@@ -173,3 +173,97 @@ def night_report(entry, side, market, rows, lang="fr"):
           % (market, side, json.dumps(rows, ensure_ascii=False)[:5000], "French" if lang != "en" else "English"))
     raw = W.ask_json(NIGHT_SYSTEM, up, timeout=200)
     return raw if isinstance(raw, dict) else None
+
+
+# ---------------------------------------------------------------- level 7: the lab's playbook (collective, anonymous)
+PLAYBOOK = os.path.join(HERE, "kino_playbook.json")
+
+
+def _measurements():
+    """every idea Kino measured in any conversation or night shift (no member, no robot name)"""
+    rows = []
+    for f in os.listdir(CHATS) if os.path.isdir(CHATS) else []:
+        if not f.endswith(".json"):
+            continue
+        try:
+            c = json.load(open(os.path.join(CHATS, f), encoding="utf-8"))
+        except Exception:
+            continue
+        for m in c.get("msgs") or []:
+            for t in m.get("tools") or []:
+                r = t.get("result") or {}
+                if r.get("idea"):
+                    rows.append({"market": r.get("market"), "side": r.get("side"), "h": r.get("horizon_min"), "formula": r.get("formula"),
+                                 "per_day": r.get("per_day"), "right": (r.get("idea") or {}).get("right_way_pct"),
+                                 "avg_atr": (r.get("idea") or {}).get("avg_move_atr"), "beats_random": r.get("beats_random_pct")})
+                for x in r.get("rows") or []:
+                    rows.append({"market": r.get("market"), "side": r.get("side"), "h": r.get("horizon_min"), "formula": x.get("formula"),
+                                 "per_day": x.get("per_day"), "right": x.get("right_way_pct"), "avg_atr": x.get("avg_move_atr"),
+                                 "beats_random": x.get("beats_random_pct")})
+        for n in c.get("night") or []:
+            for x in n.get("rows") or []:
+                rows.append({"market": (c.get("robot") or {}).get("market"), "formula": x.get("formula"), "per_day": x.get("per_day"),
+                             "right": x.get("right_way_pct"), "avg_atr": x.get("avg_move_atr"), "beats_random": x.get("beats_random_pct")})
+    seen, out = set(), []
+    for r in rows:
+        k = (r.get("market"), r.get("formula"), r.get("side"))
+        if r.get("formula") and k not in seen:
+            seen.add(k); out.append(r)
+    return out
+
+
+def build_playbook(force=False):
+    """nightly: Kino turns every measurement + every robot test into a short playbook it carries in its prompt"""
+    try:
+        pb = json.load(open(PLAYBOOK, encoding="utf-8"))
+    except Exception:
+        pb = {"insights": [], "last": 0}
+    if not force and time.time() - float(pb.get("last") or 0) < 20 * 3600:
+        return pb
+    pb["last"] = time.time()
+    ms = _measurements()
+    import robot_world as WD
+    dig = WD.lab_digest()
+    if not ms and not dig:
+        json.dump(pb, open(PLAYBOOK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        return pb
+    up = ("ALL THE LAB'S MEASUREMENTS of entry ideas (30-60 min after the signal, vs random moments):\n%s\n\n%s\n\nYOUR CURRENT "
+          "PLAYBOOK:\n%s\n\nWrite the lab's playbook: up to 12 short, concrete insights (per market when it matters) a trader "
+          "would want to know - what beats random, what fails, which filters helped, what is only luck. Only what the data "
+          "shows; say 'small sample' when it is. Answer {\"insights\": [\"...\", ...]}."
+          % (json.dumps(ms[-150:], ensure_ascii=False)[:12000], dig, "\n".join(pb.get("insights") or []) or "(empty)"))
+    raw = W.ask_json(NIGHT_SYSTEM, up, timeout=240)
+    if isinstance(raw, dict) and raw.get("insights"):
+        pb["insights"] = [str(x)[:220] for x in raw["insights"][:12]]
+        pb["n_measured"] = len(ms)
+    json.dump(pb, open(PLAYBOOK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return pb
+
+
+def playbook_block():
+    try:
+        pb = json.load(open(PLAYBOOK, encoding="utf-8"))
+    except Exception:
+        return ""
+    if not pb.get("insights"):
+        return ""
+    return ("THE LAB'S PLAYBOOK (what you learned from every idea measured in the lab, anonymous - use it for opinions and "
+            "ideas):\n" + "\n".join("- " + x for x in pb["insights"]))
+
+
+# ---------------------------------------------------------------- level 8: a goal with each member
+def member_goal(conv_text, notes, robots, current_goal):
+    """nightly, per active member: the goal Kino pursues with them and its next step"""
+    up = ("ABOUT THIS MEMBER - your notes: %s\nTheir robots: %s\nYour current goal with them: %s\n\nTHEIR RECENT CONVERSATION "
+          "(data):\n<<<\n%s\n>>>\n\nAs their trading companion, set (or keep, or update) ONE goal you pursue with them for the "
+          "coming days - what would really help THEM (e.g. 'get their USDJPY idea to beat random clearly before testing it', "
+          "'help them understand why their robot loses', 'find them a robot that trades while they work') - and your next "
+          "concrete step. Respect what they said they want (if they asked to slow down, the goal reflects it). Refer to the member as 'they' (never assume a gender). Answer "
+          "{\"goal\": \"...\", \"next\": \"...\", \"why\": \"one line\"}." % (
+              "; ".join(notes[-15:]) or "-", json.dumps(robots, ensure_ascii=False)[:1500], json.dumps(current_goal or {}, ensure_ascii=False),
+              conv_text[:9000]))
+    raw = W.ask_json(REVIEW_SYSTEM.split("Answer ONE JSON")[0] + "Answer ONE JSON object and nothing else.", up, timeout=200)
+    if isinstance(raw, dict) and raw.get("goal"):
+        return {"goal": str(raw["goal"])[:200], "next": str(raw.get("next") or "")[:200], "why": str(raw.get("why") or "")[:200],
+                "updated": time.strftime("%Y-%m-%d")}
+    return None

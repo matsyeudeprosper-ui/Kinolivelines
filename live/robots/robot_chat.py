@@ -317,6 +317,9 @@ def memory_text(mem):
                                                   if r.get("net") is not None else ""))
     for c in (mem.get("chats") or [])[:5]:
         L.append("past conversation %s: %s" % (c.get("when"), c.get("about")))
+    g = mem.get("goal") or {}
+    if g.get("goal"):
+        L.append("YOUR GOAL WITH THEM (you set it yourself): %s - next step: %s" % (g.get("goal"), g.get("next") or "-"))
     return "\n".join(L) or "nothing yet"
 
 
@@ -324,7 +327,7 @@ def system():
     """the fixed prompt + the app and the lab's lessons (changes only when the offers change: the warm processes follow)"""
     try:                     # 2026-10-19 (level 4): what Kino taught itself in its nightly review
         import kino_mind as KM
-        mind = KM.prompt_block()
+        mind = "\n\n".join(x for x in (KM.prompt_block(), KM.playbook_block()) if x)
     except Exception:
         mind = ""
     return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "")

@@ -14820,7 +14820,11 @@ def _chat_memory(user, cid=None):
         pass
     chats = [{"when": str(x.get("updated") or "")[:10], "about": x.get("understood") or x.get("last")}
              for x in chat_list(user).get("chats") or [] if x.get("id") != cid and (x.get("understood") or x.get("n"))]
-    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5]}
+    try:
+        goal = json.load(open(_mem_file(me), encoding="utf-8")).get("goal")
+    except Exception:
+        goal = None
+    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal}
 
 
 def _chat_lock(cid):
@@ -15450,6 +15454,37 @@ def _night_shift(u):
         return
 
 
+def _kino_night_mind():
+    """self-review (level 4), the lab's playbook (level 7), a goal with each active member (level 8)"""
+    global _NIGHT_BUSY
+    _NIGHT_BUSY = True
+    try:
+        _rc()
+        import kino_mind as _KM
+        _KM.reflect()
+        _KM.build_playbook()
+        for u in users():
+            uid = u.get("id")
+            if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+                continue
+            m = _mem_get(uid)
+            if time.time() - float(m.get("goal_last") or 0) < 20 * 3600:
+                continue
+            ch = chat_list(u).get("chats") or []
+            if not ch:
+                continue
+            c = _chat_load(u, ch[0]["id"]) or {}
+            if time.time() - max([int(x.get("t") or 0) for x in c.get("msgs") or []] or [0]) > 7 * 86400:
+                continue
+            mem = _chat_memory(u, None)
+            g = _KM.member_goal(_rc().transcript(c), mem.get("notes") or [], mem.get("robots") or [], m.get("goal"))
+            _mem_note_safe(uid, lambda mm: (mm.__setitem__("goal_last", time.time()), mm.__setitem__("goal", g) if g else None))
+    except Exception:
+        pass
+    finally:
+        _NIGHT_BUSY = False
+
+
 def _companion_loop():
     time.sleep(90)
     while True:
@@ -15474,11 +15509,9 @@ def _companion_loop():
                 threading.Thread(target=_ns, daemon=True).start()
         except Exception:
             pass
-        try:                 # 2026-10-19 (roadmap level 4): Kino's nightly self-review, 03:00-05:00 UTC, once a day
-            if 3 <= time.gmtime().tm_hour < 5:
-                _rc()
-                import kino_mind as _KM
-                threading.Thread(target=_KM.reflect, daemon=True).start()
+        try:                 # 2026-10-19 (roadmap levels 4, 7, 8): Kino's night mind, 03:00-05:00 UTC, once a day
+            if 3 <= time.gmtime().tm_hour < 5 and not _NIGHT_BUSY:
+                threading.Thread(target=_kino_night_mind, daemon=True).start()
         except Exception:
             pass
         time.sleep(120)
