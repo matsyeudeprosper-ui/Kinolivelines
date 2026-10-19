@@ -15091,6 +15091,7 @@ def _chat_kick(cid, user):
 # (ai_nudge); away = a push (sticky when important). Never 22:00-08:00 on their phone's clock (kept for the morning),
 # not while a trade of theirs is open and they are in the app (unless important), at most 2 unprompted ones a day.
 _CHAT_SEEN = {}
+_NIGHT_BUSY = False
 
 
 def _mem_get(uid):
@@ -15317,11 +15318,88 @@ def _proactive_event(u, c0, ago, hour):
             % (when, ("%d hours" % (ago / 3600)) if ago < 172800 else ("%d days" % (ago / 86400)), "; ".join(hooks) or "their robot and ideas"))
 
 
+def _night_shift(u):
+    """2026-10-19 (roadmap level 5): Kino works alone at night on the member's latest robot with a formula entry -
+    invents variants, measures them against random moments (robot_tools, quick, read-only), and leaves a morning
+    message only when something is genuinely better or important. Once a night per member, active members only."""
+    uid = u.get("id")
+    m = _mem_get(uid)
+    if time.time() - float(m.get("night_last") or 0) < 20 * 3600:
+        return
+    _mem_note_safe(uid, lambda mm: mm.__setitem__("night_last", time.time()))
+    _rc()
+    import kino_mind as _KM
+    import robot_tools as _RT
+    for x in (chat_list(u).get("chats") or [])[:5]:
+        c = _chat_load(u, x["id"])
+        if not c or not c.get("robot"):
+            continue
+        last = max([int(mm.get("t") or 0) for mm in c.get("msgs") or [] if mm.get("role") == "user"] or [0])
+        if time.time() - last > 3 * 86400:
+            continue
+        en = (c["robot"].get("entry") or {}).get("rule") or {}
+        if en.get("event") != "formula":
+            continue
+        side = "buy" if en.get("buy") else "sell"
+        entry = en.get("buy") or en.get("sell")
+        mk = c["robot"].get("market") or "BTCUSD"
+        vs = _KM.night_variants(entry, side, mk, m.get("notes") or [])
+        if not vs:
+            return
+        cmp_ = _RT.compare(mk, [entry] + [v["formula"] for v in vs], side, 30)
+        rows = cmp_.get("rows") or []
+        for r, v in zip(rows[1:], vs):
+            r["why"] = v["why"]
+        rep = _KM.night_report(entry, side, mk, rows, c.get("lang") or "fr")
+        _chat_mut(c["id"], lambda cc: cc.setdefault("night", []).append({"t": int(time.time()), "rows": rows, "sent": bool(rep and rep.get("send"))}))
+        if rep and rep.get("send") and str(rep.get("say") or "").strip():
+            say = str(rep["say"]).strip()[:900]
+            best = rep.get("best") if isinstance(rep.get("best"), str) else None
+
+            def put(cc):
+                _chat_msg(cc, "ai", text=say, chips=[str(ch)[:60] for ch in (rep.get("chips") or [])[:3]], night=True, quick=True,
+                          tools=[{"tool": "compare", "args": {"market": mk}, "result": cmp_}])
+                if best:
+                    try:
+                        dm = _demo_msg(dict(cc, market=mk, robot=dict(cc.get("robot") or {}, market=mk)), u, formula=best, side=side)
+                        if dm and not dm.get("nodata"):
+                            cc.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
+                    except Exception:
+                        pass
+            _chat_mut(c["id"], put)
+            _companion_deliver(u, c["id"], say, False)        # night: kept for their morning
+        return
+
+
 def _companion_loop():
     time.sleep(90)
     while True:
         try:
             _companion_tick()
+        except Exception:
+            pass
+        try:                 # 2026-10-19 (roadmap level 5): the night shift, 01:00-03:00 UTC, one member at a time
+            if 1 <= time.gmtime().tm_hour < 3 and not _NIGHT_BUSY:
+                def _ns():
+                    global _NIGHT_BUSY
+                    _NIGHT_BUSY = True
+                    try:
+                        for _u in users():
+                            if _u.get("id") and not _u.get("public") and (is_admin(_u) or has(_u.get("id"), "strategy")):
+                                try:
+                                    _night_shift(_u)
+                                except Exception:
+                                    pass
+                    finally:
+                        _NIGHT_BUSY = False
+                threading.Thread(target=_ns, daemon=True).start()
+        except Exception:
+            pass
+        try:                 # 2026-10-19 (roadmap level 4): Kino's nightly self-review, 03:00-05:00 UTC, once a day
+            if 3 <= time.gmtime().tm_hour < 5:
+                _rc()
+                import kino_mind as _KM
+                threading.Thread(target=_KM.reflect, daemon=True).start()
         except Exception:
             pass
         time.sleep(120)
@@ -23124,6 +23202,11 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "kino_mind" and is_admin(user):
+            # the owner reads Kino's mind: its lessons, self-model and journal
+            _rc()
+            import kino_mind as _KM
+            self._send(json.dumps(_KM.load(), ensure_ascii=False), "application/json")
         elif sub == "ai_nudge":
             self._send(json.dumps(ai_nudge(user), ensure_ascii=False), "application/json")
         elif sub == "chat_img":

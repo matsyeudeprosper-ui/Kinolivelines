@@ -319,7 +319,12 @@ def memory_text(mem):
 
 def system():
     """the fixed prompt + the app and the lab's lessons (changes only when the offers change: the warm processes follow)"""
-    return SYSTEM + "\n\n" + WD.world(PLANS)
+    try:                     # 2026-10-19 (level 4): what Kino taught itself in its nightly review
+        import kino_mind as KM
+        mind = KM.prompt_block()
+    except Exception:
+        mind = ""
+    return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "")
 
 
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None):
