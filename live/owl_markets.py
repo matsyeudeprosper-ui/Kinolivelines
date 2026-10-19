@@ -4,7 +4,7 @@ THE RULE (owner: "auto allow all symbols that tested positive on that bot ... a 
 account by default"; chose "beat chance" over "positive only"): an account runs the robot plugged on it (none = the
 Owl) on Bitcoin, PLUS every other market where that robot passed BOTH checks:
   1. its market test (robots/results/<robot>@<SYM>.json) made money, and
-  2. its random-entry control (study/random_control_<robot>_<SYM>.json) beats chance: percentile >= 95,
+  2. its random-entry control (study/random_control_<robot>_<SYM>.json) beats chance: percentile >= 95 on 100 draws,
 and the market is on that account's own broker (nest_data/<uid>.symbols.json) and has a market pack (the scale the
 test used). The reference account stays dedicated to Bitcoin (it feeds the Compte indicator).
 
@@ -27,6 +27,7 @@ CONTROLS = os.path.join(ROOT, "study")
 PACKS = os.path.join(ROOT, "study", "markets")
 TPACKS = os.path.join(ROOT, "study", "markets_tick")     # verified broker-tick packs (study/tick_pack.py)
 PCT_MIN = 95.0
+MIN_DRAWS = 100                     # 2026-10-18: at most 5 of 100 random robots do as well
 EXCLUDED = {"u477508138"}            # the reference account: Bitcoin only, never a copier or a second market
 # account id -> the argument its Bitcoin bot runs with (no argument = "live" = the 'bos' account)
 VARIANT = {"bos": "live", "u224016179": "valere", "demo": "demo", "infinity": "infinity", "expenses": "expenses",
@@ -86,6 +87,8 @@ def check(uid, sym):
         return False, "controle hasard pas encore fait"
     if float(ctl["percentile"]) < PCT_MIN:
         return False, "dans la chance (%.1fe percentile)" % float(ctl["percentile"])
+    if int(ctl.get("seeds") or 0) < MIN_DRAWS:        # 2026-10-18 (owner): a pass counts only on 100 draws
+        return False, "controle a finir (%d tirages sur %d)" % (int(ctl.get("seeds") or 0), MIN_DRAWS)
     syms = (_load(os.path.join(DIR, "nest_data", "%s.symbols.json" % uid), {}) or {}).get("symbols") or []
     if not any(base(x.get("s", "")).upper() == B for x in syms):
         return False, "pas sur le courtier de ce compte"

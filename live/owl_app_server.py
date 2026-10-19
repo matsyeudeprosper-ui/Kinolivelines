@@ -13757,8 +13757,10 @@ def _random_ctl(rid, sym):
         c = json.load(open(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, sym)), encoding="utf-8"))
         if c.get("percentile") is None:
             return None
+        rn = float((c.get("real") or {}).get("net") or 0)
         return {"pct": c["percentile"], "seeds": c.get("seeds"), "median": (c.get("control") or {}).get("median"),
-                "p95": (c.get("control") or {}).get("p95")}
+                "p95": (c.get("control") or {}).get("p95"), "rule": c.get("rule"), "early": bool(c.get("stopped_early")),
+                "beats": c["beats"] if c.get("beats") is not None else sum(1 for x in c.get("nets") or [] if x >= rn)}
     except Exception:
         return None
 
@@ -13780,6 +13782,24 @@ def _ctl_state():
     out = []
     for j in _ctl_load()[-30:]:
         st = "waiting"
+        if j.get("luck"):                          # 2026-10-18: 100-draw journal (study/luck_queue.py), resumes on its own
+            try:
+                ls = json.load(open(os.path.join(os.path.dirname(DIR), "study", "luck", "%s_%s.status.json" % (j["rid"], j["sym"])), encoding="utf-8"))
+            except Exception:
+                ls = {}
+            fresh = str(ls.get("updated") or "") >= j["at"]
+            if fresh and ls.get("state") in ("pass", "fail"):
+                st = "done"
+            elif fresh and ls.get("state") == "data_changed":
+                st = "error"
+            elif fresh and ls.get("state") in ("running", "paused"):
+                st = "running"
+            row = {"rid": j["rid"], "sym": j["sym"], "at": j["at"], "state": st, "mine": None}
+            if fresh:
+                row.update(n=ls.get("n"), max=ls.get("max"), beats=ls.get("beats"), allow=ls.get("allow"),
+                           paused=ls.get("state") == "paused", eta_h=ls.get("eta_h"))
+            out.append(row)
+            continue
         if j.get("stopped"):                       # stopped by hand (2026-10-18 incident): never blocks the queue
             out.append({"rid": j["rid"], "sym": j["sym"], "at": j["at"], "state": "error", "mine": None})
             continue
@@ -13831,11 +13851,18 @@ def robot_control(user, body):
     name = "ctl_%s_%s_%d" % (re.sub(r"[^a-z0-9]+", "", r["id"].lower())[:20], sym.lower(), int(time.time()))
     root = os.path.dirname(DIR)
     import subprocess
-    subprocess.Popen([sys.executable, os.path.join("study", "when_free.py"), name, "--", sys.executable,
-                      os.path.join("study", "random_control_market.py"), sym, r["id"], "40"],
+    # 2026-10-18 (owner): 100 draws, the 6th random robot that does as well stops it; each draw is saved, so it
+    # continues after a crash (study/luck_queue.py, kicked every 15 min by the OwlLuckQueue task). "again" on the
+    # same test continues the draws already made; a new market test starts fresh.
+    _st = os.path.join(root, "study")
+    if _st not in sys.path:
+        sys.path.insert(0, _st)
+    import luck_queue as _LQ
+    _LQ.add(sym, r["id"], fresh=not body.get("again"))
+    subprocess.Popen([sys.executable, os.path.join("study", "luck_queue.py")],
                      cwd=root, creationflags=0x08000000 | 0x00000008, close_fds=True)
     q = _ctl_load()
-    q.append({"rid": r["id"], "sym": sym, "uid": user.get("id"), "at": now, "t": time.time(), "name": name})
+    q.append({"rid": r["id"], "sym": sym, "uid": user.get("id"), "at": now, "t": time.time(), "name": name, "luck": True})
     json.dump(q[-60:], open(ROBOT_CTL + ".tmp", "w", encoding="utf-8"), indent=1)
     os.replace(ROBOT_CTL + ".tmp", ROBOT_CTL)
     return {"ok": True}
@@ -15165,7 +15192,7 @@ def _robot_finish_push():
         if st in ("done", "error") and j.get("uid"):
             c = _random_ctl(j["rid"], j["sym"]) or {}
             ev.append(("c:%s:%s:%s" % (j["rid"], j["sym"], j["at"]), j["uid"], "Contrôle contre le hasard fini",
-                       "« %s » sur %s : %s" % (nm(j["rid"]), j["sym"], ("mieux que %d tirages au hasard sur 100." % round(c["pct"])) if st == "done" and c.get("pct") is not None else "le contrôle n’a pas pu aller au bout.")))
+                       "« %s » sur %s : %s" % (nm(j["rid"]), j["sym"], (("%d tirages au hasard sur %d font aussi bien : %s" % (c.get("beats") or 0, c.get("seeds") or 0, "il bat le hasard." if (c.get("seeds") or 0) >= 100 and c["pct"] >= 95 else "dans la chance.")) if j.get("luck") else ("mieux que %d tirages au hasard sur 100." % round(c["pct"]))) if st == "done" and c.get("pct") is not None else "le contrôle n’a pas pu aller au bout.")))
     new = [e for e in ev if e[0] not in seen]
     if not first:
         for k, uid, title, body in new[:10]:

@@ -88,7 +88,7 @@ def markets_of(rid):
                 pct = float(ctl["percentile"]) if ctl and ctl.get("percentile") is not None else None
                 held = ("%s@%s" % (rid, sym)) in hold
                 out.append({"sym": sym, "name": names.get(sym, sym), "net": round(net, 2), "pct": pct, "held": held,
-                            "pays": net > 0 and pct is not None and pct >= 95 and not held})
+                            "pays": net > 0 and pct is not None and pct >= 95 and int((ctl or {}).get("seeds") or 0) >= 100 and not held})
     except Exception:
         pass
     return out

@@ -275,37 +275,26 @@ def _wait_room(rid, sym, need=4.5, hours=6):
 
 def random_control(rid, sym, uid, nm):
     """2026-10-15 (owner's system rule, live/owl_markets.py): a market is traded for real only when the robot's test
-    made money AND its entries beat random ones (40 random runs, top 5 %). So a positive market test runs its
-    random-entry control right here, in this lane, one at a time (heavy: ~75 min) - never in parallel."""
-    import subprocess
-    out = os.path.join(HERE, "random_control_%s_%s.json" % (rid, sym))
-    mlog("%s @ %s: random-entry control, %d runs" % (rid, sym, CONTROL_SEEDS))
+    made money AND its entries beat random ones. 2026-10-18 (owner: "build it"): the check is now 100 draws, at most 5
+    random robots may do as well, the 6th stops it; it can take a day or two, so it is no longer run inside this lane:
+    it is queued (study/luck_queue.py, one at a time, only with room, each draw saved, restarts after a reboot) and
+    shown on the robot page like a check asked from there; the server sends the notice when it ends."""
     try:
-        if os.path.exists(out):
-            os.remove(out)                       # an old verdict must never stand for a new test
-        # 2026-10-16: on a tick pack one seed replays every broker tick (14 min on Gold, ~1 h on Nasdaq) - the control
-        # runs as 4 processes of 5 seeds (ctrl_split.py); bar packs keep the 40 sequential seeds
-        import tick_pack as _TP
-        _tick = _TP.tick_ready(sym)
-        # 2026-10-18 incident: 4 control processes (1.3 GB each) beside two runners starved the VPS - the MT5 terminals
-        # lost authorization and the live bots froze ~17 min. Now: wait for room (>= 4.5 GB free, no other control),
-        # and split in 2 processes, never 4. Live trading always comes before research.
-        if not _wait_room(rid, sym):
-            mlog("%s @ %s: control SKIPPED - no room on the VPS for 6 h (run it later from the Robots page)" % (rid, sym))
-            return
-        subprocess.run([sys.executable, os.path.join(HERE, "ctrl_split.py" if _tick else "random_control_market.py"), sym, rid,
-                        str(20 if _tick else CONTROL_SEEDS)] + (["2"] if _tick else []),
-                       cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=12 * 3600,
-                       creationflags=0x08000000)
-        j = json.load(open(out, encoding="utf-8"))
-        pc = float(j["percentile"])
-        mlog("%s @ %s: control percentile %.1f -> %s" % (rid, sym, pc, j.get("verdict")))
-        if pc >= 95:
-            push(uid, "Nouveau marché autorisé · " + sym, "« %s » bat le hasard sur %s (mieux que %.0f %% des entrées au hasard) : "
-                 "les comptes qui font tourner ce robot tradent maintenant aussi ce marché." % (nm, sym, pc))
-        else:
-            push(uid, "Contrôle terminé · " + sym, "« %s » sur %s : gagnant au test, mais dans la chance (%.0fe percentile) : "
-                 "ce marché reste en test, pas en réel." % (nm, sym, pc))
+        old = os.path.join(HERE, "random_control_%s_%s.json" % (rid, sym))
+        if os.path.exists(old):
+            os.remove(old)                       # an old verdict must never stand for a new test
+        import luck_queue as LQ
+        LQ.add(sym, rid, fresh=True)             # a new market test = a new luck test, never mixed with old draws
+        cf = os.path.join(LIVE, "robots", "controls.json")
+        try:
+            q = json.load(open(cf, encoding="utf-8"))
+        except Exception:
+            q = []
+        q.append({"rid": rid, "sym": sym, "uid": uid, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "t": time.time(),
+                  "name": "luck_%s_%s" % (rid, sym), "luck": True})
+        json.dump(q[-60:], open(cf + ".tmp", "w", encoding="utf-8"), indent=1)
+        os.replace(cf + ".tmp", cf)
+        mlog("%s @ %s: luck test queued (100 draws, journal)" % (rid, sym))
     except BaseException as e:
         mlog("%s @ %s: control ERROR %r" % (rid, sym, e))
 

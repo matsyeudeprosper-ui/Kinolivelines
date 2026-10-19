@@ -15,5 +15,23 @@
   "at": "2026-10-18T12:14:52Z",
   "t": 1792325692.470052,
   "name": "ctl_owlsansorage_xauusd_1792325692"
+ },
+ {
+  "rid": "owl-sans-orage",
+  "sym": "XAUUSD",
+  "uid": "kino",
+  "at": "2026-10-19T04:24:02Z",
+  "t": 1792383842.7919557,
+  "name": "luck_owl-sans-orage_XAUUSD",
+  "luck": true
+ },
+ {
+  "rid": "owl",
+  "sym": "BTCUSD",
+  "uid": "kino",
+  "at": "2026-10-19T04:24:02Z",
+  "t": 1792383842.7919557,
+  "name": "luck_owl_BTCUSD",
+  "luck": true
  }
 ]
