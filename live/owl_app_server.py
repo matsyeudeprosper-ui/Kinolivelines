@@ -14669,6 +14669,36 @@ def _chat_member(user, c):
                 for g in c["ghosts"]))
     except Exception:
         pass
+    try:          # 2026-10-19 (owner humanity items 2, 7, 8)
+        M_ = [m for m in (c.get("msgs") or []) if m.get("t")]
+        um = [m for m in M_ if m.get("role") == "user"][-6:]
+        cues = []
+        for m in um:
+            prev_ai = next((x for x in reversed(M_) if x.get("role") == "ai" and int(x["t"]) < int(m["t"])), None)
+            tx = str(m.get("text") or "")
+            cues.append("%d chars%s%s%s" % (len(tx), (", answered after %ds" % (int(m["t"]) - int(prev_ai["t"]))) if prev_ai else "",
+                                             ", !" if "!" in tx else "", ", CAPS" if sum(1 for ch_ in tx if ch_.isupper()) > max(6, len(tx) * 0.5) else ""))
+        L.append("EMOTION CUES (their last messages, oldest first): " + " | ".join(cues) + "; their local hour now %d" % _local_hour(uid))
+        allc = chat_list(user).get("chats") or []
+        nmsg = sum(int(x.get("n") or 0) for x in allc)
+        first = time.strftime("%Y-%m-%d", time.gmtime(min([int(str(x.get("id")).split("_")[-1]) // 1000 for x in allc if str(x.get("id")).split("_")[-1].isdigit()] or [time.time()])))
+        stage = "new (be warm but a little careful)" if nmsg < 15 else "getting to know each other" if nmsg < 80 else \
+            "familiar (more direct, some teasing ok)" if nmsg < 300 else "close (a real friend's tone)"
+        L.append("RELATIONSHIP: %s - %d messages from them so far, talking since about %s" % (stage, nmsg, first))
+        work = []
+        for nn in (c.get("night") or [])[-2:]:
+            work.append("night shift %s: you measured %d versions of their entry%s" % (time.strftime("%d/%m", time.gmtime(nn["t"])), len(nn.get("rows") or []),
+                                                                                       " and told them" if nn.get("sent") else " (nothing worth telling)"))
+        for g_ in c.get("ghosts") or []:
+            work.append("you follow their robot '%s' in ghost mode since %s: %d pretend trades" % (g_.get("name"), time.strftime("%d/%m", time.gmtime(g_.get("started") or 0)),
+                                                                                               len(g_.get("trades") or [])))
+        tl = [m for m in M_ if m.get("role") == "ai" and m.get("tools") and time.time() - int(m["t"]) < 7 * 86400]
+        if tl:
+            work.append("you ran %d calculations for them this week" % len(tl))
+        if work:
+            L.append("YOUR REAL RECENT WORK FOR THEM (true - you may talk about it): " + "; ".join(work))
+    except Exception:
+        pass
     out = "\n".join("- " + x for x in L)
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
@@ -14947,7 +14977,7 @@ def _chat_memory(user, cid=None):
         opinions = (_KMm.load().get("opinions") or [])
     except Exception:
         opinions = []
-    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal, "projects": _mm.get("projects") or [],
+    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal, "projects": _mm.get("projects") or [], "jokes": _mm.get("jokes") or [],
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
             "nest_open": nest_open, "nest_answers": nest_answers}
 
@@ -14956,8 +14986,44 @@ def _chat_lock(cid):
     return _CHAT_LOCKS.setdefault(cid, threading.Lock())
 
 
+_CHAT_WAIT, _CHAT_TYPING, _CHAT_PENDING = set(), {}, {}
+
+
 def _chat_status(cid):
-    return "thinking" if _CHAT_Q.get(cid) else ("building" if cid in _CHAT_B else "ready")
+    if _CHAT_Q.get(cid):
+        return "thinking"
+    if cid in _CHAT_WAIT:
+        return "listening"            # 2026-10-19 (owner item 1): Kino waits for the member to finish their burst
+    return "building" if cid in _CHAT_B else "ready"
+
+
+def _chat_listen(cid, user):
+    """read a burst like a person: wait until the member stopped writing (2.5 s without a new message or a typing signal,
+    20 s at most), then answer everything at once"""
+    if cid in _CHAT_WAIT:
+        return
+    _CHAT_WAIT.add(cid)
+    t0 = time.time()
+    try:
+        while time.time() - t0 < 20:
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            lu = max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image")] or [0])
+            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= 2.5:
+                break
+            time.sleep(0.5)
+    except Exception:
+        pass
+    _CHAT_WAIT.discard(cid)
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+    _chat_quick(cid, user)
+
+
+def chat_typing(user, body):
+    """the page says the member is typing (every ~2.5 s while they type)"""
+    cid = str(body.get("id") or "")
+    if _chat_load(user, cid) is not None:
+        _CHAT_TYPING[cid] = time.time()
+    return {"ok": True}
 
 
 def _chat_mut(cid, fn):
@@ -15062,6 +15128,22 @@ def _demo_later(cid, user, sh):
 
 
 def _chat_quick(cid, user, event=None, notify=False, important=False):
+    """one quick turn (_chat_quick0), then - 2026-10-19 (owner item 1) - if the member wrote while Kino was answering,
+    Kino listens again and answers that too"""
+    try:
+        _chat_quick0(cid, user, event, notify, important)
+    finally:
+        if _CHAT_PENDING.pop(cid, None):
+            try:
+                c = json.load(open(_chat_path(cid), encoding="utf-8"))
+                lm = (c.get("msgs") or [])[-1:]
+                if lm and lm[0].get("role") in ("user", "show", "image") and not lm[0].get("answered"):
+                    threading.Thread(target=_chat_listen, args=(cid, user), daemon=True).start()
+            except Exception:
+                pass
+
+
+def _chat_quick0(cid, user, event=None, notify=False, important=False):
     """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
     try:
@@ -15372,6 +15454,7 @@ def _companion_tick():
             if now - _LAST_SEEN.get(uid, 0) < 150:             # in the app right now: one sample for their active hours
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("act", dict(mm.get("act") or {}, **{str(h0): int((mm.get("act") or {}).get(str(h0), 0)) + 1})))
             busy = lambda cid: _CHAT_Q.get(cid) or cid in _CHAT_B
+            m = _mem_get(uid) or {}          # 2026-10-19 fix: the brief/path/gesture blocks read m before it existed (silent NameError)
             # (1) a test finished while they were away
             for x in ch[:6]:
                 c = _chat_load(u, x["id"])
@@ -15444,6 +15527,30 @@ def _companion_tick():
                                                "J'ai écrit ce que j'ai compris de toi comme trader (page Kino). Tu me corriges si je me trompe ?", False)
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("portrait", dict(mm.get("portrait") or {}, t=time.time())))
                     threading.Thread(target=_pt, daemon=True).start()
+            except Exception:
+                pass
+            # (1i) 2026-10-19 (owner humanity item 12): small spontaneous gestures - rare, so they stay meaningful (1 per 5 days)
+            try:
+                if now - float(m.get("gesture_t") or 0) > 5 * 86400 and _active_hour(uid, h0) and not busy(ch[0]["id"]) and now - _LAST_SEEN.get(uid, 0) > 120:
+                    _lt_ = time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60))
+                    why = None
+                    if _lt_.tm_wday == 4 and 17 <= _lt_.tm_hour < 20:
+                        why = "it is Friday evening for them - a natural 'bon week-end' moment (with something personal if you can)"
+                    fd = time.strftime("%Y-%m-%d", time.gmtime(min([int(str(x.get("id")).split("_")[-1]) // 1000 for x in ch if str(x.get("id")).split("_")[-1].isdigit()] or [now])))
+                    if not why and fd != "9" and fd[8:10] == time.strftime("%d", _lt_) and fd[:7] != time.strftime("%Y-%m", _lt_):
+                        why = "it is the monthly anniversary of your first conversation (%s)" % fd
+                    try:
+                        import robot_reality as _RWg
+                        hol = [x for x in (_RWg._load().get("cal") or []) if "holiday" in str(x.get("title")).lower() and str(x.get("date"))[:10] == time.strftime("%Y-%m-%d", _lt_)]
+                        if not why and hol:
+                            why = "market holiday today (%s) - markets may be quiet" % hol[0]["title"]
+                    except Exception:
+                        pass
+                    if why:
+                        _mem_note_safe(uid, lambda mm: mm.__setitem__("gesture_t", now))
+                        _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                        threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "GESTURE - %s. A friend's small spontaneous message, one or two "
+                                         "lines, warm, never commercial; or \"send\": false if it would feel forced." % why), kwargs={"notify": True}, daemon=True).start()
             except Exception:
                 pass
             # (1g) 2026-10-19 (owner item 3): the morning brief - once a day, 07:00-10:00 on their clock, during their usual hours,
@@ -16277,16 +16384,19 @@ def chat_send(user, body):
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None:
         return {"ok": False, "err": "missing"}
-    if _CHAT_Q.get(c["id"]):
-        return {"ok": False, "err": "busy"}
     text = str(body.get("text") or "").strip()
     if not text:
         return {"ok": False, "err": "empty"}
     if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
         return {"ok": False, "err": "cap"}
-    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500]))
-    threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+    _CHAT_TYPING.pop(c["id"], None)
+    if c["id"] in _CHAT_WAIT:
+        return {"ok": True}                      # Kino is already listening to this burst
+    if _CHAT_Q.get(c["id"]):
+        _CHAT_PENDING[c["id"]] = True            # Kino is answering: it reads this right after
+        return {"ok": True}
+    threading.Thread(target=_chat_listen, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
 
 
@@ -16331,7 +16441,7 @@ def chat_get(user, cid):
     c["status"] = _chat_status(c["id"])
     # 2026-10-19: a member message left without an answer (its turn died with a server restart) is answered now
     _lm = (c.get("msgs") or [])[-1:] or [{}]
-    if _lm[0].get("role") in ("user", "show", "image") and not _lm[0].get("answered") and c["status"] == "ready"             and time.time() - int(_lm[0].get("t") or 0) > 20:
+    if _lm[0].get("role") in ("user", "show", "image") and not _lm[0].get("answered") and c["status"] == "ready" and c["id"] not in _CHAT_WAIT and not _CHAT_PENDING.get(c["id"]) and time.time() - int(_lm[0].get("t") or 0) > 35:
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         c["status"] = "thinking"
@@ -16632,7 +16742,11 @@ def chat_react(user, body):
         M = c.get("msgs") or []
         if 0 <= i < len(M) and M[i].get("role") == "ai":
             M[i]["mreact"] = None if M[i].get("mreact") == e else e
-    _chat_mut(c["id"], put)
+            return M[i].get("text") if M[i]["mreact"] in ("😂", "🔥", "❤️") else None
+    jk = _chat_mut(c["id"], put)
+    if jk:                       # 2026-10-19 (owner humanity item 3): a shared moment - Kino may come back to it, rarely
+        _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("jokes", ((mm.get("jokes") or []) + [{"t": int(time.time()), "text": str(jk)[:160],
+                                                                                                          "e": e}])[-10:]))
     return {"ok": True}
 
 
@@ -21890,7 +22004,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -21910,7 +22024,8 @@ class H(BaseHTTPRequestHandler):
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
-                       "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait}[_parts[1]]
+                       "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
+                       "chat_typing": chat_typing}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

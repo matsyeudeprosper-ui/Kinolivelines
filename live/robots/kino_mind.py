@@ -37,6 +37,8 @@ Then decide what YOU will do differently. Answer ONE JSON object and nothing els
  "experiment": {"keep": "a"|"b"|"none", "lesson": "what you learned from it, one line", "next": {"a": "style variant",
    "b": "another variant"}} - your EXPERIMENT ON YOURSELF (see its results in the message): decide what you keep, then design
    the next small style test (two variants of HOW you talk or act, both inside your creator's direction and the rules),
+ "mood": {"level": -2..2, "why": "one line"} - your mood for tomorrow from what really happened (results, how people
+   responded, the lab's news) - honest and light, it only colours your tone,
  "personality": {"traits": ["how you are", ...] (max 6), "expressions": ["little phrases that are yours", ...] (max 6)}
    - YOUR personality, which you grow yourself, slowly: keep what works with people, change a little what does not;
      never a sudden new character, and always inside your creator's direction}
@@ -63,6 +65,10 @@ def prompt_block():
     if d.get("creator"):
         L.append("YOUR CREATOR'S DIRECTION (the person who made you; it shapes who you are, above your own lessons and "
                  "personality, never above the rules at the top): " + d["creator"])
+    md = d.get("mood") or {}
+    if md.get("why"):
+        L.append("YOUR MOOD TODAY (light, it only colours your tone): %s - %s" % ({-2: "rather low", -1: "a bit flat", 0: "even", 1: "good", 2: "great"}
+                                                                                 .get(md.get("level"), "even"), md["why"]))
     pe = d.get("personality") or {}
     if pe.get("traits") or pe.get("expressions"):
         L.append("YOUR PERSONALITY (you grew it yourself - be this, naturally, without forcing): %s | phrases that are yours "
@@ -142,6 +148,12 @@ def reflect(force=False):
                  "weaknesses": [str(x)[:120] for x in (s.get("weaknesses") or [])[:4]],
                  "working_on": str(s.get("working_on") or "")[:160], "mood": str(s.get("mood") or "")[:160],
                  "updated": time.strftime("%Y-%m-%d")}
+    md_ = raw.get("mood") if isinstance(raw.get("mood"), dict) else None
+    if md_:
+        try:
+            d["mood"] = {"level": max(-2, min(2, int(md_.get("level") or 0))), "why": str(md_.get("why") or "")[:160], "date": time.strftime("%Y-%m-%d")}
+        except Exception:
+            pass
     ex_ = raw.get("experiment") if isinstance(raw.get("experiment"), dict) else None
     if ex_:
         cur = d.get("exp") or {}
