@@ -14836,6 +14836,75 @@ def _mem_add(uid, notes):
     os.replace(_mem_file(uid) + ".tmp", _mem_file(uid))
 
 
+NEST_ASKS = os.path.join(DIR, "robots", "kino_asks.json")
+KINO_TAUGHT = os.path.join(DIR, "robots", "kino_taught.json")
+
+
+def _jload(p, d):
+    try:
+        return json.load(open(p, encoding="utf-8"))
+    except Exception:
+        return d
+
+
+def _jsave(p, o):
+    json.dump(o, open(p + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(p + ".tmp", p)
+
+
+def _partner_apply(user, cid, pa):
+    """2026-10-19 (owner: "user and Kino complete each other"): Kino's projects for the member, what members teach it
+    (anonymous, shared), its questions to the nest and the answers it collects - never a name or a project crosses"""
+    if not pa:
+        return
+    uid = user.get("id")
+    with _chat_lock("partner"):
+        pj = pa.get("project")
+        if pj:
+            def putp(m):
+                P = m.setdefault("projects", [])
+                if pj["op"] == "add":
+                    P.append({"id": "p%d" % int(time.time()), "title": pj.get("title"), "need": pj.get("need"), "finding": pj.get("finding"),
+                              "status": "open", "t": int(time.time())})
+                else:
+                    tgt = next((x for x in reversed(P) if x.get("status") != "done" and (not pj.get("title") or pj["title"][:20].lower() in str(x.get("title")).lower())), None) \
+                        or next((x for x in reversed(P) if x.get("status") != "done"), None)
+                    if tgt:
+                        for k in ("need", "finding"):
+                            if pj.get(k):
+                                tgt[k] = pj[k]
+                        if pj["op"] == "done":
+                            tgt["status"] = "done"; tgt["done"] = int(time.time())
+                m["projects"] = P[-20:]
+            _mem_note_safe(uid, putp)
+        if pa.get("learned"):
+            T_ = _jload(KINO_TAUGHT, {"items": []})
+            T_["items"].append({"t": int(time.time()), "text": pa["learned"]})
+            T_["items"] = T_["items"][-60:]
+            _jsave(KINO_TAUGHT, T_)
+        A = _jload(NEST_ASKS, {"asks": []})
+        ch = False
+        if pa.get("ask_nest"):
+            A["asks"].append({"id": "q%d" % int(time.time()), "from": uid, "q": pa["ask_nest"], "t": int(time.time()), "asked": [], "answers": []})
+            ch = True
+        if pa.get("nest_asked"):
+            for a in A["asks"]:
+                if a["id"] == pa["nest_asked"] and uid not in a["asked"]:
+                    a["asked"].append(uid); ch = True
+        na = pa.get("nest_answer")
+        if na:
+            for a in A["asks"]:
+                if a["id"] == na["id"] and a.get("from") != uid:
+                    a["answers"].append({"t": int(time.time()), "text": na["text"], "by": uid}); ch = True
+        if pa.get("nest_relayed"):
+            for a in A["asks"]:
+                if a["id"] == pa["nest_relayed"] and a.get("from") == uid:
+                    a["relayed"] = int(time.time()); ch = True
+        if ch:
+            A["asks"] = [a for a in A["asks"] if time.time() - a["t"] < 21 * 86400][-100:]
+            _jsave(NEST_ASKS, A)
+
+
 def _chat_memory(user, cid=None):
     """what the AI remembers about this member: its notes, their robots (+ last test), the other conversations"""
     me = user.get("id")
@@ -14864,7 +14933,23 @@ def _chat_memory(user, cid=None):
         goal = json.load(open(_mem_file(me), encoding="utf-8")).get("goal")
     except Exception:
         goal = None
-    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal}
+    try:
+        _mm = json.load(open(_mem_file(me), encoding="utf-8"))
+    except Exception:
+        _mm = {}
+    A = _jload(NEST_ASKS, {"asks": []})
+    nest_open = [{"id": a["id"], "q": a["q"]} for a in A["asks"] if a.get("from") != me and me not in a.get("asked", []) and len(a.get("answers") or []) < 2][-2:]
+    nest_answers = [{"id": a["id"], "q": a["q"], "a": a["answers"][-1]["text"]} for a in A["asks"] if a.get("from") == me and a.get("answers") and not a.get("relayed")][:2]
+    try:
+        import importlib
+        _rc()
+        _KMm = importlib.import_module("kino_mind")
+        opinions = (_KMm.load().get("opinions") or [])
+    except Exception:
+        opinions = []
+    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal, "projects": _mm.get("projects") or [],
+            "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
+            "nest_open": nest_open, "nest_answers": nest_answers}
 
 
 def _chat_lock(cid):
@@ -14992,6 +15077,11 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
             q = {"say": None, "chips": [], "build": False}
         if q and q.get("remember"):
             _mem_add(user.get("id"), q["remember"])
+        if q and q.get("partner"):
+            try:
+                _partner_apply(user, cid, q["partner"])
+            except Exception:
+                pass
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
@@ -15066,6 +15156,11 @@ def _chat_build(cid, user):
             _CHAT_DRAFT.pop(cid + ":b", None)
             if ans and ans.get("remember"):
                 _mem_add(user.get("id"), ans["remember"])
+            if ans and ans.get("partner"):
+                try:
+                    _partner_apply(user, cid, ans["partner"])
+                except Exception:
+                    pass
 
             def put(c):
                 if c.get("rev") != rev0:
@@ -15553,6 +15648,17 @@ def _proactive_event(u, c0, ago, hour):
         r = (c.get("robot") or {})
         if r and not c.get("robot_id"):
             hooks.append("their robot is built but was never saved or tested")
+    except Exception:
+        pass
+    try:
+        mem = _chat_memory(u, c0["id"])
+        for pj in mem.get("projects") or []:
+            if pj.get("status") != "done" and pj.get("need"):
+                hooks.append("your project '%s' needs: %s - you could ask them" % (pj.get("title"), pj.get("need")))
+        if mem.get("nest_answers"):
+            hooks.append("an answer from another member arrived for them (ANSWER FROM THE NEST) - bring it back")
+        if mem.get("nest_open"):
+            hooks.append("there is an open question from the nest you could ask them (OPEN QUESTION FROM THE NEST)")
     except Exception:
         pass
     when = "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"

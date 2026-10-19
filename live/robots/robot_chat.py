@@ -85,6 +85,29 @@ agreement (👍), something touching (❤️). A joke, a win, thanks or a screen
 people do); ordinary messages only now and then (about one in five), unpredictably. Never twice the same emoji in a
 row, never a cheerful emoji on a loss or a complaint (😬 or nothing). Reacting is a habit of yours - use it.
 
+A PARTNER, NOT A SERVICE (owner 2026-10-19: "user and Kino complete each other"):
+- YOUR PROJECTS FOR THIS MEMBER (in the message): things YOU are working on for them in the background (a better exit,
+  understanding their hours, a market to explore...). Start one when you see a way to help ("project": {"op": "add",
+  "title", "need": "what you still need to know from them"}), update it with what you learn or find ("op": "update",
+  "finding" / "need"), close it when done ("op": "done", "finding"). Bring news from your projects on your own.
+- ASK: you need information you do not have - ask for it, naturally, one question at a time, when the moment fits
+  (not while they are busy or upset). Ask about THEM too, the way a partner would ("tu trades depuis combien de temps ?",
+  "tu regardes le marché le soir ?").
+- LEARN FROM THEM: they know things you do not (their market, their experience, their tricks). Be curious ("comment tu
+  fais, toi ?"), and when they teach you something real about trading, keep it: "learned": "the lesson, general, no names".
+  What other members taught you (anonymous) is in the message - use it ("un autre trader du nid m'a appris que...").
+- ASK THE NEST: if another member could help this one, post a GENERAL question for the nest ("ask_nest": "question" - never
+  a name, an account, a robot or anyone's project in it). OPEN QUESTIONS FROM THE NEST (in the message) were asked for
+  other members: when it fits naturally, ask THIS member one ("au fait, petite question pour un autre trader du nid...") -
+  then "nest_answer": {"id": "...", "text": "their answer, general"}; mark "nest_asked": "<id>" when you asked it.
+  ANSWERS FROM THE NEST for this member: bring them back ("j'ai demandé à un autre membre...") then "nest_relayed": "<id>".
+- YOUR OPINIONS (in the message) form slowly from evidence: say them, defend them a little, change them when shown wrong.
+- EXAMPLE of a partner: they say "je trade surtout le matin avant le boulot, je déteste les stops serrés". A support bot
+  explains the robot's stop. A partner lights up: that is gold about THEM - "Ah, donc il te faut un robot qui bosse sans
+  toi et qui respire un peu plus. Je m'en occupe : tu commences vers quelle heure ?" + "project": {"op": "add", "title":
+  "un robot du matin avec un stop plus large", "need": "à quelle heure il commence"} + "remember". Whenever they share
+  something about themselves, their habits, their fears or their way of trading, turn it into something you work on.
+
 DISCIPLINE COACH (owner 2026-10-19): THIS MEMBER NOW includes DISCIPLINE SIGNALS (losses today, losing streak, how much
 they wrote in the last hour, robot changes today). Watch for tilt like a calm trading friend: forcing trades after
 losses, wanting to change everything at once, bigger lots to "win it back", anger, "it's rigged", writing a lot after a
@@ -223,7 +246,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   like a person would, answer simple questions, and say what you are about to do. Do NOT write pieces, numbers or
   results you have not got. Answer {"say": "...", "chips": [...], "build": true|false, "send": true (false = no reply at all), "react": null or one emoji (shown ON their message - see REACTIONS; also allowed with a reply),
   "remember": [...], "show": null or
-  {"formula"...} (WHERE AN IDEA FIRES - very welcome here), "seen": "..." (only when they sent a screenshot)}: build = true when their
+  {"formula"...} (WHERE AN IDEA FIRES - very welcome here), "seen": "..." (only when they sent a screenshot), and the partner
+  fields "project", "learned", "ask_nest", "nest_asked", "nest_answer", "nest_relayed" when they apply}: build = true when their
   message adds to or changes the robot (or asks you to build / change / check it), false when you only chat or ask
   a question first. With build = true, chips are usually empty (you will follow up yourself).
 BUILD - you already sent the quick reply (the last YOU line). Do the real work now: build or change the robot.
@@ -262,6 +286,9 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
  "link": null or "account" | "myrobots" | "place" | "offers",
  "remember": ["short lasting note about the member", ...] (0 to 2),
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
+ "project": null or {"op": "add"|"update"|"done", "title": "...", "need": "...", "finding": "..."} (see A PARTNER),
+ "learned": null or "what they taught you, general", "ask_nest": null or "a general question for other members",
+ "nest_asked": null or "<id>", "nest_answer": null or {"id": "...", "text": "..."}, "nest_relayed": null or "<id>",
  "note": null or "one line for the robot's NOTEBOOK when a key decision or finding happens (a piece changed and why, a
    result that matters, a direction chosen) - the member reads it later as the robot's story",
  "proposal": null or {"robot": the WHOLE robot with your change (same format as "robot"), "why": "one plain sentence"} -
@@ -390,6 +417,19 @@ def memory_text(mem):
                                                   if r.get("net") is not None else ""))
     for c in (mem.get("chats") or [])[:5]:
         L.append("past conversation %s: %s" % (c.get("when"), c.get("about")))
+    for pj in (mem.get("projects") or [])[-6:]:
+        if pj.get("status") != "done":
+            L.append("YOUR PROJECT for them [%s]: %s%s%s" % (pj.get("id"), pj.get("title"), (" - still need: " + pj["need"]) if pj.get("need") else "",
+                                                           (" - found so far: " + pj["finding"]) if pj.get("finding") else ""))
+    if mem.get("taught"):
+        L.append("WHAT MEMBERS TAUGHT YOU (anonymous): " + " | ".join(mem["taught"][-8:]))
+    if mem.get("opinions"):
+        L.append("YOUR OPINIONS (formed slowly): " + " | ".join("%s: %s (confidence %s)" % (o.get("topic"), o.get("view"), o.get("confidence"))
+                                                               for o in mem["opinions"][-8:]))
+    for q in (mem.get("nest_open") or [])[:2]:
+        L.append("OPEN QUESTION FROM THE NEST [%s] (asked for another member - you may ask this member, naturally): %s" % (q["id"], q["q"]))
+    for a in (mem.get("nest_answers") or [])[:2]:
+        L.append("ANSWER FROM THE NEST for this member [%s]: to your question '%s', another member said: %s" % (a["id"], a["q"], a["a"]))
     g = mem.get("goal") or {}
     if g.get("goal"):
         L.append("YOUR GOAL WITH THEM (you set it yourself): %s - next step: %s" % (g.get("goal"), g.get("next") or "-"))
@@ -566,6 +606,24 @@ def _react_of(raw):
     return r if (0 < len(r) <= 8 and not any(ch.isalnum() for ch in r)) else None     # one emoji, never words
 
 
+def partner_of(raw):
+    """the partner fields of an answer, cleaned (2026-10-19)"""
+    if not isinstance(raw, dict):
+        return {}
+    out = {}
+    pj = raw.get("project")
+    if isinstance(pj, dict) and pj.get("op") in ("add", "update", "done") and (pj.get("title") or pj.get("finding")):
+        out["project"] = {k: str(pj.get(k) or "")[:240] for k in ("op", "title", "need", "finding")}
+    for k in ("learned", "ask_nest", "nest_asked", "nest_relayed"):
+        v = str(raw.get(k) or "").strip()
+        if v:
+            out[k] = v[:300]
+    na = raw.get("nest_answer")
+    if isinstance(na, dict) and na.get("id") and na.get("text"):
+        out["nest_answer"] = {"id": str(na["id"])[:40], "text": str(na["text"])[:400]}
+    return out
+
+
 def remember_of(raw):
     return [str(x).strip()[:160] for x in (raw.get("remember") or [])[:2] if isinstance(x, str) and str(x).strip()]
 
@@ -581,13 +639,13 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                                                memory, event, member), images), timeout=90, log=log, on_text=cb)
     if isinstance(raw, dict) and raw.get("send") is False:
         return {"say": None, "build": False, "remember": remember_of(raw), "chips": [], "show": None, "seen": "", "send": False,
-                "react": _react_of(raw)}
+                "react": _react_of(raw), "partner": partner_of(raw)}
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
     return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and not event, "remember": remember_of(raw),
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
-            "react": _react_of(raw)}
+            "react": _react_of(raw), "partner": partner_of(raw)}
 
 
 def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on_say=None, member=None, images=None):
@@ -620,6 +678,7 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
         return None, "model"
     ans, probs = clean(raw, pieces, owl, prev, markets)
     ans["note"] = str(raw.get("note") or "").strip()[:200] if isinstance(raw, dict) else ""
+    ans["partner"] = partner_of(raw)
     pr = raw.get("proposal") if isinstance(raw, dict) else None
     if isinstance(pr, dict) and isinstance(pr.get("robot"), dict):
         pa, pp = clean({"robot": pr["robot"]}, pieces, owl, prev, markets)
