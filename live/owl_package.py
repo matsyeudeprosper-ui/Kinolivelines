@@ -84,7 +84,11 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           # of that morning's balance (2.0 = stop new entries at +2 % on the
           # day). The base for future paid offers ("jusqu'a +2 %/jour",
           # "+5 %/jour"); None = no cap. Wins over the flat dollar day_cap.
-          "day_cap_pct")
+          "day_cap_pct",
+          # 2026-10-19 (owner: "even the storm rules can be rewritten ... for their own robot"): the storm
+          # ceiling of a member's robot. None = the nest's 1.85 (every account until such a robot is plugged),
+          # 0 = no ceiling (the robot dropped the storm piece; it may bring its own pace filter in robot_rules)
+          "storm_ceiling")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,

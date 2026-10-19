@@ -94,6 +94,17 @@ def markets_of(rid):
     return out
 
 
+def proven(rid, sym="BTCUSD"):
+    """2026-10-19 (owner): the place is for robots that passed the luck test on all 100 draws (at most 5 random robots
+    as good) - study/random_control_<rid>_<SYM>.json, written by study/random_control_market.py"""
+    c = _load(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, sym)), {})
+    if c.get("percentile") is None:
+        return False
+    rn = float((c.get("real") or {}).get("net") or 0)
+    beats = c["beats"] if c.get("beats") is not None else sum(1 for x in c.get("nets") or [] if x >= rn)
+    return int(c.get("seeds") or 0) >= 100 and beats <= 5
+
+
 def can_publish(rid, uid, is_admin=False):
     """(ok, why) - the creator (or the owner) may list a tested, positive robot"""
     R = robots().get(rid)
@@ -108,6 +119,8 @@ def can_publish(rid, uid, is_admin=False):
         return False, "pas de test Bitcoin"
     if float(res["net"]) <= 0:
         return False, "le test Bitcoin est négatif (%.2f $)" % float(res["net"])
+    if not proven(rid):
+        return False, "le test de chance (100 tirages) n'est pas encore réussi"
     return True, ""
 
 
@@ -154,7 +167,7 @@ def refresh_pauses():
         d = data(); changed = False
         for rid, L in d["listings"].items():
             res = result_of(rid)
-            bad = not res or res.get("net") is None or float(res["net"]) <= 0
+            bad = not res or res.get("net") is None or float(res["net"]) <= 0 or not proven(rid)
             if bool(L.get("paused")) != bad:
                 L["paused"] = bad; L["updated"] = int(time.time()); changed = True
                 d["log"].append({"t": int(time.time()), "ev": "pause" if bad else "unpause", "rid": rid})

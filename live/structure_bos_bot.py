@@ -420,6 +420,9 @@ _PB_CACHE = {"t": 0.0, "v": (0, 0, None, None)}
 # stop, exit) from its package; robot_live.py decides them exactly as the bench does (live/robots/
 # test_robot_live.py). No rules (every account until a robot is plugged) = no change anywhere below.
 ROBOT_RULES = _P.get("robot_rules") or {}
+# 2026-10-19 (owner): a member's robot may drop or rewrite the storm rule. None (every account today) = 1.85 as always.
+_SC = _P.get("storm_ceiling")
+STORM_CEIL = NERV_STORM if _SC is None else float(_SC)
 _sys.path.insert(0, os.path.join(DIR, "robots"))
 import robot_live as _RL
 # 2026-10-19 (owner, the Atelier: "even if the piece doesn't exist the AI creates it"): FORMULA pieces read the
@@ -786,8 +789,9 @@ def weather_gate(need_int=False, cj=None, sig_t=None):
     vn, vr = cj.get("vol_now"), cj.get("vol_ref")
     if vn and vr:
         nerv = vn / max(vr, 1)
-        # the exception that outranks every dial (owner 2026-09-21)
-        if nerv >= NERV_STORM:
+        # the exception that outranks every dial (owner 2026-09-21) - except a member robot's own storm rule
+        # (2026-10-19: storm_ceiling 0 = that robot has none, the bench's "no storm piece")
+        if STORM_CEIL and nerv >= STORM_CEIL:
             return (f"marche tres rapide ({nerv:.2f}x) - exception, "
                     f"personne ne trade")
         if NERVOSITY and nerv > 1.0:
@@ -1457,6 +1461,7 @@ def main():
         + ("" if DEBT_GATE else " | sans systeme de dette")
         + (" | demi-lot si resultats en baisse" if EQ_HALF else "")
         + (" | reprise: balles seulement" if RECOV_BULLETS_ONLY else "")
+        + ((" | orage: aucun" if not STORM_CEIL else f" | orage {STORM_CEIL:.2f}x") if _SC is not None else "")
         + (" | robot: " + ", ".join(sorted(ROBOT_RULES)) + " " + json.dumps(ROBOT_RULES, separators=(",", ":")) if ROBOT_RULES else "")
         + _scale_line)
     ensure_algo()

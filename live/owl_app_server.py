@@ -13472,14 +13472,15 @@ def robot_create(user, body, dry=False):
 # ---- 2026-10-12 (owner): members manage their robots - edit, delete, public/private, where to run it ----
 def robot_live_capable(parts, pieces=None):
     """True when the live bot can already run every piece of the robot (robots.json v2 'live' flag) - such a
-    robot becomes a money package + a plug once the owner approves. The live bot cannot drop the storm ceiling."""
+    robot becomes a money package + a plug once the owner approves. 2026-10-19 (owner): only the market structure is
+    fixed - a robot may drop the storm piece (the live bot reads storm_ceiling)."""
     P = pieces if pieces is not None else {p["id"]: p for p in robot_reg().get("pieces") or []}
     for k in ("entry", "stop", "exit", "recovery"):
         v = parts.get(k)
         if v is not None and not ((P.get(v) or {}).get("live") or (P.get(v) or {}).get("rule")):
             return False
     F = parts.get("filters")
-    if F is not None and (any(not ((P.get(f) or {}).get("live") or (P.get(f) or {}).get("rule")) for f in F) or "orage" not in F):
+    if F is not None and any(not ((P.get(f) or {}).get("live") or (P.get(f) or {}).get("rule")) for f in F):
         return False
     return True
 
@@ -13751,6 +13752,12 @@ def _mq_eta():
     return eta
 
 
+def _proven(rid, sym="BTCUSD"):
+    """2026-10-19 (owner): a robot others may use - its luck test passed on all 100 draws (at most 5 random as good)"""
+    c = _random_ctl(rid, sym)
+    return bool(c and (c.get("seeds") or 0) >= 100 and (c.get("beats") or 0) <= 5)
+
+
 def _random_ctl(rid, sym):
     """the random-entry control of a robot on a market (study/random_control_<rid>_<SYM>.json) or None"""
     try:
@@ -13843,7 +13850,8 @@ def robot_control(user, body):
         return {"ok": False, "err": "not_winning"}
     if not os.path.isdir(os.path.join(os.path.dirname(DIR), "study", "markets_tick", sym)) and not os.path.isdir(os.path.join(MARKET_PACKS, sym)):
         return {"ok": False, "err": "market"}
-    if any(j["state"] in ("waiting", "running") for j in _ctl_state()):
+    # 2026-10-19: no "busy" refusal any more - study/luck_queue.py runs the luck tests one at a time, the next waits in line
+    if any(j["state"] in ("waiting", "running") and j.get("rid") == r["id"] and j.get("sym") == sym for j in _ctl_state()):
         return {"ok": False, "err": "busy"}
     if _random_ctl(r["id"], sym) and not body.get("again"):
         return {"ok": False, "err": "done"}
@@ -14555,7 +14563,7 @@ def _chat_member(user, c):
             if mk:
                 st += "; market tests: " + ", ".join(mk)
             ok = any((x.get("id") == rid) for x in (acct_robot_block(user, is_admin(user)).get("choices") or []))
-            st += "; can go on their account now: %s" % ("yes" if ok else "no (needs a positive Bitcoin test, live-capable pieces)")
+            st += "; can go on their account now: %s" % ("yes" if ok else "no (it needs its Bitcoin test first, and the Automatique plan)")
             L.append(st)
         except Exception:
             pass
@@ -15298,11 +15306,11 @@ def robot_package(r, pieces, account_pkg=None, own_money=None):
     P = {p["id"]: p for p in pieces}
     R = r["resolved"]
     F = R.get("filters") or []
-    if "orage" not in F:
-        raise ValueError("storm")
     pk = {"extends": own_money or account_pkg or R.get("money") or "base", "label": "Robot %s" % (r.get("name_fr") or r["id"]),
           "pb_dir_gate": "tendance-fond" in F, "pb_gate_mode": "trend", "movement": "mouvement" in F, "nervosity": "nervosite" in F,
-          "debt_gate": R.get("recovery") != "rattrapage-sans-limite"}
+          "debt_gate": R.get("recovery") != "rattrapage-sans-limite",
+          # 2026-10-19 (owner): the storm rule is the robot's own - the Owl's piece keeps 1.85, none = no ceiling
+          "storm_ceiling": float(((P.get("orage") or {}).get("engine") or {}).get("storm") or 1.85) if "orage" in F else 0.0}
     rules = {}
     for k in ("entry", "stop", "exit"):
         p = P.get(R.get(k)) or {}
@@ -15436,7 +15444,7 @@ def acct_robot_block(user, admin=False):
     if base.startswith("robot-"):
         base = ((PK.get("robot_plugs") or {}).get(uid) or {}).get("prev") or "base"
     nm = lambda r: {"name_fr": r.get("name_fr") or r.get("id"), "name_en": r.get("name_en") or r.get("name_fr") or r.get("id")}
-    out = {"can": bool((uid in BOT_VARIANT or _generic_bot(user)) and not user.get("public")), "current": dict(nm(byid.get(cur) or {"id": cur}), id=cur),
+    out = {"can": bool((uid in BOT_VARIANT or _generic_bot(user)) and not user.get("public") and (admin or has(uid, "family"))), "current": dict(nm(byid.get(cur) or {"id": cur}), id=cur),
            "pending": dict(nm(byid.get(pend["robot"]) or {"id": pend["robot"]}), id=pend["robot"], at=pend.get("at")) if pend else None,
            "choices": []}
     # 2026-10-18 (owner upgrade list): what the robot did on THIS account, and is it running right now
@@ -15466,7 +15474,13 @@ def acct_robot_block(user, admin=False):
                 continue
         t = _robot_test(rid)
         if rid != "owl":
-            if (t.get("net") or 0) <= 0:
+            # 2026-10-19 (owner): "they are free to deploy and run it automatic if they have the plan; their robot must
+            # meet the 100 random test to qualify for the public marketplace for others". Own robot: tested is enough
+            # (its result is shown). Someone else's robot: only once proven (100 draws, at most 5 random as good).
+            mine = r.get("by_uid") == uid or (admin and r.get("by_uid") in (None, uid))
+            if t.get("net") is None:
+                continue
+            if not mine and rid != cur and not _proven(rid):
                 continue
             try:
                 robot_package(dict(r, resolved=robot_resolve(rid, byid)), reg.get("pieces") or [], base, None)
@@ -15849,6 +15863,12 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
     if action == "place_publish":
         if not (admin or has(uid, "strategy")):
             return {"ok": False, "err": "Strat\u00e9gie n\u00e9cessaire pour publier"}
+        # 2026-10-19 (owner): the public marketplace needs the 100-draw luck test - for everyone, the owner included
+        if not _proven(str(body.get("id") or "")):
+            _q = robot_control(user, {"id": str(body.get("id") or ""), "sym": "BTCUSD"})
+            return {"ok": False, "err": "Il faut d\u2019abord r\u00e9ussir le test de chance (100 tirages)." +
+                    (" Il est lanc\u00e9." if _q.get("ok") else " Il est d\u00e9j\u00e0 en cours ou en attente." if _q.get("err") in ("busy", "done") else
+                     " Il faut un test Bitcoin positif avec 20 trades ou plus." if _q.get("err") == "not_winning" else "")}
         return _OMKT.publish(str(body.get("id") or ""), uid, body.get("alias"), body.get("blurb"), body.get("price"), body.get("open_recipe"), admin)
     if action == "place_unpublish":
         return _OMKT.unpublish(str(body.get("id") or ""), uid, admin)

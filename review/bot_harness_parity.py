@@ -59,6 +59,8 @@ RULE_MAP = {
     # 2026-10-11: the pullback-direction filter (live since 2026-10-10)
     "pb_dir_gate": "pb_dir_gate",
     "pb_gate_mode": "pb_gate_mode",
+    # 2026-10-19: a member robot's storm ceiling (None everywhere but a plugged robot without / with its own storm)
+    "storm_ceiling": "storm",
     # these three have no dial. That is only DRIFT when the live value
     # differs from what the harness silently assumes - recorded here so the
     # check reports a real risk instead of a scary-looking list.

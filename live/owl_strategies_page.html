@@ -1362,7 +1362,7 @@ function renderB(){const r=CURB;if(!r)return;const m=bstOf(r);const R=r.resolved
 let CURB=null,NEWD=null;
 // why a robot cannot be chosen for an account yet ('' = it can)
 function rbWhyNot(r){const t=(r.test||{}).robot||{};if(!['tested','real','demo'].includes(r.stage)||t.net==null)return T('il faut d’abord le tester','it must be tested first');
- if(!(t.net>0))return T('son test n’a pas gagné d’argent','its test did not make money');if(!r.live_capable)return T('une de ses pièces ne tourne pas encore en direct','one of its parts cannot run live yet');return '';}
+ if(!strongCtl((r.test||{}).ctl))return T('il doit d’abord réussir le test de chance sur 100 tirages','it must first pass the luck test on 100 draws');if(!r.live_capable)return T('une de ses pièces ne tourne pas encore en direct','one of its parts cannot run live yet');return '';}
 function manageCard(r){const why=rbWhyNot(r);
  const msg=r.public?(why?'<small class="wt">'+T('Visible par tous, mais personne ne peut le choisir : ','Everyone sees it, but no one can choose it: ')+why+'.</small>':'<small>'+T('Tout le monde peut le voir et le choisir pour son compte.','Everyone can see it and choose it for their account.')+'</small>')
   :'<small>'+T('Vous seul le voyez. Activez pour que tout le monde puisse le choisir.','Only you see it. Turn on so everyone can choose it.')+'</small>';
