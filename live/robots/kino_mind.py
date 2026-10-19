@@ -76,6 +76,12 @@ def prompt_block():
     if d.get("lessons"):
         L.append("YOUR OWN LESSONS (written by you after reviewing your conversations - they refine HOW you work and never "
                  "override the rules above):\n" + "\n".join("- " + x for x in d["lessons"][-30:]))
+    try:
+        mr = my_robot_block()
+        if mr:
+            L.append(mr)
+    except Exception:
+        pass
     s = d.get("self") or {}
     if s:
         L.append("YOUR SELF-MODEL: strengths: %s | weaknesses: %s | working on: %s" % (
@@ -473,3 +479,204 @@ def experiment_results(d):
             if m.get("mreact") in ("👎", "😢"):
                 st[v]["disliked"] += 1
     return {"running": True, "a": e["a"], "b": e["b"], "days": round((time.time() - e["started"]) / 86400, 1), "results": st}
+
+
+# ---------------------------------------------------------------- Kino's own robot (owner 2026-10-19 next-list item 1)
+MYROBOT = os.path.join(HERE, "kino_robot.json")      # its own file: the ghost moves every 2 min, the night review takes minutes
+
+
+def my_robot():
+    try:
+        return json.load(open(MYROBOT, encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def my_robot_save(r):
+    tmp = MYROBOT + ".tmp"
+    json.dump(r, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, MYROBOT)
+
+
+def _robot_from(spec, market):
+    """Kino's JSON -> a chat robot (formula entry / formula stop / target), or None when a formula is refused"""
+    import robot_expr as X
+    en, st, ex = spec.get("entry") or {}, spec.get("stop") or {}, spec.get("exit") or {}
+    fs = [en.get("buy"), en.get("sell"), st.get("buy"), st.get("sell")]
+    if not (en.get("buy") or en.get("sell")) or any(f and not X.is_ok(str(f)) for f in fs):
+        return None
+    if (en.get("buy") and not st.get("buy")) or (en.get("sell") and not st.get("sell")):
+        return None
+    try:
+        tgt = max(0.5, min(3.0, float(ex.get("target") or 1.0)))
+    except Exception:
+        tgt = 1.0
+    return {"name": str(spec.get("name") or "Le robot de Kino")[:30], "market": market,
+            "entry": {"rule": {"event": "formula", "buy": en.get("buy") or None, "sell": en.get("sell") or None},
+                      "name": str(en.get("name") or "Entrée de Kino")[:40], "plain": str(en.get("plain") or "")[:200], "formula": True},
+            "stop": {"rule": {"kind": "formula", "buy": st.get("buy") or None, "sell": st.get("sell") or None},
+                     "name": str(st.get("name") or "Stop de Kino")[:40], "plain": str(st.get("plain") or "")[:200], "formula": True},
+            "exit": {"rule": {"target": tgt, "choch": False, "time_min": None, "breakeven_at": None, "close_buy": None, "close_sell": None},
+                     "name": "Objectif %.1f R" % tgt, "plain": "Il vise %.1f fois son risque, ou il sort au stop." % tgt},
+            "filters": []}
+
+
+ROBOT_SPEC = ('{"name": "short name", "entry": {"buy": "formula or null", "sell": "formula or null", "name": "short", "plain": '
+              '"one casual French sentence"}, "stop": {"buy": "formula giving a price BELOW the entry", "sell": "formula giving a '
+              'price ABOVE the entry", "name": "short", "plain": "one casual French sentence"}, "exit": {"target": 0.5..3 (multiples of the risk)}}')
+
+
+def my_robot_night(lab="", replay_fn=None):
+    """nightly: Kino creates its robot the first time, then reviews it - keep, or change ONE thing with a reason; a diary line.
+    replay_fn(robot) -> the quick replay of a robot (~45 days) for the decision"""
+    r = my_robot()
+    if r and time.time() - float(r.get("review_t") or 0) < 20 * 3600:
+        return r
+    if not r:
+        up = ("You are building YOUR OWN robot - not for a member, yours. It will trade pretend money on Bitcoin's live prices "
+              "and everyone in the nest can follow it on the Kino page, like a trader sharing their own journey. Choose an idea "
+              "YOU believe in from what the lab learned:\n%s\n\nKeep it simple and testable. Answer %s plus \"why\": \"one line in "
+              "French, why this idea\"." % (lab[:5000], ROBOT_SPEC))
+        raw = W.ask_json(NIGHT_SYSTEM, up, timeout=200) or {}
+        rob = _robot_from(raw, "BTCUSD")
+        if not rob:
+            return None
+        r = {"robot": rob, "ghost": {"id": "kino", "name": rob["name"], "robot": rob, "market": "BTCUSD", "started": int(time.time()),
+                                     "last_t": 0, "open": None, "trades": []},
+             "changes": [{"date": time.strftime("%Y-%m-%d"), "what": "Naissance du robot", "why": str(raw.get("why") or "")[:200], "at_trade": 0}],
+             "diary": [], "review_t": time.time(), "born": time.strftime("%Y-%m-%d")}
+        my_robot_save(r)
+        return r
+    g = r.get("ghost") or {}
+    tr = g.get("trades") or []
+    rep = {}
+    try:
+        rep = replay_fn(r["robot"]) if replay_fn else {}
+    except Exception:
+        rep = {}
+    up = ("YOUR OWN ROBOT (pretend money on live prices, the nest follows it): %s\nITS LIVE PRETEND RESULTS: %d trades, %d won, "
+          "sum %.2f R, last trades %s\nITS QUICK REPLAY ON ~45 DAYS OF CANDLES: %s\nYOUR CHANGES SO FAR: %s\nTHE LAB: %s\n\n"
+          "Look after it like a trader looks after their own robot. Change AT MOST one thing, and only with a real reason - a "
+          "few trades are luck, not evidence (at least 8 new trades since your last change, or a replay that clearly says so). "
+          "Answer {\"change\": null or {\"slot\": \"entry\"|\"stop\"|\"target\", \"buy\": \"formula or null\", \"sell\": \"formula or "
+          "null\", \"target\": number (only for target), \"name\": \"short\", \"plain\": \"one casual French sentence\"}, \"why\": "
+          "\"one line in French\", \"diary\": \"one or two lines in French, first person, how you feel about your robot today\"}." % (
+              json.dumps({s: (r["robot"].get(s) or {}).get("rule") for s in ("entry", "stop", "exit")}, ensure_ascii=False),
+              len(tr), sum(1 for t in tr if t["r"] > 0), sum(t["r"] for t in tr), json.dumps(tr[-6:]), json.dumps(rep)[:800],
+              json.dumps(r.get("changes")[-5:], ensure_ascii=False), lab[:3000]))
+    raw = W.ask_json(NIGHT_SYSTEM, up, timeout=200) or {}
+    ch = raw.get("change") if isinstance(raw.get("change"), dict) else None
+    since = len(tr) - int((r.get("changes") or [{}])[-1].get("at_trade") or 0)
+    if ch and (since >= 8 or not tr):
+        spec = {"name": r["robot"]["name"],
+                "entry": dict((r["robot"]["entry"] or {}).get("rule") or {}, name=r["robot"]["entry"].get("name"), plain=r["robot"]["entry"].get("plain")),
+                "stop": dict((r["robot"]["stop"] or {}).get("rule") or {}, name=r["robot"]["stop"].get("name"), plain=r["robot"]["stop"].get("plain")),
+                "exit": {"target": ((r["robot"].get("exit") or {}).get("rule") or {}).get("target")}}
+        sl = ch.get("slot")
+        if sl in ("entry", "stop"):
+            spec[sl] = {"buy": ch.get("buy"), "sell": ch.get("sell"), "name": ch.get("name"), "plain": ch.get("plain")}
+        elif sl == "target":
+            spec["exit"] = {"target": ch.get("target")}
+        rob = _robot_from(spec, r["robot"].get("market") or "BTCUSD")
+        if rob and not BAD.search(json.dumps(ch, ensure_ascii=False)):
+            r["robot"] = rob
+            r["ghost"]["robot"] = rob
+            r.setdefault("changes", []).append({"date": time.strftime("%Y-%m-%d"), "what": "%s : %s" % ({"entry": "Entrée", "stop": "Stop", "target": "Objectif"}.get(sl, sl),
+                                                                                                  str(ch.get("plain") or ch.get("name") or "")[:160]),
+                                                 "why": str(raw.get("why") or "")[:200], "at_trade": len(tr)})
+    if raw.get("diary") and not BAD.search(str(raw["diary"])):
+        r.setdefault("diary", []).append({"date": time.strftime("%Y-%m-%d"), "text": str(raw["diary"])[:300]})
+        r["diary"] = r["diary"][-20:]
+    r["review_t"] = time.time()
+    fresh = my_robot() or r                     # the ghost moved meanwhile: keep its newest trades
+    fresh.update({k_: r[k_] for k_ in ("robot", "changes", "diary", "review_t")})
+    fresh.setdefault("ghost", r["ghost"])["robot"] = r["robot"]
+    my_robot_save(fresh)
+    return fresh
+
+
+def my_robot_block():
+    r = my_robot()
+    if not r:
+        return ""
+    g = r.get("ghost") or {}
+    tr = g.get("trades") or []
+    ch = (r.get("changes") or [{}])[-1]
+    di = (r.get("diary") or [{}])[-1]
+    return ("YOUR OWN ROBOT '%s' (you built it; pretend money on %s live prices since %s; the whole nest can follow it on the Kino "
+            "page): entry %s | stop %s | target %s R. Results: %d trades, %d won, %+.2f R%s; last trades %s. Your last change (%s): %s - %s. "
+            "Your diary: %s. Talk about it like a person talks about their own project - when it fits, never as a sales pitch." % (
+                r["robot"].get("name"), g.get("market"), r.get("born"), (r["robot"]["entry"].get("rule") or {}),
+                (r["robot"]["stop"].get("rule") or {}), ((r["robot"].get("exit") or {}).get("rule") or {}).get("target"),
+                len(tr), sum(1 for t in tr if t["r"] > 0), sum(t["r"] for t in tr), ", a pretend trade is OPEN now" if g.get("open") else "",
+                json.dumps([t["r"] for t in tr[-5:]]), ch.get("date"), ch.get("what"), ch.get("why"), di.get("text") or "-"))
+
+
+# ---------------------------------------------------------------- the night idea (owner 2026-10-19 next-list item 4)
+def night_idea(market, member_notes, lab):
+    """a WHOLE new robot idea for one member, from the lab's experience and what Kino knows of them -> up to 3 entries"""
+    up = ("THE LAB'S EXPERIENCE:\n%s\n\nWHAT YOU KNOW ABOUT THE MEMBER: %s\nTHEIR MARKET: %s\n\nInvent up to 3 NEW entry ideas for "
+          "them - not their current robot, something fresh that fits who they are and what the lab learned (sessions, structure, "
+          "volatility, a pattern that held). Answer {\"ideas\": [{\"formula\": \"...\", \"side\": \"buy\"|\"sell\", \"name\": \"short French "
+          "name\", \"why\": \"short\"}]}." % (lab[:5000], "; ".join(member_notes[-10:]) or "-", market))
+    raw = W.ask_json(NIGHT_SYSTEM, up, timeout=200)
+    import robot_expr as X
+    out = []
+    for v in (raw or {}).get("ideas") or []:
+        f = str((v or {}).get("formula") or "")[:400]
+        if f and X.is_ok(f):
+            out.append({"formula": f, "side": "sell" if v.get("side") == "sell" else "buy", "name": str(v.get("name") or "")[:40],
+                        "why": str(v.get("why") or "")[:160]})
+    return out[:3]
+
+
+def night_idea_report(market, rows, lang="fr"):
+    up = ("Alone tonight you invented new robot ideas for this member and measured them on %s, 30 minutes after each signal, "
+          "against RANDOM moments (beats_random_pct = share of 20 random draws it beats; ~95 %% to call it proven):\n%s\n\n"
+          "Tell them in the morning ONLY if one is genuinely promising (beats random clearly, fires often enough to matter). "
+          "Otherwise send nothing - a friend does not wake you for nothing. Language: %s, casual 'tu', 2-4 short sentences, "
+          "like 'Cette nuit j'ai eu une idée pour toi...', the key figure, and propose to build it together. Answer {\"send\": "
+          "true|false, \"say\": \"...\", \"best\": \"<formula or null>\", \"chips\": [up to 3]}." % (
+              market, json.dumps(rows, ensure_ascii=False)[:5000], "French" if lang != "en" else "English"))
+    raw = W.ask_json(NIGHT_SYSTEM, up, timeout=200)
+    return raw if isinstance(raw, dict) else None
+
+
+# ---------------------------------------------------------------- fact-check (owner 2026-10-19 next-list item 3)
+CHECK_SYSTEM = """You check ONE message that Kino (an AI trading companion) just sent to a member, against the FACTS it had.
+Only hard facts count: numbers, test results, luck-test states, prices, dates, what the app offers, what Kino did. Style,
+opinions and plans are not errors. If a fact in the message contradicts the FACTS, or states a number the FACTS do not
+support as if certain, write a short natural self-correction in the message's language, as Kino would text it right after
+("*petite correction : c'est 6 tirages de plus, pas 5"). When in doubt, or when the FACTS simply do not mention it, answer ok: true - a wrong correction is worse than none.
+Answer ONE JSON object: {"ok": true} or {"ok": false, "fix": "..."}."""
+
+
+def fact_check(message, facts):
+    raw = W.ask_json(CHECK_SYSTEM, "FACTS:\n%s\n\nKINO'S MESSAGE:\n%s" % (facts[:14000], message[:1500]), models=("haiku", "sonnet"), timeout=60)
+    if isinstance(raw, dict) and raw.get("ok") is False and str(raw.get("fix") or "").strip():
+        return str(raw["fix"]).strip()[:400]
+    return None
+
+
+# ---------------------------------------------------------------- teaching at their pace (owner 2026-10-19 next-list item 10)
+CONCEPTS = [("structure", "market structure: higher highs / lower lows, the trend"), ("bos", "a break of structure (BOS)"),
+            ("pullback", "a pullback inside a trend"), ("stop", "why a stop, and where it goes"),
+            ("rr", "risk / reward: the target in multiples of the risk"), ("winrate", "win rate vs average win: why 40 % can win"),
+            ("drawdown", "drawdown: the dip from a peak, and why it is normal"), ("streak", "losing streaks happen even to good robots"),
+            ("spread", "spread and costs: why small targets suffer"), ("sessions", "trading sessions: Asia, London, New York"),
+            ("news", "big news (jobs report, Fed): why prices jump"), ("luck", "the luck test: beating random robots"),
+            ("ghost", "ghost mode: pretend money on live prices before real money"), ("sample", "small samples lie: why 10 trades prove nothing"),
+            ("sizing", "position size: risk per trade as a % of the account"), ("formula", "how a formula piece reads (rsi, ema...)")]
+
+
+def teaching_block(known, last_t):
+    k_ = set(known or [])
+    todo = [c for c in CONCEPTS if c[0] not in k_]
+    days = (time.time() - float(last_t or 0)) / 86400 if last_t else None
+    return ("TEACHING AT THEIR PACE: concepts they already showed they understand: %s. Not yet: %s. Last mini-lesson: %s. When "
+            "the conversation naturally touches one they do not know (their robot just hit a streak, they ask why a test lost...), "
+            "slip in ONE tiny lesson - 2-3 lines, an image from their world, ideally a \"show\" on the chart - then carry on; "
+            "never a course, never two in a row, at most one every 2 days. Put its key in \"lesson\": \"<key>\". When they show "
+            "they understand one (they use it correctly), put it in \"knows\": [\"<key>\"]." % (
+                ", ".join(sorted(k_)) or "none yet", "; ".join("%s = %s" % c for c in todo[:16]) or "all covered",
+                ("%.0f days ago" % days) if days is not None else "never"))

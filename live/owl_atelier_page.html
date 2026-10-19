@@ -260,6 +260,16 @@ header .ib{border:0;background:transparent;width:36px}
 .react.mine{left:6px;right:auto}
 #rxbar{position:fixed;z-index:80;display:flex;gap:2px;padding:6px 8px;border-radius:99px;background:var(--wa-in);box-shadow:0 8px 30px rgba(0,0,0,.45);animation:pop .2s cubic-bezier(.2,1.6,.4,1)}
 #rxbar button{border:0;background:none;font-size:1.45rem;padding:4px 5px;cursor:pointer;transition:transform .12s}#rxbar button:active{transform:scale(1.35)}
+/* 2026-10-19 (owner next-list item 5): a voice call with Kino */
+#call{position:fixed;inset:0;z-index:120;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(48px + env(safe-area-inset-top,0px)) 20px calc(40px + env(safe-area-inset-bottom,0px));
+ background:radial-gradient(120% 80% at 50% 20%,#24305e 0%,#0b0f14 70%);color:#e9edef;text-align:center}
+#call .cav{width:132px;height:132px;border-radius:50%;display:grid;place-items:center;font-size:66px;background:linear-gradient(135deg,#6d5cf6,#3b82f6);box-shadow:0 0 0 0 rgba(109,92,246,.55);margin:18px auto 14px;transition:transform .3s}
+#call .cav.talk{animation:cpulse 1.1s ease-out infinite}#call .cav.listen{box-shadow:0 0 0 10px rgba(0,168,132,.25),0 0 0 22px rgba(0,168,132,.1)}#call .cav.think{animation:cbreath 1.8s ease-in-out infinite}
+@keyframes cpulse{0%{box-shadow:0 0 0 0 rgba(109,92,246,.6)}100%{box-shadow:0 0 0 34px rgba(109,92,246,0)}}@keyframes cbreath{50%{transform:scale(1.05)}}
+#call .cn{font:800 26px/1.2 Inter,system-ui,sans-serif}#call .cst{margin-top:6px;font:600 15px/1.3 Inter,system-ui,sans-serif;color:#8fc6ff}
+#call .ctx{max-width:560px;min-height:66px;margin:22px auto 0;font:500 16px/1.45 Inter,system-ui,sans-serif;color:#c6d3df;opacity:.92}
+#call .ctm{font:500 13px Inter,system-ui,sans-serif;color:#8a9bb0;margin-top:4px}
+#call .chg{width:72px;height:72px;border-radius:50%;border:0;background:#ff3b30;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 10px 28px rgba(255,59,48,.45)}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -279,7 +289,7 @@ header .ib{border:0;background:transparent;width:36px}
   <header>
    <a class="ib" href="robots" id="bk" aria-label="Retour"><svg><use href="#back"/></svg></a>
    <div class="kav" onclick="location.href='kino'">🦉<i></i></div><div class="ttl" id="ttl" onclick="renameSh()"><b><span id="tn">Kino</span></b><small id="ts">en ligne</small></div>
-   <button class="ib" onclick="noteSh()" aria-label="Le carnet du robot" title="Le carnet du robot" style="font-size:18px">📓</button><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button>
+   <button class="ib" onclick="callStart()" aria-label="Appeler Kino" title="Appeler Kino" style="font-size:18px">📞</button><button class="ib" onclick="noteSh()" aria-label="Le carnet du robot" title="Le carnet du robot" style="font-size:18px">📓</button><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button>
    <button class="ring" onclick="bpSh()" aria-label="Le plan du robot"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="rf" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg><b id="rn">0/6</b></button>
   </header>
   <div class="strip" id="strip"></div>
@@ -609,7 +619,7 @@ async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;V
  C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000)});if(C.status!=='thinking')C.status='listening';$('tx').value='';autosize();paintChat(true);
  // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
  // then the bubble stays, marked "not sent", with a retry - never a message that looks sent and is not
- let j=null;for(const w of [0,1500,3500,6000]){if(w)await new Promise(r=>setTimeout(r,w));try{j=await post('chat_send',{id:CID,text:t});break;}catch(e){j=null;}}
+ let j=null;for(const w of [0,1500,3500,6000]){if(w)await new Promise(r=>setTimeout(r,w));try{j=await post('chat_send',VOICE?{id:CID,text:t,voice:1}:{id:CID,text:t});break;}catch(e){j=null;}}
  if(j&&!j.ok){C.msgs.pop();C.status='ready';paintChat(true);$('tx').value=t;toast(ERR[j.err]||j.err);}
  else if(j){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),1200);}
  else{C.msgs.pop();C.status='ready';FAILED.push(t);paintChat(true);}
@@ -652,7 +662,7 @@ function speak(text,then){if(!('speechSynthesis' in window)||!text){then&&then()
  const u=new SpeechSynthesisUtterance(clean);u.lang=EN?'en-US':'fr-FR';u.rate=1.05;u.pitch=1;VOICE_PICK=VOICE_PICK||pickVoice();if(VOICE_PICK)u.voice=VOICE_PICK;
  SPEAKING=true;u.onend=u.onerror=()=>{SPEAKING=false;then&&then();};speechSynthesis.speak(u);}
 function sayIt(i){const m=C&&C.msgs[i];if(!m)return;if(SPEAKING){speechSynthesis.cancel();SPEAKING=false;return;}speak(m.text);}
-function voiceReply(m){if(!VOICE)return;speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
+function voiceReply(m){if(CALL)VOICE=true;if(!VOICE)return;speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
 async function applyP(i){const j=await post('chat_apply',{id:CID,i:i});if(!j.ok){toast(T('Déjà appliquée ou introuvable.','Already applied or missing.'));return;}load(CID,true);}
 /* 2026-10-19 (owner item 10): the robot's notebook - its story: pieces made, tests, edits, proposals applied, Kino's notes */
 function noteSh(){const M=(C&&C.msgs)||[],E=[];
@@ -736,4 +746,27 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
  // 2026-10-19 (owner item 1): arrived from a long-press "Demande à Kino" somewhere in the app
  if(q.get('ask')){const ask=q.get('ask');history.replaceState(null,'',location.pathname+(CID?'?c='+CID:''));let n=0;const w=setInterval(()=>{n++;if(CID&&C&&C.status!=='thinking'){clearInterval(w);$('tx').value=ask;send();}else if(n>40)clearInterval(w);},300);}
  getJ('robots_data').then(j=>{PIECES=((j.builder||{}).pieces)||[];const owl=((j.builder||{}).robots||[]).find(r=>r.id==='owl');OWL=(owl&&(owl.resolved||owl.parts))||{};if(C)paintBP();}).catch(()=>{});})();
-</script></body></html>
+/* 2026-10-19 (owner next-list item 5): the call - talk, Kino answers out loud, then listens again; hang up to end */
+let CALL=false,CALLT=null,CALLERR=0,CALLIDLE=0,CALL0=0;
+function callStart(){if(!REC){toast(T('Ton navigateur ne permet pas l’appel vocal ici. Essaie avec Chrome.','Your browser can’t do voice calls here. Try Chrome.'));return;}
+ if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}
+ CALL=true;VOICE=true;CALLERR=0;CALLIDLE=0;CALL0=Date.now();$('call').style.display='flex';clearInterval(CALLT);CALLT=setInterval(callTick,400);callTick();
+ try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}setTimeout(()=>{if(CALL&&!RECON&&!SPEAKING)mic();},500);}
+function callEnd(){CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}SPEAKING=false;}
+function callTap(){if(!CALL)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}SPEAKING=false;}CALLERR=0;if(!RECON)mic();}
+function callTick(){if(!CALL)return;const st=C&&C.status,busy=st==='thinking'||st==='listening'||st==='building'||!!(C&&C.draft)||SENDING;
+ const av=$('cav');let s,cls='';
+ if(SPEAKING){s=T('Kino parle… (touche pour l’interrompre)','Kino is speaking… (tap to interrupt)');cls='talk';}
+ else if(RECON){s=T('Je t’écoute…','Listening…');cls='listen';}
+ else if(busy){s=T('Kino réfléchit…','Kino is thinking…');cls='think';}
+ else if(CALLERR>=4){s=T('Je ne t’entends plus - touche le hibou pour reprendre','I can’t hear you - tap the owl to go on');}
+ else s=T('À toi…','Your turn…');
+ $('cst').textContent=s;av.className='cav '+cls;
+ const last=(C&&C.msgs||[]).slice().reverse().find(m=>m.role==='ai'&&m.text);
+ $('ctx').textContent=RECON?($('tx').value||'…'):(last?String(last.text).slice(0,220):'');
+ const sec=Math.floor((Date.now()-CALL0)/1000);$('ctm').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+ if(!SPEAKING&&!RECON&&!busy&&CALLERR<4){if(++CALLIDLE>=4){CALLIDLE=0;mic();}}else CALLIDLE=0;}
+if(REC){const _oe=REC.onerror,_or=REC.onresult;REC.onerror=e=>{_oe&&_oe(e);if(CALL){CALLERR++;const b=$('micbar');if(b)b.style.display='none';}};REC.onresult=e=>{CALLERR=0;_or&&_or(e);};}
+</script>
+<div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div></div>
+<button class="chg" onclick="callEnd()" aria-label="Raccrocher">✆</button></div></body></html>

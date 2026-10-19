@@ -50,7 +50,9 @@
   later.onclick=function(){seen(n);c.style.transform='translateY(40px)';c.style.opacity='0';setTimeout(function(){o.remove();},300);};
   o.onclick=function(e){if(e.target===o)later.onclick();};row.appendChild(go);row.appendChild(later);c.appendChild(row);o.appendChild(c);document.body.appendChild(o);
   requestAnimationFrame(function(){c.style.transform='none';c.style.opacity='1';});try{navigator.vibrate&&navigator.vibrate([60,40,60]);}catch(e){}}
- function poll(){if(document.visibilityState!=='visible')return;fetch(B0+'ai_nudge',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+ /* 2026-10-19 (owner next-list item 6): what is on screen, in a few words (headings + big figures), so Kino helps right there */
+ function seeText(){try{var t=[];document.querySelectorAll('h1,h2,h3,.big,.kpi,.val').forEach(function(e){var r=e.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight&&t.length<12){var s=(e.innerText||'').replace(/\s+/g,' ').trim();if(s&&s.length<80)t.push(s);}});return t.join(' | ').slice(0,280);}catch(e){return '';}}
+ function poll(){if(document.visibilityState!=='visible')return;fetch(B0+'ai_nudge?p='+encodeURIComponent(here||'home')+'&ti='+encodeURIComponent((document.title||'').slice(0,80))+'&w='+encodeURIComponent(seeText()),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
   if(!j||j.public)return;S.can=!!j.can;fab();badge(j.unread||0);if(j.nudge)card(j.nudge);
   else if(j.unread&&j.last&&j.last.t!==S.tipped){S.tipped=j.last.t;tip(j.last.text,j.last.cid);}}).catch(function(){});}
  /* 2026-10-19 (owner item 1): long-press any figure or line of the app -> "Demande à Kino" about exactly that */

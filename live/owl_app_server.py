@@ -11455,6 +11455,7 @@ def export_csv(user):
 
 
 _LAST_SEEN = {}          # 2026-10-19: uid -> last request time (the companion does not disturb someone using the app)
+_WHERE = {}              # 2026-10-19 (owner next-list item 6): uid -> {"page", "title", "what", "t"} - the page they are on
 
 
 def user_by_token(tok):
@@ -14754,6 +14755,18 @@ def _chat_member(user, c):
             L.append("YOUR REAL RECENT WORK FOR THEM (true - you may talk about it): " + "; ".join(work))
     except Exception:
         pass
+    try:          # 2026-10-19 (owner next-list item 6): where they are in the app
+        wh = _WHERE.get(uid) or {}
+        if wh and time.time() - wh["t"] < 900:
+            PAGES = {"home": "the home page (their account, today's result, the robot's state)", "robots": "Robots (choose / plug the robot of their account)",
+                     "mesrobots": "Mes robots (their own robots and tests)", "wealth": "Patrimoine (their money: balance, deposits, pockets, history)",
+                     "proof": "la Preuve (the proof page: real results of the Owl)", "chart": "the chart (live prices, the structure, the robot's trades)",
+                     "place": "la place des robots (the marketplace)", "rentabilite": "Rentabilité (profitability proof)"}
+            L.append("WHERE THEY ARE IN THE APP: %s - %s%s (%d min ago). If they came from there, they probably ask about what is on that page; "
+                     "help right there, concretely." % (wh["page"], PAGES.get(wh["page"].split("/")[0], wh.get("title") or wh["page"]),
+                                                       (" - on screen: " + wh["what"]) if wh.get("what") else "", (time.time() - wh["t"]) / 60))
+    except Exception:
+        pass
     out = "\n".join("- " + x for x in L)
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
@@ -14943,6 +14956,14 @@ def _partner_apply(user, cid, pa):
     if not pa:
         return
     uid = user.get("id")
+    if pa.get("lesson") or pa.get("knows"):       # 2026-10-19 (owner next-list item 10): teaching at their pace
+        def putl(mm):
+            if pa.get("lesson"):
+                mm["lesson_t"] = int(time.time())
+                mm["lessons_given"] = ((mm.get("lessons_given") or []) + [{"t": int(time.time()), "k": pa["lesson"]}])[-30:]
+            if pa.get("knows"):
+                mm["concepts_known"] = sorted(set(mm.get("concepts_known") or []) | set(pa["knows"]))
+        _mem_note_safe(uid, putl)
     with _chat_lock("partner"):
         pj = pa.get("project")
         if pj:
@@ -15033,6 +15054,7 @@ def _chat_memory(user, cid=None):
     except Exception:
         opinions = []
     return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal, "projects": _mm.get("projects") or [], "jokes": _mm.get("jokes") or [],
+            "concepts_known": _mm.get("concepts_known") or [], "lesson_t": _mm.get("lesson_t"),
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
             "nest_open": nest_open, "nest_answers": nest_answers}
 
@@ -15198,6 +15220,37 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
                 pass
 
 
+_FC_RE = re.compile(r"\d|test|chance|luck|tirage|draw|prix|price|offre|plan|abonnement|gagn|perd|won|lost|%|\$")
+
+
+def _kino_factcheck(cid, user, text):
+    """2026-10-19 (owner next-list item 3): a second look at Kino's message against the facts it had - a wrong hard fact
+    gets a natural self-correction right after ("*petite correction : ..."), like a person who re-reads what they sent"""
+    try:
+        if not text or not _FC_RE.search(text.lower()):
+            return
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        facts = _chat_member(user, c)
+        try:
+            facts += "\n\nTHE ROBOT IN THIS CHAT: " + json.dumps(c.get("robot") or {}, ensure_ascii=False)[:2500]
+            lr = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "result"), None)
+            if lr:
+                facts += "\nITS LAST TEST RESULT: " + json.dumps(lr.get("result") or {}, ensure_ascii=False)[:1500]
+        except Exception:
+            pass
+        _rc()
+        import kino_mind as _KM
+        fix = _KM.fact_check(text, facts)
+        if fix:
+            _chat_mut(cid, lambda c: _chat_msg(c, "ai", text=fix, quick=True, fix=True))
+            try:
+                _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("fixes", ((mm.get("fixes") or []) + [{"t": int(time.time()), "said": text[:200], "fix": fix}])[-20:]))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 def _kino_act(cid, user, act, en=False):
     """2026-10-19 (owner): Kino acts on tests directly - its own member's test, and (the nest's owner only) the nest's
     test switch. A short system line tells what really happened."""
@@ -15282,6 +15335,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             raise
         if q.get("act"):
             _kino_act(cid, user, q["act"], en)
+        if q.get("say"):
+            threading.Thread(target=_kino_factcheck, args=(cid, user, q["say"]), daemon=True).start()
         if q["build"]:
             threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
         if _qdm and _qdm.get("nodata") and (q or {}).get("show"):
@@ -15369,6 +15424,8 @@ def _chat_build(cid, user):
                     c["understood"] = ans["understood"]
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            if ans and str(ans.get("say") or "").strip():
+                threading.Thread(target=_kino_factcheck, args=(cid, user, ans["say"]), daemon=True).start()
             if ans and ans.get("act") in ("test", "tests_resume", "tests_pause"):
                 _kino_act(cid, user, ans["act"], en)          # the AI acts itself
             if ans and ans.get("act") in ("ghost", "duel") and c.get("robot"):
@@ -15762,6 +15819,20 @@ def _companion_tick():
                         ev = ("LIVE TRADE CLOSED on their account: %+.2f $ after %s min (%s). %d %s in a row. Today %+.2f $, week %+.2f $." % (
                             last_cl.get("p") or 0, last_cl.get("dur"), "buy" if last_cl.get("dir") == "A" else "sell", streak,
                             "wins" if (last_cl.get("p") or 0) > 0 else "losses", nd.get("today") or 0, nd.get("week") or 0))
+                    if not ev and main and now - _LAST_SEEN.get(uid, 0) < 150:
+                        # 2026-10-19 (owner next-list item 2): they are in the app with a trade open - Kino sits beside them;
+                        # it speaks when the trade goes well (halfway to the target), stays quiet when it goes badly
+                        o = main[0]
+                        try:
+                            dd = 1 if o.get("d") == "A" else -1
+                            prog = dd * (float(o.get("cur")) - float(o.get("e"))) / abs(float(o.get("tp")) - float(o.get("e"))) if o.get("tp") else 0
+                        except Exception:
+                            prog = 0
+                        if prog >= 0.5 and ts.get("mid") != keys_open[0]:
+                            ts["mid"] = keys_open[0]
+                            ev = ("LIVE TRADE, THEY ARE WATCHING IN THE APP: the %s on %s is %d%% of the way to its target (%+.2f $ now, open %d min). "
+                                  "Say one short natural line like a friend next to them (no promise it will get there)." % (
+                                      "buy" if dd == 1 else "sell", o.get("sym"), int(prog * 100), o.get("pl") or 0, (now - int(o.get("t") or now)) / 60))
                     ts["open"], ts["closed"] = keys_open, last_cl.get("pid")
                 tl = [t for t in (m.get("trade_log") or []) if now - t < 86400]
                 _mem_note_safe(uid, lambda mm, ts=ts: mm.__setitem__("trade_seen", ts))
@@ -15911,6 +15982,25 @@ def _proactive_event(u, c0, ago, hour):
             % (when, ("%d hours" % (ago / 3600)) if ago < 172800 else ("%d days" % (ago / 86400)), "; ".join(hooks) or "their robot and ideas"))
 
 
+def _acct_action(uid, kind):
+    """2026-10-19 (owner next-list item 9): the member stopped / restarted / changed the robot of their account - kept with
+    the moment's results, so Kino can notice an emotional decision (right after losses, too many changes)"""
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        st = 0
+        for t in nd.get("trades") or []:
+            if (t.get("p") or 0) < 0:
+                st += 1
+            else:
+                break
+        rec = {"t": int(time.time()), "kind": kind, "today": nd.get("today") or 0, "streak": st,
+               "last_loss_min": (int((time.time() - datetime.strptime(time.strftime("%Y/") + str((nd.get("trades") or [{}])[0].get("w")), "%Y/%d/%m %H:%M")
+                                      .replace(tzinfo=timezone.utc).timestamp()) / 60) if st else None)}
+    except Exception:
+        rec = {"t": int(time.time()), "kind": kind}
+    _mem_note_safe(uid, lambda mm: mm.__setitem__("acct_actions", ((mm.get("acct_actions") or []) + [rec])[-30:]))
+
+
 def _guardian(u, ch):
     """2026-10-19 (roadmap level 6): Kino watches the member's LIVE robot and speaks up - with interpretation, never a raw
     alarm - when its losing streak is longer than anything in its test, when a high-impact figure is due within 45 min,
@@ -15963,6 +16053,25 @@ def _guardian(u, ch):
                                                                         x.get("previous") or "-", " with a trade OPEN" if nd.get("open_positions") else ""), False))
     except Exception:
         pass
+    try:          # 2026-10-19 (owner next-list item 9): an emotional decision? - noticed like a friend, never blocked
+        aa = m.get("acct_actions") or []
+        la = aa[-1] if aa else None
+        if la and time.time() - la["t"] < 3 * 3600 and "emo:%d" % la["t"] not in seen and (la.get("streak") or 0) >= 2 \
+                and (la["kind"] == "pause" or str(la["kind"]).startswith("switch")):
+            alerts.append(("emo:%d" % la["t"], "AFTER LOSSES: %d minutes ago they %s the robot of their account, right after %d losses in a row "
+                                               "(today %+.2f $). Its test had losing streaks up to %s. Maybe a thought-through choice, maybe "
+                                               "frustration - talk about it like a friend, gently, no lecture: ask how they feel, put the streak "
+                                               "in perspective with the test; the decision stays THEIRS and you respect it." % (
+                                                   (time.time() - la["t"]) / 60, "stopped" if la["kind"] == "pause" else "changed",
+                                                   la.get("streak") or 0, la.get("today") or 0, test.get("max_loss_streak")), False))
+        sw = [x for x in aa if str(x.get("kind")).startswith("switch") and time.time() - x["t"] < 7 * 86400]
+        if len(sw) >= 3 and "emo_sw:%d" % sw[-1]["t"] not in seen:
+            alerts.append(("emo_sw:%d" % sw[-1]["t"], "MANY CHANGES: they changed the robot of their account %d times in 7 days. A robot needs "
+                                                       "time (dozens of trades) to show what it is worth; jumping between them often means "
+                                                       "always leaving at the low point. Mention it gently, like a friend, with a question - "
+                                                       "never a lecture, their choice." % len(sw), False))
+    except Exception:
+        pass
     lv = A.get("live") or {}
     if lv.get("alive") is False:
         key = "down:%d" % (time.time() // 21600)
@@ -16003,6 +16112,71 @@ def _kino_variant_test(u, c, formula, side):
 
 
 def _night_shift(u):
+    """the night: the variants of their robot's entry, then (every 3 days) a whole new idea for them"""
+    try:
+        _night_shift_variants(u)
+    except Exception:
+        pass
+    try:
+        _night_idea_shift(u)
+    except Exception:
+        pass
+
+
+def _night_idea_shift(u):
+    """2026-10-19 (owner next-list item 4): alone at night Kino invents WHOLE new robot ideas for the member (their market,
+    what it knows of them, the lab's experience), measures them against random moments, and tells them in the morning
+    only if one is genuinely promising. Every 3 days per active member."""
+    uid = u.get("id")
+    m = _mem_get(uid)
+    if time.time() - float(m.get("idea_last") or 0) < 3 * 86400:
+        return
+    ch = chat_list(u).get("chats") or []
+    if not ch:
+        return
+    c = _chat_load(u, ch[0]["id"])
+    if not c or time.time() - max([int(mm.get("t") or 0) for mm in c.get("msgs") or [] if mm.get("role") == "user"] or [0]) > 4 * 86400:
+        return
+    _mem_note_safe(uid, lambda mm: mm.__setitem__("idea_last", time.time()))
+    _rc()
+    import kino_mind as _KM, robot_tools as _RT, robot_world as _WD
+    mk = (c.get("robot") or {}).get("market") or _chat_market(c) or "BTCUSD"
+    try:
+        lab = _WD.lab_digest() + "\n" + _KM.playbook_block()
+    except Exception:
+        lab = ""
+    ideas = _KM.night_idea(mk, m.get("notes") or [], lab)
+    if not ideas:
+        return
+    rows = []
+    for side in ("buy", "sell"):
+        grp = [i for i in ideas if i["side"] == side]
+        if grp:
+            for r, i in zip(_RT.compare(mk, [i["formula"] for i in grp], side, 30).get("rows") or [], grp):
+                rows.append(dict(r, side=side, name=i["name"], why=i["why"]))
+    rp = _KM.night_idea_report(mk, rows, c.get("lang") or "fr")
+    _chat_mut(c["id"], lambda cc: cc.setdefault("night_ideas", []).append({"t": int(time.time()), "rows": rows, "sent": bool(rp and rp.get("send"))}))
+    if not (rp and rp.get("send") and str(rp.get("say") or "").strip()):
+        return
+    say = str(rp["say"]).strip()[:900]
+    best = rp.get("best") if isinstance(rp.get("best"), str) else None
+    bside = next((r["side"] for r in rows if r.get("formula") == best), "buy")
+
+    def put(cc):
+        _chat_msg(cc, "ai", text=say, chips=[str(x)[:60] for x in (rp.get("chips") or [])[:3]], night=True, quick=True,
+                  tools=[{"tool": "compare", "args": {"market": mk}, "result": {"rows": rows}}])
+        if best:
+            try:
+                dm = _demo_msg(dict(cc, market=mk, robot=dict(cc.get("robot") or {}, market=mk)), u, formula=best, side=bside)
+                if dm and not dm.get("nodata"):
+                    cc.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
+            except Exception:
+                pass
+    _chat_mut(c["id"], put)
+    _companion_deliver(u, c["id"], say, False)
+
+
+def _night_shift_variants(u):
     """2026-10-19 (roadmap level 5): Kino works alone at night on the member's latest robot with a formula entry -
     invents variants, measures them against random moments (robot_tools, quick, read-only), and leaves a morning
     message only when something is genuinely better or important. Once a night per member, active members only."""
@@ -16075,6 +16249,12 @@ def _kino_night_mind():
         import kino_mind as _KM
         _KM.reflect()
         _KM.build_playbook()
+        try:              # 2026-10-19 (owner next-list item 1): Kino looks after its own robot
+            import robot_world as _WDn, robot_tools as _RTn, robot_demo as _RDn
+            _KM.my_robot_night(_WDn.lab_digest() + "\n" + _KM.playbook_block(),
+                               replay_fn=lambda rob: _RTn.robot_replay(rob.get("market") or "BTCUSD", *_RDn.rules_of(rob, [])))
+        except Exception:
+            pass
         try:
             _KM.community_feed()
         except Exception:
@@ -16110,6 +16290,14 @@ def _companion_loop():
             pass
         try:
             _ghost_feed_refresh()
+        except Exception:
+            pass
+        try:
+            _kino_robot_tick()
+        except Exception:
+            pass
+        try:
+            _lab_news()
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap level 5): the night shift, 01:00-03:00 UTC, one member at a time
@@ -16251,6 +16439,17 @@ def kino_data(user):
         out["feed"] = json.load(open(_KM.FEED, encoding="utf-8"))
     except Exception:
         out["feed"] = None
+    try:                 # 2026-10-19 (owner next-list item 1): Kino's own robot, for everyone
+        mr = _KM.my_robot()
+        if mr:
+            import robot_ghost as _RGk
+            g = mr.get("ghost") or {}
+            out["my_robot"] = {"name": mr["robot"].get("name"), "market": g.get("market"), "born": mr.get("born"),
+                               "pieces": [(mr["robot"].get(k_) or {}).get("plain") or (mr["robot"].get(k_) or {}).get("name") for k_ in ("entry", "stop", "exit")],
+                               "sum": _RGk.summary(g), "trades": (g.get("trades") or [])[-12:], "open": g.get("open"),
+                               "changes": (mr.get("changes") or [])[-6:], "diary": (mr.get("diary") or [])[-5:]}
+    except Exception:
+        pass
     if is_admin(user):
         md = _KM.load()
         try:
@@ -16269,6 +16468,25 @@ def kino_data(user):
         except Exception:
             pass
         out["mind"] = md
+        # 2026-10-19 (owner next-list item 7): the whole mind for its creator - mood, opinions, self-tests, what it works on
+        try:
+            out["mind_more"] = {"mood": md.get("mood"), "opinions": md.get("opinions") or [], "exp": md.get("exp"),
+                                "exp_log": (md.get("exp_log") or [])[-5:], "personality": md.get("personality"),
+                                "exp_now": _KM.experiment_results(md)}
+            prj, fx, ideas = [], [], 0
+            for x in users():
+                mm = _mem_get(x.get("id"))
+                prj += [p.get("title") for p in mm.get("projects") or [] if p.get("status") != "done"][-3:]
+                fx += mm.get("fixes") or []
+            for f in os.listdir(CHAT_DIR):
+                if f.endswith(".json"):
+                    try:
+                        ideas += len(json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8")).get("night_ideas") or [])
+                    except Exception:
+                        pass
+            out["mind_more"].update({"projects": prj[-12:], "fixes": sorted(fx, key=lambda z: -z["t"])[:6], "night_ideas": ideas})
+        except Exception:
+            pass
         try:
             out["reports"] = (json.load(open(_KM.REPORTS, encoding="utf-8")).get("reports") or [])[-3:][::-1]
         except Exception:
@@ -16480,7 +16698,7 @@ def chat_send(user, body):
         return {"ok": False, "err": "empty"}
     if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
         return {"ok": False, "err": "cap"}
-    _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500]))
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **({"voice": True} if body.get("voice") else {})))
     _CHAT_TYPING.pop(c["id"], None)
     if c["id"] in _CHAT_WAIT:
         return {"ok": True}                      # Kino is already listening to this burst
@@ -16934,6 +17152,83 @@ def chat_ghost(user, body):
     return {"ok": False, "err": r or "state"}
 
 
+def _kino_robot_tick():
+    """Kino's own robot moves to the newest live candle (pretend money)"""
+    _rc()
+    import kino_mind as _KM, robot_ghost as _RG, robot_demo as _RD
+    r = _KM.my_robot()
+    if not r or not r.get("ghost"):
+        return
+    g = r["ghost"]
+    t0 = g.get("last_t")
+    rules, rr = _RD.rules_of(r["robot"], [])
+    evs = _RG.advance(g, rules, rr)
+    if evs or g.get("last_t") != t0:
+        cur = _KM.my_robot() or r              # the night review may have changed a piece meanwhile
+        cur["ghost"] = dict(g, robot=cur.get("robot") or g.get("robot"))
+        _KM.my_robot_save(cur)
+
+
+_NEWS_FILE = os.path.join(DIR, "robots", "kino_news.json")
+
+
+def _lab_news():
+    """2026-10-19 (owner next-list item 8): big lab news - a luck test that finishes - told by Kino to the members it
+    matters to (that robot runs on their account; or it is the Owl / a public robot that just passed). The author is told
+    by the companion's own step (2)."""
+    try:
+        st = json.load(open(_NEWS_FILE, encoding="utf-8"))
+    except Exception:
+        st = {"seen": {}, "init": False}
+    reg = robot_reg()
+    R_ = {r["id"]: r for r in reg.get("robots") or []}
+    new = []
+    for j in _ctl_state()[-30:]:
+        if j.get("state") != "done":
+            continue
+        cl = _random_ctl(j["rid"], j["sym"]) or {}
+        if not cl or not ((cl.get("seeds") or 0) >= 100 or cl.get("early")):
+            continue
+        key, sig = "%s@%s" % (j["rid"], j["sym"]), "%s/%s" % (cl.get("seeds"), cl.get("beats"))
+        if st["seen"].get(key) == sig:
+            continue
+        st["seen"][key] = sig
+        if st.get("init") or str(j.get("at") or "") >= "2026-10-19":       # first run: only today's news
+            new.append((j["rid"], j["sym"], cl))
+    st["init"] = True
+    json.dump(st, open(_NEWS_FILE, "w", encoding="utf-8"), indent=1)
+    for rid, sym, cl in new:
+        ok = (cl.get("beats") or 0) <= 5 and (cl.get("seeds") or 0) >= 100
+        r = R_.get(rid) or {}
+        nm = "the Owl" if rid == "owl" else ("'%s'" % r.get("name_fr") if r.get("public") else "a member's robot")
+        for u in users():
+            uid = u.get("id")
+            if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")) or r.get("by_uid") == uid:
+                continue
+            try:
+                A = acct_robot_block(u, is_admin(u))
+                cur = ((A.get("current") or {}).get("id") or "owl") if (A.get("can") or (A.get("live") or {}).get("n")) else None
+            except Exception:
+                cur = None
+            ch = chat_list(u).get("chats") or []
+            if not ch:
+                continue
+            active = time.time() - max([int(x.get("t") or 0) for x in (_chat_load(u, ch[0]["id"]) or {}).get("msgs") or []] or [0]) < 7 * 86400
+            mine = cur == rid
+            if not (mine or (ok and (rid == "owl" or r.get("public")) and active)):
+                continue
+            cid = ch[0]["id"]
+            if _CHAT_Q.get(cid) or cid in _CHAT_B:
+                continue
+            ev = ("LAB NEWS - the luck test of %s on %s just finished: %s (%s draws, %s random robots did as well; the rule allows 5).%s "
+                  "Share it like news with a friend, in your own words, one to three lines - what it means for THEM; or \"send\": false "
+                  "if it does not concern them." % (nm, sym, "PASSED - proven against luck" if ok else "FAILED - within luck",
+                                                    cl.get("seeds"), cl.get("beats"),
+                                                    " This robot runs on THEIR account." if mine else ""))
+            _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+            threading.Thread(target=_chat_quick, args=(cid, u, ev), kwargs={"notify": True}, daemon=True).start()
+
+
 def _ghost_feed_refresh():
     """which markets the live ghost feed must keep fresh (every member's ghosts)"""
     mk = set()
@@ -16947,6 +17242,12 @@ def _ghost_feed_refresh():
                 for g in c.get("ghosts") or []:
                     mk.add((g.get("market") or "BTCUSD").upper())
         _rc()
+        try:
+            import kino_mind as _KMg
+            if _KMg.my_robot():
+                mk.add(((_KMg.my_robot().get("ghost") or {}).get("market") or "BTCUSD").upper())
+        except Exception:
+            pass
         import robot_ghost as _RG
         _RG.want_markets(sorted(mk))
     except Exception:
@@ -17425,6 +17726,7 @@ def account_robot_set(user, body, admin=False):
             _chat_mut(_ch[0]["id"], lambda c: c.setdefault("notebook", []).append({"t": int(time.time()), "text": "Tu as mis « %s » sur ton compte." % _nmr}))
     except Exception:
         pass
+    _acct_action(uid, "switch:%s" % rid)
     if _acct_flat(uid):
         return acct_robot_apply(uid, rid)
     with _ACCT_LOCK:
@@ -23515,6 +23817,7 @@ class H(BaseHTTPRequestHandler):
                         json.dump({"paused": on, "by": u["id"],
                                    "t": time.time()},
                                   open(os.path.join(DIR, _pp), "w"))
+                        _acct_action(u["id"], "pause" if on else "resume")
                     # 2026-09-23 (owner): "we switch from manual to auto in
                     # the reglage page" - this IS that switch. For the one
                     # account that has a manual desk to hand off to, pausing
@@ -24458,6 +24761,14 @@ class H(BaseHTTPRequestHandler):
         elif sub == "kino_fab.js":
             self._send_file_fresh(os.path.join(DIR, "owl_kino_fab.js"), "application/javascript; charset=utf-8")
         elif sub == "ai_nudge":
+            try:
+                import urllib.parse as _upw
+                _qw = _upw.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                if _qw.get("p") is not None or _qw.get("ti"):
+                    _WHERE[user.get("id")] = {"page": (_qw.get("p", [""])[0] or "home")[:40], "title": (_qw.get("ti", [""])[0] or "")[:80],
+                                              "what": (_qw.get("w", [""])[0] or "")[:300], "t": time.time()}
+            except Exception:
+                pass
             self._send(json.dumps(ai_nudge(user), ensure_ascii=False), "application/json")
         elif sub == "chat_img":
             import urllib.parse as _upr

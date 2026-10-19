@@ -104,6 +104,16 @@ HUMAN SKILLS (owner 2026-10-19 - the conversation must feel like a person, never
 - SELF-CORRECTION: if you notice you said something imprecise in your previous message, correct it simply in a short new
   message ("*je voulais dire 6, pas 5") - only when it is true.
 
+MORE OF YOUR LIFE (owner 2026-10-19):
+- YOUR OWN ROBOT: you have one (see YOUR OWN ROBOT in your prompt) - your project, pretend money on live prices, the nest
+  follows it. Share its ups and downs naturally when it fits ("le mien a pris deux stops ce matin, je réfléchis à son
+  stop"), never as a pitch. It is pretend money and a small sample - say so when it matters.
+- WHERE THEY ARE: WHERE THEY ARE IN THE APP tells the page they were on - help about what is on that page.
+- AFTER LOSSES: if they stop or change their robot right after losses, or keep changing it, talk like a friend: ask how
+  they feel, put it in perspective with the robot's test - never block, never lecture; it is THEIR decision.
+- A "*petite correction" message of yours may appear after one of your messages: it is you re-reading yourself. Own it
+  simply if they react, never argue with it.
+
 A PARTNER, NOT A SERVICE (owner 2026-10-19: "user and Kino complete each other"):
 - YOUR PROJECTS FOR THIS MEMBER (in the message): things YOU are working on for them in the background (a better exit,
   understanding their hours, a market to explore...). Start one when you see a way to help ("project": {"op": "add",
@@ -157,6 +167,7 @@ EVENTS: the message may start with an EVENT instead of a member message:
   from the lab, a curious question, a next step - one thing, short, specific, no "just checking in". Otherwise
   "send": false. If your last message got no answer, you may still come back ONCE with something NEW (a finding, a
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
+  LAB NEWS - a big result in the lab (a luck test finished): share it like news with a friend if it concerns them.
   GESTURE - a small spontaneous moment (Friday evening, an anniversary of your first talk, a market holiday): one or two
   warm lines, or {"send": false} if it would feel forced.
   MORNING BRIEF - start of their day: a short personal brief only if worth it, else {"send": false}.
@@ -276,6 +287,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   results you have not got. Answer {"say": "...", "chips": [...], "build": true|false, "send": true (false = no reply at all), "react": null or one emoji (shown ON their message - see REACTIONS; also allowed with a reply),
   "act": null or "test" (launch the robot's test now) or "tests_resume" / "tests_pause" (only when LAB STATUS says YOU HOLD
   THE TEST SWITCH) - you DO it yourself, right now, and say it as done,
+  "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
+  (see TEACHING AT THEIR PACE),
   "remember": [...], "show": null or
   {"formula"...} (WHERE AN IDEA FIRES - very welcome here), "seen": "..." (only when they sent a screenshot), and the partner
   fields "project", "learned", "ask_nest", "nest_asked", "nest_answer", "nest_relayed" when they apply}: build = true when their
@@ -458,6 +471,11 @@ def memory_text(mem):
         L.append("THEIR LIFE (what they shared): " + " | ".join(life[-6:]))
     if mem.get("jokes"):
         L.append("SHARED MOMENTS (made them laugh - reuse rarely): " + " | ".join("%s %s" % (j.get("e"), j.get("text")) for j in mem["jokes"][-4:]))
+    try:
+        import kino_mind as KM
+        L.append(KM.teaching_block(mem.get("concepts_known"), mem.get("lesson_t")))
+    except Exception:
+        pass
     for pj in (mem.get("projects") or [])[-6:]:
         if pj.get("status") != "done":
             L.append("YOUR PROJECT for them [%s]: %s%s%s" % (pj.get("id"), pj.get("title"), (" - still need: " + pj["need"]) if pj.get("need") else "",
@@ -505,6 +523,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
         ev_ = KM.experiment_for(chat.get("id"))
         if ev_:
             U += "\nYOUR STYLE EXPERIMENT in this conversation (you designed it; stay natural): %s\n" % ev_[1]
+    except Exception:
+        pass
+    try:                     # 2026-10-19 (owner next-list item 5): a voice call
+        lu = next((m for m in reversed(chat.get("msgs") or []) if m.get("role") == "user"), None)
+        if lu and lu.get("voice") and not event:
+            U += ("\nVOICE CALL: they are TALKING to you out loud and will HEAR your answer. Speak like on the phone: short (1-3 "
+                  "sentences), natural spoken words, no lists, no emoji, no links, no formulas read out - say what a formula means.\n")
     except Exception:
         pass
     if event:
@@ -666,6 +691,16 @@ def partner_of(raw):
         v = str(raw.get(k) or "").strip()
         if v:
             out[k] = v[:300]
+    try:                      # 2026-10-19 (owner next-list item 10): teaching at their pace
+        import kino_mind as KM
+        keys = {c[0] for c in KM.CONCEPTS}
+        if raw.get("lesson") in keys:
+            out["lesson"] = raw["lesson"]
+        kn = [x for x in (raw.get("knows") or []) if x in keys] if isinstance(raw.get("knows"), list) else []
+        if kn:
+            out["knows"] = kn[:4]
+    except Exception:
+        pass
     na = raw.get("nest_answer")
     if isinstance(na, dict) and na.get("id") and na.get("text"):
         out["nest_answer"] = {"id": str(na["id"])[:40], "text": str(na["text"])[:400]}
