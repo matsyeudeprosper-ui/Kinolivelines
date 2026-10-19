@@ -98,6 +98,7 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 .live .bub .caret{display:inline-block;width:7px;height:1.05em;margin-left:2px;vertical-align:-2px;border-radius:2px;background:var(--violet);animation:blinkc 1s steps(2) infinite}
 @keyframes blinkc{50%{opacity:0}}
 .m.ai.cont{margin-bottom:4px}
+.fl{font-size:.74rem;margin-top:6px;color:#ffd0d0}.fl a{color:#fff;font-weight:800}
 .typing .bub{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.84rem}
 /* 2026-10-19 evening: the builder works after the quick reply - a light line, the member can keep typing */
 .bld{display:flex;align-items:center;gap:9px;margin:2px 0 10px 39px;color:var(--muted);font-size:.78rem}
@@ -339,6 +340,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  let h='';const fresh=M.filter(m=>m.role==='user').length===0&&!C.robot_id;
  if(fresh)h+=welcome();
  M.forEach((m,i)=>{if(fresh&&i===0)return;h+=msgHTML(m,i,i===M.length-1);});
+ FAILED.forEach((t,k)=>{h+='<div class="m me"><div class="bub" style="opacity:.75">'+md(t)+'<div class="fl">⚠ '+T('Pas envoyé','Not sent')+' · <a href="#" onclick="resend('+k+');return false">'+T('Réessayer','Retry')+'</a></div></div></div>';});
  const dr=(C&&C.draft)||'';
  if(dr&&C.status!=='ready')h+='<div class="m ai live"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(dr)+'<span class="caret"></span></div></div>';
  else if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
@@ -491,8 +493,15 @@ async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',r
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;await load(j.id,true);}
 async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
  C.msgs.push({role:'user',text:t});C.status='thinking';$('tx').value='';autosize();paintChat(true);
- try{const j=await post('chat_send',{id:CID,text:t});if(!j.ok){C.msgs.pop();C.status='ready';paintChat(true);$('tx').value=t;toast(ERR[j.err]||j.err);}else{clearTimeout(POLL);POLL=setTimeout(()=>load(CID),1800);}}
- catch(e){C.status='ready';paintChat();toast(T('Hors ligne.','Offline.'));}SENDING=false;}
+ // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
+ // then the bubble stays, marked "not sent", with a retry - never a message that looks sent and is not
+ let j=null;for(const w of [0,1500,3500,6000]){if(w)await new Promise(r=>setTimeout(r,w));try{j=await post('chat_send',{id:CID,text:t});break;}catch(e){j=null;}}
+ if(j&&!j.ok){C.msgs.pop();C.status='ready';paintChat(true);$('tx').value=t;toast(ERR[j.err]||j.err);}
+ else if(j){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),1200);}
+ else{C.msgs.pop();C.status='ready';FAILED.push(t);paintChat(true);}
+ SENDING=false;}
+let FAILED=[];
+function resend(k){const t=FAILED.splice(k,1)[0];if(t==null)return;$('tx').value=t;send();}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
 setInterval(()=>{THINK_T++;const e=$('thk');if(e)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);
 /* ---------- the market (2026-10-19 evening: any market of the member's broker) */

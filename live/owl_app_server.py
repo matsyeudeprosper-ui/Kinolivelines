@@ -15343,6 +15343,12 @@ def chat_get(user, cid):
             _CHAT_Q[c["id"]] -= 1
         c = _chat_load(user, cid)
     c["status"] = _chat_status(c["id"])
+    # 2026-10-19: a member message left without an answer (its turn died with a server restart) is answered now
+    _lm = (c.get("msgs") or [])[-1:] or [{}]
+    if _lm[0].get("role") in ("user", "show", "image") and c["status"] == "ready" and time.time() - int(_lm[0].get("t") or 0) > 20:
+        _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+        threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+        c["status"] = "thinking"
     c["draft"] = _CHAT_DRAFT.get(c["id"]) or _CHAT_DRAFT.get(c["id"] + ":b") or ""
     if time.time() - _CHAT_MK.get("_warm", 0) > 60:
         _CHAT_MK["_warm"] = time.time()
