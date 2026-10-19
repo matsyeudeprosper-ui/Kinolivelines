@@ -11092,7 +11092,7 @@ function card(n){if(!n||n.t===shown||document.getElementById('ainudge'))return;s
  var c=el('div','width:100%;max-width:560px;margin:0 10px calc(14px + env(safe-area-inset-bottom,0px));border-radius:26px;border:1px solid rgba(167,139,250,.45);background:linear-gradient(160deg,#1a2233,#121a25);box-shadow:0 24px 70px rgba(0,0,0,.6);padding:18px 18px 14px;color:#e8eef4;font-family:Inter,system-ui,sans-serif;transform:translateY(40px);opacity:0;transition:all .35s cubic-bezier(.2,.8,.2,1)');
  var h=el('div','display:flex;align-items:center;gap:12px;margin-bottom:12px');
  var av=el('div','width:42px;height:42px;border-radius:14px;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#6d5cf6,#3b82f6);box-shadow:0 8px 22px rgba(109,92,246,.45);font-size:20px','🦉');
- var tt=el('div','flex:1;min-width:0');tt.appendChild(el('b','display:block;font-size:.98rem',en?'Your workshop AI':'Ton IA de l’atelier'));
+ var tt=el('div','flex:1;min-width:0');tt.appendChild(el('b','display:block;font-size:.98rem','Kino'));
  tt.appendChild(el('small','display:block;color:#8a9bb0;font-size:.76rem;margin-top:2px',n.important?(en?'News for you':'Une nouvelle pour toi'):(en?'Something I wanted to tell you':'Un truc que je voulais te dire')));
  h.appendChild(av);h.appendChild(tt);c.appendChild(h);
  c.appendChild(el('div','font-size:1rem;line-height:1.5;color:#e8eef4;white-space:pre-wrap;max-height:40vh;overflow:auto',n.text));
@@ -14726,9 +14726,9 @@ def chat_start(user, body):
                   chips=(["It loses too much", "Fewer trades", "Change the exit", "Explain it to me"] if en else
                          ["Il perd trop", "Moins de trades", "Changer la sortie", "Explique-le-moi"]))
     else:
-        _chat_msg(c, "ai", text=("Hi! Tell me your robot idea in your own words - which market, when it buys, when it sells, when it "
+        _chat_msg(c, "ai", text=("Hi, I'm Kino! Tell me your robot idea in your own words - which market, when it buys, when it sells, when it "
                                  "gets out. Bitcoin, gold, indices, forex: anything your broker has. Rough is fine, we'll sharpen it together.") if en else
-                  ("Salut ! Raconte-moi ton idée de robot avec tes mots : sur quel marché, quand il achète, quand il vend, quand il sort. "
+                  ("Salut, moi c'est Kino ! Raconte-moi ton idée de robot avec tes mots : sur quel marché, quand il achète, quand il vend, quand il sort. "
                    "Bitcoin, or, indices, forex : tout ce que ton courtier propose. Pas besoin que ce soit parfait, on l'affine ensemble."),
                   chips=(["I have an entry idea", "Start from the Owl", "I don't know where to start"] if en else
                          ["J'ai une idée d'entrée", "Pars de l'Owl", "Je ne sais pas par où commencer"]))
@@ -15092,7 +15092,7 @@ def _companion_can_push(uid, n):
 
 def _companion_push(user, n):
     uid = user.get("id")
-    queue_push(uid, ("Ton IA de l'atelier" if (user.get("lang") or "fr") != "en" else "Your workshop AI"), n["text"][:160],
+    queue_push(uid, "Kino", n["text"][:160],
                path="atelier?c=" + n["cid"], sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
     n["pushed"] = int(time.time())
 
