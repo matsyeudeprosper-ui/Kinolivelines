@@ -97,6 +97,7 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 /* typing */
 .live .bub .caret{display:inline-block;width:7px;height:1.05em;margin-left:2px;vertical-align:-2px;border-radius:2px;background:var(--violet);animation:blinkc 1s steps(2) infinite}
 @keyframes blinkc{50%{opacity:0}}
+.m.ai.cont{margin-bottom:4px}
 .typing .bub{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.84rem}
 /* 2026-10-19 evening: the builder works after the quick reply - a light line, the member can keep typing */
 .bld{display:flex;align-items:center;gap:9px;margin:2px 0 10px 39px;color:var(--muted);font-size:.78rem}
@@ -320,7 +321,9 @@ function msgHTML(m,i,last){
  if(m.role==='image'){const u='chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file||'');return (m.text?'<div class="m me"><div class="bub">'+md(m.text)+'</div></div>':'')+'<div class="att mine"><a href="'+u+'" target="_blank" rel="noopener"><img class="shot" src="'+u+'" alt="capture"></a></div>';}
  if(m.role==='sys')return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';
  if(m.role==='demo')return demoHTML(m,i,last);
- let h='<div class="m ai'+(m.err?' err':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(m.text)+'</div></div>';
+ // 2026-10-19: the AI sends two or three short messages in a row like a person (blank line = new bubble)
+ const parts=String(m.text||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
+ let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+'"><div class="av"'+(k<A.length-1?' style="visibility:hidden"':'')+'><svg><use href="#owl"/></svg></div><div class="bub">'+md(p)+'</div></div>').join('');
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
  if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')]}[m.link];
   if(LK)h+='<div class="att"><a class="cta" style="text-decoration:none;color:inherit" href="'+LK[0]+'"><span class="ci"><svg><use href="#spark"/></svg></span><span><b>'+LK[1]+'</b><small>'+LK[2]+'</small></span></a></div>';}

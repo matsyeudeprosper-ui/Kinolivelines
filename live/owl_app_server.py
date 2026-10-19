@@ -14589,6 +14589,13 @@ def _chat_member(user, c):
                 (A.get("current") or {}).get("name_fr"),
                 (", %s trades since it started, %+.2f $" % (lv.get("n"), lv.get("net") or 0)) if lv.get("n") else "",
                 ", a trade is open" if lv.get("open") else ""))
+            try:          # 2026-10-19: their account today, so the AI can look instead of asking ("j'ai perdu 50 balles")
+                _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+                _tr = ["%s %+.2f $ (%s)" % (t.get("w"), t.get("p") or 0, "buy" if t.get("dir") == "A" else "sell") for t in (_nd.get("trades") or [])[:5]]
+                L.append("their account: balance %.2f $, today %+.2f $, this week %+.2f $, this month %+.2f $; last trades: %s" % (
+                    _nd.get("balance") or 0, _nd.get("today") or 0, _nd.get("week") or 0, _nd.get("month") or 0, ", ".join(_tr) or "none"))
+            except Exception:
+                pass
             L.append("may switch robot themselves: %s" % ("yes (Robots > Le robot de ce compte, trading password)" if A.get("can") else
                                                           "no (this account's robot is set by the nest)"))
             ch = [x.get("name_fr") or x.get("id") for x in A.get("choices") or []]
@@ -14623,7 +14630,14 @@ def _chat_member(user, c):
             pass
     else:
         L.append("this chat's robot is not saved yet (it is saved at its first test)")
-    return "\n".join("- " + x for x in L)
+    out = "\n".join("- " + x for x in L)
+    try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
+        import robot_reality as _RW
+        _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
+        out += "\n\nTHE WORLD RIGHT NOW:\n" + _RW.world_now(_tz)
+    except Exception:
+        pass
+    return out
 
 
 def _chat_path(cid):
