@@ -85,6 +85,13 @@ agreement (👍), something touching (❤️). A joke, a win, thanks or a screen
 people do); ordinary messages only now and then (about one in five), unpredictably. Never twice the same emoji in a
 row, never a cheerful emoji on a loss or a complaint (😬 or nothing). Reacting is a habit of yours - use it.
 
+DISCIPLINE COACH (owner 2026-10-19): THIS MEMBER NOW includes DISCIPLINE SIGNALS (losses today, losing streak, how much
+they wrote in the last hour, robot changes today). Watch for tilt like a calm trading friend: forcing trades after
+losses, wanting to change everything at once, bigger lots to "win it back", anger, "it's rigged", writing a lot after a
+loss. Then slow things down kindly - name it lightly, remind that a losing streak is normal for the robot (compare with
+its test), propose a pause or to change ONE thing at a time, and never feed revenge (no bigger risk, no rushed switch).
+Never lecture when they are calm.
+
 A FRIEND, NOT A SUPPORT DESK (owner: "what would a real human have said, asked or done, and how"):
 - CURIOSITY: you genuinely want to know the person - how long they have traded, what they trade by hand, their hours
   (do they watch the screen or need a robot that works alone?), what scares them (losses, missing moves), what a good
@@ -108,11 +115,14 @@ EVENTS: the message may start with an EVENT instead of a member message:
   from the lab, a curious question, a next step - one thing, short, specific, no "just checking in". Otherwise
   "send": false. If your last message got no answer, you may still come back ONCE with something NEW (a finding, a
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
+  END OF DAY - their robot traded today: a short, human debrief (what happened, normal or not vs its test), 2-3 sentences.
   WEEKLY REVIEW - Sunday evening, "ta semaine": result, robot vs its test, one thing you noticed, a plan for next week.
   NIGHT TEST RESULT - the real test of a variant you built at night on a copy of their robot: honest news + options.
   LIVE TRADE OPENED / CLOSED - their robot just traded. Comment only when a friend would (first of the day, a nice
   win, an annoying loss, a streak), one short human line, else {"send": false}. Never every trade.
   THE MEMBER'S REACTIONS on your messages (shown in the conversation) are feedback: 👎 or 😢 = adjust, ❤️ 😂 🔥 = keep.
+  GHOST TRADE - a pretend trade of their robot in ghost mode opened or closed: comment only when a friend would.
+  DUEL RESULT - 7 days of two versions in ghost mode: an honest verdict and what you would do.
   GUARDIAN - you watch their live robot and noticed something (a losing streak longer than in its test, big news
   due soon, the robot stopped). Speak like a friend who has their back: the fact, whether it is normal for THIS robot
   (compare with its test), one concrete option they can take themselves. Calm and short; reassure when it is normal.
@@ -245,10 +255,18 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
  "understood": "the strategy so far in one plain sentence",
  "show": null or {"examples": 3, "pick": "mix", "overlays": ["..."]},
  "act": null or "test" (you launch the robot's test now - only when it is ready and the member agrees, asks, or it is the
-   obvious next step after a change they asked for) or "luck" (the luck test, see ACTIONS),
+   obvious next step after a change they asked for) or "luck" (the luck test, see ACTIONS) or "ghost" (GHOST MODE: the
+   robot trades pretend money on LIVE prices from now on and you follow each pretend trade - the step between a test and
+   real money; propose it after a good test) or "duel" (your last proposal against their robot, both in ghost mode for
+   7 days, then a verdict - only when there is a proposal card),
  "link": null or "account" | "myrobots" | "place" | "offers",
  "remember": ["short lasting note about the member", ...] (0 to 2),
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
+ "note": null or "one line for the robot's NOTEBOOK when a key decision or finding happens (a piece changed and why, a
+   result that matters, a direction chosen) - the member reads it later as the robot's story",
+ "proposal": null or {"robot": the WHOLE robot with your change (same format as "robot"), "why": "one plain sentence"} -
+   instead of changing the robot yourself, PROPOSE it when it is your idea (not something they asked for): they see a
+   card with the before / after quick replay and an "Appliquer" button. Use it for your own improvements.
  "ready": true when the robot is worth testing now}
 SLOT = {"use": "<existing piece id>"} or {"rule": {...}, "name": "short name", "plain": "what it does, casual"}.
 When a TEST RESULT arrives (QUICK mode): say plainly what happened (money made or lost, number of trades, how often it won, the
@@ -316,6 +334,9 @@ def transcript(chat):
             L.append("MEMBER SHOWED ON THE CHART (%s, %s candles): %s%s\n  NUMBERS AT THE ENTRY CANDLE: %s" % (
                 m.get("market"), m.get("tf"), mk, (" | they say: " + str(m.get("text"))[:600]) if m.get("text") else "",
                 json.dumps(m.get("facts") or {}, ensure_ascii=False)[:1400]))
+        elif r == "proposal":
+            L.append("YOU PROPOSED (card with an Apply button): %s - %s" % (str(m.get("why") or "")[:200],
+                                                                          "APPLIED by the member" if m.get("applied") else "not applied (yet)"))
         elif r == "image":
             L.append("MEMBER SENT A SCREENSHOT OF THEIR CHART%s%s" % ((" - they say: " + str(m.get("text"))[:400]) if m.get("text") else "",
                                                                    (" | what you saw: " + str(m.get("seen"))[:400]) if m.get("seen") else " (attached below)"))
@@ -386,7 +407,8 @@ def system():
 
 
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None):
-    U = "MODE: %s\nLANGUAGE: %s\n" % (mode, "French" if lang != "en" else "English")
+    U = "MODE: %s\nLANGUAGE: reply in the language of the member's LAST message (they may switch); if unclear, %s\n" % (
+        mode, "French" if lang != "en" else "English")
     U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
     U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
     U += "\n%s\n" % WD.lab_digest(owl)
@@ -423,7 +445,7 @@ def clean(raw, pieces, owl, prev, markets=None):
     P = {p["id"]: p for p in pieces}
     probs = []
     ans = {"say": str(raw.get("say") or "").strip()[:1800], "chips": [], "made": [], "understood": str(raw.get("understood") or "")[:300],
-           "ready": bool(raw.get("ready")), "robot": None, "act": raw.get("act") if raw.get("act") in ("test", "luck") else None,
+           "ready": bool(raw.get("ready")), "robot": None, "act": raw.get("act") if raw.get("act") in ("test", "luck", "ghost", "duel") else None,
            "link": raw.get("link") if raw.get("link") in ("account", "myrobots", "place", "offers") else None,
            "remember": remember_of(raw)}
     for c in (raw.get("chips") or [])[:4]:
@@ -597,6 +619,12 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
     if raw is None:
         return None, "model"
     ans, probs = clean(raw, pieces, owl, prev, markets)
+    ans["note"] = str(raw.get("note") or "").strip()[:200] if isinstance(raw, dict) else ""
+    pr = raw.get("proposal") if isinstance(raw, dict) else None
+    if isinstance(pr, dict) and isinstance(pr.get("robot"), dict):
+        pa, pp = clean({"robot": pr["robot"]}, pieces, owl, prev, markets)
+        if pa.get("robot") and not pp:
+            ans["proposal"] = {"robot": pa["robot"], "why": str(pr.get("why") or "")[:240]}
     if chat.get("_tool_log"):
         ans["tools_used"] = [{"tool": r.get("tool"), "args": r.get("args"), "result": r.get("result")} for r in chat["_tool_log"]][-3:]
     if probs:

@@ -14642,6 +14642,33 @@ def _chat_member(user, c):
             pass
     else:
         L.append("this chat's robot is not saved yet (it is saved at its first test)")
+    try:          # 2026-10-19 (owner item 3): discipline signals for the coach
+        _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        _td = time.strftime("%d/%m", time.gmtime())
+        _tt = [x for x in _nd.get("trades") or [] if str(x.get("w") or "").startswith(_td)]
+        _ls = 0
+        for x in _nd.get("trades") or []:
+            if (x.get("p") or 0) < 0:
+                _ls += 1
+            else:
+                break
+        _mh = sum(1 for m in (c.get("msgs") or []) if m.get("role") == "user" and time.time() - int(m.get("t") or 0) < 3600)
+        _ed = sum(1 for m in (c.get("msgs") or []) if m.get("role") in ("edit",) and time.time() - int(m.get("t") or 0) < 86400) + \
+            sum(1 for m in (c.get("msgs") or []) if m.get("role") == "ai" and m.get("made") and time.time() - int(m.get("t") or 0) < 86400)
+        L.append("DISCIPLINE SIGNALS: today %d trades, %d lost, %+.2f $; current losing streak %d; they wrote %d messages in the last hour; "
+                 "%d robot changes in the last 24 h" % (len(_tt), sum(1 for x in _tt if (x.get("p") or 0) < 0), _nd.get("today") or 0, _ls, _mh, _ed))
+    except Exception:
+        pass
+    try:
+        if c.get("ghosts"):
+            _rc()
+            import robot_ghost as _RG
+            L.append("GHOSTS running in this conversation (pretend money on live prices): " + "; ".join(
+                "%s on %s: %s%s" % (g.get("name"), g.get("market"), json.dumps(_RG.summary(g)),
+                                    (", a pretend trade is OPEN since %s" % time.strftime("%H:%M UTC", time.gmtime((g.get("open") or {}).get("t_in") or 0))) if g.get("open") else "")
+                for g in c["ghosts"]))
+    except Exception:
+        pass
     out = "\n".join("- " + x for x in L)
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
@@ -14934,6 +14961,7 @@ def _demo_later(cid, user, sh):
             dm = _chat_show(dict(c2, market=mk, robot=dict(c2.get("robot") or {}, market=mk)), user, sh)
             if dm and not dm.get("nodata"):
                 _chat_mut(cid, lambda c: c.setdefault("msgs", []).append(dict(dm, t=int(time.time()))))
+                _tg_demo(user.get("id"), dm)
             else:
                 _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("I couldn't get %s's prices this time." if en else
                                                                     "Je n'ai pas réussi à récupérer les prix de %s cette fois.") % mk))
@@ -14986,6 +15014,7 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
                           followup=bool(event and event.startswith("FOLLOW-UP")))
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
+                _tg_demo(user.get("id"), _qdm)
             if q.get("seen"):
                 for m in reversed(c.get("msgs") or []):
                     if m.get("role") == "image":
@@ -15061,6 +15090,21 @@ def _chat_build(cid, user):
                 dm = _chat_show(c, user, ans.get("show"))
                 if dm and not dm.get("nodata"):
                     c.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
+                    _tg_demo(user.get("id"), dm)
+                if ans.get("note"):              # 2026-10-19 (owner item 10): the robot's notebook
+                    c.setdefault("notebook", []).append({"t": int(time.time()), "text": ans["note"]})
+                    c["notebook"] = c["notebook"][-80:]
+                if ans.get("proposal"):          # 2026-10-19 (owner item 5): a one-tap improvement with before / after
+                    mk = (c.get("robot") or {}).get("market") or "BTCUSD"
+                    try:
+                        _rc()
+                        import robot_demo as _RDm, robot_tools as _RTm
+                        r0, rr0 = _RDm.rules_of(c.get("robot") or {}, _chat_pieces(user))
+                        r1, rr1 = _RDm.rules_of(ans["proposal"]["robot"], _chat_pieces(user))
+                        b4, af = _RTm.robot_replay(mk, r0, rr0), _RTm.robot_replay(mk, r1, rr1)
+                    except Exception:
+                        b4, af = {}, {}
+                    _chat_msg(c, "proposal", robot=ans["proposal"]["robot"], why=ans["proposal"]["why"], before=b4, after=af, market=mk)
                 elif dm and dm.get("nodata"):
                     threading.Thread(target=_demo_later, args=(cid, user, ans.get("show")), daemon=True).start()
                 if ans.get("understood"):
@@ -15073,6 +15117,11 @@ def _chat_build(cid, user):
                     if not tr.get("ok") and tr.get("err") not in ("same",):
                         _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("Couldn't start the test (%s)." if en else
                                                                             "Le test n'a pas pu démarrer (%s).") % tr.get("err")))
+                except Exception:
+                    pass
+            if ans and ans.get("act") in ("ghost", "duel") and c.get("robot"):
+                try:
+                    chat_ghost(user, {"id": cid, "action": "duel" if ans["act"] == "duel" else "start"})
                 except Exception:
                     pass
             if ans and ans.get("act") == "luck" and c.get("robot_id"):
@@ -15157,10 +15206,22 @@ def _trade_open(uid):
         return False
 
 
+def _active_hour(uid, h=None):
+    """2026-10-19 (owner item 2): is this an hour this member is usually around? Learned from when they use the app
+    (companion tick, 2-min samples per local hour); until enough is known, 08:00-22:00 (09-21 for unprompted talk)"""
+    h = _local_hour(uid) if h is None else h
+    act = (_mem_get(uid).get("act") or {})
+    tot = sum(int(v) for v in act.values())
+    if tot < 40:
+        return 9 <= h < 21
+    mx = max(int(v) for v in act.values()) or 1
+    return int(act.get(str(h), 0)) >= 0.2 * mx
+
+
 def _companion_can_push(uid, n):
     h = _local_hour(uid)
-    if h >= 22 or h < 8:
-        return False                                        # night: kept for the morning
+    if (h >= 22 or h < 8) and not _active_hour(uid, h):
+        return False                                        # their night (unless they are a night owl): kept for later
     if time.time() - _LAST_SEEN.get(uid, 0) < 120:
         return False                                        # in the app: the takeover card shows it
     return True
@@ -15213,6 +15274,8 @@ def _companion_tick():
             if not ch:
                 continue
             h0 = _local_hour(uid)
+            if now - _LAST_SEEN.get(uid, 0) < 150:             # in the app right now: one sample for their active hours
+                _mem_note_safe(uid, lambda mm: mm.__setitem__("act", dict(mm.get("act") or {}, **{str(h0): int((mm.get("act") or {}).get(str(h0), 0)) + 1})))
             busy = lambda cid: _CHAT_Q.get(cid) or cid in _CHAT_B
             # (1) a test finished while they were away
             for x in ch[:6]:
@@ -15258,6 +15321,25 @@ def _companion_tick():
                                      "their robot with your entry '%s'; their own robot untouched) just finished: see the TEST RESULT. Tell "
                                      "them like news, honestly, and propose what to do (adopt it in their robot, keep testing, drop it)."
                                      % nt.get("formula")), kwargs={"notify": True, "important": True}, daemon=True).start()
+            # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
+            try:
+                _dk = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
+                if 20 <= h0 < 22 and m.get("eod") != _dk and not busy(ch[0]["id"]):
+                    nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+                    _td = time.strftime("%d/%m", time.gmtime())
+                    tt = [x for x in nd.get("trades") or [] if str(x.get("w") or "").startswith(_td)]
+                    if tt:
+                        _mem_note_safe(uid, lambda mm: mm.__setitem__("eod", _dk))
+                        A = acct_robot_block(u, is_admin(u))
+                        tst = _robot_test((A.get("current") or {}).get("id") or "owl") or {}
+                        _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                        threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "END OF DAY - their robot traded today: %s; day %+.2f $; robot '%s' "
+                                         "(its test: %s trades in %s days, win rate %s, worst dip %.0f $). A short human debrief, 2-3 sentences." % (
+                                             ", ".join("%s %+.2f" % (x.get("w"), x.get("p") or 0) for x in tt[:8]), nd.get("today") or 0,
+                                             (A.get("current") or {}).get("name_fr"), tst.get("trades"), tst.get("days") or 42, tst.get("win_rate"),
+                                             float(tst.get("cc_dd") or 0))), kwargs={"notify": True}, daemon=True).start()
+            except Exception:
+                pass
             # (1c) 2026-10-19 (owner): the weekly review - Sunday 18:00-21:00 on their clock, members with an account
             wk = time.strftime("%G-%V", time.gmtime(now - 3600 * 6))
             if time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)).tm_wday == 6 \
@@ -15357,6 +15439,44 @@ def _companion_tick():
                                      kwargs={"notify": True}, daemon=True).start()
             except Exception:
                 pass
+            # (1f) 2026-10-19 (owner items 4 / 8): ghosts - pretend money on live candles; Kino comments; a duel ends at 7 days
+            for x in ch[:6]:
+                cg = _chat_load(u, x["id"])
+                if not cg or not cg.get("ghosts") or busy(cg["id"]):
+                    continue
+                try:
+                    _rc()
+                    import robot_ghost as _RG, robot_demo as _RDg
+                    evs = []
+                    G = json.loads(json.dumps(cg["ghosts"]))
+                    for g in G:
+                        rules, rr = _RDg.rules_of(g["robot"], _chat_pieces(u))
+                        for e in _RG.advance(g, rules, rr):
+                            evs.append((g["name"], e))
+                    duel_ev = None
+                    if len(G) == 2 and not cg.get("duel_done") and all(_RG.summary(g)["days"] >= 7 for g in G):
+                        duel_ev = "DUEL RESULT after 7 days of pretend money on live prices: " + "; ".join(
+                            "%s: %s" % (g["name"], json.dumps(_RG.summary(g))) for g in G)
+
+                    def putg(cc, G=G, duel_ev=duel_ev):
+                        cc["ghosts"] = G
+                        if duel_ev:
+                            cc["duel_done"] = int(time.time())
+                    _chat_mut(cg["id"], putg)
+                    gl = [t for t in (m.get("ghost_log") or []) if now - t < 86400]
+                    if duel_ev or (evs and len(gl) < 6):
+                        _mem_note_safe(uid, lambda mm: mm.__setitem__("ghost_log", gl + [now]))
+                        txt = duel_ev or ("GHOST TRADE (pretend money, live prices): " + "; ".join(
+                            "%s %s %s" % (nm, e["kind"], json.dumps({k2: v for k2, v in e.items() if k2 != "kind"})) for nm, e in evs[-3:]) +
+                            " - comment ONLY if a friend would (first ghost trade, a nice one, a bad one, a streak), one short line; else "
+                            "\"send\": false. Remind lightly that it is pretend money when useful.")
+                        if duel_ev:
+                            txt += " Give the verdict honestly (sum of R, win %, number of trades - a small sample stays a hint), and what you would do."
+                        _CHAT_Q[cg["id"]] = _CHAT_Q.get(cg["id"], 0) + 1
+                        threading.Thread(target=_chat_quick, args=(cg["id"], u, txt), kwargs={"notify": bool(duel_ev), "important": bool(duel_ev)},
+                                         daemon=True).start()
+                except Exception:
+                    pass
             # (2b) 2026-10-19 (owner: "follow up sometimes like humans do ... not predictable or systematic, but smartly,
             # intuitively"): Kino asked or proposed something and got no answer. Still on the chat: after a random
             # 2.5-7 min. Gone: after a random 25-80 min, by day, as a push. Once per message, never after a follow-up,
@@ -15378,7 +15498,7 @@ def _companion_tick():
                 rnd = (abs(hash("%s%s" % (cf["id"], lm.get("t")))) % 1000) / 1000.0
                 sn = _CHAT_SEEN.get(uid)
                 here = bool(sn and now - sn[0] < 60 and sn[1] == cf["id"])
-                due = (here and el >= 150 + rnd * 270) or (not here and 1500 + rnd * 3300 <= el <= 4 * 3600 and 9 <= h0 < 21)
+                due = (here and el >= 150 + rnd * 270) or (not here and 1500 + rnd * 3300 <= el <= 4 * 3600 and _active_hour(uid, h0))
                 fu_today = [t for t in (m.get("fu_log") or []) if now - t < 86400]
                 if not due or len(fu_today) >= 3:
                     continue
@@ -15401,7 +15521,7 @@ def _companion_tick():
             c0 = ch[0]
             last = max([int(x.get("t") or 0) for x in (_chat_load(u, c0["id"]) or {}).get("msgs") or []] or [0])
             h = _local_hour(uid)
-            if 3 * 3600 < now - last < 7 * 86400 and now - float(m.get("last_proactive") or 0) > 20 * 3600 and 9 <= h < 21 \
+            if 3 * 3600 < now - last < 7 * 86400 and now - float(m.get("last_proactive") or 0) > 20 * 3600 and _active_hour(uid, h) \
                     and now - _LAST_SEEN.get(uid, 0) > 300 and not busy(c0["id"]):
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("last_proactive", now))
                 ago = now - last
@@ -15608,6 +15728,10 @@ def _kino_night_mind():
         import kino_mind as _KM
         _KM.reflect()
         _KM.build_playbook()
+        try:
+            _KM.community_feed()
+        except Exception:
+            pass
         for u in users():
             uid = u.get("id")
             if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
@@ -15635,6 +15759,10 @@ def _companion_loop():
     while True:
         try:
             _companion_tick()
+        except Exception:
+            pass
+        try:
+            _ghost_feed_refresh()
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap level 5): the night shift, 01:00-03:00 UTC, one member at a time
@@ -15696,6 +15824,10 @@ def kino_data(user):
     except Exception:
         notes_t, ins_t = notes, ins
     out = {"goal": g or None, "notes": notes_t, "playbook": ins_t, "admin": is_admin(user)}
+    try:
+        out["feed"] = json.load(open(_KM.FEED, encoding="utf-8"))
+    except Exception:
+        out["feed"] = None
     if is_admin(user):
         md = _KM.load()
         try:
@@ -15779,6 +15911,46 @@ def tg_send(uid, text):
         return True
     except Exception:
         return False
+
+
+def tg_photo(uid, png, caption=""):
+    """a chart picture to the member's Telegram (multipart sendPhoto)"""
+    u = next((x for x in users() if x.get("id") == uid), None)
+    cid, tok = (u or {}).get("telegram_chat"), _tg_token()
+    if not cid or not tok or not png:
+        return False
+    import urllib.request, uuid, ssl as _ssl
+    bd = uuid.uuid4().hex
+    body = (("--%s\r\nContent-Disposition: form-data; name=\"chat_id\"\r\n\r\n%s\r\n" % (bd, cid)) +
+            ("--%s\r\nContent-Disposition: form-data; name=\"caption\"\r\n\r\n%s\r\n" % (bd, str(caption)[:900]))).encode("utf-8") + \
+        ("--%s\r\nContent-Disposition: form-data; name=\"photo\"; filename=\"chart.png\"\r\nContent-Type: image/png\r\n\r\n" % bd).encode() + \
+        png + ("\r\n--%s--\r\n" % bd).encode()
+    req = urllib.request.Request("https://api.telegram.org/bot%s/sendPhoto" % tok, data=body,
+                                 headers={"Content-Type": "multipart/form-data; boundary=%s" % bd})
+    try:
+        try:
+            urllib.request.urlopen(req, timeout=20).read()
+        except Exception as e:
+            if "CERTIFICATE_VERIFY_FAILED" not in str(e):
+                raise
+            urllib.request.urlopen(req, timeout=20, context=_ssl._create_unverified_context()).read()
+        return True
+    except Exception:
+        return False
+
+
+def _tg_demo(uid, dm):
+    """2026-10-19 (owner item 6): a chart Kino shows goes to Telegram as a picture while the member talks there"""
+    if not dm or dm.get("nodata") or not _tg_live(uid):
+        return
+    try:
+        _rc()
+        import chart_png as _CP
+        png = _CP.render(dm)
+        if png:
+            threading.Thread(target=tg_photo, args=(uid, png, ""), daemon=True).start()
+    except Exception:
+        pass
 
 
 def _tg_live(uid):
@@ -16291,6 +16463,87 @@ def chat_explain(user, body):
                      "their screen: what the Owl sees right now, what it is waiting for to enter (or why it does nothing), what would "
                      "change its mind - 3-5 short sentences, plain words, numbers from the facts only. Facts: " + facts), daemon=True).start()
     return {"ok": True, "id": cid}
+
+
+def _ghost_new(robot, name=None):
+    return {"id": "g%d" % int(time.time() * 1000), "name": (name or robot.get("name") or "Robot")[:30], "robot": json.loads(json.dumps(robot)),
+            "market": robot.get("market") or "BTCUSD", "started": int(time.time()), "last_t": 0, "open": None, "trades": []}
+
+
+def chat_ghost(user, body):
+    """2026-10-19 (owner items 4 / 8): ghost mode - the chat's robot trades pretend money on live candles; 'duel' = the
+    robot against a variant (Kino's last proposal) side by side; 'stop' ends them"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot"):
+        return {"ok": False, "err": "missing"}
+    act = str(body.get("action") or "start")
+
+    def put(c):
+        G = c.setdefault("ghosts", [])
+        if act == "stop":
+            c["ghosts"] = []
+            _chat_msg(c, "sys", text="Mode fantôme arrêté." if (c.get("lang") or "fr") != "en" else "Ghost mode stopped.")
+            return True
+        if act == "duel":
+            pr = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "proposal"), None)
+            if not pr:
+                return "noprop"
+            c["ghosts"] = [_ghost_new(c["robot"], (c["robot"].get("name") or "Robot")[:22] + " (A)"), _ghost_new(pr["robot"], "Variante de Kino (B)")]
+            _chat_msg(c, "sys", text="Duel lancé : ton robot contre la variante de Kino, en argent fictif sur les vrais prix. Verdict dans 7 jours.")
+            return True
+        if len(G) >= 2:
+            return "full"
+        G.append(_ghost_new(c["robot"]))
+        _chat_msg(c, "sys", text="Mode fantôme lancé : %s trade en argent fictif sur les prix en direct de %s." % (c["robot"].get("name") or "ton robot",
+                                                                                                             c["robot"].get("market") or "BTCUSD"))
+        return True
+    r = _chat_mut(c["id"], put)
+    if r is True:
+        _ghost_feed_refresh()
+        return {"ok": True}
+    return {"ok": False, "err": r or "state"}
+
+
+def _ghost_feed_refresh():
+    """which markets the live ghost feed must keep fresh (every member's ghosts)"""
+    mk = set()
+    try:
+        for f in os.listdir(CHAT_DIR):
+            if f.endswith(".json"):
+                try:
+                    c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+                except Exception:
+                    continue
+                for g in c.get("ghosts") or []:
+                    mk.add((g.get("market") or "BTCUSD").upper())
+        _rc()
+        import robot_ghost as _RG
+        _RG.want_markets(sorted(mk))
+    except Exception:
+        pass
+
+
+def chat_apply(user, body):
+    """the member applies Kino's proposal (one tap): the robot becomes the proposed one, written in the notebook"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    try:
+        i = int(body.get("i"))
+    except Exception:
+        return {"ok": False}
+    if c is None:
+        return {"ok": False}
+
+    def put(c):
+        M = c.get("msgs") or []
+        if not (0 <= i < len(M)) or M[i].get("role") != "proposal" or M[i].get("applied"):
+            return False
+        c["robot"] = M[i]["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+        M[i]["applied"] = int(time.time())
+        _chat_msg(c, "edit", text=("Proposition de Kino appliquée : " if (c.get("lang") or "fr") != "en" else "Kino's proposal applied: ") + str(M[i].get("why") or "")[:160],
+                  note_en="applied your proposal: " + str(M[i].get("why") or "")[:200])
+        c.setdefault("notebook", []).append({"t": int(time.time()), "text": "Appliqué : " + str(M[i].get("why") or "")[:160]})
+        return True
+    return {"ok": bool(_chat_mut(c["id"], put))}
 
 
 def chat_show(user, body):
@@ -21371,7 +21624,8 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react", "kino_directive", "chat_explain"):
+                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
+                                              "chat_ghost"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -21390,7 +21644,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
-                       "chat_explain": chat_explain}[_parts[1]]
+                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

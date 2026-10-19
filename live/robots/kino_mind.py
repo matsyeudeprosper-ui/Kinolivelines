@@ -348,3 +348,34 @@ def owner_report(force=False):
         R["reports"] = R["reports"][-12:]
     json.dump(R, open(REPORTS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return raw if isinstance(raw, dict) else None
+
+
+# ---------------------------------------------------------------- the community feed (owner 2026-10-19 item 9)
+FEED = os.path.join(HERE, "kino_feed.json")
+
+
+def community_feed(force=False):
+    """'Ce que le nid teste' - the week's ideas and results of all members, anonymous, with Kino's own take (French,
+    the members read it on the Kino page). Nightly at most once every 20 h."""
+    try:
+        F = json.load(open(FEED, encoding="utf-8"))
+    except Exception:
+        F = {"last": 0}
+    if not force and time.time() - float(F.get("last") or 0) < 20 * 3600:
+        return F
+    ms = _measurements()
+    import robot_world as WD
+    convs = _day_conversations(time.time() - 7 * 86400)
+    up = ("THIS WEEK IN THE LAB - measured ideas (vs random moments):\n%s\n\n%s\n\nWhat members talked about (anonymous):\n%s\n\n"
+          "Write 'Ce que le nid teste cette semaine' for ALL members, in French, casual 'tu', anonymous (never a member, never "
+          "an account). Up to 5 items: an idea or a result people tried, what it gave, and your honest take in one line. "
+          "Answer {\"title\": \"one line\", \"items\": [{\"title\": \"...\", \"detail\": \"...\", \"kino\": \"your take\"}]}." % (
+              json.dumps(ms[-80:], ensure_ascii=False)[:8000], WD.lab_digest(), "\n\n".join(convs)[:9000]))
+    raw = W.ask_json(NIGHT_SYSTEM, up, timeout=240)
+    F["last"] = time.time()
+    if isinstance(raw, dict) and raw.get("items"):
+        F.update({"title": str(raw.get("title") or "")[:160], "date": time.strftime("%Y-%m-%d"),
+                  "items": [{"title": str(x.get("title") or "")[:120], "detail": str(x.get("detail") or "")[:300], "kino": str(x.get("kino") or "")[:240]}
+                            for x in raw["items"][:5] if isinstance(x, dict)]})
+    json.dump(F, open(FEED, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return F

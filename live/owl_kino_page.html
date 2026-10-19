@@ -63,6 +63,8 @@ function paint(){let h='';const g=D.goal||{};
  const N=D.notes||[];
  h+='<div class="card"><h2><i>✎</i>'+T('Ce que Kino retient de toi','What Kino remembers about you')+'</h2><p class="sub">'+T('C’est sa mémoire de toi. Touche ✕ pour qu’il oublie une chose.','This is its memory of you. Tap ✕ to make it forget something.')+'</p>'+
   (N.length?'<div class="list">'+N.map((n,i)=>'<div class="it"><span>'+esc(n)+'</span><button onclick="forget('+i+')" aria-label="Oublier">✕</button></div>').join('')+'</div>':'<div class="empty">'+T('Rien encore.','Nothing yet.')+'</div>')+'</div>';
+ const F=D.feed||{};
+ if(F.items&&F.items.length)h+='<div class="card"><h2><i>◈</i>'+T('Ce que le nid teste','What the nest is testing')+'</h2><p class="sub">'+esc(F.title||'')+(F.date?' · '+esc(F.date):'')+'</p><div class="list">'+F.items.map(x=>'<div class="it" style="display:block"><b style="display:block;color:var(--text)">'+esc(x.title)+'</b><span style="display:block;margin-top:3px">'+esc(x.detail)+'</span>'+(x.kino?'<span style="display:block;margin-top:6px;color:var(--violet-soft)">🦉 '+esc(x.kino)+'</span>':'')+'</div>').join('')+'</div></div>';
  const P=D.playbook||[];
  h+='<div class="card"><h2><i>✦</i>'+T('Le carnet du labo','The lab’s notebook')+'</h2><p class="sub">'+T('Ce que Kino a appris de tous les tests du labo (anonyme). Des pistes, pas des promesses.','What Kino learned from every test in the lab (anonymous). Leads, not promises.')+'</p>'+
   (P.length?'<div class="list">'+P.map(x=>'<div class="it"><span>'+esc(x)+'</span></div>').join('')+'</div>':'<div class="empty">'+T('Le carnet se remplit chaque nuit.','The notebook fills up every night.')+'</div>')+'</div>';

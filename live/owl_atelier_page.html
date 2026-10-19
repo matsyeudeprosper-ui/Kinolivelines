@@ -250,6 +250,10 @@ header .ib{border:0;background:transparent;width:36px}
 .send:disabled{opacity:.6}
 .send.on{background:var(--down);animation:pulse 1.2s infinite}
 .hint{font-size:.64rem;opacity:.75}
+.ghc{margin-top:10px;border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:11px 12px;background:var(--surface2)}.ghc b{display:block;font-size:.9rem}.ghc small{display:block;color:var(--muted);font-size:.76rem;margin:3px 0 8px;line-height:1.4}
+.ghr{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;padding:6px 0;border-top:1px solid var(--border)}.ghr span:last-child{color:var(--muted2);text-align:right}
+.prop{border-color:rgba(167,139,250,.5)}.pba{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pba div{background:var(--surface2);border-radius:12px;padding:9px 10px;font-size:.84rem}.pba small{display:block;color:var(--muted);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.nbk{display:flex;flex-direction:column;gap:8px;border-left:2px solid var(--violet);margin-left:6px;padding-left:12px}.nbi{font-size:.88rem;line-height:1.45}.nbd{display:block;font-size:.7rem;color:var(--muted)}
 .spk{border:0;background:none;padding:0 4px 0 0;font-size:.72rem;opacity:.55;cursor:pointer;vertical-align:-1px}.spk:hover{opacity:1}
 .mw{display:contents}.typingnow .chips,.typingnow .att{display:none}
 .m.ai .bub{-webkit-user-select:none;user-select:none}.m.ai.rxm{margin-bottom:16px}
@@ -275,7 +279,7 @@ header .ib{border:0;background:transparent;width:36px}
   <header>
    <a class="ib" href="robots" id="bk" aria-label="Retour"><svg><use href="#back"/></svg></a>
    <div class="kav" onclick="location.href='kino'">🦉<i></i></div><div class="ttl" id="ttl" onclick="renameSh()"><b><span id="tn">Kino</span></b><small id="ts">en ligne</small></div>
-   <button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button>
+   <button class="ib" onclick="noteSh()" aria-label="Le carnet du robot" title="Le carnet du robot" style="font-size:18px">📓</button><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button>
    <button class="ring" onclick="bpSh()" aria-label="Le plan du robot"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="rf" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg><b id="rn">0/6</b></button>
   </header>
   <div class="strip" id="strip"></div>
@@ -335,6 +339,11 @@ function bpHTML(){const v=C&&C.view;
  SL.forEach(([k,lab])=>{if(k==='filters'){h+='<div class="bpsec">'+lab+' · '+(v.filters||[]).length+'</div>';(v.filters||[]).forEach((f,i)=>h+=slotCard('filters',lab+' '+(i+1),f,i));
    h+='<button class="btn" style="margin:0 0 8px" onclick="slotSh(\'filters\',-1)">+ '+T('Ajouter un filtre','Add a filter')+'</button>';}
   else{if(k==='entry')h+='<div class="bpsec">'+T('Les pièces','The pieces')+'</div>';h+=slotCard(k,lab,v[k],null);}});
+ const GH=C.ghosts||[];
+ h+='<div class="ghc"><b>👻 '+T('Mode fantôme','Ghost mode')+'</b><small>'+T('Le robot trade en argent fictif sur les prix en direct ; Kino suit chaque trade.','The robot trades pretend money on live prices; Kino follows each trade.')+'</small>'+
+  (GH.length?GH.map(g=>{const tr=g.trades||[],w=tr.filter(x=>x.r>0).length,sr=tr.reduce((a,x)=>a+x.r,0);return '<div class="ghr"><span>'+esc(g.name)+' · '+esc(g.market)+'</span><span>'+tr.length+' trades · '+(tr.length?Math.round(100*w/tr.length)+' %':'—')+' · '+(sr>=0?'+':'')+sr.toFixed(1)+'R'+(g.open?' · '+T('en cours','open'):'')+'</span></div>';}).join('')+
+   '<button class="cb n" onclick="ghostAct(\'stop\')">'+T('Arrêter','Stop')+'</button>':
+   '<div class="chf"><button class="cb y" onclick="ghostAct(\'start\')">'+T('Lancer','Start')+'</button>'+((C.msgs||[]).some(m=>m.role==='proposal')?'<button class="cb" onclick="ghostAct(\'duel\')">⚔️ '+T('Duel avec la variante','Duel with the variant')+'</button>':'')+'</div>')+'</div>';
  h+='<button class="bpdemo" onclick="demoAsk()"><svg><use href="#chart"/></svg>'+T('Voir ses trades sur le graphique','See its trades on the chart')+'</button>';
  const t=C.test||{},busy=t.state==='queued';
  h+='<button class="bpbtn" onclick="runTest()" '+(busy||C.status!=='ready'?'disabled':'')+'>'+(busy?T('Test en cours…','Test running…'):(t.state==='done'?T('Retester ce robot','Test this robot again'):T('Tester ce robot','Test this robot')))+'</button>';
@@ -369,6 +378,12 @@ function msgHTML(m,i,last){
  if(m.role==='result')return '<div class="att" style="margin-left:39px">'+resultCard(m.result||{})+'</div>';
  if(m.role==='show')return showHTML(m,i);
  if(m.role==='image'){const u='chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file||'');return (m.text?'<div class="m me"><div class="bub">'+md(m.text)+'</div></div>':'')+'<div class="att mine"><a href="'+u+'" target="_blank" rel="noopener"><img class="shot" src="'+u+'" alt="capture"></a></div>';}
+ if(m.role==='proposal'){const b=m.before||{},a=m.after||{},st=x=>x&&x.trades!=null?'<b>'+x.trades+'</b> trades · <b>'+(x.won_pct==null?'—':x.won_pct+' %')+'</b> '+T('gagnés','won'):'—';
+  return '<div class="att"><div class="chartc prop"><div class="chh"><b>✦ '+T('Proposition de Kino','Kino’s proposal')+'</b>'+(m.applied?'<span class="rb pos">'+T('appliquée','applied')+'</span>':'')+'</div>'+
+   '<div style="font-size:.92rem;line-height:1.45;margin:2px 2px 10px">'+esc(m.why||'')+'</div>'+
+   '<div class="pba"><div><small>'+T('Avant','Before')+'</small>'+st(b)+'</div><div><small>'+T('Après','After')+'</small>'+st(a)+'</div></div>'+
+   '<div class="sub" style="font-size:.72rem;color:var(--wa-meta);margin:6px 2px">'+T('Replay rapide sur ','Quick replay on ')+esc(m.market||'')+T(', sans frais - le vrai test décide.',', no costs - the real test decides.')+'</div>'+
+   (m.applied?'':'<div class="chf"><button class="cb y" onclick="applyP('+i+')">'+T('Appliquer','Apply')+'</button><button class="cb n" onclick="ask(\''+T('Pas cette fois, ','Not this time, ')+'\')">'+T('Non merci','No thanks')+'</button></div>')+'</div></div>';}
  if(m.role==='sys')return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';
  if(m.role==='demo')return demoHTML(m,i,last);
  // 2026-10-19: the AI sends two or three short messages in a row like a person (blank line = new bubble)
@@ -638,6 +653,16 @@ function speak(text,then){if(!('speechSynthesis' in window)||!text){then&&then()
  SPEAKING=true;u.onend=u.onerror=()=>{SPEAKING=false;then&&then();};speechSynthesis.speak(u);}
 function sayIt(i){const m=C&&C.msgs[i];if(!m)return;if(SPEAKING){speechSynthesis.cancel();SPEAKING=false;return;}speak(m.text);}
 function voiceReply(m){if(!VOICE)return;speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
+async function applyP(i){const j=await post('chat_apply',{id:CID,i:i});if(!j.ok){toast(T('Déjà appliquée ou introuvable.','Already applied or missing.'));return;}load(CID,true);}
+/* 2026-10-19 (owner item 10): the robot's notebook - its story: pieces made, tests, edits, proposals applied, Kino's notes */
+function noteSh(){const M=(C&&C.msgs)||[],E=[];
+ M.forEach(m=>{if(m.role==='ai'&&m.made&&m.made.length)E.push([m.t,'✦',T('Nouvelle(s) pièce(s) : ','New piece(s): ')+m.made.map(x=>x.name).join(', ')]);
+  if(m.role==='result'){const r=m.result||{};E.push([m.t,'🧪',(r.kino_variant?T('Variante de Kino testée : ','Kino’s variant tested: '):T('Test : ','Test: '))+(r.net>=0?'+':'')+(+r.net||0).toFixed(2)+' $ / '+(r.trades||0)+' trades'+(r.owl_net!=null?' ('+T('Owl ','Owl ')+(+r.owl_net).toFixed(2)+')':'')+(r.market?' · '+r.market:'')]);}
+  if(m.role==='edit')E.push([m.t,'✎',m.text]);if(m.role==='proposal')E.push([m.t,'💡',T('Kino propose : ','Kino proposes: ')+(m.why||'')+(m.applied?T(' (appliqué)',' (applied)'):'')]);});
+ (C.notebook||[]).forEach(n=>E.push([n.t,'📓',n.text]));E.sort((a,b)=>(a[0]||0)-(b[0]||0));
+ shOpen('<h4>📓 '+T('Le carnet du robot','The robot’s notebook')+'</h4><p class="sub">'+T('Son histoire : ce qu’on a construit, testé et décidé ensemble.','Its story: what we built, tested and decided together.')+'</p>'+
+  (E.length?'<div class="nbk">'+E.map(e=>'<div class="nbi"><span class="nbd">'+(e[0]?dm(e[0])+' '+hm(e[0]):'')+'</span><span class="nbx">'+e[1]+' '+esc(e[2])+'</span></div>').join('')+'</div>':'<div class="emptybp">'+T('Rien encore - ça se remplit au fil de vos échanges.','Nothing yet - it fills up as you go.')+'</div>'));}
+async function ghostAct(a){const j=await post('chat_ghost',{id:CID,action:a});if(!j.ok){toast(j.err==='full'?T('Déjà 2 fantômes.','Already 2 ghosts.'):(j.err==='noprop'?T('Pas encore de proposition de Kino.','No proposal from Kino yet.'):T('Impossible pour le moment.','Not possible right now.')));return;}load(CID,true);}
 function sendOrMic(){if(SPEAKING){speechSynthesis.cancel();SPEAKING=false;VOICE=false;return;}if($('tx').value.trim()){VOICE=false;send();}else mic();}
 function resend(k){const t=FAILED.splice(k,1)[0];if(t==null)return;$('tx').value=t;send();}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
