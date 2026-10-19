@@ -462,7 +462,7 @@ function typeIn(w,it){const bubs=[...w.querySelectorAll('.m.ai .bub[data-i]')];i
  w._typing=true;w.classList.add('typingnow');const full=w._h;let bi=0,n=Math.min(CARRY,parts[0].length);CARRY=0;LIVE_N=0;
  bubs.forEach((b,k)=>{if(k>0)b.parentNode.style.display='none';});
  const step=()=>{const b=bubs[bi],t=parts[bi]||'';if(!b){done();return;}
-  const rem=t.length-n;n+=rem>200?Math.ceil(rem/40):(Math.random()<(w._spd||(w._spd=0.75+Math.random()*0.5))?1:0);   // ~45-75 chars/s, a person's rhythmb.innerHTML=md(t.slice(0,n))+(n<t.length?'<span class="caret"></span>':'');
+  const rem=t.length-n;n+=rem>200?Math.ceil(rem/40):(Math.random()<(w._spd||(w._spd=0.75+Math.random()*0.5))?1:0);b.innerHTML=md(t.slice(0,n))+(n<t.length?'<span class="caret"></span>':'');
   const el=$('chat');if(el.scrollHeight-el.scrollTop-el.clientHeight<200)el.scrollTop=el.scrollHeight;
   if(n>=t.length){bi++;n=0;if(bubs[bi]){setTimeout(()=>{bubs[bi].parentNode.style.display='';requestAnimationFrame(step);},380);return;}done();return;}
   requestAnimationFrame(step);};
@@ -506,7 +506,7 @@ function drawChart(cv,o){if(!cv)return;const rows=o.rows||[];if(!rows.length)ret
    g.fillStyle=d===1?up:dn;g.beginPath();const ye=Y(tr.entry);if(d===1){g.moveTo(x1,ye+4);g.lineTo(x1-6,ye+14);g.lineTo(x1+6,ye+14);}else{g.moveTo(x1,ye-4);g.lineTo(x1-6,ye-14);g.lineTo(x1+6,ye-14);}g.fill();
    const risk=Math.abs(tr.entry-(tr.stop!=null?tr.stop:tr.exit))||1;let rr=upto>=ix?tr.r:d*(rows[Math.min(upto,rows.length-1)][4]-tr.entry)/risk;
    if(upto>=ix){g.fillStyle=cssv('--warn');g.beginPath();g.arc(X(ix),Y(tr.exit),4.5,0,7);g.fill();}
-   const lab=tr.usd!=null?((upto>=ix?+tr.usd:0)>=0?'+':'')+(upto>=ix?+tr.usd:0).toFixed(2)+' $':(rr>=0?'+':'')+rr.toFixed(1)+'R';   // a real trade: dollarsg.font='bold 12px Inter,system-ui';const tw=g.measureText(lab).width+12;g.fillStyle=rr>=0?up:dn;g.globalAlpha=.9;
+   const lab=tr.usd!=null?((upto>=ix?+tr.usd:0)>=0?'+':'')+(upto>=ix?+tr.usd:0).toFixed(2)+' $':(rr>=0?'+':'')+rr.toFixed(1)+'R';g.font='bold 12px Inter,system-ui';const tw=g.measureText(lab).width+12;g.fillStyle=rr>=0?up:dn;g.globalAlpha=.9;
    g.fillRect(6,6,tw,20);g.globalAlpha=1;g.fillStyle='#fff';g.fillText(lab,12,20);}}
  (o.marks||[]).forEach(m=>{const i=idxAt(rows,m.t);if(i<a||i>=b)return;const x=X(i),y=Y(m.p);
   const col={buy:up,sell:dn,stop:dn,exit:cssv('--warn'),line:cssv('--accent-soft')}[m.k]||'#888';g.fillStyle=col;g.strokeStyle=col;
