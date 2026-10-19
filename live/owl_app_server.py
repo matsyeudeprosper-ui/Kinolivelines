@@ -14960,6 +14960,14 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
         def put(c):
+            if (q.get("react") or not q.get("say")) and not event:
+                # 2026-10-19 (owner): Kino may just react to the message, or not answer at all - like a person
+                for mm in reversed(c.get("msgs") or []):
+                    if mm.get("role") in ("user", "show", "image"):
+                        if q.get("react"):
+                            mm["react"] = q["react"]
+                        mm["answered"] = True              # a chosen silence, not a lost reply
+                        break
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event),
                           followup=bool(event and event.startswith("FOLLOW-UP")))
@@ -15758,7 +15766,7 @@ def chat_get(user, cid):
     c["status"] = _chat_status(c["id"])
     # 2026-10-19: a member message left without an answer (its turn died with a server restart) is answered now
     _lm = (c.get("msgs") or [])[-1:] or [{}]
-    if _lm[0].get("role") in ("user", "show", "image") and c["status"] == "ready" and time.time() - int(_lm[0].get("t") or 0) > 20:
+    if _lm[0].get("role") in ("user", "show", "image") and not _lm[0].get("answered") and c["status"] == "ready"             and time.time() - int(_lm[0].get("t") or 0) > 20:
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         c["status"] = "thinking"
