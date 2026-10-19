@@ -423,6 +423,8 @@ ROBOT_RULES = _P.get("robot_rules") or {}
 # 2026-10-19 (owner): a member's robot may drop or rewrite the storm rule. None (every account today) = 1.85 as always.
 _SC = _P.get("storm_ceiling")
 STORM_CEIL = NERV_STORM if _SC is None else float(_SC)
+# 2026-10-19 (owner): the account's own robot trades another market -> this account's BITCOIN bot rests (no entry)
+BTC_REST = bool(_P.get("btc_rest"))
 _sys.path.insert(0, os.path.join(DIR, "robots"))
 import robot_live as _RL
 # 2026-10-19 (owner, the Atelier: "even if the piece doesn't exist the AI creates it"): FORMULA pieces read the
@@ -1538,6 +1540,9 @@ def main():
         if my_positions() or st.get("ghost"):
             return False
         if paused():
+            return False
+        if BTC_REST and not MKT:
+            say(f"{kind} refuse: le robot de ce compte trade un autre marche - le Bitcoin se repose")
             return False
         _bok, _bbad = broker_ok()
         if not _bok:

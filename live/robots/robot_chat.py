@@ -122,17 +122,28 @@ CHARTS - you and the member can SHOW things, like two traders looking at one scr
   candle (RSI, averages, yesterday's high/low, the last 30 minutes high/low, session, the eyes' last breaks, the last
   closes). Work out what made them pick that spot, say your guess in plain words ("tu achètes quand le prix repasse
   au-dessus du plus haut des 30 dernières minutes, c'est ça ?"), build it, and SHOW examples to check.
-- In BUILD mode you can add "show": {"examples": 1..3, "pick": "mix" (a win and a loss) | "recent", "overlays": [up to
-  3 PRICE formulas drawn as lines, e.g. the level the entry breaks: "prev(highest(high, 30), 1)"]} - the robot's own
-  trades on past candles, drawn with entry, stop, target and exit, and the member can REPLAY them candle by candle.
-  Use it after you build or change an entry, when the member asks to see, or to settle a doubt. Then ask "c'est bien
-  ce genre de trade ?". When the examples arrive (YOU SHOWED ...), they are a quick replay (no costs, no brakes) - the
-  money figures come from the real test.
+- The member can send a SCREENSHOT of their own chart (MT5, TradingView, a phone...). You SEE the image: say in one
+  or two sentences what you see that matters (the market, the timeframe, the levels, zones, indicators, arrows they
+  drew), connect it to their idea, put it in "seen" (one plain sentence, English, for your memory), then turn it into
+  pieces - and SHOW the same pattern on our prices to check.
+- SHOWING IS YOUR SUPERPOWER - use it at every chance that makes sense, in QUICK or BUILD mode, so you and the member
+  are always on the same page. Two kinds:
+  "show": {"formula": "<condition>", "side": "buy"|"sell", "market": "SYMBOL", "overlays": [...]} - WHERE AN IDEA FIRES (market =
+     the market you are talking about, from the list - give it whenever the robot's market is not set yet): the last moments
+     on the robot's market where that condition turned true, marked on the candles (+ up to 3 PRICE lines). Use it as
+     soon as the member describes an idea or a piece, BEFORE or while building: "regarde, c'est ce genre de moment ?"
+  "show": {"examples": 1..3, "pick": "mix" | "recent", "overlays": [...]} - THE ROBOT'S OWN TRADES (BUILD mode, once a
+     robot exists): entry, stop, target, exit drawn, the member can REPLAY them candle by candle. Use it after you build
+     or change an entry, stop or exit, or to settle a doubt.
+  overlays = PRICE formulas drawn as lines (e.g. the level the entry breaks: "prev(highest(high, 30), 1)").
+  After showing, ask simply if that is what they mean. Shown moments and replays are quick illustrations (no costs,
+  no brakes); the money figures come from the real test.
 
 THE MESSAGE TELLS YOU THE MODE:
 QUICK - you answer right away while the real work happens after. 1 to 3 short sentences: react to what they said
   like a person would, answer simple questions, and say what you are about to do. Do NOT write pieces, numbers or
-  results you have not got. Answer {"say": "...", "chips": [...], "build": true|false, "remember": [...]}: build = true when their
+  results you have not got. Answer {"say": "...", "chips": [...], "build": true|false, "remember": [...], "show": null or
+  {"formula"...} (WHERE AN IDEA FIRES - very welcome here), "seen": "..." (only when they sent a screenshot)}: build = true when their
   message adds to or changes the robot (or asks you to build / change / check it), false when you only chat or ask
   a question first. With build = true, chips are usually empty (you will follow up yourself).
 BUILD - you already sent the quick reply (the last YOU line). Do the real work now: build or change the robot.
@@ -184,6 +195,13 @@ def transcript(chat):
             L.append("MEMBER SHOWED ON THE CHART (%s, %s candles): %s%s\n  NUMBERS AT THE ENTRY CANDLE: %s" % (
                 m.get("market"), m.get("tf"), mk, (" | they say: " + str(m.get("text"))[:600]) if m.get("text") else "",
                 json.dumps(m.get("facts") or {}, ensure_ascii=False)[:1400]))
+        elif r == "image":
+            L.append("MEMBER SENT A SCREENSHOT OF THEIR CHART%s%s" % ((" - they say: " + str(m.get("text"))[:400]) if m.get("text") else "",
+                                                                   (" | what you saw: " + str(m.get("seen"))[:400]) if m.get("seen") else " (attached below)"))
+        elif r == "demo" and m.get("kind") == "moments":
+            L.append("YOU SHOWED WHERE '%s' FIRES on %s: %s times in ~42 days (~%s a day); %d examples at %s." % (
+                m.get("formula"), m.get("market"), m.get("count"), m.get("per_day"), len(m.get("moments") or []),
+                ", ".join(_hm(x["t"]) for x in m.get("moments") or [])))
         elif r == "demo":
             if m.get("nodata"):
                 L.append("YOU TRIED TO SHOW EXAMPLES on %s but its candles are not prepared yet (they will be after its first test)." % m.get("market"))
@@ -276,6 +294,13 @@ def clean(raw, pieces, owl, prev, markets=None):
         if isinstance(m, dict) and m.get("name"):
             ans["made"].append({"slot": str(m.get("slot") or "")[:10], "name": str(m["name"])[:30], "plain": str(m.get("plain") or "")[:200]})
     sh = raw.get("show")
+    if isinstance(sh, dict) and isinstance(sh.get("formula"), str):
+        import robot_expr as X
+        ov = [str(o)[:200] for o in (sh.get("overlays") or [])[:3] if isinstance(o, str) and X.is_ok(str(o)[:200])]
+        if X.is_ok(sh["formula"][:400]):
+            ans["show"] = {"formula": sh["formula"][:400], "side": "sell" if sh.get("side") == "sell" else "buy", "overlays": ov,
+                           "market": str(sh.get("market") or "")[:20] or None}
+        sh = None
     if isinstance(sh, dict):
         import robot_expr as X
         ov = [str(o)[:200] for o in (sh.get("overlays") or [])[:3] if isinstance(o, str) and X.is_ok(str(o)[:200])]
@@ -358,6 +383,23 @@ def view(robot, pieces):
     return v
 
 
+def _content(text, images):
+    """the message for the model: the text, plus the member's screenshot(s) when this turn must see them"""
+    if not images:
+        return text
+    return [{"type": "image", "source": {"type": "base64", "media_type": mt, "data": b64}} for mt, b64 in images[:2]] + \
+        [{"type": "text", "text": text}]
+
+
+def _show_of(raw):
+    tmp = {"say": ""}
+    try:
+        a, _ = clean({"show": raw.get("show")}, [], {}, None)
+        return a.get("show")
+    except Exception:
+        return None
+
+
 def remember_of(raw):
     return [str(x).strip()[:160] for x in (raw.get("remember") or [])[:2] if isinstance(x, str) and str(x).strip()]
 
@@ -366,23 +408,24 @@ def prewarm():
     W.prewarm(system())
 
 
-def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, event=None, on_say=None, member=None):
-    """the reply in a few seconds -> {"say", "chips", "build", "remember"} or None; on_say(partial say) while typing"""
+def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, event=None, on_say=None, member=None, images=None):
+    """the reply in a few seconds -> {"say", "chips", "build", "remember", "show", "seen"} or None; on_say(partial say)"""
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
-    raw = W.ask_json(system(), prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang,
-                                      memory, event, member), timeout=90, log=log, on_text=cb)
+    raw = W.ask_json(system(), _content(prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang,
+                                               memory, event, member), images), timeout=90, log=log, on_text=cb)
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
     return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and not event, "remember": remember_of(raw),
-            "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()]}
+            "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
+            "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400]}
 
 
-def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on_say=None, member=None):
+def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on_say=None, member=None, images=None):
     """the BUILD turn (+ one repair turn when needed) -> (answer, problems) or (None, reason)"""
     prev = chat.get("robot")
     up = prompt(chat, view(prev, pieces) or "nothing built yet", pieces, owl, markets, "BUILD", lang, memory, None, member)
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
-    raw = W.ask_json(system(), up, log=log, on_text=cb)
+    raw = W.ask_json(system(), _content(up, images), log=log, on_text=cb)
     if raw is None:
         return None, "model"
     ans, probs = clean(raw, pieces, owl, prev, markets)

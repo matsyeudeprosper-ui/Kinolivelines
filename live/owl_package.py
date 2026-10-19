@@ -88,7 +88,10 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           # 2026-10-19 (owner: "even the storm rules can be rewritten ... for their own robot"): the storm
           # ceiling of a member's robot. None = the nest's 1.85 (every account until such a robot is plugged),
           # 0 = no ceiling (the robot dropped the storm piece; it may bring its own pace filter in robot_rules)
-          "storm_ceiling")
+          "storm_ceiling",
+          # 2026-10-19 (owner): True when the account's OWN robot was built for another market - the account's
+          # Bitcoin bot takes no entry (its market bot trades instead); False/None everywhere else
+          "btc_rest")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,

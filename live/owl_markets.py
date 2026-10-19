@@ -62,12 +62,37 @@ def pack_meta(sym):
     return _load(os.path.join(TPACKS, B, "meta.json")) or _load(os.path.join(PACKS, B, "meta.json"))
 
 
+def own_market(uid, rid):
+    """2026-10-19 (owner: "own robots also run freely on other markets"): the market a member's OWN robot was built for
+    (robots.json "market", set by the workshop), or None for the Owl / someone else's robot / a Bitcoin robot"""
+    if rid == "owl":
+        return None
+    reg = _load(os.path.join(DIR, "robots", "robots.json"), {}) or {}
+    r = next((x for x in reg.get("robots") or [] if x.get("id") == rid), None) or {}
+    m = base(r.get("market") or "").upper()
+    return m if (r.get("by_uid") == uid and m and m != "BTCUSD") else None
+
+
 def check(uid, sym):
     """(allowed, reason) for one account and one market (common name)"""
     rid = robot_of(uid)
     B = base(sym).upper()
     if uid in EXCLUDED:
         return False, "compte de reference: Bitcoin seulement"
+    om = own_market(uid, rid)
+    if om:
+        # the member's own robot: its own market only, once tested there - no luck test (their robot, their choice)
+        if B != om:
+            return False, "son robot trade %s" % om
+        res = _load(os.path.join(RESULTS, "%s@%s.json" % (rid, B)))
+        if not res or not (res.get("robot") or {}).get("trades"):
+            return False, "pas teste sur ce marche"
+        syms = (_load(os.path.join(DIR, "nest_data", "%s.symbols.json" % uid), {}) or {}).get("symbols") or []
+        if not any(base(x.get("s", "")).upper() == B for x in syms):
+            return False, "pas sur le courtier de ce compte"
+        if not pack_meta(B):
+            return False, "pas de donnees de marche"
+        return True, "son propre robot, teste ici (%+.2f)" % float(res["robot"].get("net") or 0)
     # 2026-10-16: a hold set by hand (live/market_hold.json {"<robot>@<SYM>": "why"}) keeps a market out of real
     # trading even when the two checks pass - e.g. a luck check that passed by one random run, to be confirmed
     _hold = _load(os.path.join(DIR, "market_hold.json"), {}) or {}

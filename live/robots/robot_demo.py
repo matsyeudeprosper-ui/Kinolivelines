@@ -340,3 +340,36 @@ def rules_of(robot, pieces):
         rr = float(eng["rr"])
     out["filters"] = [x for x in (rule(f)[0] for f in robot.get("filters") or []) if x]
     return out, rr
+
+
+def moments(market, formula, side=1, overlays=None, n=3):
+    """where ONE idea (a condition, not a whole robot) fires on the market's candles: up to n recent moments, each a
+    window of candles with the moment marked (+ lines) - the AI shows "this is what I understood" before building"""
+    D = data(market)
+    if D is None:
+        return None
+    if not X.is_ok(formula):
+        return {"market": market, "formula": formula, "count": 0, "moments": [], "bad": True}
+    R, k, eyes, _ = D
+    B = _bars(R, eyes)
+    tr = X.truth(formula, B)
+    edges = [int(i) for i in np.flatnonzero(tr & ~np.r_[False, tr[:-1]]) if 300 <= i < len(R) - 45]
+    days = max(1.0, (int(R["time"][-1]) - int(R["time"][0])) / 86400.0)
+    pick, last = [], None
+    for i in reversed(edges):                      # the most recent ones, at least 2 hours apart
+        if last is None or last - i >= 120:
+            pick.append(i); last = i
+        if len(pick) >= n:
+            break
+    pick.sort()
+    ovs = [o for o in (overlays or [])[:3] if X.is_ok(o)]
+    OV = {o: X.evaluate(o, B) for o in ovs}
+    out = []
+    for i in pick:
+        i0, i1 = max(0, i - 60), min(len(R), i + 40)
+        rows = _rows(R, k, i0, i1, "M1")
+        ovl = [{"f": o, "pts": [None if OV[o][j] != OV[o][j] else round(float(OV[o][j]) / k, 5) for j in range(i0, i1)]} for o in ovs]
+        out.append({"tf": "M1", "candles": rows, "t": int(R["time"][i]), "marks": [{"k": "buy" if side == 1 else "sell", "t": int(R["time"][i]),
+                    "p": round(float(R["close"][i]) / k, 5)}], "overlays": ovl,
+                    "after": round(float((R["close"][min(len(R) - 1, i + 30)] - R["close"][i]) / k), 5)})
+    return {"market": market, "formula": formula, "side": side, "count": len(edges), "per_day": round(len(edges) / days, 1), "moments": out}

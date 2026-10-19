@@ -182,6 +182,19 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 .tool svg{width:21px;height:21px}.tool:active{transform:scale(.92)}.tool.on{color:#fff;background:var(--down);animation:pulse 1.2s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,92,92,.15)}}
 .cbox{padding-left:6px}
+.micbar{display:none;align-items:center;gap:10px;margin:0 2px 8px;padding:10px 12px;border-radius:18px;border:1px solid rgba(255,92,92,.45);background:linear-gradient(135deg,rgba(255,92,92,.14),var(--surface));box-shadow:var(--sh)}
+.micbar.on{display:flex;animation:up .25s cubic-bezier(.2,.8,.2,1)}
+.micbar[data-s="err"]{border-color:var(--border2);background:var(--surface)}.micbar[data-s="err"] .mwave{display:none}
+.mwave{display:flex;align-items:center;gap:3px;height:22px;flex:none}.mwave i{width:4px;border-radius:3px;background:var(--down);height:30%;animation:wv 1s ease-in-out infinite}
+.mwave i:nth-child(2){animation-delay:.15s}.mwave i:nth-child(3){animation-delay:.3s}.mwave i:nth-child(4){animation-delay:.45s}.mwave i:nth-child(5){animation-delay:.6s}
+.micbar[data-s="wait"] .mwave i{animation-duration:2s;opacity:.5}
+@keyframes wv{0%,100%{height:25%}50%{height:100%}}
+.mtx{flex:1;min-width:0}.mtx b{display:block;font-size:.86rem}.mtx small{display:block;color:var(--muted2);font-size:.8rem;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbtn{flex:none;border:1px solid var(--border2);background:var(--surface2);border-radius:99px;padding:7px 12px;font-weight:800;font-size:.78rem;cursor:pointer}.mbtn.x{padding:7px 10px}
+@media(max-width:420px){.tool{width:32px}}
+.shot{display:block;max-width:100%;max-height:340px;border-radius:14px;border:1px solid var(--border2);margin-top:4px;cursor:zoom-in}
+.att.mine .shot{margin-left:auto}
+.seen{font-size:.74rem;color:var(--muted);margin-top:6px}
 .tfs{display:flex;align-items:center;gap:6px;margin:0 0 8px}.tfb{border:1px solid var(--border2);background:var(--surface);border-radius:10px;padding:6px 10px;font-size:.78rem;font-weight:800;cursor:pointer}
 .tfb.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-soft)}.mkn{flex:1;text-align:right;font-weight:800;font-size:.82rem;color:var(--warn);padding-right:4px}
 #dnote{width:100%;font:inherit;font-size:.9rem;color:var(--text);background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:10px 12px;resize:none;outline:none}
@@ -204,6 +217,7 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 <symbol id="flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/></symbol>
 <symbol id="chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/><circle cx="19" cy="6" r="1.2" fill="currentColor"/></symbol>
 <symbol id="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+<symbol id="clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l9.2-9.2a3.7 3.7 0 0 1 5.2 5.2l-9.2 9.2a1.8 1.8 0 0 1-2.6-2.6l8.5-8.5"/></symbol>
 </defs></svg>
 <div class="app">
  <div class="col">
@@ -216,7 +230,8 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
   <div class="strip" id="strip"></div>
   <div class="chat" id="chat"></div>
   <div class="comp">
-   <div class="cbox"><button class="tool" onclick="drawSh()" aria-label="Montrer sur un graphique" title="Montrer sur un graphique"><svg><use href="#chart"/></svg></button><button class="tool" id="mic" onclick="mic()" aria-label="Parler" title="Parler"><svg><use href="#mic"/></svg></button><textarea id="tx" rows="1" placeholder="Écris ton idée…" maxlength="1500"></textarea><button class="send" id="sd" onclick="send()" disabled aria-label="Envoyer"><svg><use href="#send"/></svg></button></div>
+   <div class="micbar" id="micbar"><span class="mwave"><i></i><i></i><i></i><i></i><i></i></span><span class="mtx"><b id="micst"></b><small id="mictx"></small></span><button class="mbtn" id="micok" onclick="REC&&REC.stop()">Terminé</button><button class="mbtn x" onclick="micCancel()" aria-label="Annuler">✕</button></div>
+   <div class="cbox"><button class="tool" onclick="drawSh()" aria-label="Montrer sur un graphique" title="Montrer sur un graphique"><svg><use href="#chart"/></svg></button><button class="tool" onclick="$('imgf').click()" aria-label="Envoyer une capture" title="Envoyer une capture de ton graphique"><svg><use href="#clip"/></svg></button><input type="file" id="imgf" accept="image/*" style="display:none" onchange="imgPick(this)"><button class="tool" id="mic" onclick="mic()" aria-label="Parler" title="Parler"><svg><use href="#mic"/></svg></button><textarea id="tx" rows="1" placeholder="Écris ton idée…" maxlength="1500"></textarea><button class="send" id="sd" onclick="send()" disabled aria-label="Envoyer"><svg><use href="#send"/></svg></button></div>
    <div class="hint" id="hint">Un test sur le passé ne promet rien pour la suite. Aucun argent n'est engagé.</div>
   </div>
  </div>
@@ -282,6 +297,7 @@ function paintBP(flash){$('bp').innerHTML=bpHTML();const v=C&&C.view;
  $('strip').innerHTML=s;
  const f=v?changed():0,tot=6;$('rn').textContent=(v?filled():0)+'/6';$('rf').style.strokeDashoffset=String(100.5*(1-(v?filled():0)/tot));
  if(v){$('tn').textContent=v.name||T('Mon robot','My robot');$('ts').textContent=C.understood||T('Construit avec l’IA','Built with the AI');}
+ else{$('tn').textContent=T('Nouveau robot','New robot');$('ts').textContent=T('Raconte-moi ton idée','Tell me your idea');}   // a new chat never shows the last robot's name
  if(flash&&flash.length)setTimeout(()=>flash.forEach(k=>document.querySelectorAll('[data-k="'+k+'"]').forEach(e=>{e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash');})),60);}
 
 /* ---------- chat */
@@ -301,6 +317,7 @@ function msgHTML(m,i,last){
   return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';}
  if(m.role==='result')return '<div class="att" style="margin-left:39px">'+resultCard(m.result||{})+'</div>';
  if(m.role==='show')return showHTML(m,i);
+ if(m.role==='image'){const u='chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file||'');return (m.text?'<div class="m me"><div class="bub">'+md(m.text)+'</div></div>':'')+'<div class="att mine"><a href="'+u+'" target="_blank" rel="noopener"><img class="shot" src="'+u+'" alt="capture"></a></div>';}
  if(m.role==='sys')return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';
  if(m.role==='demo')return demoHTML(m,i,last);
  let h='<div class="m ai'+(m.err?' err':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(m.text)+'</div></div>';
@@ -375,7 +392,24 @@ function drawChart(cv,o){if(!cv)return;const rows=o.rows||[];if(!rows.length)ret
   const lb={buy:T('achat','buy'),sell:T('vente','sell'),stop:'stop',exit:T('sortie','exit'),line:''}[m.k];if(lb){g.font='bold 10px Inter,system-ui';g.fillText(lb,Math.min(x+8,W-R-30),m.k==='buy'?y+26:y-18);}});
  g.fillStyle=cssv('--muted');g.font='10px Inter,system-ui';if(n){g.fillText(dm(vis[0][0])+' '+hm(vis[0][0]),2,H-4);const l=hm(vis[n-1][0]);g.fillText(l,W-R-g.measureText(l).width-2,H-4);}}
 /* the AI's examples */
-function demoHTML(m,i,last){if(m.nodata)return '<div class="sys"><span><svg><use href="#chart"/></svg>'+T('Le graphique de '+esc(m.market)+' sera prêt après son premier test.',esc(m.market)+'’s chart will be ready after its first test.')+'</span></div>';
+function momentsHTML(m,i,last){const mo=m.moments||[];
+ let h='<div class="att demo"><div class="dmh"><svg><use href="#chart"/></svg><span><b>'+T('Là où ton idée se déclenche','Where your idea fires')+' · '+esc(m.market)+'</b><small>'+m.count+T(' fois en 42 jours (~'+m.per_day+' par jour) · voici les dernières',' times in 42 days (~'+m.per_day+' a day) · the latest ones')+'</small></span></div>';
+ mo.forEach((x,j)=>{const id='cm'+i+'_'+j;h+='<div class="chartc"><div class="chh"><b>'+(m.side==='sell'?T('Vente','Sell'):T('Achat','Buy'))+' · '+dm(x.t)+' '+hm(x.t)+'</b><span class="rb '+((m.side==='sell'?-1:1)*(x.after||0)>0?'pos':'neg')+'">'+T('30 min après : ','30 min later: ')+((x.after||0)>=0?'+':'')+px(x.after||0)+'</span></div>'+
+  '<canvas class="cvs" id="'+id+'" data-o="'+i+'" data-j="'+j+'"></canvas><div class="chf"><button class="cb" onclick="playM(\''+id+'\','+i+','+j+')"><svg><use href="#play"/></svg>'+T('Rejouer','Replay')+'</button>'+
+  (last?'<button class="cb y" onclick="voteM('+(j+1)+',1)">'+T('Oui, c’est ça','Yes, that’s it')+'</button><button class="cb n" onclick="voteM('+(j+1)+',0)">'+T('Pas ça','Not that')+'</button>':'')+'</div></div>';});
+ return h+'</div>';}
+function playM(id,i,j){const x=C.msgs[i].moments[j];const st=CH[id]||(CH[id]={});clearInterval(st.timer);const ie=idxAt(x.candles,x.t);st.k=Math.max(5,ie-30);
+ st.timer=setInterval(()=>{st.k++;const cv=$(id);if(cv)drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:st.k>=ie?x.marks:[],upto:st.k});if(st.k>=x.candles.length-1){clearInterval(st.timer);st.timer=null;}},65);}
+function voteM(j,yes){$('tx').value=yes?T('Le moment '+j+' : oui, c’est exactement ça.','Moment '+j+': yes, exactly that.'):T('Le moment '+j+' : non, pas comme ça. ','Moment '+j+': no, not like that. ');autosize();
+ if(yes)send();else{$('tx').focus();$('sd').disabled=false;toast(T('Dis-moi ce qui cloche.','Tell me what’s off.'));}}
+async function imgPick(inp){const f=inp.files&&inp.files[0];inp.value='';if(!f||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}
+ try{const url=URL.createObjectURL(f);const im=new Image();await new Promise((ok,ko)=>{im.onload=ok;im.onerror=ko;im.src=url;});
+  const sc=Math.min(1,1600/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
+  cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);URL.revokeObjectURL(url);let q=.85,d=cv.toDataURL('image/jpeg',q);while(d.length>2500000&&q>.4){q-=.15;d=cv.toDataURL('image/jpeg',q);}
+  const note=$('tx').value.trim();$('tx').value='';autosize();toast(T('J’envoie ta capture…','Sending your screenshot…'));
+  const j=await post('chat_image',{id:CID,data:d,note:note});if(!j.ok){toast(ERR[j.err]||T('Image refusée (JPEG ou PNG, 2 Mo max).','Image refused (JPEG or PNG, 2 MB max).'));if(note)$('tx').value=note;return;}
+  clearTimeout(POLL);load(CID,true);}catch(e){toast(T('Je n’arrive pas à lire cette image.','I can’t read that image.'));}}
+function demoHTML(m,i,last){if(m.kind==='moments')return momentsHTML(m,i,last);if(m.nodata)return '<div class="sys"><span><svg><use href="#chart"/></svg>'+T('Le graphique de '+esc(m.market)+' sera prêt après son premier test.',esc(m.market)+'’s chart will be ready after its first test.')+'</span></div>';
  const tr=m.trades||[],wr=m.count?Math.round(100*m.won/m.count):0;
  let h='<div class="att demo"><div class="dmh"><svg><use href="#chart"/></svg><span><b>'+T('Ses trades sur le graphique','Its trades on the chart')+' · '+esc(m.market)+'</b><small>'+m.count+T(' trades en 42 jours · '+wr+' % gagnés · replay simplifié, sans frais',' trades in 42 days · '+wr+' % won · simplified replay, no costs')+'</small></span></div>';
  tr.forEach((t,j)=>{const id='cv'+i+'_'+j;h+='<div class="chartc"><div class="chh"><b>'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' · '+dm(t.t_in)+' '+hm(t.t_in)+'</b><span class="rb '+(t.r>0?'pos':'neg')+'">'+(t.r>0?'+':'')+t.r.toFixed(1)+'R · '+({target:T('cible','target'),stop:'stop',be:T('à zéro','break-even'),formula:T('sortie formule','formula exit'),time:T('temps','time')}[t.why]||t.why)+'</span></div>'+
@@ -385,6 +419,8 @@ function demoHTML(m,i,last){if(m.nodata)return '<div class="sys"><span><svg><use
 function showHTML(m,i){const id='cs'+i;return '<div class="m me"><div class="bub">'+(m.text?md(m.text):T('Regarde ce que je te montre sur le graphique 👇','Look at what I show you on the chart 👇'))+'</div></div><div class="att mine"><div class="chartc"><div class="chh"><b>'+esc(m.market)+' · '+esc(m.tf)+'</b><span class="rb">'+(m.marks||[]).length+T(' repère(s)',' mark(s)')+'</span></div><canvas class="cvs" id="'+id+'" data-s="'+i+'"></canvas></div></div>';}
 function drawAll(){document.querySelectorAll('#chat canvas[data-m]').forEach(cv=>{const m=C.msgs[+cv.dataset.m],t=(m.trades||[])[+cv.dataset.j];if(!t)return;const st=CH[cv.id];
   drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:st&&st.timer?st.k:null});});
+ document.querySelectorAll('#chat canvas[data-o]').forEach(cv=>{const x=((C.msgs[+cv.dataset.o]||{}).moments||[])[+cv.dataset.j];if(!x)return;const st=CH[cv.id];
+  drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:(st&&st.timer&&st.k<idxAt(x.candles,x.t))?[]:x.marks,upto:st&&st.timer?st.k:null});});
  document.querySelectorAll('#chat canvas[data-s]').forEach(cv=>{const m=C.msgs[+cv.dataset.s];drawChart(cv,{rows:m.candles||[],marks:m.marks});});}
 function play(id,i,j){const m=C.msgs[i],t=m.trades[j];const st=CH[id]||(CH[id]={});clearInterval(st.timer);const ie=idxAt(t.candles,t.t_in);st.k=Math.max(5,ie-30);
  st.timer=setInterval(()=>{st.k++;const cv=$(id);if(cv)drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:st.k});if(st.k>=t.candles.length-1){clearInterval(st.timer);st.timer=null;}},ie>0?65:65);}
@@ -423,14 +459,24 @@ function drInput(){const cv=$('dc');if(!cv)return;let x0=null,off0=0,moved=false
 async function drSend(){if(!DR||!DR.marks.length)return;const b=$('dsend');b.disabled=true;
  const j=await post('chat_show',{id:CID,marks:DR.marks,tf:DR.tf,market:DR.mk,note:($('dnote')||{}).value||''});
  if(!j.ok){b.disabled=false;toast(ERR[j.err]||j.err);return;}shClose();load(CID,true);}
-/* voice: speak instead of typing (the browser's own speech recognition) */
-let REC=null;
+/* voice: speak instead of typing (the browser's own speech recognition). 2026-10-19 (owner: "nothing proves I'm
+   being listened to"): a listening bar above the box - state, moving bars, the words as they come, Terminé / Annuler,
+   and plain words when the browser refuses (micro not allowed, nothing heard, no network) */
+let REC=null,RECON=false,RECBASE='';
+function micBar(state,txt){const b=$('micbar');if(!b)return;if(!state){b.classList.remove('on');return;}b.classList.add('on');b.dataset.s=state;
+ $('micst').textContent={wait:T('J’active le micro…','Turning the mic on…'),on:T('Je t’écoute… parle','I’m listening… go ahead'),err:txt||''}[state]||'';
+ $('mictx').textContent=state==='on'?(txt||''):'';$('micok').style.display=state==='on'?'':'none';}
 function micInit(){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){const m=$('mic');if(m)m.style.display='none';return;}
- REC=new S();REC.lang=EN?'en-US':'fr-FR';REC.interimResults=true;REC.continuous=false;let base='';
- REC.onstart=()=>{base=$('tx').value?$('tx').value+' ':'';$('mic').classList.add('on');};
- REC.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$('tx').value=base+s;autosize();$('sd').disabled=!$('tx').value.trim();};
- REC.onend=()=>$('mic').classList.remove('on');REC.onerror=()=>$('mic').classList.remove('on');}
-function mic(){if(!REC)return;if($('mic').classList.contains('on'))REC.stop();else try{REC.start();}catch(e){}}
+ REC=new S();REC.lang=EN?'en-US':'fr-FR';REC.interimResults=true;REC.continuous=false;
+ REC.onstart=()=>{RECON=true;RECBASE=$('tx').value?$('tx').value+' ':'';$('mic').classList.add('on');micBar('on','');try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}};
+ REC.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$('tx').value=RECBASE+s;autosize();$('sd').disabled=!$('tx').value.trim();micBar('on','« '+s+' »');};
+ REC.onend=()=>{RECON=false;$('mic').classList.remove('on');const b=$('micbar');if(b&&b.dataset.s!=='err')micBar(null);if($('tx').value.trim())$('tx').focus();};
+ REC.onerror=e=>{RECON=false;$('mic').classList.remove('on');const m={'not-allowed':T('Autorise le micro pour cette page (le cadenas à côté de l’adresse), puis réessaie.','Allow the microphone for this page (the padlock next to the address), then try again.'),
+   'service-not-allowed':T('Ton navigateur bloque la dictée ici. Essaie avec Chrome.','Your browser blocks dictation here. Try Chrome.'),'no-speech':T('Je n’ai rien entendu. Touche le micro et parle tout de suite.','I didn’t hear anything. Tap the mic and speak right away.'),
+   'audio-capture':T('Aucun micro trouvé sur cet appareil.','No microphone found on this device.'),'network':T('La dictée a besoin d’internet.','Dictation needs the internet.')}[e.error]||T('Le micro n’a pas marché, réessaie.','The mic didn’t work, try again.');
+  micBar('err',m);setTimeout(()=>{const b=$('micbar');if(b&&b.dataset.s==='err')micBar(null);},5000);};}
+function mic(){if(!REC)return;if(RECON){REC.stop();return;}micBar('wait');try{REC.start();}catch(e){micBar(null);}}
+function micCancel(){if(REC&&RECON){REC.abort();}$('tx').value=RECBASE.trim();autosize();micBar(null);}
 window.addEventListener('resize',()=>{drawAll();if(DR&&$('dc'))drDraw();});
 micInit();
 /* ---------- load / poll */

@@ -67,6 +67,7 @@ RULE_MAP = {
     "max_trades_day": None,
     "movement": None,
     "debt_mode": None,
+    "btc_rest": None,
 }
 # what the harness hard-codes for the rules it cannot switch. A live value
 # equal to this is equivalent, not drift.
@@ -74,6 +75,7 @@ ASSUMES = {
     "max_trades_day": [None],      # harness caps nothing
     "movement": [True],            # harness always applies the moves_2h gate
     "debt_mode": ["hwm"],          # harness debt/jar follows the high-water mark
+    "btc_rest": [None, False],     # 2026-10-19: only a member robot built for another market sets it
 }
 ACCOUNTS = ("u224016179", "infinity", "expenses", "bos", "kino", "demo")
 JOURNALS = ("bos_journal_valere.csv", "bos_journal_infinity.csv",

@@ -13265,8 +13265,13 @@ def robot_now(uid, ms, has_open, preview=None):
         return {"id": "?", "err": str(ex)[:80]}
 
 
+TESTS_PAUSED = os.path.join(DIR, "robots", "tests_paused.json")    # exists = no robot / market test starts (luck tests apart)
+
+
 def robot_runner_kick():
     """test the queued robots now, in the background, unless a run is already going"""
+    if os.path.exists(TESTS_PAUSED):          # 2026-10-19 (owner): "pause any test other than the BTC" - requests queue
+        return
     try:
         lk = os.path.join(DIR, "robots", "runner.lock")
         if os.path.exists(lk) and time.time() - os.path.getmtime(lk) < 3 * 3600:
@@ -13713,6 +13718,8 @@ def robot_test_market(user, body):
 def robot_fast_kick():
     """2026-10-14 (owner: "why one hour long"): the fast lane - tests on markets already prepared run at once,
     beside a long preparation (study/robot_runner.py --fast, its own lock)"""
+    if os.path.exists(TESTS_PAUSED):
+        return
     try:
         lk = os.path.join(DIR, "robots", "runner_fast.lock")
         if os.path.exists(lk) and time.time() - os.path.getmtime(lk) < 1800:
@@ -14785,6 +14792,41 @@ def _chat_oops(cid, en, e=None):
         if e is None else ("Oups, petit souci de mon côté (%s). Réessaie dans un instant." % str(e)[:60])))
 
 
+CHAT_IMG = os.path.join(DIR, "robots", "chats", "img")
+
+
+def _chat_images(c):
+    """[(media type, base64)] of the member's screenshot when it is the last thing they sent (that turn must see it)"""
+    import base64
+    for m in reversed(c.get("msgs") or []):
+        if m.get("role") in ("user", "show"):
+            return []
+        if m.get("role") == "image" and m.get("file"):
+            try:
+                b = open(os.path.join(CHAT_IMG, os.path.basename(m["file"])), "rb").read()
+                return [("image/png" if b[:4] == b"\x89PNG" else "image/jpeg", base64.b64encode(b).decode())]
+            except Exception:
+                return []
+    return []
+
+
+def _chat_show(c, user, sh):
+    """the AI's "show" -> a demo message dict (or None)"""
+    if not sh:
+        return None
+    try:
+        if sh.get("formula"):
+            mk = _rc().market_of(sh.get("market"), _chat_markets(user)) if sh.get("market") else None
+            cc = dict(c, market=mk, robot=dict(c.get("robot") or {}, market=mk)) if mk else c     # the market being talked about
+            return _demo_msg(cc, user,
+                             overlays=sh.get("overlays") or [], formula=sh["formula"], side=sh.get("side") or "buy")
+        if c.get("robot"):
+            return _demo_msg(c, user, sh.get("examples") or 3, sh.get("pick") or "mix", sh.get("overlays") or [])
+    except Exception:
+        return None
+    return None
+
+
 def _chat_quick(cid, user, event=None):
     """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
@@ -14794,8 +14836,9 @@ def _chat_quick(cid, user, event=None):
         _CHAT_DRAFT[cid] = ""
         q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                         markets=_chat_markets(user), memory=_chat_memory(user, cid), event=event,
-                        on_say=lambda t: _CHAT_DRAFT.__setitem__(cid, t), member=_chat_member(user, c))
+                        on_say=lambda t: _CHAT_DRAFT.__setitem__(cid, t), member=_chat_member(user, c), images=_chat_images(c))
         _CHAT_DRAFT.pop(cid, None)
+        _qdm = _chat_show(c, user, (q or {}).get("show"))
         if q is None and event:
             q = {"say": None, "chips": [], "build": False}
         if q and q.get("remember"):
@@ -14809,6 +14852,12 @@ def _chat_quick(cid, user, event=None):
         def put(c):
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event))
+            if _qdm and not _qdm.get("nodata"):
+                c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
+            if q.get("seen"):
+                for m in reversed(c.get("msgs") or []):
+                    if m.get("role") == "image":
+                        m.setdefault("seen", q["seen"]); break
             if q["build"]:
                 c["b_want"] = len(c.get("msgs") or [])
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
@@ -14847,7 +14896,8 @@ def _chat_build(cid, user):
             n0, rev0 = len(c.get("msgs") or []), c.get("rev")
             ans, probs = _rc().answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                                       markets=_chat_markets(user), memory=_chat_memory(user, cid),
-                                      on_say=lambda t: _CHAT_DRAFT.__setitem__(cid + ":b", t), member=_chat_member(user, c))
+                                      on_say=lambda t: _CHAT_DRAFT.__setitem__(cid + ":b", t), member=_chat_member(user, c),
+                                      images=_chat_images(c))
             _CHAT_DRAFT.pop(cid + ":b", None)
             if ans and ans.get("remember"):
                 _mem_add(user.get("id"), ans["remember"])
@@ -14870,14 +14920,9 @@ def _chat_build(cid, user):
                     _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
                               follow=True, link=ans.get("link"))
-                sh = ans.get("show")
-                if sh and c.get("robot"):
-                    try:
-                        dm = _demo_msg(c, user, sh.get("examples") or 3, sh.get("pick") or "mix", sh.get("overlays") or [])
-                        if dm and not dm.get("nodata"):
-                            c.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
-                    except Exception:
-                        pass
+                dm = _chat_show(c, user, ans.get("show"))
+                if dm and not dm.get("nodata"):
+                    c.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
                 if ans.get("understood"):
                     c["understood"] = ans["understood"]
             _chat_mut(cid, put)
@@ -15132,6 +15177,13 @@ def chat_test(user, body):
     if not r.get("ok"):
         return r
     mk = rob.get("market") or "BTCUSD"
+    try:                     # 2026-10-19: the robot remembers the market it was built for (owl_markets.own_market)
+        _rg = robot_reg()
+        _rr = next((x for x in _rg.get("robots") or [] if x.get("id") == rid), None)
+        if _rr is not None and _rr.get("market") != mk:
+            _rr["market"] = mk; _robot_save(_rg)
+    except Exception:
+        pass
     fx = (rob.get("entry") or {}).get("rule", {}).get("event") == "formula"
     at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     if mk != "BTCUSD":
@@ -15204,8 +15256,17 @@ def chat_chart(user, body):
     return r
 
 
-def _demo_msg(c, user, n=3, pick="mix", overlays=None, by="ai"):
-    """the robot's past trades on its market as a "demo" message (None when nothing can be shown)"""
+def _demo_msg(c, user, n=3, pick="mix", overlays=None, by="ai", formula=None, side="buy"):
+    """the robot's past trades on its market as a "demo" message (None when nothing can be shown); with a formula:
+    where that ONE idea fires (2026-10-19, owner: "visual demonstration is emphasized")"""
+    if formula:
+        mo = _rd().moments(_chat_market(c), formula, -1 if side == "sell" else 1, overlays or [], 3)
+        if mo is None:
+            return {"role": "demo", "nodata": True, "market": _chat_market(c), "by": by}
+        if not mo.get("moments"):
+            return None
+        return {"role": "demo", "kind": "moments", "market": mo["market"], "formula": formula, "side": side, "count": mo["count"],
+                "per_day": mo["per_day"], "moments": mo["moments"], "by": by}
     if not c.get("robot"):
         return None
     rules, rr = _rd().rules_of(c["robot"], _chat_pieces(user))
@@ -15227,6 +15288,37 @@ def chat_demo(user, body):
         return {"ok": False, "err": "nodata"}
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     _chat_mut(c["id"], lambda c: c.setdefault("msgs", []).append(dict(m, t=int(time.time()))))
+    threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+    return {"ok": True}
+
+
+def chat_image(user, body):
+    """2026-10-19 (owner): the member sends a screenshot of their own chart (MT5, TradingView...) - the AI sees it.
+    JPEG/PNG only (checked by their first bytes), max 2 MB, kept beside the chat; the page shrinks it first."""
+    import base64
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    if _CHAT_Q.get(c["id"]):
+        return {"ok": False, "err": "busy"}
+    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
+        return {"ok": False, "err": "cap"}
+    d = str(body.get("data") or "")
+    if d.startswith("data:"):
+        d = d.split(",", 1)[-1]
+    try:
+        b = base64.b64decode(d, validate=True)
+    except Exception:
+        return {"ok": False, "err": "image"}
+    ext = "png" if b[:8] == b"\x89PNG\r\n\x1a\n" else "jpg" if b[:3] == b"\xff\xd8\xff" else None
+    if not ext or len(b) > 2_000_000:
+        return {"ok": False, "err": "image"}
+    os.makedirs(CHAT_IMG, exist_ok=True)
+    fn = "%s_%d.%s" % (c["id"], int(time.time() * 1000), ext)
+    open(os.path.join(CHAT_IMG, fn), "wb").write(b)
+    note = str(body.get("note") or "").strip()[:600]
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "image", file=fn, text=note))
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
 
@@ -15310,7 +15402,9 @@ def robot_package(r, pieces, account_pkg=None, own_money=None):
           "pb_dir_gate": "tendance-fond" in F, "pb_gate_mode": "trend", "movement": "mouvement" in F, "nervosity": "nervosite" in F,
           "debt_gate": R.get("recovery") != "rattrapage-sans-limite",
           # 2026-10-19 (owner): the storm rule is the robot's own - the Owl's piece keeps 1.85, none = no ceiling
-          "storm_ceiling": float(((P.get("orage") or {}).get("engine") or {}).get("storm") or 1.85) if "orage" in F else 0.0}
+          "storm_ceiling": float(((P.get("orage") or {}).get("engine") or {}).get("storm") or 1.85) if "orage" in F else 0.0,
+          # 2026-10-19 (owner): a member's own robot built for another market trades there; the Bitcoin bot rests
+          "btc_rest": bool(r.get("market")) and str(r.get("market")).upper().rstrip("M") != "BTCUSD"}
     rules = {}
     for k in ("entry", "stop", "exit"):
         p = P.get(R.get(k)) or {}
@@ -15488,7 +15582,7 @@ def acct_robot_block(user, admin=False):
                 continue
         out["choices"].append(dict(nm(r), id=rid, net=t.get("net"), dd=t.get("cc_dd"), trades=t.get("trades"),
                                    win_rate=t.get("win_rate"), days=t.get("days") or 42, balance=t.get("balance") or 200, window_utc=t.get("window_utc"),
-                                   owl=rid == "owl", mine=r.get("by_uid") == uid,
+                                   owl=rid == "owl", mine=r.get("by_uid") == uid, market=r.get("market") or "BTCUSD",
                                    public=bool(r.get("public")), current=rid == cur))
     out["choices"].sort(key=lambda c: (not c["current"], not c["owl"], -(c["net"] or 0)))
     return out
@@ -20294,13 +20388,14 @@ class H(BaseHTTPRequestHandler):
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
-                                              "chat_chart", "chat_show", "chat_demo", "chat_open"):
+                                              "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
                 return
             try:
-                _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 40000)).decode("utf-8", "replace") or "{}")
+                _cap = 2_800_000 if _parts[1] == "chat_image" else 40000          # a screenshot (base64) is bigger
+                _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), _cap)).decode("utf-8", "replace") or "{}")
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
@@ -20309,7 +20404,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
-                       "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open}[_parts[1]]
+                       "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -22634,6 +22729,15 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "chat_img":
+            import urllib.parse as _upr
+            _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            _c = _chat_load(user, _q.get("id", [""])[0]) if not user.get("public") else None
+            _f = os.path.basename(_q.get("f", [""])[0])
+            if _c is None or not _f.startswith(_c["id"] + "_") or not any(m.get("file") == _f for m in _c.get("msgs") or []):
+                self._not_found()
+            else:
+                self._send_file_fresh(os.path.join(CHAT_IMG, _f), "image/png" if _f.endswith(".png") else "image/jpeg")
         elif sub in ("atelier", "chat_get", "chat_list"):
             # 2026-10-19 (owner): L'atelier - build a robot by chatting with the AI (Strategie members + admin, from disk)
             _ok = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
