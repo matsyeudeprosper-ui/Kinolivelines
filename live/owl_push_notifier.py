@@ -733,7 +733,7 @@ def is_manual(uid):
 
 
 def send_all(title, body, kind="instant", only_uid=None,
-             skip_uids=None, url=None, image=None, ttl=0, urgent=False):
+             skip_uids=None, url=None, image=None, ttl=0, urgent=False, sticky=False, tag=None):
     try:
         subs = json.load(open(SUBS))
     except Exception:
@@ -769,7 +769,7 @@ def send_all(title, body, kind="instant", only_uid=None,
             try:
                 resp = webpush(s, json.dumps({"title": title,
                                               "body": body,
-                                              "tag": "owl",
+                                              "tag": tag or "owl", "sticky": bool(sticky),
                                               "url": url or "",
                                               "image": image or ""}),
                                vapid_private_key=VAPID_PEM,
@@ -1486,8 +1486,11 @@ def main():
                     pass
                 for it in _q:
                     try:
+                        # 2026-10-19: the workshop AI's messages open their chat, may stay on screen, carry their tag
                         send_all(it.get("title") or "OwlNest", it.get("body") or "",
-                                 kind="instant", only_uid=it.get("uid"))
+                                 kind="instant", only_uid=it.get("uid"),
+                                 url=_tok_url(it.get("uid"), it["path"]) if it.get("path") is not None else None,
+                                 urgent=bool(it.get("urgent")), sticky=bool(it.get("sticky")), tag=it.get("tag"))
                     except Exception:
                         pass
         if time.time() - _sg_last > 60:

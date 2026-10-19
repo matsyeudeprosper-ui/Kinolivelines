@@ -240,11 +240,16 @@ SW = (
     ".then(()=>{if(e.source)e.source.postMessage({type:'refreshed'});}));}});"
     "self.addEventListener('push',e=>{let d={};"
     "try{d=e.data.json()}catch(x){}"
-    "e.waitUntil(self.registration.showNotification("
+    # 2026-10-19 (owner): the workshop AI - an app open on screen shows it as a card in the page, else a
+    # notification that can stay on screen (sticky) until touched
+    "e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{"
+    "const v=cs.find(c=>c.visibilityState==='visible');"
+    "if(v&&d.tag==='atelier'){v.postMessage({type:'owl_nudge',title:d.title,body:d.body,url:d.url});return;}"
+    "return self.registration.showNotification("
     "d.title||'OwlNest',{body:d.body||'',icon:'icon192.png',"
-    "badge:'icon192.png',tag:d.tag||'owl',renotify:true,"
+    "badge:'icon192.png',tag:d.tag||'owl',renotify:true,requireInteraction:!!d.sticky,"
     "data:{url:d.url||''},image:d.image||undefined,"
-    "vibrate:[80,40,80]}));});"
+    "vibrate:d.sticky?[120,60,120,60,120]:[80,40,80]});}));});"
     "self.addEventListener('notificationclick',e=>{"
     "e.notification.close();"
     "const u=(e.notification.data&&e.notification.data.url)||'';"
@@ -299,15 +304,25 @@ def code_guess_fail(who):
     rate_fail(("codeguess", "*"))
 
 
-def queue_push(uid, title, body):
-    """One line for the push notifier (it also writes the member's inbox)."""
+def queue_push(uid, title, body, path=None, sticky=False, urgent=False, tag=None):
+    """One line for the push notifier (it also writes the member's inbox). 2026-10-19: path = the page a tap opens,
+    sticky = stays on screen until touched, tag = groups / replaces (the workshop AI uses "atelier")."""
     try:
         qf = os.path.join(DIR, "owl_push_queue.json")
         try:
             q = json.load(open(qf, encoding="utf-8"))
         except Exception:
             q = []
-        q.append({"uid": uid, "t": int(time.time()), "title": title, "body": body})
+        it = {"uid": uid, "t": int(time.time()), "title": title, "body": body}
+        if path is not None:
+            it["path"] = path
+        if sticky:
+            it["sticky"] = True
+        if urgent:
+            it["urgent"] = True
+        if tag:
+            it["tag"] = tag
+        q.append(it)
         json.dump(q, open(qf, "w", encoding="utf-8"), ensure_ascii=False)
     except Exception:
         pass
@@ -11065,6 +11080,34 @@ function apkDismiss(){try{localStorage.setItem('owlApkDis',String(Date.now()));}
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
+<script>
+/* 2026-10-19 (owner: "push notifications, even take over the screen ... understand when to do so"): the workshop AI's
+   card - a message it wants the member to see (test news, an idea, a question). Shown over the app, read from
+   ai_nudge (also pushed by the service worker when the app is on screen); "Plus tard" keeps it for the workshop. */
+(function(){var B0=location.pathname.replace(/[^/]*$/,''),shown=0,en=false;try{en=localStorage.getItem('owlLang')==='en'}catch(e){}
+function el(t,css,txt){var e=document.createElement(t);if(css)e.style.cssText=css;if(txt!=null)e.textContent=txt;return e;}
+function seen(n){try{fetch(B0+'ai_nudge_seen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t:n.t})});}catch(e){}}
+function card(n){if(!n||n.t===shown||document.getElementById('ainudge'))return;shown=n.t;
+ var o=el('div','position:fixed;inset:0;z-index:95;display:flex;align-items:flex-end;justify-content:center;background:rgba(3,6,10,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)');o.id='ainudge';
+ var c=el('div','width:100%;max-width:560px;margin:0 10px calc(14px + env(safe-area-inset-bottom,0px));border-radius:26px;border:1px solid rgba(167,139,250,.45);background:linear-gradient(160deg,#1a2233,#121a25);box-shadow:0 24px 70px rgba(0,0,0,.6);padding:18px 18px 14px;color:#e8eef4;font-family:Inter,system-ui,sans-serif;transform:translateY(40px);opacity:0;transition:all .35s cubic-bezier(.2,.8,.2,1)');
+ var h=el('div','display:flex;align-items:center;gap:12px;margin-bottom:12px');
+ var av=el('div','width:42px;height:42px;border-radius:14px;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#6d5cf6,#3b82f6);box-shadow:0 8px 22px rgba(109,92,246,.45);font-size:20px','🦉');
+ var tt=el('div','flex:1;min-width:0');tt.appendChild(el('b','display:block;font-size:.98rem',en?'Your workshop AI':'Ton IA de l’atelier'));
+ tt.appendChild(el('small','display:block;color:#8a9bb0;font-size:.76rem;margin-top:2px',n.important?(en?'News for you':'Une nouvelle pour toi'):(en?'Something I wanted to tell you':'Un truc que je voulais te dire')));
+ h.appendChild(av);h.appendChild(tt);c.appendChild(h);
+ c.appendChild(el('div','font-size:1rem;line-height:1.5;color:#e8eef4;white-space:pre-wrap;max-height:40vh;overflow:auto',n.text));
+ var row=el('div','display:flex;gap:8px;margin-top:14px');
+ var go=el('button','flex:1;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:.92rem;color:#fff;background:linear-gradient(135deg,#3b82f6,#6d5cf6);cursor:pointer',en?'Open the chat':'Ouvrir la conversation');
+ var later=el('button','border:1px solid #2b3a4d;border-radius:14px;padding:13px 16px;font-weight:700;font-size:.9rem;color:#c6d3df;background:#172130;cursor:pointer',en?'Later':'Plus tard');
+ go.onclick=function(){seen(n);location.href=B0+'atelier?c='+encodeURIComponent(n.cid);};
+ later.onclick=function(){seen(n);c.style.transform='translateY(40px)';c.style.opacity='0';setTimeout(function(){o.remove();},300);};
+ o.onclick=function(e){if(e.target===o)later.onclick();};
+ row.appendChild(go);row.appendChild(later);c.appendChild(row);o.appendChild(c);document.body.appendChild(o);
+ requestAnimationFrame(function(){c.style.transform='none';c.style.opacity='1';});try{navigator.vibrate&&navigator.vibrate([60,40,60]);}catch(e){}}
+function poll(){if(document.visibilityState!=='visible')return;fetch(B0+'ai_nudge',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j&&j.nudge)card(j.nudge);}).catch(function(){});}
+setTimeout(poll,4000);setInterval(poll,60000);document.addEventListener('visibilitychange',poll);
+try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',function(ev){if(ev.data&&ev.data.type==='owl_nudge')poll();});}catch(e){}})();
+</script>
 </body></html>"""
 
 
@@ -11438,9 +11481,13 @@ def export_csv(user):
     return "\ufeff" + out.getvalue()
 
 
+_LAST_SEEN = {}          # 2026-10-19: uid -> last request time (the companion does not disturb someone using the app)
+
+
 def user_by_token(tok):
     for u in users():
         if u.get("token") == tok:
+            _LAST_SEEN[u.get("id")] = time.time()
             return u
     return None
 
@@ -14827,7 +14874,7 @@ def _chat_show(c, user, sh):
     return None
 
 
-def _chat_quick(cid, user, event=None):
+def _chat_quick(cid, user, event=None, notify=False, important=False):
     """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
     try:
@@ -14848,6 +14895,8 @@ def _chat_quick(cid, user, event=None):
             q = {"say": None, "chips": [], "build": True}
         if event:
             q["build"] = False
+        if event and event.startswith("PROACTIVE") and not q.get("send"):
+            q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
         def put(c):
             if q["say"]:
@@ -14870,6 +14919,8 @@ def _chat_quick(cid, user, event=None):
             raise
         if q["build"]:
             threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
+        if notify and q.get("say"):
+            _companion_deliver(user, cid, q["say"], important)
     except Exception as e:
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
         _CHAT_DRAFT.pop(cid, None)
@@ -14968,6 +15019,234 @@ def _chat_kick(cid, user):
     threading.Thread(target=_chat_quick, args=(cid, user), daemon=True).start()
 
 
+# ---- 2026-10-19 (owner: "make it proactive ... a digital friend working together with the user, a relationship ...
+# push notifications ... even take over the screen ... but understand when to do so, aware of what the user is busy
+# with, when not to disturb") ----
+# A loop every 2 minutes, per workshop member: (1) a test that finished while they were away -> the AI comments it and
+# tells them; (2) a luck test of their robot that finished -> same; (3) a conversation quiet for 3 h - 7 days -> the AI
+# thinks about it (PROACTIVE CHECK) and may come back with a thought, a question or an idea - or choose silence.
+# Delivery: in the workshop on that chat = nothing more (they see it); using the app = a takeover card in the page
+# (ai_nudge); away = a push (sticky when important). Never 22:00-08:00 on their phone's clock (kept for the morning),
+# not while a trade of theirs is open and they are in the app (unless important), at most 2 unprompted ones a day.
+_CHAT_SEEN = {}
+
+
+def _mem_get(uid):
+    try:
+        return json.load(open(_mem_file(uid), encoding="utf-8"))
+    except Exception:
+        return {"notes": []}
+
+
+def _mem_put(uid, m):
+    os.makedirs(CHAT_MEM, exist_ok=True)
+    json.dump(m, open(_mem_file(uid) + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(_mem_file(uid) + ".tmp", _mem_file(uid))
+
+
+def _mem_note_safe(uid, fn):
+    with _chat_lock("mem:" + uid):
+        m = _mem_get(uid)
+        out = fn(m)
+        _mem_put(uid, m)
+        return out
+
+
+def _local_hour(uid):
+    try:
+        tz = (json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}
+        return int(((time.time() - int(tz.get("off") or 0) * 60) // 3600) % 24)
+    except Exception:
+        return int(time.gmtime().tm_hour)
+
+
+def _trade_open(uid):
+    try:
+        return bool(json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8")).get("open_positions"))
+    except Exception:
+        return False
+
+
+def _companion_can_push(uid, n):
+    h = _local_hour(uid)
+    if h >= 22 or h < 8:
+        return False                                        # night: kept for the morning
+    if time.time() - _LAST_SEEN.get(uid, 0) < 120:
+        return False                                        # in the app: the takeover card shows it
+    return True
+
+
+def _companion_push(user, n):
+    uid = user.get("id")
+    queue_push(uid, ("Ton IA de l'atelier" if (user.get("lang") or "fr") != "en" else "Your workshop AI"), n["text"][:160],
+               path="atelier?c=" + n["cid"], sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
+    n["pushed"] = int(time.time())
+
+
+def _companion_deliver(user, cid, text, important=False):
+    """a message the AI wants the member to see: live chat / takeover card / push, by what they are doing now"""
+    uid = user.get("id")
+    sn = _CHAT_SEEN.get(uid)
+    if sn and time.time() - sn[0] < 45 and sn[1] == cid:
+        return "live"
+    if not important and _trade_open(uid) and time.time() - _LAST_SEEN.get(uid, 0) < 120:
+        important = False                                   # busy with a trade: the card waits until it is closed
+
+    def put(m):
+        n = {"t": int(time.time()), "cid": cid, "text": str(text)[:400], "important": bool(important), "seen": False, "pushed": 0}
+        m.setdefault("nudges", []).append(n)
+        m["nudges"] = m["nudges"][-20:]
+        if _companion_can_push(uid, n):
+            _companion_push(user, n)
+        return n
+    _mem_note_safe(uid, put)
+    return "queued"
+
+
+def _companion_tick():
+    now = time.time()
+    for u in users():
+        uid = u.get("id")
+        if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+            continue
+        try:
+            # deferred messages: night is over, or they left the app
+            def flush(m):
+                for n in m.get("nudges") or []:
+                    if not n.get("seen") and not n.get("pushed") and now - n["t"] < 86400 and _companion_can_push(uid, n):
+                        _companion_push(u, n)
+            _mem_note_safe(uid, flush)
+            ch = chat_list(u).get("chats") or []
+            if not ch:
+                continue
+            busy = lambda cid: _CHAT_Q.get(cid) or cid in _CHAT_B
+            # (1) a test finished while they were away
+            for x in ch[:6]:
+                c = _chat_load(u, x["id"])
+                if not c or (c.get("test") or {}).get("state") != "queued" or busy(c["id"]):
+                    continue
+                sn = _CHAT_SEEN.get(uid)
+                if sn and now - sn[0] < 45 and sn[1] == c["id"]:
+                    continue                                 # they are on it: chat_get handles it live
+                res = _chat_result(c)
+                if res is None:
+                    continue
+
+                def put(c):
+                    if (c.get("test") or {}).get("state") != "done":
+                        c["test"]["state"] = "done"
+                        _chat_msg(c, "result", result=res)
+                        return True
+                _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+                if _chat_mut(c["id"], put):
+                    threading.Thread(target=_chat_quick, args=(c["id"], u), kwargs={"notify": True, "important": True}, daemon=True).start()
+                else:
+                    _CHAT_Q[c["id"]] -= 1
+            # (2) a luck test of one of their robots finished
+            m = _mem_get(uid)
+            seen = m.get("luck_seen") or {}
+            for r in robot_reg().get("robots") or []:
+                if r.get("by_uid") != uid:
+                    continue
+                for sym in ["BTCUSD"] + ([r["market"]] if r.get("market") and r.get("market") != "BTCUSD" else []):
+                    cl = _random_ctl(r["id"], sym)
+                    if not cl or not ((cl.get("seeds") or 0) >= 100 or cl.get("early")):
+                        continue
+                    key = "%s@%s" % (r["id"], sym)
+                    sig = "%s/%s" % (cl.get("seeds"), cl.get("beats"))
+                    if seen.get(key) == sig:
+                        continue
+                    seen[key] = sig
+                    tgt = next((x["id"] for x in ch if x.get("robot_id") == r["id"]), ch[0]["id"])
+                    if not busy(tgt):
+                        ok = (cl.get("beats") or 0) <= 5 and (cl.get("seeds") or 0) >= 100
+                        ev = "LUCK TEST FINISHED for their robot '%s' on %s: %s (%s draws, %s random robots did as well; the rule allows 5)" % (
+                            r.get("name_fr") or r["id"], sym, "PASSED - proven, it can go on the marketplace" if ok else "FAILED - within luck",
+                            cl.get("seeds"), cl.get("beats"))
+                        _CHAT_Q[tgt] = _CHAT_Q.get(tgt, 0) + 1
+                        threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
+            if seen != (m.get("luck_seen") or {}):
+                _mem_note_safe(uid, lambda mm: mm.__setitem__("luck_seen", seen))
+            # (3) a quiet conversation: the AI thinks about it, and may come back (at most once a day, by day)
+            c0 = ch[0]
+            last = max([int(x.get("t") or 0) for x in (_chat_load(u, c0["id"]) or {}).get("msgs") or []] or [0])
+            h = _local_hour(uid)
+            if 3 * 3600 < now - last < 7 * 86400 and now - float(m.get("last_proactive") or 0) > 20 * 3600 and 9 <= h < 21 \
+                    and now - _LAST_SEEN.get(uid, 0) > 300 and not busy(c0["id"]):
+                _mem_note_safe(uid, lambda mm: mm.__setitem__("last_proactive", now))
+                ago = now - last
+                ev = _proactive_event(u, c0, ago, h)
+                _CHAT_Q[c0["id"]] = _CHAT_Q.get(c0["id"], 0) + 1
+                threading.Thread(target=_chat_quick, args=(c0["id"], u, ev), kwargs={"notify": True}, daemon=True).start()
+        except Exception as e:
+            try:
+                print("companion", uid, e)
+            except Exception:
+                pass
+
+
+def _proactive_event(u, c0, ago, hour):
+    """the PROACTIVE CHECK with concrete hooks - a friend texts because something happened or came to mind"""
+    hooks = []
+    try:
+        c = _chat_load(u, c0["id"]) or {}
+        t = c.get("test") or {}
+        if t.get("state") == "queued":
+            hooks.append("their robot's test%s is still waiting in the queue (tests are paused while the nest's Bitcoin luck test runs)"
+                         % (" on " + t["sym"] if t.get("sym") else ""))
+        if any(m.get("role") == "demo" for m in (c.get("msgs") or [])[-4:]):
+            hooks.append("you showed charts last time and they did not react - you could show it differently or ask what they thought")
+        for st in (_ctl_state() or [])[-3:]:
+            if st.get("state") == "running" and st.get("n"):
+                hooks.append("lab news: the Owl's Bitcoin luck test is at %s/100 draws with %s random robots as good so far"
+                             % (st.get("n"), st.get("beats")))
+        r = (c.get("robot") or {})
+        if r and not c.get("robot_id"):
+            hooks.append("their robot is built but was never saved or tested")
+    except Exception:
+        pass
+    when = "morning" if hour < 12 else "afternoon" if hour < 18 else "evening"
+    return ("PROACTIVE CHECK - it is %s for them; nobody wrote for %s. Come back ON YOUR OWN like a friend who kept thinking "
+            "about their project: a thought about their robot, an idea from the lab, a chart of their idea, a curious question "
+            "about them, a next step. Things you could use: %s. Lean towards SENDING when you have something specific and "
+            "useful to say; answer \"send\": false only if you would repeat yourself or truly have nothing new. Keep it short "
+            "and natural (never 'just checking in'), one idea, maybe one question."
+            % (when, ("%d hours" % (ago / 3600)) if ago < 172800 else ("%d days" % (ago / 86400)), "; ".join(hooks) or "their robot and ideas"))
+
+
+def _companion_loop():
+    time.sleep(90)
+    while True:
+        try:
+            _companion_tick()
+        except Exception:
+            pass
+        time.sleep(120)
+
+
+def ai_nudge(user):
+    """the takeover card of the app: the AI's latest unseen message (last 3 days)"""
+    if user.get("public") or not (is_admin(user) or has(user.get("id"), "strategy")):
+        return {}
+    m = _mem_get(user.get("id"))
+    for n in reversed(m.get("nudges") or []):
+        if not n.get("seen") and time.time() - n["t"] < 3 * 86400:
+            return {"nudge": {"t": n["t"], "text": n["text"], "cid": n["cid"], "important": n.get("important")}}
+    return {}
+
+
+def ai_nudge_seen(user, body):
+    t = int(body.get("t") or 0)
+    cid = body.get("cid")
+
+    def put(m):
+        for n in m.get("nudges") or []:
+            if n["t"] == t or (cid and n["cid"] == cid):
+                n["seen"] = True
+    _mem_note_safe(user.get("id"), put)
+    return {"ok": True}
+
+
 def chat_open(user, body):
     """the member opened (or came back to) a chat: after 45 min away, the AI welcomes them back on its own"""
     c = _chat_load(user, str(body.get("id") or ""))
@@ -14975,6 +15254,10 @@ def chat_open(user, body):
         return {"ok": False, "err": "missing"}
     try:
         _rc().prewarm()
+    except Exception:
+        pass
+    try:
+        ai_nudge_seen(user, {"cid": c["id"]})
     except Exception:
         pass
     M = c.get("msgs") or []
@@ -15031,6 +15314,7 @@ def chat_get(user, cid):
     c = _chat_load(user, cid)
     if c is None:
         return {"err": "missing"}
+    _CHAT_SEEN[user.get("id")] = (time.time(), cid)
     res = _chat_result(c)
     if res is not None and not _CHAT_Q.get(c["id"]):
         def put(c):
@@ -20388,7 +20672,7 @@ class H(BaseHTTPRequestHandler):
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
-                                              "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image"):
+                                              "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -20404,7 +20688,8 @@ class H(BaseHTTPRequestHandler):
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
-                       "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image}[_parts[1]]
+                       "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
+                       "ai_nudge_seen": ai_nudge_seen}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -21410,7 +21695,8 @@ class H(BaseHTTPRequestHandler):
                 if "cand" in qs:
                     # 2026-10-13 (owner): "tell me when the next candidate is nearly ready" (En direct)
                     prefs.setdefault("_cand", {})[u["id"]] = qs["cand"][0] == "1"
-                if "tzo" in qs:
+                if "tzo" in qs and "Headless" not in (self.headers.get("User-Agent") or ""):
+                    # 2026-10-19: never from a headless browser (the VPS's own screenshots overwrote members' zones)
                     # 2026-10-15 (owner: every time in the member's local time): the phone's UTC offset
                     # (JS getTimezoneOffset: minutes, positive WEST of UTC) + its zone name, for pushes
                     try:
@@ -22729,6 +23015,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "ai_nudge":
+            self._send(json.dumps(ai_nudge(user), ensure_ascii=False), "application/json")
         elif sub == "chat_img":
             import urllib.parse as _upr
             _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
@@ -23191,6 +23479,7 @@ def _cand_watch():
 if __name__ == "__main__":
     print(f"OwlNest v2 serving on port {PORT}, token {TOKEN}")
     threading.Thread(target=_cand_watch, daemon=True).start()
+    threading.Thread(target=_companion_loop, daemon=True).start()     # 2026-10-19: the workshop AI reaches out on its own
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 
