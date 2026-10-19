@@ -14787,12 +14787,14 @@ def chat_test(user, body):
     if not t.get("ok"):
         return t
     c["robot_id"] = rid
-    c["test"] = {"rid": rid, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "state": "queued", "rev": c.get("rev")}
+    # a formula entry runs the robot and its parent in two passes: measured 16 min on 2026-10-19 (5 for the others)
+    mins = (t.get("minutes") or ROBOT_TEST_MIN) + (11 if (rob.get("entry") or {}).get("rule", {}).get("event") == "formula" else 0)
+    c["test"] = {"rid": rid, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "state": "queued", "rev": c.get("rev"), "minutes": mins}
     en = c.get("lang") == "en"
-    _chat_msg(c, "test", text=("Test started: about %d minutes. I'll tell you what it gives." % (t.get("minutes") or ROBOT_TEST_MIN)) if en else
-              ("Test lancé : environ %d minutes. Je te dis ce que ça donne." % (t.get("minutes") or ROBOT_TEST_MIN)))
+    _chat_msg(c, "test", text=("Test started: about %d minutes. I'll tell you what it gives." % mins) if en else
+              ("Test lancé : environ %d minutes. Je te dis ce que ça donne." % mins))
     _chat_save(c)
-    return {"ok": True, "rid": rid, "minutes": t.get("minutes") or ROBOT_TEST_MIN}
+    return {"ok": True, "rid": rid, "minutes": mins}
 
 
 def chat_list(user):
