@@ -60,11 +60,32 @@ def add(sym, rid, fresh=False, uid=None, nm=None):
     return True
 
 
+def lock_held():
+    """a luck test is running when one of the journal locks is held (more reliable than reading process lists)"""
+    import glob, msvcrt
+    for f in glob.glob(os.path.join(LDIR, "*.lock")):
+        try:
+            h = open(f, "a")
+        except OSError:
+            return os.path.basename(f)
+        try:
+            msvcrt.locking(h.fileno(), msvcrt.LK_NBLCK, 1)
+            msvcrt.locking(h.fileno(), msvcrt.LK_UNLCK, 1)
+        except OSError:
+            return os.path.basename(f)
+        finally:
+            h.close()
+    return None
+
+
 def kick():
     q = load()
     todo = [e for e in q if not finished(e) and int(e.get("starts") or 0) < 30]     # 30 starts without a verdict = broken, skip it
     if not todo:
         return "nothing queued"
+    held = lock_held()
+    if held:
+        return "busy: luck test running (%s)" % held
     busy = heavy_running()
     if busy:
         return "busy: " + "; ".join(busy)                    # a luck test (or another heavy job) is running

@@ -1,7 +1,7 @@
 {
  "symbol": "XAUUSD",
  "robot": "owl-sans-orage",
- "seeds": 40,
+ "seeds": 51,
  "real": {
   "net": 59.87,
   "trades": 105,
@@ -12,17 +12,17 @@
   "later_half": 29.54
  },
  "control": {
-  "median": -4.17,
+  "median": -3.4,
   "p05": -30.15,
   "p25": -15.95,
-  "p75": 28.08,
-  "p95": 82.52,
-  "mean": 7.168750000000001,
-  "share_positive": 0.375,
-  "median_trades": 92,
-  "median_pf": 0.976
+  "p75": 36.64,
+  "p95": 74.02,
+  "mean": 8.900392156862745,
+  "share_positive": 0.43137254901960786,
+  "median_trades": 84,
+  "median_pf": 1.088
  },
- "percentile": 87.5,
+ "percentile": 88.23529411764706,
  "verdict": "within luck",
  "nets": [
   37.73,
@@ -64,7 +64,21 @@
   -30.15,
   21.13,
   -7.96,
-  -21.14
+  -21.14,
+  2.01,
+  37.71,
+  12.2,
+  -4.69,
+  12.89,
+  -18.67,
+  36.64,
+  -22.17,
+  -10.14,
+  47.37,
+  74.02
  ],
- "generated_at": "2026-10-18T22:34:14Z"
+ "generated_at": "2026-10-19T07:24:46Z",
+ "rule": "100 draws, at most 5 as good",
+ "beats": 6,
+ "stopped_early": true
 }

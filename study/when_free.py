@@ -28,10 +28,10 @@ def free_gb():
 def heavy_running(ignore_pid=None):
     try:
         out = subprocess.run(["powershell", "-NoProfile", "-Command",
-                              "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | ForEach-Object { $_.ProcessId.ToString() + '|' + $_.CommandLine }"],
+                              "Get-CimInstance Win32_Process -Filter \"Name='python.exe' or Name='pythonw.exe'\" | ForEach-Object { $_.ProcessId.ToString() + '|' + $_.CommandLine }"],
                              capture_output=True, text=True, timeout=60).stdout
     except Exception:
-        return []
+        return ["(process list unavailable - assume busy)"]     # 2026-10-19: cannot tell = busy, never start a second job
     found = []
     for ln in out.splitlines():
         pid, _, cmd = ln.partition("|")

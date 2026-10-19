@@ -1,0 +1,16 @@
+{
+ "rid": "owl-sans-orage",
+ "sym": "XAUUSD",
+ "real": 59.87,
+ "max": 100,
+ "allow": 5,
+ "started": "2026-10-19T04:59:36Z",
+ "why": null,
+ "state": "fail",
+ "n": 51,
+ "beats": 6,
+ "updated": "2026-10-19T07:24:46Z",
+ "sec_per_draw": 792,
+ "best": 100.56,
+ "eta_h": 10.8
+}

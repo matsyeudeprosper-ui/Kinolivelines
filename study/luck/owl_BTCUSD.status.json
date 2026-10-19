@@ -1,0 +1,16 @@
+{
+ "rid": "owl",
+ "sym": "BTCUSD",
+ "real": 201.49,
+ "max": 100,
+ "allow": 5,
+ "started": "2026-10-19T07:36:01Z",
+ "why": null,
+ "state": "running",
+ "n": 44,
+ "beats": 0,
+ "updated": "2026-10-19T08:24:53Z",
+ "sec_per_draw": 732,
+ "best": 163.45,
+ "eta_h": 11.4
+}

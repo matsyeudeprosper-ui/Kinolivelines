@@ -1,0 +1,45 @@
+{"kind": "head", "real": 201.49, "trades": 131, "sha": "dd72e0456c6b1943", "opps": 1210, "bars": 86358, "max": 100, "allow": 5, "at": "2026-10-19T07:36:01Z", "imported": {"n": 40, "from": "2026-10-18T03:51:13Z"}}
+{"kind": "draw", "sd": 0, "net": -7.34, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 1, "net": 14.55, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 2, "net": -11.97, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 3, "net": -65.44, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 4, "net": 36.9, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 5, "net": -15.91, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 6, "net": 40.39, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 7, "net": -7.57, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 8, "net": 42.43, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 9, "net": 2.09, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 10, "net": -0.38, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 11, "net": -6.75, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 12, "net": 56.66, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 13, "net": 47.4, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 14, "net": 3.23, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 15, "net": 18.82, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 16, "net": 3.21, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 17, "net": -12.92, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 18, "net": -42.61, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 19, "net": 58.75, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 20, "net": -13.87, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 21, "net": -2.25, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 22, "net": -18.59, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 23, "net": -33.17, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 24, "net": -9.58, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 25, "net": 163.45, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 26, "net": -13.62, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 27, "net": 88.61, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 28, "net": 19.83, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 29, "net": 74.92, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 30, "net": 0.72, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 31, "net": 4.75, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 32, "net": 63.85, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 33, "net": 18.25, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 34, "net": -14.11, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 35, "net": -20.45, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 36, "net": -17.87, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 37, "net": 6.52, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 38, "net": 60.98, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 39, "net": -6.87, "imported": "2026-10-18T03:51:13Z"}
+{"kind": "draw", "sd": 40, "net": -9.23, "trades": 91, "pf": 0.931, "sec": 647, "at": "2026-10-19T07:46:48Z"}
+{"kind": "draw", "sd": 41, "net": 69.43, "trades": 88, "pf": 1.57, "sec": 879, "at": "2026-10-19T08:01:27Z"}
+{"kind": "draw", "sd": 42, "net": -9.92, "trades": 86, "pf": 0.926, "sec": 692, "at": "2026-10-19T08:13:00Z"}
+{"kind": "draw", "sd": 43, "net": 80.75, "trades": 105, "pf": 1.568, "sec": 712, "at": "2026-10-19T08:24:53Z"}

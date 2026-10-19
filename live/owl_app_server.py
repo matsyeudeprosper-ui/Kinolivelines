@@ -14221,8 +14221,11 @@ def piece_create(user, body):
     while pid in ids:
         pid = "%s-%d" % (base, n); n += 1
     fr, en = D.describe(kind, c)
+    _pl = str(body.get("plain") or "").strip()[:240]       # 2026-10-19: the workshop AI's own plain words come first
+    if _pl:
+        fr = en = _pl
     P.append({"id": pid, "type": kind, "name_fr": name, "name_en": name, "plain_fr": fr, "plain_en": en, "status": "new",
-              "rule": c, "live": True, "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
+              "rule": c, "live": not D.is_formula(kind, c), "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
               "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "public": bool(is_admin(user))})
     reg["pieces"] = P
     _robot_save(reg)
@@ -14484,6 +14487,336 @@ def ai_build(user, body):
         j["robot"] = r["id"]
         _ai_save(j)
     return r
+
+
+# ---- 2026-10-19 (owner): L'ATELIER - a robot built by chatting with the AI, which makes any piece it needs ----
+# One chat = one robot (live/robots/chats/<id>.json). Each member message = one tool-less model call in a thread
+# (live/robots/robot_chat.py validates everything it returns). The page polls chat_get. "Tester" saves the robot
+# (its new pieces + the robot, or an update of the robot the chat edits) and queues the usual bench test; when the
+# result lands, chat_get adds it to the chat and the AI comments it on its own.
+CHAT_DIR = os.path.join(DIR, "robots", "chats")
+CHAT_DAY_CAP = 80            # member messages a day (admin: no cap)
+
+
+def _rc():
+    import importlib
+    if os.path.join(DIR, "robots") not in sys.path:
+        sys.path.insert(0, os.path.join(DIR, "robots"))
+    return importlib.import_module("robot_chat")
+
+
+def _chat_path(cid):
+    return os.path.join(CHAT_DIR, cid + ".json")
+
+
+def _chat_load(user, cid):
+    import re as _re
+    if not _re.match(r"^[A-Za-z0-9_]+$", cid or ""):
+        return None
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+    except Exception:
+        return None
+    if c.get("uid") != user.get("id") and not is_admin(user):
+        return None
+    return c
+
+
+def _chat_save(c):
+    os.makedirs(CHAT_DIR, exist_ok=True)
+    c["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    tmp = _chat_path(c["id"]) + ".tmp"
+    json.dump(c, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, _chat_path(c["id"]))
+
+
+def _chat_msg(c, role, **kw):
+    m = {"role": role, "t": int(time.time())}
+    m.update(kw)
+    c.setdefault("msgs", []).append(m)
+    return m
+
+
+def _chat_pieces(user):
+    return builder_payload(user, is_admin(user)).get("pieces") or []
+
+
+def chat_start(user, body):
+    """a new chat; with robot=<id> of one of my robots, the chat starts from that robot (editing)"""
+    os.makedirs(CHAT_DIR, exist_ok=True)
+    me = user.get("id")
+    en = str(body.get("lang") or "fr") == "en"
+    robot, rid, nm = None, None, None
+    if body.get("robot"):
+        reg = robot_reg(); byid = {r["id"]: r for r in reg.get("robots") or []}
+        r = byid.get(str(body["robot"]))
+        if r is None or not (_robot_mine(user, r) or is_admin(user)) or r.get("id") == "owl":
+            return {"ok": False, "err": "not_yours"}
+        parts = robot_resolve(r["id"], byid)
+        robot = {"name": (r.get("name_fr") or r["id"])[:30], "filters": [{"use": f} for f in parts.get("filters") or []]}
+        for k in ("entry", "stop", "exit", "recovery", "money"):
+            if parts.get(k):
+                robot[k] = {"use": parts[k]}
+        rid, nm = r["id"], robot["name"]
+    cid = "%s_%d" % (re.sub(r"[^A-Za-z0-9]", "", me) or "u", int(time.time() * 1000))
+    c = {"id": cid, "uid": me, "lang": "en" if en else "fr", "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+         "status": "ready", "robot": robot, "robot_id": rid, "rev": 1 if robot else 0, "msgs": []}
+    if rid:
+        _chat_msg(c, "ai", text=("We're picking « %s » back up. What would you like to change?" % nm) if en else
+                  ("On reprend « %s ». Qu'est-ce que tu veux changer ?" % nm),
+                  chips=(["It loses too much", "Fewer trades", "Change the exit", "Explain it to me"] if en else
+                         ["Il perd trop", "Moins de trades", "Changer la sortie", "Explique-le-moi"]))
+    else:
+        _chat_msg(c, "ai", text=("Hi! Tell me your robot idea in your own words - when it buys, when it sells, when it gets out. "
+                                 "Rough is fine, we'll sharpen it together.") if en else
+                  ("Salut ! Raconte-moi ton idée de robot avec tes mots : quand il achète, quand il vend, quand il sort. "
+                   "Pas besoin que ce soit parfait, on l'affine ensemble."),
+                  chips=(["I have an entry idea", "Start from the Owl", "I don't know where to start"] if en else
+                         ["J'ai une idée d'entrée", "Pars de l'Owl", "Je ne sais pas par où commencer"]))
+    _chat_save(c)
+    return {"ok": True, "id": cid}
+
+
+def _chat_day_count(me):
+    day0 = int(time.time()) - int(time.time()) % 86400; n = 0
+    try:
+        for f in os.listdir(CHAT_DIR):
+            if f.startswith(re.sub(r"[^A-Za-z0-9]", "", me) + "_") and f.endswith(".json"):
+                try:
+                    c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+                    n += sum(1 for m in c.get("msgs") or [] if m.get("role") == "user" and int(m.get("t") or 0) >= day0)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return n
+
+
+def _chat_turn(cid, user):
+    """background: one AI turn"""
+    c = None
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        rc = _rc()
+        ans, probs = rc.answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"))
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))       # the member may have edited meanwhile
+        en = c.get("lang") == "en"
+        if ans is None:
+            _chat_msg(c, "ai", text="Oops, I lost my train of thought. Can you send that again?" if en else
+                      "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?", chips=[], err=True)
+        else:
+            if ans.get("robot"):
+                c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+            txt = ans.get("say") or ("Done." if en else "C'est fait.")
+            if probs:
+                txt += ("\n\n(One piece didn't pass the checks, so I kept the previous one.)" if en else
+                        "\n\n(Une pièce n'a pas passé les contrôles, j'ai gardé l'ancienne.)")
+            _chat_msg(c, "ai", text=txt, chips=ans.get("chips") or [], made=ans.get("made") or [], rev=c.get("rev"),
+                      ready=bool(ans.get("ready")), probs=probs[:4] if probs else None)
+            if ans.get("understood"):
+                c["understood"] = ans["understood"]
+        c["status"] = "ready"
+        _chat_save(c)
+    except Exception as e:
+        try:
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            c["status"] = "ready"
+            _chat_msg(c, "ai", text="Oups, petit souci de mon côté (%s). Réessaie dans un instant." % str(e)[:60], chips=[], err=True)
+            _chat_save(c)
+        except Exception:
+            pass
+
+
+def chat_send(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    if c.get("status") == "thinking":
+        return {"ok": False, "err": "busy"}
+    text = str(body.get("text") or "").strip()
+    if not text:
+        return {"ok": False, "err": "empty"}
+    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
+        return {"ok": False, "err": "cap"}
+    _chat_msg(c, "user", text=text[:1500])
+    c["status"] = "thinking"
+    _chat_save(c)
+    threading.Thread(target=_chat_turn, args=(c["id"], user), daemon=True).start()
+    return {"ok": True}
+
+
+def _chat_result(c):
+    """the bench result of the chat's robot, once it is newer than the test request"""
+    t = c.get("test") or {}
+    if not t.get("rid") or t.get("state") == "done":
+        return None
+    try:
+        res = json.load(open(os.path.join(DIR, "robots", "results", t["rid"] + ".json"), encoding="utf-8"))
+    except Exception:
+        return None
+    if str(res.get("generated_at") or "") < t.get("at", ""):
+        return None
+    r, p = res.get("robot") or {}, res.get("parent_result") or {}
+    return {"net": r.get("net"), "trades": r.get("trades"), "win_rate": r.get("win_rate"), "profit_factor": r.get("profit_factor"),
+            "dip": r.get("cc_dd"), "first_half": r.get("first_half"), "later_half": r.get("later_half"), "worst": r.get("worst"),
+            "best": r.get("best"), "loss_streak": r.get("max_loss_streak"), "days": res.get("days"),
+            "owl_net": p.get("net"), "owl_trades": p.get("trades"), "owl_dip": p.get("cc_dd"), "curve": (r.get("curve") or [])[-60:],
+            "owl_curve": (p.get("curve") or [])[-60:]}
+
+
+def chat_get(user, cid):
+    c = _chat_load(user, cid)
+    if c is None:
+        return {"err": "missing"}
+    res = _chat_result(c)
+    if res is not None and c.get("status") != "thinking":
+        c["test"]["state"] = "done"
+        _chat_msg(c, "result", result=res)
+        c["status"] = "thinking"
+        _chat_save(c)
+        threading.Thread(target=_chat_turn, args=(c["id"], user), daemon=True).start()
+    if (c.get("test") or {}).get("state") == "queued":
+        try:
+            reg = robot_reg()
+            q = [x["id"] for x in reg.get("robots") or [] if x.get("stage") in ("queued", "testing") or x.get("retest")]
+            r = next((x for x in reg.get("robots") or [] if x["id"] == c["test"]["rid"]), {})
+            c["test"]["ahead"] = q.index(r["id"]) if r.get("id") in q else 0
+            c["test"]["stage"] = r.get("stage")
+        except Exception:
+            pass
+    out = {k: v for k, v in c.items() if k != "uid"}
+    out["view"] = _rc().view(c.get("robot"), _chat_pieces(user))
+    for m in out.get("msgs") or []:
+        m.pop("probs", None)
+    return out
+
+
+def chat_edit(user, body):
+    """the member changes a piece by hand: a whole slot (or a filter, or removes one), or the name"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot"):
+        return {"ok": False, "err": "missing"}
+    if c.get("status") == "thinking":
+        return {"ok": False, "err": "busy"}
+    rob = json.loads(json.dumps(c["robot"]))
+    slot = str(body.get("slot") or "")
+    en = c.get("lang") == "en"
+    if slot == "name":
+        nm = str(body.get("name") or "").strip()[:30]
+        if len(nm) < 2:
+            return {"ok": False, "err": "name"}
+        rob["name"] = nm; note = "renamed the robot to « %s »" % nm
+    elif slot == "filters":
+        F = rob.get("filters") or []
+        i = body.get("index")
+        if body.get("remove"):
+            if not isinstance(i, int) or not 0 <= i < len(F):
+                return {"ok": False, "err": "index"}
+            F.pop(i); note = "removed filter %d" % (i + 1)
+        else:
+            pc = body.get("piece")
+            if isinstance(i, int) and 0 <= i < len(F):
+                F[i] = pc; note = "changed filter %d" % (i + 1)
+            else:
+                F.append(pc); note = "added a filter"
+        rob["filters"] = F
+    elif slot in ("entry", "stop", "exit", "recovery", "money"):
+        rob[slot] = body.get("piece"); note = "changed the %s" % slot
+    else:
+        return {"ok": False, "err": "slot"}
+    ans, probs = _rc().clean({"robot": rob}, _chat_pieces(user), _ai_owl(), c["robot"])
+    if probs:
+        return {"ok": False, "err": "check", "why": probs[:3]}
+    c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+    _chat_msg(c, "edit", note_en=note + ": " + json.dumps(body.get("piece") or {}, ensure_ascii=False)[:300],
+              text=("You " + note) if en else ("Modifié à la main : " + {"name": "le nom", "filters": "les filtres", "entry": "l'entrée", "stop": "le stop",
+                                                                          "exit": "la sortie", "recovery": "le rattrapage", "money": "l'argent"}.get(slot, slot)))
+    _chat_save(c)
+    return {"ok": True, "rev": c["rev"]}
+
+
+def chat_check(user, body):
+    """live check of a formula or a rule while the member types (no save)"""
+    D = _dsl()
+    kind = str(body.get("type") or "")
+    ok, cl = D.validate(kind, body.get("rule"))
+    if not ok:
+        return {"ok": False, "err": cl}
+    fr, en = D.describe(kind, cl)
+    return {"ok": True, "rule": cl, "fr": fr, "en": en, "formula": D.is_formula(kind, cl)}
+
+
+def chat_test(user, body):
+    """save the chat's robot (new pieces + robot, or an update of the robot it edits) and queue its test"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot"):
+        return {"ok": False, "err": "missing"}
+    rob = c["robot"]
+
+    def pid_of(kind, s):
+        if s.get("use"):
+            return s["use"]
+        r = piece_create(user, {"type": kind, "rule": s["rule"], "name": s.get("name") or kind, "plain": s.get("plain") or ""})
+        if r.get("ok") or r.get("err") == "exists":
+            return r["id"]
+        raise ValueError(r.get("err"))
+    try:
+        parts = {k: pid_of(k, rob[k]) for k in ("entry", "stop", "exit") if rob.get(k)}
+        for k in ("recovery", "money"):
+            if (rob.get(k) or {}).get("use"):
+                parts[k] = rob[k]["use"]
+        parts["filters"] = [pid_of("filter", f) for f in rob.get("filters") or []]
+    except Exception as e:
+        return {"ok": False, "err": "piece:" + str(e)[:40]}
+    owl = _ai_owl()
+    diff = {k: v for k, v in parts.items() if v is not None and v != owl.get(k)}
+    if not diff:
+        return {"ok": False, "err": "same"}
+    rid = c.get("robot_id")
+    reg = robot_reg()
+    mine = next((x for x in reg.get("robots") or [] if x.get("id") == rid), None) if rid else None
+    if mine is not None and (_robot_mine(user, mine) or is_admin(user)):
+        r = robot_update(user, {"id": rid, "parts": diff, "name": rob.get("name")})
+    else:
+        r = robot_create(user, {"name": rob.get("name") or "Mon robot", "parent": "owl", "parts": diff})
+        if r.get("ok"):
+            rid = r["id"]
+    if not r.get("ok"):
+        return r
+    t = robot_test(user, {"id": rid, "again": True})
+    if not t.get("ok"):
+        return t
+    c["robot_id"] = rid
+    c["test"] = {"rid": rid, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "state": "queued", "rev": c.get("rev")}
+    en = c.get("lang") == "en"
+    _chat_msg(c, "test", text=("Test started: about %d minutes. I'll tell you what it gives." % (t.get("minutes") or ROBOT_TEST_MIN)) if en else
+              ("Test lancé : environ %d minutes. Je te dis ce que ça donne." % (t.get("minutes") or ROBOT_TEST_MIN)))
+    _chat_save(c)
+    return {"ok": True, "rid": rid, "minutes": t.get("minutes") or ROBOT_TEST_MIN}
+
+
+def chat_list(user):
+    me = re.sub(r"[^A-Za-z0-9]", "", user.get("id") or "")
+    out = []
+    try:
+        for f in sorted(os.listdir(CHAT_DIR), reverse=True):
+            if not f.endswith(".json") or not (f.startswith(me + "_") or is_admin(user)):
+                continue
+            try:
+                c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+            except Exception:
+                continue
+            if c.get("uid") != user.get("id"):
+                continue
+            last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "ai")), {})
+            out.append({"id": c["id"], "name": (c.get("robot") or {}).get("name"), "updated": c.get("updated"), "robot_id": c.get("robot_id"),
+                        "last": str(last.get("text") or "")[:90], "n": sum(1 for m in c.get("msgs") or [] if m.get("role") == "user"),
+                        "understood": c.get("understood")})
+            if len(out) >= 30:
+                break
+    except Exception:
+        pass
+    return {"chats": out}
 
 
 # ---- 2026-10-13 (owner, step 4): plugging a robot onto a real account (owner only) ----
@@ -19476,7 +19809,8 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
-                                              "robot_markets", "robot_test_market", "robot_test_markets", "robot_control"):
+                                              "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
+                                              "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -19489,7 +19823,9 @@ class H(BaseHTTPRequestHandler):
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
-                       "robot_test_markets": robot_test_markets, "robot_control": robot_control}[_parts[1]]
+                       "robot_test_markets": robot_test_markets, "robot_control": robot_control,
+                       "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
+                       "chat_check": chat_check}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -21814,6 +22150,21 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub in ("atelier", "chat_get", "chat_list"):
+            # 2026-10-19 (owner): L'atelier - build a robot by chatting with the AI (Strategie members + admin, from disk)
+            _ok = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
+            import urllib.parse as _upr
+            _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            if sub == "atelier":
+                if not _ok:
+                    self.send_response(302); self.send_header("Location", "/%s/robots" % parts[0]); self.end_headers(); return
+                self._send(open(os.path.join(DIR, "owl_atelier_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            elif not _ok:
+                self._send(json.dumps({"err": "strategy"}), "application/json")
+            elif sub == "chat_get":
+                self._send(json.dumps(chat_get(user, _q.get("id", [""])[0]), ensure_ascii=False), "application/json")
+            else:
+                self._send(json.dumps(chat_list(user), ensure_ascii=False), "application/json")
         elif sub in ("chart_replay", "studio_get", "ai_get"):
             # 2026-10-12 (owner): the chart studio - a past day replayed with the structure as it was at
             # each candle (Strategie / admin), and a recorded session's observations

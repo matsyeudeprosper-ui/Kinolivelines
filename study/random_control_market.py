@@ -26,6 +26,15 @@ import sys, os, json, time, pickle, random, bisect
 ARGS = list(sys.argv); sys.argv = ["x"]
 FLAGS = {a.split("=", 1)[0]: (a.split("=", 1)[1] if "=" in a else True) for a in ARGS if a.startswith("--")}
 ARGS = [a for a in ARGS if not a.startswith("--")]
+if FLAGS.get("--journal"):
+    # 2026-10-19: take the journal's lock BEFORE the 10-minute replay of the robot, so a second start leaves at once
+    import msvcrt as _ms
+    _jd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "luck"); os.makedirs(_jd, exist_ok=True)
+    _LOCK = open(os.path.join(_jd, "%s_%s.lock" % (ARGS[2] if len(ARGS) > 2 else "owl", (ARGS[1] if len(ARGS) > 1 else "USTEC").upper())), "w")
+    try:
+        _ms.locking(_LOCK.fileno(), _ms.LK_NBLCK, 1)
+    except OSError:
+        print("already running"); sys.exit(0)
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); sys.path.insert(0, r"C:\Projects\KinoliveLines\live"); sys.path.insert(0, r"C:\Projects\KinoliveLines\live\lab")
 import robot_runner as RR
@@ -109,11 +118,12 @@ def journal():
     os.makedirs(JDIR, exist_ok=True)
     base = os.path.join(JDIR, "%s_%s" % (rid, sym))
     jp, sp = base + ".jsonl", base + ".status.json"
-    lk = open(base + ".lock", "w")
-    try:
-        msvcrt.locking(lk.fileno(), msvcrt.LK_NBLCK, 1)       # one process per journal; the OS frees it if we die
-    except OSError:
-        print("already running"); return 0
+    if "_LOCK" not in globals():                              # (the lock is taken at start in journal mode)
+        lk = open(base + ".lock", "w")
+        try:
+            msvcrt.locking(lk.fileno(), msvcrt.LK_NBLCK, 1)   # one process per journal; the OS frees it if we die
+        except OSError:
+            print("already running"); return 0
     rn = round(real["net"], 2)
     now = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     head = {"kind": "head", "real": rn, "trades": real["trades"], "sha": meta.get("sha256"), "opps": len(opps), "bars": len(D),
