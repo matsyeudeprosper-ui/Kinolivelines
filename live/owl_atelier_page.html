@@ -208,6 +208,48 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 .tl.on{background:var(--accent-bg);border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.25)}
 .bpdemo{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;border:1px solid rgba(167,139,250,.4);background:linear-gradient(135deg,rgba(167,139,250,.12),var(--surface));border-radius:14px;padding:12px;font-weight:800;font-size:.88rem;cursor:pointer;color:var(--text)}
 .bpdemo svg{width:18px;height:18px;color:var(--violet-soft)}
+
+/* ===== 2026-10-19: messenger look (familiar like WhatsApp, in the nest's colours) ===== */
+:root{--wa-bg:#0b141a;--wa-in:#1f2c34;--wa-out:#144d42;--wa-out2:#0f3f37;--wa-txt:#e9edef;--wa-meta:rgba(233,237,239,.6);--wa-tick:#53bdeb;--wa-acc:#00a884;--wa-bar:#111b21}
+:root[data-theme="light"]{--wa-bg:#efeae2;--wa-in:#ffffff;--wa-out:#d9fdd3;--wa-out2:#cdf5c6;--wa-txt:#111b21;--wa-meta:#667781;--wa-tick:#3a9ee0;--wa-acc:#00a884;--wa-bar:#f0f2f5}
+body{background:var(--wa-bg)}body:before{display:none}
+header{background:var(--wa-bar);padding-bottom:10px;gap:8px;border-bottom:1px solid rgba(255,255,255,.04)}
+header .ib{border:0;background:transparent;width:36px}
+.kav{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#6d5cf6,#3b82f6);font-size:21px;position:relative;box-shadow:0 4px 14px rgba(109,92,246,.35)}
+.kav i{position:absolute;right:0;bottom:1px;width:11px;height:11px;border-radius:50%;background:var(--wa-acc);border:2px solid var(--wa-bar)}
+.ttl b{font-size:1.06rem}.ttl small{font-size:.76rem;color:var(--wa-meta)}.ttl small.on{color:var(--wa-acc);font-weight:600}
+.strip{background:var(--wa-bar);padding-top:2px;mask-image:none;-webkit-mask-image:none}
+.chat{padding:8px 12px 24px;background-color:var(--wa-bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.045' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='M18 30v22M14 36h8v10h-8zM46 20v16M42 24h8v6h-8zM120 112l14-14 10 8 14-18M30 120a10 10 0 1 0 20 0a10 10 0 1 0-20 0M36 118h.1M44 118h.1M96 30l6 10h-12zM70 80h20M80 70v20M128 40a6 6 0 1 0 12 0a6 6 0 1 0-12 0M12 92l10 6-10 6M140 140h10M100 140v-12'/%3E%3C/g%3E%3C/svg%3E");background-size:220px}
+:root[data-theme="light"] .chat{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='.05' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='M18 30v22M14 36h8v10h-8zM46 20v16M42 24h8v6h-8zM120 112l14-14 10 8 14-18M30 120a10 10 0 1 0 20 0a10 10 0 1 0-20 0M96 30l6 10h-12zM70 80h20M80 70v20M128 40a6 6 0 1 0 12 0a6 6 0 1 0-12 0'/%3E%3C/g%3E%3C/svg%3E")}
+.m{margin:2px 0;gap:0;animation:pop .25s cubic-bezier(.2,.8,.2,1) both}
+.m.gap{margin-top:10px}
+.m.ai .av{display:none}
+.bub{position:relative;max-width:min(560px,84%);padding:6px 9px 7px;border-radius:9px;font-size:.96rem;line-height:1.42;box-shadow:0 1px .5px rgba(0,0,0,.18)}
+.m.ai .bub{background:var(--wa-in);color:var(--wa-txt);border:0;border-bottom-left-radius:9px}
+.m.me .bub{background:var(--wa-out);color:var(--wa-txt);border-bottom-right-radius:9px;box-shadow:0 1px .5px rgba(0,0,0,.18)}
+.m.ai.tail .bub{border-top-left-radius:0}.m.me.tail .bub{border-top-right-radius:0}
+.m.ai.tail .bub:before{content:"";position:absolute;left:-7px;top:0;border-top:9px solid var(--wa-in);border-left:8px solid transparent}
+.m.me.tail .bub:before{content:"";position:absolute;right:-7px;top:0;border-top:9px solid var(--wa-out);border-right:8px solid transparent}
+.meta{float:right;margin:8px -2px -5px 12px;font-size:.66rem;line-height:1;color:var(--wa-meta);display:inline-flex;align-items:center;gap:3px;white-space:nowrap;user-select:none}
+.meta svg{width:16px;height:11px}.meta .rd{color:var(--wa-tick)}
+.m.me .bub code,.m.ai .bub code{background:rgba(255,255,255,.08)}
+.day{display:flex;justify-content:center;margin:12px 0 8px;position:sticky;top:4px;z-index:2}.day span{background:var(--wa-in);color:var(--wa-meta);font-size:.74rem;font-weight:600;padding:5px 12px;border-radius:8px;box-shadow:0 1px .5px rgba(0,0,0,.2)}
+.att{margin-left:0!important;max-width:min(600px,92%)}.chips{margin-left:0;margin-top:6px}
+.chip{background:var(--wa-in);border-color:transparent;color:var(--wa-acc);font-weight:700;box-shadow:0 1px .5px rgba(0,0,0,.2)}
+.sys span{background:var(--wa-in);border:0;color:var(--wa-meta)}
+.typing .bub,.live .bub{background:var(--wa-in)}
+.bld{margin-left:4px}
+.react{left:auto;right:6px;bottom:-15px}
+.comp{background:transparent;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.wrow{display:flex;align-items:flex-end;gap:6px}
+.cbox{flex:1;background:var(--wa-in);border:0;border-radius:24px;padding:4px 6px 4px 4px;box-shadow:0 1px .5px rgba(0,0,0,.2)}
+.cbox:focus-within{border:0}
+.cbox .tool{color:var(--wa-meta)}
+.send{width:48px;height:48px;border-radius:50%;background:var(--wa-acc);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.send svg{width:21px;height:21px}
+.send:disabled{opacity:.6}
+.send.on{background:var(--down);animation:pulse 1.2s infinite}
+.hint{font-size:.64rem;opacity:.75}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -226,7 +268,7 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
  <div class="col">
   <header>
    <a class="ib" href="robots" id="bk" aria-label="Retour"><svg><use href="#back"/></svg></a>
-   <div class="ttl" id="ttl" onclick="renameSh()"><b><span id="tn">L'atelier</span><svg><use href="#pen"/></svg></b><small id="ts">Construis ton robot en parlant</small></div>
+   <div class="kav" onclick="location.href='kino'">🦉<i></i></div><div class="ttl" id="ttl" onclick="renameSh()"><b><span id="tn">Kino</span></b><small id="ts">en ligne</small></div>
    <button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button>
    <button class="ring" onclick="bpSh()" aria-label="Le plan du robot"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="rf" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg><b id="rn">0/6</b></button>
   </header>
@@ -234,7 +276,7 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
   <div class="chat" id="chat"></div>
   <div class="comp">
    <div class="micbar" id="micbar"><span class="mwave"><i></i><i></i><i></i><i></i><i></i></span><span class="mtx"><b id="micst"></b><small id="mictx"></small></span><button class="mbtn" id="micok" onclick="REC&&REC.stop()">Terminé</button><button class="mbtn x" onclick="micCancel()" aria-label="Annuler">✕</button></div>
-   <div class="cbox"><button class="tool" onclick="drawSh()" aria-label="Montrer sur un graphique" title="Montrer sur un graphique"><svg><use href="#chart"/></svg></button><button class="tool" onclick="$('imgf').click()" aria-label="Envoyer une capture" title="Envoyer une capture de ton graphique"><svg><use href="#clip"/></svg></button><input type="file" id="imgf" accept="image/*" style="display:none" onchange="imgPick(this)"><button class="tool" id="mic" onclick="mic()" aria-label="Parler" title="Parler"><svg><use href="#mic"/></svg></button><textarea id="tx" rows="1" placeholder="Écris ton idée…" maxlength="1500"></textarea><button class="send" id="sd" onclick="send()" disabled aria-label="Envoyer"><svg><use href="#send"/></svg></button></div>
+   <div class="wrow"><div class="cbox"><button class="tool" onclick="drawSh()" aria-label="Montrer sur un graphique" title="Montrer sur un graphique"><svg><use href="#chart"/></svg></button><button class="tool" onclick="$('imgf').click()" aria-label="Envoyer une capture" title="Envoyer une capture de ton graphique"><svg><use href="#clip"/></svg></button><input type="file" id="imgf" accept="image/*" style="display:none" onchange="imgPick(this)"><textarea id="tx" rows="1" placeholder="Écris ton idée…" maxlength="1500"></textarea></div><button class="send" id="sdb" onclick="sendOrMic()" aria-label="Envoyer"><svg><use href="#mic"/></svg></button></div>
    <div class="hint" id="hint">Un test sur le passé ne promet rien pour la suite. Aucun argent n'est engagé.</div>
   </div>
  </div>
@@ -299,8 +341,7 @@ function paintBP(flash){$('bp').innerHTML=bpHTML();const v=C&&C.view;
  if(v)s='<button class="sp mk" onclick="mkSh()"><i>$</i>'+esc(v.market||'BTCUSD')+'</button>'+s;
  $('strip').innerHTML=s;
  const f=v?changed():0,tot=6;$('rn').textContent=(v?filled():0)+'/6';$('rf').style.strokeDashoffset=String(100.5*(1-(v?filled():0)/tot));
- if(v){$('tn').textContent=v.name||T('Mon robot','My robot');$('ts').textContent=C.understood||T('Construit avec l’IA','Built with the AI');}
- else{$('tn').textContent=T('Nouveau robot','New robot');$('ts').textContent=T('Raconte-moi ton idée','Tell me your idea');}   // a new chat never shows the last robot's name
+ hdr();
  if(flash&&flash.length)setTimeout(()=>flash.forEach(k=>document.querySelectorAll('[data-k="'+k+'"]').forEach(e=>{e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash');})),60);}
 
 /* ---------- chat */
@@ -314,7 +355,8 @@ function resultCard(r){const pos=(r.net||0)>=0,wr=r.win_rate!=null?Math.round(r.
   '<div class="leg"><span><i style="background:'+(pos?'var(--up)':'var(--down)')+'"></i>'+T('ton robot','your robot')+'</span><span><i style="background:var(--muted)"></i>'+T('l’Owl','the Owl')+'</span></div>'+
   '<div class="q"><div><b>'+(r.trades==null?'—':r.trades)+'</b><span>trades</span></div><div><b>'+(wr==null?'—':wr+' %')+'</b><span>'+T('gagnés','won')+'</span></div><div><b class="neg">'+(r.dip==null?'—':'−$'+Math.round(r.dip))+'</b><span>'+T('pire baisse','worst dip')+'</span></div><div><b>'+(r.profit_factor==null?'—':(+r.profit_factor).toFixed(2))+'</b><span>'+T('gain/perte','gain/loss')+'</span></div></div></div>';}
 function msgHTML(m,i,last){
- if(m.role==='user')return '<div class="m me'+(m.react?' rx':'')+'"><div class="bub">'+md(m.text)+(m.react?'<span class="react">'+esc(m.react)+'</span>':'')+'</div></div>';
+ if(m.role==='user'){const rd=m.answered||m.react||C.msgs.slice(i+1).some(x=>x.role==='ai');
+  return '<div class="m me'+(m.react?' rx':'')+(m._tl?' tail gap':'')+'"><div class="bub">'+md(m.text)+'<span class="meta">'+hm2(m.t)+'<span class="'+(rd?'rd':'')+'">'+TICK+'</span></span>'+(m.react?'<span class="react">'+esc(m.react)+'</span>':'')+'</div></div>';}
  if(m.role==='edit')return '<div class="sys"><span><svg><use href="#pen"/></svg>'+esc(m.text)+'</span></div>';
  if(m.role==='test'){const t=C.test||{};if(t.state==='queued'&&last)return '<div class="att" style="margin-left:39px"><div class="run"><b>'+(t.mstate==='building'?T('Je prépare les prix de '+esc(t.sym)+' (première fois sur ce marché)','Preparing '+esc(t.sym)+'’s prices (first time on this market)'):T('Test en cours sur 42 jours de vrais prix','Testing on 42 days of real prices')+(t.sym?' · '+esc(t.sym):''))+'</b><small>'+(t.ahead?T(t.ahead+' test(s) avant le tien · ',t.ahead+' test(s) before yours · '):'')+T('environ '+(t.minutes||5)+' minutes, je te préviens ici','about '+(t.minutes||5)+' minutes, I’ll tell you here')+'</small><div class="pb"><i></i></div></div></div>';
   return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';}
@@ -325,7 +367,7 @@ function msgHTML(m,i,last){
  if(m.role==='demo')return demoHTML(m,i,last);
  // 2026-10-19: the AI sends two or three short messages in a row like a person (blank line = new bubble)
  const parts=String(m.text||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
- let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+'"><div class="av"'+(k<A.length-1?' style="visibility:hidden"':'')+'><svg><use href="#owl"/></svg></div><div class="bub">'+md(p)+'</div></div>').join('');
+ let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(p)+(k===A.length-1?'<span class="meta">'+hm2(m.t)+'</span>':'')+'</div></div>').join('');
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
  if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')]}[m.link];
   if(LK)h+='<div class="att"><a class="cta" style="text-decoration:none;color:inherit" href="'+LK[0]+'"><span class="ci"><svg><use href="#spark"/></svg></span><span><b>'+LK[1]+'</b><small>'+LK[2]+'</small></span></a></div>';}
@@ -343,16 +385,19 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  // a member it knows gets Kino typing its own greeting straight away - no generic screen that swaps under them
  const wel=fresh&&(M.length?(M[0].role==='ai'&&!M[0].event&&!M[0].quick):(C.status==='ready'&&!C.draft));
  if(wel)h+=welcome();
- M.forEach((m,i)=>{if(wel&&i===0)return;h+=msgHTML(m,i,i===M.length-1);});
+ let lastDay='',lastSide='';
+ M.forEach((m,i)=>{if(wel&&i===0)return;const dk=dayKey(m.t);if(m.t&&dk!==lastDay){h+='<div class="day"><span>'+dayLab(m.t)+'</span></div>';lastDay=dk;lastSide='';}
+  const side=m.role==='user'?'me':(m.role==='ai'?'ai':'x');m._tl=(side!=='x'&&side!==lastSide);if(side!=='x')lastSide=side;else lastSide='';
+  h+=msgHTML(m,i,i===M.length-1);});
  FAILED.forEach((t,k)=>{h+='<div class="m me"><div class="bub" style="opacity:.75">'+md(t)+'<div class="fl">⚠ '+T('Pas envoyé','Not sent')+' · <a href="#" onclick="resend('+k+');return false">'+T('Réessayer','Retry')+'</a></div></div></div>';});
  const dr=(C&&C.draft)||'';
  if(dr&&C.status!=='ready')h+='<div class="m ai live"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(dr)+'<span class="caret"></span></div></div>';
  else if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
  if(!dr&&C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?THINK[THINK_T%THINK.length]:T('Kino arrive…','Kino is on his way…'))+'</span></div></div>';
- el.innerHTML=h;drawAll();if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN||dr)el.scrollTop=el.scrollHeight;LASTN=M.length;
- $('sd').disabled=!($('tx').value.trim())||(C&&C.status==='thinking');}
+ el.innerHTML=h;drawAll();hdr();if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN||dr)el.scrollTop=el.scrollHeight;LASTN=M.length;
+ sdPaint();}
 function chip(b){$('tx').value=b.textContent;send();}
-function useIdea(b){$('tx').value=b.querySelector('span').textContent;autosize();$('tx').focus();$('sd').disabled=false;}
+function useIdea(b){$('tx').value=b.querySelector('span').textContent;autosize();$('tx').focus();sdPaint();}
 
 /* ---------- charts (2026-10-19 evening, owner: "demonstrate a piece of the idea from a custom chart, same for the AI:
    chart markings and even a play of auto trade to confirm a point or an understanding") */
@@ -410,7 +455,7 @@ function momentsHTML(m,i,last){const mo=m.moments||[];
 function playM(id,i,j){const x=C.msgs[i].moments[j];const st=CH[id]||(CH[id]={});clearInterval(st.timer);const ie=idxAt(x.candles,x.t);st.k=Math.max(5,ie-30);
  st.timer=setInterval(()=>{st.k++;const cv=$(id);if(cv)drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:st.k>=ie?x.marks:[],upto:st.k});if(st.k>=x.candles.length-1){clearInterval(st.timer);st.timer=null;}},65);}
 function voteM(j,yes){$('tx').value=yes?T('Le moment '+j+' : oui, c’est exactement ça.','Moment '+j+': yes, exactly that.'):T('Le moment '+j+' : non, pas comme ça. ','Moment '+j+': no, not like that. ');autosize();
- if(yes)send();else{$('tx').focus();$('sd').disabled=false;toast(T('Dis-moi ce qui cloche.','Tell me what’s off.'));}}
+ if(yes)send();else{$('tx').focus();sdPaint();toast(T('Dis-moi ce qui cloche.','Tell me what’s off.'));}}
 async function imgPick(inp){const f=inp.files&&inp.files[0];inp.value='';if(!f||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}
  try{const url=URL.createObjectURL(f);const im=new Image();await new Promise((ok,ko)=>{im.onload=ok;im.onerror=ko;im.src=url;});
   const sc=Math.min(1,1600/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);
@@ -434,7 +479,7 @@ function drawAll(){document.querySelectorAll('#chat canvas[data-m]').forEach(cv=
 function play(id,i,j){const m=C.msgs[i],t=m.trades[j];const st=CH[id]||(CH[id]={});clearInterval(st.timer);const ie=idxAt(t.candles,t.t_in);st.k=Math.max(5,ie-30);
  st.timer=setInterval(()=>{st.k++;const cv=$(id);if(cv)drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:st.k});if(st.k>=t.candles.length-1){clearInterval(st.timer);st.timer=null;}},ie>0?65:65);}
 function vote(j,yes){$('tx').value=yes?T('Le trade '+j+' : oui, c’est exactement ce genre de trade.','Trade '+j+': yes, that’s exactly the kind of trade.'):T('Le trade '+j+' : non, ce n’est pas ce que je veux. ','Trade '+j+': no, that’s not what I mean. ');autosize();
- if(yes)send();else{$('tx').focus();$('sd').disabled=false;toast(T('Dis-moi ce qui ne va pas dans ce trade.','Tell me what is wrong with that trade.'));}}
+ if(yes)send();else{$('tx').focus();sdPaint();toast(T('Dis-moi ce qui ne va pas dans ce trade.','Tell me what is wrong with that trade.'));}}
 async function demoAsk(){if(!CID)return;shClose();const j=await post('chat_demo',{id:CID});if(!j.ok){toast(ERR[j.err]||j.err);return;}load(CID,true);}
 /* the member's drawing chart */
 let DR=null;
@@ -475,12 +520,12 @@ let REC=null,RECON=false,RECBASE='';
 function micBar(state,txt){const b=$('micbar');if(!b)return;if(!state){b.classList.remove('on');return;}b.classList.add('on');b.dataset.s=state;
  $('micst').textContent={wait:T('J’active le micro…','Turning the mic on…'),on:T('Je t’écoute… parle','I’m listening… go ahead'),err:txt||''}[state]||'';
  $('mictx').textContent=state==='on'?(txt||''):'';$('micok').style.display=state==='on'?'':'none';}
-function micInit(){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){const m=$('mic');if(m)m.style.display='none';return;}
+function micInit(){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){const m=$('sdb');if(m)m.style.display='none';return;}
  REC=new S();REC.lang=EN?'en-US':'fr-FR';REC.interimResults=true;REC.continuous=false;
- REC.onstart=()=>{RECON=true;RECBASE=$('tx').value?$('tx').value+' ':'';$('mic').classList.add('on');micBar('on','');try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}};
- REC.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$('tx').value=RECBASE+s;autosize();$('sd').disabled=!$('tx').value.trim();micBar('on','« '+s+' »');};
- REC.onend=()=>{RECON=false;$('mic').classList.remove('on');const b=$('micbar');if(b&&b.dataset.s!=='err')micBar(null);if($('tx').value.trim())$('tx').focus();};
- REC.onerror=e=>{RECON=false;$('mic').classList.remove('on');const m={'not-allowed':T('Autorise le micro pour cette page (le cadenas à côté de l’adresse), puis réessaie.','Allow the microphone for this page (the padlock next to the address), then try again.'),
+ REC.onstart=()=>{RECON=true;RECBASE=$('tx').value?$('tx').value+' ':'';$('sdb').classList.add('on');micBar('on','');try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}};
+ REC.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$('tx').value=RECBASE+s;autosize();sdPaint();micBar('on','« '+s+' »');};
+ REC.onend=()=>{RECON=false;$('sdb').classList.remove('on');const b=$('micbar');if(b&&b.dataset.s!=='err')micBar(null);if($('tx').value.trim())$('tx').focus();};
+ REC.onerror=e=>{RECON=false;$('sdb').classList.remove('on');const m={'not-allowed':T('Autorise le micro pour cette page (le cadenas à côté de l’adresse), puis réessaie.','Allow the microphone for this page (the padlock next to the address), then try again.'),
    'service-not-allowed':T('Ton navigateur bloque la dictée ici. Essaie avec Chrome.','Your browser blocks dictation here. Try Chrome.'),'no-speech':T('Je n’ai rien entendu. Touche le micro et parle tout de suite.','I didn’t hear anything. Tap the mic and speak right away.'),
    'audio-capture':T('Aucun micro trouvé sur cet appareil.','No microphone found on this device.'),'network':T('La dictée a besoin d’internet.','Dictation needs the internet.')}[e.error]||T('Le micro n’a pas marché, réessaie.','The mic didn’t work, try again.');
   micBar('err',m);setTimeout(()=>{const b=$('micbar');if(b&&b.dataset.s==='err')micBar(null);},5000);};}
@@ -496,7 +541,7 @@ async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURICom
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;await load(j.id,true);}
 async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
- C.msgs.push({role:'user',text:t});C.status='thinking';$('tx').value='';autosize();paintChat(true);
+ C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000)});C.status='thinking';$('tx').value='';autosize();paintChat(true);
  // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
  // then the bubble stays, marked "not sent", with a retry - never a message that looks sent and is not
  let j=null;for(const w of [0,1500,3500,6000]){if(w)await new Promise(r=>setTimeout(r,w));try{j=await post('chat_send',{id:CID,text:t});break;}catch(e){j=null;}}
@@ -505,6 +550,21 @@ async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;i
  else{C.msgs.pop();C.status='ready';FAILED.push(t);paintChat(true);}
  SENDING=false;}
 let FAILED=[];
+/* messenger bits (2026-10-19) */
+function hm2(t){const d=new Date((t||Date.now()/1000)*1000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function dayKey(t){const d=new Date((t||Date.now()/1000)*1000);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();}
+function dayLab(t){const d=new Date((t||Date.now()/1000)*1000),n=new Date(),y=new Date(Date.now()-864e5);
+ if(dayKey(t)===dayKey(n/1000))return T('Aujourd’hui','Today');if(dayKey(t)===dayKey(y/1000))return T('Hier','Yesterday');
+ return d.toLocaleDateString(EN?'en-GB':'fr-FR',{day:'numeric',month:'long'});}
+const TICK='<svg viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l3 3 6-7M6 9l1 1 6-8"/></svg>';
+function hdr(){const v=C&&C.view,st=C&&C.status,d=C&&C.draft;const ts=$('ts');if(!ts)return;
+ $('tn').textContent='Kino';
+ if(st==='thinking'||d){ts.textContent=T('écrit…','typing…');ts.className='on';}
+ else if(st==='building'){ts.textContent=T('prépare ton robot…','building your robot…');ts.className='on';}
+ else{ts.textContent=v&&v.name?('· '+v.name):T('en ligne','online');ts.className='';}}
+function sdPaint(){const b=$('sdb');if(!b)return;const has=!!$('tx').value.trim();b.innerHTML='<svg><use href="#'+(has?'send':'mic')+'"/></svg>';
+ b.setAttribute('aria-label',has?T('Envoyer','Send'):T('Parler','Talk'));b.disabled=false;}
+function sendOrMic(){if($('tx').value.trim())send();else mic();}
 function resend(k){const t=FAILED.splice(k,1)[0];if(t==null)return;$('tx').value=t;send();}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
 setInterval(()=>{THINK_T++;const e=$('thk');if(e&&C&&(C.msgs||[]).length)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);
@@ -524,7 +584,7 @@ window.addEventListener('popstate',()=>{$('sh').classList.remove('on');});
 function bpSh(k){if(window.matchMedia('(min-width:960px)').matches){const e=k&&document.querySelector('#bp [data-k="'+k+'"]');if(e){e.scrollIntoView({behavior:'smooth',block:'center'});e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash');}return;}
  shOpen(bpHTML());if(k)setTimeout(()=>{const e=document.querySelector('#pn [data-k="'+k+'"]');if(e)e.scrollIntoView({block:'center'});},80);}
 async function pieces(){if(PIECES)return PIECES;try{const j=await getJ('robots_data');PIECES=((j.builder||{}).pieces)||[];}catch(e){PIECES=[];}return PIECES;}
-function ask(t){shClose();$('tx').value=t;autosize();$('tx').focus();$('sd').disabled=false;}
+function ask(t){shClose();$('tx').value=t;autosize();$('tx').focus();sdPaint();}
 async function slotSh(k,i){if(!C||!C.view)return;const lab=(SL.find(x=>x[0]===k)||[0,k])[1];
  const s=k==='filters'?((i!=null&&i>=0)?(C.view.filters||[])[i]:null):C.view[k];const typ=TYPE[k];const r=s&&s.rule;
  let h='<h4>'+esc(lab)+(s?' · '+esc(nameOf(s)):'')+'</h4><p class="sub">'+esc(plainOf(s)||T('Choisis une pièce, écris une formule, ou demande à l’IA.','Pick a piece, write a formula, or ask the AI.'))+'</p>';
@@ -563,10 +623,10 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 /* ---------- composer */
 const tx=$('tx');function autosize(){tx.style.height='auto';tx.style.height=Math.min(140,tx.scrollHeight)+'px';}
-tx.addEventListener('input',()=>{autosize();$('sd').disabled=!tx.value.trim()||(C&&C.status==='thinking');});
+tx.addEventListener('input',()=>{autosize();sdPaint();});
 tx.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&window.matchMedia('(min-width:700px)').matches){e.preventDefault();send();}});
 document.documentElement.lang=EN?'en':'fr';tx.placeholder=T('Écris ton idée…','Write your idea…');$('hint').textContent=T('Un test sur le passé ne promet rien pour la suite. Aucun argent n’est engagé.','A past test promises nothing for the future. No money is involved.');
-$('tn').textContent=T('L’atelier','The workshop');$('ts').textContent=T('Construis ton robot en parlant','Build your robot by talking');
+hdr();
 
 /* ---------- boot */
 try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hello'))el.scrollTop=el.scrollHeight;});}catch(e){}
