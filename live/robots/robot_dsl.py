@@ -32,7 +32,7 @@ KINDS = ("entry", "filter", "stop", "exit")
 #                                                                    "lowest(low, 10)" or "close - 2 * atr(14)")
 #   exit    adds "close_buy": F | null, "close_sell": F | null        closes the trade at the close of the candle
 #                                                                    where F is true (counts as an exit on its own)
-# Formula pieces run on the bench only for now (live: false) - the live bot reads the fixed language.
+# Formula pieces run on the bench AND in the live bot (robot_live.Candles, owner OK 2026-10-19): live: true.
 import robot_expr as X
 
 

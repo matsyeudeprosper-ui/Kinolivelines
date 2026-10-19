@@ -30,7 +30,9 @@ results beyond these and the member facts.
 - A ROBOT ON THE ACCOUNT ("Le robot de ce compte", top of the Robots page): every account runs the Owl by default.
   A member with an account switches to another robot there, confirmed with their own trading password. A robot can
   be chosen only when: it has been tested, its 42-day Bitcoin test is positive, every piece can run on the live
-  robot, and it is public or theirs. If a trade is open, the switch happens when the account is flat. The robot then
+  robot (all pieces you make can, formulas included), it KEEPS the Owl's storm filter ("orage" - a safety rule: no
+  robot trades an account without it), and it is public or theirs. So when you remove the Owl's filters, keep the
+  storm one if the member wants to trade the robot for real, and say why. If a trade is open, the switch happens when the account is flat. The robot then
   trades the member's account automatically, 24/7. So YES, once a robot is finished and its test is positive, the
   member can put it on their account themselves - you guide them there (you never switch it yourself: their
   password, their decision).

@@ -14225,7 +14225,7 @@ def piece_create(user, body):
     if _pl:
         fr = en = _pl
     P.append({"id": pid, "type": kind, "name_fr": name, "name_en": name, "plain_fr": fr, "plain_en": en, "status": "new",
-              "rule": c, "live": not D.is_formula(kind, c), "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
+              "rule": c, "live": True, "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
               "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "public": bool(is_admin(user))})
     reg["pieces"] = P
     _robot_save(reg)
