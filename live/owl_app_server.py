@@ -14525,8 +14525,15 @@ def _chat_load(user, cid):
 def _chat_save(c):
     os.makedirs(CHAT_DIR, exist_ok=True)
     c["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    tmp = _chat_path(c["id"]) + ".tmp"
-    json.dump(c, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    tmp = _chat_path(c["id"]) + ".%d.tmp" % threading.get_ident()
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(c, f, ensure_ascii=False, indent=1)
+    for k in range(40):                  # Windows refuses the swap while the page's poll is reading the file
+        try:
+            os.replace(tmp, _chat_path(c["id"]))
+            return
+        except PermissionError:
+            time.sleep(0.05)
     os.replace(tmp, _chat_path(c["id"]))
 
 
@@ -14567,6 +14574,17 @@ def chat_start(user, body):
         _rc().prewarm()
     except Exception:
         pass
+    mem = _chat_memory(user)
+    known = bool(mem.get("notes") or mem.get("chats") or mem.get("robots"))
+    if known and not rid:
+        _chat_save(c)
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        threading.Thread(target=_chat_quick, args=(cid, user, "NEW CONVERSATION (the member opened a fresh chat)"), daemon=True).start()
+        try:
+            _rc().prewarm()
+        except Exception:
+            pass
+        return {"ok": True, "id": cid}
     if rid:
         _chat_msg(c, "ai", text=("We're picking « %s » back up. What would you like to change?" % nm) if en else
                   ("On reprend « %s ». Qu'est-ce que tu veux changer ?" % nm),
@@ -14605,6 +14623,61 @@ def _chat_day_count(me):
 # way) > building (builder working) > ready.
 _CHAT_LOCKS, _CHAT_Q, _CHAT_B = {}, {}, set()
 _CHAT_MK = {}
+# 2026-10-19 evening (owner: "the AI should have a continuous memory and pick up where we left off ... a real digital
+# being, alive, fast, agentic and reactive"): per member, the notes the AI chose to remember (robots/chat_memory/
+# <uid>.json, max 40) + their robots and test results + the other conversations go into every turn; the reply
+# streams into _CHAT_DRAFT (the page shows it being typed); events NEW CONVERSATION / CAME BACK get a reply of
+# their own; the AI's "act": "test" launches the test itself.
+CHAT_MEM = os.path.join(DIR, "robots", "chat_memory")
+_CHAT_DRAFT = {}
+
+
+def _mem_file(uid):
+    return os.path.join(CHAT_MEM, re.sub(r"[^A-Za-z0-9_]", "", uid or "u") + ".json")
+
+
+def _mem_add(uid, notes):
+    if not notes:
+        return
+    try:
+        m = json.load(open(_mem_file(uid), encoding="utf-8"))
+    except Exception:
+        m = {"notes": []}
+    for n in notes:
+        if n and n not in m["notes"]:
+            m["notes"].append(n)
+    m["notes"] = m["notes"][-40:]
+    m["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    os.makedirs(CHAT_MEM, exist_ok=True)
+    json.dump(m, open(_mem_file(uid) + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(_mem_file(uid) + ".tmp", _mem_file(uid))
+
+
+def _chat_memory(user, cid=None):
+    """what the AI remembers about this member: its notes, their robots (+ last test), the other conversations"""
+    me = user.get("id")
+    try:
+        notes = json.load(open(_mem_file(me), encoding="utf-8")).get("notes") or []
+    except Exception:
+        notes = []
+    robots = []
+    try:
+        for r in robot_reg().get("robots") or []:
+            if r.get("by_uid") != me or r.get("id") == "owl":
+                continue
+            x = {"name": r.get("name_fr") or r["id"], "stage": r.get("stage"), "market": "BTCUSD"}
+            try:
+                res = json.load(open(os.path.join(DIR, "robots", "results", r["id"] + ".json"), encoding="utf-8"))
+                x.update(net=(res.get("robot") or {}).get("net"), trades=(res.get("robot") or {}).get("trades"),
+                         owl=(res.get("parent_result") or {}).get("net"))
+            except Exception:
+                pass
+            robots.append(x)
+    except Exception:
+        pass
+    chats = [{"when": str(x.get("updated") or "")[:10], "about": x.get("understood") or x.get("last")}
+             for x in chat_list(user).get("chats") or [] if x.get("id") != cid and (x.get("understood") or x.get("n"))]
+    return {"notes": notes, "robots": robots[-8:], "chats": chats[:5]}
 
 
 def _chat_lock(cid):
@@ -14645,31 +14718,45 @@ def _chat_oops(cid, en, e=None):
         if e is None else ("Oups, petit souci de mon côté (%s). Réessaie dans un instant." % str(e)[:60])))
 
 
-def _chat_quick(cid, user):
-    """background: the quick reply; starts the builder when the robot must change"""
+def _chat_quick(cid, user, event=None):
+    """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
         en = c.get("lang") == "en"
+        _CHAT_DRAFT[cid] = ""
         q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
-                        markets=_chat_markets(user))
+                        markets=_chat_markets(user), memory=_chat_memory(user, cid), event=event,
+                        on_say=lambda t: _CHAT_DRAFT.__setitem__(cid, t))
+        _CHAT_DRAFT.pop(cid, None)
+        if q is None and event:
+            q = {"say": None, "chips": [], "build": False}
+        if q and q.get("remember"):
+            _mem_add(user.get("id"), q["remember"])
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
+        if event:
+            q["build"] = False
 
         def put(c):
             if q["say"]:
-                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True)
+                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event))
             if q["build"]:
                 c["b_want"] = len(c.get("msgs") or [])
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
         if q["build"]:
             _CHAT_B.add(cid)
-        _chat_mut(cid, put)
+        try:
+            _chat_mut(cid, put)
+        except Exception:
+            _CHAT_B.discard(cid)
+            raise
         if q["build"]:
             threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
     except Exception as e:
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+        _CHAT_DRAFT.pop(cid, None)
         try:
             _chat_oops(cid, en, e)
         except Exception:
@@ -14692,7 +14779,11 @@ def _chat_build(cid, user):
             en = c.get("lang") == "en"
             n0, rev0 = len(c.get("msgs") or []), c.get("rev")
             ans, probs = _rc().answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
-                                      markets=_chat_markets(user))
+                                      markets=_chat_markets(user), memory=_chat_memory(user, cid),
+                                      on_say=lambda t: _CHAT_DRAFT.__setitem__(cid + ":b", t))
+            _CHAT_DRAFT.pop(cid + ":b", None)
+            if ans and ans.get("remember"):
+                _mem_add(user.get("id"), ans["remember"])
 
             def put(c):
                 if c.get("rev") != rev0:
@@ -14712,10 +14803,26 @@ def _chat_build(cid, user):
                     _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
                               follow=True)
+                sh = ans.get("show")
+                if sh and c.get("robot"):
+                    try:
+                        dm = _demo_msg(c, user, sh.get("examples") or 3, sh.get("pick") or "mix", sh.get("overlays") or [])
+                        if dm and not dm.get("nodata"):
+                            c.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
+                    except Exception:
+                        pass
                 if ans.get("understood"):
                     c["understood"] = ans["understood"]
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            if ans and ans.get("act") == "test" and c.get("robot") and (c.get("test") or {}).get("state") != "queued":
+                try:
+                    tr = chat_test(user, {"id": cid})            # the AI launches the test itself
+                    if not tr.get("ok") and tr.get("err") not in ("same",):
+                        _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("Couldn't start the test (%s)." if en else
+                                                                            "Le test n'a pas pu démarrer (%s).") % tr.get("err")))
+                except Exception:
+                    pass
             if int(c.get("b_want") or 0) <= n0:
                 break
     except Exception as e:
@@ -14736,6 +14843,28 @@ def _chat_build(cid, user):
 def _chat_kick(cid, user):
     _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
     threading.Thread(target=_chat_quick, args=(cid, user), daemon=True).start()
+
+
+def chat_open(user, body):
+    """the member opened (or came back to) a chat: after 45 min away, the AI welcomes them back on its own"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    try:
+        _rc().prewarm()
+    except Exception:
+        pass
+    M = c.get("msgs") or []
+    last = max([int(m.get("t") or 0) for m in M] or [0])
+    away = time.time() - last
+    if M and away > 2700 and not _CHAT_Q.get(c["id"]) and c["id"] not in _CHAT_B and any(m.get("role") == "user" for m in M):
+        h = away / 3600.0
+        ago = ("%d minutes" % (away / 60)) if h < 1 else ("%.0f hours" % h) if h < 48 else ("%.0f days" % (h / 24))
+        _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+        threading.Thread(target=_chat_quick, args=(c["id"], user, "CAME BACK after %s (their local time of day: %s UTC)" % (
+            ago, datetime.now(timezone.utc).strftime("%H:%M"))), daemon=True).start()
+        return {"ok": True, "back": True}
+    return {"ok": True, "away": int(away)}
 
 
 def chat_send(user, body):
@@ -14793,6 +14922,7 @@ def chat_get(user, cid):
             _CHAT_Q[c["id"]] -= 1
         c = _chat_load(user, cid)
     c["status"] = _chat_status(c["id"])
+    c["draft"] = _CHAT_DRAFT.get(c["id"]) or _CHAT_DRAFT.get(c["id"] + ":b") or ""
     if time.time() - _CHAT_MK.get("_warm", 0) > 60:
         _CHAT_MK["_warm"] = time.time()
         try:
@@ -14958,6 +15088,104 @@ def chat_test(user, body):
         _chat_msg(c, "test", text=txt)
     _chat_mut(c["id"], put)
     return {"ok": True, "rid": rid, "minutes": mins}
+
+
+# ---- 2026-10-19 evening (owner: "the user should be able to demonstrate a piece of the idea from a custom chart, same
+# for the AI: chart markings and even a play of auto trade to confirm a point or an understanding") ----
+# live/robots/robot_demo.py: the test's own candles per market; the member marks a chart (chat_show -> a "show"
+# message with the numbers at the marked candle, the AI reads them); the AI (its "show" field) or the member
+# ("Voir des exemples") gets the robot's past trades drawn and replayable (a "demo" message).
+def _rd():
+    import importlib
+    if os.path.join(DIR, "robots") not in sys.path:
+        sys.path.insert(0, os.path.join(DIR, "robots"))
+    return importlib.import_module("robot_demo")
+
+
+def _chat_market(c):
+    return (c.get("robot") or {}).get("market") or c.get("market") or "BTCUSD"
+
+
+def chat_chart(user, body):
+    """candles for the member's drawing chart (the chat's market unless one is asked)"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    mk = str(body.get("market") or _chat_market(c))
+    tf = str(body.get("tf") or "M5")
+    if tf not in ("M1", "M5", "M15", "H1"):
+        tf = "M5"
+    try:
+        end = int(body["end"]) if body.get("end") else None
+    except Exception:
+        end = None
+    r = _rd().candles(mk, tf, end, 240)
+    if r is None:
+        return {"ok": False, "err": "nodata", "market": mk}
+    r["ok"] = True
+    return r
+
+
+def _demo_msg(c, user, n=3, pick="mix", overlays=None, by="ai"):
+    """the robot's past trades on its market as a "demo" message (None when nothing can be shown)"""
+    if not c.get("robot"):
+        return None
+    rules, rr = _rd().rules_of(c["robot"], _chat_pieces(user))
+    ex = _rd().examples(_chat_market(c), rules, max(1, min(3, int(n or 3))), overlays or [], rr, pick if pick in ("mix", "recent") else "mix")
+    if ex is None:
+        return {"role": "demo", "nodata": True, "market": _chat_market(c), "by": by}
+    return {"role": "demo", "market": ex["market"], "count": ex["count"], "won": ex["won"], "trades": ex["trades"], "by": by, "rev": c.get("rev")}
+
+
+def chat_demo(user, body):
+    """the member asks to see the robot's trades on the chart; the AI then comments them"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot"):
+        return {"ok": False, "err": "missing"}
+    if _CHAT_Q.get(c["id"]):
+        return {"ok": False, "err": "busy"}
+    m = _demo_msg(c, user, 3, "mix", [], by="member")
+    if m is None or m.get("nodata"):
+        return {"ok": False, "err": "nodata"}
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    _chat_mut(c["id"], lambda c: c.setdefault("msgs", []).append(dict(m, t=int(time.time()))))
+    threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+    return {"ok": True}
+
+
+def chat_show(user, body):
+    """the member marked the chart: buy / sell / stop / exit / line points + a note -> the AI reads them"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    if _CHAT_Q.get(c["id"]):
+        return {"ok": False, "err": "busy"}
+    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
+        return {"ok": False, "err": "cap"}
+    mk = str(body.get("market") or _chat_market(c))
+    tf = str(body.get("tf") or "M5")
+    marks = []
+    for x in (body.get("marks") or [])[:12]:
+        try:
+            k = str(x.get("k"))
+            if k in ("buy", "sell", "stop", "exit", "line"):
+                marks.append({"k": k, "t": int(x["t"]), "p": round(float(x["p"]), 5)})
+        except Exception:
+            pass
+    if not marks:
+        return {"ok": False, "err": "marks"}
+    note = str(body.get("note") or "").strip()[:600]
+    RD = _rd()
+    ent = next((m for m in marks if m["k"] in ("buy", "sell")), marks[0])
+    fx = RD.facts(mk, ent["t"])
+    t0, t1 = min(m["t"] for m in marks), max(m["t"] for m in marks)
+    s_ = RD.TFS.get(tf, 300)
+    win = RD.candles(mk, tf, t1 + 30 * s_, 240) or {}
+    rows = [r for r in win.get("candles") or [] if r[0] >= t0 - 60 * s_]
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "show", text=note, marks=marks, market=mk, tf=tf, facts=fx, candles=rows[-160:]))
+    threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+    return {"ok": True}
 
 
 def chat_list(user):
@@ -19975,7 +20203,8 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check"):
+                                              "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
+                                              "chat_chart", "chat_show", "chat_demo", "chat_open"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -19990,7 +20219,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
-                       "chat_check": chat_check}[_parts[1]]
+                       "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

@@ -95,6 +95,8 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 .res .leg{display:flex;gap:12px;font-size:.7rem;color:var(--muted);margin-top:6px}.res .leg i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:5px;vertical-align:2px}
 .pos{color:var(--up-soft)}.neg{color:var(--down-soft)}
 /* typing */
+.live .bub .caret{display:inline-block;width:7px;height:1.05em;margin-left:2px;vertical-align:-2px;border-radius:2px;background:var(--violet);animation:blinkc 1s steps(2) infinite}
+@keyframes blinkc{50%{opacity:0}}
 .typing .bub{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.84rem}
 /* 2026-10-19 evening: the builder works after the quick reply - a light line, the member can keep typing */
 .bld{display:flex;align-items:center;gap:9px;margin:2px 0 10px 39px;color:var(--muted);font-size:.78rem}
@@ -165,6 +167,31 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 .pk{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:9px 11px;margin-bottom:6px;cursor:pointer;font:inherit;color:var(--text)}
 .pk b{font-size:.85rem}.pk small{display:block;color:var(--muted);font-size:.74rem;line-height:1.35;margin-top:2px}.pk.on{border-color:var(--accent);background:var(--accent-bg)}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:12px;font-size:.84rem;z-index:60;box-shadow:var(--sh);display:none;max-width:90vw}
+/* charts: the AI's examples (replay) and the member's drawing */
+.att.demo{max-width:min(620px,88%)}.att.mine{margin:2px 0 10px auto;max-width:min(560px,86%)}
+.dmh{display:flex;align-items:center;gap:10px;padding:2px 2px 0}.dmh svg{width:20px;height:20px;color:var(--violet-soft);flex:none}
+.dmh b{display:block;font-size:.88rem}.dmh small{display:block;color:var(--muted);font-size:.74rem;margin-top:1px}
+.chartc{border-radius:18px;border:1px solid var(--border2);background:var(--surface);padding:10px 10px 8px;box-shadow:var(--hl)}
+.chh{display:flex;align-items:center;gap:8px;margin:0 2px 6px}.chh b{flex:1;font-size:.82rem}
+.rb{font-size:.72rem;font-weight:800;border-radius:99px;padding:3px 8px;background:var(--surface3);color:var(--muted2)}.rb.pos{background:var(--ok-bg);color:var(--up-soft)}.rb.neg{background:rgba(255,92,92,.13);color:var(--down-soft)}
+.cvs{display:block;width:100%;height:190px;border-radius:12px;background:var(--surface2)}
+.chf{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cb{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border2);background:var(--surface2);border-radius:99px;padding:7px 12px;font-size:.78rem;font-weight:700;cursor:pointer}
+.cb svg{width:12px;height:12px}.cb.y{border-color:rgba(46,204,113,.45);color:var(--up-soft)}.cb.n{color:var(--muted2)}
+.tool{flex:none;width:36px;height:36px;border-radius:12px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;margin-bottom:2px}
+.tool svg{width:21px;height:21px}.tool:active{transform:scale(.92)}.tool.on{color:#fff;background:var(--down);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(255,92,92,.15)}}
+.cbox{padding-left:6px}
+.tfs{display:flex;align-items:center;gap:6px;margin:0 0 8px}.tfb{border:1px solid var(--border2);background:var(--surface);border-radius:10px;padding:6px 10px;font-size:.78rem;font-weight:800;cursor:pointer}
+.tfb.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-soft)}.mkn{flex:1;text-align:right;font-weight:800;font-size:.82rem;color:var(--warn);padding-right:4px}
+#dnote{width:100%;font:inherit;font-size:.9rem;color:var(--text);background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:10px 12px;resize:none;outline:none}
+.dcw{position:relative}#dc{display:block;width:100%;height:46vh;min-height:260px;border-radius:14px;background:var(--surface2);touch-action:none;cursor:crosshair}
+.dlo{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:.85rem;text-align:center;padding:20px}
+.tools{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap}.tl{flex:1;min-width:58px;border:1px solid var(--border2);background:var(--surface);border-radius:12px;padding:10px 6px;font-size:.8rem;font-weight:800;cursor:pointer}
+.tl.buy{color:var(--up-soft)}.tl.sell,.tl.stop{color:var(--down-soft)}.tl.exit{color:var(--warn)}.tl.line{color:var(--accent-soft)}
+.tl.on{background:var(--accent-bg);border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.25)}
+.bpdemo{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;border:1px solid rgba(167,139,250,.4);background:linear-gradient(135deg,rgba(167,139,250,.12),var(--surface));border-radius:14px;padding:12px;font-weight:800;font-size:.88rem;cursor:pointer;color:var(--text)}
+.bpdemo svg{width:18px;height:18px;color:var(--violet-soft)}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -175,6 +202,8 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 <symbol id="hist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
 <symbol id="pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
 <symbol id="flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2h12.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/></symbol>
+<symbol id="chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/><circle cx="19" cy="6" r="1.2" fill="currentColor"/></symbol>
+<symbol id="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
 </defs></svg>
 <div class="app">
  <div class="col">
@@ -187,7 +216,7 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
   <div class="strip" id="strip"></div>
   <div class="chat" id="chat"></div>
   <div class="comp">
-   <div class="cbox"><textarea id="tx" rows="1" placeholder="Écris ton idée…" maxlength="1500"></textarea><button class="send" id="sd" onclick="send()" disabled aria-label="Envoyer"><svg><use href="#send"/></svg></button></div>
+   <div class="cbox"><button class="tool" onclick="drawSh()" aria-label="Montrer sur un graphique" title="Montrer sur un graphique"><svg><use href="#chart"/></svg></button><button class="tool" id="mic" onclick="mic()" aria-label="Parler" title="Parler"><svg><use href="#mic"/></svg></button><textarea id="tx" rows="1" placeholder="Écris ton idée…" maxlength="1500"></textarea><button class="send" id="sd" onclick="send()" disabled aria-label="Envoyer"><svg><use href="#send"/></svg></button></div>
    <div class="hint" id="hint">Un test sur le passé ne promet rien pour la suite. Aucun argent n'est engagé.</div>
   </div>
  </div>
@@ -240,6 +269,7 @@ function bpHTML(){const v=C&&C.view;
  SL.forEach(([k,lab])=>{if(k==='filters'){h+='<div class="bpsec">'+lab+' · '+(v.filters||[]).length+'</div>';(v.filters||[]).forEach((f,i)=>h+=slotCard('filters',lab+' '+(i+1),f,i));
    h+='<button class="btn" style="margin:0 0 8px" onclick="slotSh(\'filters\',-1)">+ '+T('Ajouter un filtre','Add a filter')+'</button>';}
   else{if(k==='entry')h+='<div class="bpsec">'+T('Les pièces','The pieces')+'</div>';h+=slotCard(k,lab,v[k],null);}});
+ h+='<button class="bpdemo" onclick="demoAsk()"><svg><use href="#chart"/></svg>'+T('Voir ses trades sur le graphique','See its trades on the chart')+'</button>';
  const t=C.test||{},busy=t.state==='queued';
  h+='<button class="bpbtn" onclick="runTest()" '+(busy||C.status!=='ready'?'disabled':'')+'>'+(busy?T('Test en cours…','Test running…'):(t.state==='done'?T('Retester ce robot','Test this robot again'):T('Tester ce robot','Test this robot')))+'</button>';
  if(C.robot_id)h+='<a class="btn" style="display:block;text-align:center;text-decoration:none;color:var(--text)" href="mesrobots">'+T('Voir dans Mes robots','See it in My robots')+'</a>';
@@ -270,6 +300,8 @@ function msgHTML(m,i,last){
  if(m.role==='test'){const t=C.test||{};if(t.state==='queued'&&last)return '<div class="att" style="margin-left:39px"><div class="run"><b>'+(t.mstate==='building'?T('Je prépare les prix de '+esc(t.sym)+' (première fois sur ce marché)','Preparing '+esc(t.sym)+'’s prices (first time on this market)'):T('Test en cours sur 42 jours de vrais prix','Testing on 42 days of real prices')+(t.sym?' · '+esc(t.sym):''))+'</b><small>'+(t.ahead?T(t.ahead+' test(s) avant le tien · ',t.ahead+' test(s) before yours · '):'')+T('environ '+(t.minutes||5)+' minutes, je te préviens ici','about '+(t.minutes||5)+' minutes, I’ll tell you here')+'</small><div class="pb"><i></i></div></div></div>';
   return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';}
  if(m.role==='result')return '<div class="att" style="margin-left:39px">'+resultCard(m.result||{})+'</div>';
+ if(m.role==='show')return showHTML(m,i);
+ if(m.role==='demo')return demoHTML(m,i,last);
  let h='<div class="m ai'+(m.err?' err':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(m.text)+'</div></div>';
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
  if(last&&m.ready&&C.view&&!(C.test&&C.test.state==='queued'))h+='<div class="att"><button class="cta" onclick="runTest()"><span class="ci"><svg><use href="#play"/></svg></span><span><b>'+T('Tester ce robot','Test this robot')+'</b><small>'+T('42 jours de vrais prix · 5 à 15 min · sans argent','42 days of real prices · 5 to 15 min · no money')+'</small></span></button></div>';
@@ -284,18 +316,125 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  let h='';const fresh=M.filter(m=>m.role==='user').length===0&&!C.robot_id;
  if(fresh)h+=welcome();
  M.forEach((m,i)=>{if(fresh&&i===0)return;h+=msgHTML(m,i,i===M.length-1);});
- if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
- if(C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+THINK[THINK_T%THINK.length]+'</span></div></div>';
- el.innerHTML=h;if(force||atBottom||M.length!==LASTN)el.scrollTop=el.scrollHeight;LASTN=M.length;
+ const dr=(C&&C.draft)||'';
+ if(dr&&C.status!=='ready')h+='<div class="m ai live"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(dr)+'<span class="caret"></span></div></div>';
+ else if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
+ if(!dr&&C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+THINK[THINK_T%THINK.length]+'</span></div></div>';
+ el.innerHTML=h;drawAll();if(fresh&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN||dr)el.scrollTop=el.scrollHeight;LASTN=M.length;
  $('sd').disabled=!($('tx').value.trim())||(C&&C.status==='thinking');}
 function chip(b){$('tx').value=b.textContent;send();}
 function useIdea(b){$('tx').value=b.querySelector('span').textContent;autosize();$('tx').focus();$('sd').disabled=false;}
 
+/* ---------- charts (2026-10-19 evening, owner: "demonstrate a piece of the idea from a custom chart, same for the AI:
+   chart markings and even a play of auto trade to confirm a point or an understanding") */
+const CH={};          // canvas id -> {k: candles shown during a replay, timer}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()||'#888';}
+function hm(t){const d=new Date(t*1000);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');}
+function dm(t){const d=new Date(t*1000);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');}
+function px(v){const a=Math.abs(v);return a>=1000?v.toFixed(1):a>=10?v.toFixed(2):v.toFixed(4);}
+function idxAt(rows,t){let k=0;for(let i=0;i<rows.length;i++){if(rows[i][0]<=t)k=i;else break;}return k;}
+/* one chart: candles + overlays + a trade (entry, stop, target, exit) or marks; upto = last candle drawn (replay) */
+function drawChart(cv,o){if(!cv)return;const rows=o.rows||[];if(!rows.length)return;
+ const dpr=window.devicePixelRatio||1,W=cv.clientWidth||300,H=cv.clientHeight||200;cv.width=W*dpr;cv.height=H*dpr;
+ const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ const a=o.from||0,b=o.to==null?rows.length:o.to,vis=rows.slice(a,b),n=vis.length,upto=o.upto==null?rows.length-1:o.upto;
+ let lo=Infinity,hi=-Infinity;vis.forEach(r=>{lo=Math.min(lo,r[3]);hi=Math.max(hi,r[2]);});
+ const tr=o.trade;if(tr){[tr.entry,tr.stop,tr.target].forEach(v=>{if(v!=null){lo=Math.min(lo,v);hi=Math.max(hi,v);}});}
+ (o.marks||[]).forEach(m=>{lo=Math.min(lo,m.p);hi=Math.max(hi,m.p);});
+ const pad=(hi-lo)*.08||1;lo-=pad;hi+=pad;const R=46,TP=8,Bm=18,cw=(W-R)/Math.max(n,1);
+ const X=i=>(i-a)*cw+cw/2,Y=v=>TP+(hi-v)/(hi-lo)*(H-TP-Bm);o._X=X;o._Y=Y;o._cw=cw;o._lo=lo;o._hi=hi;o._H=H;o._T=TP;o._Bm=Bm;
+ g.strokeStyle=cssv('--border');g.lineWidth=1;g.font='10px Inter,system-ui';g.fillStyle=cssv('--muted');
+ for(let q=0;q<=3;q++){const v=lo+(hi-lo)*q/3,y=Y(v);g.globalAlpha=.5;g.beginPath();g.moveTo(0,y);g.lineTo(W-R,y);g.stroke();g.globalAlpha=1;g.fillText(px(v),W-R+4,y+3);}
+ const up=cssv('--up'),dn=cssv('--down');
+ for(let i=a;i<b;i++){if(i>upto)break;const r=rows[i],x=X(i),c=r[4]>=r[1]?up:dn;g.strokeStyle=c;g.fillStyle=c;g.beginPath();g.moveTo(x,Y(r[2]));g.lineTo(x,Y(r[3]));g.stroke();
+  const y1=Y(Math.max(r[1],r[4])),y2=Y(Math.min(r[1],r[4]));g.fillRect(x-Math.max(1,cw*.32),y1,Math.max(2,cw*.64),Math.max(1,y2-y1));}
+ (o.overlays||[]).forEach((ov,q)=>{g.strokeStyle=q?cssv('--accent-soft'):cssv('--violet');g.lineWidth=1.6;g.setLineDash(q?[4,3]:[]);g.beginPath();let on=false;
+  ov.pts.forEach((v,i)=>{const ii=i+(o.ovOff||0);if(v==null||ii<a||ii>=b||ii>upto){on=false;return;}const x=X(ii),y=Y(v);if(!on){g.moveTo(x,y);on=true;}else g.lineTo(x,y);});g.stroke();g.setLineDash([]);});
+ if(tr){const ie=idxAt(rows,tr.t_in),ix=idxAt(rows,tr.t_out);
+  if(upto>=ie){const e2=Math.min(upto,ix),x1=X(ie),x2=X(e2)+cw/2,d=tr.d;
+   const zone=(v,col)=>{g.fillStyle=col;g.globalAlpha=.12;g.fillRect(x1,Math.min(Y(tr.entry),Y(v)),x2-x1,Math.abs(Y(v)-Y(tr.entry)));g.globalAlpha=1;};
+   if(tr.target!=null)zone(tr.target,up);zone(tr.stop,dn);
+   const line=(v,col,dash,lab)=>{g.strokeStyle=col;g.lineWidth=1.5;g.setLineDash(dash);g.beginPath();g.moveTo(x1,Y(v));g.lineTo(x2,Y(v));g.stroke();g.setLineDash([]);
+    g.fillStyle=col;g.fillRect(W-R+1,Y(v)-7,R-2,14);g.fillStyle='#fff';g.font='bold 9px Inter,system-ui';g.fillText(lab,W-R+4,Y(v)+3);};
+   line(tr.entry,cssv('--accent'),[],T('entrée','entry'));line(tr.stop,dn,[5,3],'stop');if(tr.target!=null)line(tr.target,up,[5,3],T('cible','target'));
+   g.fillStyle=d===1?up:dn;g.beginPath();const ye=Y(tr.entry);if(d===1){g.moveTo(x1,ye+4);g.lineTo(x1-6,ye+14);g.lineTo(x1+6,ye+14);}else{g.moveTo(x1,ye-4);g.lineTo(x1-6,ye-14);g.lineTo(x1+6,ye-14);}g.fill();
+   const risk=Math.abs(tr.entry-tr.stop)||1;let rr=upto>=ix?tr.r:d*(rows[Math.min(upto,rows.length-1)][4]-tr.entry)/risk;
+   if(upto>=ix){g.fillStyle=cssv('--warn');g.beginPath();g.arc(X(ix),Y(tr.exit),4.5,0,7);g.fill();}
+   const lab=(rr>=0?'+':'')+rr.toFixed(1)+'R';g.font='bold 12px Inter,system-ui';const tw=g.measureText(lab).width+12;g.fillStyle=rr>=0?up:dn;g.globalAlpha=.9;
+   g.fillRect(6,6,tw,20);g.globalAlpha=1;g.fillStyle='#fff';g.fillText(lab,12,20);}}
+ (o.marks||[]).forEach(m=>{const i=idxAt(rows,m.t);if(i<a||i>=b)return;const x=X(i),y=Y(m.p);
+  const col={buy:up,sell:dn,stop:dn,exit:cssv('--warn'),line:cssv('--accent-soft')}[m.k]||'#888';g.fillStyle=col;g.strokeStyle=col;
+  if(m.k==='line'||m.k==='stop'){g.setLineDash([5,3]);g.lineWidth=1.4;g.beginPath();g.moveTo(m.k==='line'?0:x,y);g.lineTo(W-R,y);g.stroke();g.setLineDash([]);}
+  if(m.k==='buy'){g.beginPath();g.moveTo(x,y+3);g.lineTo(x-7,y+15);g.lineTo(x+7,y+15);g.fill();}
+  else if(m.k==='sell'){g.beginPath();g.moveTo(x,y-3);g.lineTo(x-7,y-15);g.lineTo(x+7,y-15);g.fill();}
+  else if(m.k==='exit'){g.beginPath();g.moveTo(x,y-6);g.lineTo(x+6,y);g.lineTo(x,y+6);g.lineTo(x-6,y);g.fill();}
+  else if(m.k==='stop'){g.fillRect(x-5,y-1.5,10,3);}
+  const lb={buy:T('achat','buy'),sell:T('vente','sell'),stop:'stop',exit:T('sortie','exit'),line:''}[m.k];if(lb){g.font='bold 10px Inter,system-ui';g.fillText(lb,Math.min(x+8,W-R-30),m.k==='buy'?y+26:y-18);}});
+ g.fillStyle=cssv('--muted');g.font='10px Inter,system-ui';if(n){g.fillText(dm(vis[0][0])+' '+hm(vis[0][0]),2,H-4);const l=hm(vis[n-1][0]);g.fillText(l,W-R-g.measureText(l).width-2,H-4);}}
+/* the AI's examples */
+function demoHTML(m,i,last){if(m.nodata)return '<div class="sys"><span><svg><use href="#chart"/></svg>'+T('Le graphique de '+esc(m.market)+' sera prêt après son premier test.',esc(m.market)+'’s chart will be ready after its first test.')+'</span></div>';
+ const tr=m.trades||[],wr=m.count?Math.round(100*m.won/m.count):0;
+ let h='<div class="att demo"><div class="dmh"><svg><use href="#chart"/></svg><span><b>'+T('Ses trades sur le graphique','Its trades on the chart')+' · '+esc(m.market)+'</b><small>'+m.count+T(' trades en 42 jours · '+wr+' % gagnés · replay simplifié, sans frais',' trades in 42 days · '+wr+' % won · simplified replay, no costs')+'</small></span></div>';
+ tr.forEach((t,j)=>{const id='cv'+i+'_'+j;h+='<div class="chartc"><div class="chh"><b>'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' · '+dm(t.t_in)+' '+hm(t.t_in)+'</b><span class="rb '+(t.r>0?'pos':'neg')+'">'+(t.r>0?'+':'')+t.r.toFixed(1)+'R · '+({target:T('cible','target'),stop:'stop',be:T('à zéro','break-even'),formula:T('sortie formule','formula exit'),time:T('temps','time')}[t.why]||t.why)+'</span></div>'+
+  '<canvas class="cvs" id="'+id+'" data-m="'+i+'" data-j="'+j+'"></canvas><div class="chf"><button class="cb" onclick="play(\''+id+'\','+i+','+j+')"><svg><use href="#play"/></svg>'+T('Rejouer','Replay')+'</button>'+
+  (last?'<button class="cb y" onclick="vote('+(j+1)+',1)">'+T('Oui, c’est ça','Yes, that’s it')+'</button><button class="cb n" onclick="vote('+(j+1)+',0)">'+T('Pas celui-là','Not this one')+'</button>':'')+'</div></div>';});
+ return h+'</div>';}
+function showHTML(m,i){const id='cs'+i;return '<div class="m me"><div class="bub">'+(m.text?md(m.text):T('Regarde ce que je te montre sur le graphique 👇','Look at what I show you on the chart 👇'))+'</div></div><div class="att mine"><div class="chartc"><div class="chh"><b>'+esc(m.market)+' · '+esc(m.tf)+'</b><span class="rb">'+(m.marks||[]).length+T(' repère(s)',' mark(s)')+'</span></div><canvas class="cvs" id="'+id+'" data-s="'+i+'"></canvas></div></div>';}
+function drawAll(){document.querySelectorAll('#chat canvas[data-m]').forEach(cv=>{const m=C.msgs[+cv.dataset.m],t=(m.trades||[])[+cv.dataset.j];if(!t)return;const st=CH[cv.id];
+  drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:st&&st.timer?st.k:null});});
+ document.querySelectorAll('#chat canvas[data-s]').forEach(cv=>{const m=C.msgs[+cv.dataset.s];drawChart(cv,{rows:m.candles||[],marks:m.marks});});}
+function play(id,i,j){const m=C.msgs[i],t=m.trades[j];const st=CH[id]||(CH[id]={});clearInterval(st.timer);const ie=idxAt(t.candles,t.t_in);st.k=Math.max(5,ie-30);
+ st.timer=setInterval(()=>{st.k++;const cv=$(id);if(cv)drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:st.k});if(st.k>=t.candles.length-1){clearInterval(st.timer);st.timer=null;}},ie>0?65:65);}
+function vote(j,yes){$('tx').value=yes?T('Le trade '+j+' : oui, c’est exactement ce genre de trade.','Trade '+j+': yes, that’s exactly the kind of trade.'):T('Le trade '+j+' : non, ce n’est pas ce que je veux. ','Trade '+j+': no, that’s not what I mean. ');autosize();
+ if(yes)send();else{$('tx').focus();$('sd').disabled=false;toast(T('Dis-moi ce qui ne va pas dans ce trade.','Tell me what is wrong with that trade.'));}}
+async function demoAsk(){if(!CID)return;shClose();const j=await post('chat_demo',{id:CID});if(!j.ok){toast(ERR[j.err]||j.err);return;}load(CID,true);}
+/* the member's drawing chart */
+let DR=null;
+async function drawSh(){if(!CID)return;const mk=(C&&C.view&&C.view.market)||'BTCUSD';
+ shOpen('<h4>'+T('Montre-moi sur le graphique','Show me on the chart')+'</h4><p class="sub">'+T('Choisis un outil, puis touche le graphique. Glisse pour remonter le temps.','Pick a tool, then tap the chart. Drag to go back in time.')+'</p>'+
+  '<div class="tfs" id="tfs">'+['M1','M5','M15','H1'].map(t=>'<button class="tfb'+(t==='M5'?' on':'')+'" onclick="drTf(\''+t+'\')">'+t+'</button>').join('')+'<span class="mkn">'+esc(mk)+'</span><button class="tfb" onclick="drZoom(1)">−</button><button class="tfb" onclick="drZoom(-1)">+</button></div>'+
+  '<div class="dcw"><canvas id="dc"></canvas><div class="dlo" id="dlo">'+T('Je charge le graphique…','Loading the chart…')+'</div></div>'+
+  '<div class="tools">'+[['buy',T('Achat','Buy')],['sell',T('Vente','Sell')],['stop','Stop'],['exit',T('Sortie','Exit')],['line',T('Niveau','Level')]].map(x=>'<button class="tl '+x[0]+'" data-t="'+x[0]+'" onclick="drTool(\''+x[0]+'\')">'+x[1]+'</button>').join('')+'<button class="tl" onclick="drUndo()">↺</button></div>'+
+  '<div class="fld"><textarea id="dnote" rows="2" maxlength="600" placeholder="'+T('Ce que je veux te montrer (facultatif)…','What I want to show you (optional)…')+'"></textarea></div>'+
+  '<button class="btn pri" id="dsend" onclick="drSend()" disabled>'+T('Montrer à l’IA','Show the AI')+'</button>');
+ DR={mk:mk,tf:'M5',rows:[],marks:[],tool:null,vis:70,off:0,older:true};await drLoad();drInput();}
+async function drLoad(end){const j=await post('chat_chart',{id:CID,tf:DR.tf,end:end,market:DR.mk});const lo=$('dlo');
+ if(!j.ok){if(lo)lo.textContent=j.err==='nodata'?T('Le graphique de ce marché sera prêt après son premier test.','This market’s chart will be ready after its first test.'):T('Graphique indisponible.','Chart unavailable.');return;}
+ if(lo)lo.style.display='none';if(end){const old=j.candles.filter(r=>r[0]<DR.rows[0][0]);DR.rows=old.concat(DR.rows);}else{DR.rows=j.candles;DR.off=0;}DR.older=j.older;drDraw();}
+function drWin(){const n=DR.rows.length,b=Math.max(Math.min(n,DR.vis),n-DR.off),a=Math.max(0,b-DR.vis);return [a,b];}
+function drDraw(){const cv=$('dc');if(!cv||!DR.rows.length)return;const w=drWin();DR.o={rows:DR.rows,marks:DR.marks,from:w[0],to:w[1]};drawChart(cv,DR.o);$('dsend').disabled=!DR.marks.length;}
+function drTf(t){DR.tf=t;DR.marks=[];document.querySelectorAll('#tfs .tfb').forEach(b=>b.classList.toggle('on',b.textContent===t));drLoad();}
+function drZoom(z){DR.vis=Math.max(30,Math.min(200,Math.round(DR.vis*(z>0?1.35:1/1.35))));drDraw();}
+function drTool(t){DR.tool=DR.tool===t?null:t;document.querySelectorAll('.tools .tl').forEach(b=>b.classList.toggle('on',b.dataset.t===DR.tool));}
+function drUndo(){DR.marks.pop();drDraw();}
+function drInput(){const cv=$('dc');if(!cv)return;let x0=null,off0=0,moved=false;
+ cv.addEventListener('pointerdown',e=>{x0=e.clientX;off0=DR.off;moved=false;cv.setPointerCapture(e.pointerId);});
+ cv.addEventListener('pointermove',e=>{if(x0==null||!DR.o)return;const dx=e.clientX-x0;if(Math.abs(dx)>6)moved=true;if(!moved)return;
+  const n=DR.rows.length;DR.off=Math.max(0,Math.min(n-DR.vis,off0+Math.round(dx/(DR.o._cw||5))));drDraw();
+  if(DR.older&&drWin()[0]<10&&!DR.busy){DR.busy=true;const keep=DR.rows.length;drLoad(DR.rows[0][0]).then(()=>{DR.off+=0;DR.busy=false;});}});
+ cv.addEventListener('pointerup',e=>{const was=moved;x0=null;if(was||!DR.tool||!DR.o)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,o=DR.o;
+  const i=Math.max(o.from,Math.min(o.to-1,o.from+Math.floor(x/o._cw))),p=o._hi-(y-o._T)/(o._H-o._T-o._Bm)*(o._hi-o._lo);
+  if(['buy','sell'].includes(DR.tool))DR.marks=DR.marks.filter(m=>m.k!=='buy'&&m.k!=='sell');
+  if(['stop','exit'].includes(DR.tool))DR.marks=DR.marks.filter(m=>m.k!==DR.tool);
+  DR.marks.push({k:DR.tool,t:DR.rows[i][0],p:+p.toFixed(5)});drDraw();});}
+async function drSend(){if(!DR||!DR.marks.length)return;const b=$('dsend');b.disabled=true;
+ const j=await post('chat_show',{id:CID,marks:DR.marks,tf:DR.tf,market:DR.mk,note:($('dnote')||{}).value||''});
+ if(!j.ok){b.disabled=false;toast(ERR[j.err]||j.err);return;}shClose();load(CID,true);}
+/* voice: speak instead of typing (the browser's own speech recognition) */
+let REC=null;
+function micInit(){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){const m=$('mic');if(m)m.style.display='none';return;}
+ REC=new S();REC.lang=EN?'en-US':'fr-FR';REC.interimResults=true;REC.continuous=false;let base='';
+ REC.onstart=()=>{base=$('tx').value?$('tx').value+' ':'';$('mic').classList.add('on');};
+ REC.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$('tx').value=base+s;autosize();$('sd').disabled=!$('tx').value.trim();};
+ REC.onend=()=>$('mic').classList.remove('on');REC.onerror=()=>$('mic').classList.remove('on');}
+function mic(){if(!REC)return;if($('mic').classList.contains('on'))REC.stop();else try{REC.start();}catch(e){}}
+window.addEventListener('resize',()=>{drawAll();if(DR&&$('dc'))drDraw();});
+micInit();
 /* ---------- load / poll */
 async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURIComponent(id));if(j.err){toast(ERR[j.err]||j.err);return;}
  const flash=[];if(C&&C.view&&j.view){SL.forEach(([k])=>{if(JSON.stringify(C.view[k])!==JSON.stringify(j.view[k]))flash.push(k);});}
  C=j;CID=j.id;paintChat(force);if(force||(j.rev||0)!==LASTREV||!$('bp').innerHTML)paintBP(flash);LASTREV=j.rev||0;
- const t=j.test||{};const wait=(j.status==='thinking'||j.status==='building')?2000:(t.state==='queued'?8000:0);clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
+ const t=j.test||{};const wait=(j.draft||j.status==='thinking')?600:(j.status==='building'?1500:(t.state==='queued'?8000:0));clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;await load(j.id,true);}
 async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
@@ -352,9 +491,10 @@ async function rmFilter(i){edit({slot:'filters',index:i,remove:true});}
 async function edit(b,okid){b.id=CID;const j=await post('chat_edit',b);if(!j.ok){const msg=(ERR[j.err]||j.err)+(j.why?' '+j.why.join(' · '):'');const o=okid&&$(okid);if(o){o.className='ok r';o.textContent=msg;}else toast(msg);return;}shClose();load(CID,true);}
 function renameSh(){if(!C||!C.view)return;shOpen('<h4>'+T('Le nom du robot','The robot’s name')+'</h4><div class="fld"><input id="nm" maxlength="30" value="'+esc(C.view.name||'')+'"></div><button class="btn pri" onclick="edit({slot:\'name\',name:$(\'nm\').value})">'+T('Renommer','Rename')+'</button>');setTimeout(()=>$('nm')&&$('nm').focus(),100);}
 async function histSh(){let L=[];try{L=(await getJ('chat_list')).chats||[];}catch(e){}
- shOpen('<h4>'+T('Mes conversations','My conversations')+'</h4><p class="sub">'+T('Chaque conversation construit un robot. Reprends-en une quand tu veux.','Each conversation builds a robot. Pick one back up whenever you like.')+'</p><button class="btn pri" style="margin:0 0 12px" onclick="shClose();start()">+ '+T('Nouveau robot','New robot')+'</button>'+
+ shOpen('<h4>'+T('Mes conversations','My conversations')+'</h4><p class="sub">'+T('Chaque conversation construit un robot. Reprends-en une quand tu veux.','Each conversation builds a robot. Pick one back up whenever you like.')+'</p><button class="btn pri" style="margin:0 0 12px" onclick="shClose();start()">+ '+T('Nouvelle conversation','New conversation')+'</button>'+
   (L.length?L.map(c=>'<button class="hl" onclick="openChat(\''+esc(c.id)+'\')"><b>'+esc(c.name||T('Idée en cours','Idea in progress'))+'</b><small>'+esc(c.understood||c.last||'')+'</small></button>').join(''):'<div class="emptybp">'+T('Rien encore.','Nothing yet.')+'</div>'));}
-function openChat(id){shClose();history.replaceState(null,'','?c='+id);LASTN=0;LASTREV=-1;C=null;load(id,true);}
+function openChat(id){shClose();history.replaceState(null,'','?c='+id);LASTN=0;LASTREV=-1;C=null;load(id,true).then(()=>post('chat_open',{id:id}).then(j=>{if(j&&j.back){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),700);}}).catch(()=>{}));}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&CID)post('chat_open',{id:CID}).then(j=>{if(j&&j.back){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),700);}}).catch(()=>{});});
 
 /* ---------- composer */
 const tx=$('tx');function autosize(){tx.style.height='auto';tx.style.height=Math.min(140,tx.scrollHeight)+'px';}
@@ -364,7 +504,10 @@ document.documentElement.lang=EN?'en':'fr';tx.placeholder=T('Écris ton idée…
 $('tn').textContent=T('L’atelier','The workshop');$('ts').textContent=T('Construis ton robot en parlant','Build your robot by talking');
 
 /* ---------- boot */
-try{document.fonts.ready.then(()=>{const el=$('chat');el.scrollTop=el.scrollHeight;});}catch(e){}
-(()=>{const q=new URLSearchParams(location.search);if(q.get('c'))load(q.get('c'),true);else start(q.get('robot'));
+try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hello'))el.scrollTop=el.scrollHeight;});}catch(e){}
+(async()=>{const q=new URLSearchParams(location.search);
+ if(q.get('c'))openChat(q.get('c'));
+ else if(q.get('robot'))start(q.get('robot'));
+ else{let L=[];try{L=(await getJ('chat_list')).chats||[];}catch(e){}if(L.length)openChat(L[0].id);else start();}
  getJ('robots_data').then(j=>{PIECES=((j.builder||{}).pieces)||[];const owl=((j.builder||{}).robots||[]).find(r=>r.id==='owl');OWL=(owl&&(owl.resolved||owl.parts))||{};if(C)paintBP();}).catch(()=>{});})();
 </script></body></html>

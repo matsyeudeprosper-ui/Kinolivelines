@@ -28,9 +28,9 @@ def _sysfile(system):
 def _spawn(sp, model):
     cmd = [IV.CLAUDE, "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
            "--system-prompt-file", sp, "--tools", "", "--strict-mcp-config", "--no-session-persistence",
-           "--max-turns", "1", "--model", model]
+           "--max-turns", "1", "--include-partial-messages", "--model", model]
     return subprocess.Popen(cmd, cwd=IV.JOBS, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                            text=True, encoding="utf-8", errors="replace", creationflags=0x08000000)
+                            text=True, encoding="utf-8", errors="replace", creationflags=0x08000000 | 0x00004000)   # no window, below-normal priority
 
 
 def _fill(key):
@@ -41,12 +41,15 @@ def _fill(key):
         for p, t in _POOL.get(key, []):
             if (p, t) not in L:
                 _kill(p)
-        while len(L) < WARM:
+        if len(L) < WARM:                    # one at a time: a starting process is CPU-hungry for ~10 s
             try:
                 L.append((_spawn(sp, model), time.time()))
             except Exception:
-                break
+                pass
         _POOL[key] = L
+        short = len(L) < WARM
+    if short:
+        threading.Timer(12, _fill, args=(key,)).start()
 
 
 def _kill(p):
@@ -88,7 +91,28 @@ def _reaper():
 threading.Thread(target=_reaper, daemon=True).start()
 
 
-def ask_text(system, user, model="sonnet", timeout=150, log=None):
+def partial_say(buf):
+    """the "say" text of a JSON answer still being written (for the typing bubble), or "" """
+    i = buf.find('"say"')
+    if i < 0:
+        return ""
+    i = buf.find('"', buf.find(":", i) + 1)
+    if i < 0:
+        return ""
+    out, esc = [], False
+    for ch in buf[i + 1:]:
+        if esc:
+            out.append({"n": "\n", "t": " ", '"': '"', "\\": "\\"}.get(ch, ch)); esc = False
+        elif ch == "\\":
+            esc = True
+        elif ch == '"':
+            break
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
     sp, h = _sysfile(system)
     key = h + model
@@ -105,8 +129,14 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None):
             _kill(q)
     if p is None:
         p = _spawn(sp, model)             # cold: ~12 s more
-    threading.Thread(target=_fill, args=(key,), daemon=True).start()
+    try:                                  # the one answering now goes back to normal priority
+        import ctypes
+        ctypes.windll.kernel32.SetPriorityClass(int(p._handle), 0x00000020)
+    except Exception:
+        pass
+    # the pool is topped up AFTER the answer: a process starting meanwhile takes the CPU from the reply (5 s vs 2.5 s)
     out = queue.Queue()
+    acc = []
 
     def read():
         try:
@@ -115,6 +145,14 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None):
                     j = json.loads(line)
                 except Exception:
                     continue
+                if on_text is not None and j.get("type") == "stream_event":
+                    dl = (j.get("event") or {}).get("delta") or {}
+                    if dl.get("type") == "text_delta":
+                        acc.append(dl.get("text") or "")
+                        try:
+                            on_text("".join(acc))
+                        except Exception:
+                            pass
                 if j.get("type") == "result":
                     out.put(j.get("result") if not j.get("is_error") else None)
                     return
@@ -129,6 +167,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None):
     except Exception:
         txt = None
     _kill(p)
+    threading.Thread(target=_fill, args=(key,), daemon=True).start()
     if log:
         try:
             io.open(log, "a", encoding="utf-8").write("\n--- warm %s ---\n%s\n" % (model, (txt or "(none)")[-6000:]))
@@ -137,10 +176,10 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None):
     return txt
 
 
-def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None):
-    """the first JSON object of the answer; the next model if one fails"""
+def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on_text=None):
+    """the first JSON object of the answer; the next model if one fails; on_text(partial text) while it is written"""
     for m in models:
-        j = IV.first_json(ask_text(system, user, m, timeout, log) or "")
+        j = IV.first_json(ask_text(system, user, m, timeout, log, on_text) or "")
         if j is not None:
             return j
     return None
