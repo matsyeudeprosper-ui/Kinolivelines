@@ -99,8 +99,10 @@ def check(src):
                 walk(c, in_tf)
             return
         if isinstance(x, ast.Call):
-            if not isinstance(x.func, ast.Name) or x.func.id not in FUNCS or x.keywords:
-                raise FormulaError("unknown function '%s'" % getattr(x.func, "id", "?"))
+            if not isinstance(x.func, ast.Name):
+                raise FormulaError("only the listed functions can be used (ema, rsi, atr...)")
+            if x.func.id not in FUNCS or x.keywords:
+                raise FormulaError("unknown function '%s'" % x.func.id)
             lo, hi = FUNCS[x.func.id]
             if not lo <= len(x.args) <= hi:
                 raise FormulaError("%s takes %s values" % (x.func.id, lo if lo == hi else "%d to %d" % (lo, hi)))
