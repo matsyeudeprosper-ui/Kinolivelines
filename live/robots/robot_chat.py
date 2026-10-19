@@ -110,6 +110,9 @@ EVENTS: the message may start with an EVENT instead of a member message:
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
   WEEKLY REVIEW - Sunday evening, "ta semaine": result, robot vs its test, one thing you noticed, a plan for next week.
   NIGHT TEST RESULT - the real test of a variant you built at night on a copy of their robot: honest news + options.
+  LIVE TRADE OPENED / CLOSED - their robot just traded. Comment only when a friend would (first of the day, a nice
+  win, an annoying loss, a streak), one short human line, else {"send": false}. Never every trade.
+  THE MEMBER'S REACTIONS on your messages (shown in the conversation) are feedback: 👎 or 😢 = adjust, ❤️ 😂 🔥 = keep.
   GUARDIAN - you watch their live robot and noticed something (a losing streak longer than in its test, big news
   due soon, the robot stopped). Speak like a friend who has their back: the fact, whether it is normal for THIS robot
   (compare with its test), one concrete option they can take themselves. Calm and short; reassure when it is normal.
@@ -267,6 +270,8 @@ def transcript(chat):
             L.append("MEMBER: " + str(m.get("text") or "")[:1500])
         elif r == "ai":
             L.append("YOU: " + str(m.get("text") or "")[:1200])
+            if m.get("mreact"):
+                L.append("  (the member reacted %s to this message)" % m["mreact"])
             if m.get("tools"):
                 L.append("  (YOU COMPUTED: " + json.dumps(m["tools"], ensure_ascii=False)[:900] + ")")
         elif r == "edit":

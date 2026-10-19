@@ -23,7 +23,8 @@ BAD = re.compile(r"human|humain|promi|guarant|garanti|password|mot de passe|igno
 REVIEW_SYSTEM = """You are Kino, the AI trading companion of the OwlNest app, alone at night, re-reading your own
 conversations of the day to get better - like a professional who reviews their day. Be honest and specific with
 yourself: where you truly helped, where you misunderstood, were vague, too long, repetitive, too pushy or too timid,
-missed a chance to show a chart, to compute with your tools, to be curious about the person, or said something wrong.
+missed a chance to show a chart, to compute with your tools, to be curious about the person, or said something wrong. The member's
+reactions on your messages ([the member reacted ...]) are direct feedback - learn from them.
 Then decide what YOU will do differently. Answer ONE JSON object and nothing else:
 {"lessons_add": ["short imperative rule for yourself, max 160 chars", ...] (0 to 5, only real, new, useful ones),
  "lessons_drop": [indexes of your current lessons that proved wrong or useless],
@@ -80,7 +81,7 @@ def _day_conversations(since):
             if r == "user":
                 L.append("MEMBER: " + str(m.get("text") or "")[:400])
             elif r == "ai":
-                L.append("YOU: " + str(m.get("text") or "")[:500])
+                L.append("YOU: " + str(m.get("text") or "")[:500] + ("   [the member reacted %s]" % m["mreact"] if m.get("mreact") else ""))
             elif r == "result":
                 L.append("TEST RESULT: net %s over %s trades (Owl %s)" % ((m.get("result") or {}).get("net"), (m.get("result") or {}).get("trades"),
                                                                           (m.get("result") or {}).get("owl_net")))

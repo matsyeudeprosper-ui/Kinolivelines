@@ -250,6 +250,11 @@ header .ib{border:0;background:transparent;width:36px}
 .send:disabled{opacity:.6}
 .send.on{background:var(--down);animation:pulse 1.2s infinite}
 .hint{font-size:.64rem;opacity:.75}
+.mw{display:contents}.typingnow .chips,.typingnow .att{display:none}
+.m.ai .bub{-webkit-user-select:none;user-select:none}.m.ai.rxm{margin-bottom:16px}
+.react.mine{left:6px;right:auto}
+#rxbar{position:fixed;z-index:80;display:flex;gap:2px;padding:6px 8px;border-radius:99px;background:var(--wa-in);box-shadow:0 8px 30px rgba(0,0,0,.45);animation:pop .2s cubic-bezier(.2,1.6,.4,1)}
+#rxbar button{border:0;background:none;font-size:1.45rem;padding:4px 5px;cursor:pointer;transition:transform .12s}#rxbar button:active{transform:scale(1.35)}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -367,7 +372,7 @@ function msgHTML(m,i,last){
  if(m.role==='demo')return demoHTML(m,i,last);
  // 2026-10-19: the AI sends two or three short messages in a row like a person (blank line = new bubble)
  const parts=String(m.text||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
- let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(p)+(k===A.length-1?'<span class="meta">'+hm2(m.t)+'</span>':'')+'</div></div>').join('');
+ let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+(k===A.length-1&&m.mreact?' rxm':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" data-i="'+i+'">'+md(p)+(k===A.length-1?'<span class="meta">'+hm2(m.t)+'</span>'+(m.mreact?'<span class="react mine">'+esc(m.mreact)+'</span>':''):'')+'</div></div>').join('');
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
  if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')]}[m.link];
   if(LK)h+='<div class="att"><a class="cta" style="text-decoration:none;color:inherit" href="'+LK[0]+'"><span class="ci"><svg><use href="#spark"/></svg></span><span><b>'+LK[1]+'</b><small>'+LK[2]+'</small></span></a></div>';}
@@ -379,23 +384,56 @@ function welcome(){return '<div class="hello"><div class="orb"><svg><use href="#
   [T('Rebond','Bounce'),T('Je vends quand le RSI est au-dessus de 75 et que le prix touche le haut des bandes de Bollinger.','I sell when the RSI is above 75 and price touches the upper Bollinger band.')],
   [T('Cassure du jour','Day breakout'),T('J’entre quand le prix casse le plus haut d’hier, pendant la session de Londres seulement.','I enter when price breaks yesterday’s high, during the London session only.')],
   [T('L’Owl, en mieux','The Owl, better'),T('Pars de l’Owl, mais je veux moins de trades et une sortie qui laisse courir les gains.','Start from the Owl, but I want fewer trades and an exit that lets winners run.')]].map(x=>'<button class="idea" onclick="useIdea(this)"><small>'+esc(x[0])+'</small><span>'+esc(x[1])+'</span></button>').join('')+'</div></div>';}
-function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
- let h='';const fresh=M.filter(m=>m.role==='user').length===0&&!C.robot_id;
+function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<140;
+ const fresh=M.filter(m=>m.role==='user').length===0&&!C.robot_id;
  // 2026-10-19 (owner): the idea cards are for someone Kino does not know yet (its first message is the fixed greeting);
  // a member it knows gets Kino typing its own greeting straight away - no generic screen that swaps under them
  const wel=fresh&&(M.length?(M[0].role==='ai'&&!M[0].event&&!M[0].quick):(C.status==='ready'&&!C.draft));
- if(wel)h+=welcome();
+ const items=[];if(wel)items.push({k:'wel',h:welcome()});
  let lastDay='',lastSide='';
- M.forEach((m,i)=>{if(wel&&i===0)return;const dk=dayKey(m.t);if(m.t&&dk!==lastDay){h+='<div class="day"><span>'+dayLab(m.t)+'</span></div>';lastDay=dk;lastSide='';}
+ M.forEach((m,i)=>{if(wel&&i===0)return;const dk=dayKey(m.t);if(m.t&&dk!==lastDay){items.push({k:'d'+dk,h:'<div class="day"><span>'+dayLab(m.t)+'</span></div>'});lastDay=dk;lastSide='';}
   const side=m.role==='user'?'me':(m.role==='ai'?'ai':'x');m._tl=(side!=='x'&&side!==lastSide);if(side!=='x')lastSide=side;else lastSide='';
-  h+=msgHTML(m,i,i===M.length-1);});
- FAILED.forEach((t,k)=>{h+='<div class="m me"><div class="bub" style="opacity:.75">'+md(t)+'<div class="fl">⚠ '+T('Pas envoyé','Not sent')+' · <a href="#" onclick="resend('+k+');return false">'+T('Réessayer','Retry')+'</a></div></div></div>';});
- const dr=(C&&C.draft)||'';
- if(dr&&C.status!=='ready')h+='<div class="m ai live"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(dr)+'<span class="caret"></span></div></div>';
- else if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
- if(!dr&&C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?THINK[THINK_T%THINK.length]:T('Kino arrive…','Kino is on his way…'))+'</span></div></div>';
- el.innerHTML=h;drawAll();hdr();if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN||dr)el.scrollTop=el.scrollHeight;LASTN=M.length;
+  items.push({k:'m'+i+':'+(m.t||0)+':'+m.role,h:msgHTML(m,i,i===M.length-1),m:m,i:i});});
+ FAILED.forEach((t,k)=>items.push({k:'f'+k,h:'<div class="m me"><div class="bub" style="opacity:.75">'+md(t)+'<div class="fl">⚠ '+T('Pas envoyé','Not sent')+' · <a href="#" onclick="resend('+k+');return false">'+T('Réessayer','Retry')+'</a></div></div></div>'}));
+ // keyed blocks: a block is rebuilt only when its HTML changed - charts, images and typing in progress stay put
+ let box=$('msgs');if(!box){el.innerHTML='<div id="msgs"></div><div id="tailbox"></div>';box=$('msgs');}
+ const kids=[...box.children],fresh2=[];
+ items.forEach((it,x)=>{const n=kids[x];if(n&&n.dataset.k===it.k&&n._h===it.h)return;
+  if(n&&n.dataset.k===it.k&&n._typing){n._h=it.h;return;}           // still typing in: refresh when done
+  const w=document.createElement('div');w.className='mw';w.dataset.k=it.k;w._h=it.h;w.innerHTML=it.h;
+  if(n)box.replaceChild(w,n);else box.appendChild(w);kids[x]=w;fresh2.push([w,it]);});
+ while(box.children.length>items.length)box.lastChild.remove();
+ // Kino's new messages type themselves in (not the history shown at load)
+ fresh2.forEach(([w,it])=>{if(!it.m||it.m.role!=='ai')return;if(FIRSTPAINT||TYPED.has(it.k)){TYPED.add(it.k);return;}TYPED.add(it.k);typeIn(w,it);});
+ if(FIRSTPAINT)M.forEach((m,i)=>TYPED.add('m'+i+':'+(m.t||0)+':'+m.role));
+ FIRSTPAINT=false;
+ // the tail: Kino writing (smooth), building, or the dots
+ const dr=(C&&C.draft)||'',tb=$('tailbox');
+ if(dr&&C.status!=='ready'){LIVE_T=dr;if(!$('livebub')){tb.dataset.mode='live';tb.innerHTML='<div class="m ai live tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" id="livebub"></div></div>';}liveTick();}
+ else{LIVE_T='';const mode=C&&C.status==='building'?'b':(C&&C.status==='thinking'?'t':'');
+  if(tb.dataset.mode!==mode||(mode&&!tb.innerHTML)){tb.dataset.mode=mode;
+   tb.innerHTML=mode==='b'?'<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>':
+    mode==='t'?'<div class="m ai typing tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?THINK[THINK_T%THINK.length]:T('Kino arrive…','Kino is on his way…'))+'</span></div></div>':'';}}
+ if(fresh2.length)drawAll();hdr();
+ if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN)el.scrollTop=el.scrollHeight;LASTN=M.length;
  sdPaint();}
+/* typing like a person writing (owner: "like in ChatGPT") */
+let TYPED=new Set(),FIRSTPAINT=true,LIVE_T='',LIVE_N=0,LIVE_RAF=0,CARRY=0;
+function liveTick(){if(LIVE_RAF)return;const step=()=>{LIVE_RAF=0;const b=$('livebub');if(!b||!LIVE_T){return;}
+  if(LIVE_N>LIVE_T.length)LIVE_N=LIVE_T.length;const rem=LIVE_T.length-LIVE_N;if(rem>0){LIVE_N+=rem>120?Math.ceil(rem/25):1;
+   const el=$('chat'),near=el.scrollHeight-el.scrollTop-el.clientHeight<160;b.innerHTML=md(LIVE_T.slice(0,LIVE_N))+'<span class="caret"></span>';if(near)el.scrollTop=el.scrollHeight;}
+  CARRY=LIVE_N;LIVE_RAF=requestAnimationFrame(step);};LIVE_RAF=requestAnimationFrame(step);}
+function typeIn(w,it){const bubs=[...w.querySelectorAll('.m.ai .bub[data-i]')];if(!bubs.length)return;
+ const parts=String(it.m.text||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);if(!parts.length)return;
+ w._typing=true;w.classList.add('typingnow');const full=w._h;let bi=0,n=Math.min(CARRY,parts[0].length);CARRY=0;LIVE_N=0;
+ bubs.forEach((b,k)=>{if(k>0)b.parentNode.style.display='none';});
+ const step=()=>{const b=bubs[bi],t=parts[bi]||'';if(!b){done();return;}
+  const rem=t.length-n;n+=rem>200?Math.ceil(rem/40):1;   // ~60 characters a second, faster only for long textsb.innerHTML=md(t.slice(0,n))+(n<t.length?'<span class="caret"></span>':'');
+  const el=$('chat');if(el.scrollHeight-el.scrollTop-el.clientHeight<200)el.scrollTop=el.scrollHeight;
+  if(n>=t.length){bi++;n=0;if(bubs[bi]){setTimeout(()=>{bubs[bi].parentNode.style.display='';requestAnimationFrame(step);},380);return;}done();return;}
+  requestAnimationFrame(step);};
+ const done=()=>{w._typing=false;w.classList.remove('typingnow');w.innerHTML=w._h||full;drawAll();const el=$('chat');if(el.scrollHeight-el.scrollTop-el.clientHeight<240)el.scrollTop=el.scrollHeight;};
+ requestAnimationFrame(step);}
 function chip(b){$('tx').value=b.textContent;send();}
 function useIdea(b){$('tx').value=b.querySelector('span').textContent;autosize();$('tx').focus();sdPaint();}
 
@@ -539,7 +577,7 @@ async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURICom
  C=j;CID=j.id;paintChat(force);if(force||(j.rev||0)!==LASTREV||!$('bp').innerHTML)paintBP(flash);LASTREV=j.rev||0;
  const t=j.test||{};const wait=(j.draft||j.status==='thinking')?600:(j.status==='building'?1500:(t.state==='queued'?8000:0));clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
- history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;await load(j.id,true);}
+ history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;TYPED=new Set();FIRSTPAINT=false;const _ch=$('chat');if(_ch)_ch.innerHTML='';await load(j.id,true);}
 async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
  C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000)});C.status='thinking';$('tx').value='';autosize();paintChat(true);
  // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
@@ -564,6 +602,18 @@ function hdr(){const v=C&&C.view,st=C&&C.status,d=C&&C.draft;const ts=$('ts');if
  else{ts.textContent=v&&v.name?('· '+v.name):T('en ligne','online');ts.className='';}}
 function sdPaint(){const b=$('sdb');if(!b)return;const has=!!$('tx').value.trim();b.innerHTML='<svg><use href="#'+(has?'send':'mic')+'"/></svg>';
  b.setAttribute('aria-label',has?T('Envoyer','Send'):T('Parler','Talk'));b.disabled=false;}
+/* 2026-10-19 (owner: feedback, the messenger way): long-press or double-tap a Kino message to react */
+const RX=['👍','❤️','😂','😮','😢','👎'];let RXT=null;
+function rxBar(b){const i=+b.dataset.i;rxClose();const r=b.getBoundingClientRect(),d=document.createElement('div');d.id='rxbar';
+ d.innerHTML=RX.map(e=>'<button data-e="'+e+'">'+e+'</button>').join('');d.dataset.i=i;document.body.appendChild(d);
+ d.querySelectorAll('button').forEach(x=>x.onclick=()=>rxPick(i,x.dataset.e));
+ const w=d.offsetWidth;d.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left))+'px';d.style.top=Math.max(8,r.top-54)+'px';try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
+function rxClose(){const d=$('rxbar');if(d)d.remove();}
+async function rxPick(i,e){rxClose();const m=C&&C.msgs[i];if(!m)return;m.mreact=m.mreact===e?null:e;paintChat();try{await post('chat_react',{id:CID,i:i,e:e});}catch(x){}}
+document.addEventListener('pointerdown',ev=>{if(!ev.target.closest('#rxbar'))rxClose();const b=ev.target.closest('.m.ai .bub[data-i]');clearTimeout(RXT);if(b)RXT=setTimeout(()=>rxBar(b),450);});
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>clearTimeout(RXT)));
+document.addEventListener('pointermove',ev=>{if(Math.abs(ev.movementY)>4||Math.abs(ev.movementX)>4)clearTimeout(RXT);});
+document.addEventListener('dblclick',ev=>{const b=ev.target.closest('.m.ai .bub[data-i]');if(b){ev.preventDefault();rxBar(b);}});
 function sendOrMic(){if($('tx').value.trim())send();else mic();}
 function resend(k){const t=FAILED.splice(k,1)[0];if(t==null)return;$('tx').value=t;send();}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
@@ -618,7 +668,7 @@ function renameSh(){if(!C||!C.view)return;shOpen('<h4>'+T('Le nom du robot','The
 async function histSh(){let L=[];try{L=(await getJ('chat_list')).chats||[];}catch(e){}
  shOpen('<h4>'+T('Mes conversations','My conversations')+'</h4><p class="sub">'+T('Chaque conversation construit un robot. Reprends-en une quand tu veux.','Each conversation builds a robot. Pick one back up whenever you like.')+'</p><button class="btn pri" style="margin:0 0 12px" onclick="shClose();start()">+ '+T('Nouvelle conversation','New conversation')+'</button><a class="btn" style="display:block;text-align:center;text-decoration:none;color:var(--text);margin:-4px 0 12px" href="kino">🦉 '+T('Kino et toi','Kino and you')+'</a>'+
   (L.length?L.map(c=>'<button class="hl" onclick="openChat(\''+esc(c.id)+'\')"><b>'+esc(c.name||T('Idée en cours','Idea in progress'))+'</b><small>'+esc(c.understood||c.last||'')+'</small></button>').join(''):'<div class="emptybp">'+T('Rien encore.','Nothing yet.')+'</div>'));}
-function openChat(id){shClose();history.replaceState(null,'','?c='+id);LASTN=0;LASTREV=-1;C=null;load(id,true).then(()=>post('chat_open',{id:id}).then(j=>{if(j&&j.back){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),700);}}).catch(()=>{}));}
+function openChat(id){shClose();history.replaceState(null,'','?c='+id);LASTN=0;LASTREV=-1;C=null;TYPED=new Set();FIRSTPAINT=true;const _ch=$('chat');if(_ch)_ch.innerHTML='';load(id,true).then(()=>post('chat_open',{id:id}).then(j=>{if(j&&j.back){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),700);}}).catch(()=>{}));}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&CID)post('chat_open',{id:CID}).then(j=>{if(j&&j.back){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),700);}}).catch(()=>{});});
 
 /* ---------- composer */

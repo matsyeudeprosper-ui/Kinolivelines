@@ -14956,7 +14956,7 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
             q = {"say": None, "chips": [], "build": True}
         if event:
             q["build"] = False
-        if event and event.startswith(("PROACTIVE", "FOLLOW-UP")) and not q.get("send"):
+        if event and not q.get("send") and not event.startswith("NEW CONVERSATION"):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
         def put(c):
@@ -15296,6 +15296,49 @@ def _companion_tick():
                     _guardian(u, ch)
                 except Exception:
                     pass
+            # (1d) 2026-10-19 (owner: "Kino comments your trades live"): a trade opened or closed on their account -> Kino
+            # decides like a friend watching whether it is worth a word (first trade of the day, a big win or loss, a
+            # streak...) - never every trade, max 4 a day, and may stay silent
+            try:
+                nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+                ts = m.get("trade_seen") or {}
+                ol = nd.get("open_list") or []
+                main = [o for o in ol if o.get("k") != "s"]
+                keys_open = ["%s|%s|%s" % (o.get("t"), o.get("d"), o.get("e")) for o in main]
+                last_cl = (nd.get("trades") or [{}])[0]
+                ev = None
+                if "init" not in ts:
+                    ts = {"init": 1, "open": keys_open, "closed": last_cl.get("pid")}   # first look: remember, say nothing
+                else:
+                    new_open = [o for o, k in zip(main, keys_open) if k not in (ts.get("open") or [])]
+                    if new_open:
+                        o = new_open[0]
+                        ev = ("LIVE TRADE OPENED on their account: %s %s lot %s at %s, stop %s, target %s (%s). Today so far %+.2f $." % (
+                            "BUY" if o.get("d") == "A" else "SELL", o.get("sym"), o.get("lot"), o.get("e"), o.get("sl") or "-", o.get("tp") or "-",
+                            time.strftime("%H:%M UTC", time.gmtime(int(o.get("t") or now))), nd.get("today") or 0))
+                    elif last_cl.get("pid") and last_cl.get("pid") != ts.get("closed"):
+                        streak = 0
+                        for t in nd.get("trades") or []:
+                            if ((t.get("p") or 0) > 0) == ((last_cl.get("p") or 0) > 0):
+                                streak += 1
+                            else:
+                                break
+                        ev = ("LIVE TRADE CLOSED on their account: %+.2f $ after %s min (%s). %d %s in a row. Today %+.2f $, week %+.2f $." % (
+                            last_cl.get("p") or 0, last_cl.get("dur"), "buy" if last_cl.get("dir") == "A" else "sell", streak,
+                            "wins" if (last_cl.get("p") or 0) > 0 else "losses", nd.get("today") or 0, nd.get("week") or 0))
+                    ts["open"], ts["closed"] = keys_open, last_cl.get("pid")
+                tl = [t for t in (m.get("trade_log") or []) if now - t < 86400]
+                _mem_note_safe(uid, lambda mm, ts=ts: mm.__setitem__("trade_seen", ts))
+                if ev and len(tl) < 4 and not busy(ch[0]["id"]):
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("trade_log", tl + [now]))
+                    _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, ev + " You watch their trades like a friend "
+                                     "sitting next to them: say something ONLY if a person would (the first trade of the day, a nice "
+                                     "win, an annoying loss, a streak, a trade during big news) - one short line, human, no lecture; "
+                                     "otherwise \"send\": false. Never comment two trades in a row the same way."),
+                                     kwargs={"notify": True}, daemon=True).start()
+            except Exception:
+                pass
             # (2b) 2026-10-19 (owner: "follow up sometimes like humans do ... not predictable or systematic, but smartly,
             # intuitively"): Kino asked or proposed something and got no answer. Still on the chat: after a random
             # 2.5-7 min. Gone: after a random 25-80 min, by day, as a push. Once per message, never after a follow-up,
@@ -16045,6 +16088,29 @@ def chat_image(user, body):
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     _chat_mut(c["id"], lambda c: _chat_msg(c, "image", file=fn, text=note))
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+    return {"ok": True}
+
+
+CHAT_REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "🔥", "🙏")
+
+
+def chat_react(user, body):
+    """2026-10-19 (owner: feedback on Kino's messages, the messenger way): a reaction on one of Kino's messages - Kino
+    sees it in the conversation and its nightly review learns from it; the same emoji again removes it"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    e = str(body.get("e") or "")
+    try:
+        i = int(body.get("i"))
+    except Exception:
+        return {"ok": False}
+    if c is None or e not in CHAT_REACTS:
+        return {"ok": False}
+
+    def put(c):
+        M = c.get("msgs") or []
+        if 0 <= i < len(M) and M[i].get("role") == "ai":
+            M[i]["mreact"] = None if M[i].get("mreact") == e else e
+    _chat_mut(c["id"], put)
     return {"ok": True}
 
 
@@ -21114,7 +21180,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget"):
+                                              "kino_forget", "chat_react"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -21131,7 +21197,8 @@ class H(BaseHTTPRequestHandler):
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
-                       "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget}[_parts[1]]
+                       "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
+                       "chat_react": chat_react}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
