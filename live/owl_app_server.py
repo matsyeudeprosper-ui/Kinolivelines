@@ -14698,6 +14698,20 @@ def _chat_member(user, c):
             pass
     else:
         L.append("this chat's robot is not saved yet (it is saved at its first test)")
+    try:          # 2026-10-20 (owner: "too many mistakes"): THIS chat's test, exactly as it stands - no guessing
+        mk_ = (c.get("robot") or {}).get("market") or "BTCUSD"
+        t_ = c.get("test") or {}
+        line_ = "testing this robot on %s: possible right now with \"act\": \"test\" (any market of their broker; %s)" % (
+            mk_, "the market is prepared - a few minutes" if (mk_ == "BTCUSD" or _pack_ready(mk_)) else "first time on this market - its prices are prepared first, ~45 min more")
+        if t_:
+            cur = t_.get("rev") == c.get("rev") and (t_.get("sym") or "BTCUSD") == mk_
+            js = next((x for x in _mq_load() if x.get("id") == t_.get("job")), None) if t_.get("job") else None
+            line_ += "; its last test request: %s on %s, %s%s" % (
+                "THIS version" if cur else "an OLDER version / another market (not the robot as it is now)", t_.get("sym") or "BTCUSD",
+                (js or {}).get("state") or t_.get("state"), (", waiting since %s" % str(t_.get("at"))[11:16] + " UTC") if (js or {}).get("state", t_.get("state")) == "queued" else "")
+        L.append(line_ + ("; tests are PAUSED by the owner" if os.path.exists(TESTS_PAUSED) else ""))
+    except Exception:
+        pass
     try:          # 2026-10-19 (owner item 3): discipline signals for the coach
         _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
         _td = time.strftime("%d/%m", time.gmtime())
@@ -15300,10 +15314,16 @@ def _kino_act(cid, user, act, en=False):
                     ("Tests relancés." if not r.get("already") else "Les tests tournaient déjà.")) if act == "tests_resume" else \
                    (("Tests paused (luck tests continue)." if not r.get("already") else "Tests were already paused.") if en else
                     ("Tests en pause (les tests de chance continuent)." if not r.get("already") else "Les tests étaient déjà en pause."))
-        elif act == "test" and c.get("robot") and (c.get("test") or {}).get("state") != "queued":
-            tr = chat_test(user, {"id": cid})
-            if not tr.get("ok") and tr.get("err") not in ("same",):
-                line = ("Couldn't start the test (%s)." if en else "Le test n'a pas pu démarrer (%s).") % tr.get("err")
+        elif act == "test" and c.get("robot"):
+            t0 = c.get("test") or {}
+            same = t0.get("state") == "queued" and t0.get("rev") == c.get("rev") and (t0.get("sym") or "BTCUSD") == (c["robot"].get("market") or "BTCUSD")
+            if same:
+                line = ("This test is already in the queue." if en else "Ce test est déjà dans la file d'attente.")
+            else:
+                tr = chat_test(user, {"id": cid})
+                if not tr.get("ok"):
+                    line = ("Nothing changed from the Owl, so there is nothing new to test." if en else "Rien ne change par rapport à l'Owl : rien de nouveau à tester.") \
+                        if tr.get("err") == "same" else (("Couldn't start the test (%s)." if en else "Le test n'a pas pu démarrer (%s).") % tr.get("err"))
         if line:
             _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=line))
     except Exception:
@@ -15370,8 +15390,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             raise
         if q.get("act"):
             _kino_act(cid, user, q["act"], en)
-        if q.get("say"):
-            threading.Thread(target=_kino_factcheck, args=(cid, user, q["say"]), daemon=True).start()
+
         if q["build"]:
             threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
         if _qdm and _qdm.get("nodata") and (q or {}).get("show"):
@@ -15462,8 +15481,7 @@ def _chat_build(cid, user):
                     c["understood"] = ans["understood"]
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
-            if ans and str(ans.get("say") or "").strip():
-                threading.Thread(target=_kino_factcheck, args=(cid, user, ans["say"]), daemon=True).start()
+
             if ans and ans.get("act") in ("test", "tests_resume", "tests_pause"):
                 _kino_act(cid, user, ans["act"], en)          # the AI acts itself
             if ans and ans.get("act") in ("ghost", "duel") and c.get("robot"):
@@ -16962,6 +16980,8 @@ def chat_test(user, body):
     rid = c.get("robot_id")
     reg = robot_reg()
     mine = next((x for x in reg.get("robots") or [] if x.get("id") == rid), None) if rid else None
+    if mine is not None and mine.get("market") and mine.get("market") != (rob.get("market") or "BTCUSD"):
+        mine = None          # 2026-10-20: the chat's robot moved market (Nasdaq -> gold) - a new robot, the old one stays intact
     if mine is not None and (_robot_mine(user, mine) or is_admin(user)):
         r = robot_update(user, {"id": rid, "parts": diff, "name": rob.get("name")})
     else:
@@ -17328,7 +17348,8 @@ def _tts_mp3(text, lang="fr"):
     except Exception:
         return None
     text = re.sub(r"\s+", " ", str(text or "")).strip()
-    if not text or not cf.get("key"):
+    key = cf.get("key") or (os.environ.get("OPENAI_API_KEY") if cf.get("provider") == "openai" else None)   # 2026-10-20: the server's own key
+    if not text or not key:
         return None
     import hashlib, urllib.request
     os.makedirs(TTS_CACHE, exist_ok=True)
@@ -17336,14 +17357,17 @@ def _tts_mp3(text, lang="fr"):
     if os.path.exists(fn):
         return open(fn, "rb").read()
     if cf.get("provider") == "openai":
-        rq = urllib.request.Request("https://api.openai.com/v1/audio/speech", data=json.dumps({"model": cf.get("model") or "tts-1", "voice": cf.get("voice") or "onyx",
-                                    "input": text}).encode(), headers={"Authorization": "Bearer " + cf["key"], "Content-Type": "application/json"})
+        body = {"model": cf.get("model") or "gpt-4o-mini-tts", "voice": cf.get("voice") or "ash", "input": text, "response_format": "mp3"}
+        if cf.get("instructions") and "mini-tts" in body["model"]:
+            body["instructions"] = cf["instructions"] + (" Speak English." if lang == "en" else " Parle en français, accent naturel de France.")
+        rq = urllib.request.Request("https://api.openai.com/v1/audio/speech", data=json.dumps(body).encode(),
+                                    headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
     else:
         from xml.sax.saxutils import escape as _esc
         vc = cf.get("voice_en" if lang == "en" else "voice_fr") or ("en-US-AndrewNeural" if lang == "en" else "fr-FR-HenriNeural")
         ssml = "<speak version='1.0' xml:lang='%s'><voice name='%s'>%s</voice></speak>" % ("en-US" if lang == "en" else "fr-FR", vc, _esc(text))
         rq = urllib.request.Request("https://%s.tts.speech.microsoft.com/cognitiveservices/v1" % (cf.get("region") or "westeurope"), data=ssml.encode("utf-8"),
-                                    headers={"Ocp-Apim-Subscription-Key": cf["key"], "Content-Type": "application/ssml+xml",
+                                    headers={"Ocp-Apim-Subscription-Key": key, "Content-Type": "application/ssml+xml",
                                              "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3", "User-Agent": "OwlNest"})
     mp3 = urllib.request.urlopen(rq, timeout=20).read()
     if mp3:
