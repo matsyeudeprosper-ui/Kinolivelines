@@ -96,6 +96,16 @@ header{flex:none;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px;disp
 .pos{color:var(--up-soft)}.neg{color:var(--down-soft)}
 /* typing */
 .typing .bub{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.84rem}
+/* 2026-10-19 evening: the builder works after the quick reply - a light line, the member can keep typing */
+.bld{display:flex;align-items:center;gap:9px;margin:2px 0 10px 39px;color:var(--muted);font-size:.78rem}
+.bld .spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--violet);animation:spin .9s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sp.mk{color:var(--text);border-color:rgba(232,197,90,.45);background:linear-gradient(135deg,rgba(232,197,90,.13),var(--surface))}.sp.mk i{background:#e8c55a;color:#2a2000}
+.mkp{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:11px 13px;border-radius:14px;border:1px solid rgba(232,197,90,.35);background:linear-gradient(135deg,rgba(232,197,90,.10),var(--surface));color:var(--text);cursor:pointer;text-align:left;font:inherit}
+.mkp small{display:block;color:var(--muted);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.mkp b{font-size:.95rem}.mkp em{margin-left:auto;font-style:normal;color:var(--muted);font-size:.8rem}
+.mkl{display:flex;flex-direction:column;gap:6px;max-height:52vh;overflow:auto;margin-top:10px}
+.mkr{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;font:inherit;text-align:left}
+.mkr.on{border-color:#e8c55a}.mkr span{flex:1;font-weight:700}.mkr small{color:var(--muted);font-size:.72rem}.mkr .rd{color:var(--up-soft);font-weight:800}
 .dots{display:inline-flex;gap:4px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--accent-soft);opacity:.4;animation:dt 1.2s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
 @keyframes dt{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
 /* welcome */
@@ -194,12 +204,14 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 let C=null,CID=null,PIECES=null,POLL=null,LASTN=0,LASTREV=0,SENDING=false,THINK_T=0;
 const SL=[['entry',T('Entrée','Entry')],['filters',T('Filtres','Filters')],['stop',T('Stop','Stop')],['exit',T('Sortie','Exit')],['recovery',T('Rattrapage','Recovery')],['money',T('Argent','Money')]];
 const TYPE={entry:'entry',filters:'filter',stop:'stop',exit:'exit',recovery:'recovery',money:'money'};
+const BUILD=[T('je monte ton robot…','building your robot…'),T('je vérifie les pièces…','checking the pieces…'),T('j’écris les formules…','writing the formulas…'),T('je relis tout…','reading it all over…')];
+let MK=null;
 const THINK=[T('je réfléchis…','thinking…'),T('je relis ton idée…','reading your idea again…'),T('j’assemble les pièces…','putting the pieces together…'),T('je vérifie les formules…','checking the formulas…'),T('presque fini…','almost done…')];
 
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200);}
 async function getJ(u){const r=await fetch(B+u+(u.includes('?')?'&':'?')+'t='+Date.now(),{cache:'no-store'});return r.json();}
 async function post(fn,body){const r=await fetch(B+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});return r.json();}
-const ERR={busy:T('Je suis encore en train de répondre, une seconde.','Still answering, one second.'),cap:T('Tu as beaucoup parlé aujourd’hui : on reprend demain.','Lots of chatting today: let’s pick it up tomorrow.'),
+const ERR={market:T('Ce marché n’est pas chez ton courtier.','That market isn’t at your broker.'),busy:T('Je suis encore en train de répondre, une seconde.','Still answering, one second.'),cap:T('Tu as beaucoup parlé aujourd’hui : on reprend demain.','Lots of chatting today: let’s pick it up tomorrow.'),
  same:T('Pour l’instant c’est encore l’Owl tel quel : change au moins une pièce.','Right now it is still the plain Owl: change at least one piece.'),limit:T('Tu as atteint le nombre maximum de robots.','You reached the maximum number of robots.'),
  state:T('Un test est déjà en route pour ce robot.','A test is already on its way for this robot.'),check:T('Ça ne passe pas les contrôles.','That does not pass the checks.'),missing:T('Conversation introuvable.','Conversation not found.'),strategy:T('L’atelier fait partie de la formule Stratégie.','The workshop is part of the Strategy plan.')};
 
@@ -223,18 +235,20 @@ function slotCard(k,lab,s,i){const st=s&&!s.use?'new':((OWL[k]===(s&&s.use)||(k=
 function bpHTML(){const v=C&&C.view;
  let h='<div class="bph"><h3>'+T('Le plan du robot','The robot’s blueprint')+'</h3></div>';
  if(!v){return h+'<div class="emptybp">'+T('Le robot apparaît ici dès que l’IA a compris ton idée. Chaque pièce se remplit en direct.','The robot shows up here as soon as the AI gets your idea. Each piece fills in live.')+'</div>';}
- h+='<div class="bpn" onclick="renameSh()">'+esc(v.name||T('Mon robot','My robot'))+'</div>'+(C.understood?'<p class="bpu">'+esc(C.understood)+'</p>':'');
+ h+='<div class="bpn" onclick="renameSh()">'+esc(v.name||T('Mon robot','My robot'))+'</div>'+(C.understood?'<p class="bpu">'+esc(C.understood)+'</p>':'')+
+  '<button class="mkp" onclick="mkSh()"><span><small>'+T('Marché','Market')+'</small><b>'+esc(v.market||'BTCUSD')+'</b></span><em>'+T('changer','change')+' ›</em></button>';
  SL.forEach(([k,lab])=>{if(k==='filters'){h+='<div class="bpsec">'+lab+' · '+(v.filters||[]).length+'</div>';(v.filters||[]).forEach((f,i)=>h+=slotCard('filters',lab+' '+(i+1),f,i));
    h+='<button class="btn" style="margin:0 0 8px" onclick="slotSh(\'filters\',-1)">+ '+T('Ajouter un filtre','Add a filter')+'</button>';}
   else{if(k==='entry')h+='<div class="bpsec">'+T('Les pièces','The pieces')+'</div>';h+=slotCard(k,lab,v[k],null);}});
  const t=C.test||{},busy=t.state==='queued';
- h+='<button class="bpbtn" onclick="runTest()" '+(busy||C.status==='thinking'?'disabled':'')+'>'+(busy?T('Test en cours…','Test running…'):(t.state==='done'?T('Retester ce robot','Test this robot again'):T('Tester ce robot','Test this robot')))+'</button>';
+ h+='<button class="bpbtn" onclick="runTest()" '+(busy||C.status!=='ready'?'disabled':'')+'>'+(busy?T('Test en cours…','Test running…'):(t.state==='done'?T('Retester ce robot','Test this robot again'):T('Tester ce robot','Test this robot')))+'</button>';
  if(C.robot_id)h+='<a class="btn" style="display:block;text-align:center;text-decoration:none;color:var(--text)" href="mesrobots">'+T('Voir dans Mes robots','See it in My robots')+'</a>';
  return h;}
 function paintBP(flash){$('bp').innerHTML=bpHTML();const v=C&&C.view;
  // strip
  let s='';SL.forEach(([k,lab])=>{const val=v?v[k]:null;let st=v?slotState(k,val):'empty';if(k==='filters'&&v)st=(val||[]).some(x=>!x.use)?'new':((JSON.stringify((val||[]).map(x=>x.use))===JSON.stringify(OWL.filters||[]))?'owl':'set');
   const n=k==='filters'&&v?(val||[]).length:'';s+='<button class="sp '+st+'" data-k="'+k+'" onclick="bpSh(\''+k+'\')"><i>'+(st==='new'?'✦':(st==='empty'?'':(n!==''?n:'✓')))+'</i>'+esc(lab)+'</button>';});
+ if(v)s='<button class="sp mk" onclick="mkSh()"><i>$</i>'+esc(v.market||'BTCUSD')+'</button>'+s;
  $('strip').innerHTML=s;
  const f=v?changed():0,tot=6;$('rn').textContent=(v?filled():0)+'/6';$('rf').style.strokeDashoffset=String(100.5*(1-(v?filled():0)/tot));
  if(v){$('tn').textContent=v.name||T('Mon robot','My robot');$('ts').textContent=C.understood||T('Construit avec l’IA','Built with the AI');}
@@ -247,13 +261,13 @@ function resultCard(r){const pos=(r.net||0)>=0,wr=r.win_rate!=null?Math.round(r.
   const a=fill(A),o=fill(O),all=[0,...a,...o],mn=Math.min(...all),mx=Math.max(...all),W=300,H=70,sx=i=>days.length>1?i*W/(days.length-1):0,sy=v=>H-4-(v-mn)/((mx-mn)||1)*(H-8);
   const pth=L=>L.map((v,i)=>(i?'L':'M')+sx(i).toFixed(1)+' '+sy(v).toFixed(1)).join(' ');
   return '<svg class="cv" viewBox="0 0 300 70" preserveAspectRatio="none"><line x1="0" x2="300" y1="'+sy(0)+'" y2="'+sy(0)+'" stroke="var(--border2)" stroke-dasharray="3 4"/><path d="'+pth(o)+'" fill="none" stroke="var(--muted)" stroke-width="1.6" opacity=".7"/><path d="'+pth(a)+'" fill="none" stroke="'+(pos?'var(--up)':'var(--down)')+'" stroke-width="2.4" stroke-linejoin="round"/></svg>';})();
- return '<div class="res"><div class="top"><div><div class="lab">'+T('Résultat du test','Test result')+' · '+Math.round(r.days||42)+T(' jours',' days')+'</div><div class="net '+(pos?'pos':'neg')+'">'+money(r.net)+'</div></div><div class="vs">'+T('l’Owl','the Owl')+'<b>'+money(r.owl_net)+'</b></div></div>'+cv+
+ return '<div class="res"><div class="top"><div><div class="lab">'+T('Résultat du test','Test result')+(r.market?' · '+esc(r.market):'')+' · '+Math.round(r.days||42)+T(' jours',' days')+'</div><div class="net '+(pos?'pos':'neg')+'">'+money(r.net)+'</div></div><div class="vs">'+T('l’Owl','the Owl')+'<b>'+money(r.owl_net)+'</b></div></div>'+cv+
   '<div class="leg"><span><i style="background:'+(pos?'var(--up)':'var(--down)')+'"></i>'+T('ton robot','your robot')+'</span><span><i style="background:var(--muted)"></i>'+T('l’Owl','the Owl')+'</span></div>'+
   '<div class="q"><div><b>'+(r.trades==null?'—':r.trades)+'</b><span>trades</span></div><div><b>'+(wr==null?'—':wr+' %')+'</b><span>'+T('gagnés','won')+'</span></div><div><b class="neg">'+(r.dip==null?'—':'−$'+Math.round(r.dip))+'</b><span>'+T('pire baisse','worst dip')+'</span></div><div><b>'+(r.profit_factor==null?'—':(+r.profit_factor).toFixed(2))+'</b><span>'+T('gain/perte','gain/loss')+'</span></div></div></div>';}
 function msgHTML(m,i,last){
  if(m.role==='user')return '<div class="m me"><div class="bub">'+md(m.text)+'</div></div>';
  if(m.role==='edit')return '<div class="sys"><span><svg><use href="#pen"/></svg>'+esc(m.text)+'</span></div>';
- if(m.role==='test'){const t=C.test||{};if(t.state==='queued'&&last)return '<div class="att" style="margin-left:39px"><div class="run"><b>'+T('Test en cours sur 42 jours de vrais prix','Testing on 42 days of real prices')+'</b><small>'+(t.ahead?T(t.ahead+' test(s) avant le tien · ',t.ahead+' test(s) before yours · '):'')+T('environ '+(t.minutes||5)+' minutes, je te préviens ici','about '+(t.minutes||5)+' minutes, I’ll tell you here')+'</small><div class="pb"><i></i></div></div></div>';
+ if(m.role==='test'){const t=C.test||{};if(t.state==='queued'&&last)return '<div class="att" style="margin-left:39px"><div class="run"><b>'+(t.mstate==='building'?T('Je prépare les prix de '+esc(t.sym)+' (première fois sur ce marché)','Preparing '+esc(t.sym)+'’s prices (first time on this market)'):T('Test en cours sur 42 jours de vrais prix','Testing on 42 days of real prices')+(t.sym?' · '+esc(t.sym):''))+'</b><small>'+(t.ahead?T(t.ahead+' test(s) avant le tien · ',t.ahead+' test(s) before yours · '):'')+T('environ '+(t.minutes||5)+' minutes, je te préviens ici','about '+(t.minutes||5)+' minutes, I’ll tell you here')+'</small><div class="pb"><i></i></div></div></div>';
   return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';}
  if(m.role==='result')return '<div class="att" style="margin-left:39px">'+resultCard(m.result||{})+'</div>';
  let h='<div class="m ai'+(m.err?' err':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(m.text)+'</div></div>';
@@ -270,6 +284,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  let h='';const fresh=M.filter(m=>m.role==='user').length===0&&!C.robot_id;
  if(fresh)h+=welcome();
  M.forEach((m,i)=>{if(fresh&&i===0)return;h+=msgHTML(m,i,i===M.length-1);});
+ if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
  if(C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+THINK[THINK_T%THINK.length]+'</span></div></div>';
  el.innerHTML=h;if(force||atBottom||M.length!==LASTN)el.scrollTop=el.scrollHeight;LASTN=M.length;
  $('sd').disabled=!($('tx').value.trim())||(C&&C.status==='thinking');}
@@ -280,7 +295,7 @@ function useIdea(b){$('tx').value=b.querySelector('span').textContent;autosize()
 async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURIComponent(id));if(j.err){toast(ERR[j.err]||j.err);return;}
  const flash=[];if(C&&C.view&&j.view){SL.forEach(([k])=>{if(JSON.stringify(C.view[k])!==JSON.stringify(j.view[k]))flash.push(k);});}
  C=j;CID=j.id;paintChat(force);if(force||(j.rev||0)!==LASTREV||!$('bp').innerHTML)paintBP(flash);LASTREV=j.rev||0;
- const t=j.test||{};const wait=j.status==='thinking'?2200:(t.state==='queued'?8000:0);clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
+ const t=j.test||{};const wait=(j.status==='thinking'||j.status==='building')?2000:(t.state==='queued'?8000:0);clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;await load(j.id,true);}
 async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
@@ -288,7 +303,15 @@ async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;i
  try{const j=await post('chat_send',{id:CID,text:t});if(!j.ok){C.msgs.pop();C.status='ready';paintChat(true);$('tx').value=t;toast(ERR[j.err]||j.err);}else{clearTimeout(POLL);POLL=setTimeout(()=>load(CID),1800);}}
  catch(e){C.status='ready';paintChat();toast(T('Hors ligne.','Offline.'));}SENDING=false;}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
-setInterval(()=>{THINK_T++;const e=$('thk');if(e)e.textContent=THINK[THINK_T%THINK.length];},2600);
+setInterval(()=>{THINK_T++;const e=$('thk');if(e)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);
+/* ---------- the market (2026-10-19 evening: any market of the member's broker) */
+async function mkSh(){if(!C||!C.view)return;shOpen('<h4>'+T('Sur quel marché ?','Which market?')+'</h4><div class="fld"><input id="mkq" placeholder="'+T('Chercher : or, nasdaq, EURUSD…','Search: gold, nasdaq, EURUSD…')+'" oninput="mkList()"></div><div class="mkl" id="mkl"><div class="sys"><span>'+T('Je charge les marchés de ton courtier…','Loading your broker’s markets…')+'</span></div></div>');
+ if(!MK){try{const j=await post('robot_markets',{});MK=[{s:'BTCUSD',d:'Bitcoin',ready:true}].concat(j.symbols||[]);}catch(e){MK=[{s:'BTCUSD',d:'Bitcoin',ready:true}];}}mkList();}
+const MKA={gold:'XAU',or:'XAU',argent:'XAG',silver:'XAG',nasdaq:'USTEC',us100:'USTEC',nas100:'USTEC',sp500:'US500','s&p':'US500',dow:'US30',dax:'DE30',petrole:'OIL','pétrole':'OIL',oil:'OIL',bitcoin:'BTC',nikkei:'JP225',ftse:'UK100'};
+function mkList(){const e=$('mkl');if(!e||!MK)return;let q=($('mkq')||{}).value||'';q=q.trim().toLowerCase();const qa=(MKA[q]||q).toLowerCase();const cur=(C.view||{}).market||'BTCUSD';
+ const L=MK.filter(m=>!q||m.s.toLowerCase().includes(qa)||(m.d||'').toLowerCase().includes(q)).slice(0,80);
+ e.innerHTML=L.length?L.map(m=>'<button class="mkr'+(m.s===cur?' on':'')+'" onclick="mkPick(\''+esc(m.s)+'\')"><span>'+esc(m.s)+'</span><small>'+esc((m.d||'').slice(0,34))+'</small>'+(m.ready?'<small class="rd">'+T('prêt','ready')+'</small>':'<small>~100 min</small>')+'</button>').join(''):'<div class="sys"><span>'+T('Rien trouvé chez ton courtier.','Nothing found at your broker.')+'</span></div>';}
+function mkPick(sym){edit({slot:'market',market:sym});}
 
 /* ---------- sheets */
 function shOpen(h){$('pn').innerHTML='<div class="gr"></div>'+h;$('sh').classList.add('on');if(!history.state||!history.state.sh)history.pushState({sh:1},'');}

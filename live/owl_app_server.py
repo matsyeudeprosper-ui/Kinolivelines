@@ -14561,16 +14561,22 @@ def chat_start(user, body):
     cid = "%s_%d" % (re.sub(r"[^A-Za-z0-9]", "", me) or "u", int(time.time() * 1000))
     c = {"id": cid, "uid": me, "lang": "en" if en else "fr", "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
          "status": "ready", "robot": robot, "robot_id": rid, "rev": 1 if robot else 0, "msgs": []}
+    if robot is not None:
+        robot["market"] = "BTCUSD"
+    try:
+        _rc().prewarm()
+    except Exception:
+        pass
     if rid:
         _chat_msg(c, "ai", text=("We're picking « %s » back up. What would you like to change?" % nm) if en else
                   ("On reprend « %s ». Qu'est-ce que tu veux changer ?" % nm),
                   chips=(["It loses too much", "Fewer trades", "Change the exit", "Explain it to me"] if en else
                          ["Il perd trop", "Moins de trades", "Changer la sortie", "Explique-le-moi"]))
     else:
-        _chat_msg(c, "ai", text=("Hi! Tell me your robot idea in your own words - when it buys, when it sells, when it gets out. "
-                                 "Rough is fine, we'll sharpen it together.") if en else
-                  ("Salut ! Raconte-moi ton idée de robot avec tes mots : quand il achète, quand il vend, quand il sort. "
-                   "Pas besoin que ce soit parfait, on l'affine ensemble."),
+        _chat_msg(c, "ai", text=("Hi! Tell me your robot idea in your own words - which market, when it buys, when it sells, when it "
+                                 "gets out. Bitcoin, gold, indices, forex: anything your broker has. Rough is fine, we'll sharpen it together.") if en else
+                  ("Salut ! Raconte-moi ton idée de robot avec tes mots : sur quel marché, quand il achète, quand il vend, quand il sort. "
+                   "Bitcoin, or, indices, forex : tout ce que ton courtier propose. Pas besoin que ce soit parfait, on l'affine ensemble."),
                   chips=(["I have an entry idea", "Start from the Owl", "I don't know where to start"] if en else
                          ["J'ai une idée d'entrée", "Pars de l'Owl", "Je ne sais pas par où commencer"]))
     _chat_save(c)
@@ -14592,56 +14598,160 @@ def _chat_day_count(me):
     return n
 
 
-def _chat_turn(cid, user):
-    """background: one AI turn"""
-    c = None
+# 2026-10-19 evening (owner: "reply immediately while working in the background ... conversation must flow"):
+# every member message (and every test result) gets a QUICK reply first (warm model, a few seconds); when it says the
+# robot must change, ONE builder per chat follows up with the robot and a short message. The member can keep writing
+# meanwhile; the builder runs again for messages that arrived during its work. Status: thinking (quick reply on its
+# way) > building (builder working) > ready.
+_CHAT_LOCKS, _CHAT_Q, _CHAT_B = {}, {}, set()
+_CHAT_MK = {}
+
+
+def _chat_lock(cid):
+    return _CHAT_LOCKS.setdefault(cid, threading.Lock())
+
+
+def _chat_status(cid):
+    return "thinking" if _CHAT_Q.get(cid) else ("building" if cid in _CHAT_B else "ready")
+
+
+def _chat_mut(cid, fn):
+    """read-change-save one chat under its lock; fn(c) -> anything"""
+    with _chat_lock(cid):
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        out = fn(c)
+        c["status"] = _chat_status(cid)
+        _chat_save(c)
+        return out
+
+
+def _chat_markets(user):
+    """the member's broker markets (cached 10 min): [{s, ready, cat}] without Bitcoin"""
+    k = user.get("id")
+    hit = _CHAT_MK.get(k)
+    if hit and time.time() - hit[0] < 600:
+        return hit[1]
+    try:
+        M = [{"s": x["s"], "ready": x.get("ready"), "cat": x.get("cat")} for x in robot_markets(user, {}).get("symbols") or []]
+    except Exception:
+        M = []
+    _CHAT_MK[k] = (time.time(), M)
+    return M
+
+
+def _chat_oops(cid, en, e=None):
+    _chat_mut(cid, lambda c: _chat_msg(c, "ai", chips=[], err=True, text=(
+        "Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?")
+        if e is None else ("Oups, petit souci de mon côté (%s). Réessaie dans un instant." % str(e)[:60])))
+
+
+def _chat_quick(cid, user):
+    """background: the quick reply; starts the builder when the robot must change"""
+    en = False
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
-        rc = _rc()
-        ans, probs = rc.answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"))
-        c = json.load(open(_chat_path(cid), encoding="utf-8"))       # the member may have edited meanwhile
         en = c.get("lang") == "en"
-        if ans is None:
-            _chat_msg(c, "ai", text="Oops, I lost my train of thought. Can you send that again?" if en else
-                      "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?", chips=[], err=True)
-        else:
-            if ans.get("robot"):
-                c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
-            txt = ans.get("say") or ("Done." if en else "C'est fait.")
-            if probs:
-                txt += ("\n\n(One piece didn't pass the checks, so I kept the previous one.)" if en else
-                        "\n\n(Une pièce n'a pas passé les contrôles, j'ai gardé l'ancienne.)")
-            _chat_msg(c, "ai", text=txt, chips=ans.get("chips") or [], made=ans.get("made") or [], rev=c.get("rev"),
-                      ready=bool(ans.get("ready")), probs=probs[:4] if probs else None)
-            if ans.get("understood"):
-                c["understood"] = ans["understood"]
-        c["status"] = "ready"
-        _chat_save(c)
+        q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
+                        markets=_chat_markets(user))
+        if q is None:
+            # no quick reply: the builder answers alone (slower, but the member still gets an answer)
+            q = {"say": None, "chips": [], "build": True}
+
+        def put(c):
+            if q["say"]:
+                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True)
+            if q["build"]:
+                c["b_want"] = len(c.get("msgs") or [])
+        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+        if q["build"]:
+            _CHAT_B.add(cid)
+        _chat_mut(cid, put)
+        if q["build"]:
+            threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
     except Exception as e:
+        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
         try:
-            c = json.load(open(_chat_path(cid), encoding="utf-8"))
-            c["status"] = "ready"
-            _chat_msg(c, "ai", text="Oups, petit souci de mon côté (%s). Réessaie dans un instant." % str(e)[:60], chips=[], err=True)
-            _chat_save(c)
+            _chat_oops(cid, en, e)
         except Exception:
             pass
+
+
+_CHAT_BUILDING = set()
+
+
+def _chat_build(cid, user):
+    """background: ONE builder per chat; runs again while new messages asked for a build during its work"""
+    with _chat_lock(cid):
+        if cid in _CHAT_BUILDING:
+            return
+        _CHAT_BUILDING.add(cid)
+    en = False
+    try:
+        for _ in range(4):
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            en = c.get("lang") == "en"
+            n0, rev0 = len(c.get("msgs") or []), c.get("rev")
+            ans, probs = _rc().answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
+                                      markets=_chat_markets(user))
+
+            def put(c):
+                if c.get("rev") != rev0:
+                    c["b_want"] = len(c.get("msgs") or [])      # the member edited by hand meanwhile: build again on that
+                    return
+                if ans is None:
+                    _chat_msg(c, "ai", chips=[], err=True, text="Hmm, I couldn't put it together this time - say it again in other words?" if en
+                              else "Hmm, je n'ai pas réussi à l'assembler cette fois - tu me le redis autrement ?")
+                    return
+                if ans.get("robot"):
+                    c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+                txt = ans.get("say") or ""
+                if probs:
+                    txt += ("\n\n(One piece didn't pass the checks, so I kept the previous one.)" if en else
+                            "\n\n(Une pièce n'a pas passé les contrôles, j'ai gardé l'ancienne.)")
+                if txt.strip() or ans.get("made") or ans.get("robot"):
+                    _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
+                              made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
+                              follow=True)
+                if ans.get("understood"):
+                    c["understood"] = ans["understood"]
+            _chat_mut(cid, put)
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            if int(c.get("b_want") or 0) <= n0:
+                break
+    except Exception as e:
+        try:
+            _chat_oops(cid, en, e)
+        except Exception:
+            pass
+    finally:
+        with _chat_lock(cid):
+            _CHAT_BUILDING.discard(cid)
+        _CHAT_B.discard(cid)
+        try:
+            _chat_mut(cid, lambda c: None)
+        except Exception:
+            pass
+
+
+def _chat_kick(cid, user):
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+    threading.Thread(target=_chat_quick, args=(cid, user), daemon=True).start()
 
 
 def chat_send(user, body):
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None:
         return {"ok": False, "err": "missing"}
-    if c.get("status") == "thinking":
+    if _CHAT_Q.get(c["id"]):
         return {"ok": False, "err": "busy"}
     text = str(body.get("text") or "").strip()
     if not text:
         return {"ok": False, "err": "empty"}
     if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
         return {"ok": False, "err": "cap"}
-    _chat_msg(c, "user", text=text[:1500])
-    c["status"] = "thinking"
-    _chat_save(c)
-    threading.Thread(target=_chat_turn, args=(c["id"], user), daemon=True).start()
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500]))
+    threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
 
 
@@ -14650,8 +14760,9 @@ def _chat_result(c):
     t = c.get("test") or {}
     if not t.get("rid") or t.get("state") == "done":
         return None
+    fn = t["rid"] + ("@" + t["sym"] if t.get("sym") else "")
     try:
-        res = json.load(open(os.path.join(DIR, "robots", "results", t["rid"] + ".json"), encoding="utf-8"))
+        res = json.load(open(os.path.join(DIR, "robots", "results", fn + ".json"), encoding="utf-8"))
     except Exception:
         return None
     if str(res.get("generated_at") or "") < t.get("at", ""):
@@ -14661,7 +14772,7 @@ def _chat_result(c):
             "dip": r.get("cc_dd"), "first_half": r.get("first_half"), "later_half": r.get("later_half"), "worst": r.get("worst"),
             "best": r.get("best"), "loss_streak": r.get("max_loss_streak"), "days": res.get("days"),
             "owl_net": p.get("net"), "owl_trades": p.get("trades"), "owl_dip": p.get("cc_dd"), "curve": (r.get("curve") or [])[-60:],
-            "owl_curve": (p.get("curve") or [])[-60:]}
+            "owl_curve": (p.get("curve") or [])[-60:], "market": t.get("sym") or "BTCUSD"}
 
 
 def chat_get(user, cid):
@@ -14669,13 +14780,36 @@ def chat_get(user, cid):
     if c is None:
         return {"err": "missing"}
     res = _chat_result(c)
-    if res is not None and c.get("status") != "thinking":
-        c["test"]["state"] = "done"
-        _chat_msg(c, "result", result=res)
-        c["status"] = "thinking"
-        _chat_save(c)
-        threading.Thread(target=_chat_turn, args=(c["id"], user), daemon=True).start()
-    if (c.get("test") or {}).get("state") == "queued":
+    if res is not None and not _CHAT_Q.get(c["id"]):
+        def put(c):
+            if (c.get("test") or {}).get("state") != "done":
+                c["test"]["state"] = "done"
+                _chat_msg(c, "result", result=res)
+                return True
+        _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+        if _chat_mut(c["id"], put):
+            threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+        else:
+            _CHAT_Q[c["id"]] -= 1
+        c = _chat_load(user, cid)
+    c["status"] = _chat_status(c["id"])
+    if time.time() - _CHAT_MK.get("_warm", 0) > 60:
+        _CHAT_MK["_warm"] = time.time()
+        try:
+            _rc().prewarm()
+        except Exception:
+            pass
+    if (c.get("test") or {}).get("sym") and c["test"].get("state") == "queued":
+        try:
+            q = _mq_load()
+            job = next((x for x in q if x.get("id") == c["test"].get("job")), {})
+            live = [x["id"] for x in q if x.get("state") in ("queued", "building", "testing")]
+            c["test"]["ahead"] = live.index(job["id"]) if job.get("id") in live else 0
+            c["test"]["stage"] = {"building": "testing", "testing": "testing"}.get(job.get("state"), "queued")
+            c["test"]["mstate"] = job.get("state")
+        except Exception:
+            pass
+    elif (c.get("test") or {}).get("state") == "queued":
         try:
             reg = robot_reg()
             q = [x["id"] for x in reg.get("robots") or [] if x.get("stage") in ("queued", "testing") or x.get("retest")]
@@ -14696,12 +14830,15 @@ def chat_edit(user, body):
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None or not c.get("robot"):
         return {"ok": False, "err": "missing"}
-    if c.get("status") == "thinking":
-        return {"ok": False, "err": "busy"}
     rob = json.loads(json.dumps(c["robot"]))
     slot = str(body.get("slot") or "")
     en = c.get("lang") == "en"
-    if slot == "name":
+    if slot == "market":
+        mk = _rc().market_of(body.get("market"), _chat_markets(user))
+        if not mk:
+            return {"ok": False, "err": "market"}
+        rob["market"] = mk; note = "moved the robot to the market %s" % mk
+    elif slot == "name":
         nm = str(body.get("name") or "").strip()[:30]
         if len(nm) < 2:
             return {"ok": False, "err": "name"}
@@ -14724,15 +14861,18 @@ def chat_edit(user, body):
         rob[slot] = body.get("piece"); note = "changed the %s" % slot
     else:
         return {"ok": False, "err": "slot"}
-    ans, probs = _rc().clean({"robot": rob}, _chat_pieces(user), _ai_owl(), c["robot"])
+    ans, probs = _rc().clean({"robot": rob}, _chat_pieces(user), _ai_owl(), c["robot"], _chat_markets(user))
     if probs:
         return {"ok": False, "err": "check", "why": probs[:3]}
-    c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
-    _chat_msg(c, "edit", note_en=note + ": " + json.dumps(body.get("piece") or {}, ensure_ascii=False)[:300],
-              text=("You " + note) if en else ("Modifié à la main : " + {"name": "le nom", "filters": "les filtres", "entry": "l'entrée", "stop": "le stop",
-                                                                          "exit": "la sortie", "recovery": "le rattrapage", "money": "l'argent"}.get(slot, slot)))
-    _chat_save(c)
-    return {"ok": True, "rev": c["rev"]}
+
+    def put(c):
+        c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+        _chat_msg(c, "edit", note_en=note + ": " + json.dumps(body.get("piece") or body.get("market") or {}, ensure_ascii=False)[:300],
+                  text=("You " + note) if en else ("Modifié à la main : " + {"name": "le nom", "filters": "les filtres", "entry": "l'entrée", "stop": "le stop",
+                                                                              "exit": "la sortie", "recovery": "le rattrapage", "money": "l'argent",
+                                                                              "market": "le marché (%s)" % rob.get("market")}.get(slot, slot)))
+        return c["rev"]
+    return {"ok": True, "rev": _chat_mut(c["id"], put)}
 
 
 def chat_check(user, body):
@@ -14783,17 +14923,40 @@ def chat_test(user, body):
             rid = r["id"]
     if not r.get("ok"):
         return r
-    t = robot_test(user, {"id": rid, "again": True})
-    if not t.get("ok"):
-        return t
-    c["robot_id"] = rid
-    # a formula entry runs the robot and its parent in two passes: measured 16 min on 2026-10-19 (5 for the others)
-    mins = (t.get("minutes") or ROBOT_TEST_MIN) + (11 if (rob.get("entry") or {}).get("rule", {}).get("event") == "formula" else 0)
-    c["test"] = {"rid": rid, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "state": "queued", "rev": c.get("rev"), "minutes": mins}
+    mk = rob.get("market") or "BTCUSD"
+    fx = (rob.get("entry") or {}).get("rule", {}).get("event") == "formula"
+    at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if mk != "BTCUSD":
+        # 2026-10-19 evening (owner: "any market his broker allows"): the market test of the member's broker
+        t = robot_test_market(user, {"id": rid, "sym": mk})
+        if not t.get("ok"):
+            return t
+        mins = int(t.get("minutes") or MARKET_TEST_MIN) + (5 if fx else 0)
+        test = {"rid": rid, "sym": mk, "job": t.get("job"), "at": at, "state": "queued", "rev": c.get("rev"), "minutes": mins,
+                "first_build": bool(t.get("first_build"))}
+    else:
+        t = robot_test(user, {"id": rid, "again": True})
+        if not t.get("ok"):
+            return t
+        # a formula entry runs the robot and its parent in two passes: measured 16 min on 2026-10-19 (5 for the others)
+        mins = (t.get("minutes") or ROBOT_TEST_MIN) + (11 if fx else 0)
+        test = {"rid": rid, "at": at, "state": "queued", "rev": c.get("rev"), "minutes": mins}
     en = c.get("lang") == "en"
-    _chat_msg(c, "test", text=("Test started: about %d minutes. I'll tell you what it gives." % mins) if en else
-              ("Test lancé : environ %d minutes. Je te dis ce que ça donne." % mins))
-    _chat_save(c)
+
+    def put(c):
+        c["robot_id"] = rid
+        c["test"] = test
+        mt = (" on %s" % mk) if en else (" sur %s" % mk)
+        if test.get("first_build"):
+            txt = ("Test started%s. First time on this market, so I prepare its prices first: about %d minutes in all. "
+                   "I'll ping you when it's done." % (mt, mins)) if en else \
+                  ("Test lancé%s. C'est la première fois sur ce marché, je prépare d'abord ses prix : environ %d minutes en tout. "
+                   "Je te préviens quand c'est fini." % (mt, mins))
+        else:
+            txt = ("Test started%s: about %d minutes. I'll tell you what it gives." % (mt, mins)) if en else \
+                  ("Test lancé%s : environ %d minutes. Je te dis ce que ça donne." % (mt, mins))
+        _chat_msg(c, "test", text=txt)
+    _chat_mut(c["id"], put)
     return {"ok": True, "rid": rid, "minutes": mins}
 
 
