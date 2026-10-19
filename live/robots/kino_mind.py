@@ -258,12 +258,41 @@ def member_goal(conv_text, notes, robots, current_goal):
           "(data):\n<<<\n%s\n>>>\n\nAs their trading companion, set (or keep, or update) ONE goal you pursue with them for the "
           "coming days - what would really help THEM (e.g. 'get their USDJPY idea to beat random clearly before testing it', "
           "'help them understand why their robot loses', 'find them a robot that trades while they work') - and your next "
-          "concrete step. Respect what they said they want (if they asked to slow down, the goal reflects it). Refer to the member as 'they' (never assume a gender). Answer "
+          "concrete step (each in one or two short sentences). Respect what they said they want (if they asked to slow down, the goal reflects it). Refer to the member as 'they' (never assume a gender). Answer "
           "{\"goal\": \"...\", \"next\": \"...\", \"why\": \"one line\"}." % (
               "; ".join(notes[-15:]) or "-", json.dumps(robots, ensure_ascii=False)[:1500], json.dumps(current_goal or {}, ensure_ascii=False),
               conv_text[:9000]))
     raw = W.ask_json(REVIEW_SYSTEM.split("Answer ONE JSON")[0] + "Answer ONE JSON object and nothing else.", up, timeout=200)
     if isinstance(raw, dict) and raw.get("goal"):
-        return {"goal": str(raw["goal"])[:200], "next": str(raw.get("next") or "")[:200], "why": str(raw.get("why") or "")[:200],
+        return {"goal": str(raw["goal"])[:400], "next": str(raw.get("next") or "")[:400], "why": str(raw.get("why") or "")[:300],
                 "updated": time.strftime("%Y-%m-%d")}
     return None
+
+
+# ---------------------------------------------------------------- display in the member's language
+TR_CACHE = os.path.join(HERE, "demo_cache", "kino_tr.json")
+
+
+def translate(texts, lang="fr"):
+    """Kino's notes / goals / insights are written in English for its own use; the member reads them in their language.
+    One cached model call for the lines not translated yet."""
+    if lang == "en" or not texts:
+        return list(texts)
+    try:
+        cache = json.load(open(TR_CACHE, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    todo = [t for t in texts if t and t not in cache]
+    if todo:
+        raw = W.ask_json("You translate short notes from English to natural, casual French (tu). Keep numbers, symbols and "
+                         "robot names as they are. Refer to the person as 'tu' when the note is about the member. Answer ONE JSON "
+                         "object {\"fr\": [same count, same order]} and nothing else.",
+                         json.dumps({"notes": todo}, ensure_ascii=False), timeout=120)
+        out = (raw or {}).get("fr") if isinstance(raw, dict) else None
+        if isinstance(out, list) and len(out) == len(todo):
+            for a, b in zip(todo, out):
+                cache[a] = str(b)[:400]
+            os.makedirs(os.path.dirname(TR_CACHE), exist_ok=True)
+            json.dump(cache, open(TR_CACHE + ".tmp", "w", encoding="utf-8"), ensure_ascii=False)
+            os.replace(TR_CACHE + ".tmp", TR_CACHE)
+    return [cache.get(t, t) for t in texts]

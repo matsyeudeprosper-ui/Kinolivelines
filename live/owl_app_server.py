@@ -15210,6 +15210,53 @@ def _companion_tick():
                     threading.Thread(target=_chat_quick, args=(c["id"], u), kwargs={"notify": True, "important": True}, daemon=True).start()
                 else:
                     _CHAT_Q[c["id"]] -= 1
+            # (1b) a test Kino ran by itself at night (a variant) -> the result goes into the conversation, Kino comments
+            for x in ch[:6]:
+                c = _chat_load(u, x["id"])
+                for nt in (c or {}).get("night_tests") or []:
+                    if nt.get("done") or busy(c["id"]):
+                        continue
+                    sub = _chat_load(u, nt["sub"])
+                    res = _chat_result(sub) if sub else None
+                    if res is None:
+                        continue
+
+                    def put(cc, nt=nt, res=res):
+                        for y in cc.get("night_tests") or []:
+                            if y.get("sub") == nt["sub"]:
+                                y["done"] = True
+                        _chat_msg(cc, "result", result=dict(res, kino_variant=True, formula=nt.get("formula")))
+                    _chat_mut(c["id"], put)
+                    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+                    threading.Thread(target=_chat_quick, args=(c["id"], u, "NIGHT TEST RESULT - the real test of YOUR variant (a copy of "
+                                     "their robot with your entry '%s'; their own robot untouched) just finished: see the TEST RESULT. Tell "
+                                     "them like news, honestly, and propose what to do (adopt it in their robot, keep testing, drop it)."
+                                     % nt.get("formula")), kwargs={"notify": True, "important": True}, daemon=True).start()
+            # (1c) 2026-10-19 (owner): the weekly review - Sunday 18:00-21:00 on their clock, members with an account
+            wk = time.strftime("%G-%V", time.gmtime(now - 3600 * 6))
+            if time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)).tm_wday == 6 \
+                    and 18 <= h0 < 21 and m.get("week_review") != wk and not busy(ch[0]["id"]):
+                try:
+                    nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+                    A = acct_robot_block(u, is_admin(u))
+                    rid0 = (A.get("current") or {}).get("id") or "owl"
+                    tst = _robot_test(rid0) or {}
+                    facts = ("their week: %+.2f $ (days: %s); month so far %+.2f $; balance %.2f $; robot on the account: '%s' (its 42-day "
+                             "test: %+.2f $ over %s trades, worst dip %.0f $, longest losing streak %s); this month %s trades, %s won" % (
+                                 nd.get("week") or 0, ", ".join("%s %+.2f" % (d.get("d"), d.get("p") or 0) for d in (nd.get("days") or [])[:7]),
+                                 nd.get("month") or 0, nd.get("balance") or 0, (A.get("current") or {}).get("name_fr"), tst.get("net") or 0,
+                                 tst.get("trades"), float(tst.get("cc_dd") or 0), tst.get("max_loss_streak"),
+                                 ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("n"),
+                                 ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("won")))
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("week_review", wk))
+                    _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "WEEKLY REVIEW - it is Sunday evening for them: write 'ta semaine' "
+                                     "like a friend who follows their trading: the result in one line, how their robot behaved compared with "
+                                     "its test (normal or not), one thing you noticed, and a simple plan or question for next week (their robots, "
+                                     "their goal with you). 3-6 short sentences, two bubbles max. Facts: %s" % facts),
+                                     kwargs={"notify": True}, daemon=True).start()
+                except Exception:
+                    pass
             # (2) a luck test of one of their robots finished
             m = _mem_get(uid)
             seen = m.get("luck_seen") or {}
@@ -15401,6 +15448,24 @@ def _guardian(u, ch):
     threading.Thread(target=_chat_quick, args=(cid, u, ev), kwargs={"notify": True, "important": imp}, daemon=True).start()
 
 
+def _kino_variant_test(u, c, formula, side):
+    """a copy of the chat's robot with Kino's entry, saved and tested through the normal path (chat_test) in a hidden chat"""
+    rob = json.loads(json.dumps(c["robot"]))
+    en = dict((rob.get("entry") or {}).get("rule") or {"event": "formula"})
+    en["buy" if side == "buy" else "sell"] = formula
+    rob["entry"] = {"rule": en, "name": "Variante de Kino", "plain": "La version que Kino a trouvée la nuit."}
+    rob["name"] = (str(rob.get("name") or "Robot")[:22] + " · Kino")[:30]
+    sid = "%s_k%d" % (c["id"], int(time.time()))
+    sub = {"id": sid, "uid": u.get("id"), "lang": c.get("lang"), "hidden": True, "parent": c["id"], "robot": rob, "rev": 1, "msgs": [],
+           "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "status": "ready"}
+    _chat_save(sub)
+    r = chat_test(u, {"id": sid})
+    if r.get("ok"):
+        _chat_mut(c["id"], lambda cc: cc.setdefault("night_tests", []).append({"sub": sid, "formula": formula, "t": int(time.time()),
+                                                                                  "rid": r.get("rid")}))
+    return r
+
+
 def _night_shift(u):
     """2026-10-19 (roadmap level 5): Kino works alone at night on the member's latest robot with a formula entry -
     invents variants, measures them against random moments (robot_tools, quick, read-only), and leaves a morning
@@ -15434,6 +15499,17 @@ def _night_shift(u):
         for r, v in zip(rows[1:], vs):
             r["why"] = v["why"]
         rep = _KM.night_report(entry, side, mk, rows, c.get("lang") or "fr")
+        # 2026-10-19 (owner: "Kino proposing real tests of its night variants"): tests running (not paused) and a variant
+        # clearly better than the original -> Kino tests it FOR REAL on a copy of the robot ("<name> · Kino"), the member's
+        # own robot untouched; the result comes in the morning (companion step (1b))
+        try:
+            best = rep.get("best") if isinstance(rep, dict) else None
+            br = next((r for r in rows[1:] if r.get("formula") == best), None)
+            if best and br and not os.path.exists(TESTS_PAUSED) and (br.get("beats_random_pct") or 0) >= 70 \
+                    and (br.get("beats_random_pct") or 0) > (rows[0].get("beats_random_pct") or 0):
+                _kino_variant_test(u, c, best, side)
+        except Exception:
+            pass
         _chat_mut(c["id"], lambda cc: cc.setdefault("night", []).append({"t": int(time.time()), "rows": rows, "sent": bool(rep and rep.get("send"))}))
         if rep and rep.get("send") and str(rep.get("say") or "").strip():
             say = str(rep["say"]).strip()[:900]
@@ -15515,6 +15591,64 @@ def _companion_loop():
         except Exception:
             pass
         time.sleep(120)
+
+
+def kino_data(user):
+    """2026-10-19 (owner): the 'Kino' page - for a member: the goal Kino pursues with them, what it remembers about them
+    (they can make it forget a note), the lab's playbook; for the owner also Kino's mind (lessons, self-model, journal)"""
+    _rc()
+    import kino_mind as _KM
+    m = _mem_get(user.get("id"))
+    try:
+        pb = json.load(open(_KM.PLAYBOOK, encoding="utf-8"))
+    except Exception:
+        pb = {}
+    lang = "en" if (user.get("lang") == "en") else "fr"
+    g = dict(m.get("goal") or {})
+    notes, ins = m.get("notes") or [], pb.get("insights") or []
+    try:                 # shown in the member's language; Kino keeps its own English notes
+        tr = _KM.translate([g.get("goal"), g.get("next"), g.get("why")] + notes + ins, lang)
+        if g:
+            g["goal"], g["next"], g["why"] = tr[0], tr[1], tr[2]
+        notes_t, ins_t = tr[3:3 + len(notes)], tr[3 + len(notes):]
+    except Exception:
+        notes_t, ins_t = notes, ins
+    out = {"goal": g or None, "notes": notes_t, "playbook": ins_t, "admin": is_admin(user)}
+    if is_admin(user):
+        md = _KM.load()
+        try:
+            S_ = md.get("self") or {}
+            L1, L2, L3 = md.get("lessons") or [], S_.get("strengths") or [], S_.get("weaknesses") or []
+            J = [j.get("text") for j in md.get("journal") or []]
+            tr = _KM.translate(L1 + L2 + L3 + J + [S_.get("working_on"), S_.get("mood")], lang)
+            i = 0
+            md["lessons"] = tr[i:i + len(L1)]; i += len(L1)
+            S_["strengths"] = tr[i:i + len(L2)]; i += len(L2)
+            S_["weaknesses"] = tr[i:i + len(L3)]; i += len(L3)
+            for j, t in zip(md.get("journal") or [], tr[i:i + len(J)]):
+                j["text"] = t
+            i += len(J)
+            S_["working_on"], S_["mood"] = tr[i], tr[i + 1]
+        except Exception:
+            pass
+        out["mind"] = md
+    return out
+
+
+def kino_forget(user, body):
+    """the member makes Kino forget one note about them"""
+    try:
+        i = int(body.get("i"))
+    except Exception:
+        return {"ok": False}
+
+    def put(mm):
+        n = mm.get("notes") or []
+        if 0 <= i < len(n):
+            n.pop(i)
+            mm["notes"] = n
+    _mem_note_safe(user.get("id"), put)
+    return {"ok": True}
 
 
 def ai_nudge(user):
@@ -15952,7 +16086,7 @@ def chat_list(user):
                 c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
             except Exception:
                 continue
-            if c.get("uid") != user.get("id"):
+            if c.get("uid") != user.get("id") or c.get("hidden"):
                 continue
             last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "ai")), {})
             out.append({"id": c["id"], "name": (c.get("robot") or {}).get("name"), "updated": c.get("updated"), "robot_id": c.get("robot_id"),
@@ -20971,7 +21105,8 @@ class H(BaseHTTPRequestHandler):
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
-                                              "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen"):
+                                              "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
+                                              "kino_forget"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -20988,7 +21123,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
-                       "ai_nudge_seen": ai_nudge_seen}[_parts[1]]
+                       "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -23319,6 +23454,14 @@ class H(BaseHTTPRequestHandler):
             _rc()
             import kino_mind as _KM
             self._send(json.dumps(_KM.load(), ensure_ascii=False), "application/json")
+        elif sub in ("kino", "kino_data"):
+            _okk = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
+            if not _okk:
+                self.send_response(302); self.send_header("Location", "/%s/robots" % parts[0]); self.end_headers()
+            elif sub == "kino":
+                self._send(open(os.path.join(DIR, "owl_kino_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                self._send(json.dumps(kino_data(user), ensure_ascii=False), "application/json")
         elif sub == "ai_nudge":
             self._send(json.dumps(ai_nudge(user), ensure_ascii=False), "application/json")
         elif sub == "chat_img":
