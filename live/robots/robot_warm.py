@@ -30,7 +30,7 @@ def _spawn(sp, model):
            "--system-prompt-file", sp, "--tools", "", "--strict-mcp-config", "--no-session-persistence",
            "--max-turns", "1", "--include-partial-messages", "--model", model]
     return subprocess.Popen(cmd, cwd=IV.JOBS, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                            text=True, encoding="utf-8", errors="replace", creationflags=0x08000000 | 0x00004000)   # no window, below-normal priority
+                            text=True, encoding="utf-8", errors="replace", creationflags=0x08000000)   # normal priority: at below-normal a busy CPU starved it (api 2 s, total 60-140 s)
 
 
 def _fill(key):
