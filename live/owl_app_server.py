@@ -15636,6 +15636,19 @@ def _companion_loop():
                 threading.Thread(target=_ns, daemon=True).start()
         except Exception:
             pass
+        try:                 # 2026-10-19 (owner item 7): Kino's weekly report for the creator, Monday 06:00-09:00 UTC
+            if time.gmtime().tm_wday == 0 and 6 <= time.gmtime().tm_hour < 9 and not _NIGHT_BUSY:
+                def _rep():
+                    _rc()
+                    import kino_mind as _KM
+                    r = _KM.owner_report()
+                    if r:
+                        for _o in users():
+                            if is_admin(_o) and _o.get("id") == "kino":
+                                queue_push("kino", "Kino", "Ton rapport de la semaine est prêt : " + str(r.get("title") or "")[:120], path="kino")
+                threading.Thread(target=_rep, daemon=True).start()
+        except Exception:
+            pass
         try:                 # 2026-10-19 (roadmap levels 4, 7, 8): Kino's night mind, 03:00-05:00 UTC, once a day
             if 3 <= time.gmtime().tm_hour < 5 and not _NIGHT_BUSY:
                 threading.Thread(target=_kino_night_mind, daemon=True).start()
@@ -15683,7 +15696,23 @@ def kino_data(user):
         except Exception:
             pass
         out["mind"] = md
+        try:
+            out["reports"] = (json.load(open(_KM.REPORTS, encoding="utf-8")).get("reports") or [])[-3:][::-1]
+        except Exception:
+            out["reports"] = []
     return out
+
+
+def kino_directive(user, body):
+    """the app's creator steers who Kino is (owner 2026-10-19: "not controlled by users, only by the app creator")"""
+    if not is_admin(user):
+        return {"ok": False}
+    _rc()
+    import kino_mind as _KM
+    d = _KM.load()
+    d["creator"] = str(body.get("text") or "").strip()[:800]
+    _KM.save(d)
+    return {"ok": True}
 
 
 def kino_forget(user, body):
@@ -21180,7 +21209,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react"):
+                                              "kino_forget", "chat_react", "kino_directive"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -21198,7 +21227,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
-                       "chat_react": chat_react}[_parts[1]]
+                       "chat_react": chat_react, "kino_directive": kino_directive}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

@@ -66,13 +66,22 @@ function paint(){let h='';const g=D.goal||{};
  const P=D.playbook||[];
  h+='<div class="card"><h2><i>✦</i>'+T('Le carnet du labo','The lab’s notebook')+'</h2><p class="sub">'+T('Ce que Kino a appris de tous les tests du labo (anonyme). Des pistes, pas des promesses.','What Kino learned from every test in the lab (anonymous). Leads, not promises.')+'</p>'+
   (P.length?'<div class="list">'+P.map(x=>'<div class="it"><span>'+esc(x)+'</span></div>').join('')+'</div>':'<div class="empty">'+T('Le carnet se remplit chaque nuit.','The notebook fills up every night.')+'</div>')+'</div>';
- if(D.admin&&D.mind){const M=D.mind,S=M.self||{};
+ if(D.admin&&D.mind){const M=D.mind,S=M.self||{},PE=M.personality||{};
+  h+='<div class="card"><h2><i>✦</i>'+T('Ta direction pour Kino','Your direction for Kino')+' <span class="badge">'+T('créateur','creator')+'</span></h2><p class="sub">'+T('Qui il doit être. Il grandit seul, mais toujours dans cette direction (les membres ne le règlent pas).','Who it should be. It grows by itself, always within this direction (members cannot tune it).')+'</p>'+
+   '<textarea id="dir" rows="4" maxlength="800" style="width:100%;font:inherit;font-size:.9rem;color:var(--text);background:var(--surface2);border:1px solid var(--border2);border-radius:14px;padding:10px 12px;resize:vertical">'+esc(M.creator||'')+'</textarea>'+
+   '<button class="cta" style="margin-top:8px" onclick="saveDir()">'+T('Enregistrer','Save')+'</button></div>';
+  if(PE.traits||PE.expressions)h+='<div class="card"><h2><i>☺</i>'+T('Sa personnalité (il la fait grandir lui-même)','Its personality (it grows it itself)')+'</h2><div class="list">'+(PE.traits||[]).map(x=>'<div class="it"><span>'+esc(x)+'</span></div>').join('')+'</div>'+((PE.expressions||[]).length?'<p class="sub" style="margin-top:10px">'+T('Ses expressions : ','Its phrases: ')+(PE.expressions||[]).map(esc).join(' · ')+'</p>':'')+'</div>';
+  (D.reports||[]).forEach(r=>{const L=(t,a)=>a&&a.length?'<p class="sub" style="margin:10px 0 4px"><b>'+t+'</b></p><div class="list">'+a.map(x=>'<div class="it"><span>'+esc(x)+'</span></div>').join('')+'</div>':'';
+   h+='<div class="card"><h2><i>✉</i>'+T('Rapport de la semaine','Weekly report')+' · '+esc(r.date)+'</h2><b style="font-size:1rem">'+esc(r.title)+'</b><p class="sub" style="margin-top:6px">'+esc(r.members||'')+'</p>'+
+    L(T('Ce qu’ils voulaient','What they wanted'),r.topics)+L(T('Où ils bloquent','Where they struggle'),r.struggles)+L(T('Ce qui a plu','What landed'),r.liked)+L(T('Idées qui émergent','Emerging ideas'),r.ideas)+
+    (r.me?'<p class="sub" style="margin:10px 0 4px"><b>'+T('Kino sur lui-même','Kino about itself')+'</b></p><div class="it"><span>'+esc(r.me)+'</span></div>':'')+L(T('Suggestions pour l’app','Suggestions for the app'),r.suggestions)+'</div>';});
   h+='<div class="card mind"><h2><i>◉</i>'+T('L’esprit de Kino','Kino’s mind')+' <span class="badge">'+T('toi seul','owner only')+'</span></h2>'+
    '<div class="row"><div class="pill"><b>'+T('Ses forces','Strengths')+'</b><ul>'+(S.strengths||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div><div class="pill"><b>'+T('Ses faiblesses','Weaknesses')+'</b><ul>'+(S.weaknesses||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div></div>'+
    (S.working_on?'<div class="it" style="margin-top:10px"><span><b>'+T('Il travaille sur : ','Working on: ')+'</b>'+esc(S.working_on)+'</span></div>':'')+(S.mood?'<div class="mood">« '+esc(S.mood)+' »</div>':'')+'</div>';
   h+='<div class="card"><h2><i>⚑</i>'+T('Les leçons qu’il s’est écrites','Lessons it wrote itself')+'</h2>'+((M.lessons||[]).length?'<div class="list">'+M.lessons.map(x=>'<div class="it"><span>'+esc(x)+'</span></div>').join('')+'</div>':'<div class="empty">—</div>')+'</div>';
   h+='<div class="card"><h2><i>☾</i>'+T('Son journal','Its journal')+'</h2>'+((M.journal||[]).length?M.journal.slice().reverse().map(j=>'<div class="jr"><b>'+esc(j.date)+'</b><p>'+esc(j.text)+'</p></div>').join(''):'<div class="empty">—</div>')+'</div>';}
  $('main').innerHTML=h;}
+async function saveDir(){const t=($('dir')||{}).value||'';try{await fetch(B+'kino_directive',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t})});alert(T('Enregistré. Kino en tiendra compte dès son prochain message.','Saved. Kino follows it from its next message.'));}catch(e){}}
 async function forget(i){if(!confirm(T('Kino oubliera cette information. Sûr ?','Kino will forget this. Sure?')))return;
  try{await fetch(B+'kino_forget',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({i:i})});}catch(e){}load();}
 load();
