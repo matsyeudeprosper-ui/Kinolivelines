@@ -14714,7 +14714,15 @@ def chat_start(user, body):
     if known and not rid:
         _chat_save(c)
         _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
-        threading.Thread(target=_chat_quick, args=(cid, user, "NEW CONVERSATION (the member opened a fresh chat)"), daemon=True).start()
+        _lt = 0
+        for _x in (chat_list(user).get("chats") or [])[:6]:       # when did we last talk (any conversation)?
+            _cx = _chat_load(user, _x["id"]) or {}
+            _lt = max([_lt] + [int(m.get("t") or 0) for m in _cx.get("msgs") or [] if m.get("role") in ("user", "ai")])
+        _ago = time.time() - _lt if _lt else None
+        _when = ("never talked before" if _ago is None else "%d minutes ago" % (_ago / 60) if _ago < 3600 else
+                 "%d hours ago" % (_ago / 3600) if _ago < 172800 else "%d days ago" % (_ago / 86400))
+        threading.Thread(target=_chat_quick, args=(cid, user, "NEW CONVERSATION (the member opened a fresh page; you last talked: %s, in "
+                                                   "another conversation)" % _when), daemon=True).start()
         try:
             _rc().prewarm()
         except Exception:
