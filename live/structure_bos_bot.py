@@ -422,6 +422,10 @@ _PB_CACHE = {"t": 0.0, "v": (0, 0, None, None)}
 ROBOT_RULES = _P.get("robot_rules") or {}
 _sys.path.insert(0, os.path.join(DIR, "robots"))
 import robot_live as _RL
+# 2026-10-19 (owner, the Atelier: "even if the piece doesn't exist the AI creates it"): FORMULA pieces read the
+# candles, so a robot using one gets a memory of closed 1-minute candles + the eyes' breaks (robot_live.Candles;
+# live == bench in live/robots/test_robot_live_formula.py). None for every other account = no change below.
+_FX = _RL.Candles() if _RL.uses_formulas(ROBOT_RULES) else None
 
 
 def pb_state_now():
@@ -1326,6 +1330,51 @@ def rates_utc(tf, start, n):
     return R
 
 
+def fx_seed():
+    """the formula memory's first ~42 days of closed candles, with the eyes' breaks replayed on them by a second
+    structure engine (the live one keeps its own seed). The background trend of those old breaks is today's."""
+    R = rates_utc(mt5.TIMEFRAME_M1, 1, _RL.Candles.KEEP)
+    if R is None or len(R) < 100:
+        say("ROBOT formules: pas d'historique de bougies - ses pieces formule refusent tout")
+        return
+    e2 = Struct()
+    e2.quiet = True
+    tr0 = pb_trend_now()
+    for r in R:
+        pt = e2.trend
+        sg = e2.step(int(r["time"]), float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"]))
+        _FX.add(r["time"], r["open"], r["high"], r["low"], r["close"], r["tick_volume"],
+                d=sg[0] if sg else 0, flip=bool(sg) and e2.trend != pt, trend=tr0 if sg else None)
+    say(f"ROBOT formules: {len(_FX.rows)} bougies en memoire")
+
+
+def fx_catch_up(kb, d, flip, trend):
+    """the closed candles the memory misses (kb = the last 3 closed), the newest one carrying the eyes' break"""
+    last = _FX.rows[-1][0] if _FX.rows else 0
+    if last and int(kb[0]["time"]) > last + 60:          # more than 2 candles missed (a stall, a weekend)
+        n = min(_RL.Candles.KEEP, int((int(kb[-1]["time"]) - last) / 60) + 5)
+        R = rates_utc(mt5.TIMEFRAME_M1, 1, n)
+        for r in (R if R is not None else []):
+            if last < int(r["time"]) < int(kb[0]["time"]):
+                _FX.add(r["time"], r["open"], r["high"], r["low"], r["close"], r["tick_volume"])
+    for j, r in enumerate(kb):
+        nw = j == len(kb) - 1
+        _FX.add(r["time"], r["open"], r["high"], r["low"], r["close"], r["tick_volume"],
+                d=d if nw else 0, flip=flip if nw else False, trend=trend if nw else None)
+
+
+def robot_formula_exit(st):
+    """the robot's close formula on the open MAIN trade, at the candle that just closed (bench: DslArm.tick)"""
+    adds = set(st.get("add_ids") or [])
+    for p in my_positions():
+        if p.ticket in adds:
+            continue
+        act = _RL.formula_exit(ROBOT_RULES, 1 if p.type == mt5.POSITION_TYPE_BUY else -1, _FX)
+        if act:
+            robot_close_all(act[1])
+            return
+
+
 def fill_mode():
     """item 5: the fill type this symbol accepts - IOC where allowed (Exness), else FOK (FOREX.com), else RETURN"""
     if _FILL["v"] is None:
@@ -1430,6 +1479,11 @@ def main():
     save_state(st)
     say(f"seeded {len(R)} bars: trend {eng.trend} "
         f"choch {eng.choch} kept {len(eng.kept)}")
+    if _FX is not None:
+        try:
+            fx_seed()
+        except Exception as e:
+            say(f"ROBOT formules: memoire impossible ({type(e).__name__}: {e}) - ses pieces formule refusent tout")
 
     def eq_state():
         """The account's own progression structure (trend, pending choch),
@@ -1520,7 +1574,7 @@ def main():
         # STRONGEST slice of any ordinal position - different lens, same
         # direction. Owner: "take the extra profit with bigger worse
         # case swing" - deliberate, informed choice.
-        if kind == "FLIP-BOS":
+        if kind in ("FLIP-BOS", "FORMULA"):     # a formula entry is a fresh signal, like the bench's flip
             st["cont_used_since_flip"] = False
         elif kind == "BOS" and DEBT_GATE and st.get("debt", 0.0) > 0.5:
             if not st.get("cont_used_since_flip", True):
@@ -1598,7 +1652,7 @@ def main():
             _rvn, _rvr = (_cj0 or {}).get("vol_now"), (_cj0 or {}).get("vol_ref")
             _rok, _rwhy = _RL.filters_ok(ROBOT_RULES, _nw.hour, _nw.weekday(),
                                          (_rvn / max(_rvr, 1e-9)) if (_rvn and _rvr) else None,
-                                         (_cj0 or {}).get("moves_2h"))
+                                         (_cj0 or {}).get("moves_2h"), d=d, C=_FX)
             if not _rok:
                 say(f"{kind} refuse: robot - {_rwhy}")
                 return False
@@ -1623,7 +1677,10 @@ def main():
             slp = _RL.stop_for(ROBOT_RULES, d, slp,
                                float(_kb1["close"]) if _kb1 is not None else e_ref,
                                float(_kb1["low"]) if _kb1 is not None else e_ref,
-                               float(_kb1["high"]) if _kb1 is not None else e_ref)
+                               float(_kb1["high"]) if _kb1 is not None else e_ref, C=_FX)
+            if slp != slp:
+                say(f"{kind} refuse: robot - la formule du stop ne donne pas de prix")
+                return False
             if (d == 1 and slp >= e_ref) or (d == -1 and slp <= e_ref):
                 say(f"{kind} refuse: robot - stop {slp:.2f} du mauvais cote du prix {e_ref:.2f}")
                 return False
@@ -2130,6 +2187,20 @@ def main():
                     say(f"INT note, pas pris: {_why}")
                     st["int_last_t"] = _ivt
                     save_state(st)
+            if _FX is not None:
+                # the robot's formulas at the candle that just closed: its close formula on the open trade,
+                # then its formula entry (fresh and awake by definition, as on the bench)
+                try:
+                    fx_catch_up(kb, sig[0] if sig else 0, sig is not None and eng.trend != _pt,
+                                pb_trend_now() if sig else None)
+                    if my_positions():
+                        robot_formula_exit(st)
+                    _fe = _RL.formula_entry(ROBOT_RULES, _FX)
+                    if _fe:
+                        say(f"FORMULE: signal {'BUY' if _fe[0] == 1 else 'SELL'} (point protege {_fe[1]:.2f})")
+                        enter(_fe[0], _fe[1], "FORMULA")
+                except Exception as e:
+                    say(f"ROBOT formules ERROR {type(e).__name__}: {e}")
             if sig is None:
                 continue
             if not awake:
