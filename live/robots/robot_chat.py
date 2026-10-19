@@ -17,6 +17,7 @@ member's pieces, markets and mode travel in the message. The robot carries its M
 broker, or the default broker's list when they have no account).
 """
 import json
+import time
 
 import robot_dsl as D
 import robot_interview as IV
@@ -287,13 +288,22 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   results you have not got. Answer {"say": "...", "chips": [...], "build": true|false, "send": true (false = no reply at all), "react": null or one emoji (shown ON their message - see REACTIONS; also allowed with a reply),
   "act": null or "test" (launch the robot's test now) or "tests_resume" / "tests_pause" (only when LAB STATUS says YOU HOLD
   THE TEST SWITCH) - you DO it yourself, right now, and say it as done,
+  "watch": null or {"kind": "price", "market": "BTCUSD", "above": number | "below": number, "asked": "their words"} or
+  {"kind": "losses"|"wins", "n": 3, "asked": "..."} or {"kind": "trade", "asked": "..."} (the next trade opened on their
+  account) - an alert THEY ask for ("préviens-moi si..."): you really watch it and tell them when it happens; confirm it
+  simply. "watch_cancel": "their words" stops one. Prices of the BROKER's market (the prices in THE WORLD RIGHT NOW),
+  "draw": null or {"market", "lines": [{"price", "label"}], "zones": [{"from", "to", "label"}]} or {"clear": true} - draws
+  on THEIR live chart page (Graphique) to show a level or a zone; then add "link": "chart" so they can open it,
+  "missing": null or "one line: a tool or ability you LACKED to help them properly" (the app's creator reads it),
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
   (see TEACHING AT THEIR PACE),
   "remember": [...], "show": null or
   {"formula"...} (WHERE AN IDEA FIRES - very welcome here), "seen": "..." (only when they sent a screenshot), and the partner
   fields "project", "learned", "ask_nest", "nest_asked", "nest_answer", "nest_relayed" when they apply}: build = true when their
   message adds to or changes the robot (or asks you to build / change / check it), false when you only chat or ask
-  a question first. With build = true, chips are usually empty (you will follow up yourself).
+  a question first. With build = true, chips are usually empty (you will follow up yourself). Set build = true ALSO when
+  answering needs your analysis tools: a real trade of theirs ("pourquoi ce trade ?"), your past conversations ("tu te
+  souviens...?"), numbers to compute - the quick reply says you are looking ("je regarde ça").
 BUILD - you already sent the quick reply (the last YOU line). Do the real work now: build or change the robot.
   Your "say" is a natural FOLLOW-UP to your quick reply, never a repeat and never a new greeting: what you built or
   changed and why, in 1 to 3 sentences, then ONE question if you still need something. "say" may be "" when the
@@ -308,6 +318,11 @@ the server runs them on ~42-60 days of real candles of that market and gives you
   robot_replay {"market"}                                                 the chat robot's quick replay (trades, won %)
   event_impact {"market"}             the chat robot's trades around big US events (jobs report, Fed, calendar) vs its other
       trades - to warn before the next big figure (any pause is THEIR choice: suggest it, never do it)
+  trade_explain {"which": "last" | "2" (the 2nd most recent) | "<ticket>"}   one REAL trade of their account: entry, exit,
+      result, best / worst move during it, and its chart shown in the chat - explain why it opened, why it closed, and
+      whether it was a normal trade for their robot (compare with its test). Use it for "pourquoi ce trade ?"
+  search_chats {"query": "a few key words"}   THEIR past conversations with you: the exchanges that match, with dates -
+      for "tu te souviens quand..." - quote what was said, honestly; if nothing is found, say so
   portfolio {"items": [{"market", "robot": "chat"|"owl"|"pekos-owl"}, ...up to 4]}   several robots / markets together: each
       one's result and worst dip, how their days move together, the combined result - to advise combinations
 Use them when a number would change the conversation: "est-ce que ça marche ?", choosing between versions, checking an
@@ -471,6 +486,12 @@ def memory_text(mem):
         L.append("THEIR LIFE (what they shared): " + " | ".join(life[-6:]))
     if mem.get("jokes"):
         L.append("SHARED MOMENTS (made them laugh - reuse rarely): " + " | ".join("%s %s" % (j.get("e"), j.get("text")) for j in mem["jokes"][-4:]))
+    if mem.get("watches"):
+        L.append("YOUR ACTIVE WATCHES for them (you promised to tell them): " + " | ".join(
+            "%s (since %s)" % (w.get("asked"), time.strftime("%d/%m", time.gmtime(w.get("t") or 0))) for w in mem["watches"]))
+    if mem.get("drawing"):
+        L.append("ON THEIR CHART PAGE you drew (on %s): %s" % (mem["drawing"].get("market"), json.dumps(
+            {"lines": mem["drawing"].get("lines"), "zones": mem["drawing"].get("zones")}, ensure_ascii=False)[:400]))
     try:
         import kino_mind as KM
         L.append(KM.teaching_block(mem.get("concepts_known"), mem.get("lesson_t")))
@@ -559,7 +580,7 @@ def clean(raw, pieces, owl, prev, markets=None):
     probs = []
     ans = {"say": str(raw.get("say") or "").strip()[:1800], "chips": [], "made": [], "understood": str(raw.get("understood") or "")[:300],
            "ready": bool(raw.get("ready")), "robot": None, "act": raw.get("act") if raw.get("act") in ("test", "luck", "ghost", "duel", "tests_resume", "tests_pause") else None,
-           "link": raw.get("link") if raw.get("link") in ("account", "myrobots", "place", "offers") else None,
+           "link": raw.get("link") if raw.get("link") in ("account", "myrobots", "place", "offers", "chart") else None,
            "remember": remember_of(raw)}
     for c in (raw.get("chips") or [])[:4]:
         if isinstance(c, str) and c.strip():
@@ -691,6 +712,42 @@ def partner_of(raw):
         v = str(raw.get(k) or "").strip()
         if v:
             out[k] = v[:300]
+    try:                      # 2026-10-19 (owner list-4 items 1, 2, 9): drawings, watches, missing abilities
+        w = raw.get("watch")
+        if isinstance(w, dict) and w.get("kind") in ("price", "losses", "wins", "trade") and str(w.get("asked") or "").strip():
+            ww = {"kind": w["kind"], "asked": str(w["asked"])[:200], "market": str(w.get("market") or "BTCUSD").upper()[:12]}
+            for k_ in ("above", "below"):
+                try:
+                    if w.get(k_) is not None:
+                        ww[k_] = float(w[k_])
+                except Exception:
+                    pass
+            try:
+                ww["n"] = max(1, min(20, int(w.get("n") or 1)))
+            except Exception:
+                ww["n"] = 1
+            if ww["kind"] != "price" or "above" in ww or "below" in ww:
+                out["watch"] = ww
+        if raw.get("watch_cancel"):
+            out["watch_cancel"] = str(raw["watch_cancel"])[:200]
+        dr = raw.get("draw")
+        if isinstance(dr, dict):
+            def _f(x):
+                try:
+                    return float(x)
+                except Exception:
+                    return None
+            dd = {"market": str(dr.get("market") or "BTCUSD").upper()[:12], "clear": bool(dr.get("clear")),
+                  "lines": [{"price": _f(l.get("price")), "label": str(l.get("label") or "")[:40]} for l in (dr.get("lines") or [])[:6]
+                            if isinstance(l, dict) and _f(l.get("price"))],
+                  "zones": [{"from": _f(z.get("from")), "to": _f(z.get("to")), "label": str(z.get("label") or "")[:40]} for z in (dr.get("zones") or [])[:3]
+                            if isinstance(z, dict) and _f(z.get("from")) and _f(z.get("to"))]}
+            if dd["clear"] or dd["lines"] or dd["zones"]:
+                out["draw"] = dd
+        if str(raw.get("missing") or "").strip():
+            out["missing"] = str(raw["missing"]).strip()[:240]
+    except Exception:
+        pass
     try:                      # 2026-10-19 (owner next-list item 10): teaching at their pace
         import kino_mind as KM
         keys = {c[0] for c in KM.CONCEPTS}
@@ -764,7 +821,8 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
             import robot_tools as T
             import robot_demo as RD
             rules, rr = RD.rules_of(prev or {}, pieces) if prev else ({}, 0.8)
-            res = T.run(calls, {"market": (prev or {}).get("market") or chat.get("market") or "BTCUSD", "rules": rules, "rr": rr})
+            res = T.run(calls, {"market": (prev or {}).get("market") or chat.get("market") or "BTCUSD", "rules": rules, "rr": rr,
+                                "uid": chat.get("uid")})
         except Exception as e:
             res = [{"error": str(e)[:120]}]
         chat.setdefault("_tool_log", []).extend(res)
@@ -786,6 +844,12 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
             ans["proposal"] = {"robot": pa["robot"], "why": str(pr.get("why") or "")[:240]}
     if chat.get("_tool_log"):
         ans["tools_used"] = [{"tool": r.get("tool"), "args": r.get("args"), "result": r.get("result")} for r in chat["_tool_log"]][-3:]
+        try:                  # 2026-10-19 (owner list-4 item 3): a real trade's chart goes into the chat
+            import robot_tools as T
+            ans["charts"] = [T.CHARTS.pop(r["result"]["chart_key"]) for r in chat["_tool_log"]
+                             if isinstance(r.get("result"), dict) and r["result"].get("chart_key") in T.CHARTS][-2:]
+        except Exception:
+            pass
     if probs:
         fix = up + "\n\nYOUR LAST ANSWER:\n" + json.dumps(raw, ensure_ascii=False)[:5000] + \
             "\n\nIT HAD THESE PROBLEMS - fix them and answer again with the same JSON (keep what was right):\n- " + "\n- ".join(probs)

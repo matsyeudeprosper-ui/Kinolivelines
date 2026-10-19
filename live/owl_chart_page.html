@@ -1355,6 +1355,13 @@ function draw(){
   ctx.fillStyle='rgba(8,14,22,.82)';ctx.beginPath();ctx.roundRect(W-w-18,ly-8,w,16,8);ctx.fill();
   ctx.strokeStyle=col;ctx.globalAlpha=.55;ctx.lineWidth=1;ctx.stroke();ctx.globalAlpha=1;
   ctx.fillStyle=col;ctx.fillText(lab,W-w-13,ly+3.5);ctx.restore();};
+ // 2026-10-19 (owner list-4 item 1): what Kino drew for this member (violet, dashed) - kino_draw, polled every 30 s
+ if(window.KDRAW){try{const K=window.KDRAW,vio='#a78bfa',SCK=SYM==='BTCUSD'?1:(typeof SC!=='undefined'?SC:1);ctx.save();ctx.font='bold 10px system-ui';
+  (K.zones||[]).forEach(z=>{const y1=px(z.from*SCK),y2=px(z.to*SCK),yt=Math.min(y1,y2),hh=Math.abs(y2-y1);if(yt>Hh||yt+hh<0)return;
+   ctx.fillStyle=vio;ctx.globalAlpha=.12;ctx.fillRect(0,yt,W-60,Math.max(2,hh));ctx.globalAlpha=1;if(z.label){ctx.fillStyle=vio;ctx.fillText('🦉 '+z.label,8,Math.max(12,yt+12));}});
+  (K.lines||[]).forEach(l=>{const y=px(l.price*SCK);if(y<0||y>Hh)return;ctx.strokeStyle=vio;ctx.lineWidth=1.4;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-60,y);ctx.stroke();ctx.setLineDash([]);
+   const lb='🦉 '+(l.label||fmtPx(l.price*SCK));const w=ctx.measureText(lb).width+10;ctx.fillStyle='rgba(8,14,22,.85)';ctx.beginPath();ctx.roundRect(6,y-8,w,16,8);ctx.fill();ctx.fillStyle=vio;ctx.fillText(lb,11,y+3.5);});
+  ctx.restore();}catch(e){}}
  // 2026-09-27 (owner): in manual mode the chart is a signal service - the
  // anticipated break, when its pullback is confirmed, is named on the chart.
  if(!FULL&&window._MANUAL){
@@ -3581,6 +3588,8 @@ if(STUDIO){cv.addEventListener('pointerup',e=>{if(!ST.wantStop)return;const r=cv
 <script>
 /* 2026-10-19 (owner: "Kino explains your live chart"): sends the live picture to Kino, opens the conversation */
 (function(){try{if(window.top!==window){var b=document.getElementById('askkino');if(b)b.style.display='none';}}catch(e){}})();
+async function kdrawPoll(){try{const j=await (await fetch('kino_draw?sym='+encodeURIComponent(SYM)+'&px='+encodeURIComponent((window.D&&D.px)||''),{cache:'no-store'})).json();window.KDRAW=j.draw||null;}catch(e){}}
+setTimeout(kdrawPoll,1500);setInterval(()=>{if(document.visibilityState==='visible')kdrawPoll();},30000);
 async function askKino(){var b=document.getElementById('askkino');b.disabled=true;b.style.opacity=.7;
  var base=location.pathname.replace(/chart\/?$/,''),sym=(new URLSearchParams(location.search).get('sym'))||'BTCUSD';
  try{var r=await fetch(base+'chat_explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sym:sym})});var j=await r.json();

@@ -400,7 +400,7 @@ function msgHTML(m,i,last){
  const parts=String(m.text||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
  let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+(k===A.length-1&&m.mreact?' rxm':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" data-i="'+i+'">'+md(p)+(k===A.length-1?'<span class="meta"><button class="spk" onclick="event.stopPropagation();sayIt('+i+')" aria-label="Écouter">🔊</button>'+hm2(m.t)+'</span>'+(m.mreact?'<span class="react mine">'+esc(m.mreact)+'</span>':''):'')+'</div></div>').join('');
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
- if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')]}[m.link];
+ if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')],chart:['chart',T('Ouvrir mon graphique','Open my chart'),T('Kino y a dessiné ce qu’il te montre','Kino drew what he means on it')]}[m.link];
   if(LK)h+='<div class="att"><a class="cta" style="text-decoration:none;color:inherit" href="'+LK[0]+'"><span class="ci"><svg><use href="#spark"/></svg></span><span><b>'+LK[1]+'</b><small>'+LK[2]+'</small></span></a></div>';}
  if(last&&m.ready&&C.view&&!(C.test&&C.test.state==='queued'))h+='<div class="att"><button class="cta" onclick="runTest()"><span class="ci"><svg><use href="#play"/></svg></span><span><b>'+T('Tester ce robot','Test this robot')+'</b><small>'+T('42 jours de vrais prix · 5 à 15 min · sans argent','42 days of real prices · 5 to 15 min · no money')+'</small></span></button></div>';
  if(last&&m.chips&&m.chips.length&&C.status!=='thinking')h+='<div class="chips">'+m.chips.map(c=>'<button class="chip" onclick="chip(this)">'+esc(c)+'</button>').join('')+'</div>';
@@ -499,14 +499,14 @@ function drawChart(cv,o){if(!cv)return;const rows=o.rows||[];if(!rows.length)ret
  if(tr){const ie=idxAt(rows,tr.t_in),ix=idxAt(rows,tr.t_out);
   if(upto>=ie){const e2=Math.min(upto,ix),x1=X(ie),x2=X(e2)+cw/2,d=tr.d;
    const zone=(v,col)=>{g.fillStyle=col;g.globalAlpha=.12;g.fillRect(x1,Math.min(Y(tr.entry),Y(v)),x2-x1,Math.abs(Y(v)-Y(tr.entry)));g.globalAlpha=1;};
-   if(tr.target!=null)zone(tr.target,up);zone(tr.stop,dn);
+   if(tr.target!=null)zone(tr.target,up);if(tr.stop!=null)zone(tr.stop,dn);
    const line=(v,col,dash,lab)=>{g.strokeStyle=col;g.lineWidth=1.5;g.setLineDash(dash);g.beginPath();g.moveTo(x1,Y(v));g.lineTo(x2,Y(v));g.stroke();g.setLineDash([]);
     g.fillStyle=col;g.fillRect(W-R+1,Y(v)-7,R-2,14);g.fillStyle='#fff';g.font='bold 9px Inter,system-ui';g.fillText(lab,W-R+4,Y(v)+3);};
-   line(tr.entry,cssv('--accent'),[],T('entrée','entry'));line(tr.stop,dn,[5,3],'stop');if(tr.target!=null)line(tr.target,up,[5,3],T('cible','target'));
+   line(tr.entry,cssv('--accent'),[],T('entrée','entry'));if(tr.stop!=null)line(tr.stop,dn,[5,3],'stop');if(tr.target!=null)line(tr.target,up,[5,3],T('cible','target'));
    g.fillStyle=d===1?up:dn;g.beginPath();const ye=Y(tr.entry);if(d===1){g.moveTo(x1,ye+4);g.lineTo(x1-6,ye+14);g.lineTo(x1+6,ye+14);}else{g.moveTo(x1,ye-4);g.lineTo(x1-6,ye-14);g.lineTo(x1+6,ye-14);}g.fill();
-   const risk=Math.abs(tr.entry-tr.stop)||1;let rr=upto>=ix?tr.r:d*(rows[Math.min(upto,rows.length-1)][4]-tr.entry)/risk;
+   const risk=Math.abs(tr.entry-(tr.stop!=null?tr.stop:tr.exit))||1;let rr=upto>=ix?tr.r:d*(rows[Math.min(upto,rows.length-1)][4]-tr.entry)/risk;
    if(upto>=ix){g.fillStyle=cssv('--warn');g.beginPath();g.arc(X(ix),Y(tr.exit),4.5,0,7);g.fill();}
-   const lab=(rr>=0?'+':'')+rr.toFixed(1)+'R';g.font='bold 12px Inter,system-ui';const tw=g.measureText(lab).width+12;g.fillStyle=rr>=0?up:dn;g.globalAlpha=.9;
+   const lab=tr.usd!=null?((upto>=ix?+tr.usd:0)>=0?'+':'')+(upto>=ix?+tr.usd:0).toFixed(2)+' $':(rr>=0?'+':'')+rr.toFixed(1)+'R';   // a real trade: dollarsg.font='bold 12px Inter,system-ui';const tw=g.measureText(lab).width+12;g.fillStyle=rr>=0?up:dn;g.globalAlpha=.9;
    g.fillRect(6,6,tw,20);g.globalAlpha=1;g.fillStyle='#fff';g.fillText(lab,12,20);}}
  (o.marks||[]).forEach(m=>{const i=idxAt(rows,m.t);if(i<a||i>=b)return;const x=X(i),y=Y(m.p);
   const col={buy:up,sell:dn,stop:dn,exit:cssv('--warn'),line:cssv('--accent-soft')}[m.k]||'#888';g.fillStyle=col;g.strokeStyle=col;
@@ -657,11 +657,18 @@ let VOICE=false,SPEAKING=false,VOICE_PICK=null;
 function pickVoice(){if(!('speechSynthesis' in window))return null;const L=speechSynthesis.getVoices()||[];const lang=EN?'en':'fr';
  const c=L.filter(v=>(v.lang||'').toLowerCase().startsWith(lang));return c.find(v=>/natural|neural|google|premium|enhanced/i.test(v.name))||c[0]||null;}
 try{speechSynthesis.onvoiceschanged=()=>{VOICE_PICK=pickVoice();};}catch(e){}
-function speak(text,then){if(!('speechSynthesis' in window)||!text){then&&then();return;}try{speechSynthesis.cancel();}catch(e){}
+let TTS_OK=null,TTS_A=null;
+function speak(text,then){if(TTS_OK!==false&&text){const clean0=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'').slice(0,900);
+  try{if(TTS_A){TTS_A.pause();}TTS_A=new Audio('kino_tts?l='+(EN?'en':'fr')+'&t='+encodeURIComponent(clean0));SPEAKING=true;
+   TTS_A.onended=()=>{SPEAKING=false;then&&then();};
+   TTS_A.onerror=()=>{TTS_OK=false;SPEAKING=false;speak0(text,then);};
+   TTS_A.play().then(()=>{TTS_OK=true;}).catch(()=>{if(!TTS_A.error){SPEAKING=false;speak0(text,then);}});return;}catch(e){TTS_OK=false;}}
+ speak0(text,then);}
+function speak0(text,then){if(!('speechSynthesis' in window)||!text){then&&then();return;}try{speechSynthesis.cancel();}catch(e){}
  const clean=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'');
  const u=new SpeechSynthesisUtterance(clean);u.lang=EN?'en-US':'fr-FR';u.rate=1.05;u.pitch=1;VOICE_PICK=VOICE_PICK||pickVoice();if(VOICE_PICK)u.voice=VOICE_PICK;
  SPEAKING=true;u.onend=u.onerror=()=>{SPEAKING=false;then&&then();};speechSynthesis.speak(u);}
-function sayIt(i){const m=C&&C.msgs[i];if(!m)return;if(SPEAKING){speechSynthesis.cancel();SPEAKING=false;return;}speak(m.text);}
+function sayIt(i){const m=C&&C.msgs[i];if(!m)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;return;}speak(m.text);}
 function voiceReply(m){if(CALL)VOICE=true;if(!VOICE)return;speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
 async function applyP(i){const j=await post('chat_apply',{id:CID,i:i});if(!j.ok){toast(T('Déjà appliquée ou introuvable.','Already applied or missing.'));return;}load(CID,true);}
 /* 2026-10-19 (owner item 10): the robot's notebook - its story: pieces made, tests, edits, proposals applied, Kino's notes */
@@ -752,8 +759,8 @@ function callStart(){if(!REC){toast(T('Ton navigateur ne permet pas l’appel vo
  if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}
  CALL=true;VOICE=true;CALLERR=0;CALLIDLE=0;CALL0=Date.now();$('call').style.display='flex';clearInterval(CALLT);CALLT=setInterval(callTick,400);callTick();
  try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}setTimeout(()=>{if(CALL&&!RECON&&!SPEAKING)mic();},500);}
-function callEnd(){CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}SPEAKING=false;}
-function callTap(){if(!CALL)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}SPEAKING=false;}CALLERR=0;if(!RECON)mic();}
+function callEnd(){CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}
+function callTap(){if(!CALL)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}CALLERR=0;if(!RECON)mic();}
 function callTick(){if(!CALL)return;const st=C&&C.status,busy=st==='thinking'||st==='listening'||st==='building'||!!(C&&C.draft)||SENDING;
  const av=$('cav');let s,cls='';
  if(SPEAKING){s=T('Kino parle… (touche pour l’interrompre)','Kino is speaking… (tap to interrupt)');cls='talk';}

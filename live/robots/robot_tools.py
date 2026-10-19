@@ -18,7 +18,8 @@ import numpy as np
 import robot_demo as RD
 import robot_expr as X
 
-TOOLS = ("idea_stats", "compare", "robot_replay", "event_impact", "portfolio")
+TOOLS = ("idea_stats", "compare", "robot_replay", "event_impact", "portfolio", "trade_explain", "search_chats")
+CHARTS = {}               # chart_key -> a demo trade (candles) - shown in the chat, never sent to the model
 
 
 def _fwd(R, idx, side, h):
@@ -215,6 +216,101 @@ def portfolio(items, ctx):
             "note": "R = multiples of each trade's risk; low or negative correlation + both positive = they complement each other"}
 
 
+# ---------------------------------------------------------------- 2026-10-19 (owner list-4 items 3 and 4)
+def trade_explain(uid, which="last"):
+    """one REAL trade of the member's account (nest_data): its numbers, the candles around it (live feed, else the test
+    data) as a chart for the chat, and the market's state at entry - so Kino explains why it opened and closed"""
+    import json, os, datetime as _d
+    nd = json.load(open(os.path.join(os.path.dirname(RD.HERE), "nest_data", "%s.json" % uid), encoding="utf-8"))
+    tr = nd.get("trades") or []
+    if not tr:
+        return {"error": "no closed trade on their account yet"}
+    if str(which).isdigit() and int(which) < 50:
+        t = tr[min(len(tr) - 1, int(which) - 1 if int(which) > 0 else 0)]
+    else:
+        t = next((x for x in tr if str(x.get("pid")) == str(which)), tr[0])
+    yr = time.gmtime().tm_year
+    t_out = int(_d.datetime.strptime("%d/%s" % (yr, t["w"]), "%Y/%d/%m %H:%M").replace(tzinfo=_d.timezone.utc).timestamp())
+    if t_out > time.time() + 86400:
+        t_out = int(_d.datetime.strptime("%d/%s" % (yr - 1, t["w"]), "%Y/%d/%m %H:%M").replace(tzinfo=_d.timezone.utc).timestamp())
+    t_in = t_out - int(t.get("dur") or 0) * 60
+    d = 1 if t.get("dir") == "A" else -1
+    out = {"trade": {"closed_utc": time.strftime("%d/%m %H:%M", time.gmtime(t_out)), "opened_utc": time.strftime("%d/%m %H:%M", time.gmtime(t_in)),
+                     "side": "buy" if d == 1 else "sell", "entry": t.get("ep"), "exit": t.get("xp"), "result_usd": t.get("p"), "lot": t.get("lot"),
+                     "minutes": t.get("dur"), "kind": t.get("k")},
+           "of_last": "%d trades on the account; today %+.2f $, week %+.2f $" % (len(tr), nd.get("today") or 0, nd.get("week") or 0)}
+    Rw = None
+    try:
+        import robot_ghost as G
+        Rw, k = G.live_bars("BTCUSD")
+        if Rw is not None and not (Rw["time"][0] <= t_in - 3600 and t_out <= Rw["time"][-1] + 60):
+            Rw = None
+    except Exception:
+        Rw = None
+    if Rw is None:
+        D = RD.data("BTCUSD")
+        if D is not None and D[0]["time"][0] <= t_in - 3600 and t_out <= D[0]["time"][-1] + 60:
+            Rw, k = D[0], D[1]
+    if Rw is None:
+        out["chart"] = "no candles for that moment any more (live memory keeps ~2 days)"
+        return out
+    T = Rw["time"]
+    i = int(np.searchsorted(T, t_in, side="right")) - 1
+    j = int(np.searchsorted(T, t_out, side="right")) - 1
+    i0, i1 = max(0, i - 70), min(len(Rw), j + 20)
+    step = max(1, (i1 - i0) // 160)
+    tf = "M1" if step == 1 else ("M5" if step <= 5 else ("M15" if step <= 15 else "H1"))
+    try:
+        e, x = float(t["ep"]), float(t["xp"])
+        lo = float(Rw["low"][i:j + 1].min()) / k
+        hi = float(Rw["high"][i:j + 1].max()) / k
+        out["during"] = {"best_move_in_favour": round((hi - e) if d == 1 else (e - lo), 2), "worst_move_against": round((e - lo) if d == 1 else (hi - e), 2)}
+        key = "c%d" % int(time.time() * 1000)
+        CHARTS[key] = {"tf": tf, "candles": RD._rows(Rw, k, i0, i1, tf), "t_in": int(T[i]), "t_out": int(T[j]), "d": d, "entry": e, "exit": x,
+                       "stop": None, "target": None, "why": "real", "r": round(float(t.get("p") or 0), 2), "overlays": [], "usd": t.get("p")}
+        out["chart_key"] = key
+        out["chart"] = "shown in the chat"
+    except Exception as ex:
+        out["chart"] = "could not draw (%s)" % str(ex)[:60]
+    return out
+
+
+def _norm(x):
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", str(x).lower()) if unicodedata.category(c) != "Mn")
+
+
+def search_chats(uid, query):
+    """the member's OWN past conversations: the messages that best match the query, with their date and context"""
+    import json, os, re as _re
+    CH = os.path.join(RD.HERE, "chats")
+    stop = set("le la les un une des de du et a au aux en on tu je il elle est pas que qui quoi ce ca the a an of to and is it we you i".split())
+    words = [w for w in _re.findall(r"[a-z0-9]{3,}", _norm(query)) if w not in stop][:8]
+    if not words:
+        return {"error": "query too vague"}
+    hits = []
+    for f in os.listdir(CH):
+        if not f.endswith(".json"):
+            continue
+        try:
+            c = json.load(open(os.path.join(CH, f), encoding="utf-8"))
+        except Exception:
+            continue
+        if c.get("uid") != uid or c.get("hidden"):
+            continue
+        M = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")]
+        for n, m in enumerate(M):
+            tx = _norm(m["text"])
+            sc = sum(1 for w in words if w in tx)
+            if sc:
+                ctx_ = M[max(0, n - 1):n + 2]
+                hits.append((sc, int(m.get("t") or 0), {"date": time.strftime("%d/%m/%Y", time.gmtime(int(m.get("t") or 0))),
+                                                         "conversation": (c.get("robot") or {}).get("name") or c.get("title") or "",
+                                                         "exchange": [("THEM: " if x["role"] == "user" else "YOU: ") + str(x["text"])[:260] for x in ctx_]}))
+    hits.sort(key=lambda h: (-h[0], -h[1]))
+    return {"query": query, "found": len(hits), "best": [h[2] for h in hits[:5]]}
+
+
 def run(calls, ctx):
     """[(name, args)] -> [{"tool", "args", "result"}]; ctx = {"market", "rules", "rr"} of the chat"""
     out = []
@@ -233,6 +329,10 @@ def run(calls, ctx):
                 r = event_impact(mk, ctx.get("rules") or {}, ctx.get("rr") or 0.8)
             elif c["name"] == "portfolio":
                 r = portfolio(a.get("items") or [], ctx)
+            elif c["name"] == "trade_explain":
+                r = trade_explain(ctx.get("uid"), str(a.get("which") or "last")[:20]) if ctx.get("uid") else {"error": "no member"}
+            elif c["name"] == "search_chats":
+                r = search_chats(ctx.get("uid"), str(a.get("query") or "")[:200]) if ctx.get("uid") else {"error": "no member"}
             else:
                 r = robot_replay(mk, ctx.get("rules") or {}, ctx.get("rr") or 0.8)
         except Exception as e:

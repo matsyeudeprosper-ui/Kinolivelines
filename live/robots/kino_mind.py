@@ -376,6 +376,10 @@ def owner_report(force=False):
     if not force and time.time() - float(R.get("last") or 0) < 6 * 86400:
         return None
     convs = _day_conversations(time.time() - 7 * 86400)
+    try:
+        convs = convs + ["WHAT YOU LACKED THIS WEEK (your own notes - put the most useful in \"suggestions\"): " + json.dumps(wishes()[:8], ensure_ascii=False)]
+    except Exception:
+        pass
     R["last"] = time.time()
     if not convs:
         json.dump(R, open(REPORTS, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
@@ -680,3 +684,31 @@ def teaching_block(known, last_t):
             "they understand one (they use it correctly), put it in \"knows\": [\"<key>\"]." % (
                 ", ".join(sorted(k_)) or "none yet", "; ".join("%s = %s" % c for c in todo[:16]) or "all covered",
                 ("%.0f days ago" % days) if days is not None else "never"))
+
+
+# ---------------------------------------------------------------- what Kino lacked (owner 2026-10-19 list-4 item 9)
+WISHES = os.path.join(HERE, "kino_wishes.json")
+
+
+def wishes():
+    try:
+        return sorted(json.load(open(WISHES, encoding="utf-8")), key=lambda w: (-w.get("n", 1), -w.get("last", 0)))
+    except Exception:
+        return []
+
+
+def add_wish(text):
+    """a tool / ability Kino lacked while helping someone - counted, so the creator sees what matters most"""
+    text = str(text or "").strip()[:240]
+    if not text or BAD.search(text):
+        return
+    W_ = wishes()
+    key = re.sub(r"[^a-z0-9 ]", "", text.lower())[:40]
+    for w in W_:
+        if re.sub(r"[^a-z0-9 ]", "", w["text"].lower())[:40] == key:
+            w["n"] = int(w.get("n") or 1) + 1
+            w["last"] = int(time.time())
+            break
+    else:
+        W_.append({"text": text, "n": 1, "first": int(time.time()), "last": int(time.time())})
+    json.dump(W_[-60:], open(WISHES, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
