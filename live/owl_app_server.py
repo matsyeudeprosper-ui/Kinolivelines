@@ -13288,6 +13288,54 @@ def robot_now(uid, ms, has_open, preview=None):
 TESTS_PAUSED = os.path.join(DIR, "robots", "tests_paused.json")    # exists = no robot / market test starts (luck tests apart)
 
 
+def _proc_freeze(pid, freeze):
+    """suspend / resume one process (Windows)"""
+    import ctypes
+    h = ctypes.windll.kernel32.OpenProcess(0x0800, False, int(pid))      # PROCESS_SUSPEND_RESUME
+    if not h:
+        return False
+    try:
+        return (ctypes.windll.ntdll.NtSuspendProcess if freeze else ctypes.windll.ntdll.NtResumeProcess)(h) == 0
+    finally:
+        ctypes.windll.kernel32.CloseHandle(h)
+
+
+def tests_control(on, who="kino"):
+    """2026-10-19 (owner: "give him power to act on tests directly"): pause or resume the nest's robot / market tests.
+    Luck tests are never touched. Pause = the running test runners are frozen where they are and no new run starts;
+    resume = they continue exactly where they were, and the queue is kicked."""
+    if on:
+        if not os.path.exists(TESTS_PAUSED):
+            return {"ok": True, "state": "running", "already": True}
+        try:
+            P = json.load(open(TESTS_PAUSED, encoding="utf-8")).get("suspended_pids") or []
+        except Exception:
+            P = []
+        back = [p for p in P if _proc_freeze(p, False)]
+        os.remove(TESTS_PAUSED)
+        robot_runner_kick()
+        robot_fast_kick()
+        return {"ok": True, "state": "running", "resumed": len(back)}
+    if os.path.exists(TESTS_PAUSED):
+        return {"ok": True, "state": "paused", "already": True}
+    P = []
+    try:
+        import subprocess
+        out = subprocess.run(["powershell", "-NoProfile", "-Command", "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "
+                              "'*robot_runner.py*' } | ForEach-Object { $_.ProcessId }"],
+                             capture_output=True, text=True, timeout=30, creationflags=0x08000000).stdout
+        for ln in out.splitlines():
+            if ln.strip():
+                pid = ln.strip()
+                if pid.isdigit() and _proc_freeze(int(pid), True):
+                    P.append(int(pid))
+    except Exception:
+        pass
+    json.dump({"since": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "why": "paused by %s" % who, "suspended_pids": P},
+              open(TESTS_PAUSED, "w", encoding="utf-8"), indent=1)
+    return {"ok": True, "state": "paused", "frozen": len(P)}
+
+
 def robot_runner_kick():
     """test the queued robots now, in the background, unless a run is already going"""
     if os.path.exists(TESTS_PAUSED):          # 2026-10-19 (owner): "pause any test other than the BTC" - requests queue
@@ -14579,6 +14627,13 @@ def _lab_status(uid):
         pass
     L.append("robot and market tests: %s" % ("PAUSED by the nest's owner (luck tests continue); new tests wait in line"
                                               if os.path.exists(TESTS_PAUSED) else "running normally"))
+    try:
+        if is_admin(next((x for x in users() if x.get("id") == uid), {}) or {}):
+            L.append("YOU HOLD THE TEST SWITCH for this member (the nest's owner): \"act\": \"tests_resume\" restarts the paused "
+                     "robot and market tests where they stopped, \"tests_pause\" pauses them (luck tests never stop). Use it when "
+                     "they ask or agree - never say you cannot. Pausing slows everyone's tests: say so in one line.")
+    except Exception:
+        pass
     return "\n".join("- " + x for x in L)
 
 
@@ -15143,6 +15198,30 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
                 pass
 
 
+def _kino_act(cid, user, act, en=False):
+    """2026-10-19 (owner): Kino acts on tests directly - its own member's test, and (the nest's owner only) the nest's
+    test switch. A short system line tells what really happened."""
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        line = None
+        if act in ("tests_resume", "tests_pause"):
+            if not is_admin(user):
+                return
+            r = tests_control(act == "tests_resume", "Kino for %s" % (user.get("name") or user.get("id")))
+            line = (("Tests resumed." if not r.get("already") else "Tests were already running.") if en else
+                    ("Tests relancés." if not r.get("already") else "Les tests tournaient déjà.")) if act == "tests_resume" else \
+                   (("Tests paused (luck tests continue)." if not r.get("already") else "Tests were already paused.") if en else
+                    ("Tests en pause (les tests de chance continuent)." if not r.get("already") else "Les tests étaient déjà en pause."))
+        elif act == "test" and c.get("robot") and (c.get("test") or {}).get("state") != "queued":
+            tr = chat_test(user, {"id": cid})
+            if not tr.get("ok") and tr.get("err") not in ("same",):
+                line = ("Couldn't start the test (%s)." if en else "Le test n'a pas pu démarrer (%s).") % tr.get("err")
+        if line:
+            _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=line))
+    except Exception:
+        pass
+
+
 def _chat_quick0(cid, user, event=None, notify=False, important=False):
     """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
@@ -15201,6 +15280,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         except Exception:
             _CHAT_B.discard(cid)
             raise
+        if q.get("act"):
+            _kino_act(cid, user, q["act"], en)
         if q["build"]:
             threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
         if _qdm and _qdm.get("nodata") and (q or {}).get("show"):
@@ -15288,14 +15369,8 @@ def _chat_build(cid, user):
                     c["understood"] = ans["understood"]
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
-            if ans and ans.get("act") == "test" and c.get("robot") and (c.get("test") or {}).get("state") != "queued":
-                try:
-                    tr = chat_test(user, {"id": cid})            # the AI launches the test itself
-                    if not tr.get("ok") and tr.get("err") not in ("same",):
-                        _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("Couldn't start the test (%s)." if en else
-                                                                            "Le test n'a pas pu démarrer (%s).") % tr.get("err")))
-                except Exception:
-                    pass
+            if ans and ans.get("act") in ("test", "tests_resume", "tests_pause"):
+                _kino_act(cid, user, ans["act"], en)          # the AI acts itself
             if ans and ans.get("act") in ("ghost", "duel") and c.get("robot"):
                 try:
                     chat_ghost(user, {"id": cid, "action": "duel" if ans["act"] == "duel" else "start"})
@@ -15527,6 +15602,22 @@ def _companion_tick():
                                                "J'ai écrit ce que j'ai compris de toi comme trader (page Kino). Tu me corriges si je me trompe ?", False)
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("portrait", dict(mm.get("portrait") or {}, t=time.time())))
                     threading.Thread(target=_pt, daemon=True).start()
+            except Exception:
+                pass
+            # (1j) 2026-10-19: tests came back on - a member whose test waited hears it at once
+            try:
+                if not os.path.exists(TESTS_PAUSED) and m.get("tests_seen_paused"):
+                    _mem_note_safe(uid, lambda mm: mm.pop("tests_seen_paused", None))
+                    for x in ch[:6]:
+                        c = _chat_load(u, x["id"])
+                        if c and (c.get("test") or {}).get("state") == "queued" and not busy(c["id"]):
+                            _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+                            threading.Thread(target=_chat_quick, args=(c["id"], u, "TESTS RESUMED - the nest's tests are running again; "
+                                             "their queued test will start soon. Tell them simply, like keeping a promise."),
+                                             kwargs={"notify": True}, daemon=True).start()
+                            break
+                elif os.path.exists(TESTS_PAUSED) and not m.get("tests_seen_paused"):
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("tests_seen_paused", int(now)))
             except Exception:
                 pass
             # (1i) 2026-10-19 (owner humanity item 12): small spontaneous gestures - rare, so they stay meaningful (1 per 5 days)

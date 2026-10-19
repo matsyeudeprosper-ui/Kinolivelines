@@ -274,6 +274,8 @@ THE MESSAGE TELLS YOU THE MODE:
 QUICK - you answer right away while the real work happens after. 1 to 3 short sentences: react to what they said
   like a person would, answer simple questions, and say what you are about to do. Do NOT write pieces, numbers or
   results you have not got. Answer {"say": "...", "chips": [...], "build": true|false, "send": true (false = no reply at all), "react": null or one emoji (shown ON their message - see REACTIONS; also allowed with a reply),
+  "act": null or "test" (launch the robot's test now) or "tests_resume" / "tests_pause" (only when LAB STATUS says YOU HOLD
+  THE TEST SWITCH) - you DO it yourself, right now, and say it as done,
   "remember": [...], "show": null or
   {"formula"...} (WHERE AN IDEA FIRES - very welcome here), "seen": "..." (only when they sent a screenshot), and the partner
   fields "project", "learned", "ask_nest", "nest_asked", "nest_answer", "nest_relayed" when they apply}: build = true when their
@@ -315,7 +317,8 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
    obvious next step after a change they asked for) or "luck" (the luck test, see ACTIONS) or "ghost" (GHOST MODE: the
    robot trades pretend money on LIVE prices from now on and you follow each pretend trade - the step between a test and
    real money; propose it after a good test) or "duel" (your last proposal against their robot, both in ghost mode for
-   7 days, then a verdict - only when there is a proposal card),
+   7 days, then a verdict - only when there is a proposal card) or "tests_resume" / "tests_pause" (the nest's test switch -
+   only when LAB STATUS says YOU HOLD THE TEST SWITCH),
  "link": null or "account" | "myrobots" | "place" | "offers",
  "remember": ["short lasting note about the member", ...] (0 to 2),
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
@@ -530,7 +533,7 @@ def clean(raw, pieces, owl, prev, markets=None):
     P = {p["id"]: p for p in pieces}
     probs = []
     ans = {"say": str(raw.get("say") or "").strip()[:1800], "chips": [], "made": [], "understood": str(raw.get("understood") or "")[:300],
-           "ready": bool(raw.get("ready")), "robot": None, "act": raw.get("act") if raw.get("act") in ("test", "luck", "ghost", "duel") else None,
+           "ready": bool(raw.get("ready")), "robot": None, "act": raw.get("act") if raw.get("act") in ("test", "luck", "ghost", "duel", "tests_resume", "tests_pause") else None,
            "link": raw.get("link") if raw.get("link") in ("account", "myrobots", "place", "offers") else None,
            "remember": remember_of(raw)}
     for c in (raw.get("chips") or [])[:4]:
@@ -704,6 +707,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
     return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and not event, "remember": remember_of(raw),
+            "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
             "react": _react_of(raw), "partner": partner_of(raw)}
