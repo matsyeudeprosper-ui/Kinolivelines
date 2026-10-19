@@ -250,6 +250,7 @@ header .ib{border:0;background:transparent;width:36px}
 .send:disabled{opacity:.6}
 .send.on{background:var(--down);animation:pulse 1.2s infinite}
 .hint{font-size:.64rem;opacity:.75}
+.spk{border:0;background:none;padding:0 4px 0 0;font-size:.72rem;opacity:.55;cursor:pointer;vertical-align:-1px}.spk:hover{opacity:1}
 .mw{display:contents}.typingnow .chips,.typingnow .att{display:none}
 .m.ai .bub{-webkit-user-select:none;user-select:none}.m.ai.rxm{margin-bottom:16px}
 .react.mine{left:6px;right:auto}
@@ -372,7 +373,7 @@ function msgHTML(m,i,last){
  if(m.role==='demo')return demoHTML(m,i,last);
  // 2026-10-19: the AI sends two or three short messages in a row like a person (blank line = new bubble)
  const parts=String(m.text||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);
- let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+(k===A.length-1&&m.mreact?' rxm':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" data-i="'+i+'">'+md(p)+(k===A.length-1?'<span class="meta">'+hm2(m.t)+'</span>'+(m.mreact?'<span class="react mine">'+esc(m.mreact)+'</span>':''):'')+'</div></div>').join('');
+ let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+(k===A.length-1&&m.mreact?' rxm':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" data-i="'+i+'">'+md(p)+(k===A.length-1?'<span class="meta"><button class="spk" onclick="event.stopPropagation();sayIt('+i+')" aria-label="Écouter">🔊</button>'+hm2(m.t)+'</span>'+(m.mreact?'<span class="react mine">'+esc(m.mreact)+'</span>':''):'')+'</div></div>').join('');
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
  if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')]}[m.link];
   if(LK)h+='<div class="att"><a class="cta" style="text-decoration:none;color:inherit" href="'+LK[0]+'"><span class="ci"><svg><use href="#spark"/></svg></span><span><b>'+LK[1]+'</b><small>'+LK[2]+'</small></span></a></div>';}
@@ -404,7 +405,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
   if(n)box.replaceChild(w,n);else box.appendChild(w);kids[x]=w;fresh2.push([w,it]);});
  while(box.children.length>items.length)box.lastChild.remove();
  // Kino's new messages type themselves in (not the history shown at load)
- fresh2.forEach(([w,it])=>{if(!it.m||it.m.role!=='ai')return;if(FIRSTPAINT||TYPED.has(it.k)){TYPED.add(it.k);return;}TYPED.add(it.k);typeIn(w,it);});
+ fresh2.forEach(([w,it])=>{if(!it.m||it.m.role!=='ai')return;if(FIRSTPAINT||TYPED.has(it.k)){TYPED.add(it.k);return;}TYPED.add(it.k);typeIn(w,it);voiceReply(it.m);});
  if(FIRSTPAINT)M.forEach((m,i)=>TYPED.add('m'+i+':'+(m.t||0)+':'+m.role));
  FIRSTPAINT=false;
  // the tail: Kino writing (smooth), building, or the dots
@@ -485,6 +486,8 @@ function drawChart(cv,o){if(!cv)return;const rows=o.rows||[];if(!rows.length)ret
  g.fillStyle=cssv('--muted');g.font='10px Inter,system-ui';if(n){g.fillText(dm(vis[0][0])+' '+hm(vis[0][0]),2,H-4);const l=hm(vis[n-1][0]);g.fillText(l,W-R-g.measureText(l).width-2,H-4);}}
 /* the AI's examples */
 function momentsHTML(m,i,last){const mo=m.moments||[];
+ if(m.kind==='live'){const x=mo[0]||{},id='cm'+i+'_0';return '<div class="att demo"><div class="dmh"><svg><use href="#chart"/></svg><span><b>'+T('Le graphique en direct','The live chart')+' · '+esc(m.market)+'</b><small>'+T('les dernières bougies, le prochain BOS et le point protégé','the last candles, the next BOS and the protected point')+'</small></span></div>'+
+  '<div class="chartc"><canvas class="cvs" id="'+id+'" data-o="'+i+'" data-j="0"></canvas></div></div>';}
  let h='<div class="att demo"><div class="dmh"><svg><use href="#chart"/></svg><span><b>'+T('Là où ton idée se déclenche','Where your idea fires')+' · '+esc(m.market)+'</b><small>'+m.count+T(' fois en 42 jours (~'+m.per_day+' par jour) · voici les dernières',' times in 42 days (~'+m.per_day+' a day) · the latest ones')+'</small></span></div>';
  mo.forEach((x,j)=>{const id='cm'+i+'_'+j;h+='<div class="chartc"><div class="chh"><b>'+(m.side==='sell'?T('Vente','Sell'):T('Achat','Buy'))+' · '+dm(x.t)+' '+hm(x.t)+'</b><span class="rb '+((m.side==='sell'?-1:1)*(x.after||0)>0?'pos':'neg')+'">'+T('30 min après : ','30 min later: ')+((x.after||0)>=0?'+':'')+px(x.after||0)+'</span></div>'+
   '<canvas class="cvs" id="'+id+'" data-o="'+i+'" data-j="'+j+'"></canvas><div class="chf"><button class="cb" onclick="playM(\''+id+'\','+i+','+j+')"><svg><use href="#play"/></svg>'+T('Rejouer','Replay')+'</button>'+
@@ -554,7 +557,7 @@ async function drSend(){if(!DR||!DR.marks.length)return;const b=$('dsend');b.dis
 /* voice: speak instead of typing (the browser's own speech recognition). 2026-10-19 (owner: "nothing proves I'm
    being listened to"): a listening bar above the box - state, moving bars, the words as they come, Terminé / Annuler,
    and plain words when the browser refuses (micro not allowed, nothing heard, no network) */
-let REC=null,RECON=false,RECBASE='';
+let REC=null,RECON=false,RECBASE='',LAST_SPOKEN='';
 function micBar(state,txt){const b=$('micbar');if(!b)return;if(!state){b.classList.remove('on');return;}b.classList.add('on');b.dataset.s=state;
  $('micst').textContent={wait:T('J’active le micro…','Turning the mic on…'),on:T('Je t’écoute… parle','I’m listening… go ahead'),err:txt||''}[state]||'';
  $('mictx').textContent=state==='on'?(txt||''):'';$('micok').style.display=state==='on'?'':'none';}
@@ -562,7 +565,8 @@ function micInit(){const S=window.SpeechRecognition||window.webkitSpeechRecognit
  REC=new S();REC.lang=EN?'en-US':'fr-FR';REC.interimResults=true;REC.continuous=false;
  REC.onstart=()=>{RECON=true;RECBASE=$('tx').value?$('tx').value+' ':'';$('sdb').classList.add('on');micBar('on','');try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}};
  REC.onresult=e=>{let s='';for(let i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;$('tx').value=RECBASE+s;autosize();sdPaint();micBar('on','« '+s+' »');};
- REC.onend=()=>{RECON=false;$('sdb').classList.remove('on');const b=$('micbar');if(b&&b.dataset.s!=='err')micBar(null);if($('tx').value.trim())$('tx').focus();};
+ REC.onend=()=>{RECON=false;$('sdb').classList.remove('on');const b=$('micbar');if(b&&b.dataset.s!=='err')micBar(null);
+  const v=$('tx').value.trim();if(v&&v!==RECBASE.trim()){LAST_SPOKEN=v;send();}else{VOICE=false;}};
  REC.onerror=e=>{RECON=false;$('sdb').classList.remove('on');const m={'not-allowed':T('Autorise le micro pour cette page (le cadenas à côté de l’adresse), puis réessaie.','Allow the microphone for this page (the padlock next to the address), then try again.'),
    'service-not-allowed':T('Ton navigateur bloque la dictée ici. Essaie avec Chrome.','Your browser blocks dictation here. Try Chrome.'),'no-speech':T('Je n’ai rien entendu. Touche le micro et parle tout de suite.','I didn’t hear anything. Tap the mic and speak right away.'),
    'audio-capture':T('Aucun micro trouvé sur cet appareil.','No microphone found on this device.'),'network':T('La dictée a besoin d’internet.','Dictation needs the internet.')}[e.error]||T('Le micro n’a pas marché, réessaie.','The mic didn’t work, try again.');
@@ -578,7 +582,7 @@ async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURICom
  const t=j.test||{};const wait=(j.draft||j.status==='thinking')?600:(j.status==='building'?1500:(t.state==='queued'?8000:0));clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;TYPED=new Set();FIRSTPAINT=false;const _ch=$('chat');if(_ch)_ch.innerHTML='';await load(j.id,true);}
-async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
+async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;VOICE=!!LAST_SPOKEN&&t===LAST_SPOKEN.trim();LAST_SPOKEN='';if(C&&C.status==='thinking'){toast(ERR.busy);return;}SENDING=true;
  C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000)});C.status='thinking';$('tx').value='';autosize();paintChat(true);
  // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
  // then the bubble stays, marked "not sent", with a retry - never a message that looks sent and is not
@@ -614,7 +618,19 @@ document.addEventListener('pointerdown',ev=>{if(!ev.target.closest('#rxbar'))rxC
 ['pointerup','pointercancel'].forEach(t=>document.addEventListener(t,()=>clearTimeout(RXT)));
 document.addEventListener('pointermove',ev=>{if(Math.abs(ev.movementY)>4||Math.abs(ev.movementX)>4)clearTimeout(RXT);});
 document.addEventListener('dblclick',ev=>{const b=ev.target.closest('.m.ai .bub[data-i]');if(b){ev.preventDefault();rxBar(b);}});
-function sendOrMic(){if($('tx').value.trim())send();else mic();}
+/* 2026-10-19 (owner: "Kino talks out loud"): the browser's own voices. When the member spoke to Kino (mic), Kino answers
+   out loud and then listens again - a hands-free conversation; typing (or tapping the button) ends it. */
+let VOICE=false,SPEAKING=false,VOICE_PICK=null;
+function pickVoice(){if(!('speechSynthesis' in window))return null;const L=speechSynthesis.getVoices()||[];const lang=EN?'en':'fr';
+ const c=L.filter(v=>(v.lang||'').toLowerCase().startsWith(lang));return c.find(v=>/natural|neural|google|premium|enhanced/i.test(v.name))||c[0]||null;}
+try{speechSynthesis.onvoiceschanged=()=>{VOICE_PICK=pickVoice();};}catch(e){}
+function speak(text,then){if(!('speechSynthesis' in window)||!text){then&&then();return;}try{speechSynthesis.cancel();}catch(e){}
+ const clean=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'');
+ const u=new SpeechSynthesisUtterance(clean);u.lang=EN?'en-US':'fr-FR';u.rate=1.05;u.pitch=1;VOICE_PICK=VOICE_PICK||pickVoice();if(VOICE_PICK)u.voice=VOICE_PICK;
+ SPEAKING=true;u.onend=u.onerror=()=>{SPEAKING=false;then&&then();};speechSynthesis.speak(u);}
+function sayIt(i){const m=C&&C.msgs[i];if(!m)return;if(SPEAKING){speechSynthesis.cancel();SPEAKING=false;return;}speak(m.text);}
+function voiceReply(m){if(!VOICE)return;speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
+function sendOrMic(){if(SPEAKING){speechSynthesis.cancel();SPEAKING=false;VOICE=false;return;}if($('tx').value.trim()){VOICE=false;send();}else mic();}
 function resend(k){const t=FAILED.splice(k,1)[0];if(t==null)return;$('tx').value=t;send();}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
 setInterval(()=>{THINK_T++;const e=$('thk');if(e&&C&&(C.msgs||[]).length)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);

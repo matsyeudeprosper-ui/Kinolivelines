@@ -3577,4 +3577,15 @@ async function stuSave(){if(ST.pos||ST.trades.length<3)return;
  try{const r=await fetch('/'+tok+'/studio_save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({day:ST.day,view:ST.view,trades:ST.trades})});const j=await r.json();
   if(!j.ok){alert(j.err);return;}location.href='/'+tok+'/robots#studio='+j.id;}catch(e){alert(stuT('Réseau indisponible.','Network unavailable.'));}}
 if(STUDIO){cv.addEventListener('pointerup',e=>{if(!ST.wantStop)return;const r=cv.getBoundingClientRect();const v=yToP(e.clientY-r.top);if(v==null)return;e.stopImmediatePropagation();stuSetStop(v);},true);}
-</script></body></html>
+</script><button id="askkino" onclick="askKino()" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:90;display:flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:11px 18px 11px 12px;font:800 14px Inter,system-ui,sans-serif;color:#fff;background:linear-gradient(135deg,#6d5cf6,#3b82f6);box-shadow:0 10px 28px rgba(109,92,246,.5);cursor:pointer"><span style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center">🦉</span>Demande à Kino</button>
+<script>
+/* 2026-10-19 (owner: "Kino explains your live chart"): sends the live picture to Kino, opens the conversation */
+(function(){try{if(window.top!==window){var b=document.getElementById('askkino');if(b)b.style.display='none';}}catch(e){}})();
+async function askKino(){var b=document.getElementById('askkino');b.disabled=true;b.style.opacity=.7;
+ var base=location.pathname.replace(/chart\/?$/,''),sym=(new URLSearchParams(location.search).get('sym'))||'BTCUSD';
+ try{var r=await fetch(base+'chat_explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sym:sym})});var j=await r.json();
+  if(j.ok||j.id){location.href=base+'atelier'+(j.id?'?c='+encodeURIComponent(j.id):'');return;}
+  alert(j.err==='strategy'?'Kino est inclus dans la formule Stratégie.':'Kino est occupé, réessaie dans un instant.');}catch(e){alert('Hors ligne.');}
+ b.disabled=false;b.style.opacity=1;}
+</script>
+</body></html>

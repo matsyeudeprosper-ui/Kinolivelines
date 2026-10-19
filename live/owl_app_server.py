@@ -11080,34 +11080,7 @@ function apkDismiss(){try{localStorage.setItem('owlApkDis',String(Date.now()));}
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
-<script>
-/* 2026-10-19 (owner: "push notifications, even take over the screen ... understand when to do so"): the workshop AI's
-   card - a message it wants the member to see (test news, an idea, a question). Shown over the app, read from
-   ai_nudge (also pushed by the service worker when the app is on screen); "Plus tard" keeps it for the workshop. */
-(function(){var B0=location.pathname.replace(/[^/]*$/,''),shown=0,en=false;try{en=localStorage.getItem('owlLang')==='en'}catch(e){}
-function el(t,css,txt){var e=document.createElement(t);if(css)e.style.cssText=css;if(txt!=null)e.textContent=txt;return e;}
-function seen(n){try{fetch(B0+'ai_nudge_seen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t:n.t})});}catch(e){}}
-function card(n){if(!n||n.t===shown||document.getElementById('ainudge'))return;shown=n.t;
- var o=el('div','position:fixed;inset:0;z-index:95;display:flex;align-items:flex-end;justify-content:center;background:rgba(3,6,10,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)');o.id='ainudge';
- var c=el('div','width:100%;max-width:560px;margin:0 10px calc(14px + env(safe-area-inset-bottom,0px));border-radius:26px;border:1px solid rgba(167,139,250,.45);background:linear-gradient(160deg,#1a2233,#121a25);box-shadow:0 24px 70px rgba(0,0,0,.6);padding:18px 18px 14px;color:#e8eef4;font-family:Inter,system-ui,sans-serif;transform:translateY(40px);opacity:0;transition:all .35s cubic-bezier(.2,.8,.2,1)');
- var h=el('div','display:flex;align-items:center;gap:12px;margin-bottom:12px');
- var av=el('div','width:42px;height:42px;border-radius:14px;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#6d5cf6,#3b82f6);box-shadow:0 8px 22px rgba(109,92,246,.45);font-size:20px','🦉');
- var tt=el('div','flex:1;min-width:0');tt.appendChild(el('b','display:block;font-size:.98rem','Kino'));
- tt.appendChild(el('small','display:block;color:#8a9bb0;font-size:.76rem;margin-top:2px',n.important?(en?'News for you':'Une nouvelle pour toi'):(en?'Something I wanted to tell you':'Un truc que je voulais te dire')));
- h.appendChild(av);h.appendChild(tt);c.appendChild(h);
- c.appendChild(el('div','font-size:1rem;line-height:1.5;color:#e8eef4;white-space:pre-wrap;max-height:40vh;overflow:auto',n.text));
- var row=el('div','display:flex;gap:8px;margin-top:14px');
- var go=el('button','flex:1;border:0;border-radius:14px;padding:13px;font-weight:800;font-size:.92rem;color:#fff;background:linear-gradient(135deg,#3b82f6,#6d5cf6);cursor:pointer',en?'Open the chat':'Ouvrir la conversation');
- var later=el('button','border:1px solid #2b3a4d;border-radius:14px;padding:13px 16px;font-weight:700;font-size:.9rem;color:#c6d3df;background:#172130;cursor:pointer',en?'Later':'Plus tard');
- go.onclick=function(){seen(n);location.href=B0+'atelier?c='+encodeURIComponent(n.cid);};
- later.onclick=function(){seen(n);c.style.transform='translateY(40px)';c.style.opacity='0';setTimeout(function(){o.remove();},300);};
- o.onclick=function(e){if(e.target===o)later.onclick();};
- row.appendChild(go);row.appendChild(later);c.appendChild(row);o.appendChild(c);document.body.appendChild(o);
- requestAnimationFrame(function(){c.style.transform='none';c.style.opacity='1';});try{navigator.vibrate&&navigator.vibrate([60,40,60]);}catch(e){}}
-function poll(){if(document.visibilityState!=='visible')return;fetch(B0+'ai_nudge',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){if(j&&j.nudge)card(j.nudge);}).catch(function(){});}
-setTimeout(poll,4000);setInterval(poll,60000);document.addEventListener('visibilitychange',poll);
-try{navigator.serviceWorker&&navigator.serviceWorker.addEventListener('message',function(ev){if(ev.data&&ev.data.type==='owl_nudge')poll();});}catch(e){}})();
-</script>
+<script src="kino_fab.js"></script>
 </body></html>"""
 
 
@@ -14570,6 +14543,43 @@ def _rc():
     return m
 
 
+def _lab_status(uid):
+    """2026-10-19 (owner: "why doesn't it know this question?" - the Bitcoin luck test): the nest's tests right now - luck
+    tests (state, draws, random robots as good), whether tests are paused. Other members' robots stay anonymous; the Owl
+    and public robots by name."""
+    L = []
+    try:
+        reg = robot_reg()
+        R = {r["id"]: r for r in reg.get("robots") or []}
+
+        def nm(rid):
+            r = R.get(rid) or {}
+            if rid == "owl":
+                return "the Owl"
+            return "'%s'" % r.get("name_fr") if (r.get("public") or r.get("by_uid") == uid) else "a member's robot"
+        _seen = set()
+        for j in reversed(_ctl_state()[-12:]):
+            if (j["rid"], j["sym"]) in _seen:
+                continue
+            _seen.add((j["rid"], j["sym"]))
+            st = j.get("state")
+            if st in ("running", "waiting"):
+                L.append("luck test of %s on %s: %s%s" % (nm(j["rid"]), j["sym"], "IN PROGRESS" if st == "running" else "queued (waits its turn)",
+                                                          (", %s/%s draws done, %s random robots did as well so far (a 6th = fail)" % (
+                                                              j.get("n"), j.get("max") or 100, j.get("beats"))) if j.get("n") is not None else ""))
+            elif st == "done":
+                cl = _random_ctl(j["rid"], j["sym"]) or {}
+                if cl:
+                    L.append("luck test of %s on %s: FINISHED - %s (%s draws, %s random as good)" % (
+                        nm(j["rid"]), j["sym"], "PASSED" if (cl.get("seeds") or 0) >= 100 and (cl.get("beats") or 0) <= 5 else "failed / within luck",
+                        cl.get("seeds"), cl.get("beats")))
+    except Exception:
+        pass
+    L.append("robot and market tests: %s" % ("PAUSED by the nest's owner (luck tests continue); new tests wait in line"
+                                              if os.path.exists(TESTS_PAUSED) else "running normally"))
+    return "\n".join("- " + x for x in L)
+
+
 def _chat_member(user, c):
     """2026-10-19 (owner: "it should have great knowledge of the app since it lives there"): THIS member's situation in
     plain facts for the AI - plan, account, the robot on it, what they may choose, where the chat's robot stands.
@@ -14631,6 +14641,7 @@ def _chat_member(user, c):
     else:
         L.append("this chat's robot is not saved yet (it is saved at its first test)")
     out = "\n".join("- " + x for x in L)
+    out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
         import robot_reality as _RW
         _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
@@ -15798,14 +15809,31 @@ def kino_tg(body):
 
 
 def ai_nudge(user):
-    """the takeover card of the app: the AI's latest unseen message (last 3 days)"""
-    if user.get("public") or not (is_admin(user) or has(user.get("id"), "strategy")):
-        return {}
+    """the takeover card of the app: the AI's latest unseen message (last 3 days); and for the floating Kino bubble on
+    every page (owl_kino_fab.js): can (has Kino), unread (Kino's messages since the member last looked), the last one"""
+    if user.get("public"):
+        return {"public": True}
+    if not (is_admin(user) or has(user.get("id"), "strategy")):
+        return {"can": False}
+    out = {"can": True, "unread": 0}
+    try:
+        ch = chat_list(user).get("chats") or []
+        if ch:
+            c = _chat_load(user, ch[0]["id"]) or {}
+            sn = _CHAT_SEEN.get(user.get("id"))
+            seen_t = sn[0] if sn else max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") == "user"] or [0])
+            new = [m for m in c.get("msgs") or [] if m.get("role") == "ai" and int(m.get("t") or 0) > seen_t]
+            out["unread"] = len(new)
+            if new:
+                out["last"] = {"t": new[-1].get("t"), "text": str(new[-1].get("text") or "")[:200], "cid": c["id"]}
+    except Exception:
+        pass
     m = _mem_get(user.get("id"))
     for n in reversed(m.get("nudges") or []):
         if not n.get("seen") and time.time() - n["t"] < 3 * 86400:
-            return {"nudge": {"t": n["t"], "text": n["text"], "cid": n["cid"], "important": n.get("important")}}
-    return {}
+            out["nudge"] = {"t": n["t"], "text": n["text"], "cid": n["cid"], "important": n.get("important")}
+            break
+    return out
 
 
 def ai_nudge_seen(user, body):
@@ -16207,6 +16235,60 @@ def chat_react(user, body):
             M[i]["mreact"] = None if M[i].get("mreact") == e else e
     _chat_mut(c["id"], put)
     return {"ok": True}
+
+
+def chat_explain(user, body):
+    """2026-10-19 (owner: "Kino explains your live chart"): from the price chart, 'Demande à Kino' - the live picture of
+    the market as the Owl reads it (trend, pending turn, next break level, protected point, pace, movement) goes to Kino
+    with a marked chart of the last candles; Kino explains what the Owl sees and what it is waiting for."""
+    sym = str(body.get("sym") or "BTCUSD").upper()
+    try:
+        if sym.startswith("BTC"):
+            j = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8")); sc = 1.0; sym = "BTCUSD"
+        else:
+            j = json.load(open(os.path.join(DIR, "chart_multi", sym + ".json"), encoding="utf-8"))
+            sc = float((json.load(open(os.path.join(DIR, "chart_multi", "meta.json"), encoding="utf-8"))["symbols"].get(sym) or {}).get("scale") or 1)
+    except Exception:
+        return {"ok": False, "err": "nodata"}
+    cs = [[c[0], c[1] / sc, c[2] / sc, c[3] / sc, c[4] / sc] for c in (j.get("candles") or [])[-120:]]
+    if not cs:
+        return {"ok": False, "err": "nodata"}
+    t0 = cs[0][0]
+    lines = []
+    if j.get("next_bos"):
+        lines.append({"f": "prochain BOS (cassure qui continue la tendance)", "pts": [round(j["next_bos"] / sc, 5)] * len(cs)})
+    dots = [d for d in (j.get("dots") or []) if d[0] >= t0 - 86400]
+    if dots:
+        lines.append({"f": "point protégé", "pts": [round(dots[-1][1] / sc, 5)] * len(cs)})
+    marks = [{"k": "buy" if b[1] == 1 else "sell", "t": int(b[0]), "p": round(b[2] / sc, 5)} for b in (j.get("breaks") or []) if b[0] >= t0][-4:]
+    vn, vr = j.get("vol_now"), j.get("vol_ref")
+    nerv = (vn / vr) if (vn and vr) else None
+    facts = ("market %s, price %s; the Owl's structure: trend %s%s; next BOS level %s (a close beyond it = a new break in the trend); last "
+             "protected point %s; inner structure trend %s; pace %s; big moves in the last 2 h: %s (the Owl wants at least 1 - else the "
+             "market is 'asleep'); last marks: %s" % (
+                 sym, round(cs[-1][4], 5), {1: "UP", -1: "DOWN"}.get(j.get("trend"), "none"),
+                 (", a change of direction (CHoCH) is pending toward %s" % ("up" if j.get("choch") == 1 else "down")) if j.get("choch") else "",
+                 round(j["next_bos"] / sc, 5) if j.get("next_bos") else "-", round(dots[-1][1] / sc, 5) if dots else "-",
+                 {1: "up", -1: "down"}.get(j.get("int_trend"), "-"),
+                 ("%.2fx usual (%s)" % (nerv, "storm - nobody trades" if nerv >= 1.85 else "nervous" if nerv > 1 else "calm")) if nerv else "-",
+                 j.get("moves_2h"), ", ".join("%s %s at %s" % (m[2], "up" if m[3] == 1 else "down", round(m[1] / sc, 5)) for m in (j.get("marks") or [])[-3:])))
+    ch = chat_list(user).get("chats") or []
+    cid = ch[0]["id"] if ch else chat_start(user, {"lang": "fr"}).get("id")
+    if not cid or _CHAT_Q.get(cid):
+        return {"ok": False, "err": "busy", "id": cid}
+    demo = {"role": "demo", "kind": "live", "market": sym, "count": 0, "per_day": 0, "side": "buy",
+            "moments": [{"tf": "M1", "candles": cs, "t": cs[-1][0], "marks": marks, "overlays": lines, "after": 0}], "t": int(time.time())}
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+
+    def put(c):
+        _chat_msg(c, "user", text=("Explique-moi le graphique en direct (%s)" % sym) if (c.get("lang") or "fr") != "en" else ("Explain the live chart (%s)" % sym))
+        c.setdefault("msgs", []).append(demo)
+    _chat_mut(cid, put)
+    threading.Thread(target=_chat_quick, args=(cid, user, "EXPLAIN LIVE CHART - the member pressed 'Demande à Kino' on the price chart; "
+                     "the chart above shows the last candles with the next BOS level and the protected point. Explain like a friend at "
+                     "their screen: what the Owl sees right now, what it is waiting for to enter (or why it does nothing), what would "
+                     "change its mind - 3-5 short sentences, plain words, numbers from the facts only. Facts: " + facts), daemon=True).start()
+    return {"ok": True, "id": cid}
 
 
 def chat_show(user, body):
@@ -21287,7 +21369,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react", "kino_directive"):
+                                              "kino_forget", "chat_react", "kino_directive", "chat_explain"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -21305,7 +21387,8 @@ class H(BaseHTTPRequestHandler):
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
-                       "chat_react": chat_react, "kino_directive": kino_directive}[_parts[1]]
+                       "chat_react": chat_react, "kino_directive": kino_directive,
+                       "chat_explain": chat_explain}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -23644,6 +23727,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(open(os.path.join(DIR, "owl_kino_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
                 self._send(json.dumps(kino_data(user), ensure_ascii=False), "application/json")
+        elif sub == "kino_fab.js":
+            self._send_file_fresh(os.path.join(DIR, "owl_kino_fab.js"), "application/javascript; charset=utf-8")
         elif sub == "ai_nudge":
             self._send(json.dumps(ai_nudge(user), ensure_ascii=False), "application/json")
         elif sub == "chat_img":
