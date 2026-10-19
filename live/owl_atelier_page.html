@@ -338,14 +338,17 @@ function welcome(){return '<div class="hello"><div class="orb"><svg><use href="#
   [T('L’Owl, en mieux','The Owl, better'),T('Pars de l’Owl, mais je veux moins de trades et une sortie qui laisse courir les gains.','Start from the Owl, but I want fewer trades and an exit that lets winners run.')]].map(x=>'<button class="idea" onclick="useIdea(this)"><small>'+esc(x[0])+'</small><span>'+esc(x[1])+'</span></button>').join('')+'</div></div>';}
 function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
  let h='';const fresh=M.filter(m=>m.role==='user').length===0&&!C.robot_id;
- if(fresh)h+=welcome();
- M.forEach((m,i)=>{if(fresh&&i===0)return;h+=msgHTML(m,i,i===M.length-1);});
+ // 2026-10-19 (owner): the idea cards are for someone Kino does not know yet (its first message is the fixed greeting);
+ // a member it knows gets Kino typing its own greeting straight away - no generic screen that swaps under them
+ const wel=fresh&&(M.length?(M[0].role==='ai'&&!M[0].event&&!M[0].quick):(C.status==='ready'&&!C.draft));
+ if(wel)h+=welcome();
+ M.forEach((m,i)=>{if(wel&&i===0)return;h+=msgHTML(m,i,i===M.length-1);});
  FAILED.forEach((t,k)=>{h+='<div class="m me"><div class="bub" style="opacity:.75">'+md(t)+'<div class="fl">⚠ '+T('Pas envoyé','Not sent')+' · <a href="#" onclick="resend('+k+');return false">'+T('Réessayer','Retry')+'</a></div></div></div>';});
  const dr=(C&&C.draft)||'';
  if(dr&&C.status!=='ready')h+='<div class="m ai live"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(dr)+'<span class="caret"></span></div></div>';
  else if(C&&C.status==='building')h+='<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>';
- if(!dr&&C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+THINK[THINK_T%THINK.length]+'</span></div></div>';
- el.innerHTML=h;drawAll();if(fresh&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN||dr)el.scrollTop=el.scrollHeight;LASTN=M.length;
+ if(!dr&&C&&C.status==='thinking')h+='<div class="m ai typing"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?THINK[THINK_T%THINK.length]:T('Kino arrive…','Kino is on his way…'))+'</span></div></div>';
+ el.innerHTML=h;drawAll();if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN||dr)el.scrollTop=el.scrollHeight;LASTN=M.length;
  $('sd').disabled=!($('tx').value.trim())||(C&&C.status==='thinking');}
 function chip(b){$('tx').value=b.textContent;send();}
 function useIdea(b){$('tx').value=b.querySelector('span').textContent;autosize();$('tx').focus();$('sd').disabled=false;}
@@ -503,7 +506,7 @@ async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;i
 let FAILED=[];
 function resend(k){const t=FAILED.splice(k,1)[0];if(t==null)return;$('tx').value=t;send();}
 async function runTest(){if(!CID)return;shClose();const j=await post('chat_test',{id:CID});if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
-setInterval(()=>{THINK_T++;const e=$('thk');if(e)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);
+setInterval(()=>{THINK_T++;const e=$('thk');if(e&&C&&(C.msgs||[]).length)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);
 /* ---------- the market (2026-10-19 evening: any market of the member's broker) */
 async function mkSh(){if(!C||!C.view)return;shOpen('<h4>'+T('Sur quel marché ?','Which market?')+'</h4><div class="fld"><input id="mkq" placeholder="'+T('Chercher : or, nasdaq, EURUSD…','Search: gold, nasdaq, EURUSD…')+'" oninput="mkList()"></div><div class="mkl" id="mkl"><div class="sys"><span>'+T('Je charge les marchés de ton courtier…','Loading your broker’s markets…')+'</span></div></div>');
  if(!MK){try{const j=await post('robot_markets',{});MK=[{s:'BTCUSD',d:'Bitcoin',ready:true}].concat(j.symbols||[]);}catch(e){MK=[{s:'BTCUSD',d:'Bitcoin',ready:true}];}}mkList();}
