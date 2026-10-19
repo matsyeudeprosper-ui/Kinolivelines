@@ -416,10 +416,18 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
    tb.innerHTML=mode==='b'?'<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>':
     mode==='t'?'<div class="m ai typing tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?THINK[THINK_T%THINK.length]:T('Kino arrive…','Kino is on his way…'))+'</span></div></div>':'';}}
  if(fresh2.length)drawAll();hdr();
- if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN)el.scrollTop=el.scrollHeight;LASTN=M.length;
+ if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||M.length!==LASTN){el.scrollTop=el.scrollHeight;if(force||M.length!==LASTN)pinBottom(force?2500:900);}LASTN=M.length;
  sdPaint();}
 /* typing like a person writing (owner: "like in ChatGPT") */
 let TYPED=new Set(),FIRSTPAINT=true,LIVE_T='',LIVE_N=0,LIVE_RAF=0,CARRY=0;
+/* 2026-10-19 (owner: "it doesn't go down to the very last message"): after opening, the conversation keeps growing for a
+   moment (fonts, charts, chips, images) - stay pinned to the very bottom for 2.5 s unless the member scrolls up */
+let PIN_UNTIL=0,PIN_RO=null,USER_SCROLLED=false;
+function pinBottom(ms){const el=$('chat');if(!el)return;PIN_UNTIL=Date.now()+(ms||2500);USER_SCROLLED=false;
+ const go=()=>{if(Date.now()<PIN_UNTIL&&!USER_SCROLLED)el.scrollTop=el.scrollHeight;};go();requestAnimationFrame(go);[120,350,800,1500,2400].forEach(t=>setTimeout(go,t));
+ if(!PIN_RO&&window.ResizeObserver){PIN_RO=new ResizeObserver(go);PIN_RO.observe(el);const b=$('msgs');if(b)PIN_RO.observe(b);}
+ try{document.fonts&&document.fonts.ready.then(go);}catch(e){}}
+['wheel','touchmove'].forEach(t=>document.addEventListener(t,()=>{if(Date.now()<PIN_UNTIL)USER_SCROLLED=true;},{passive:true}));
 function liveTick(){if(LIVE_RAF)return;const step=()=>{LIVE_RAF=0;const b=$('livebub');if(!b||!LIVE_T){return;}
   if(LIVE_N>LIVE_T.length)LIVE_N=LIVE_T.length;const rem=LIVE_T.length-LIVE_N;if(rem>0){LIVE_N+=rem>120?Math.ceil(rem/25):1;
    const el=$('chat'),near=el.scrollHeight-el.scrollTop-el.clientHeight<160;b.innerHTML=md(LIVE_T.slice(0,LIVE_N))+'<span class="caret"></span>';if(near)el.scrollTop=el.scrollHeight;}

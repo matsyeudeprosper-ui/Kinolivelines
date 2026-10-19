@@ -14565,8 +14565,10 @@ def _lab_status(uid):
             st = j.get("state")
             if st in ("running", "waiting"):
                 L.append("luck test of %s on %s: %s%s" % (nm(j["rid"]), j["sym"], "IN PROGRESS" if st == "running" else "queued (waits its turn)",
-                                                          (", %s/%s draws done, %s random robots did as well so far (a 6th = fail)" % (
-                                                              j.get("n"), j.get("max") or 100, j.get("beats"))) if j.get("n") is not None else ""))
+                                                          (", %s/%s draws done, %s random robots did as well so far; it FAILS only if %d MORE "
+                                                           "of the %d remaining draws do as well (6 in total), otherwise it passes" % (
+                                                              j.get("n"), j.get("max") or 100, j.get("beats"), 6 - int(j.get("beats") or 0),
+                                                              int(j.get("max") or 100) - int(j.get("n") or 0))) if j.get("n") is not None else ""))
             elif st == "done":
                 cl = _random_ctl(j["rid"], j["sym"]) or {}
                 if cl:
