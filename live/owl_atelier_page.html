@@ -301,9 +301,12 @@ function msgHTML(m,i,last){
   return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';}
  if(m.role==='result')return '<div class="att" style="margin-left:39px">'+resultCard(m.result||{})+'</div>';
  if(m.role==='show')return showHTML(m,i);
+ if(m.role==='sys')return '<div class="sys"><span><svg><use href="#flask"/></svg>'+esc(m.text)+'</span></div>';
  if(m.role==='demo')return demoHTML(m,i,last);
  let h='<div class="m ai'+(m.err?' err':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub">'+md(m.text)+'</div></div>';
  if(m.made&&m.made.length)h+='<div class="att">'+m.made.map(p=>'<div class="made" onclick="bpSh(\''+esc(p.slot==='filters'?'filters':p.slot)+'\')"><div class="k"><svg><use href="#spark"/></svg>'+T('Nouvelle pièce','New piece')+' · '+esc((SL.find(x=>x[0]===p.slot||x[0]===p.slot+'s')||[0,p.slot])[1])+'</div><b>'+esc(p.name)+'</b>'+(p.plain?'<p>'+esc(p.plain)+'</p>':'')+'</div>').join('')+'</div>';
+ if(m.link){const LK={account:['robots',T('Mettre un robot sur mon compte','Put a robot on my account'),T('Robots › Le robot de ce compte · avec ton mot de passe','Robots › This account’s robot · with your password')],myrobots:['mesrobots',T('Ouvrir Mes robots','Open My robots'),T('Résultats, marchés, tests de chance','Results, markets, luck tests')],place:['place',T('La place des robots','The robot marketplace'),T('Publier ou suivre un robot','Publish or follow a robot')],offers:['offres',T('Voir les offres','See the offers'),T('Signal, Stratégie, Automatique','Signal, Strategy, Automatic')]}[m.link];
+  if(LK)h+='<div class="att"><a class="cta" style="text-decoration:none;color:inherit" href="'+LK[0]+'"><span class="ci"><svg><use href="#spark"/></svg></span><span><b>'+LK[1]+'</b><small>'+LK[2]+'</small></span></a></div>';}
  if(last&&m.ready&&C.view&&!(C.test&&C.test.state==='queued'))h+='<div class="att"><button class="cta" onclick="runTest()"><span class="ci"><svg><use href="#play"/></svg></span><span><b>'+T('Tester ce robot','Test this robot')+'</b><small>'+T('42 jours de vrais prix · 5 à 15 min · sans argent','42 days of real prices · 5 to 15 min · no money')+'</small></span></button></div>';
  if(last&&m.chips&&m.chips.length&&C.status!=='thinking')h+='<div class="chips">'+m.chips.map(c=>'<button class="chip" onclick="chip(this)">'+esc(c)+'</button>').join('')+'</div>';
  return h;}

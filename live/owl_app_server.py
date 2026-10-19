@@ -13273,7 +13273,7 @@ def robot_runner_kick():
             return
         import subprocess
         st = os.path.join(os.path.dirname(DIR), "study")
-        subprocess.Popen(["pythonw", "robot_runner.py"], cwd=st, creationflags=0x08000000)
+        subprocess.Popen(["pythonw", "robot_runner.py"], cwd=st, creationflags=0x08000000 | 0x00004000)   # below normal: bots + chat first
     except Exception:
         pass
 
@@ -13718,7 +13718,7 @@ def robot_fast_kick():
             return
         import subprocess
         st = os.path.join(os.path.dirname(DIR), "study")
-        subprocess.Popen(["pythonw", "robot_runner.py", "--fast"], cwd=st, creationflags=0x08000000)
+        subprocess.Popen(["pythonw", "robot_runner.py", "--fast"], cwd=st, creationflags=0x08000000 | 0x00004000)
     except Exception:
         pass
 
@@ -13860,7 +13860,7 @@ def robot_control(user, body):
     import luck_queue as _LQ
     _LQ.add(sym, r["id"], fresh=not body.get("again"))
     subprocess.Popen([sys.executable, os.path.join("study", "luck_queue.py")],
-                     cwd=root, creationflags=0x08000000 | 0x00000008, close_fds=True)
+                     cwd=root, creationflags=0x08000000 | 0x00000008 | 0x00004000, close_fds=True)
     q = _ctl_load()
     q.append({"rid": r["id"], "sym": sym, "uid": user.get("id"), "at": now, "t": time.time(), "name": name, "luck": True})
     json.dump(q[-60:], open(ROBOT_CTL + ".tmp", "w", encoding="utf-8"), indent=1)
@@ -14502,7 +14502,66 @@ def _rc():
     import importlib
     if os.path.join(DIR, "robots") not in sys.path:
         sys.path.insert(0, os.path.join(DIR, "robots"))
-    return importlib.import_module("robot_chat")
+    m = importlib.import_module("robot_chat")
+    if not m.PLANS:
+        m.PLANS = {k: {"usd": v.get("usd")} for k, v in PACKAGES.items()}
+    return m
+
+
+def _chat_member(user, c):
+    """2026-10-19 (owner: "it should have great knowledge of the app since it lives there"): THIS member's situation in
+    plain facts for the AI - plan, account, the robot on it, what they may choose, where the chat's robot stands.
+    Their own data only; nothing about the machinery."""
+    uid = user.get("id")
+    L = []
+    try:
+        L.append("plan: Signal %s, Stratégie %s, Automatique %s%s" % tuple(["yes" if has(uid, k) else "no" for k in ("manual", "strategy", "family")]
+                                                                        + [" (the nest's owner)" if is_admin(user) else ""]))
+    except Exception:
+        pass
+    try:
+        A = acct_robot_block(user, is_admin(user))
+        lv = A.get("live") or {}
+        if A.get("can") or lv.get("n"):
+            L.append("trading account: yes - robot on it now: %s%s%s" % (
+                (A.get("current") or {}).get("name_fr"),
+                (", %s trades since it started, %+.2f $" % (lv.get("n"), lv.get("net") or 0)) if lv.get("n") else "",
+                ", a trade is open" if lv.get("open") else ""))
+            L.append("may switch robot themselves: %s" % ("yes (Robots > Le robot de ce compte, trading password)" if A.get("can") else
+                                                          "no (this account's robot is set by the nest)"))
+            ch = [x.get("name_fr") or x.get("id") for x in A.get("choices") or []]
+            if ch:
+                L.append("robots they may choose right now: " + ", ".join(ch[:10]))
+        else:
+            L.append("trading account: none connected yet (they can test robots; to trade one they need an account - Automatique)")
+    except Exception:
+        pass
+    rid = c.get("robot_id")
+    if rid:
+        try:
+            reg = robot_reg(); r = next((x for x in reg.get("robots") or [] if x.get("id") == rid), {})
+            res = _robot_test(rid) or {}
+            st = "this chat's robot is saved as '%s', stage %s" % (r.get("name_fr") or rid, r.get("stage"))
+            if res.get("net") is not None:
+                st += ", Bitcoin test %+.2f $ over %s trades" % (res["net"], res.get("trades"))
+            mk = []
+            for f in os.listdir(os.path.join(DIR, "robots", "results")):
+                if f.startswith(rid + "@"):
+                    try:
+                        mr = json.load(open(os.path.join(DIR, "robots", "results", f), encoding="utf-8")).get("robot") or {}
+                        mk.append("%s %+.2f $ / %s trades" % (f[len(rid) + 1:-5], mr.get("net") or 0, mr.get("trades")))
+                    except Exception:
+                        pass
+            if mk:
+                st += "; market tests: " + ", ".join(mk)
+            ok = any((x.get("id") == rid) for x in (acct_robot_block(user, is_admin(user)).get("choices") or []))
+            st += "; can go on their account now: %s" % ("yes" if ok else "no (needs a positive Bitcoin test, live-capable pieces)")
+            L.append(st)
+        except Exception:
+            pass
+    else:
+        L.append("this chat's robot is not saved yet (it is saved at its first test)")
+    return "\n".join("- " + x for x in L)
 
 
 def _chat_path(cid):
@@ -14727,7 +14786,7 @@ def _chat_quick(cid, user, event=None):
         _CHAT_DRAFT[cid] = ""
         q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                         markets=_chat_markets(user), memory=_chat_memory(user, cid), event=event,
-                        on_say=lambda t: _CHAT_DRAFT.__setitem__(cid, t))
+                        on_say=lambda t: _CHAT_DRAFT.__setitem__(cid, t), member=_chat_member(user, c))
         _CHAT_DRAFT.pop(cid, None)
         if q is None and event:
             q = {"say": None, "chips": [], "build": False}
@@ -14780,7 +14839,7 @@ def _chat_build(cid, user):
             n0, rev0 = len(c.get("msgs") or []), c.get("rev")
             ans, probs = _rc().answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                                       markets=_chat_markets(user), memory=_chat_memory(user, cid),
-                                      on_say=lambda t: _CHAT_DRAFT.__setitem__(cid + ":b", t))
+                                      on_say=lambda t: _CHAT_DRAFT.__setitem__(cid + ":b", t), member=_chat_member(user, c))
             _CHAT_DRAFT.pop(cid + ":b", None)
             if ans and ans.get("remember"):
                 _mem_add(user.get("id"), ans["remember"])
@@ -14802,7 +14861,7 @@ def _chat_build(cid, user):
                 if txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
-                              follow=True)
+                              follow=True, link=ans.get("link"))
                 sh = ans.get("show")
                 if sh and c.get("robot"):
                     try:
@@ -14821,6 +14880,17 @@ def _chat_build(cid, user):
                     if not tr.get("ok") and tr.get("err") not in ("same",):
                         _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("Couldn't start the test (%s)." if en else
                                                                             "Le test n'a pas pu démarrer (%s).") % tr.get("err")))
+                except Exception:
+                    pass
+            if ans and ans.get("act") == "luck" and c.get("robot_id"):
+                try:
+                    lr = robot_control(user, {"id": c["robot_id"], "sym": _chat_market(c)})
+                    _why = {"not_winning": ("its test there is not positive with 20+ trades", "son test là-bas n'est pas positif avec 20 trades ou plus"),
+                            "busy": ("another luck test is running in the nest - try again later", "un autre test de chance tourne dans le nid - on réessaiera plus tard"),
+                            "done": ("it already has one", "il en a déjà un"), "market": ("that market is not prepared", "ce marché n'est pas préparé")}
+                    _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=(
+                        ("Luck test queued on %s." if en else "Test de chance lancé sur %s.") % _chat_market(c) if lr.get("ok") else
+                        ("Luck test not started: %s." if en else "Test de chance pas lancé : %s.") % (_why.get(lr.get("err"), (lr.get("err"),) * 2)[0 if en else 1]))))
                 except Exception:
                     pass
             if int(c.get("b_want") or 0) <= n0:

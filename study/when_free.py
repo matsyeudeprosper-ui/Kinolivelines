@@ -71,7 +71,7 @@ def main():
                 time.sleep(60)
             say("start (try %d, %.1f GB free): %s" % (attempt, free_gb(), " ".join(cmd)))
             t0 = time.time()
-            p = subprocess.Popen(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000)
+            p = subprocess.Popen(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000 | 0x00004000)   # below-normal priority
             killed = False
             while p.poll() is None:
                 time.sleep(20)

@@ -102,7 +102,9 @@ def kick():
         cmd.append("--nm=%s" % e["nm"])
     log = open(os.path.join(LDIR, "%s_%s.log" % (e["rid"], e["sym"])), "a", encoding="utf-8")
     log.write("\n%s start (%.1f GB free): %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), f, " ".join(cmd[2:]))); log.flush()
-    flags = 0x00000008 | 0x08000000 | 0x00000200            # detached, no window, own process group
+    # detached, no window, own process group, BELOW-NORMAL priority (2026-10-19: research never takes the CPU from the
+    # live bots or the workshop chat - a test at 100 % CPU made the AI's replies 3x slower)
+    flags = 0x00000008 | 0x08000000 | 0x00000200 | 0x00004000
     try:
         subprocess.Popen(cmd, cwd=HERE, stdout=log, stderr=subprocess.STDOUT, creationflags=flags | 0x01000000, close_fds=True)
     except OSError:                                          # the task's job does not allow breakaway
