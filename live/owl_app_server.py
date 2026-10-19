@@ -14952,12 +14952,13 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
             q = {"say": None, "chips": [], "build": True}
         if event:
             q["build"] = False
-        if event and event.startswith("PROACTIVE") and not q.get("send"):
+        if event and event.startswith(("PROACTIVE", "FOLLOW-UP")) and not q.get("send"):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
         def put(c):
             if q["say"]:
-                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event))
+                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event),
+                          followup=bool(event and event.startswith("FOLLOW-UP")))
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
             if q.get("seen"):
@@ -15180,6 +15181,7 @@ def _companion_tick():
             ch = chat_list(u).get("chats") or []
             if not ch:
                 continue
+            h0 = _local_hour(uid)
             busy = lambda cid: _CHAT_Q.get(cid) or cid in _CHAT_B
             # (1) a test finished while they were away
             for x in ch[:6]:
@@ -15228,6 +15230,46 @@ def _companion_tick():
                         threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
             if seen != (m.get("luck_seen") or {}):
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("luck_seen", seen))
+            # (2b) 2026-10-19 (owner: "follow up sometimes like humans do ... not predictable or systematic, but smartly,
+            # intuitively"): Kino asked or proposed something and got no answer. Still on the chat: after a random
+            # 2.5-7 min. Gone: after a random 25-80 min, by day, as a push. Once per message, never after a follow-up,
+            # at most 3 a day - and Kino itself may decide to say nothing.
+            for x in ch[:3]:
+                cf = _chat_load(u, x["id"])
+                if not cf or busy(cf["id"]):
+                    continue
+                M = cf.get("msgs") or []
+                if not M or M[-1].get("role") != "ai" or M[-1].get("followup") or M[-1].get("fu") or M[-1].get("err"):
+                    continue
+                lm = M[-1]
+                if not any(mm.get("role") == "user" for mm in M):
+                    continue
+                txt = str(lm.get("text") or "")
+                if not (txt.rstrip().endswith("?") or lm.get("chips") or lm.get("ready")):
+                    continue                                  # nothing was asked or proposed
+                el = now - int(lm.get("t") or now)
+                rnd = (abs(hash("%s%s" % (cf["id"], lm.get("t")))) % 1000) / 1000.0
+                sn = _CHAT_SEEN.get(uid)
+                here = bool(sn and now - sn[0] < 60 and sn[1] == cf["id"])
+                due = (here and el >= 150 + rnd * 270) or (not here and 1500 + rnd * 3300 <= el <= 4 * 3600 and 9 <= h0 < 21)
+                fu_today = [t for t in (m.get("fu_log") or []) if now - t < 86400]
+                if not due or len(fu_today) >= 3:
+                    continue
+
+                def mark(c, _t=lm.get("t")):
+                    if c.get("msgs") and c["msgs"][-1].get("t") == _t:
+                        c["msgs"][-1]["fu"] = True
+                _chat_mut(cf["id"], mark)
+                _mem_note_safe(uid, lambda mm: mm.__setitem__("fu_log", [t for t in (mm.get("fu_log") or []) if now - t < 86400] + [now]))
+                ev = ("FOLLOW-UP CHECK - you asked or proposed something %d minutes ago and they have not answered; they are %s. "
+                      "Decide like a person who cares, not a reminder bot: a light nudge, an easier option, a reassurance (no "
+                      "pressure), a bit of humour, a simpler way to say it, or a useful extra (a chart of the idea) - or simply "
+                      "wait (\"send\": false), which is often right if they are busy or it can wait. Never repeat your question "
+                      "word for word, never 'tu es toujours là ?' as a reflex. One short message."
+                      % (el / 60, "still looking at the conversation" if here else "away from the app"))
+                _CHAT_Q[cf["id"]] = _CHAT_Q.get(cf["id"], 0) + 1
+                threading.Thread(target=_chat_quick, args=(cf["id"], u, ev), kwargs={"notify": not here}, daemon=True).start()
+                break
             # (3) a quiet conversation: the AI thinks about it, and may come back (at most once a day, by day)
             c0 = ch[0]
             last = max([int(x.get("t") or 0) for x in (_chat_load(u, c0["id"]) or {}).get("msgs") or []] or [0])
