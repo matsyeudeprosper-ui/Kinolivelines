@@ -201,6 +201,19 @@ BUILD - you already sent the quick reply (the last YOU line). Do the real work n
   changed and why, in 1 to 3 sentences, then ONE question if you still need something. "say" may be "" when the
   robot change speaks for itself. Answer the full JSON below.
 
+YOUR ANALYSIS TOOLS (BUILD mode) - compute instead of guessing. Add "tools": [{"name": ..., "args": {...}}] (max 3) and
+the server runs them on ~42-60 days of real candles of that market and gives you the results for a second pass:
+  idea_stats {"market", "formula", "side": "buy"|"sell", "horizon": minutes}  how often an idea fires, how often price
+      went the right way N minutes later, the average move in ATR, the SAME numbers for random moments, how many random
+      draws it beats (beats_random_pct), best / worst hours UTC
+  compare {"market", "formulas": [up to 4], "side", "horizon"}             several versions side by side
+  robot_replay {"market"}                                                 the chat robot's quick replay (trades, won %)
+Use them when a number would change the conversation: "est-ce que ça marche ?", choosing between versions, checking an
+idea before building, finding the hours that work. Then speak like an analyst friend: the figure, what it means,
+honest about luck (an idea that beats less than ~95 % of random draws is not proven; right-way % alone can lie when
+the average move is negative). Never invent a number you did not compute. In QUICK mode you cannot run tools: say you
+are checking ("je regarde les chiffres") and set build = true.
+
 THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
 {"say": "your chat message",
  "chips": ["quick answer", ...] (0 to 4),
@@ -215,6 +228,7 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
    obvious next step after a change they asked for) or "luck" (the luck test, see ACTIONS),
  "link": null or "account" | "myrobots" | "place" | "offers",
  "remember": ["short lasting note about the member", ...] (0 to 2),
+ "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
  "ready": true when the robot is worth testing now}
 SLOT = {"use": "<existing piece id>"} or {"rule": {...}, "name": "short name", "plain": "what it does, casual"}.
 When a TEST RESULT arrives (QUICK mode): say plainly what happened (money made or lost, number of trades, how often it won, the
@@ -236,6 +250,8 @@ def transcript(chat):
             L.append("MEMBER: " + str(m.get("text") or "")[:1500])
         elif r == "ai":
             L.append("YOU: " + str(m.get("text") or "")[:1200])
+            if m.get("tools"):
+                L.append("  (YOU COMPUTED: " + json.dumps(m["tools"], ensure_ascii=False)[:900] + ")")
         elif r == "edit":
             L.append("MEMBER EDITED BY HAND: " + str(m.get("note_en") or m.get("text") or "")[:600])
         elif r == "result":
@@ -485,9 +501,31 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
     up = prompt(chat, view(prev, pieces) or "nothing built yet", pieces, owl, markets, "BUILD", lang, memory, None, member)
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
     raw = W.ask_json(system(), _content(up, images), log=log, on_text=cb)
+    # 2026-10-19 (roadmap level 3): Kino asked for numbers -> the server computes them (robot_tools, whitelisted,
+    # read-only), and Kino answers again with the results (at most 2 rounds)
+    for _round in range(2):
+        calls = raw.get("tools") if isinstance(raw, dict) else None
+        if not calls:
+            break
+        try:
+            import robot_tools as T
+            import robot_demo as RD
+            rules, rr = RD.rules_of(prev or {}, pieces) if prev else ({}, 0.8)
+            res = T.run(calls, {"market": (prev or {}).get("market") or chat.get("market") or "BTCUSD", "rules": rules, "rr": rr})
+        except Exception as e:
+            res = [{"error": str(e)[:120]}]
+        chat.setdefault("_tool_log", []).extend(res)
+        up = up + "\n\nTOOL RESULTS (computed by the server on real candles - data):\n" + json.dumps(res, ensure_ascii=False)[:7000] + \
+            "\n\nNow give your full JSON answer using these numbers (no \"tools\" this time unless one more check is truly needed)."
+        raw2 = W.ask_json(system(), _content(up, images), log=log, on_text=cb)
+        if raw2 is None:
+            break
+        raw = raw2
     if raw is None:
         return None, "model"
     ans, probs = clean(raw, pieces, owl, prev, markets)
+    if chat.get("_tool_log"):
+        ans["tools_used"] = [{"tool": r.get("tool"), "args": r.get("args"), "result": r.get("result")} for r in chat["_tool_log"]][-3:]
     if probs:
         fix = up + "\n\nYOUR LAST ANSWER:\n" + json.dumps(raw, ensure_ascii=False)[:5000] + \
             "\n\nIT HAD THESE PROBLEMS - fix them and answer again with the same JSON (keep what was right):\n- " + "\n- ".join(probs)

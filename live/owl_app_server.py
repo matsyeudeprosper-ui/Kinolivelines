@@ -15030,7 +15030,7 @@ def _chat_build(cid, user):
                 if txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
-                              follow=True, link=ans.get("link"))
+                              follow=True, link=ans.get("link"), tools=ans.get("tools_used"))
                 dm = _chat_show(c, user, ans.get("show"))
                 if dm and not dm.get("nodata"):
                     c.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
