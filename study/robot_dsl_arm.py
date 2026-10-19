@@ -60,7 +60,7 @@ class DslArm(RobotArm):
     # ---- entry + stop
     def _entry_ok(self, o):
         en = self.dsl.get("entry")
-        if not en or en.get("event") == "any":
+        if not en or en.get("event") in ("any", "formula"):     # a formula entry made its own stream (robot_opps)
             return True
         return bool(o["flip"]) if en["event"] == "choch" else not o["flip"]
 
