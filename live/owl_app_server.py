@@ -15231,6 +15231,12 @@ def _companion_tick():
                         threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
             if seen != (m.get("luck_seen") or {}):
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("luck_seen", seen))
+            if int(now // 600) != int(m.get("guard_tick") or 0):
+                _mem_note_safe(uid, lambda mm: mm.__setitem__("guard_tick", int(now // 600)))
+                try:
+                    _guardian(u, ch)
+                except Exception:
+                    pass
             # (2b) 2026-10-19 (owner: "follow up sometimes like humans do ... not predictable or systematic, but smartly,
             # intuitively"): Kino asked or proposed something and got no answer. Still on the chat: after a random
             # 2.5-7 min. Gone: after a random 25-80 min, by day, as a push. Once per message, never after a follow-up,
@@ -15316,6 +15322,79 @@ def _proactive_event(u, c0, ago, hour):
             "useful to say; answer \"send\": false only if you would repeat yourself or truly have nothing new. Keep it short "
             "and natural (never 'just checking in'), one idea, maybe one question."
             % (when, ("%d hours" % (ago / 3600)) if ago < 172800 else ("%d days" % (ago / 86400)), "; ".join(hooks) or "their robot and ideas"))
+
+
+def _guardian(u, ch):
+    """2026-10-19 (roadmap level 6): Kino watches the member's LIVE robot and speaks up - with interpretation, never a raw
+    alarm - when its losing streak is longer than anything in its test, when a high-impact figure is due within 45 min,
+    or when it stopped while it should run. Each alert once (per streak / event / 6 h), max 3 a day; Kino proposes,
+    the member decides (Kino cannot touch the account)."""
+    uid = u.get("id")
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+    except Exception:
+        return
+    A = acct_robot_block(u, is_admin(u))
+    if not (A.get("can") or (A.get("live") or {}).get("n")):
+        return
+    rid = (A.get("current") or {}).get("id") or "owl"
+    test = _robot_test(rid) or {}
+    m = _mem_get(uid)
+    seen = m.get("guard_seen") or {}
+    today = [t for t in (m.get("guard_log") or []) if time.time() - t < 86400]
+    if len(today) >= 3:
+        return
+    alerts = []
+    tr = nd.get("trades") or []
+    streak = 0
+    for t in tr:
+        if (t.get("p") or 0) < 0:
+            streak += 1
+        else:
+            break
+    lim = max(4, int(test.get("max_loss_streak") or 3) + 1)
+    if streak >= lim:
+        key = "streak:%s" % (tr[streak - 1].get("pid") if streak <= len(tr) else streak)
+        if key not in seen:
+            alerts.append((key, "LOSING STREAK: the robot on their account ('%s') just lost %d trades in a row (%s); in its 42-day test "
+                                "its longest losing streak was %s and its worst dip %.0f $. Today %+.2f $, this week %+.2f $." % (
+                                    (A.get("current") or {}).get("name_fr"), streak, ", ".join("%+.2f" % (t.get("p") or 0) for t in tr[:streak]),
+                                    test.get("max_loss_streak"), float(test.get("cc_dd") or 0), nd.get("today") or 0, nd.get("week") or 0), True))
+    try:
+        import robot_reality as _RW
+        cal = (_RW._load() or {}).get("cal") or []
+        now = datetime.now(timezone.utc)
+        for x in cal:
+            if x.get("impact") != "High" or x.get("cc") != "USD":
+                continue
+            t = datetime.fromisoformat(x["date"]).astimezone(timezone.utc)
+            if timedelta(0) < t - now <= timedelta(minutes=45):
+                key = "news:%s:%s" % (x["title"], x["date"])
+                if key not in seen:
+                    alerts.append((key, "BIG NEWS SOON: %s (USD, high impact) in %d minutes (forecast %s, previous %s) while their robot is "
+                                        "running on their account%s." % (x["title"], (t - now).total_seconds() / 60, x.get("forecast") or "-",
+                                                                        x.get("previous") or "-", " with a trade OPEN" if nd.get("open_positions") else ""), False))
+    except Exception:
+        pass
+    lv = A.get("live") or {}
+    if lv.get("alive") is False:
+        key = "down:%d" % (time.time() // 21600)
+        if key not in seen:
+            alerts.append((key, "ROBOT STOPPED: the robot of their account is not running right now (%s)." % (lv.get("why") or "no sign of life"), True))
+    if not alerts:
+        return
+    key, fact, imp = alerts[0]
+    seen[key] = int(time.time())
+    _mem_note_safe(uid, lambda mm: (mm.__setitem__("guard_seen", dict(list(seen.items())[-60:])),
+                                    mm.__setitem__("guard_log", today + [time.time()])))
+    cid = ch[0]["id"]
+    if _CHAT_Q.get(cid) or cid in _CHAT_B:
+        return
+    ev = ("GUARDIAN - you watch their live robot and noticed: %s Tell them like a friend who has their back: what it means, "
+          "whether it is normal for this robot or not (compare with its test), and one concrete option they can choose "
+          "(you cannot touch the account yourself). Calm, short, no drama; if it is normal, say so - that is reassuring." % fact)
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+    threading.Thread(target=_chat_quick, args=(cid, u, ev), kwargs={"notify": True, "important": imp}, daemon=True).start()
 
 
 def _night_shift(u):
