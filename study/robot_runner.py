@@ -34,7 +34,7 @@ def resolve(rid, robots, seen=None):
     return out
 
 
-def arm_for(name, parts, bars, S, pieces=None):
+def arm_for(name, parts, bars, S, pieces=None, opps=None):
     """a robot's named pieces (robots.json v2) -> the bench's settings. Filters are a list: a filter that is
     absent is switched OFF (the storm ceiling, the movement brake, the trend filter, the nervosity gate)."""
     P = pieces or {}
@@ -68,7 +68,69 @@ def arm_for(name, parts, bars, S, pieces=None):
     return DslArm(name, cfg, bars, S, dsl=dsl, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
                     stop="protected", allowance="all_bos" if rec == "all_bos" else "current",
                     gate="trend" if fe.get("gate") == "trend" else "none",
-                    order="live", cap_rule="adaptive", cap="on")
+                    order="live", cap_rule="adaptive", cap="on", opps=opps)
+
+
+def robot_opps(parts, pieces, opps, S, bars):
+    """2026-10-19: a robot whose ENTRY is a formula gets its own opportunity stream - one per candle where its buy
+    or sell formula turns true (from false), at that candle's close, shaped like the eyes' stream so every gate
+    downstream reads it the same way: fresh (flip), awake, the bar's own pace, the background trend of the last
+    real break before it. Its stop: the robot's stop piece; a 'protected point' does not exist for a formula entry,
+    so the extreme of the last 20 candles stands in for it. Returns (opps, S) unchanged for any other robot."""
+    P = pieces or {}
+    en = (P.get(parts.get("entry")) or {}).get("rule") or {}
+    if en.get("event") != "formula":
+        return opps, S
+    import bisect
+    import numpy as np
+    sys.path.insert(0, os.path.join(LIVE, "robots"))
+    import robot_expr as X
+    from datetime import datetime, timezone
+    R = E.R; n = len(R)
+    B = X.Bars.from_rates(R, X.eyes_from_opps(opps, n, S))
+    times = [int(x) for x in R["time"]]
+    lo = min(1440, n - 1)                           # the harness's warm-up (a day of bars)
+    rt = sorted(opps, key=lambda o: o["t"]); rts = [o["t"] for o in rt]
+    st = (P.get(parts.get("stop")) or {}).get("rule") or {}
+    sw_lo, sw_hi = X.evaluate("lowest(low, 20)", B), X.evaluate("highest(high, 20)", B)
+    out, S2 = [], dict(S)
+    for d, src in ((1, en.get("buy")), (-1, en.get("sell"))):
+        if not src:
+            continue
+        tr = X.truth(src, B)
+        edge = np.flatnonzero(tr & ~np.r_[False, tr[:-1]])
+        for i in edge:
+            i = int(i)
+            if i < lo or i >= n - 2:
+                continue
+            t = times[i]; cl = float(R["close"][i])
+            slp = float(sw_lo[i]) if d == 1 else float(sw_hi[i])
+            if st.get("kind") == "fixed":
+                slp = cl - d * float(st["points"])
+            if slp != slp:
+                continue
+            g = datetime.fromtimestamp(t, tz=timezone.utc)
+            nv = (bars.get(t) or (0, 1.0))[1]
+            out.append({"t": t, "i": i, "d": d, "slp": slp, "cl": cl, "flip": True, "awake": True, "nv": nv, "mv2": None,
+                        "i_fire": False, "lvl": cl, "weekday": g.weekday(), "hour": g.hour, "minute": g.minute})
+            j = bisect.bisect_right(rts, t) - 1
+            if t not in S2:
+                S2[t] = S.get(rts[j], (0, 0, None, None)) if j >= 0 else (0, 0, None, None)
+    out.sort(key=lambda o: (o["t"], o["d"]))
+    return out, S2
+
+
+def run_robot_and_parent(parts, parent_parts, PCS, TM, BID, ASK, END, opps, bars, S):
+    """the robot next to its parent; a formula-entry robot runs on its own stream, the parent on the eyes'"""
+    ro, rS = robot_opps(parts, PCS, opps, S, bars)
+    ra = arm_for("robot", parts, bars, rS, PCS, opps=opps)
+    pa = arm_for("parent", parent_parts, bars, S, PCS, opps=opps)
+    if ro is opps:
+        return run_pair([ra, pa], TM, BID, ASK, END, opps, bars)
+    out = run_pair([ra], TM, BID, ASK, END, ro, bars)
+    out.update(run_pair([pa], TM, BID, ASK, END, opps, bars))
+    out["robot"]["signals"] = len(ro)
+    return out
 
 
 def run_pair(arms, TM, BID, ASK, END, opps, bars):
@@ -214,8 +276,7 @@ def run_markets(fast=False):
             t0 = time.time()
             global DRAG
             DRAG = 0.0          # cost: the market's own spread is in bid/ask; BTC's measured slippage does not transfer
-            arms = [arm_for("robot", parts, bars, S, PCS), arm_for("parent", resolve(parent, robots), bars, S, PCS)]
-            out = run_pair(arms, TM, BID, ASK, END, opps, bars)
+            out = run_robot_and_parent(parts, resolve(parent, robots), PCS, TM, BID, ASK, END, opps, bars, S)
             res = {"id": rid, "parent": parent, "parts": parts, "market": sym, "market_name": meta.get("description") or sym,
                    "server": meta.get("server"), "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                    "balance": BAL, "drag": 0.0, "fills": "ticks" if tick else "bars", "risk_factor": meta["m"],
@@ -353,8 +414,7 @@ if __name__ == "__main__":
             missing = [v for k, v in parts.items() if k != "money" and k != "filters" and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
             if missing:
                 print(rid, "skipped: pieces not testable yet", missing, flush=True); continue
-            arms = [arm_for("robot", parts, bars, S, PCS), arm_for("parent", resolve(parent, robots), bars, S, PCS)]
-            out = run_pair(arms, TM, BID, ASK, END, opps, bars)
+            out = run_robot_and_parent(parts, resolve(parent, robots), PCS, TM, BID, ASK, END, opps, bars, S)
             res = {"id": rid, "parent": parent, "parts": parts, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                    "balance": BAL, "drag": DRAG, "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
                    "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[-1]) / 1000))],
