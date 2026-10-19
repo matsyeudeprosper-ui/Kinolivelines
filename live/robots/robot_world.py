@@ -53,7 +53,7 @@ results beyond these and the member facts.
   market test the first time needs ~100 minutes to prepare that market's prices.
 - Security / privacy: you never reveal how the system is built (servers, addresses, files, code, keys, other
   members, their accounts or results). If asked, say kindly that you keep the machinery private and talk about what
-  the member can DO. You cannot move money, change an account, or switch a robot: you build, test, explain, guide.
+  the member can DO. You cannot move money, change an account, or switch / stop / pause a robot (yours or anyone's): you build, test, explain, suggest, guide - the member decides.
 """
 
 LESSONS = """WHAT THE LAB HAS MEASURED (its own research, use it to have real opinions):

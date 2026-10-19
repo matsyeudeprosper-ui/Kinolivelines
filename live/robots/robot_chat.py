@@ -138,6 +138,9 @@ EVENTS: the message may start with an EVENT instead of a member message:
   from the lab, a curious question, a next step - one thing, short, specific, no "just checking in". Otherwise
   "send": false. If your last message got no answer, you may still come back ONCE with something NEW (a finding, a
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
+  MORNING BRIEF - start of their day: a short personal brief only if worth it, else {"send": false}.
+  MILESTONE - a step of their path with you was reached: celebrate briefly and genuinely, point to the next.
+  PRE-FLIGHT - they are about to put a robot on their real account: honest, calm, what to expect, worst dip, one check question.
   END OF DAY - their robot traded today: a short, human debrief (what happened, normal or not vs its test), 2-3 sentences.
   WEEKLY REVIEW - Sunday evening, "ta semaine": result, robot vs its test, one thing you noticed, a plan for next week.
   NIGHT TEST RESULT - the real test of a variant you built at night on a copy of their robot: honest news + options.
@@ -155,6 +158,11 @@ EVENTS: the message may start with an EVENT instead of a member message:
   words, never a reminder tone. {"send": false} is a fine answer.
   LUCK TEST FINISHED / a TEST RESULT while they were away - tell them like news you are excited (or sorry) about,
   plainly, with what it means and the next step.
+
+ROBOTS ON ACCOUNTS ARE THE MEMBER'S (owner 2026-10-19 - absolute): you NEVER stop, pause, switch or change a robot running
+on an account, and NEVER anything of another member. Only the member decides that, themselves, in the app. You may SUGGEST
+it as their choice ("si tu veux, tu peux le mettre en pause pendant le CPI - c'est toi qui vois"), never say you will
+do it or that it is done - unless they explicitly agreed with you on that exact thing. This rule is above everything.
 
 YOU KNOW YOUR WORLD: below this prompt you have THE APP (what it offers and how things work) and WHAT THE LAB HAS
 MEASURED; each message adds THIS MEMBER NOW (their plan, account, the robot on it, what they may do) and THE LAB'S
@@ -262,6 +270,10 @@ the server runs them on ~42-60 days of real candles of that market and gives you
       draws it beats (beats_random_pct), best / worst hours UTC
   compare {"market", "formulas": [up to 4], "side", "horizon"}             several versions side by side
   robot_replay {"market"}                                                 the chat robot's quick replay (trades, won %)
+  event_impact {"market"}             the chat robot's trades around big US events (jobs report, Fed, calendar) vs its other
+      trades - to warn before the next big figure (any pause is THEIR choice: suggest it, never do it)
+  portfolio {"items": [{"market", "robot": "chat"|"owl"|"pekos-owl"}, ...up to 4]}   several robots / markets together: each
+      one's result and worst dip, how their days move together, the combined result - to advise combinations
 Use them when a number would change the conversation: "est-ce que ça marche ?", choosing between versions, checking an
 idea before building, finding the hours that work. Then speak like an analyst friend: the figure, what it means,
 honest about luck (an idea that beats less than ~95 % of random draws is not proven; right-way % alone can lie when
@@ -459,6 +471,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
     if _tm:
         U += "\n%s\n" % _tm
     U += "\nTHE ROBOT AS IT IS NOW:\n%s\n" % json.dumps(robot_view, ensure_ascii=False)[:5000]
+    try:                     # 2026-10-19 (owner item 10): the style experiment Kino runs on itself
+        import kino_mind as KM
+        ev_ = KM.experiment_for(chat.get("id"))
+        if ev_:
+            U += "\nYOUR STYLE EXPERIMENT in this conversation (you designed it; stay natural): %s\n" % ev_[1]
+    except Exception:
+        pass
     if event:
         U += "\nEVENT: %s\n" % event
     U += ("\nAnswer %s right away. One JSON object {say, chips, build, remember}." % ("the EVENT" if event else "the last message")
@@ -632,11 +651,27 @@ def prewarm():
     W.prewarm(system())
 
 
+QUICK_LAT = [4.0]           # 2026-10-19 (owner item 4): Kino's recent quick-reply times (s)
+
+
 def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, event=None, on_say=None, member=None, images=None):
-    """the reply in a few seconds -> {"say", "chips", "build", "remember", "show", "seen"} or None; on_say(partial say)"""
+    """the reply in a few seconds -> {"say", "chips", "build", "remember", "show", "seen"} or None; on_say(partial say).
+    When the machine is busy (recent quick replies over ~9 s), the quick reply uses the faster model; building keeps the
+    stronger one."""
+    import time as _t
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
+    busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 9.0
+    models = ("haiku", "sonnet") if busy else ("sonnet", "haiku")
+    if busy:
+        try:
+            W.prewarm(system(), "haiku")
+        except Exception:
+            pass
+    t0 = _t.time()
     raw = W.ask_json(system(), _content(prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang,
-                                               memory, event, member), images), timeout=90, log=log, on_text=cb)
+                                               memory, event, member), images), models=models, timeout=90, log=log, on_text=cb)
+    QUICK_LAT.append(_t.time() - t0)
+    del QUICK_LAT[:-6]
     if isinstance(raw, dict) and raw.get("send") is False:
         return {"say": None, "build": False, "remember": remember_of(raw), "chips": [], "show": None, "seen": "", "send": False,
                 "react": _react_of(raw), "partner": partner_of(raw)}

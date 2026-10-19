@@ -15416,6 +15416,49 @@ def _companion_tick():
                                      "their robot with your entry '%s'; their own robot untouched) just finished: see the TEST RESULT. Tell "
                                      "them like news, honestly, and propose what to do (adopt it in their robot, keep testing, drop it)."
                                      % nt.get("formula")), kwargs={"notify": True, "important": True}, daemon=True).start()
+            # (1h) 2026-10-19 (owner item 7): milestones of their path - Kino celebrates the new one and points to the next
+            try:
+                if int(now // 900) != int(m.get("path_tick") or 0):
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("path_tick", int(now // 900)))
+                    got = _path_now(u)
+                    P_ = dict(m.get("path") or {})
+                    new = [k_ for k_, _ in PATH_STEPS if k_ in got and k_ not in P_]
+                    first_look = not P_
+                    for k_ in new:
+                        P_[k_] = time.strftime("%Y-%m-%d")
+                    if new:
+                        _mem_note_safe(uid, lambda mm: mm.__setitem__("path", P_))
+                    if new and not first_look and not busy(ch[0]["id"]):
+                        lab = dict(PATH_STEPS)[new[-1]]
+                        nxt = next((lb for k_, lb in PATH_STEPS if k_ not in P_), None)
+                        _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                        threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "MILESTONE reached on their path with you: '%s'. Celebrate it like "
+                                         "a friend (short, genuine, maybe an emoji), and point to the next step%s." % (lab, (" ('%s')" % nxt) if nxt else "")),
+                                         kwargs={"notify": True}, daemon=True).start()
+                # (owner item 9) the portrait: every 21 days, then Kino invites them to correct it
+                if time.time() - float((m.get("portrait") or {}).get("t") or 0) > 21 * 86400 and len(m.get("notes") or []) >= 5 and _active_hour(uid, h0):
+                    def _pt(u=u, uid=uid):
+                        r_ = kino_portrait(u, {})
+                        if r_.get("ok"):
+                            _companion_deliver(u, (chat_list(u).get("chats") or [{}])[0].get("id"),
+                                               "J'ai écrit ce que j'ai compris de toi comme trader (page Kino). Tu me corriges si je me trompe ?", False)
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("portrait", dict(mm.get("portrait") or {}, t=time.time())))
+                    threading.Thread(target=_pt, daemon=True).start()
+            except Exception:
+                pass
+            # (1g) 2026-10-19 (owner item 3): the morning brief - once a day, 07:00-10:00 on their clock, during their usual hours,
+            # only if Kino finds something worth saying (it may stay silent)
+            try:
+                _dkm = time.strftime("%Y-%m-%d", time.gmtime(now))
+                if 7 <= h0 < 10 and _active_hour(uid, h0) and m.get("brief") != _dkm and not busy(ch[0]["id"]) and now - _LAST_SEEN.get(uid, 0) > 120:
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("brief", _dkm))
+                    _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "MORNING BRIEF - it is the start of their day. Using THE WORLD RIGHT NOW, "
+                                     "their account and their robot: send a short personal brief ONLY if something is worth it today (a big figure "
+                                     "in their time, a market in a storm, their robot waiting for something, news from your projects for them) - 2-3 "
+                                     "short sentences, a friend's tone, never a bulletin; otherwise \"send\": false."), kwargs={"notify": True}, daemon=True).start()
+            except Exception:
+                pass
             # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
             try:
                 _dk = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
@@ -15909,6 +15952,73 @@ def _companion_loop():
         time.sleep(120)
 
 
+PATH_STEPS = [("first_chat", "Première conversation avec Kino"), ("first_robot", "Premier robot construit"),
+              ("first_test", "Premier test sur de vrais prix"), ("first_positive", "Premier test positif"),
+              ("first_ghost", "Premier robot en mode fantôme"), ("ghost_week", "Une semaine complète en mode fantôme"),
+              ("own_live", "Ton propre robot sur ton compte"), ("proven", "Un robot prouvé contre le hasard"),
+              ("month_profit", "Un mois en profit")]
+
+
+def _path_now(user):
+    """2026-10-19 (owner item 7): the milestones reached by this member, from their real data"""
+    uid = user.get("id")
+    got = set()
+    ch = chat_list(user).get("chats") or []
+    if any(x.get("n") for x in ch):
+        got.add("first_chat")
+    mine = [r for r in robot_reg().get("robots") or [] if r.get("by_uid") == uid and r.get("id") != "owl"]
+    if mine:
+        got.add("first_robot")
+    for r in mine:
+        t = _robot_test(r["id"]) or {}
+        if t.get("net") is not None:
+            got.add("first_test")
+            if (t.get("net") or 0) > 0:
+                got.add("first_positive")
+        if _proven(r["id"]):
+            got.add("proven")
+    for x in ch[:10]:
+        c = _chat_load(user, x["id"]) or {}
+        for g in c.get("ghosts") or []:
+            got.add("first_ghost")
+            if time.time() - float(g.get("started") or time.time()) >= 7 * 86400:
+                got.add("ghost_week")
+    try:
+        A = acct_robot_block(user, is_admin(user))
+        cur = (A.get("current") or {}).get("id")
+        if cur and any(r["id"] == cur for r in mine):
+            got.add("own_live")
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        if (nd.get("month") or 0) > 0 and time.gmtime().tm_mday >= 25:
+            got.add("month_profit")
+    except Exception:
+        pass
+    return got
+
+
+def kino_correct(user, body):
+    """the member corrects Kino's portrait of them (owner item 9) - it goes straight into Kino's memory"""
+    t = str(body.get("text") or "").strip()[:400]
+    if not t:
+        return {"ok": False}
+    _mem_add(user.get("id"), ["The member corrected my view of them: " + t])
+    _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("portrait_fix", t))
+    return {"ok": True}
+
+
+def kino_portrait(user, body):
+    """rewrite Kino's portrait of the member now (button on the Kino page)"""
+    _rc()
+    import kino_mind as _KM
+    mem = _chat_memory(user, None)
+    ch = chat_list(user).get("chats") or []
+    c = (_chat_load(user, ch[0]["id"]) if ch else None) or {"msgs": []}
+    pt = _KM.member_portrait(mem.get("notes") or [], mem.get("projects") or [], _rc().transcript(c), _mem_get(user.get("id")).get("portrait_fix"))
+    if pt:
+        _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("portrait", pt))
+    return {"ok": bool(pt)}
+
+
 def kino_data(user):
     """2026-10-19 (owner): the 'Kino' page - for a member: the goal Kino pursues with them, what it remembers about them
     (they can make it forget a note), the lab's playbook; for the owner also Kino's mind (lessons, self-model, journal)"""
@@ -15930,6 +16040,15 @@ def kino_data(user):
     except Exception:
         notes_t, ins_t = notes, ins
     out = {"goal": g or None, "notes": notes_t, "playbook": ins_t, "admin": is_admin(user)}
+    try:
+        P_ = m.get("path") or {}
+        out["path"] = [{"k": k_, "label": lb, "date": P_.get(k_)} for k_, lb in PATH_STEPS]
+        pt = dict(m.get("portrait") or {})
+        if pt.get("text"):
+            pt["text"] = _KM.translate([pt["text"]], lang)[0]
+        out["portrait"] = pt or None
+    except Exception:
+        pass
     try:
         out["feed"] = json.load(open(_KM.FEED, encoding="utf-8"))
     except Exception:
@@ -16652,6 +16771,39 @@ def chat_apply(user, body):
     return {"ok": bool(_chat_mut(c["id"], put))}
 
 
+def kino_preflight(user, body):
+    """2026-10-19 (owner item 8): before a member puts a robot on their account, Kino's pre-flight in the confirm sheet:
+    what to expect, the worst dip in its test, what would make THEM want to stop it (their decision), one check question"""
+    rid = str(body.get("rid") or "")
+    reg = robot_reg()
+    r = next((x for x in reg.get("robots") or [] if x.get("id") == rid), None)
+    if r is None and rid != "owl":
+        return {"ok": False}
+    tst = _robot_test(rid) or {}
+    cl = _random_ctl(rid, "BTCUSD") or {}
+    A = acct_robot_block(user, is_admin(user))
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", user.get("id") + ".json"), encoding="utf-8"))
+    except Exception:
+        nd = {}
+    facts = ("robot '%s' (%s), market %s; its 42-day test: %+.2f $ over %s trades, win rate %s, worst dip %.0f $, longest losing streak %s; "
+             "luck test: %s; the account now runs '%s', balance %.2f $" % (
+                 (r or {}).get("name_fr") or rid, "their own robot" if (r or {}).get("by_uid") == user.get("id") else "someone else's / the nest's",
+                 (r or {}).get("market") or "BTCUSD", tst.get("net") or 0, tst.get("trades"), tst.get("win_rate"), float(tst.get("cc_dd") or 0),
+                 tst.get("max_loss_streak"), ("passed" if (cl.get("seeds") or 0) >= 100 and (cl.get("beats") or 0) <= 5 else
+                                              "not passed yet (%s draws, %s as good)" % (cl.get("seeds"), cl.get("beats")) if cl else "not done"),
+                 (A.get("current") or {}).get("name_fr"), nd.get("balance") or 0))
+    ch = chat_list(user).get("chats") or []
+    c = (_chat_load(user, ch[0]["id"]) if ch else None) or {"msgs": []}
+    c = dict(c, msgs=list(c.get("msgs") or [])[-10:])
+    q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", markets=_chat_markets(user), memory=_chat_memory(user, None),
+                    event="PRE-FLIGHT - the member is about to put this robot on their REAL account (they are on the confirm screen). Facts: %s. "
+                          "In 3-4 short sentences, as their friend: what to expect from it (trades, a normal losing streak), the worst "
+                          "dip in its test in dollars, what could make them want to stop it later (their decision, in the app), and ONE "
+                          "simple check question. Calm, honest, no pressure either way." % facts, member=_chat_member(user, c))
+    return {"ok": True, "say": (q or {}).get("say") or ""}
+
+
 def chat_show(user, body):
     """the member marked the chart: buy / sell / stop / exit / line points + a note -> the AI reads them"""
     c = _chat_load(user, str(body.get("id") or ""))
@@ -17061,6 +17213,13 @@ def account_robot_set(user, body, admin=False):
             json.dump(PK, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             os.replace(tmp, pp)
         return {"ok": True, "cancelled": True}
+    try:            # 2026-10-19 (owner item 8): the decision goes into the robot's notebook (the member's latest conversation)
+        _ch = chat_list(user).get("chats") or []
+        if _ch:
+            _nmr = (next((x for x in robot_reg().get("robots") or [] if x.get("id") == rid), {}) or {}).get("name_fr") or rid
+            _chat_mut(_ch[0]["id"], lambda c: c.setdefault("notebook", []).append({"t": int(time.time()), "text": "Tu as mis « %s » sur ton compte." % _nmr}))
+    except Exception:
+        pass
     if _acct_flat(uid):
         return acct_robot_apply(uid, rid)
     with _ACCT_LOCK:
@@ -21731,7 +21890,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -21750,7 +21909,8 @@ class H(BaseHTTPRequestHandler):
                        "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
-                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost}[_parts[1]]
+                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
+                       "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

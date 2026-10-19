@@ -44,6 +44,16 @@ def _refresh():
                            "impact": str(x.get("impact"))[:8], "forecast": str(x.get("forecast") or "")[:12],
                            "previous": str(x.get("previous") or "")[:12]} for x in cal if x.get("impact") in ("High", "Medium")][:80]
             out["cal_t"] = int(time.time())
+            try:                # 2026-10-19 (owner item 6): keep the high-impact events for the news impact studies
+                hp = os.path.join(os.path.dirname(CACHE), "cal_history.json")
+                H = json.load(open(hp, encoding="utf-8")) if os.path.exists(hp) else []
+                seen = {(h["title"], h["date"]) for h in H}
+                for x in out["cal"]:
+                    if x["impact"] == "High" and (x["title"], x["date"]) not in seen:
+                        H.append({"title": x["title"], "cc": x["cc"], "date": x["date"]})
+                json.dump(H[-2000:], open(hp, "w", encoding="utf-8"), ensure_ascii=False)
+            except Exception:
+                pass
         except Exception:
             pass
         try:

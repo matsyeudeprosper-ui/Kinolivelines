@@ -18,7 +18,7 @@ import numpy as np
 import robot_demo as RD
 import robot_expr as X
 
-TOOLS = ("idea_stats", "compare", "robot_replay")
+TOOLS = ("idea_stats", "compare", "robot_replay", "event_impact", "portfolio")
 
 
 def _fwd(R, idx, side, h):
@@ -109,6 +109,112 @@ def robot_replay(market, rules, rr=0.8):
             "note": "quick replay on candles: no costs, no brakes - the real test decides"}
 
 
+# ---------------------------------------------------------------- 2026-10-19 (owner items 6 and 5)
+FOMC = ["2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09",
+        "2025-09-17", "2025-10-29", "2025-12-10"]
+
+
+def _us_dst(dt):
+    import datetime as _d
+    y = dt.year
+    m2 = _d.date(y, 3, 8); start = m2 + _d.timedelta(days=(6 - m2.weekday()) % 7)
+    n1 = _d.date(y, 11, 1); end = n1 + _d.timedelta(days=(6 - n1.weekday()) % 7)
+    return start <= dt.date() < end
+
+
+def _events(t0, t1):
+    """big US events between t0 and t1 (epoch): jobs report (first Friday, 08:30 New York), Fed decisions (14:00 New York),
+    plus every high-impact event of the archived calendar"""
+    import datetime as _d, os as _o, json as _j
+    out = []
+    d = _d.datetime.utcfromtimestamp(t0).replace(day=1, hour=0, minute=0, second=0)
+    while d.timestamp() < t1:
+        f = d + _d.timedelta(days=(4 - d.weekday()) % 7)
+        h = 12 if _us_dst(f) else 13
+        out.append(("Emploi US (NFP)", int(f.replace(hour=h, minute=30).timestamp())))
+        d = (d + _d.timedelta(days=32)).replace(day=1)
+    for s_ in FOMC:
+        f = _d.datetime.strptime(s_, "%Y-%m-%d")
+        out.append(("Décision de la Fed", int(f.replace(hour=18 if _us_dst(f) else 19).timestamp())))
+    try:
+        for h in _j.load(open(_o.path.join(RD.CACHE, "cal_history.json"), encoding="utf-8")):
+            if h.get("cc") in ("USD", "All"):
+                out.append((h["title"], int(_d.datetime.fromisoformat(h["date"]).timestamp())))
+    except Exception:
+        pass
+    return sorted(set(e for e in out if t0 <= e[1] <= t1), key=lambda e: e[1])
+
+
+def event_impact(market, rules, rr=0.8, before=30, after=60):
+    """the robot's quick-replay trades opened around big US events vs all its other trades"""
+    ex = RD.examples(market, rules, 1, [], rr, "all")
+    if ex is None:
+        RD.fetch(market)
+        return {"error": "no candles for %s yet - being fetched" % market}
+    T = ex.get("all") or []
+    if not T:
+        return {"market": market, "trades": 0}
+    ev = _events(T[0]["t_in"] - 86400, T[-1]["t_out"] + 86400)
+    near, other = [], []
+    for t in T:
+        hit = next((e for e in ev if e[1] - before * 60 <= t["t_in"] <= e[1] + after * 60), None)
+        (near if hit else other).append(dict(t, ev=hit[0] if hit else None))
+    st = lambda L: {"trades": len(L), "won_pct": round(100.0 * sum(1 for x in L if x["r"] > 0) / len(L), 1) if L else None,
+                    "avg_r": round(sum(x["r"] for x in L) / len(L), 2) if L else None, "sum_r": round(sum(x["r"] for x in L), 2)}
+    return {"market": market, "window": "%d min before to %d min after" % (before, after), "events_in_data": len(ev),
+            "around_events": st(near), "other_trades": st(other), "examples": [{"event": x["ev"], "r": x["r"]} for x in near[:6]],
+            "note": "quick replay, no costs; few events = a small sample. Any pause is the MEMBER's choice - suggest, never do."}
+
+
+def portfolio(items, ctx):
+    """several robots / markets together: each one's result and worst dip (in R), how much their days move together,
+    and the combined result - which ones complement each other"""
+    import math
+    rows, series = [], {}
+    for it in (items or [])[:4]:
+        mk = str(it.get("market") or ctx.get("market") or "BTCUSD")[:20]
+        who = str(it.get("robot") or "chat")
+        if who == "chat":
+            rules, rr = ctx.get("rules") or {}, ctx.get("rr") or 0.8
+        else:
+            rules, rr = {"entry": {"event": "any"}, "stop": {"kind": "protected"}}, (1.0 if who == "pekos-owl" else 0.8)
+        ex = RD.examples(mk, rules, 1, [], rr, "all")
+        if ex is None:
+            RD.fetch(mk)
+            rows.append({"item": "%s@%s" % (who, mk), "error": "no candles yet"})
+            continue
+        day = {}
+        for t in ex.get("all") or []:
+            k = t["t_out"] // 86400
+            day[k] = day.get(k, 0) + t["r"]
+        eq = peak = dd = 0.0
+        for k in sorted(day):
+            eq += day[k]; peak = max(peak, eq); dd = max(dd, peak - eq)
+        key = "%s@%s" % (who, mk)
+        series[key] = day
+        rows.append({"item": key, "trades": ex["count"], "sum_r": round(sum(day.values()), 2), "worst_dip_r": round(dd, 2)})
+    keys = list(series)
+    corr = []
+    for i in range(len(keys)):
+        for j in range(i + 1, len(keys)):
+            a, b = series[keys[i]], series[keys[j]]
+            ds = sorted(set(a) | set(b))
+            x = [a.get(k, 0) for k in ds]; y = [b.get(k, 0) for k in ds]
+            mx, my = sum(x) / len(x), sum(y) / len(y)
+            num = sum((p - mx) * (q - my) for p, q in zip(x, y))
+            den = math.sqrt(sum((p - mx) ** 2 for p in x) * sum((q - my) ** 2 for q in y)) or 1
+            corr.append({"pair": "%s + %s" % (keys[i], keys[j]), "daily_correlation": round(num / den, 2)})
+    comb = {}
+    for d_ in series.values():
+        for k, v in d_.items():
+            comb[k] = comb.get(k, 0) + v
+    eq = peak = dd = 0.0
+    for k in sorted(comb):
+        eq += comb[k]; peak = max(peak, eq); dd = max(dd, peak - eq)
+    return {"items": rows, "correlations": corr, "combined": {"sum_r": round(sum(comb.values()), 2), "worst_dip_r": round(dd, 2)},
+            "note": "R = multiples of each trade's risk; low or negative correlation + both positive = they complement each other"}
+
+
 def run(calls, ctx):
     """[(name, args)] -> [{"tool", "args", "result"}]; ctx = {"market", "rules", "rr"} of the chat"""
     out = []
@@ -123,6 +229,10 @@ def run(calls, ctx):
                 r = idea_stats(mk, str(a.get("formula") or "")[:400], a.get("side") or "buy", a.get("horizon") or 30)
             elif c["name"] == "compare":
                 r = compare(mk, [str(f)[:400] for f in (a.get("formulas") or [])][:4], a.get("side") or "buy", a.get("horizon") or 30)
+            elif c["name"] == "event_impact":
+                r = event_impact(mk, ctx.get("rules") or {}, ctx.get("rr") or 0.8)
+            elif c["name"] == "portfolio":
+                r = portfolio(a.get("items") or [], ctx)
             else:
                 r = robot_replay(mk, ctx.get("rules") or {}, ctx.get("rr") or 0.8)
         except Exception as e:

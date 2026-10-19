@@ -1970,4 +1970,13 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
  document.getElementById('owlnav').innerHTML=L.map(x=>'<a href="'+x[1]+'" class="'+(x[0]===cur?'on':'')+'"'+(x[0]===cur?' aria-current="page"':'')+'>'+svg(I[x[0]])+'<span>'+x[2]+'</span></a>').join('');
 })();
 </script>
-<script src="kino_fab.js"></script></body></html>
+<script>
+/* 2026-10-19 (owner item 8): Kino's pre-flight on the confirm sheet before a robot goes on the account */
+(function(){if(typeof arbAsk!=='function')return;const _a=arbAsk;window.arbAsk=arbAsk=function(id){_a(id);try{const A=RB.acct;if(id===(A.current||{}).id)return;
+ const box=document.querySelector('.arbc');if(!box)return;const d=document.createElement('div');d.className='kpre';
+ d.style.cssText='display:flex;gap:10px;align-items:flex-start;padding:12px;margin:0 0 12px;border-radius:14px;border:1px solid rgba(167,139,250,.4);background:linear-gradient(135deg,rgba(109,92,246,.12),rgba(59,130,246,.06))';
+ d.innerHTML='<span style="width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#6d5cf6,#3b82f6)">🦉</span><span style="font-size:.88rem;line-height:1.5"><b>Kino</b><br><span class="kpt" style="color:var(--muted,#8a9bb0)">…</span></span>';
+ box.insertBefore(d,box.firstChild);
+ fetch(location.pathname.replace(/[^/]*$/,'')+'kino_preflight',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rid:id})}).then(r=>r.json()).then(j=>{
+  const t=d.querySelector('.kpt');if(j&&j.ok&&j.say){t.style.color='';t.textContent=j.say;}else d.remove();}).catch(()=>d.remove());}catch(e){}};})();
+</script><script src="kino_fab.js"></script></body></html>

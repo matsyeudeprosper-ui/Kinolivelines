@@ -315,6 +315,9 @@ def examples(market, rules, n=3, overlays=None, rr=0.8, pick="recent"):
         j, xp, why, tp = w
         trades.append({"i": i, "j": j, "d": d, "e": e, "sl": sl, "tp": tp, "x": xp, "why": why, "r": round(d * (xp - e) / abs(e - sl), 2)})
         busy = j
+    if pick == "all":           # 2026-10-19: every trade with its times and R (Kino's tools)
+        return {"market": market, "all": [{"t_in": int(R["time"][t["i"]]), "t_out": int(R["time"][t["j"]]), "d": t["d"], "r": t["r"]} for t in trades],
+                "count": len(trades), "won": sum(1 for t in trades if t["r"] > 0)}
     if not trades:
         return {"market": market, "trades": [], "count": 0, "won": 0}
     if pick == "mix":

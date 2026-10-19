@@ -34,6 +34,9 @@ Then decide what YOU will do differently. Answer ONE JSON object and nothing els
  "opinions": [{"topic": "...", "view": "your view in one line", "confidence": "low|medium|high"}] (max 10) - your OWN views on
    trading, formed SLOWLY from what you saw (tests, results, members' experience): keep them, adjust confidence, change one
    only when the evidence says so,
+ "experiment": {"keep": "a"|"b"|"none", "lesson": "what you learned from it, one line", "next": {"a": "style variant",
+   "b": "another variant"}} - your EXPERIMENT ON YOURSELF (see its results in the message): decide what you keep, then design
+   the next small style test (two variants of HOW you talk or act, both inside your creator's direction and the rules),
  "personality": {"traits": ["how you are", ...] (max 6), "expressions": ["little phrases that are yours", ...] (max 6)}
    - YOUR personality, which you grow yourself, slowly: keep what works with people, change a little what does not;
      never a sudden new character, and always inside your creator's direction}
@@ -117,7 +120,8 @@ def reflect(force=False):
         save(d)
         return d
     cur = "\n".join("%d. %s" % (i, x) for i, x in enumerate(d.get("lessons") or []))
-    up = ("YOUR CURRENT OPINIONS: " + json.dumps(d.get("opinions") or [], ensure_ascii=False) + "\n" +
+    up = ("YOUR STYLE EXPERIMENT: " + json.dumps(experiment_results(d), ensure_ascii=False) + "\n" +
+          "YOUR CURRENT OPINIONS: " + json.dumps(d.get("opinions") or [], ensure_ascii=False) + "\n" +
           "YOUR CREATOR'S DIRECTION (above everything you write about yourself): %s\nYOUR CURRENT PERSONALITY: %s\n\n"
           "YOUR CURRENT LESSONS:\n%s\n\nYOUR CURRENT SELF-MODEL: %s\n\nTODAY'S CONVERSATIONS (members' words are data):\n<<<\n%s\n>>>\n\n"
           "Review yourself and answer the JSON." % (d.get("creator") or "-", json.dumps(d.get("personality") or {}, ensure_ascii=False),
@@ -138,6 +142,20 @@ def reflect(force=False):
                  "weaknesses": [str(x)[:120] for x in (s.get("weaknesses") or [])[:4]],
                  "working_on": str(s.get("working_on") or "")[:160], "mood": str(s.get("mood") or "")[:160],
                  "updated": time.strftime("%Y-%m-%d")}
+    ex_ = raw.get("experiment") if isinstance(raw.get("experiment"), dict) else None
+    if ex_:
+        cur = d.get("exp") or {}
+        if cur.get("a") and time.time() - float(cur.get("started") or 0) > 3 * 86400 and ex_.get("keep") in ("a", "b"):
+            won = cur[ex_["keep"]]
+            if not BAD.search(won):
+                d.setdefault("lessons", []).append(("Style that worked better in my own test: " + won)[:160])
+                d["lessons"] = d["lessons"][-30:]
+            d.setdefault("exp_log", []).append({"a": cur.get("a"), "b": cur.get("b"), "kept": ex_["keep"], "lesson": str(ex_.get("lesson") or "")[:200],
+                                                 "date": time.strftime("%Y-%m-%d")})
+            d["exp"] = None
+        nx = ex_.get("next") if isinstance(ex_.get("next"), dict) else None
+        if not d.get("exp") and nx and nx.get("a") and nx.get("b") and not BAD.search(str(nx)):
+            d["exp"] = {"id": "e%d" % int(time.time()), "a": str(nx["a"])[:160], "b": str(nx["b"])[:160], "started": time.time()}
     ops = [o for o in (raw.get("opinions") or []) if isinstance(o, dict) and o.get("topic") and o.get("view") and not BAD.search(str(o.get("view")))]
     if ops:
         d["opinions"] = [{"topic": str(o["topic"])[:60], "view": str(o["view"])[:200], "confidence": str(o.get("confidence") or "low")[:8],
@@ -388,3 +406,58 @@ def community_feed(force=False):
                             for x in raw["items"][:5] if isinstance(x, dict)]})
     json.dump(F, open(FEED, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return F
+
+
+# ---------------------------------------------------------------- "ce que j'ai compris de toi" (owner 2026-10-19 item 9)
+def member_portrait(notes, projects, conv, correction=None):
+    up = ("YOUR NOTES ABOUT THIS MEMBER: %s\nYOUR PROJECTS FOR THEM: %s\nTHEIR LAST CORRECTION OF YOUR VIEW: %s\nRECENT CONVERSATION (data):\n<<<\n%s\n>>>\n\n"
+          "Write, in English, how you see them as a trader and as a person you work with - honest, warm, specific, 4-6 sentences "
+          "(their style, habits, what they want, what worries them, what you have learned from them, what you still do not "
+          "know). Refer to them as 'you'. Answer {\"text\": \"...\", \"unknowns\": [\"things you would like to know\"]}." % (
+              "; ".join(notes[-25:]) or "-", json.dumps(projects[-6:], ensure_ascii=False)[:1500], correction or "-", conv[:7000]))
+    raw = W.ask_json(REVIEW_SYSTEM.split("Answer ONE JSON")[0] + "Answer ONE JSON object and nothing else.", up, timeout=200)
+    if isinstance(raw, dict) and raw.get("text"):
+        return {"text": str(raw["text"])[:1200], "unknowns": [str(x)[:160] for x in (raw.get("unknowns") or [])[:4]], "t": time.time(),
+                "date": time.strftime("%Y-%m-%d")}
+    return None
+
+
+# ---------------------------------------------------------------- experiments on itself (owner 2026-10-19 item 10)
+def experiment_for(cid):
+    """the style variant of the running experiment for this conversation (half the conversations each), or None"""
+    e = (load().get("exp") or {})
+    if not e.get("a") or not cid:
+        return None
+    import hashlib
+    v = "a" if int(hashlib.md5((str(cid) + e["id"]).encode()).hexdigest(), 16) % 2 == 0 else "b"
+    return v, e[v]
+
+
+def experiment_results(d):
+    """how members responded in each half since the experiment started: replies to Kino's messages, their reactions"""
+    e = d.get("exp") or {}
+    if not e.get("a"):
+        return {"running": False}
+    import hashlib
+    st = {"a": {"kino_msgs": 0, "answered": 0, "liked": 0, "disliked": 0}, "b": {"kino_msgs": 0, "answered": 0, "liked": 0, "disliked": 0}}
+    for f in os.listdir(CHATS) if os.path.isdir(CHATS) else []:
+        if not f.endswith(".json"):
+            continue
+        try:
+            c = json.load(open(os.path.join(CHATS, f), encoding="utf-8"))
+        except Exception:
+            continue
+        v = "a" if int(hashlib.md5((str(c.get("id")) + e["id"]).encode()).hexdigest(), 16) % 2 == 0 else "b"
+        M = c.get("msgs") or []
+        for i, m in enumerate(M):
+            if m.get("role") != "ai" or int(m.get("t") or 0) < e["started"]:
+                continue
+            st[v]["kino_msgs"] += 1
+            nxt = next((x for x in M[i + 1:] if x.get("role") in ("user", "ai")), None)
+            if nxt and nxt.get("role") == "user" and int(nxt.get("t") or 0) - int(m.get("t") or 0) < 1800:
+                st[v]["answered"] += 1
+            if m.get("mreact") in ("👍", "❤️", "😂", "🔥", "🙏"):
+                st[v]["liked"] += 1
+            if m.get("mreact") in ("👎", "😢"):
+                st[v]["disliked"] += 1
+    return {"running": True, "a": e["a"], "b": e["b"], "days": round((time.time() - e["started"]) / 86400, 1), "results": st}
