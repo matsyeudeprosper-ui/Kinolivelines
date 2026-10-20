@@ -15006,6 +15006,10 @@ def _robot_set(c, new, src, quiet=False):
     c["robot"] = new
     c["rev"] = int(c.get("rev") or 0) + 1
     d = _robot_diff(old, new) if old else []
+    if not old or any(x["slot"] in ("entry", "market") for x in d):     # the idea of THIS robot, in the member's own words
+        U = [str(m.get("text") or "") for m in (c.get("msgs") or []) if m.get("role") in ("user", "doc") and str(m.get("text") or "").strip()][-2:]
+        if U:
+            c["idea"] = {"t": int(time.time()), "text": U, "robot": (new or {}).get("name")}
     if d and not quiet:
         _chat_msg(c, "change", diff=d, rev=c["rev"], src=src)
     return d
