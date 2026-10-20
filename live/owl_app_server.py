@@ -14983,6 +14983,24 @@ def _partner_apply(user, cid, pa):
     if not pa:
         return
     uid = user.get("id")
+    if cid and any(k in pa for k in ("thread", "aside", "later", "later_used")):      # 2026-10-20: the conversation's flow
+        def putf(cc):
+            if pa.get("thread"):
+                cc["thread"] = pa["thread"]
+                cc["aside_n"] = 0
+            if "aside" in pa:
+                cc["aside_n"] = (int(cc.get("aside_n") or 0) + 1) if pa["aside"] else 0
+            Lt = cc.get("later") or []
+            if pa.get("later_used"):
+                w_ = set(_rc_norm(pa["later_used"]).split())
+                Lt = [x for x in Lt if len(w_ & set(_rc_norm(x.get("text")).split())) < max(2, len(w_) // 2)]
+            if pa.get("later"):
+                Lt = (Lt + pa["later"])[-6:]
+            cc["later"] = Lt
+        try:
+            _chat_mut(cid, putf)
+        except Exception:
+            pass
     if pa.get("watch") or pa.get("watch_cancel") or pa.get("draw"):      # 2026-10-19 (owner list-4 items 1 and 2)
         def putw(mm):
             W_ = mm.get("watches") or []

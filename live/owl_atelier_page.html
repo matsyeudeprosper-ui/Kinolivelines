@@ -322,7 +322,7 @@ header .ib{border:0;background:transparent;width:36px}
   <header>
    <a class="ib" href="robots" id="bk" aria-label="Retour"><svg><use href="#back"/></svg></a>
    <div class="kav" onclick="location.href='kino'">🦉<i></i></div><div class="ttl" id="ttl" onclick="renameSh()"><b><span id="tn">Kino</span></b><small id="ts">en ligne</small></div>
-   <button class="ib" onclick="srchOpen()" aria-label="Chercher dans la conversation" title="Chercher" style="font-size:16px">🔍</button><button class="ib" onclick="callStart()" aria-label="Appeler Kino" title="Appeler Kino" style="font-size:18px">📞</button><button class="ib" onclick="noteSh()" aria-label="Le carnet du robot" title="Le carnet du robot" style="font-size:18px">📓</button><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button>
+   <button class="ib" onclick="callStart()" aria-label="Appeler Kino" title="Appeler Kino" style="font-size:18px">📞</button><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button><button class="ib" onclick="moreSh(this)" aria-label="Plus" title="Plus" style="font-size:20px;font-weight:800">⋮</button>
    <button class="ring" onclick="bpSh()" aria-label="Le plan du robot"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="rf" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg><b id="rn">0/6</b></button>
   </header>
   <div id="srch"><button onclick="srchClose()" aria-label="Fermer">←</button><input id="sq" placeholder="Chercher dans la conversation" oninput="srchRun()" enterkeyhint="search"><small id="sn"></small><button onclick="srchStep(-1)" aria-label="Précédent">⌃</button><button onclick="srchStep(1)" aria-label="Suivant">⌄</button></div>
@@ -797,6 +797,11 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
  if(q.get('ask')){const ask=q.get('ask');history.replaceState(null,'',location.pathname+(CID?'?c='+CID:''));let n=0;const w=setInterval(()=>{n++;if(CID&&C&&C.status!=='thinking'){clearInterval(w);$('tx').value=ask;send();}else if(n>40)clearInterval(w);},300);}
  getJ('robots_data').then(j=>{PIECES=((j.builder||{}).pieces)||[];const owl=((j.builder||{}).robots||[]).find(r=>r.id==='owl');OWL=(owl&&(owl.resolved||owl.parts))||{};if(C)paintBP();}).catch(()=>{});})();
 
+/* ---------- 2026-10-20: the header's "more" menu (search, notebook) - the name keeps its room */
+function moreSh(btn){rxClose();const r=btn.getBoundingClientRect(),d=document.createElement('div');d.id='rxbar';d.className='lpm';
+ d.innerHTML='<button class="it" data-a="s">🔍&nbsp; '+T('Chercher dans la conversation','Search the conversation')+'</button><button class="it" data-a="n">📓&nbsp; '+T('Le carnet du robot','The robot’s notebook')+'</button><button class="it" data-a="k">🦉&nbsp; '+T('Kino et toi','Kino and you')+'</button>';
+ document.body.appendChild(d);d.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{rxClose();({s:srchOpen,n:noteSh,k:()=>{location.href='kino';}})[x.dataset.a]();});
+ const w=d.offsetWidth;d.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px';d.style.top=(r.bottom+6)+'px';}
 /* ---------- 2026-10-20 (owner: the chat's look and ease of use) */
 let REPLY=null,NEWUP=0,CHIPKEY='',CHIPDONE='',SWX={moved:false},HITS=[],HITI=-1,FS=null;
 let SND=true;try{SND=localStorage.getItem('kinoSnd')!=='0';}catch(e){}

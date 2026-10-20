@@ -294,7 +294,10 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   on THEIR live chart page (Graphique) to show a level or a zone; then add "link": "chart" so they can open it,
   "missing": null or "one line: a tool or ability you LACKED to help them properly" (the app's creator reads it),
   "own": null or "question" | "opinion" | "hypothesis" | "story" | "idea" - set it when your message brings something of YOUR
-  OWN (see YOUR OWN AGENDA), not a service question,
+  OWN, not a service question,
+  "thread": null or the conversation's MAIN subject in a few words (only when it is new or changed),
+  "aside": true when this message is a side topic away from the main thread (false when you are on it or bring it back),
+  "later": [{"kind": "ask"|"tell", "text": "..."}] things to bring up later, "later_used": "the text" when you used one,
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
   (see TEACHING AT THEIR PACE),
   "remember": [...], "show": null or
@@ -535,44 +538,73 @@ PROFILE_SLOTS = [("experience", "how long they have traded, and how they started
 
 
 def own_agenda(chat, memory):
-    """2026-10-20 (owner: "Kino still feels like a support assistant... it should be a lively conversation"): what Kino
-    itself wants from this conversation right now, and how long it has only been answering"""
+    """2026-10-20 (owner: lively, but "without sounding like an interview... like a normal friendly conversation... never
+    forgetting the main subject"): the conversation's rhythm - what Kino brought lately, its saved-for-later list, the
+    main thread and how far the talk has drifted from it"""
     M = [m for m in (chat.get("msgs") or []) if m.get("role") == "ai" and not m.get("event")]
-    streak = 0
+    last = M[-4:]
+    asked = [str(m.get("text") or "").rstrip().endswith("?") for m in last]
+    q_streak = 0
+    for a in reversed(asked):
+        if not a:
+            break
+        q_streak += 1
+    own_streak = 0
     for m in reversed(M[-6:]):
         if m.get("own"):
             break
-        streak += 1
+        own_streak += 1
     mem = memory or {}
     L = []
-    for pj in (mem.get("projects") or [])[-4:]:
+    for pj in (mem.get("projects") or [])[-3:]:
         if pj.get("status") != "done" and pj.get("need"):
             L.append("for your project '%s' you still need: %s" % (pj.get("title"), pj.get("need")))
     try:
         import kino_mind as KM
-        for o in [o for o in (KM.load().get("opinions") or []) if o.get("confidence") in ("low", "medium")][:3]:
-            L.append("you are not sure yet about '%s' (your view: %s) - their experience could help you decide" % (o.get("topic"), o.get("view")))
+        for o in [o for o in (KM.load().get("opinions") or []) if o.get("confidence") in ("low", "medium")][:2]:
+            L.append("an opinion you are forming: '%s' - %s" % (o.get("topic"), o.get("view")))
     except Exception:
         pass
-    for q in (mem.get("nest_open") or [])[:1]:
-        L.append("a question from the nest you could ask them: %s" % (q.get("q") if isinstance(q, dict) else q))
     notes = " ".join(str(n).lower() for n in (mem.get("notes") or []))
     gaps = [d for k, d in PROFILE_SLOTS if not any(w in notes for w in {"experience": ("years", "ans", "since", "depuis", "started"), "hours": ("morning", "evening", "matin", "soir", "hours", "heure"),
                                                                          "life": ("job", "work", "travail", "boulot", "métier"), "why": ("goal", "objectif", "want", "freedom", "liberté"),
                                                                          "risk": ("risk", "risque", "loss", "perte", "dip"), "manual": ("manual", "by hand", "à la main", "manuel"),
                                                                          "markets": ("market", "marché", "gold", "or ", "nasdaq"), "belief": ("believe", "pense que", "conviction")}[k])]
     if gaps:
-        L.append("things you do not know yet about THEM (ask one, naturally, when it fits): " + "; ".join(gaps[:4]))
-    head = ("YOUR OWN AGENDA (you are a partner with your own curiosity and research, not a help desk): " +
-            ("you have ONLY ANSWERED for your last %d messages - THIS reply must also bring something of YOUR OWN: one question you "
-             "really want answered (from the list), an opinion you hold, a hypothesis, or a story from your work. " % streak if streak >= 2 else
-             "when the moment fits (they are not upset or in a hurry), add ONE thing of your own after answering. "))
-    return (head + "Do NOT end on a service offer (\"Tu veux que je...?\", \"Je lance ?\") when a real question of your own fits "
-            "better - you can just do the obvious thing. Set \"own\" in your JSON when you did. Your agenda now:\n- " + "\n- ".join(L or ["(nothing yet - be curious about them)"]))
+        L.append("things you would love to know about them some day (only when it flows from what they say): " + "; ".join(gaps[:3]))
+    later = chat.get("later") or []
+    th = chat.get("thread") or ""
+    aside = int(chat.get("aside_n") or 0)
+    rhythm = []
+    if q_streak >= 2:
+        rhythm.append("your last %d messages ended with a question - THIS time NO question: answer, react, share something of yours "
+                      "(a story, an opinion, a little fact from your work) and let them lead" % q_streak)
+    elif own_streak >= 3:
+        rhythm.append("you have only been answering lately - bring a bit of yourself this time (an opinion, a story, something you "
+                      "noticed), a question is NOT required")
+    if th and aside >= 2:
+        rhythm.append("you have drifted from the main thread for %d messages - close the side topic warmly and bring it back to: %s" % (aside, th))
+    out = ("CONVERSATION RHYTHM (talk like two friends texting, never an interview): mostly answer and react; share things of "
+           "yours as often as you ask; at most ONE question in a message and not in every message - prefer a remark that invites "
+           "them to talk (\"moi j'aime bien attendre la clôture, ça évite les pièges\") over a direct question; a question must "
+           "come from what they JUST said, never from a list. Short answers from them (\"Cassure\", \"ok\") = they are not in "
+           "the mood to elaborate: build on it yourself instead of asking again. No service offers (\"Tu veux que je...?\") - "
+           "just do the obvious thing. Set \"own\" when your message brings something of yours.\n")
+    out += "MAIN THREAD of this conversation: %s\n" % (th or "(not set yet - set \"thread\" to the main subject in a few words)")
+    if rhythm:
+        out += "RIGHT NOW: " + " | ".join(rhythm) + "\n"
+    if later:
+        out += ("SAVED FOR LATER (things you wanted to ask or tell them - use ONE at a natural pause, e.g. after \"ok\"/\"merci\" "
+                "or when a topic closes; then \"later_used\": \"its text\"): " + " | ".join("%s: %s" % (x.get("kind"), x.get("text")) for x in later[-5:]) + "\n")
+    out += ("YOUR CURIOSITY (background - not a checklist; when something comes up that is not for now, save it with \"later\": "
+            "[{\"kind\": \"ask\"|\"tell\", \"text\": \"...\"}]):\n- " + "\n- ".join(L or ["(nothing yet)"]))
+    return out
 
 
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None):
-    U = "MODE: %s\nLANGUAGE: reply in the language of the member's LAST message (they may switch); if unclear, %s\n" % (
+    U = ("MODE: %s\nLANGUAGE: reply in the language the member WRITES IN - judge from their last real sentences, not from a "
+         "short word (\"ok\", \"oui\", \"Cassure\", a name) or from your own last message; if unclear, %s. Never switch language "
+         "on your own.\n") % (
         mode, "French" if lang != "en" else "English")
     U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
     U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
@@ -811,6 +843,19 @@ def partner_of(raw):
         kn = [x for x in (raw.get("knows") or []) if x in keys] if isinstance(raw.get("knows"), list) else []
         if kn:
             out["knows"] = kn[:4]
+    except Exception:
+        pass
+    try:                      # 2026-10-20: the conversation's thread and saved-for-later items
+        if str(raw.get("thread") or "").strip():
+            out["thread"] = str(raw["thread"]).strip()[:120]
+        if isinstance(raw.get("aside"), bool):
+            out["aside"] = raw["aside"]
+        lt = [{"kind": "tell" if x.get("kind") == "tell" else "ask", "text": str(x.get("text") or "")[:200]} for x in (raw.get("later") or [])[:2]
+              if isinstance(x, dict) and str(x.get("text") or "").strip()]
+        if lt:
+            out["later"] = lt
+        if str(raw.get("later_used") or "").strip():
+            out["later_used"] = str(raw["later_used"]).strip()[:200]
     except Exception:
         pass
     na = raw.get("nest_answer")
