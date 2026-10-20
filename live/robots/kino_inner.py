@@ -85,7 +85,7 @@ def add_thought(text, kind, strength=0.5, uid=None, src="", half_h=8, extra=None
     def f(d):
         T = d.setdefault("thoughts", [])
         for th in T:
-            if th.get("uid") == uid and not th.get("used") and (th.get("src") == src if str(src).startswith(("market:", "bet:", "question:"))
+            if th.get("uid") == uid and not th.get("used") and (th.get("src") == src if str(src).startswith(("market:", "bet:", "question:", "attach:"))
                                                                   else _similar(th["text"], text)):
                 th["s"] = round(min(1.0, _strength(th) + strength * 0.5), 3)
                 th["t"] = time.time()
@@ -289,6 +289,12 @@ def prompt_block(uid):
         v2 = v2_block(uid)
         if v2:
             L.append(v2)
+    except Exception:
+        pass
+    try:
+        v3 = v3_block(uid)
+        if v3:
+            L.append(v3)
     except Exception:
         pass
     return "\n".join(L)
@@ -646,4 +652,73 @@ def v2_block(uid):
                                                                     ("; you changed your mind on %s" % o["changed"][-1]["date"]) if o.get("changed") else "") for o in O))
     except Exception:
         pass
+    return "\n".join(L)
+
+
+# ================================================================ v3 (owner 2026-10-20 list 5: "all 10")
+#  shared MOMENTS and running JOKES per member, ONCE keys (a thing noticed only once), the bets block (changing its mind
+#  in front of them)
+def add_moment(uid, text, kind="moment"):
+    text = str(text or "").strip()[:200]
+    if not uid or not text or BAD.search(text):
+        return
+
+    def f(d):
+        L = d.setdefault("moments", {}).setdefault(uid, [])
+        if any(_similar(x["text"], text) for x in L if x.get("kind") == kind):
+            return
+        L.append({"t": time.time(), "text": text, "kind": kind})
+        d["moments"][uid] = [x for x in L if x["kind"] == "joke"][-8:] + [x for x in L if x["kind"] != "joke"][-30:]
+    _mut(f)
+
+
+def joke_used(uid, words):
+    def f(d):
+        for x in (d.get("moments") or {}).get(uid) or []:
+            if x.get("kind") == "joke" and (_similar(x["text"], words) or str(words).lower()[:30] in x["text"].lower()):
+                x["used"] = time.time()
+                x["n"] = int(x.get("n") or 0) + 1
+    _mut(f)
+
+
+def moments(uid, kind=None):
+    return [x for x in (_load().get("moments") or {}).get(uid) or [] if kind is None or x.get("kind") == kind]
+
+
+def once(key):
+    """True the first time a key is seen (a thing Kino should notice only once)"""
+    def f(d):
+        S = d.setdefault("once", {})
+        if key in S:
+            return False
+        S[key] = time.time()
+        if len(S) > 600:
+            for k in sorted(S, key=S.get)[:200]:
+                S.pop(k, None)
+        return True
+    return _mut(f)
+
+
+def v3_block(uid):
+    L = []
+    now = time.time()
+    mo = [x for x in moments(uid, "moment") if now - x["t"] > 12 * 3600][-6:]
+    if mo:
+        L.append("SHARED MOMENTS WITH THEM (yours to cherish - bring ONE back only when it truly echoes what is happening now, "
+                 "like an old friend would: \"ça me rappelle le jour où...\"; rarely): " + " | ".join(
+                     "%s (%s)" % (x["text"], time.strftime("%d/%m", time.gmtime(x["t"]))) for x in mo))
+    jk = moments(uid, "joke")[-4:]
+    if jk:
+        L.append("RUNNING JOKES BETWEEN YOU (a light callback only when it fits naturally, never forced, never the same one twice "
+                 "in a day - then \"joke_used\"): " + " | ".join("%s%s" % (x["text"], (" (used %s)" % ("today" if now - x["used"] < 86400 else
+                                                                                                          "%d days ago" % ((now - x["used"]) // 86400)))
+                                                                         if x.get("used") else "") for x in jk))
+    b = (_load().get("test_bets") or {}).get(uid)
+    if b and not b.get("done"):
+        L.append("YOUR PRIVATE BET on their running test (%s): %s - %s. You may mention it for fun." % (b["label"], b["bet"], b.get("why") or ""))
+    elif b and b.get("done") and now - b["done"] < 4 * 3600:
+        L.append("YOUR BET on their test (%s) was %s: you said %s, it came out %+.2f $. %s" % (
+            b["label"], "RIGHT" if b.get("right") else "WRONG", b["bet"], float(b.get("net") or 0),
+            "Enjoy it lightly." if b.get("right") else "Say it plainly, with humour, and what it teaches you - "
+                                                        "changing your mind in front of them is a strength."))
     return "\n".join(L)

@@ -172,6 +172,10 @@ EVENTS: the message may start with an EVENT instead of a member message:
   needs numbers or a chart, say a short line and set build = true to bring them), or stay silent ("send": false).
   YOUR FOLLOW-ON - the message you planned to add ("more"): send it now, naturally, as a continuation (you may use
   build = true to check numbers or show a chart); or "send": false if it no longer makes sense.
+  YOUR PROMISE - you told them you would look into something ("work"): keep it NOW - a short line like "bon, j'ai
+  regardé..." and build = true so the numbers / chart come with it. Never "send": false on a promise.
+  SHARED EXPERIMENT - a small experiment you agreed on together has ended: measure it now (build = true), show the result
+  honestly - and say plainly whether your bet was right or wrong and what you both learn from it.
   LAB NEWS - a big result in the lab (a luck test finished): share it like news with a friend if it concerns them.
   GESTURE - a small spontaneous moment (Friday evening, an anniversary of your first talk, a market holiday): one or two
   warm lines, or {"send": false} if it would feel forced.
@@ -307,6 +311,16 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "thought_used": null or the id of the ON YOUR MIND thought you just brought up,
   "more": null or {"in": seconds (15 to 1800), "what": "what you will add"} - you will TEXT AGAIN by yourself if they have
   not written by then (see YOU CAN TEXT AGAIN),
+  "work": null or {"in": seconds (120 to 1200), "what": "exactly what you will look into"} - when you are NOT SURE and say
+  so honestly ("pas sûr, laisse-moi 10 min"), you really work on it in the background and come back with the answer
+  even if the conversation moved on,
+  "moment": null or "one line: how you will remember THIS moment between you" - only for a real shared moment (a first,
+  a joy, a frustration, a laugh, a confidence), rarely,
+  "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
+  could come back later as a callback (e.g. "mon robot qui collectionne les stops");
+  "joke_used": "its words" when you bring one back,
+  "experiment": null or {"title": "...", "how": "how you will measure it (a formula, hours, a market...)", "days": 1-14,
+  "bet": "your bet, one line"} - ONLY when they just AGREED to a small experiment you proposed together,
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
   (see TEACHING AT THEIR PACE),
   "remember": [...], "show": null or
@@ -628,6 +642,15 @@ def own_agenda(chat, memory):
             out += ib + "\n"
     except Exception:
         pass
+    out += ("HONEST DOUBT: when you are not sure of something that matters, say it simply (\"pas sûr, laisse-moi 10 min\") and "
+            "set \"work\" - you will really look into it and come back with the answer. Never bluff, never promise and forget.\n"
+            "SMALL EXPERIMENTS TOGETHER: now and then (rarely, when it fits their robot or a question you share), propose a small "
+            "concrete experiment to run together for a few days, with your bet (\"on teste ton robot seulement le matin cette "
+            "semaine ? je parie qu'il fait mieux\"); when they agree, set \"experiment\" - you will measure it at the end together.\n")
+    xs = [x for x in chat.get("exps") or [] if not x.get("done")]
+    if xs:
+        out += "EXPERIMENTS RUNNING WITH THEM: " + " | ".join("%s (since %s, ends %s, your bet: %s)" % (
+            x["title"], time.strftime("%d/%m", time.gmtime(x["t"])), time.strftime("%d/%m", time.gmtime(x["due"])), x.get("bet") or "-") for x in xs) + "\n"
     out += "MAIN THREAD of this conversation: %s\n" % (th or "(not set yet - set \"thread\" to the main subject in a few words)")
     if rhythm:
         out += "RIGHT NOW: " + " | ".join(rhythm) + "\n"
@@ -885,6 +908,19 @@ def partner_of(raw):
         pass
     if str(raw.get("thought_used") or "").strip():
         out["thought_used"] = str(raw["thought_used"]).strip()[:120]
+    try:                      # 2026-10-20 (owner list 5): promised work, shared moments, running jokes, experiments together
+        wk = raw.get("work")
+        if isinstance(wk, dict) and str(wk.get("what") or "").strip():
+            out["work"] = {"in": max(120, min(1200, int(float(wk.get("in") or 420)))), "what": str(wk["what"]).strip()[:240]}
+        for k in ("moment", "joke", "joke_used"):
+            if isinstance(raw.get(k), str) and raw[k].strip():
+                out[k] = raw[k].strip()[:200]
+        ex = raw.get("experiment")
+        if isinstance(ex, dict) and str(ex.get("title") or "").strip():
+            out["experiment"] = {"title": str(ex["title"]).strip()[:120], "how": str(ex.get("how") or "")[:240],
+                                 "days": max(1, min(14, int(float(ex.get("days") or 5)))), "bet": str(ex.get("bet") or "")[:200]}
+    except Exception:
+        pass
     try:                      # 2026-10-20 (owner: "not ping pong - he is free to add more messages without my reply")
         mo = raw.get("more")
         if isinstance(mo, dict) and str(mo.get("what") or "").strip():
@@ -944,7 +980,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "react": _react_of(raw), "partner": partner_of(raw)}
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
-    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE"))), "remember": remember_of(raw),
+    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT"))), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,

@@ -15032,6 +15032,30 @@ def _partner_apply(user, cid, pa):
             _KIu.use_thought(pa["thought_used"], uid)
         except Exception:
             pass
+    if cid and pa.get("work"):                     # 2026-10-20 (owner list 5 item 3): an honest "let me look" is kept
+        try:
+            _chat_mut(cid, lambda cc: cc.__setitem__("work", ((cc.get("work") or []) + [{"due": time.time() + pa["work"]["in"], "what": pa["work"]["what"],
+                                                                                        "t": time.time()}])[-3:]))
+        except Exception:
+            pass
+    if pa.get("moment") or pa.get("joke") or pa.get("joke_used"):      # list 5 items 1, 4
+        try:
+            _rc()
+            import kino_inner as _KIm
+            if pa.get("moment"):
+                _KIm.add_moment(uid, pa["moment"], "moment")
+            if pa.get("joke"):
+                _KIm.add_moment(uid, pa["joke"], "joke")
+            if pa.get("joke_used"):
+                _KIm.joke_used(uid, pa["joke_used"])
+        except Exception:
+            pass
+    if cid and pa.get("experiment"):               # list 5 item 8: a small experiment agreed together
+        ex_ = dict(pa["experiment"], t=time.time(), due=time.time() + pa["experiment"]["days"] * 86400)
+        try:
+            _chat_mut(cid, lambda cc: cc.__setitem__("exps", ((cc.get("exps") or []) + [ex_])[-6:]))
+        except Exception:
+            pass
     if cid and pa.get("more"):                     # 2026-10-20 (owner: "free to continue adding messages without my reply")
         try:
             _more_plan(user, cid, pa["more"])
@@ -15214,9 +15238,11 @@ def _chat_listen(cid, user):
         while time.time() - t0 < 20:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
             lu = max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image")] or [0])
-            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= 1.8:
+            lt_ = str(((c.get("msgs") or [{}])[-1]).get("text") or "").strip()
+            done_ = len(lt_) >= 12 and (lt_[-1:] in "?!.)" or ord(lt_[-1:] or " ") > 0x2600)     # it looks finished
+            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= (0.9 if done_ else 1.8):
                 break
-            time.sleep(0.5)
+            time.sleep(0.25)
     except Exception:
         pass
     _CHAT_WAIT.discard(cid)
@@ -15417,10 +15443,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
         en = c.get("lang") == "en"
         _CHAT_DRAFT[cid] = ""
+        _t0q, _tfw = time.time(), []
+
+        def _say_(t):
+            if t and not _tfw:
+                _tfw.append(time.time() - _t0q)
+            _CHAT_DRAFT[cid] = t
         q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                         markets=_chat_markets(user), memory=_chat_memory(user, cid), event=event,
-                        on_say=lambda t: _CHAT_DRAFT.__setitem__(cid, t), member=_chat_member(user, c), images=_chat_images(c))
+                        on_say=_say_, member=_chat_member(user, c), images=_chat_images(c))
         _CHAT_DRAFT.pop(cid, None)
+        try:                                     # 2026-10-20 (list 5 item 10): how long the first words took
+            open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f\n" % (
+                time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), _tfw[0] if _tfw else -1, time.time() - _t0q))
+        except Exception:
+            pass
         _qdm = _chat_show(c, user, (q or {}).get("show"))
         if q is None and event:
             q = {"say": None, "chips": [], "build": False}
@@ -15434,7 +15471,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
-        if event and not (event.startswith("YOUR FOLLOW-ON") or event.startswith("INNER VOICE")):
+        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT")):
             q["build"] = False
         if event and not q.get("send") and not event.startswith("NEW CONVERSATION"):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
@@ -15891,10 +15928,26 @@ def _companion_tick():
                 if 7 <= h0 < 10 and _active_hour(uid, h0) and m.get("brief") != _dkm and not busy(ch[0]["id"]) and now - _LAST_SEEN.get(uid, 0) > 120:
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("brief", _dkm))
                     _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
-                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "MORNING BRIEF - it is the start of their day. Using THE WORLD RIGHT NOW, "
-                                     "their account and their robot: send a short personal brief ONLY if something is worth it today (a big figure "
-                                     "in their time, a market in a storm, their robot waiting for something, news from your projects for them) - 2-3 "
-                                     "short sentences, a friend's tone, never a bulletin; otherwise \"send\": false."), kwargs={"notify": True}, daemon=True).start()
+                    _cof = ""
+                    try:                                  # 2026-10-20 (owner list 5 item 6): the morning coffee
+                        _rc()
+                        import kino_inner as _KIb
+                        _dr = [t for t in _KIb.thoughts(uid, 8, 0.2) if t["kind"] == "dream"][:1]
+                        if _dr:
+                            _KIb.use_thought(_dr[0]["id"], uid)
+                            _cof += " WHAT YOU WOKE UP WITH (you slept on their day): %s%s." % (_dr[0]["text"], (" (measured: %s)" % _dr[0]["measure"]) if _dr[0].get("measure") else "")
+                        _oq = _KIb.open_questions(uid, 1)
+                        if _oq:
+                            _cof += " A QUESTION ON YOUR MIND: %s." % _oq[0]["q"]
+                        _ndb = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+                        _ov = [x for x in _ndb.get("trades") or [] if str(x.get("w") or "")[:5] == time.strftime("%d/%m", time.gmtime())]
+                        _cof += " THEIR ROBOT OVERNIGHT: %s." % (", ".join("%s %+.2f $" % (x.get("w"), x.get("p") or 0) for x in _ov[:5]) or "no trade")
+                    except Exception:
+                        pass
+                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "MORNING BRIEF - it is the start of their day: a MORNING COFFEE message, "
+                                     "like a friend texting when you wake up - NOT a report. 2-4 short sentences, two bubbles max: one thing you "
+                                     "woke up with (your dream below, in your words), what their robot did overnight in a few words (only if it "
+                                     "traded), and one light question for their day. Personal, warm, specific.%s" % _cof), kwargs={"notify": True}, daemon=True).start()
             except Exception:
                 pass
             # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
@@ -15934,10 +15987,19 @@ def _companion_tick():
                                  ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("won")))
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("week_review", wk))
                     _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
-                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "WEEKLY REVIEW - it is Sunday evening for them: write 'ta semaine' "
-                                     "like a friend who follows their trading: the result in one line, how their robot behaved compared with "
-                                     "its test (normal or not), one thing you noticed, and a simple plan or question for next week (their robots, "
-                                     "their goal with you). 3-6 short sentences, two bubbles max. Facts: %s" % facts),
+                    try:                                  # 2026-10-20 (owner list 5 item 7): a look back TOGETHER - Kino's week too
+                        _rc()
+                        import kino_inner as _KIw, kino_mind as _KMw
+                        facts += " | YOUR OWN WEEK: %s | your own robot: %s | your notes to yourself: %s" % (
+                            _KIw.evidence_block()[:900], (_KMw.my_robot_block() or "-")[:400],
+                            " ; ".join(n["text"] for n in (_KIw._load().get("notes") or [])[-2:])[:400])
+                    except Exception:
+                        pass
+                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "WEEKLY REVIEW - it is Sunday evening for them: a LOOK BACK TOGETHER, "
+                                     "like two friends who trade side by side: their week in one line (and how their robot behaved compared with "
+                                     "its test), YOUR week in one line (your hunches, your robot, a question you solved - honest, with humour), "
+                                     "one thing you both learned, and ONE idea or small experiment for next week. 4-6 short sentences, two "
+                                     "bubbles max. Facts: %s" % facts),
                                      kwargs={"notify": True}, daemon=True).start()
                 except Exception:
                     pass
@@ -16693,6 +16755,22 @@ def _inner_engine_once():
                                                                                            it_.split(":", 1)[-1].strip()[:120]), "bet", 0.4, uid=uid, src="testbet", half_h=6)
                 except Exception:
                     pass
+            # list 5 item 2: attachment - a robot of theirs with a test, not talked about for 2-6 days, comes back to mind
+            try:
+                for x_ in ch[1:8]:
+                    cx_ = _chat_load(u, x_["id"]) or {}
+                    Mx_ = cx_.get("msgs") or []
+                    lr_ = next((m for m in reversed(Mx_) if m.get("role") == "result"), None)
+                    lt_ = max([int(m.get("t") or 0) for m in Mx_] or [0])
+                    if lr_ and 2 * 86400 < now - lt_ < 6 * 86400 and _KI.once("attach:%s:%d" % (x_["id"], lt_)):
+                        rs_ = lr_.get("result") or {}
+                        _KI.add_thought("Je repense à son robot « %s » sur %s (son test : %+.2f $ sur %s trades) - ça fait quelques jours qu'on n'en "
+                                        "parle plus, j'ai envie de savoir ce qu'il compte en faire" % (
+                                            (cx_.get("robot") or {}).get("name") or "?", rs_.get("market") or (cx_.get("robot") or {}).get("market") or "?",
+                                            float(rs_.get("net") or 0), rs_.get("trades")), "attached", 0.5, uid=uid, src="attach:" + x_["id"], half_h=20)
+                        break
+            except Exception:
+                pass
             # v2 item 5: at their night, Kino sleeps on their day and wakes up with one thing
             if (h0 in (2, 3, 4, 5) or (h0 in (0, 1, 6) and not _active_hour(uid, h0))) and st_.get("dream") != today_ and now - last_user < 30 * 3600:
                 st_["dream"] = today_
@@ -16789,7 +16867,7 @@ def _inner_engine_once():
             # A THOUGHT COMES OUT - only a strong one, never mid-conversation, and the inner voice decides
             # v2 item 1: weighted by how this member welcomed that kind of message (and at this time of day)
             top = sorted([dict(t, eff=t["now"] * _KI.kind_weight(uid, t["kind"], h0)) for t in _KI.thoughts(uid, 6, 0.35)
-                          if t["kind"] != "wonder"], key=lambda z: -z["eff"])
+                          if t["kind"] != "wonder" and not (t["kind"] == "dream" and h0 < 10)], key=lambda z: -z["eff"])
             top = [t for t in top if t["eff"] >= 0.55][:1]
             if not top or now - max([int(m.get("t") or 0) for m in M] or [0]) < 900 or _CHAT_Q.get(c.get("id")) or c.get("id") in _CHAT_B:
                 continue
@@ -16848,12 +16926,103 @@ def _inner_engine_loop():
         time.sleep(60)
 
 
+_MISS = {}            # cid -> [msg t, tries, first seen stuck]
+
+
+def _chat_watch_once():
+    """2026-10-20 (owner list 5): every 30 s over all conversations -
+    (9) a member's message left without any answer (a crashed turn, a stuck counter): Kino is woken up again (twice), then
+        a short honest line rather than silence; every case is logged (robots/kino_alarm.log)
+    (3) a promise Kino made ("laisse-moi 10 min", field "work") is due: it is kept, even if the talk moved on
+    (8) an experiment agreed together ended: Kino measures it with them"""
+    now = time.time()
+    U_ = {x.get("id"): x for x in users()}
+    for f in os.listdir(CHAT_DIR):
+        if not f.endswith(".json"):
+            continue
+        cid = f[:-5]
+        try:
+            c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+        except Exception:
+            continue
+        u = U_.get(c.get("uid"))
+        if not u or c.get("hidden"):
+            continue
+        M = c.get("msgs") or []
+        alarm = lambda what: open(os.path.join(DIR, "robots", "kino_alarm.log"), "a", encoding="utf-8").write(
+            "%s %s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, what))
+        # (9) missed reply
+        lm = M[-1] if M else {}
+        if lm.get("role") in ("user", "show", "image") and not lm.get("answered") and 75 < now - int(lm.get("t") or 0) < 3 * 3600 \
+                and cid not in _CHAT_WAIT and cid not in _CHAT_B:
+            st = _MISS.get(cid)
+            if not st or st[0] != lm.get("t"):
+                st = _MISS[cid] = [lm.get("t"), 0, now]
+            if _CHAT_Q.get(cid):
+                if now - st[2] > 240:                 # a turn counted as running for 4 min with nothing coming: stuck
+                    _CHAT_Q[cid] = 0
+                    alarm("stuck counter reset")
+                else:
+                    continue
+            elif st[1] and now - st[2] < 75:
+                continue                              # give the last wake-up time to answer
+            st[2] = now
+            if st[1] < 2:
+                st[1] += 1
+                alarm("no answer %d s after the member's message - waking Kino (try %d)" % (now - int(lm.get("t") or 0), st[1]))
+                threading.Thread(target=_chat_listen, args=(cid, u), daemon=True).start()
+            elif st[1] == 2:
+                st[1] = 3
+                alarm("still no answer after 2 tries - honest line posted")
+                en_ = c.get("lang") == "en"
+                _chat_mut(cid, lambda cc: _chat_msg(cc, "ai", text=("Sorry, I lost my thread for a moment - can you tell me again?" if en_ else
+                                                                  "Pardon, j'ai perdu le fil une seconde - tu peux me redire ?"), quick=True))
+            continue
+        if _CHAT_Q.get(cid) or cid in _CHAT_B or cid in _CHAT_WAIT:
+            continue
+        # (3) a promise due
+        W_ = [w for w in c.get("work") or [] if now >= float(w.get("due") or 0)]
+        if W_:
+            w = W_[0]
+            _chat_mut(cid, lambda cc: cc.__setitem__("work", [x for x in cc.get("work") or [] if x.get("t") != w.get("t")]))
+            if now - float(w["due"]) < 6 * 3600:
+                sn = _CHAT_SEEN.get(u.get("id"))
+                here = bool(sn and now - sn[0] < 60 and sn[1] == cid)
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                threading.Thread(target=_chat_quick, args=(cid, u, "YOUR PROMISE - %d minutes ago you told them you would look into: \"%s\". "
+                                 "Keep it now: say it like a friend coming back (\"bon, j'ai regardé...\") and set build = true so the real "
+                                 "numbers / chart come with it. They are %s." % ((now - float(w["t"])) / 60, w["what"],
+                                                                                 "looking at the conversation" if here else "away from the app")),
+                                 kwargs={"notify": not here}, daemon=True).start()
+            continue
+        # (8) an experiment ended (during their day)
+        X_ = [x for x in c.get("exps") or [] if not x.get("done") and now >= float(x.get("due") or 0)]
+        if X_ and _active_hour(u.get("id")):
+            x = X_[0]
+
+            def putx(cc):
+                for y in cc.get("exps") or []:
+                    if y.get("t") == x.get("t"):
+                        y["done"] = now
+            _chat_mut(cid, putx)
+            _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+            threading.Thread(target=_chat_quick, args=(cid, u, "SHARED EXPERIMENT - the experiment you agreed on together has ended: \"%s\" "
+                             "(started %s, %d days; how to measure: %s; YOUR BET: %s). Measure it now with your tools (build = true) and "
+                             "show it together - honestly, and say plainly whether your bet was right." % (
+                                 x["title"], time.strftime("%d/%m", time.gmtime(x["t"])), x.get("days") or 0, x.get("how") or "-", x.get("bet") or "-")),
+                             kwargs={"notify": True}, daemon=True).start()
+
+
 def _inner_clock_loop():
     time.sleep(60)
     while True:
         try:
             if INNER_ON:
                 _inner_clock_once()
+        except Exception:
+            pass
+        try:
+            _chat_watch_once()
         except Exception:
             pass
         time.sleep(30)
