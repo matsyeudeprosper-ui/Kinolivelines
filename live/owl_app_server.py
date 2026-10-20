@@ -15160,7 +15160,7 @@ def _chat_listen(cid, user):
         while time.time() - t0 < 20:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
             lu = max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image")] or [0])
-            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= 2.5:
+            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= 1.8:
                 break
             time.sleep(0.5)
     except Exception:

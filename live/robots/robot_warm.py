@@ -176,10 +176,16 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None):
     return txt
 
 
-def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on_text=None):
-    """the first JSON object of the answer; the next model if one fails; on_text(partial text) while it is written"""
+def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on_text=None, salvage=False):
+    """the first JSON object of the answer; the next model if one fails; on_text(partial text) while it is written.
+    salvage=True (2026-10-20, a 2 min 20 s reply: the quick answer came as plain text, was thrown away, and the slow turn
+    had to answer): a plain chat message without JSON is kept as {"say": text} instead of trying another model"""
     for m in models:
-        j = IV.first_json(ask_text(system, user, m, timeout, log, on_text) or "")
+        txt = ask_text(system, user, m, timeout, log, on_text) or ""
+        j = IV.first_json(txt)
         if j is not None:
             return j
+        t = txt.strip()
+        if salvage and t and "{" not in t and len(t) < 1500 and t.lower() not in ("(none)", "none"):
+            return {"say": t, "salvaged": True}
     return None

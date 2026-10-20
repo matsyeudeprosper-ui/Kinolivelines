@@ -890,7 +890,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             pass
     t0 = _t.time()
     raw = W.ask_json(system(), _content(prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang,
-                                               memory, event, member), images), models=models, timeout=90, log=log, on_text=cb)
+                                               memory, event, member), images), models=models, timeout=90, log=log, on_text=cb, salvage=True)
     QUICK_LAT.append(_t.time() - t0)
     del QUICK_LAT[:-6]
     if isinstance(raw, dict) and raw.get("send") is False:
