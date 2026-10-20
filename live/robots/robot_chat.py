@@ -292,6 +292,11 @@ CHARTS - you and the member can SHOW things, like two traders looking at one scr
   candle (RSI, averages, yesterday's high/low, the last 30 minutes high/low, session, the eyes' last breaks, the last
   closes). Work out what made them pick that spot, say your guess in plain words ("tu achètes quand le prix repasse
   au-dessus du plus haut des 30 dernières minutes, c'est ça ?"), build it, and SHOW examples to check.
+- The member can send a DOCUMENT (PDF, Word or text) - usually their own strategy. Read ALL of it. Then, like a
+  friend who read it carefully: say in 2-3 short lines what you understood (markets, timeframe, when it buys / sells,
+  stop, exit, money rules), name what is unclear or impossible to automate in one line, and BUILD what is clear right
+  away (build = true) with sensible defaults for the gaps - ask only about the single most important unclear point.
+  If it holds several strategies, build the clearest one first and say which ones you keep for later ("later").
 - The member can send a SCREENSHOT of their own chart (MT5, TradingView, a phone...). You SEE the image: say in one
   or two sentences what you see that matters (the market, the timeframe, the levels, zones, indicators, arrows they
   drew), connect it to their idea, put it in "seen" (one plain sentence, English, for your memory), then turn it into
@@ -500,6 +505,11 @@ def transcript(chat):
         elif r == "proposal":
             L.append("YOU PROPOSED (card with an Apply button): %s - %s" % (str(m.get("why") or "")[:200],
                                                                           "APPLIED by the member" if m.get("applied") else "not applied (yet)"))
+        elif r == "doc":                 # 2026-10-20: a document they sent (their strategy, often)
+            recent = m is (chat.get("msgs") or [None])[-1] or m in (chat.get("msgs") or [])[-3:]
+            L.append("MEMBER SENT A DOCUMENT '%s' (%s)%s%s" % (m.get("name"), m.get("kind"), (" - they say: " + str(m.get("note"))[:300]) if m.get("note") else "",
+                     (" - its text:\n<<<\n%s\n>>>" % str(m.get("text"))[:15000] if recent else " - beginning: " + str(m.get("text"))[:600]) if m.get("text")
+                     else (" (the PDF itself is attached below)" if recent else " (a PDF you read earlier)")))
         elif r == "image":
             L.append("MEMBER SENT A SCREENSHOT OF THEIR CHART%s%s" % ((" - they say: " + str(m.get("text"))[:400]) if m.get("text") else "",
                                                                    (" | what you saw: " + str(m.get("seen"))[:400]) if m.get("seen") else " (attached below)")
@@ -959,7 +969,8 @@ def _content(text, images):
     """the message for the model: the text, plus the member's screenshot(s) when this turn must see them"""
     if not images:
         return text
-    return [{"type": "image", "source": {"type": "base64", "media_type": mt, "data": b64}} for mt, b64 in images[:2]] + \
+    return [({"type": "document", "source": {"type": "base64", "media_type": mt, "data": b64}} if mt == "application/pdf" else
+             {"type": "image", "source": {"type": "base64", "media_type": mt, "data": b64}}) for mt, b64 in images[:2]] + \
         [{"type": "text", "text": text}]
 
 

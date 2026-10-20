@@ -15638,7 +15638,7 @@ def _chat_listen(cid, user):
     try:
         while time.time() - t0 < 20:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
-            lu = max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image")] or [0])
+            lu = max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image", "doc")] or [0])
             lt_ = str(((c.get("msgs") or [{}])[-1]).get("text") or "").strip()
             done_ = len(lt_) >= 12 and (lt_[-1:] in "?!.)" or ord(lt_[-1:] or " ") > 0x2600)     # it looks finished
             if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= (0.9 if done_ else 1.8):
@@ -15693,9 +15693,17 @@ CHAT_IMG = os.path.join(DIR, "robots", "chats", "img")
 
 
 def _chat_images(c):
-    """[(media type, base64)] of the member's screenshot when it is the last thing they sent (that turn must see it)"""
+    """[(media type, base64)] of the member's screenshot when it is the last thing they sent (that turn must see it);
+    2026-10-20: a PDF they just sent comes the same way ("application/pdf")"""
     import base64
     for m in reversed(c.get("msgs") or []):
+        if m.get("role") == "doc":
+            if m.get("kind") == "pdf" and m.get("file"):
+                try:
+                    return [("application/pdf", base64.b64encode(open(os.path.join(CHAT_IMG, os.path.basename(m["file"])), "rb").read()).decode())]
+                except Exception:
+                    return []
+            return []
         if m.get("role") in ("user", "show"):
             return []
         if m.get("role") == "image" and m.get("file"):
@@ -15770,7 +15778,7 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
             try:
                 c = json.load(open(_chat_path(cid), encoding="utf-8"))
                 lm = (c.get("msgs") or [])[-1:]
-                if lm and lm[0].get("role") in ("user", "show", "image") and not lm[0].get("answered"):
+                if lm and lm[0].get("role") in ("user", "show", "image", "doc") and not lm[0].get("answered"):
                     threading.Thread(target=_chat_listen, args=(cid, user), daemon=True).start()
             except Exception:
                 pass
@@ -15883,7 +15891,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             if (q.get("react") or not q.get("say")) and not event:
                 # 2026-10-19 (owner): Kino may just react to the message, or not answer at all - like a person
                 for mm in reversed(c.get("msgs") or []):
-                    if mm.get("role") in ("user", "show", "image"):
+                    if mm.get("role") in ("user", "show", "image", "doc"):
                         if q.get("react"):
                             mm["react"] = q["react"]
                         mm["answered"] = True              # a chosen silence, not a lost reply
@@ -17471,7 +17479,7 @@ def _chat_watch_once():
             "%s %s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, what))
         # (9) missed reply
         lm = M[-1] if M else {}
-        if lm.get("role") in ("user", "show", "image") and not lm.get("answered") and 75 < now - int(lm.get("t") or 0) < 3 * 3600 \
+        if lm.get("role") in ("user", "show", "image", "doc") and not lm.get("answered") and 75 < now - int(lm.get("t") or 0) < 3 * 3600 \
                 and cid not in _CHAT_WAIT and cid not in _CHAT_B:
             st = _MISS.get(cid)
             if not st or st[0] != lm.get("t"):
@@ -18269,7 +18277,7 @@ def chat_get(user, cid):
     c["status"] = _chat_status(c["id"])
     # 2026-10-19: a member message left without an answer (its turn died with a server restart) is answered now
     _lm = (c.get("msgs") or [])[-1:] or [{}]
-    if _lm[0].get("role") in ("user", "show", "image") and not _lm[0].get("answered") and c["status"] == "ready" and c["id"] not in _CHAT_WAIT and not _CHAT_PENDING.get(c["id"]) and time.time() - int(_lm[0].get("t") or 0) > 35:
+    if _lm[0].get("role") in ("user", "show", "image", "doc") and not _lm[0].get("answered") and c["status"] == "ready" and c["id"] not in _CHAT_WAIT and not _CHAT_PENDING.get(c["id"]) and time.time() - int(_lm[0].get("t") or 0) > 35:
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         c["status"] = "thinking"
@@ -18696,6 +18704,66 @@ def chat_image(user, body):
     _chat_mut(c["id"], lambda c: _chat_msg(c, "image", file=fn, text=note))
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     threading.Thread(target=_read_shot, args=(c["id"], user, fn, note), daemon=True).start()     # 2026-10-20 list 6 item 9
+    return {"ok": True}
+
+
+def _docx_text(b):
+    """the text of a .docx (zip + word/document.xml), paragraphs kept"""
+    import io, zipfile, html
+    z = zipfile.ZipFile(io.BytesIO(b))
+    x = z.read("word/document.xml").decode("utf-8", "replace")
+    x = re.sub(r"</w:p>", "\n", x)
+    x = re.sub(r"<w:tab/>", "\t", x)
+    x = re.sub(r"<[^>]+>", "", x)
+    return html.unescape(re.sub(r"\n{3,}", "\n\n", x)).strip()
+
+
+def chat_doc(user, body):
+    """2026-10-20 (owner: "if I upload my strategy as a Word doc or PDF, can you turn it into a robot?"): the member sends a
+    document - PDF (read by the model itself, scanned pages too), Word .docx or plain text - and Kino reads it like a message"""
+    import base64
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    if _CHAT_Q.get(c["id"]):
+        return {"ok": False, "err": "busy"}
+    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
+        return {"ok": False, "err": "cap"}
+    d = str(body.get("data") or "")
+    if d.startswith("data:"):
+        d = d.split(",", 1)[-1]
+    try:
+        b = base64.b64decode(d, validate=True)
+    except Exception:
+        return {"ok": False, "err": "doc"}
+    if len(b) > 8_000_000:
+        return {"ok": False, "err": "doc_big"}
+    name = re.sub(r"[^\w .()\-àâçéèêëîïôûùüÿñæœ]", "", str(body.get("name") or "document"))[:80] or "document"
+    text, kind = "", None
+    if b[:5] == b"%PDF-":
+        kind = "pdf"
+    elif b[:2] == b"PK":
+        try:
+            text, kind = _docx_text(b), "docx"
+        except Exception:
+            return {"ok": False, "err": "doc_kind"}
+    elif b[:8] == bytes.fromhex("D0CF11E0A1B11AE1"):
+        return {"ok": False, "err": "doc_old"}               # old .doc: save it as .docx or PDF
+    else:
+        try:
+            text, kind = b.decode("utf-8"), "txt"
+        except Exception:
+            try:
+                text, kind = b.decode("latin-1"), "txt"
+            except Exception:
+                return {"ok": False, "err": "doc_kind"}
+    os.makedirs(CHAT_IMG, exist_ok=True)
+    fn = "%s_%d.%s" % (c["id"], int(time.time() * 1000), kind)
+    open(os.path.join(CHAT_IMG, fn), "wb").write(b)
+    note = str(body.get("note") or "").strip()[:600]
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "doc", file=fn, name=name, kind=kind, size=len(b), text=(text or "")[:60000], note=note))
+    threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
 
 
@@ -24351,13 +24419,13 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
                 return
             try:
-                _cap = 2_800_000 if _parts[1] == "chat_image" else 40000          # a screenshot (base64) is bigger
+                _cap = 2_800_000 if _parts[1] == "chat_image" else (11_000_000 if _parts[1] == "chat_doc" else 40000)    # a screenshot / a document is bigger
                 _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), _cap)).decode("utf-8", "replace") or "{}")
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
@@ -24372,7 +24440,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
