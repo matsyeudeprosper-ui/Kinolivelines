@@ -24023,8 +24023,18 @@ class H(BaseHTTPRequestHandler):
                     # 2026-10-15 (owner: every time in the member's local time): the phone's UTC offset
                     # (JS getTimezoneOffset: minutes, positive WEST of UTC) + its zone name, for pushes
                     try:
-                        prefs.setdefault("_tz", {})[u["id"]] = {"off": int(qs["tzo"][0]),
-                                                                "name": (qs.get("tzn", [""])[0] or "")[:64]}
+                        _old = (prefs.get("_tz") or {}).get(u["id"]) or {}
+                        _new = {"off": int(qs["tzo"][0]), "name": (qs.get("tzn", [""])[0] or "")[:64]}
+                        # 2026-10-20: the owner's zone was overwritten to Los Angeles again (Kino thought it was 4 a.m.
+                        # in his afternoon): a pinned zone never changes, and every change is logged with its source
+                        if not _old.get("pin") and _new["off"] != _old.get("off"):
+                            prefs.setdefault("_tz", {})[u["id"]] = _new
+                            try:
+                                open(os.path.join(DIR, "owl_tz_changes.log"), "a", encoding="utf-8").write("%s %s %s->%s %s ip=%s xff=%s ua=%s\n" % (
+                                    time.strftime("%Y-%m-%d %H:%M:%S"), u["id"], _old.get("off"), _new["off"], _new["name"],
+                                    self.client_address[0], self.headers.get("X-Forwarded-For") or "-", (self.headers.get("User-Agent") or "")[:160]))
+                            except Exception:
+                                pass
                     except Exception:
                         pass
                 if "quiet" in qs:
