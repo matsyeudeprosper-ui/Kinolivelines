@@ -16329,7 +16329,9 @@ def _companion_tick():
                     if not n.get("seen") and not n.get("pushed") and now - n["t"] < 86400 and _companion_can_push(uid, n):
                         _companion_push(u, n)
             _mem_note_safe(uid, flush)
-            ch = chat_list(u).get("chats") or []
+            # 2026-10-20: archived chats and test copies never get Kino's unprompted messages or pushes (a push opened a test copy
+            # on the owner's phone, which then vanished under him)
+            ch = [x for x in (chat_list(u).get("chats") or []) if not x.get("archived") and not str(x.get("id") or "").endswith("9999999999999")]
             if not ch:
                 continue
             h0 = _local_hour(uid)

@@ -1422,8 +1422,9 @@ function rpEl(){let el=$('rproom');if(el)return el;el=document.createElement('di
  $('rplvl').addEventListener('contextmenu',e=>{e.preventDefault();if(!RP)return;RP.levels=[];RP.mode=null;RP.dirty=true;rpDraw();rpUi();toast(T('Niveaux effacés.','Levels cleared.'));});return el;}
 async function rpOpen(){if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}shClose();const el=rpEl();el.classList.add('on');document.body.style.overflow='hidden';
  $('rpbody').innerHTML='<div class="kload"><div class="kl">'+(typeof OWLV!=='undefined'?OWLV:'')+'</div>'+T('J’ouvre ta salle de replay…','Opening your replay room…')+'</div>';
- let j;try{j=await post('replay_get',{id:CID});}catch(e){j=null;}
- if(!j||!j.ok){$('rpbody').innerHTML='<div class="rpmsg">'+(j&&j.err==='nodata'?T('Pas encore de prix pour ce marché : lance d’abord un test.','No prices for this market yet: run a test first.'):T('Je n’arrive pas à ouvrir le replay, réessaie.','I could not open the replay, try again.'))+'</div>';return;}
+ if(RP&&RP.cid===CID&&RP.rows.length){rpLayout();rpDraw();rpUi();return;}     // same project, still in memory: back at once
+ let j;try{j=await rpPost('replay_get',{id:CID},20000);}catch(e){j=null;}
+ if(!j||!j.ok){$('rpbody').innerHTML='<div class="rpmsg">'+(j&&j.err==='nodata'?T('Pas encore de prix pour ce marché : lance d’abord un test.','No prices for this market yet: run a test first.'):T('Je n’arrive pas à ouvrir le replay (réseau lent ?).','I could not open the replay (slow network?).')+'<br><br><button class="btn pri" onclick="rpOpen()">'+T('Réessayer','Try again')+'</button>')+'</div>';return;}
  const s=j.sess||{};RP={cid:CID,mk:j.market,name:j.name,first:j.first,last:j.last,rows:[],ci:0,tfs:s.tfs||['M15','M5'],split:s.split||(innerWidth<360?1:2),speed:s.speed||1,timer:null,
   pos:s.pos||null,trades:s.trades||[],notes:s.notes||[],levels:s.levels||[],start:s.start||0,view:[{z:70,off:0},{z:70,off:0}],dirty:false,askT:0,fresh:0,mode:null,busy:false,minT:0};
  RP.minT=RP.trades.length?RP.trades[RP.trades.length-1].to:0;if(RP.pos)RP.minT=Math.max(RP.minT,RP.pos.ti);
@@ -1434,9 +1435,11 @@ function rpStartPick(){$('rproom').classList.add('pick');const L=RP.last,F=RP.fi
   o.map(x=>'<button onclick="rpBegin('+Math.floor(x[1])+')">'+x[0]+'<small>'+rpFmt(rpDay(x[1]))+'</small></button>').join('')+'</div>';}
 function rpDay(t){return Math.floor(t/86400)*86400+7*3600;}
 async function rpBegin(t){t=rpDay(t);RP.start=t;RP.trades=[];RP.notes=[];RP.levels=[];RP.pos=null;RP.minT=0;await rpLoadAt(t);RP.dirty=true;rpSave();}
-async function rpFetch(a,b){const j=await post('replay_bars',{market:RP.mk,a:Math.floor(a),b:Math.floor(b)});return j&&j.ok?j.rows:[];}
-async function rpLoadAt(t){const rows=await rpFetch(t-5*86400,t+3*86400);if(!rows.length){$('rpbody').innerHTML='<div class="rpmsg">'+T('Pas de prix à cette date.','No prices at that date.')+'</div>';return;}
- $('rproom').classList.remove('pick');RP.rows=rows;let ci=0;for(let i=0;i<rows.length;i++){if(rows[i][0]<t)ci=i;else break;}RP.ci=ci;if(!RP.start)RP.start=rpT();rpLayout();rpDraw();rpUi();}
+function rpPost(fn,body,ms){return Promise.race([post(fn,body),new Promise((_,ko)=>setTimeout(()=>ko(new Error('timeout')),ms||25000))]);}
+async function rpFetch(a,b){const j=await rpPost('replay_bars',{market:RP.mk,a:Math.floor(a),b:Math.floor(b)});return j&&j.ok?j.rows:[];}
+async function rpLoadAt(t){let rows=[];try{rows=await rpFetch(t-2*86400,t+86400);}catch(e){$('rpbody').innerHTML='<div class="rpmsg">'+T('Je n’arrive pas à ouvrir le replay (réseau lent ?).','I could not open the replay (slow network?).')+'<br><br><button class="btn pri" onclick="rpOpen()">'+T('Réessayer','Try again')+'</button></div>';return;}if(!rows.length){$('rpbody').innerHTML='<div class="rpmsg">'+T('Pas de prix à cette date.','No prices at that date.')+'</div>';return;}
+ $('rproom').classList.remove('pick');RP.rows=rows;let ci=0;for(let i=0;i<rows.length;i++){if(rows[i][0]<t)ci=i;else break;}RP.ci=ci;if(!RP.start)RP.start=rpT();rpLayout();rpDraw();rpUi();rpPast();}
+async function rpPast(){const R=RP,f=R.rows[0][0];if(f<=R.first)return;try{const add=(await rpFetch(f-4*86400,f-60)).filter(r=>r[0]<f);if(RP!==R||!add.length)return;R.rows=add.concat(R.rows);R.ci+=add.length;rpDraw();}catch(e){}}
 async function rpMore(){if(RP.busy)return;const lt=RP.rows[RP.rows.length-1][0];if(lt>=RP.last)return;RP.busy=true;try{const add=(await rpFetch(lt+60,lt+4*86400)).filter(r=>r[0]>lt);RP.rows=RP.rows.concat(add);
   if(RP.rows.length>24000){const cut=RP.rows.length-24000;RP.rows=RP.rows.slice(cut);RP.ci-=cut;}}catch(e){}RP.busy=false;}
 function rpLayout(){const b=$('rpbody');const n=RP.split;b.className='rpbody s'+n;let h='';for(let p=0;p<n;p++)h+='<div class="rppane"><div class="rptfs">'+Object.keys(RTF).map(tf=>'<button class="'+(RP.tfs[p]===tf?'on':'')+'" onclick="rpTf('+p+',\''+tf+'\')">'+tf+'</button>').join('')+'</div><canvas id="rpc'+p+'"></canvas></div>';
