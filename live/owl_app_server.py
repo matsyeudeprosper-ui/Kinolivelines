@@ -13537,9 +13537,7 @@ def robot_create(user, body, dry=False):
                 "by": "owner" if is_admin(user) else "member", "by_uid": me,
                 "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "stage": "draft", "public": bool(is_admin(user))})
     reg["robots"] = rob
-    tmp = ROBOT_REG + ".tmp"
-    json.dump(reg, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    os.replace(tmp, ROBOT_REG)
+    _robot_save(reg)
     return {"ok": True, "id": rid}
 
 
@@ -13582,9 +13580,9 @@ def robot_targets(user, detail):
 
 
 def _robot_save(reg):
-    tmp = ROBOT_REG + ".tmp"
-    json.dump(reg, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    os.replace(tmp, ROBOT_REG)
+    # 2026-10-20 (owner screenshot: "test n'a pas pu démarrer (piece: [WinError 5] Access is denied")): the test runner
+    # had the registry open - retry the swap instead of failing the member's test
+    _atomic_json(ROBOT_REG, reg, ensure_ascii=False, indent=1)
 
 
 def _robot_mine(user, r):
@@ -15050,6 +15048,12 @@ def _partner_apply(user, cid, pa):
                 _KIm.joke_used(uid, pa["joke_used"])
         except Exception:
             pass
+    if pa.get("decision"):                          # list 6 item 5: their decision journal
+        try:
+            _cc = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
+            _decision_add(uid, pa["decision"]["what"], pa["decision"].get("why"), cid, _cc.get("robot_id"), "kino")
+        except Exception:
+            pass
     if cid and pa.get("experiment"):               # list 5 item 8: a small experiment agreed together
         ex_ = dict(pa["experiment"], t=time.time(), due=time.time() + pa["experiment"]["days"] * 86400)
         try:
@@ -15442,6 +15446,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
         en = c.get("lang") == "en"
+        c["decisions_v"] = _decisions_for(user, c)
         _CHAT_DRAFT[cid] = ""
         _t0q, _tfw = time.time(), []
 
@@ -16240,6 +16245,40 @@ def _proactive_event(u, c0, ago, hour):
             % (when, ("%d hours" % (ago / 3600)) if ago < 172800 else ("%d days" % (ago / 86400)), "; ".join(hooks) or "their robot and ideas"))
 
 
+def _decision_add(uid, what, why="", cid=None, rid=None, src="kino"):
+    """2026-10-20 (owner list 6 item 5): a decision that matters, kept with its moment - looked back on after 7 and 30 days"""
+    d = {"id": "d%d" % int(time.time() * 1000), "t": int(time.time()), "what": str(what)[:160], "why": str(why or "")[:240], "cid": cid,
+         "rid": rid, "src": src, "checks": {}}
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        d["bal"] = nd.get("balance")
+    except Exception:
+        pass
+    _mem_note_safe(uid, lambda mm: mm.__setitem__("decisions", ((mm.get("decisions") or []) + [d])[-40:]))
+
+
+def _decision_facts(uid, d):
+    """what happened since a decision (their account; the chat robot's tests)"""
+    L = []
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        tt = [t for t in nd.get("trades") or [] if _trade_epoch(t.get("w")) >= d["t"]]
+        L.append("their account since: %d trade(s), %+.2f $ (%d won)%s" % (len(tt), sum(float(t.get("p") or 0) for t in tt),
+                                                                       sum(1 for t in tt if (t.get("p") or 0) > 0),
+                                                                       (", balance %.2f $ -> %.2f $" % (float(d["bal"]), float(nd.get("balance") or 0))) if d.get("bal") else ""))
+    except Exception:
+        pass
+    try:
+        if d.get("cid"):
+            c = json.load(open(_chat_path(d["cid"]), encoding="utf-8"))
+            rs = [m.get("result") or {} for m in c.get("msgs") or [] if m.get("role") == "result" and int(m.get("t") or 0) >= d["t"]]
+            if rs:
+                L.append("tests since: " + ", ".join("%+.2f $ / %s trades" % (float(r.get("net") or 0), r.get("trades")) for r in rs[-3:]))
+    except Exception:
+        pass
+    return "; ".join(L) or "no measurable result yet"
+
+
 def _acct_action(uid, kind):
     """2026-10-19 (owner next-list item 9): the member stopped / restarted / changed the robot of their account - kept with
     the moment's results, so Kino can notice an emotional decision (right after losses, too many changes)"""
@@ -16257,6 +16296,12 @@ def _acct_action(uid, kind):
     except Exception:
         rec = {"t": int(time.time()), "kind": kind}
     _mem_note_safe(uid, lambda mm: mm.__setitem__("acct_actions", ((mm.get("acct_actions") or []) + [rec])[-30:]))
+    try:
+        _decision_add(uid, {"pause": "mettre le robot du compte en pause", "resume": "relancer le robot du compte"}.get(kind) or
+                      ("changer le robot du compte pour %s" % kind.split(":", 1)[-1] if kind.startswith("switch:") else kind),
+                      "", None, kind.split(":", 1)[-1] if kind.startswith("switch:") else None, "app")
+    except Exception:
+        pass
 
 
 def _guardian(u, ch):
@@ -16755,6 +16800,35 @@ def _inner_engine_once():
                                                                                            it_.split(":", 1)[-1].strip()[:120]), "bet", 0.4, uid=uid, src="testbet", half_h=6)
                 except Exception:
                     pass
+            # list 6 item 5: looking back on a decision with them (7 days, 30 days)
+            try:
+                if _active_hour(uid, h0) and now - max([int(m.get("t") or 0) for m in M] or [0]) > 900 and not _CHAT_Q.get(c.get("id")) \
+                        and c.get("id") not in _CHAT_B and now - float(st_.get("dlb") or 0) > 4 * 3600:
+                    for d_ in _mem_get(uid).get("decisions") or []:
+                        due_ = next((k for k in (30, 7) if now - d_["t"] > k * 86400 and str(k) not in (d_.get("checks") or {})), None)
+                        if not due_:
+                            continue
+                        if due_ == 7 and now - d_["t"] > 20 * 86400:
+                            continue                             # too late for the first look: the month one will do
+                        fx_ = _decision_facts(uid, d_)
+
+                        def mk_(mm, did=d_["id"], k=str(due_), fx=fx_):
+                            for y in mm.get("decisions") or []:
+                                if y["id"] == did:
+                                    y.setdefault("checks", {})[k] = int(time.time())
+                                    y["verdict"] = fx
+                        _mem_note_safe(uid, mk_)
+                        st_["dlb"] = now
+                        cid_ = d_.get("cid") if d_.get("cid") and os.path.exists(_chat_path(d_["cid"])) else c.get("id")
+                        _CHAT_Q[cid_] = _CHAT_Q.get(cid_, 0) + 1
+                        threading.Thread(target=_chat_quick, args=(cid_, u, "DECISION LOOK BACK (%s) - on %s they decided: \"%s\" (why: %s). "
+                                         "What happened since: %s. Look back on it WITH them, honestly and kindly, like a friend: was it a good "
+                                         "decision so far, what you both learn from it - 2-3 short sentences; never a lecture; say it is early "
+                                         "when it is." % ("une semaine après" if due_ == 7 else "un mois après", time.strftime("%d/%m", time.gmtime(d_["t"])),
+                                                          d_["what"], d_.get("why") or "not said", fx_)), kwargs={"notify": True}, daemon=True).start()
+                        break
+            except Exception:
+                pass
             # list 5 item 2: attachment - a robot of theirs with a test, not talked about for 2-6 days, comes back to mind
             try:
                 for x_ in ch[1:8]:
@@ -16847,6 +16921,7 @@ def _inner_engine_once():
                            ("ANTICIPATE: they usually arrive around %02d h - one of your thoughts should be the thing they will want or enjoy "
                             "when they open the app (what happened to their robot, their test, the market they follow), strength 0.7." % arr_) if antic_ else "",
                            _rc().transcript(dict(c, msgs=M[-20:]))[-5000:]))
+                _KI.mark_activity(uid, "reverie")
                 for th in _KI.reverie(uid, ctx, _W_):
                     if th["kind"] == "wonder":
                         _KI.add_question(th["text"], uid, th.get("formula"), th.get("side") or "buy", mk_, "reverie")
@@ -17416,6 +17491,121 @@ def ai_nudge_seen(user, body):
     return {"ok": True}
 
 
+def _decisions_for(user, c):
+    D = _mem_get(user.get("id")).get("decisions") or []
+    return [d for d in D if d.get("cid") == c.get("id") or (not d.get("cid") and d.get("rid") and d.get("rid") == c.get("robot_id"))
+            or (not d.get("cid") and not d.get("rid"))][-12:]
+
+
+def _kino_presence(user, c):
+    """2026-10-20 (owner list 6 items 1, 2): a live status under Kino's name from what it is really doing, and its mood
+    for the avatar -> {"kst": {"fr", "en"} or None, "km": "happy|focus|worried|sleepy|curious|proud|calm"}"""
+    uid = user.get("id")
+    now = time.time()
+    st = _chat_status(c["id"])
+    kst, km = None, "calm"
+    try:
+        _rc()
+        import kino_inner as _KIp
+        F = {f["kind"]: f["v"] for f in _KIp.feelings(uid)}
+        act = _KIp.last_activity(uid)
+        ms = _KIp.mood_slow()
+    except Exception:
+        F, act, ms = {}, {}, {"v": 0}
+    h = _local_hour(uid)
+    if st in ("thinking", "listening", "building"):
+        km = "focus"
+    elif 0 <= h < 6:
+        km = "sleepy"
+    elif max(F.get("worry", 0), F.get("annoyance", 0)) > 0.55:
+        km = "worried"
+    elif F.get("pride", 0) > 0.45:
+        km = "proud"
+    elif F.get("excitement", 0) > 0.4 or ms.get("v", 0) > 0.25:
+        km = "happy"
+    elif F.get("curiosity", 0) > 0.4:
+        km = "curious"
+    if st == "ready":
+        if (c.get("test") or {}).get("state") == "queued":
+            kst = {"fr": "suit le test de ton robot ⏳", "en": "watching your robot's test ⏳"}
+        elif c.get("work"):
+            kst = {"fr": "regarde ton idée de près 🔎", "en": "looking closely at your idea 🔎"}
+        elif act.get("shot") and now - act["shot"] < 180:
+            kst = {"fr": "zoome sur ta capture 🔎", "en": "zooming in on your screenshot 🔎"}
+        elif act.get("reverie") and now - act["reverie"] < 300:
+            kst = {"fr": "rêvasse un peu…", "en": "daydreaming a little…"}
+        elif act.get("market") and now - act["market"][0] < 1200:
+            kst = {"fr": "regarde %s 👀" % act["market"][1], "en": "watching %s 👀" % act["market"][2]}
+        elif km == "sleepy":
+            kst = {"fr": "somnole 😴", "en": "half asleep 😴"}
+        elif km == "proud":
+            kst = {"fr": "fier de son robot ✨", "en": "proud of his robot ✨"}
+        elif km == "worried":
+            kst = {"fr": "un peu soucieux", "en": "a bit worried"}
+        elif km == "happy":
+            kst = {"fr": "de bonne humeur ☀️", "en": "in a good mood ☀️"}
+    return {"kst": kst, "km": km}
+
+
+def _trade_epoch(w):
+    """nest_data trade time "dd/mm HH:MM" (UTC, current year) -> epoch"""
+    try:
+        t = datetime.strptime(time.strftime("%Y/") + str(w), "%Y/%d/%m %H:%M").replace(tzinfo=timezone.utc).timestamp()
+        return t - 365 * 86400 if t > time.time() + 86400 else t
+    except Exception:
+        return 0
+
+
+def _glance(user, c, since):
+    """what Kino looks at before the member is back (no model): their account since the last talk, the chat robot's market,
+    its test, what is on Kino's mind about them -> one line of fresh facts"""
+    uid = user.get("id")
+    L = []
+    ago = (time.time() - since) / 3600.0
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        tt = [t for t in nd.get("trades") or [] if _trade_epoch(t.get("w")) >= since]
+        if tt:
+            L.append("their account since you last talked (%.0f h): %d trade(s), %+.2f $ (%d won, %d lost), balance %.2f $" % (
+                ago, len(tt), sum(float(t.get("p") or 0) for t in tt), sum(1 for t in tt if (t.get("p") or 0) > 0),
+                sum(1 for t in tt if (t.get("p") or 0) < 0), float(nd.get("balance") or 0)))
+        else:
+            L.append("their account: no trade since you last talked (%.0f h)" % ago)
+    except Exception:
+        pass
+    mk = (c.get("robot") or {}).get("market") or "BTCUSD"
+    try:
+        import robot_ghost as _RGg
+        R, k = _RGg.live_bars(mk)
+        cl = R["close"].astype(float) / k
+        tm = R["time"].astype(int)
+        i0 = int((tm >= since).argmax()) if (tm >= since).any() else 0
+        if len(cl) > 10:
+            L.append("%s since then: %+.2f %% (now %.2f, range %.2f - %.2f)" % (mk, 100 * (cl[-1] / cl[i0] - 1), cl[-1], float(cl[i0:].min()), float(cl[i0:].max())))
+    except Exception:
+        pass
+    try:
+        lr = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "result"), None)
+        if lr:
+            r = lr.get("result") or {}
+            L.append("this robot's last test: %+.2f $ over %s trades (%s days ago)" % (float(r.get("net") or 0), r.get("trades"), int((time.time() - int(lr.get("t") or 0)) / 86400)))
+        t_ = c.get("test") or {}
+        if t_.get("state") == "queued":
+            L.append("its test is still in line")
+    except Exception:
+        pass
+    try:
+        _rc()
+        import kino_inner as _KIg
+        th = _KIg.thoughts(uid, 2, 0.3)
+        if th:
+            L.append("on your mind about them: " + " | ".join(t["text"][:160] for t in th))
+        _KIg.mark_activity(uid, "glance")
+    except Exception:
+        pass
+    return "; ".join(L)
+
+
 def chat_open(user, body):
     """the member opened (or came back to) a chat: after 45 min away, the AI welcomes them back on its own"""
     c = _chat_load(user, str(body.get("id") or ""))
@@ -17437,6 +17627,13 @@ def chat_open(user, body):
     M = c.get("msgs") or []
     last = max([int(m.get("t") or 0) for m in M] or [0])
     away = time.time() - last
+    if M and away > 1800 and time.time() - float((c.get("glance") or {}).get("t") or 0) > 1800:
+        try:                                     # 2026-10-20 (owner list 6 item 10): a fresh look before they even ask
+            gtx = _glance(user, c, last)
+            if gtx:
+                _chat_mut(c["id"], lambda cc: cc.__setitem__("glance", {"t": time.time(), "text": gtx}))
+        except Exception:
+            pass
     if M and away > 2700 and not _CHAT_Q.get(c["id"]) and c["id"] not in _CHAT_B and any(m.get("role") == "user" for m in M):
         h = away / 3600.0
         ago = ("%d minutes" % (away / 60)) if h < 1 else ("%.0f hours" % h) if h < 48 else ("%.0f days" % (h / 24))
@@ -17507,7 +17704,8 @@ def chat_ping(user, cid):
     _CHAT_VIEW[cid] = time.time()
     M = c.get("msgs") or []
     return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
-            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state")}
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state"),
+            **_kino_presence(user, c)}
 
 
 _CHAT_VIEW = {}          # 2026-10-20 (owner UI item 7): cid -> last time the member had it open (unread badges)
@@ -17541,6 +17739,11 @@ def chat_get(user, cid):
         threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         c["status"] = "thinking"
     c["draft"] = _CHAT_DRAFT.get(c["id"]) or _CHAT_DRAFT.get(c["id"] + ":b") or ""
+    try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood
+        c["decisions_v"] = _decisions_for(user, c)
+        c.update(_kino_presence(user, c))
+    except Exception:
+        pass
     if time.time() - _CHAT_MK.get("_warm", 0) > 60:
         _CHAT_MK["_warm"] = time.time()
         try:
@@ -17817,7 +18020,57 @@ def chat_image(user, body):
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     _chat_mut(c["id"], lambda c: _chat_msg(c, "image", file=fn, text=note))
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+    threading.Thread(target=_read_shot, args=(c["id"], user, fn, note), daemon=True).start()     # 2026-10-20 list 6 item 9
     return {"ok": True}
+
+
+def _read_shot(cid, user, fn, note):
+    """2026-10-20 (owner list 6 item 9): while Kino gives its first reaction, a close reading of the screenshot (levels with
+    prices, zones, what they drew, trades, the rule it suggests); then Kino comes back with what it had not said - the
+    levels drawn on their live chart, the idea shown on our prices"""
+    try:
+        import base64
+        b = open(os.path.join(CHAT_IMG, fn), "rb").read()
+        _rc()
+        import kino_inner as _KIr
+        _KIr.mark_activity(user.get("id"), "shot")
+        rd = _KIr.read_chart([("image/png" if b[:4] == b"\x89PNG" else "image/jpeg", base64.b64encode(b).decode())], note,
+                             _rc().W if hasattr(_rc(), "W") else __import__("robot_warm"))
+        if not rd:
+            return
+        mk = None
+        try:
+            mk = _rc().market_of(rd.get("market"), _chat_markets(user)) if rd.get("market") else None
+        except Exception:
+            pass
+        rd["broker_market"] = mk
+
+        def put(cc):
+            for m in reversed(cc.get("msgs") or []):
+                if m.get("role") == "image" and m.get("file") == fn:
+                    m["read"] = rd
+                    return True
+        _chat_mut(cid, put)
+        for _ in range(60):                          # let the first reaction finish
+            if not (_CHAT_Q.get(cid) or cid in _CHAT_B or cid in _CHAT_WAIT):
+                break
+            time.sleep(2)
+        else:
+            return
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        L = c.get("msgs") or []
+        ix = next((i for i in range(len(L) - 1, -1, -1) if L[i].get("role") == "image" and L[i].get("file") == fn), None)
+        if ix is None or any(m.get("role") in ("user", "image") for m in L[ix + 1:]):
+            return                                   # they moved on: the reading stays in the conversation for later
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        _chat_quick(cid, user, "YOUR CLOSE LOOK AT THEIR SCREENSHOT - you zoomed in on it: %s. Add ONLY what you had not said yet, "
+                    "like a friend who looked closer (\"j'ai zoomé : ...\"): the exact levels with their prices, what their drawing "
+                    "says, the rule you guess - %s and SHOW where this idea fires on our prices (\"show\" with the formula) when "
+                    "there is one. Or \"send\": false if you already said it all." % (
+                        json.dumps(rd, ensure_ascii=False)[:1800],
+                        ("offer to draw these levels on their live chart (\"draw\" on %s, then \"link\": \"chart\")," % mk) if mk and rd.get("levels") else ""))
+    except Exception:
+        pass
 
 
 CHAT_REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "🔥", "🙏")

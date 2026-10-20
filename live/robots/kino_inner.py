@@ -170,6 +170,7 @@ def perceive_market(live_bars):
                 nm.capitalize(), "monte" if up > 0 else "baisse", pct,
                 "ça sent l'essoufflement, je parie sur un repli dans les 2 heures" if exp_ == "pullback" else "ça a encore du souffle, je parie que ça continue")
             add_thought(txt, "hunch", 0.6, src="market:run:" + sym, half_h=3)
+            mark_activity("_market", "market", [nm, {"le Bitcoin": "Bitcoin", "l'or": "gold", "le Nasdaq": "the Nasdaq"}.get(nm, nm)])
             place_bet(sym, nm, "run", exp_, 1 if up > 0 else -1, float(c[-1]), pct, txt)
             feel("curiosity", 0.25, why="%s bouge d'une façon rare" % nm)
         # 2) a sudden burst in the last 15 minutes
@@ -178,6 +179,7 @@ def perceive_market(live_bars):
             pct = 100 * (b[-1] / b[0] - 1)
             txt = "%s vient de faire un mouvement brusque en 15 minutes (%+.2f %%) - je parie qu'il en reprend une partie" % (nm.capitalize(), pct)
             add_thought(txt, "hunch", 0.65, src="market:burst:" + sym, half_h=1.5)
+            mark_activity("_market", "market", [nm, {"le Bitcoin": "Bitcoin", "l'or": "gold", "le Nasdaq": "the Nasdaq"}.get(nm, nm)])
             place_bet(sym, nm, "burst", "retrace", 1 if pct > 0 else -1, float(c[-1]), pct, txt)
             feel("excitement", 0.2, why="un mouvement brusque sur %s" % nm)
         # 3) the day's range broken
@@ -722,3 +724,41 @@ def v3_block(uid):
             "Enjoy it lightly." if b.get("right") else "Say it plainly, with humour, and what it teaches you - "
                                                         "changing your mind in front of them is a strength."))
     return "\n".join(L)
+
+
+# ================================================================ list 6 (owner 2026-10-20): the close reading of a screenshot
+READ_SYSTEM = """You are an expert chart reader looking closely at a trader's screenshot (MT5, TradingView, a phone app...).
+Read ONLY what is really visible - prices only from the price axis, labels or the order panel; when a number is not
+readable, leave it out. Answer ONE JSON object and nothing else:
+{"platform": "...", "market": "symbol or name as shown, or null", "timeframe": "M5/H1/... or null",
+ "price_now": number or null, "price_axis": [low, high] or null,
+ "levels": [{"price": number, "label": "what it is (their line, a high, support...)"}] (max 6),
+ "zones": [{"from": number, "to": number, "label": "..."}] (max 3),
+ "drawn": "what THEY drew (lines, arrows, boxes, text) in one line, or null",
+ "indicators": ["..."], "trades": "open positions / orders / SL / TP visible with prices, or null",
+ "pattern": "the price story and pattern in one or two lines",
+ "rule_guess": "the trading rule their drawing suggests, plain words, or null",
+ "formula": "that rule in the formula language, or null", "side": "buy"|"sell"|null, "confidence": "low"|"medium"|"high"}
+Formula names: open high low close body range hour weekday asia london newyork pdh pdl trend bos_up bos_down ema sma rsi
+atr highest lowest (series, n); cross_up/cross_down(a,b); "@ H1" etc. after a part."""
+
+
+def read_chart(images, note, W):
+    import robot_chat as RC
+    raw = W.ask_json(READ_SYSTEM, RC._content("Their words with it: %s" % (note or "-"), images), models=("sonnet", "haiku"),
+                     timeout=120, warm=False)
+    return raw if isinstance(raw, dict) else None
+
+
+_ACT = {}          # uid (or "_market") -> {kind: t} - what Kino is doing right now (memory only, for its live status)
+
+
+def mark_activity(uid, kind, extra=None):
+    _ACT.setdefault(uid or "_g", {})[kind] = [time.time()] + list(extra or []) if extra else time.time()
+
+
+def last_activity(uid):
+    out = dict(_ACT.get(uid) or {})
+    if "market" in (_ACT.get("_market") or {}):
+        out["market"] = _ACT["_market"]["market"]
+    return out

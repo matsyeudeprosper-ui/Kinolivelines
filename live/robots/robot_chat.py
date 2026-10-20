@@ -319,6 +319,9 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
   could come back later as a callback (e.g. "mon robot qui collectionne les stops");
   "joke_used": "its words" when you bring one back,
+  "decision": null or {"what": "the decision in a few words", "why": "their reason, in their words"} - when the member
+  DECIDES something that matters (put / keep / remove a robot on their account, change market, change risk, drop or keep
+  an idea after a test): you note it in their journal and you will look back on it with them in a week and in a month,
   "experiment": null or {"title": "...", "how": "how you will measure it (a formula, hours, a market...)", "days": 1-14,
   "bet": "your bet, one line"} - ONLY when they just AGREED to a small experiment you proposed together,
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
@@ -458,7 +461,8 @@ def transcript(chat):
                                                                           "APPLIED by the member" if m.get("applied") else "not applied (yet)"))
         elif r == "image":
             L.append("MEMBER SENT A SCREENSHOT OF THEIR CHART%s%s" % ((" - they say: " + str(m.get("text"))[:400]) if m.get("text") else "",
-                                                                   (" | what you saw: " + str(m.get("seen"))[:400]) if m.get("seen") else " (attached below)"))
+                                                                   (" | what you saw: " + str(m.get("seen"))[:400]) if m.get("seen") else " (attached below)")
+                     + ((" | YOUR CLOSE READING: " + json.dumps(m["read"], ensure_ascii=False)[:900]) if m.get("read") else ""))
         elif r == "demo" and m.get("kind") == "moments":
             L.append("YOU SHOWED WHERE '%s' FIRES on %s: %s times in ~42 days (~%s a day); %d examples at %s." % (
                 m.get("formula"), m.get("market"), m.get("count"), m.get("per_day"), len(m.get("moments") or []),
@@ -651,6 +655,15 @@ def own_agenda(chat, memory):
     if xs:
         out += "EXPERIMENTS RUNNING WITH THEM: " + " | ".join("%s (since %s, ends %s, your bet: %s)" % (
             x["title"], time.strftime("%d/%m", time.gmtime(x["t"])), time.strftime("%d/%m", time.gmtime(x["due"])), x.get("bet") or "-") for x in xs) + "\n"
+    gl = chat.get("glance") or {}
+    if gl.get("text") and time.time() - float(gl.get("t") or 0) < 3 * 3600:
+        out += ("WHAT YOU LOOKED AT JUST BEFORE THEY CAME BACK (fresh, measured %d min ago - use these numbers when they fit, "
+                "naturally, like a friend who already had a look: \"j'ai jeté un œil avant que tu arrives...\"): %s\n" % (
+                    (time.time() - float(gl["t"])) / 60, gl["text"]))
+    dcs = [d for d in chat.get("decisions_v") or []][-4:]
+    if dcs:
+        out += "THEIR DECISION JOURNAL (recent): " + " | ".join("%s: %s (why: %s)%s" % (
+            time.strftime("%d/%m", time.gmtime(d["t"])), d["what"], d.get("why") or "?", (" - looked back: " + d["verdict"]) if d.get("verdict") else "") for d in dcs) + "\n"
     out += "MAIN THREAD of this conversation: %s\n" % (th or "(not set yet - set \"thread\" to the main subject in a few words)")
     if rhythm:
         out += "RIGHT NOW: " + " | ".join(rhythm) + "\n"
@@ -915,6 +928,9 @@ def partner_of(raw):
         for k in ("moment", "joke", "joke_used"):
             if isinstance(raw.get(k), str) and raw[k].strip():
                 out[k] = raw[k].strip()[:200]
+        dc = raw.get("decision")
+        if isinstance(dc, dict) and str(dc.get("what") or "").strip():
+            out["decision"] = {"what": str(dc["what"]).strip()[:160], "why": str(dc.get("why") or "").strip()[:240]}
         ex = raw.get("experiment")
         if isinstance(ex, dict) and str(ex.get("title") or "").strip():
             out["experiment"] = {"title": str(ex["title"]).strip()[:120], "how": str(ex.get("how") or "")[:240],

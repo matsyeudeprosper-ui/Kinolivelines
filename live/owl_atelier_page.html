@@ -303,6 +303,7 @@ header .ib{border:0;background:transparent;width:36px}
 .hl2 .hr{flex:none;text-align:right;font-size:.74rem;color:var(--muted)}.hl2 .hr i{display:block;margin:5px 0 0 auto;width:max-content;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--wa-acc);color:#fff;font:800 11px/20px Inter,system-ui,sans-serif;font-style:normal;text-align:center}
 .hl2.un .hr{color:var(--wa-acc)}.hl2.un .hm b{font-weight:800}
 .sndt{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font:600 .9rem Inter,system-ui,sans-serif;cursor:pointer}
+.kav{position:relative}.kav .km{position:absolute;top:-5px;right:-7px;font-size:12px;line-height:1;pointer-events:none}.kav[data-km=sleepy]{filter:saturate(.55) brightness(.92)}.kav[data-km=happy],.kav[data-km=proud]{animation:kbo 2.6s ease-in-out infinite}.kav[data-km=focus]{animation:kfo 1.6s ease-in-out infinite}@keyframes kbo{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}@keyframes kfo{0%,100%{opacity:1}50%{opacity:.78}}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -676,7 +677,10 @@ function hdr(){const v=C&&C.view,st=C&&C.status,d=C&&C.draft;const ts=$('ts');if
  $('tn').textContent='Kino';
  if(st==='thinking'||d){ts.textContent=T('écrit…','typing…');ts.className='on';}
  else if(st==='building'){ts.textContent=T('prépare ton robot…','building your robot…');ts.className='on';}
- else{ts.textContent=v&&v.name?('· '+v.name):T('en ligne','online');ts.className='';}}
+  else if(C&&C.kst){ts.textContent=EN?C.kst.en:C.kst.fr;ts.className='';}
+  else{ts.textContent=v&&v.name?('· '+v.name):T('en ligne','online');ts.className='';}
+  const kv=document.querySelector('.kav');if(kv){const km=(C&&C.km)||'';kv.dataset.km=km;let b=kv.querySelector('.km');if(!b){b=document.createElement('b');b.className='km';kv.appendChild(b);}
+   b.textContent=({happy:'☀️',focus:'💭',worried:'😟',sleepy:'💤',curious:'👀',proud:'✨'})[km]||'';}}
 function sdPaint(){const b=$('sdb');if(!b)return;const has=!!$('tx').value.trim();b.innerHTML='<svg><use href="#'+(has?'send':'mic')+'"/></svg>';
  b.setAttribute('aria-label',has?T('Envoyer','Send'):T('Parler','Talk'));b.disabled=false;}
 /* 2026-10-19 (owner: feedback, the messenger way): long-press or double-tap a Kino message to react */
@@ -718,7 +722,7 @@ function noteSh(){const M=(C&&C.msgs)||[],E=[];
  M.forEach(m=>{if(m.role==='ai'&&m.made&&m.made.length)E.push([m.t,'✦',T('Nouvelle(s) pièce(s) : ','New piece(s): ')+m.made.map(x=>x.name).join(', ')]);
   if(m.role==='result'){const r=m.result||{};E.push([m.t,'🧪',(r.kino_variant?T('Variante de Kino testée : ','Kino’s variant tested: '):T('Test : ','Test: '))+(r.net>=0?'+':'')+(+r.net||0).toFixed(2)+' $ / '+(r.trades||0)+' trades'+(r.owl_net!=null?' ('+T('Owl ','Owl ')+(+r.owl_net).toFixed(2)+')':'')+(r.market?' · '+r.market:'')]);}
   if(m.role==='edit')E.push([m.t,'✎',m.text]);if(m.role==='proposal')E.push([m.t,'💡',T('Kino propose : ','Kino proposes: ')+(m.why||'')+(m.applied?T(' (appliqué)',' (applied)'):'')]);});
- (C.notebook||[]).forEach(n=>E.push([n.t,'📓',n.text]));E.sort((a,b)=>(a[0]||0)-(b[0]||0));
+ (C.notebook||[]).forEach(n=>E.push([n.t,'📓',n.text]));(C.decisions_v||[]).forEach(d=>E.push([d.t,'⚖️',T('Décision : ','Decision: ')+d.what+(d.why?T(' — pourquoi : ',' — why: ')+d.why:'')+(d.verdict?T(' · depuis : ',' · since: ')+d.verdict:'')]));E.sort((a,b)=>(a[0]||0)-(b[0]||0));
  shOpen('<h4>📓 '+T('Le carnet du robot','The robot’s notebook')+'</h4><p class="sub">'+T('Son histoire : ce qu’on a construit, testé et décidé ensemble.','Its story: what we built, tested and decided together.')+'</p>'+
   (E.length?'<div class="nbk">'+E.map(e=>'<div class="nbi"><span class="nbd">'+(e[0]?dm(e[0])+' '+hm(e[0]):'')+'</span><span class="nbx">'+e[1]+' '+esc(e[2])+'</span></div>').join('')+'</div>':'<div class="emptybp">'+T('Rien encore - ça se remplit au fil de vos échanges.','Nothing yet - it fills up as you go.')+'</div>'));}
 async function ghostAct(a){const j=await post('chat_ghost',{id:CID,action:a});if(!j.ok){toast(j.err==='full'?T('Déjà 2 fantômes.','Already 2 ghosts.'):(j.err==='noprop'?T('Pas encore de proposition de Kino.','No proposal from Kino yet.'):T('Impossible pour le moment.','Not possible right now.')));return;}load(CID,true);}
@@ -802,7 +806,8 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
 setInterval(async()=>{if(!CID||!C||document.visibilityState!=='visible'||POLL&&C.status!=='ready')return;
  try{const p=await getJ('chat_ping?id='+encodeURIComponent(CID));if(p.err)return;
   const M=C.msgs||[],lt=(M[M.length-1]||{}).t||0;
-  if(p.n!==M.length||p.last_t!==lt||p.status!==C.status||p.draft||(p.rev||0)!==(C.rev||0)||(p.test||null)!==((C.test||{}).state||null))load(CID);}catch(e){}},6000);
+  if(p.n!==M.length||p.last_t!==lt||p.status!==C.status||p.draft||(p.rev||0)!==(C.rev||0)||(p.test||null)!==((C.test||{}).state||null))load(CID);
+  else if(JSON.stringify(p.kst||null)!==JSON.stringify(C.kst||null)||(p.km||'')!==(C.km||'')){C.kst=p.kst;C.km=p.km;hdr();}}catch(e){}},6000);
 /* ---------- 2026-10-20: the header's "more" menu (search, notebook) - the name keeps its room */
 function moreSh(btn){rxClose();const r=btn.getBoundingClientRect(),d=document.createElement('div');d.id='rxbar';d.className='lpm';
  d.innerHTML='<button class="it" data-a="s">🔍&nbsp; '+T('Chercher dans la conversation','Search the conversation')+'</button><button class="it" data-a="n">📓&nbsp; '+T('Le carnet du robot','The robot’s notebook')+'</button><button class="it" data-a="k">🦉&nbsp; '+T('Kino et toi','Kino and you')+'</button>';
