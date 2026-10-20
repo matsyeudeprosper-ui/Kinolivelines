@@ -16014,6 +16014,10 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _tg_demo(user.get("id"), _qdm)
             # 2026-10-20 (owner: "all is possible from the chat"): live cards Kino attaches, settings it applies
             _cards = list(_pa.get("cards") or [])
+            # 2026-10-20 (humanity watch): "j'ouvre la salle de replay" said without the card = a promise the page can't keep
+            if q.get("say") and not any(cd.get("kind") == "replay" for cd in _cards) and re.search(
+                    r"(j['’]ouvre|je t['’]ouvre|j['’]ouvre pour toi|opening|i['’]ll open|i open)[^.!?]{0,40}replay", str(q["say"]), re.I):
+                _cards.append({"kind": "replay", "args": {}})
             if q["say"] and event and event.startswith(("LIVE TRADE OPENED", "LIVE TRADE CLOSED")) and not _cards:
                 _cards = [{"kind": "account", "args": {}}]
             for cd in _cards[:2]:
@@ -16127,7 +16131,7 @@ def _chat_build(cid, user):
                 if txt.strip() and _tg_live(user.get("id")) and any(mm.get("via") == "telegram" for mm in (c.get("msgs") or [])[-4:]):
                     threading.Thread(target=tg_send, args=(user.get("id"), txt.strip()), daemon=True).start()
                 if txt.strip() or ans.get("made") or ans.get("robot"):
-                    _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
+                    _chat_msg(c, "ai", text=txt.strip() or ("Done, your robot is up to date." if _rc().member_lang(c, "en" if en else "fr") == "en" else "C'est fait, ton robot est à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
                               follow=True, link=ans.get("link"), tools=ans.get("tools_used"), **({"own": ans["own"]} if ans.get("own") else {}))
                 for _cht in ans.get("charts") or []:       # 2026-10-19 (owner list-4 item 3): the real trade, replayed
