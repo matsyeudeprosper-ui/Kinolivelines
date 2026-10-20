@@ -676,13 +676,14 @@ async function drawSh(){if(!CID)return;const mk=(C&&C.view&&C.view.market)||'BTC
   '<div class="dcw"><canvas id="dc"></canvas><div class="dlo" id="dlo">'+T('Je charge le graphique…','Loading the chart…')+'</div></div>'+
   '<div class="tools">'+[['buy',T('Achat','Buy')],['sell',T('Vente','Sell')],['stop','Stop'],['exit',T('Sortie','Exit')],['line',T('Niveau','Level')]].map(x=>'<button class="tl '+x[0]+'" data-t="'+x[0]+'" onclick="drTool(\''+x[0]+'\')">'+x[1]+'</button>').join('')+'<button class="tl" onclick="drUndo()">↺</button></div>'+
   '<div class="fld"><textarea id="dnote" rows="2" maxlength="600" placeholder="'+T('Ce que je veux te montrer (facultatif)…','What I want to show you (optional)…')+'"></textarea></div>'+
-  '<button class="btn pri" id="dsend" onclick="drSend()" disabled>'+T('Montrer à l’IA','Show the AI')+'</button>');
+  '<button class="btn pri" id="dsend" onclick="drSend()" disabled>'+T('Montrer à Kino','Show Kino')+'</button>'+
+  '<div class="kact"><button onclick="shClose();ask(T(\'Explique-moi ce que je vois sur le graphique \',\'Explain what I see on the chart \')+DR.mk+\' (\'+DR.tf+\')\')">💬 '+T('Explique-moi ce graphique','Explain this chart')+'</button><button onclick="openPage(\'chart\')">📈 '+T('Mon graphique complet','My full chart')+'</button></div>');
  DR={mk:mk,tf:'M5',rows:[],marks:[],tool:null,vis:70,off:0,older:true};await drLoad();drInput();}
 async function drLoad(end){const j=await post('chat_chart',{id:CID,tf:DR.tf,end:end,market:DR.mk});const lo=$('dlo');
  if(!j.ok){if(lo)lo.textContent=j.err==='nodata'?T('Le graphique de ce marché sera prêt après son premier test.','This market’s chart will be ready after its first test.'):T('Graphique indisponible.','Chart unavailable.');return;}
- if(lo)lo.style.display='none';if(end){const old=j.candles.filter(r=>r[0]<DR.rows[0][0]);DR.rows=old.concat(DR.rows);}else{DR.rows=j.candles;DR.off=0;}DR.older=j.older;drDraw();}
+ if(lo)lo.style.display='none';if(end){const old=j.candles.filter(r=>r[0]<DR.rows[0][0]);DR.rows=old.concat(DR.rows);}else{DR.rows=j.candles;DR.off=0;DR.extra=j;}DR.older=j.older;drDraw();}
 function drWin(){const n=DR.rows.length,b=Math.max(Math.min(n,DR.vis),n-DR.off),a=Math.max(0,b-DR.vis);return [a,b];}
-function drDraw(){const cv=$('dc');if(!cv||!DR.rows.length)return;const w=drWin();DR.o={rows:DR.rows,marks:DR.marks,from:w[0],to:w[1]};drawChart(cv,DR.o);$('dsend').disabled=!DR.marks.length;}
+function drDraw(){const cv=$('dc');if(!cv||!DR.rows.length)return;const w=drWin();DR.o={rows:DR.rows,marks:DR.marks,from:w[0],to:w[1]};drawChart(cv,DR.o);drExtras(cv,DR.o);$('dsend').disabled=!DR.marks.length;}
 function drTf(t){DR.tf=t;DR.marks=[];document.querySelectorAll('#tfs .tfb').forEach(b=>b.classList.toggle('on',b.textContent===t));drLoad();}
 function drZoom(z){DR.vis=Math.max(30,Math.min(200,Math.round(DR.vis*(z>0?1.35:1/1.35))));drDraw();}
 function drTool(t){DR.tool=DR.tool===t?null:t;document.querySelectorAll('.tools .tl').forEach(b=>b.classList.toggle('on',b.dataset.t===DR.tool));}
@@ -1292,6 +1293,18 @@ function cacheGet(id){try{const c=JSON.parse(localStorage.getItem('kcache_'+id)|
 function cacheSet(j){try{const c=Object.assign({},j,{msgs:(j.msgs||[]).slice(-40).filter(m=>m.role!=='demo'),draft:'',status:'ready'});localStorage.setItem('kcache_'+j.id,JSON.stringify(c));
  const K=JSON.parse(localStorage.getItem('kcache_keys')||'[]').filter(k=>k!==j.id);K.unshift(j.id);K.slice(6).forEach(k=>localStorage.removeItem('kcache_'+k));localStorage.setItem('kcache_keys',JSON.stringify(K.slice(0,6)));}catch(e){}}
 (function(){const go=()=>{hcApply();const w=document.querySelector('.wrow');if(w&&!$('sugg')){const d=document.createElement('div');d.id='sugg';w.parentNode.insertBefore(d,w);}const x=$('tx');if(x)x.addEventListener('input',suggPaint);};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();})();
+
+/* 2026-10-20 (owner: "this chart is useful - make it really smart"): live prices, yesterday's high / low, the last price and
+   Kino's own drawing on top of the member's drawing chart, refreshed while it is open */
+function drExtras(cv,o){const J=DR.extra||{};if(!o||!o._Y)return;const g=cv.getContext('2d'),W=cv.clientWidth||300,Rr=46,lo=o._lo,hi=o._hi,Y=o._Y;
+ const hl=(p,col,lab,dash)=>{if(p==null||p<lo||p>hi)return;const y=Y(p);g.strokeStyle=col;g.lineWidth=1.2;g.setLineDash(dash||[5,4]);g.beginPath();g.moveTo(0,y);g.lineTo(W-Rr,y);g.stroke();g.setLineDash([]);
+  g.font='bold 9px Inter,system-ui';const tw=g.measureText(lab).width+8;g.fillStyle=col;g.globalAlpha=.85;g.fillRect(4,y-8,tw,14);g.globalAlpha=1;g.fillStyle='#fff';g.fillText(lab,8,y+3);};
+ (J.levels||[]).forEach(l=>hl(l.p,l.k==='pdh'?'#f59e0b':'#38bdf8',l.k==='pdh'?T('plus haut d’hier','yesterday’s high'):T('plus bas d’hier','yesterday’s low')));
+ const kd=J.kdraw||{};(kd.zones||[]).forEach(z=>{const a=Math.max(lo,Math.min(z.from,z.to)),b=Math.min(hi,Math.max(z.from,z.to));if(b<=a)return;g.fillStyle=cssv('--violet');g.globalAlpha=.12;g.fillRect(0,Y(b),W-Rr,Y(a)-Y(b));g.globalAlpha=1;});
+ (kd.lines||[]).forEach(l=>hl(l.price,cssv('--violet'),'🦉 '+(l.label||'Kino'),[]));
+ if(J.now!=null&&DR.off===0){const y=Y(J.now);if(J.now>=lo&&J.now<=hi){g.fillStyle=cssv('--accent');g.fillRect(W-Rr+1,y-7,Rr-2,14);g.fillStyle='#fff';g.font='bold 9px Inter,system-ui';g.fillText(px(J.now),W-Rr+3,y+3);}}
+ if(J.live){g.fillStyle=cssv('--up');g.beginPath();g.arc(10,10,4,0,7);g.fill();g.fillStyle=cssv('--muted');g.font='bold 9px Inter,system-ui';g.fillText(T('EN DIRECT','LIVE'),18,13);}}
+setInterval(async()=>{if(!DR||!DR.rows||!DR.rows.length||DR.off!==0||!$('dc')||document.visibilityState!=='visible')return;try{const j=await post('chat_chart',{id:CID,tf:DR.tf,market:DR.mk});if(j&&j.ok&&j.live){DR.rows=j.candles;DR.extra=j;drDraw();}}catch(e){}},15000);
 
 </script>
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div></div>

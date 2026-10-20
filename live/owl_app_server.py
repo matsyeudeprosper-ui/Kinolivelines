@@ -18779,8 +18779,36 @@ def chat_chart(user, body):
     except Exception:
         end = None
     r = _rd().candles(mk, tf, end, 240)
+    # 2026-10-20 (owner: "this chart is useful - make it really smart"): today's LIVE prices when the live feed has the
+    # market (the test pack stops weeks ago), yesterday's high / low, the last price, Kino's own drawing on that market
+    try:
+        _rc()
+        import robot_ghost as _RGc, robot_demo as _RDc
+        LR, lk = _RGc.live_bars(mk)
+        if LR is not None and len(LR) > 60 and (end is None or end > int(LR["time"][0]) + 3600):
+            Tm = LR["time"].astype(int)
+            s_ = _RDc.TFS.get(tf, 300)
+            j1 = len(LR) if end is None else int(np.searchsorted(Tm, int(end), side="right")) if "np" in globals() else len(LR)
+            j0 = max(0, j1 - 240 * s_ // 60 - s_ // 60)
+            rows = _RDc._rows(LR, lk, j0, j1, tf)[-240:]
+            if rows:
+                older = bool(j0 > 0 or r)
+                r = {"market": mk, "tf": tf, "candles": rows, "older": older, "first": int(Tm[0]), "last": int(Tm[-1]), "live": True}
+                day = int(Tm[-1]) // 86400 * 86400
+                yd = [(float(LR["high"][i]) / lk, float(LR["low"][i]) / lk) for i in range(len(LR)) if day - 86400 <= int(Tm[i]) < day]
+                if yd:
+                    r["levels"] = [{"p": round(max(h for h, _ in yd), 5), "k": "pdh"}, {"p": round(min(l for _, l in yd), 5), "k": "pdl"}]
+                r["now"] = round(float(LR["close"][-1]) / lk, 5)
+    except Exception:
+        pass
     if r is None:
         return {"ok": False, "err": "nodata", "market": mk}
+    try:
+        _dw = _mem_get(user.get("id")).get("drawing") or {}
+        if str(_dw.get("market") or "").upper() == mk.upper() and (_dw.get("lines") or _dw.get("zones")):
+            r["kdraw"] = {"lines": _dw.get("lines") or [], "zones": _dw.get("zones") or []}
+    except Exception:
+        pass
     r["ok"] = True
     return r
 
