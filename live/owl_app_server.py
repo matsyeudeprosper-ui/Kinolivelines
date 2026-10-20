@@ -15025,6 +15025,13 @@ def _partner_apply(user, cid, pa):
     if not pa:
         return
     uid = user.get("id")
+    if pa.get("thought_used"):
+        try:
+            _rc()
+            import kino_inner as _KIu
+            _KIu.use_thought(pa["thought_used"], uid)
+        except Exception:
+            pass
     if cid and pa.get("more"):                     # 2026-10-20 (owner: "free to continue adding messages without my reply")
         try:
             _more_plan(user, cid, pa["more"])
@@ -15991,6 +15998,13 @@ def _companion_tick():
                                 streak += 1
                             else:
                                 break
+                        try:
+                            _rc()
+                            import kino_inner as _KIt
+                            _KIt.feel("worry" if (last_cl.get("p") or 0) < 0 else "excitement", 0.12, uid=uid,
+                                      why="un trade %s sur son compte (%+.2f $)" % ("perdant" if (last_cl.get("p") or 0) < 0 else "gagnant", last_cl.get("p") or 0))
+                        except Exception:
+                            pass
                         ev = ("LIVE TRADE CLOSED on their account: %+.2f $ after %s min (%s). %d %s in a row. Today %+.2f $, week %+.2f $." % (
                             last_cl.get("p") or 0, last_cl.get("dur"), "buy" if last_cl.get("dir") == "A" else "sell", streak,
                             "wins" if (last_cl.get("p") or 0) > 0 else "losses", nd.get("today") or 0, nd.get("week") or 0))
@@ -16549,11 +16563,11 @@ def _inner_clock_once():
                 tr = _rc().transcript(dict(c, msgs=(c.get("msgs") or [])[-14:]))
                 ctx = ("THE CONVERSATION (the end):\n%s\n\nSILENCE: %d minutes since the last message (%s). This member usually answers "
                        "Kino in about %d s. Kino has sent %d message(s) in a row without an answer. They are %s. Their local time: %02d h. "
-                       "Main thread: %s. Kino saved for later: %s. Kino's mood: %s." % (
+                       "Main thread: %s. Kino saved for later: %s. Kino's mood: %s.\n%s" % (
                            tr[-5000:], quiet / 60, "Kino wrote last" if M[-1].get("role") != "user" else "THEY wrote last and got no answer",
                            _reply_rhythm(M), run, "looking at the conversation right now" if here else "away from the app", h0,
                            c.get("thread") or "-", json.dumps(c.get("later") or [], ensure_ascii=False)[:400],
-                           json.dumps((_KM.load().get("mood") or {}), ensure_ascii=False)[:160]))
+                           json.dumps((_KM.load().get("mood") or {}), ensure_ascii=False)[:160], _inner_block(uid)))
                 d = _KM.inner_decide(ctx)
             except Exception:
                 d = None
@@ -16575,6 +16589,129 @@ def _inner_clock_once():
                              "là ?' as a reflex, never repeat yourself); or \"send\": false if, re-reading, it is not worth it." % (
                                  quiet / 60, str(d.get("intent") or "")[:240])), kwargs={"notify": not here}, daemon=True).start()
             break
+
+
+_REV_NEXT = {}        # uid -> next reverie moment (irregular)
+
+
+def _inner_block(uid):
+    try:
+        _rc()
+        import kino_inner as _KI
+        return _KI.prompt_block(uid)
+    except Exception:
+        return ""
+
+
+def _inner_feel_result(uid, res):
+    """a test result for a member -> Kino feels something about it"""
+    try:
+        _rc()
+        import kino_inner as _KI
+        net = float((res or {}).get("net") or 0)
+        if net > 0:
+            _KI.feel("excitement", 0.35, uid=uid, why="son test vient de sortir positif (%+.2f $)" % net)
+        else:
+            _KI.feel("worry", 0.15, uid=uid, why="son test vient de sortir négatif (%+.2f $)" % net)
+    except Exception:
+        pass
+
+
+def _inner_engine_once():
+    """2026-10-20 (owner: "a really good inner voice engine"): Kino notices (market, robots), daydreams about each member
+    at irregular moments, and lets a strong thought come out on its own when the inner voice says it is the moment"""
+    import random
+    _rc()
+    import kino_inner as _KI, kino_mind as _KM, robot_ghost as _RG, robot_tools as _RT
+    now = time.time()
+    try:
+        _KI.perceive_market(_RG.live_bars)
+    except Exception:
+        pass
+    for u in users():
+        uid = u.get("id")
+        if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+            continue
+        try:
+            ch = chat_list(u).get("chats") or []
+            if not ch:
+                continue
+            c = _chat_load(u, ch[0]["id"]) or {}
+            M = c.get("msgs") or []
+            last_user = max([int(m.get("t") or 0) for m in M if m.get("role") == "user"] or [0])
+            if now - last_user > 3 * 86400:
+                continue
+            try:
+                _KI.perceive_robot(uid, json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8")))
+            except Exception:
+                pass
+            h0 = _local_hour(uid)
+            # REVERIE - at irregular moments, during their day
+            if uid not in _REV_NEXT:
+                _REV_NEXT[uid] = now + random.uniform(600, 1800)
+            if now >= _REV_NEXT[uid] and _active_hour(uid, h0):
+                _REV_NEXT[uid] = now + random.uniform(2700, 7200)
+                mem = _chat_memory(u, c.get("id"))
+                ctx = ("TODAY: %s, their local time %02d h.\nWHAT YOU KNOW ABOUT THEM: %s\nTHEIR ROBOT IN THIS CHAT: %s (market %s)\n"
+                       "THINGS ON YOUR MIND ALREADY: %s\nHOW YOU FEEL: %s\nYOUR OWN ROBOT: %s\nTHE LAST TALK:\n%s" % (
+                           time.strftime("%A %d %B %Y"), h0, " | ".join(str(n) for n in (mem.get("notes") or [])[-20:])[:2500],
+                           ((c.get("robot") or {}).get("name") or "-"), ((c.get("robot") or {}).get("market") or "-"),
+                           json.dumps([t["text"] for t in _KI.thoughts(uid, 5, 0.1)], ensure_ascii=False)[:1200],
+                           json.dumps(_KI.feelings(uid)[:4], ensure_ascii=False)[:600], (_KM.my_robot_block() or "-")[:800],
+                           _rc().transcript(dict(c, msgs=M[-20:]))[-5000:]))
+                for th in _KI.reverie(uid, ctx, _rc().W if hasattr(_rc(), "W") else __import__("robot_warm")):
+                    extra = None
+                    if th["kind"] == "daydream" and th.get("formula"):
+                        try:            # a daydream that can be measured is measured (vs random moments)
+                            mk = (c.get("robot") or {}).get("market") or "BTCUSD"
+                            st = _RT.idea_stats(mk, th["formula"], th["side"], 30)
+                            if not st.get("error"):
+                                br = st.get("beats_random_pct")
+                                extra = {"formula": th["formula"], "side": th["side"], "market": mk,
+                                         "measure": "%s fois par jour, bat le hasard dans %s %% des tirages, sur %s" % (st.get("per_day"), br, mk)}
+                                th["s"] = min(0.9, th["s"] + (0.25 if (br or 0) >= 80 else (-0.1 if (br or 0) < 50 else 0)))
+                        except Exception:
+                            pass
+                    _KI.add_thought(th["text"], th["kind"], th["s"], uid=uid, src="reverie", half_h=10 if th["kind"] != "memory" else 16, extra=extra)
+            # A THOUGHT COMES OUT - only a strong one, never mid-conversation, and the inner voice decides
+            top = _KI.thoughts(uid, 1, 0.55)
+            if not top or now - max([int(m.get("t") or 0) for m in M] or [0]) < 900 or _CHAT_Q.get(c.get("id")) or c.get("id") in _CHAT_B:
+                continue
+            mm = _mem_get(uid)
+            sp = [t for t in (mm.get("spont_log") or []) if now - t < 86400]
+            if len(sp) >= 4 or (sp and now - max(sp) < 5400) or not _active_hour(uid, h0):
+                continue
+            th = top[0]
+            sn = _CHAT_SEEN.get(uid)
+            here = bool(sn and now - sn[0] < 30 and sn[1] == c.get("id"))
+            d = _KM.inner_decide("A THOUGHT ON YOUR MIND (%s, strength %.1f): %s%s\n\nTHE LAST TALK (ended %d min ago):\n%s\n\nThey are %s, their local "
+                                 "time %02d h. Would Kino naturally text this thought now?" % (
+                                     th["kind"], th["now"], th["text"], (" (measured: %s)" % th["measure"]) if th.get("measure") else "",
+                                     (now - max([int(m.get("t") or 0) for m in M] or [now])) / 60, _rc().transcript(dict(c, msgs=M[-10:]))[-3000:],
+                                     "looking at the app" if here else "away", h0))
+            if not d or not d.get("now"):
+                _KI._mut(lambda dd: [x.__setitem__("s", round(float(x.get("s") or 0) * 0.8, 3)) for x in dd.get("thoughts") or [] if x["id"] == th["id"]])
+                continue
+            _KI.use_thought(th["id"], uid)
+            _mem_note_safe(uid, lambda mm2: mm2.__setitem__("spont_log", [t for t in (mm2.get("spont_log") or []) if time.time() - t < 86400] + [time.time()]))
+            _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+            threading.Thread(target=_chat_quick, args=(c["id"], u, "A THOUGHT CAME TO YOU (%s): \"%s\"%s. Say it the way a friend texts something that "
+                             "just crossed their mind - spontaneous, short, in your own words%s; or \"send\": false if, re-reading, it is not worth it." % (
+                                 th["kind"], th["text"], (" - measured: %s" % th["measure"]) if th.get("measure") else "",
+                                 " (you may set build = true to show it on a chart)" if th.get("formula") else "")),
+                             kwargs={"notify": not here}, daemon=True).start()
+        except Exception:
+            continue
+
+
+def _inner_engine_loop():
+    time.sleep(120)
+    while True:
+        try:
+            _inner_engine_once()
+        except Exception:
+            pass
+        time.sleep(60)
 
 
 def _inner_clock_loop():
@@ -17077,6 +17214,7 @@ def chat_get(user, cid):
                 return True
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         if _chat_mut(c["id"], put):
+            _inner_feel_result(user.get("id"), res)
             threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         else:
             _CHAT_Q[c["id"]] -= 1
@@ -17560,6 +17698,12 @@ def _kino_robot_tick():
     t0 = g.get("last_t")
     rules, rr = _RD.rules_of(r["robot"], [])
     evs = _RG.advance(g, rules, rr)
+    try:                      # 2026-10-20: Kino feels its own robot's trades
+        import kino_inner as _KIr
+        for e in evs:
+            _KIr.own_robot_event(e)
+    except Exception:
+        pass
     if evs or g.get("last_t") != t0:
         cur = _KM.my_robot() or r              # the night review may have changed a piece meanwhile
         cur["ghost"] = dict(g, robot=cur.get("robot") or g.get("robot"))
@@ -17694,6 +17838,7 @@ def _ghost_feed_refresh():
         except Exception:
             pass
         import robot_ghost as _RG
+        mk |= {"BTCUSD", "XAUUSD", "USTEC"}                   # 2026-10-20: Kino watches the big markets for its hunches
         _RG.want_markets(sorted(mk))
     except Exception:
         pass
@@ -25713,7 +25858,8 @@ if __name__ == "__main__":
     print(f"OwlNest v2 serving on port {PORT}, token {TOKEN}")
     threading.Thread(target=_cand_watch, daemon=True).start()
     threading.Thread(target=_companion_loop, daemon=True).start()
-    threading.Thread(target=_inner_clock_loop, daemon=True).start()   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
+    threading.Thread(target=_inner_clock_loop, daemon=True).start()
+    threading.Thread(target=_inner_engine_loop, daemon=True).start()  # 2026-10-20: feelings, thoughts, daydreams   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 

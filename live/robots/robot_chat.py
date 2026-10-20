@@ -166,6 +166,8 @@ EVENTS: the message may start with an EVENT instead of a member message:
   from the lab, a curious question, a next step - one thing, short, specific, no "just checking in". Otherwise
   "send": false. If your last message got no answer, you may still come back ONCE with something NEW (a finding, a
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
+  A THOUGHT CAME TO YOU - something crossed your mind (a market hunch, a link with their idea, a memory, a daydream idea,
+  a feeling about them, your own robot): text it spontaneously, short, in your own words, or "send": false.
   INNER VOICE - the talk went quiet and a thought came back to you: write it like a friend who just thought of it (if it
   needs numbers or a chart, say a short line and set build = true to bring them), or stay silent ("send": false).
   YOUR FOLLOW-ON - the message you planned to add ("more"): send it now, naturally, as a continuation (you may use
@@ -302,6 +304,7 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "thread": null or the conversation's MAIN subject in a few words (only when it is new or changed),
   "aside": true when this message is a side topic away from the main thread (false when you are on it or bring it back),
   "later": [{"kind": "ask"|"tell", "text": "..."}] things to bring up later, "later_used": "the text" when you used one,
+  "thought_used": null or the id of the ON YOUR MIND thought you just brought up,
   "more": null or {"in": seconds (15 to 1800), "what": "what you will add"} - you will TEXT AGAIN by yourself if they have
   not written by then (see YOU CAN TEXT AGAIN),
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
@@ -590,6 +593,15 @@ def own_agenda(chat, memory):
                       "noticed), a question is NOT required")
     if th and aside >= 2:
         rhythm.append("you have drifted from the main thread for %d messages - close the side topic warmly and bring it back to: %s" % (aside, th))
+    U_ = [m for m in (chat.get("msgs") or []) if m.get("role") == "user"]
+    short = [len(str(m.get("text") or "").strip()) for m in U_[-4:]]
+    if len(short) >= 3 and all(x <= 14 for x in short[-3:]):
+        # 2026-10-20 (inner voice items 6 and 9): one-word answers = tired, busy, bored, or the topic is worn out
+        if th and aside == 0:
+            rhythm.append("their last answers are one or two words: the topic feels worn out - wrap it up warmly and move on to "
+                          "something else (a thought on your mind, them, your robot, the market), the way friends naturally switch")
+        rhythm.append("you sense they are short - tired, busy or not in the mood: lighter and shorter; if it feels right (rarely), "
+                      "a simple human 'ça va, toi ?'")
     out = ("CONVERSATION RHYTHM (talk like two friends texting, never an interview): mostly answer and react; share things of "
            "yours as often as you ask; at most ONE question in a message and not in every message - prefer a remark that invites "
            "them to talk (\"moi j'aime bien attendre la clôture, ça évite les pièges\") over a direct question; a question must "
@@ -609,6 +621,13 @@ def own_agenda(chat, memory):
             "something, either do it now or plan it with \"more\" - never promise and wait. %s\n" % (
                 "You already sent %d messages in a row without an answer - no \"more\" now, let them breathe." % run if run >= 3 else
                 "Not every message - only when a person would."))
+    try:
+        import kino_inner as KI
+        ib = KI.prompt_block(chat.get("uid"))
+        if ib:
+            out += ib + "\n"
+    except Exception:
+        pass
     out += "MAIN THREAD of this conversation: %s\n" % (th or "(not set yet - set \"thread\" to the main subject in a few words)")
     if rhythm:
         out += "RIGHT NOW: " + " | ".join(rhythm) + "\n"
@@ -864,6 +883,8 @@ def partner_of(raw):
             out["knows"] = kn[:4]
     except Exception:
         pass
+    if str(raw.get("thought_used") or "").strip():
+        out["thought_used"] = str(raw["thought_used"]).strip()[:120]
     try:                      # 2026-10-20 (owner: "not ping pong - he is free to add more messages without my reply")
         mo = raw.get("more")
         if isinstance(mo, dict) and str(mo.get("what") or "").strip():
