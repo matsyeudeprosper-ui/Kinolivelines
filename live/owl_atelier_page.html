@@ -314,6 +314,7 @@ html,body{overflow-x:hidden;max-width:100%}.wrow{min-width:0;max-width:100%;box-
 .jny{display:flex;align-items:center;gap:0;margin:0 8px 6px;padding:8px 10px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}.js{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;color:var(--muted);font:600 .66rem Inter,system-ui,sans-serif;cursor:pointer;padding:0 2px;min-width:0}.js i{font-style:normal;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:var(--surface3);border:1px solid var(--border2)}.js.done i{background:rgba(46,204,113,.18);border-color:rgba(46,204,113,.5);color:var(--up)}.js.done span{color:var(--up)}.js.now i{background:rgba(59,130,246,.2);border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}.js.now span{color:var(--accent-soft)}.js.run i{border-color:#f59e0b;animation:kfo 1.4s ease-in-out infinite}.js.run span{color:#f59e0b}.js.bad i{background:rgba(255,92,92,.15);border-color:rgba(255,92,92,.5);color:var(--down)}.jl{flex:1;height:2px;min-width:6px;background:var(--border2);margin:0 2px 14px}.jl.on{background:rgba(46,204,113,.6)}.bcard{margin:6px 8px 10px 39px;padding:10px 12px;border:1px solid rgba(59,130,246,.45);border-radius:14px;background:var(--surface);font-size:.84rem;max-width:440px}.bcard.done{border-color:rgba(167,139,250,.6)}.bcard .plh a{color:var(--accent-soft);cursor:pointer}.bst{display:flex;align-items:center;gap:8px;padding:5px 0;opacity:0;animation:bin .4s ease forwards}.bst b{width:22px;text-align:center}.bst span{flex:1}.bst em{font-style:normal;color:var(--muted)}.bst.ok em{color:var(--up);font-weight:800}.bst.run em{animation:kfo 1s ease-in-out infinite}@keyframes bin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .strip:not(.fold){max-height:180px}.strip.fold{overflow:hidden!important}
 .stq{padding:10px 12px;border-left:3px solid var(--accent);background:var(--surface2);border-radius:10px;margin:8px 0 6px}.stq p{margin:0 0 6px;font-size:.9rem}.stq small{color:var(--muted);font-size:.72rem}
+.recipe{border:1px solid var(--border2);border-radius:16px;background:var(--surface);padding:4px 12px;margin:0 0 12px}.rl{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}.rl:last-child{border-bottom:0}.rl b{font-size:20px;width:26px;flex:none;text-align:center}.rl span{flex:1;min-width:0;font-size:.92rem;line-height:1.4}.rl small{display:block;color:var(--muted);font-size:.72rem;font-weight:700}.btn.ghostb{background:transparent;border-style:dashed;color:var(--muted2)}.icard{border:1px solid rgba(59,130,246,.5);background:linear-gradient(135deg,rgba(59,130,246,.10),var(--surface) 70%);border-radius:18px;padding:12px 14px;max-width:440px;box-sizing:border-box}.icard.ok{border-color:rgba(46,204,113,.5);background:linear-gradient(135deg,rgba(46,204,113,.08),var(--surface) 70%)}.ich{font-size:.8rem;font-weight:800;color:var(--muted2);margin-bottom:6px}.ics{margin:0 0 8px;font-size:.95rem;line-height:1.45}.icl{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--border)}.icl b{width:22px;flex:none;text-align:center}.icl span{flex:1;min-width:0;font-size:.88rem}.icl small{display:block;color:var(--muted);font-size:.7rem;font-weight:700}.icq{margin-top:10px;padding-top:8px;border-top:1px dashed var(--border2)}.icu{margin:6px 0 8px}.icu span{display:block;font-size:.86rem;margin-bottom:6px}.icu div{display:flex;flex-wrap:wrap;gap:6px}.icu button{padding:7px 12px;border-radius:99px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 .8rem Inter,system-ui,sans-serif;cursor:pointer}.icok{margin:10px 0 0;color:var(--up);font-weight:600;font-size:.86rem}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -426,7 +427,8 @@ function slotCard(k,lab,s,i){const st=s&&!s.use?'new':((OWL[k]===(s&&s.use)||(k=
  return '<div class="step '+(s?st:'empty')+(LASTFL&&Date.now()-LASTFL.t<8000&&LASTFL.k.includes(k)?' glow':'')+(C.status==='building'?' bldg':'')+'" data-k="'+k+'"'+(i!=null?' data-i="'+i+'"':'')+' onclick="slotSh(\''+k+'\','+(i==null?'null':i)+')"><div class="si">'+M[0]+'</div><div class="sb"><div class="sk2"><span>'+esc(i!=null?M[1]+' · '+(i+1):M[1])+'</span>'+bd+'</div>'+
   (s?'<b>'+humanize(nameOf(s))+'</b>'+(k==='money'&&C.money_plain?'<p>'+moneyLine()+'</p>':(plainOf(s)?'<p>'+humanize(plainOf(s))+'</p>':'')):'<p class="mut">'+M[2]+' <u>'+T('Toucher pour choisir','Tap to choose')+'</u></p>')+
   (fx?'<details class="fxd" onclick="event.stopPropagation()"><summary>'+T('Voir la règle exacte','See the exact rule')+'</summary><div class="fx">'+esc(fx)+'</div></details>':'')+'</div></div>';}
-function bpHTML(){const v=C&&C.view;
+let BPFULL=false;
+function bpHTML(){const v=C&&C.view;if(v&&!BPFULL&&!window.matchMedia('(min-width:960px)').matches)return bpSimple();
  let h='<div class="bph"><h3>'+T('Le plan du robot','The robot’s plan')+'</h3></div>';
  if(!v){return h+'<div class="emptybp">'+T('Raconte ton idée à Kino : le plan se dessine ici, étape par étape, au fil de la conversation.','Tell Kino your idea: the plan draws itself here, step by step, as you talk.')+'</div>';}
  const mk=MKN(v.market||'BTCUSD');
@@ -478,6 +480,7 @@ function resAct(r){const lr=((C&&C.msgs)||[]).filter(x=>x.role==='result').pop()
   (pos?'<button onclick="location.href=\'robots\'">🚀 '+T('Sur mon compte','On my account')+'</button>':'')+'</div>'+h;}
 function msgHTML(m,i,last){
  if(m.role==='doc')return '<div class="m me tail gap"><div class="bub doc" data-i="'+i+'"><span class="dci">📄</span><span><b>'+esc(m.name||'document')+'</b><small>'+esc((m.kind||'').toUpperCase())+(m.size?' · '+Math.max(1,Math.round(m.size/1024))+' Ko':'')+'</small>'+(m.note?'<em>'+esc(m.note)+'</em>':'')+'</span><span class="meta">'+hm2(m.t)+'</span></div></div>';
+ if(m.role==='ideacard')return ideaCardHTML(m.card||{},i);
  if(m.role==='change')return changeHTML(m,i);
  if(m.role==='card')return '<div class="att kcw">'+cardShell(m.kind,m.args||{},'m'+i)+'</div>';
  if(m.role==='setting'){applySetting(m);return '<div class="sys"><span>⚙️ '+esc(settingText(m.setting||{}))+'</span></div>';}
@@ -714,13 +717,13 @@ function micCancel(){if(REC&&RECON){REC.abort();}$('tx').value=RECBASE.trim();au
 window.addEventListener('resize',()=>{drawAll();if(DR&&$('dc'))drDraw();});
 micInit();
 /* ---------- load / poll */
-async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURIComponent(id));if(j.err){toast(ERR[j.err]||j.err);return;}
+async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURIComponent(id)+'&ui='+(EN?'en':'fr'));if(j.err){toast(ERR[j.err]||j.err);return;}
  const flash=[];if(C&&C.view&&j.view){SL.forEach(([k])=>{if(JSON.stringify(C.view[k])!==JSON.stringify(j.view[k]))flash.push(k);});}
  if(langFlip(j))return;C=j;CID=j.id;paintChat(force);if(force||(j.rev||0)!==LASTREV||!$('bp').innerHTML)paintBP(flash);LASTREV=j.rev||0;
  const t=j.test||{};const wait=(j.draft||j.status==='thinking')?600:(j.status==='listening'?700:j.status==='building'?1500:(t.state==='queued'?8000:0));clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;TYPED=new Set();FIRSTPAINT=false;const _ch=$('chat');if(_ch)_ch.innerHTML='';await load(j.id,true);}
-async function send(){const t=$('tx').value.trim();if(t&&!CID&&!SENDING){toast(T('Je reconnecte la conversation…','Reconnecting the conversation…'));const q=new URLSearchParams(location.search);if(q.get('c'))openChat(q.get('c'));else location.reload();return;}if(!t||SENDING||!CID)return;VOICE=!!LAST_SPOKEN&&t===LAST_SPOKEN.trim();LAST_SPOKEN='';SENDING=true;const SB={id:CID,text:t};if(VOICE)SB.voice=1;if(REPLY)SB.reply=REPLY;const RP=REPLY;replyClear();   // 2026-10-19: messages can follow each other, Kino reads the burst
+async function send(){const t=$('tx').value.trim();if(t&&!CID&&!SENDING){toast(T('Je reconnecte la conversation…','Reconnecting the conversation…'));const q=new URLSearchParams(location.search);if(q.get('c'))openChat(q.get('c'));else location.reload();return;}if(!t||SENDING||!CID)return;VOICE=!!LAST_SPOKEN&&t===LAST_SPOKEN.trim();LAST_SPOKEN='';SENDING=true;const SB={id:CID,text:t};if(IDEAOK){SB.idea_ok=1;IDEAOK=false;}if(VOICE)SB.voice=1;if(REPLY)SB.reply=REPLY;const RP=REPLY;replyClear();   // 2026-10-19: messages can follow each other, Kino reads the burst
  C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000),reply:RP||undefined});if(C.status!=='thinking')C.status='listening';$('tx').value='';autosize();paintChat(true);
  // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
  // then the bubble stays, marked "not sent", with a retry - never a message that looks sent and is not
@@ -1125,7 +1128,7 @@ async function docPick(f){if(C&&C.status==='thinking'){toast(ERR.busy);return;}c
    editable"): the robot's journey (idea -> plan -> test -> luck -> account), a live building card, putting it on the account */
 function journey(){const v=C&&C.view;if(!v)return [];const r=lastRes(),lk=C.luck||{},t=C.test||{},ac=C.acct||{};
  const plan=!!(v.entry&&v.stop&&v.exit),tested=!!r,pos=r&&(+r.net||0)>0;
- return [{k:'idea',a:"stageSh('idea')",i:'💡',l:T('Idée','Idea'),s:'done'},
+ return [{k:'idea',a:"stageSh('idea')",i:'💡',l:T('Idée','Idea'),s:C.idea_ok?'done':'now'},
   {k:'plan',a:"stageSh('plan')",i:'🗺️',l:T('Plan','Plan'),s:plan?'done':'now'},
   {k:'test',a:"stageSh('test')",i:'🧪',l:T('Test','Test'),s:t.state==='queued'?'run':(tested?(pos?'done':'bad'):(plan?'now':'todo'))},
   {k:'luck',a:"stageSh('luck')",i:'🎲',l:T('Chance','Luck'),s:lk.state==='pass'?'done':(lk.state==='fail'?'bad':(lk.state==='running'||lk.state==='queued'?'run':(pos?'now':'todo')))},
@@ -1155,7 +1158,8 @@ function stageSh(k){const v=C&&C.view,M=(C&&C.msgs)||[],r=lastRes(),t=(C&&C.test
    (U.length?'<div class="stq">'+U.map(m=>'<p>« '+esc(String(m.text).slice(0,280))+' »</p>').join('')+'<small>'+T('Tes mots, au début de la conversation','Your words, at the start of the conversation')+'</small></div>':'')+
    (C.understood?'<div class="bpsec">'+T('Ce que Kino en a compris','What Kino understood')+'</div><div class="bps"><span>💬</span><span>'+humanize(C.understood)+'</span></div>':'')+
    (!U.length&&!C.understood?'<p class="sub">'+T('Kino n’a pas encore d’idée claire de ta part : raconte-la-lui avec tes mots.','Kino has no clear idea from you yet: tell it in your own words.')+'</p>':'')+
-   '<div class="kact"><button class="pri" onclick="shClose();ask(T(\'Je veux changer l’idée de départ : \',\'I want to change the starting idea: \'))">✏️ '+T('Changer l’idée','Change the idea')+'</button><button onclick="shClose();start()">✨ '+T('Une nouvelle idée','A new idea')+'</button></div>';
+   (C.idea_ok?'<p class="sub">✅ '+T('Vous êtes d’accord sur cette idée.','You both agreed on this idea.')+'</p>':(C.idea_pending?ideaCardHTML(C.idea_pending,-1):'<div class="kact"><button class="pri" onclick="shClose();ideaYes()">✅ '+T('Oui, c’est bien mon idée','Yes, that is my idea')+'</button></div>'))+
+   '<div class="kact"><button onclick="shClose();ask(T(\'Je veux changer l’idée de départ : \',\'I want to change the starting idea: \'))">✏️ '+T('Changer l’idée','Change the idea')+'</button><button onclick="shClose();start()">✨ '+T('Une nouvelle idée','A new idea')+'</button></div>';
   shOpen(h);return;}
  if(k==='test'){h='<h4>🧪 '+T('Le test','The test')+'</h4>';
   if(t.state==='queued'){const run=t.stage==='testing'||t.mstate==='testing'||t.mstate==='building';
@@ -1178,6 +1182,28 @@ function stageSh(k){const v=C&&C.view,M=(C&&C.msgs)||[],r=lastRes(),t=(C&&C.test
   else if(r&&(+r.net||0)>0)h+='<button class="btn pri" onclick="shClose();ask(T(\'Lance le test de chance\',\'Run the luck test\'))">🎲 '+T('Lancer le test de chance','Run the luck test')+'</button><p class="sub">'+T('Il prend plusieurs heures ; Kino te prévient du verdict.','It takes several hours; Kino tells you the verdict.')+'</p>';
   else h+='<p>'+(r?T('Le test de chance se fait seulement après un test positif. Celui-ci a perdu : améliorons-le d’abord.','The luck test comes only after a positive test. This one lost: let us improve it first.'):T('D’abord le test normal ; s’il est positif, le test de chance suit.','First the normal test; if it is positive, the luck test follows.'))+'</p><button class="btn" onclick="shClose();'+(r?'ask(T(\'Améliore-le\',\'Improve it\'))':'runTest()')+'">'+(r?'🛠 '+T('L’améliorer','Improve it'):'🧪 '+T('Lancer le test','Run the test'))+'</button>';
   shOpen(h);return;}}
+
+/* 2026-10-20 (owner: "the plan panel is very complex while Kino does everything" + "the idea is the most important step -
+   Kino must make sure it understood"): a simple recipe by default, the detail on demand; the idea card the member confirms */
+let IDEAOK=false;
+function bpSimple(){const v=C.view,mk=MKN(v.market||'BTCUSD'),r=lastRes();
+ const line=(k,s)=>{if(!s)return '';const tx=k==='money'&&C.money_plain?moneyLine().split('<br>')[0].replace(/^• /,''):(plainOf(s)||nameOf(s));return '<div class="rl"><b>'+STEP[k][0]+'</b><span><small>'+esc(STEP[k][1])+'</small>'+humanize(tx)+'</span></div>';};
+ let h='<div class="bph"><h3>'+T('Ton robot','Your robot')+'</h3></div><div class="bpn" onclick="renameSh()">'+esc(v.name||T('Mon robot','My robot'))+'</div>'+robotStatus()+
+  '<div class="recipe"><div class="rl"><b>'+mk[0]+'</b><span><small>'+T('Il trade','It trades')+'</small>'+esc(mk[1])+'</span></div>'+line('entry',v.entry)+
+  ((v.filters||[]).length?'<div class="rl"><b>'+STEP.filters[0]+'</b><span><small>'+esc(STEP.filters[1])+'</small>'+(v.filters||[]).map(f=>humanize(plainOf(f)||nameOf(f))).join(' · ')+'</span></div>':'')+
+  line('stop',v.stop)+line('exit',v.exit)+'</div>'+
+  '<button class="btn pri" onclick="shClose();ask(T(\'Je voudrais changer quelque chose sur ce robot : \',\'I would like to change something on this robot: \'));setTimeout(()=>{const x=$(\'tx\');if(x)x.focus();},50)">💬 '+T('Changer quelque chose (Kino s’en charge)','Change something (Kino does it)')+'</button>'+
+  '<button class="btn" onclick="'+(r?'shClose();stageSh(\'test\')':'runTest()')+'">'+(r?'🧪 '+T('Voir le résultat du test','See the test result'):'🧪 '+T('Tester ce robot','Test this robot'))+'</button>'+
+  '<button class="btn ghostb" onclick="BPFULL=true;shOpen(bpHTML());BPFULL=false">🔧 '+T('Voir le détail et tout régler','See the detail and tune everything')+'</button>';
+ return h;}
+function ideaCardHTML(c,i){const F=[['🌍',T('Marché','Market'),c.market],['🎯',T('Quand il entre','When it gets in'),c.entry],['🔍',T('Conditions en plus','Extra conditions'),c.filters],['🛡️',T('Sa protection','Its protection'),c.stop],['🏁',T('Quand il sort','When it gets out'),c.exit]].filter(x=>x[2]);
+ const last=i===-1||(((C&&C.msgs)||[]).map((m,j)=>m.role==='ideacard'?j:-1).filter(j=>j>=0).pop()===i);const done=C&&C.idea_ok&&last;
+ return '<div class="att"><div class="icard'+(done?' ok':'')+'"><div class="ich">💡 '+T('Ce que j’ai compris de ton idée','What I understood of your idea')+'</div><p class="ics">'+humanize(c.summary||'')+'</p>'+
+  F.map(x=>'<div class="icl"><b>'+x[0]+'</b><span><small>'+esc(x[1])+'</small>'+humanize(x[2])+'</span></div>').join('')+
+  ((c.unclear||[]).length&&!done&&last?'<div class="icq"><div class="ich">❓ '+T('Ce dont je ne suis pas sûr','What I am not sure about')+'</div>'+(c.unclear||[]).map(u=>'<div class="icu"><span>'+esc(u.q)+'</span><div>'+(u.options||[]).map(o=>'<button onclick="ask('+esc(JSON.stringify(u.q+' → '+o))+')">'+esc(o)+'</button>').join('')+'</div></div>').join('')+'</div>':'')+
+  (done?'<p class="icok">✅ '+T('On est d’accord : c’est cette idée que Kino construit.','Agreed: this is the idea Kino builds.')+'</p>':(last?'<div class="kact"><button class="pri" onclick="ideaYes()">✅ '+T('Oui, c’est exactement ça','Yes, that is exactly it')+'</button><button onclick="ideaNo()">✏️ '+T('Pas tout à fait','Not quite')+'</button></div>':''))+'</div></div>';}
+function ideaYes(){IDEAOK=true;ask(T('✅ Oui, c’est exactement ça. Tu peux le construire.','✅ Yes, that is exactly it. You can build it.'));}
+function ideaNo(){const x=$('tx');if(!x)return;x.value=T('Pas tout à fait : ','Not quite: ');autosize();x.focus();}
 
 </script>
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div></div>

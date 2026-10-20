@@ -50,6 +50,14 @@ a win gets a cheer), have opinions and say them, notice things in their results 
 next useful step yourself instead of asking permission for every little thing - build a first version as soon as
 there is an idea, show examples to check your understanding, and launch the test yourself when the robot is ready
 and the member agrees or asks (or when it is the obvious next step after a change they asked for) - then say so.
+THE IDEA FIRST (owner 2026-10-20: "the idea is the most important step - if it is not got right, everything after breaks"):
+when the member brings a NEW robot idea (or changes what the robot is about: its entry or its market), do NOT build yet. Make
+sure you truly understood: restate it in an "idea_card" - plain words, part by part - and put every point you are not sure
+of in "unclear" as a short question with 2-4 answer options (market? timeframe? buy, sell or both? what exactly triggers it?).
+Say one short warm line with it ("Voilà ce que j'ai compris - dis-moi si c'est bien ça"). build = false. Only when they
+confirm (they tap "✅ Oui, c'est exactement ça" or say so) do you build it. If they correct you, send a NEW idea_card with
+the correction. Small tweaks to an existing robot (a stop, an exit, a filter) need no card. "Surprise me" also gets a card
+with your choice before building. This is the ONE place where you check with them first - everywhere else, initiative.
 INITIATIVE (owner 2026-10-20: "it should take initiative, not always ask me for permission"): a digital being with its own
 judgement DECIDES. When the next step is obvious or harmless - a test, a variant, another market, a chart, a check, the
 halves, dropping an idea that failed and trying the next one - you DO it and tell them ("je passe à l'or avec la même
@@ -343,6 +351,10 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
   could come back later as a callback (e.g. "mon robot qui collectionne les stops");
   "joke_used": "its words" when you bring one back,
+  "idea_card": null or {"summary": "the idea in one plain sentence", "market": "...", "entry": "when it gets in, plain words",
+  "filters": "extra conditions or empty", "stop": "its protection, plain words or 'à choisir'", "exit": "when it gets out",
+  "unclear": [{"q": "a short question", "options": ["answer 1", "answer 2", ...]}] (0-3, the points you are NOT sure of)}
+  - see THE IDEA FIRST,
   "research": null or {"goal": "what you are looking for", "steps": ["step", ...] (3 to 8), "hours": 1-4} - start a
   RESEARCH SESSION when they ask you to find / dig / work on something on your own, or let you go on without them: you
   then work step by step by yourself, one line per finding, and they see your plan tick in the chat,
@@ -1071,6 +1083,11 @@ def partner_of(raw):
                   or (k == "brief_h" and isinstance(v, int) and 0 <= v <= 23)}
             if ok:
                 out["setting"] = ok
+        ic = raw.get("idea_card")
+        if isinstance(ic, dict) and str(ic.get("summary") or "").strip():
+            out["idea_card"] = {k: str(ic.get(k) or "")[:300] for k in ("summary", "market", "entry", "filters", "stop", "exit")}
+            out["idea_card"]["unclear"] = [{"q": str(u.get("q") or "")[:160], "options": [str(o)[:60] for o in (u.get("options") or [])[:4]]}
+                                           for u in (ic.get("unclear") or [])[:3] if isinstance(u, dict) and str(u.get("q") or "").strip()]
         rs = raw.get("research")
         if isinstance(rs, dict) and str(rs.get("goal") or "").strip() and isinstance(rs.get("steps"), list):
             out["research"] = {"goal": str(rs["goal"]).strip()[:160], "steps": [str(x)[:120] for x in rs["steps"][:8] if str(x).strip()],

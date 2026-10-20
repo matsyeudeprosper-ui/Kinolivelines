@@ -15917,6 +15917,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _chat_msg(c, "card", kind=cd["kind"], args=cd.get("args") or {})
             if _pa.get("setting"):
                 _chat_msg(c, "setting", setting=_pa["setting"])
+            if _pa.get("idea_card"):                # 2026-10-20 (owner: "make sure the user and Kino fully agree on the idea")
+                _chat_msg(c, "ideacard", card=_pa["idea_card"])
+                c["idea_pending"] = _pa["idea_card"]
             if q.get("seen"):
                 for m in reversed(c.get("msgs") or []):
                     if m.get("role") == "image":
@@ -18204,6 +18207,13 @@ def chat_send(user, body):
     rp = body.get("reply") if isinstance(body.get("reply"), dict) else None     # 2026-10-20 (owner UI item 1): a quoted message
     if rp and str(rp.get("text") or "").strip():
         _ex["reply"] = {"who": "ai" if rp.get("who") == "ai" else "me", "text": str(rp["text"])[:200], "i": int(rp.get("i") or 0) if str(rp.get("i") or "0").isdigit() else 0}
+    if body.get("idea_ok"):                      # 2026-10-20: the member confirmed Kino's understanding of the idea
+        def _iok(cc):
+            card = cc.get("idea_pending") or {"summary": cc.get("understood") or ""}
+            cc["idea_ok"] = {"t": int(time.time()), "card": card}
+            cc.pop("idea_pending", None)
+            cc["idea"] = {"t": int(time.time()), "text": [str(card.get("summary") or "")], "robot": (cc.get("robot") or {}).get("name")}
+        _chat_mut(c["id"], _iok)
     _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **_ex))
     _CHAT_TYPING.pop(c["id"], None)
     try:                                         # 2026-10-20 (inner v2 item 1): did they answer what Kino sent on its own?
@@ -18258,7 +18268,7 @@ def chat_ping(user, cid):
 _CHAT_VIEW = {}          # 2026-10-20 (owner UI item 7): cid -> last time the member had it open (unread badges)
 
 
-def chat_get(user, cid):
+def chat_get(user, cid, ui=""):
     c = _chat_load(user, cid)
     if c is None:
         return {"err": "missing"}
@@ -18339,8 +18349,8 @@ def chat_get(user, cid):
         pass
     for m in out.get("msgs") or []:
         m.pop("probs", None)
-    if c.get("lang") != "en":
-        try:                                     # 2026-10-20 (owner screenshot): piece names / descriptions in the member's language
+    if (ui or c.get("lang")) != "en":
+        try:                                     # 2026-10-20 (owner screenshot): piece names / descriptions in the member's SCREEN language
             _tr_view(out)
         except Exception:
             pass
@@ -26884,7 +26894,7 @@ class H(BaseHTTPRequestHandler):
             elif not _ok:
                 self._send(json.dumps({"err": "strategy"}), "application/json")
             elif sub == "chat_get":
-                self._send(json.dumps(chat_get(user, _q.get("id", [""])[0]), ensure_ascii=False), "application/json")
+                self._send(json.dumps(chat_get(user, _q.get("id", [""])[0], _q.get("ui", [""])[0]), ensure_ascii=False), "application/json")
             elif sub == "chat_ping":
                 self._send(json.dumps(chat_ping(user, _q.get("id", [""])[0])), "application/json")
             else:
