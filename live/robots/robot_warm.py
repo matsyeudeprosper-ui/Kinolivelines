@@ -9,7 +9,7 @@ import hashlib, io, json, os, queue, subprocess, threading, time
 
 import robot_interview as IV
 
-WARM, IDLE, MAX_AGE = 2, 600, 1500
+WARM, IDLE, MAX_AGE = 3, 600, 1500     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
 _LOCK = threading.Lock()
 _POOL = {}            # key -> [(proc, started_at)]
 _KEYS = {}            # key -> (system file, model)

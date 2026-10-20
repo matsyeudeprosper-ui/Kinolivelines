@@ -14636,6 +14636,130 @@ def _lab_status(uid):
     return "\n".join("- " + x for x in L)
 
 
+PKG_FILE = os.path.join(DIR, "owl_packages.json")
+PKG_SNAP = os.path.join(DIR, "robots", "kino_pkg_snapshot.json")
+PKG_CHANGES = os.path.join(DIR, "robots", "kino_pkg_changes.json")
+PKG_PLAIN = {"base_lot": "lot per signal", "max_extra": "recovery add-ons on top", "kill_net": "stops everything at this net loss ($)",
+             "max_risk_pct": "max share of the balance risked on one trade", "day_cap": "stops opening after this realised profit today ($)",
+             "day_cap_waived": "adaptive daily cap while the account owes money", "max_trades_day": "max trades a day",
+             "debt_mode": "how the debt is counted", "rr": "reward / risk target", "k_streak": "streak rule", "scale_with_balance": "lot grows with the balance",
+             "scale_ref_balance": "balance the lot is scaled from ($)", "min_balance": "stops below this balance ($)", "jar": "jar (skims wins)",
+             "nervosity": "nervosity brake", "movement": "movement brake", "pb_dir_gate": "only trades with the pullback trend",
+             "pb_gate_mode": "pullback gate mode", "adds_on": "recovery add-ons allowed", "chest_cap": "chest cap ($)", "week_target": "week target ($)"}
+
+
+def _pkg_resolved(name, packs):
+    out, seen, cur, why = {}, set(), name, {}
+    chain = []
+    while cur and cur not in seen and isinstance(packs.get(cur), dict):
+        seen.add(cur); chain.append(cur)
+        cur = packs[cur].get("extends")
+    for nm in reversed(chain):
+        for k, v in packs[nm].items():
+            if k.startswith("_why_"):
+                why[k[5:]] = v
+            elif not k.startswith("_") and k != "extends":
+                out[k] = v
+    return out, why, chain
+
+
+def _pkg_block(user):
+    """2026-10-20 (owner): the member's package in plain words (dials + the written reasons), the robot plugged on their
+    account, the recent changes that concern them; the nest's owner also gets the whole map"""
+    uid = user.get("id")
+    raw = json.load(open(PKG_FILE, encoding="utf-8"))
+    packs, accts = raw.get("packages") or {}, raw.get("accounts") or {}
+    name = accts.get(uid, "base")
+    d, why, chain = _pkg_resolved(name, packs)
+    nm = ROBOT_NAMES.get(name, (d.get("label") or name,))[0] if "ROBOT_NAMES" in globals() else (d.get("label") or name)
+    L = ["their account's package: '%s' (%s; inherits %s)" % (name, nm, " <- ".join(chain[1:]) or "nothing")]
+    L.append("its dials: " + "; ".join("%s = %s" % (PKG_PLAIN.get(k, k), json.dumps(v, ensure_ascii=False)) for k, v in d.items()
+                                       if k in PKG_PLAIN))
+    if why:
+        L.append("why some dials are set that way: " + " | ".join("%s: %s" % (k, str(v)[:220]) for k, v in list(why.items())[:8]))
+    pl = (raw.get("robot_plugs") or {}).get(uid)
+    if pl:
+        L.append("robot plugged on their account: %s (since %s, by %s)" % (pl.get("robot"), str(pl.get("at"))[:10], pl.get("by")))
+    try:
+        ch = json.load(open(PKG_CHANGES, encoding="utf-8"))
+    except Exception:
+        ch = []
+    mine = [x for x in ch if time.time() - x["t"] < 7 * 86400 and (is_admin(user) or uid in (x.get("uids") or []))][-8:]
+    if mine:
+        L.append("RECENT PACKAGE CHANGES%s: " % ("" if is_admin(user) else " concerning them") + " | ".join(
+            "%s %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["what"]) for x in mine))
+    if is_admin(user):
+        L.append("THE WHOLE MAP (owner only): accounts -> package: " + ", ".join("%s -> %s" % (a, p) for a, p in accts.items()) +
+                 " | packages: " + ", ".join("%s (%s)" % (k, (v or {}).get("label") or "-") for k, v in packs.items()))
+        L.append("note: a dial change reaches a running bot only after that account's bot restarts (the file's own rule)")
+    return "\n".join("- " + x for x in L)
+
+
+def _pkg_watch():
+    """every minute: did owl_packages.json change? -> what changed, for which accounts (with inheritance) -> logged, and
+    Kino gets it on its mind for each member concerned (it may tell them, in its own words)"""
+    try:
+        raw = json.load(open(PKG_FILE, encoding="utf-8"))
+    except Exception:
+        return
+    cur = {"packages": raw.get("packages") or {}, "accounts": raw.get("accounts") or {}, "robot_plugs": raw.get("robot_plugs") or {}}
+    try:
+        old = json.load(open(PKG_SNAP, encoding="utf-8"))
+    except Exception:
+        _atomic_json(PKG_SNAP, cur, ensure_ascii=False)
+        return
+    if old == cur:
+        return
+    ch = []
+    P0, P1 = old.get("packages") or {}, cur["packages"]
+    for k in sorted(set(P0) | set(P1)):
+        a, b = P0.get(k) or {}, P1.get(k) or {}
+        if a == b:
+            continue
+        if not a:
+            ch.append(("package '%s' created" % k, k))
+        elif not b:
+            ch.append(("package '%s' removed" % k, k))
+        else:
+            diffs = ["%s %s -> %s" % (PKG_PLAIN.get(f, f), json.dumps(a.get(f), ensure_ascii=False), json.dumps(b.get(f), ensure_ascii=False))
+                     for f in sorted(set(a) | set(b)) if a.get(f) != b.get(f) and not f.startswith("_")]
+            if diffs:
+                ch.append(("package '%s': %s" % (k, "; ".join(diffs)[:400]), k))
+    A0, A1 = old.get("accounts") or {}, cur["accounts"]
+    moved = {}
+    for u in sorted(set(A0) | set(A1)):
+        if A0.get(u) != A1.get(u):
+            moved[u] = "account moved from package '%s' to '%s'" % (A0.get(u, "base"), A1.get(u, "base"))
+    R0, R1 = old.get("robot_plugs") or {}, cur["robot_plugs"]
+    for u in sorted(set(R0) | set(R1)):
+        if R0.get(u) != R1.get(u):
+            moved[u] = (moved.get(u, "") + "; " if u in moved else "") + "robot plugged: %s -> %s" % ((R0.get(u) or {}).get("robot"), (R1.get(u) or {}).get("robot"))
+    def users_of(pk):                         # every account whose package is pk or inherits from it
+        out = []
+        for u, name in A1.items():
+            _, _, chain = _pkg_resolved(name, P1)
+            if pk in chain or (pk == "base" and name not in P1):
+                out.append(u)
+        return out
+    try:
+        log = json.load(open(PKG_CHANGES, encoding="utf-8"))
+    except Exception:
+        log = []
+    now = time.time()
+    entries = [{"t": now, "what": w, "uids": users_of(pk)} for w, pk in ch] + [{"t": now, "what": "%s: %s" % (u, w), "uids": [u]} for u, w in moved.items()]
+    _atomic_json(PKG_CHANGES, (log + entries)[-80:], ensure_ascii=False, indent=1)
+    _atomic_json(PKG_SNAP, cur, ensure_ascii=False)
+    try:
+        _rc()
+        import kino_inner as _KIk
+        for e in entries:
+            for u in e["uids"]:
+                _KIk.add_thought("Changement sur son compte : %s - je devrais le lui dire simplement, avec ce que ça change pour lui" % e["what"][:220],
+                                 "news", 0.6, uid=u, src="pkg:%d" % int(now), half_h=12)
+    except Exception:
+        pass
+
+
 def _chat_member(user, c):
     """2026-10-19 (owner: "it should have great knowledge of the app since it lives there"): THIS member's situation in
     plain facts for the AI - plan, account, the robot on it, what they may choose, where the chat's robot stands.
@@ -14788,6 +14912,10 @@ def _chat_member(user, c):
     except Exception:
         pass
     out = "\n".join("- " + x for x in L)
+    try:                                         # 2026-10-20 (owner: "access to know about packages, everything around it, and every change")
+        out += "\n\nPACKAGES (money management - owl_packages.json, live):\n" + _pkg_block(user)
+    except Exception:
+        pass
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
         import robot_reality as _RW
@@ -14880,7 +15008,13 @@ def kino_day(user):
                 R_.append(dict(cx["research"], cid=x["id"]))
     except Exception:
         pass
-    return {"mood": _KId.mood_slow(), "feelings": _KId.feelings(uid), "items": T[:40], "robot": rob, "score": _KId.hunch_score(),
+    try:
+        _V = _KId._views()
+        view = next((x for x in reversed(_V.get("days") or []) if x["day"] == time.strftime("%Y-%m-%d", time.gmtime())), None)
+        vscore = _V.get("score")
+    except Exception:
+        view, vscore = None, None
+    return {"view": view, "vscore": vscore, "mood": _KId.mood_slow(), "feelings": _KId.feelings(uid), "items": T[:40], "robot": rob, "score": _KId.hunch_score(),
             "notes": (d.get("notes") or [])[-2:], "goal": (_mem_get(uid).get("goal") or {}), "research": R_,
             "status": _kino_presence(user, {"id": "-", "test": {}}).get("kst")}
 
@@ -15284,6 +15418,52 @@ def _partner_apply(user, cid, pa):
             _jsave(NEST_ASKS, A)
 
 
+_STOP = set("dans pour avec mais plus tout tous cette comme quand alors donc sont elle elles nous vous leur leurs être avoir fait faire "
+             "this that with from have what when then your their there they them will would could should about just like".split())
+
+
+def _related_snippets(user, cid):
+    """2026-10-20 (owner list 8 item 7): what they said on the same subject in their OTHER conversations (30 days) - so Kino
+    links them like a friend who remembers ("tu disais la même chose il y a 3 jours...")"""
+    me = user.get("id")
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+    except Exception:
+        return []
+    last = " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-4:] if m.get("role") in ("user", "ai"))
+    kw = set(w for w in re.findall(r"[a-zà-ÿ0-9]{4,}", last.lower()) if w not in _STOP)
+    if len(kw) < 2:
+        return []
+    now = time.time()
+    hits = []
+    for f in os.listdir(CHAT_DIR):
+        if not f.endswith(".json") or f[:-5] == cid or not f.startswith(re.sub(r"[^A-Za-z0-9]", "", me) + "_"):
+            continue
+        try:
+            x = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+        except Exception:
+            continue
+        if x.get("uid") != me:
+            continue
+        for m in x.get("msgs") or []:
+            if m.get("role") not in ("user", "ai") or now - int(m.get("t") or 0) > 30 * 86400:
+                continue
+            t = str(m.get("text") or "")
+            sc = len(kw & set(re.findall(r"[a-zà-ÿ0-9]{4,}", t.lower())))
+            if sc >= 3 or (sc >= 2 and m["role"] == "user"):
+                hits.append((sc + (1 if m["role"] == "user" else 0), int(m.get("t") or 0), (x.get("robot") or {}).get("name") or "?", m["role"], t))
+    hits.sort(key=lambda h: (-h[0], -h[1]))
+    out, seen = [], set()
+    for sc, t, nm, role, txt in hits:
+        if nm in seen and len(out) >= 2:
+            continue
+        seen.add(nm)
+        out.append("%s, chat '%s', %s: %s" % (time.strftime("%d/%m", time.gmtime(t)), nm, "they said" if role == "user" else "you said", txt[:220]))
+        if len(out) >= 3:
+            break
+    return out
+
+
 def _chat_memory(user, cid=None):
     """what the AI remembers about this member: its notes, their robots (+ last test), the other conversations"""
     me = user.get("id")
@@ -15326,8 +15506,13 @@ def _chat_memory(user, cid=None):
         opinions = (_KMm.load().get("opinions") or [])
     except Exception:
         opinions = []
+    try:
+        related = _related_snippets(user, cid) if cid else []
+    except Exception:
+        related = []
     return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal, "projects": _mm.get("projects") or [], "jokes": _mm.get("jokes") or [],
-            "standing": _mm.get("standing") or [],
+            "standing": _mm.get("standing") or [], "related": related,
+            "mem_fixes": [x for x in _mm.get("mem_fixes") or [] if time.time() - x["t"] < 3 * 86400][-4:],
             "concepts_known": _mm.get("concepts_known") or [], "lesson_t": _mm.get("lesson_t"),
             "watches": _mm.get("watches") or [], "drawing": _mm.get("drawing") if time.time() - float((_mm.get("drawing") or {}).get("t") or 0) < 48 * 3600 else None,
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
@@ -15349,6 +15534,24 @@ def _chat_status(cid):
     return "building" if cid in _CHAT_B else "ready"
 
 
+_CTX = {}          # cid -> (t, pieces, owl, markets, memory, member) - prepared during the burst wait (2026-10-20 speed)
+
+
+def _ctx_prefetch(user, cid):
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        _CTX[cid] = (time.time(), _chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
+    except Exception:
+        pass
+
+
+def _ctx_get(user, cid, c):
+    x = _CTX.pop(cid, None)
+    if x and time.time() - x[0] < 20:
+        return x[1:]
+    return (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
+
+
 def _chat_listen(cid, user):
     """read a burst like a person: wait until the member stopped writing (2.5 s without a new message or a typing signal,
     20 s at most), then answer everything at once"""
@@ -15356,6 +15559,7 @@ def _chat_listen(cid, user):
         return
     _CHAT_WAIT.add(cid)
     t0 = time.time()
+    threading.Thread(target=_ctx_prefetch, args=(user, cid), daemon=True).start()
     try:
         while time.time() - t0 < 20:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
@@ -15572,13 +15776,14 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             if t and not _tfw:
                 _tfw.append(time.time() - _t0q)
             _CHAT_DRAFT[cid] = t
-        q = _rc().quick(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
-                        markets=_chat_markets(user), memory=_chat_memory(user, cid), event=event,
-                        on_say=_say_, member=_chat_member(user, c), images=_chat_images(c))
+        _pc, _ow, _mk, _me, _mb = _ctx_get(user, cid, c) if not event else (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
+        _tctx = time.time() - _t0q
+        q = _rc().quick(c, _pc, _ow, c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
+                        markets=_mk, memory=_me, event=event, on_say=_say_, member=_mb, images=_chat_images(c))
         _CHAT_DRAFT.pop(cid, None)
         try:                                     # 2026-10-20 (list 5 item 10): how long the first words took
-            open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f\n" % (
-                time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), _tfw[0] if _tfw else -1, time.time() - _t0q))
+            open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f\n" % (
+                time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), _tfw[0] if _tfw else -1, time.time() - _t0q, _tctx))
         except Exception:
             pass
         _qdm = _chat_show(c, user, (q or {}).get("show"))
@@ -16670,6 +16875,11 @@ def _kino_night_mind():
         import kino_mind as _KM
         _KM.reflect()
         _KM.build_playbook()
+        try:              # 2026-10-20 (owner list 8 item 2): the nightly humanity exam on made-up conversations
+            import kino_exam as _KX
+            _KX.run()
+        except Exception:
+            pass
         try:              # 2026-10-19 (owner next-list item 1): Kino looks after its own robot
             import robot_world as _WDn, robot_tools as _RTn, robot_demo as _RDn
             _KM.my_robot_night(_WDn.lab_digest() + "\n" + _KM.playbook_block(),
@@ -16865,6 +17075,15 @@ def _inner_engine_once():
         pass
     try:
         _KI.check_bets(_RG.live_bars)                       # v2 item 3: hunches checked ~2 h later
+    except Exception:
+        pass
+    try:                                                    # list 8 item 3: Kino's market view of the day, and its evening score
+        _hu = time.gmtime().tm_hour
+        if 6 <= _hu < 9 and time.gmtime().tm_wday < 5:
+            import robot_reality as _RWv
+            _KI.form_views(_RG.live_bars, _RWv.world_now(0)[-1500:], _rc().W if hasattr(_rc(), "W") else __import__("robot_warm"))
+        elif _hu >= 20:
+            _KI.judge_views(_RG.live_bars)
     except Exception:
         pass
     global _Q_NEXT
@@ -17258,6 +17477,10 @@ def _inner_clock_loop():
             _chat_watch_once()
         except Exception:
             pass
+        try:
+            _pkg_watch()
+        except Exception:
+            pass
         time.sleep(30)
 
 
@@ -17406,6 +17629,16 @@ def kino_data(user):
     except Exception:
         notes_t, ins_t = notes, ins
     out = {"goal": g or None, "notes": notes_t, "playbook": ins_t, "admin": is_admin(user)}
+    try:                 # 2026-10-20 (list 8 item 6): everything Kino remembers, each item fixable / deletable
+        _rc()
+        import kino_inner as _KIm2
+        out["memory_all"] = {"standing": [x.get("text") for x in m.get("standing") or []],
+                             "moments": [x.get("text") for x in _KIm2.moments(user.get("id"), "moment")],
+                             "jokes": [x.get("text") for x in _KIm2.moments(user.get("id"), "joke")],
+                             "decisions": ["%s - %s%s" % (time.strftime("%d/%m", time.gmtime(d.get("t") or 0)), d.get("what"),
+                                                          (" (%s)" % d["why"]) if d.get("why") else "") for d in m.get("decisions") or []]}
+    except Exception:
+        pass
     try:
         P_ = m.get("path") or {}
         out["path"] = [{"k": k_, "label": lb, "date": P_.get(k_)} for k_, lb in PATH_STEPS]
@@ -17490,6 +17723,51 @@ def kino_directive(user, body):
     d["creator"] = str(body.get("text") or "").strip()[:800]
     _KM.save(d)
     return {"ok": True}
+
+
+def kino_mem(user, body):
+    """2026-10-20 (owner list 8 item 6): the member fixes or deletes anything Kino remembers about them - notes, their
+    standing instructions, shared moments, running jokes, decisions. A fix is kept so Kino can say "ah, noté, je m'étais trompé"."""
+    uid = user.get("id")
+    kind, act = str(body.get("kind") or ""), str(body.get("act") or "del")
+    txt = str(body.get("text") or "").strip()[:400]
+    try:
+        i = int(body.get("i"))
+    except Exception:
+        return {"ok": False}
+    if kind in ("note", "standing", "decision"):
+        key = {"note": "notes", "standing": "standing", "decision": "decisions"}[kind]
+
+        def put(mm):
+            L = mm.get(key) or []
+            if not (0 <= i < len(L)):
+                return
+            old = L[i] if isinstance(L[i], str) else (L[i].get("text") or L[i].get("what") or "")
+            if act == "fix" and txt:
+                if isinstance(L[i], str):
+                    L[i] = txt
+                elif kind == "decision":
+                    L[i]["what"] = txt
+                else:
+                    L[i]["text"] = txt
+                mm["mem_fixes"] = ((mm.get("mem_fixes") or []) + [{"t": int(time.time()), "old": str(old)[:200], "new": txt}])[-10:]
+            else:
+                L.pop(i)
+            mm[key] = L
+        _mem_note_safe(uid, put)
+        return {"ok": True}
+    if kind in ("moment", "joke"):
+        _rc()
+        import kino_inner as _KIx
+
+        def f(d):
+            L = (d.get("moments") or {}).get(uid) or []
+            idx = [k for k, x in enumerate(L) if x.get("kind") == kind]
+            if 0 <= i < len(idx):
+                L.pop(idx[i])
+        _KIx._mut(f)
+        return {"ok": True}
+    return {"ok": False}
 
 
 def kino_forget(user, body):
@@ -23716,7 +23994,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -23737,7 +24015,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

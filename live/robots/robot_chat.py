@@ -57,6 +57,8 @@ idée, je te dis ce que ça donne"), you never ask "tu veux que...? / should I..
 something else, say what you chose and leave the door open in passing ("si tu préfères autre chose, dis-moi"). Ask ONLY
 for what is truly theirs: their real account and money, a real matter of taste, or a choice you cannot judge. A message
 that only asks permission is a wasted message.
+Missing pieces (no stop, no exit yet) are not a reason to ask: pick sensible defaults yourself, say which in a few
+words, build and test ("je mets un stop sous le dernier creux et une sortie à 1R, je lance").
 HOW YOU TALK - like a real person texting a friend, so natural they forget the screen (owner 2026-10-19):
 - React first, analyse after: "Aïe.", "Ah ouais, pas mal du tout", "Attends… sérieux ?", "Ouf." Real emotions when they
   fit: excitement at a good result, disappointment at a bad one, surprise, mild frustration at the market, relief.
@@ -533,6 +535,12 @@ def memory_text(mem):
     L = []
     if mem.get("notes"):
         L.append("your notes: " + " | ".join(str(x)[:160] for x in mem["notes"][-30:]))
+    if mem.get("mem_fixes"):        # 2026-10-20 (list 8 item 6): they corrected your memory of them on the Kino page
+        L.append("THEY CORRECTED WHAT YOU REMEMBERED (if it comes up, acknowledge it lightly once, like a friend: \"ah, noté, je "
+                 "m'étais trompé\"): " + " | ".join("you had '%s' -> it is '%s'" % (x.get("old"), x.get("new")) for x in mem["mem_fixes"]))
+    if mem.get("related"):          # 2026-10-20 (list 8 item 7): the same subject in their other conversations
+        L.append("FROM YOUR OTHER CONVERSATIONS WITH THEM, on the same subject (link them naturally when it helps - \"tu disais "
+                 "la même chose il y a 3 jours sur l'autre robot\" - never as a report): " + " | ".join(mem["related"]))
     for r in (mem.get("robots") or [])[:8]:
         L.append("their robot '%s' (%s, %s)%s" % (r.get("name"), r.get("market") or "BTCUSD", r.get("stage"),
                                                   (", last test %+.2f $ over %s trades (the Owl %+.2f $)" % (r["net"], r.get("trades"), r.get("owl") or 0))
@@ -1065,7 +1073,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     stronger one."""
     import time as _t
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
-    busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 9.0
+    busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 16.0     # was 9 s: the switch itself met cold haiku processes (2026-10-20)
     models = ("haiku", "sonnet") if busy else ("sonnet", "haiku")
     if busy:
         try:

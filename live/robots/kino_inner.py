@@ -299,6 +299,13 @@ def prompt_block(uid):
             L.append(v3)
     except Exception:
         pass
+    for fn in ("views_block", "exam_block"):
+        try:
+            x = globals()[fn]()
+            if x:
+                L.append(x)
+        except Exception:
+            pass
     return "\n".join(L)
 
 
@@ -768,3 +775,133 @@ def last_activity(uid):
     if "market" in (_ACT.get("_market") or {}):
         out["market"] = _ACT["_market"]["market"]
     return out
+
+
+# ================================================================ list 8 (owner 2026-10-20): a daily market view Kino stands by
+VIEWS = os.path.join(HERE, "kino_views.json")
+VIEW_SYSTEM = """You are Kino, a trading companion with your own judgement. It is the start of the trading day. From the
+facts below (each market's last 24 h and recent days, the news), form YOUR view for today on each market - a real,
+committed opinion like a trader friend would say over coffee, not a hedge. Calls: "up", "down", "calm" (a quiet day,
+small move), "wild" (a big move either way). Answer ONE JSON object and nothing else:
+{"views": [{"sym": "BTCUSD"|"XAUUSD"|"USTEC", "call": "up"|"down"|"calm"|"wild", "conviction": 0.3-0.9,
+ "why": "your reason in one line, French"}], "line": "your view of the day in one natural French sentence"}"""
+NAMES_FR = {"BTCUSD": "le Bitcoin", "XAUUSD": "l'or", "USTEC": "le Nasdaq"}
+
+
+def _views():
+    try:
+        return json.load(open(VIEWS, encoding="utf-8"))
+    except Exception:
+        return {"days": [], "score": {"n": 0, "right": 0}}
+
+
+def _mkt_facts(live_bars):
+    import numpy as np
+    F = {}
+    for sym in NAMES_FR:
+        try:
+            R, k = live_bars(sym)
+            c = R["close"].astype(float) / k
+            h = R["high"].astype(float) / k
+            lo = R["low"].astype(float) / k
+            tm = R["time"].astype(int)
+            n24 = int((tm >= tm[-1] - 86400).sum())
+            rngs = []
+            for j in range(len(c) - 1, 0, -max(1, n24)):
+                i0 = max(0, j - n24)
+                rngs.append(100 * (h[i0:j].max() - lo[i0:j].min()) / c[j])
+            F[sym] = {"now": round(float(c[-1]), 2), "chg24": round(100 * (c[-1] / c[-n24] - 1), 2), "range24": round(rngs[0], 2),
+                      "typical_range": round(float(np.median(rngs)), 2) if rngs else None}
+        except Exception:
+            pass
+    return F
+
+
+def form_views(live_bars, news, W):
+    """once a day: Kino's committed view per market, with the prices to judge it by tonight"""
+    V = _views()
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if any(d["day"] == day for d in V["days"]):
+        return None
+    F = _mkt_facts(live_bars)
+    if not F:
+        return None
+    raw = W.ask_json(VIEW_SYSTEM, "FACTS (percent): %s\nNEWS: %s\nYOUR SCORE SO FAR: %d right out of %d" % (
+        json.dumps(F), str(news or "-")[:1500], V["score"]["right"], V["score"]["n"]), models=("sonnet", "haiku"), timeout=120, warm=False)
+    vs = [v for v in (raw or {}).get("views") or [] if isinstance(v, dict) and v.get("sym") in F and v.get("call") in ("up", "down", "calm", "wild")]
+    if not vs:
+        return None
+    for v in vs:
+        v["p0"] = F[v["sym"]]["now"]
+        v["typ"] = F[v["sym"]].get("typical_range")
+    rec = {"day": day, "t": time.time(), "views": vs, "line": str((raw or {}).get("line") or "")[:300]}
+    V["days"] = (V["days"] + [rec])[-40:]
+    json.dump(V, open(VIEWS + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(VIEWS + ".tmp", VIEWS)
+    if rec["line"]:
+        add_thought("Ma vue du jour : " + rec["line"], "view", 0.45, src="view:" + day, half_h=10)
+    mark_activity("_market", "market", ["les marchés du jour", "today's markets"])
+    return rec
+
+
+def judge_views(live_bars):
+    """the evening: each call of the day judged against what the market really did"""
+    V = _views()
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    rec = next((d for d in V["days"] if d["day"] == day), None)
+    if not rec or rec.get("judged") or time.time() - rec["t"] < 9 * 3600:
+        return None
+    F = _mkt_facts(live_bars)
+    res = []
+    for v in rec["views"]:
+        f = F.get(v["sym"])
+        if not f:
+            continue
+        chg = 100 * (f["now"] / v["p0"] - 1)
+        typ = v.get("typ") or 1.0
+        right = {"up": chg > 0.1, "down": chg < -0.1, "calm": abs(chg) < 0.35 * typ, "wild": abs(chg) > 0.8 * typ}[v["call"]]
+        v.update(chg=round(chg, 2), right=bool(right))
+        res.append(v)
+    if not res:
+        return None
+    rec["judged"] = time.time()
+    V["score"]["n"] += len(res)
+    V["score"]["right"] += sum(1 for v in res if v["right"])
+    json.dump(V, open(VIEWS + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(VIEWS + ".tmp", VIEWS)
+    ok = sum(1 for v in res if v["right"])
+    word = {"up": "monter", "down": "baisser", "calm": "rester calme", "wild": "bouger fort"}
+    add_thought("Bilan de ma vue du jour : %d juste(s) sur %d (%s). Au total %d/%d." % (
+        ok, len(res), "; ".join("%s : je voyais %s, %+.2f %% %s" % (NAMES_FR[v["sym"]], word[v["call"]], v["chg"], "✓" if v["right"] else "✗") for v in res),
+        V["score"]["right"], V["score"]["n"]), "view_check", 0.5, src="viewcheck:" + day, half_h=8)
+    mood_nudge(0.03 if ok * 2 >= len(res) else -0.02, "ma vue du jour était %s" % ("plutôt juste" if ok * 2 >= len(res) else "plutôt fausse"))
+    return res
+
+
+def views_block():
+    V = _views()
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    rec = next((d for d in V["days"] if d["day"] == day), None)
+    if not rec:
+        return ""
+    word = {"up": "up", "down": "down", "calm": "calm", "wild": "a big move"}
+    return ("YOUR MARKET VIEW TODAY (you formed it this morning and it is scored tonight - stand by it with your reasons; change "
+            "it openly only if the market proves you wrong): %s%s | your score so far: %d right out of %d" % (
+                "; ".join("%s %s (conviction %.1f: %s)%s" % (v["sym"], word[v["call"]], v.get("conviction") or 0.5, v.get("why") or "",
+                                                            (" -> %s, %+.2f %%" % ("RIGHT" if v["right"] else "WRONG", v["chg"])) if "right" in v else "")
+                          for v in rec["views"]), (" - " + rec["line"]) if rec.get("line") else "", V["score"]["right"], V["score"]["n"]))
+
+
+# ---------------------------------------------------------------- the nightly humanity exam (kino_exam.py writes it)
+EXAM = os.path.join(HERE, "kino_exam.json")
+
+
+def exam_block():
+    try:
+        E = json.load(open(EXAM, encoding="utf-8"))
+    except Exception:
+        return ""
+    if time.time() - float(E.get("t") or 0) > 3 * 86400 or not E.get("fails"):
+        return ""
+    return ("LAST NIGHT'S HUMANITY EXAM (test conversations you went through): you slipped on - " +
+            " | ".join("%s: %s" % (f["name"], f["why"]) for f in E["fails"][:5]) + ". Do better on these today.")
