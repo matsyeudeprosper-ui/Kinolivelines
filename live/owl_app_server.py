@@ -18209,7 +18209,63 @@ def chat_get(user, cid):
     out["view"] = _rc().view(c.get("robot"), _chat_pieces(user))
     for m in out.get("msgs") or []:
         m.pop("probs", None)
+    if c.get("lang") != "en":
+        try:                                     # 2026-10-20 (owner screenshot): piece names / descriptions in the member's language
+            _tr_view(out)
+        except Exception:
+            pass
     return out
+
+
+_TR_BUSY = set()
+_EN_HINT = re.compile(r"\b(the|when|price|above|below|after|before|buys|sells|closes|stop|exit|entry|with|candle|trend|high|low|of|and)\b", re.I)
+_FR_HINT = re.compile(r"\b(le|la|les|quand|prix|au-dessus|sous|après|avant|achète|vend|sort|avec|bougie|tendance|plus|de|et)\b", re.I)
+
+
+def _looks_en(t):
+    t = str(t or "")
+    return len(t) > 3 and len(_EN_HINT.findall(t)) > len(_FR_HINT.findall(t))
+
+
+def _tr_view(out):
+    """English piece texts (the model sometimes writes them in English) shown in French: from the translation cache at
+    once; the missing ones are translated in the background and appear on the next refresh"""
+    _rc()
+    import kino_mind as _KMt
+    try:
+        cache = json.load(open(_KMt.TR_CACHE, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    todo = []
+
+    def fix(d, keys):
+        for k in keys:
+            v = d.get(k)
+            if isinstance(v, str) and _looks_en(v):
+                if v in cache:
+                    d[k] = cache[v]
+                else:
+                    todo.append(v)
+    v = out.get("view") or {}
+    for k in ("entry", "stop", "exit", "recovery", "money"):
+        if isinstance(v.get(k), dict):
+            fix(v[k], ("plain", "name"))
+    for f in v.get("filters") or []:
+        if isinstance(f, dict):
+            fix(f, ("plain", "name"))
+    for m in out.get("msgs") or []:
+        for p_ in m.get("made") or []:
+            fix(p_, ("plain", "name"))
+    todo = [t for t in dict.fromkeys(todo) if t not in _TR_BUSY][:30]
+    if todo:
+        _TR_BUSY.update(todo)
+
+        def bg():
+            try:
+                _KMt.translate(todo, "fr")
+            finally:
+                _TR_BUSY.difference_update(todo)
+        threading.Thread(target=bg, daemon=True).start()
 
 
 def chat_edit(user, body):
