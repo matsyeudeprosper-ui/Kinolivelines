@@ -15190,8 +15190,18 @@ def chat_start(user, body):
         _ago = time.time() - _lt if _lt else None
         _when = ("never talked before" if _ago is None else "%d minutes ago" % (_ago / 60) if _ago < 3600 else
                  "%d hours ago" % (_ago / 3600) if _ago < 172800 else "%d days ago" % (_ago / 86400))
+        _ops = []                                  # 2026-10-20 (owner: "he always starts with the same sentence - robotic")
+        try:
+            for _x in (chat_list(user).get("chats") or [])[:12]:
+                _cx = _chat_load(user, _x["id"]) or {}
+                _m0 = next((m for m in (_cx.get("msgs") or [])[:3] if m.get("role") == "ai" and m.get("event")), None)
+                if _m0 and _m0.get("text"):
+                    _ops.append(str(_m0["text"])[:140])
+        except Exception:
+            pass
         threading.Thread(target=_chat_quick, args=(cid, user, "NEW CONVERSATION (the member opened a fresh page; you last talked: %s, in "
-                                                   "another conversation)" % _when), daemon=True).start()
+                                                   "another conversation). YOUR LAST OPENINGS - never reuse their words, start or shape: %s" % (
+                                                       _when, " | ".join(_ops[:6]) or "-")), daemon=True).start()
         try:
             _rc().prewarm()
         except Exception:
