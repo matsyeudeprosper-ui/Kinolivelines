@@ -18739,8 +18739,13 @@ def chat_test(user, body):
     en = c.get("lang") == "en"
 
     def put(c):
+        _old = c.get("test") or {}
         c["robot_id"] = rid
         c["test"] = test
+        # 2026-10-20 (humanity watch): a second launch of the SAME queued job (the build, then Kino's own follow-up) said
+        # "Test lancé" twice in a minute - one announcement per job
+        if test.get("job") and _old.get("job") == test.get("job") and _old.get("state") == "queued":
+            return
         mt = (" on %s" % mk) if en else (" sur %s" % mk)
         if test.get("first_build"):
             txt = ("Test started%s. First time on this market, so I prepare its prices first: about %d minutes in all. "
