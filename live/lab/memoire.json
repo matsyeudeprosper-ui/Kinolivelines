@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-20T11:30:00Z",
+ "updated": "2026-10-20T12:00:40Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -94,7 +94,8 @@
     "2026-10-15 16:30 veille: day BOS BUY -6.03 (closed 16:24, pace 1.588, after the -17.17 loss, gap 1-3 h). cont_day 36 tr 42% vs 53% -50.10 PF 0.61 (h 41/42 agree); after a loss 16 tr 38% -42.68, after a win 19 tr -15.22; 1.3-1.85 band 10 tr 40% -33.89 (avg loss -9.83 vs win 6.28). As predicted.",
     "2026-10-16: filtered accounts since 10-10: night 9 tr 67% +8.33, day 13 tr 69% +14.95 (trop peu); the reference's refused trades: day 20 tr -30.67, night 11 tr -15.78. Day leak may be what the filter already removes.",
     "2026-10-17: filtered pool since 10-10 (22 tr, deduped): night 01-08 h 8 tr 5 won -1.25 per 0.01, day 08-16 9 tr 5 won -0.15, evening 16-01 h 5 tr 5 won +10.61 (trop peu). With the filter the night edge is not visible yet. choch+ext500 + day stake 0.5 C -15.9 (hole 57->38), 0.75 C -14.9 (hole 47).",
-    "2026-10-19: cont_rested pile: its whole gain is night (16 tr +55.3) vs day (15 tr -1)."
+    "2026-10-19: cont_rested pile: its whole gain is night (16 tr +55.3) vs day (15 tr -1).",
+    "2026-10-20 12:00 veille: Tue night closes 03:56-07:56 4 tr 3 won +7.65; day 08:26-11:49 7 tr 1 won -15.90 (FLIP 4 tr 1 won, BOS 3 tr 0 won). By hour since 09-24: 02-03 h 16 tr +46.5; 08 h 14 tr 36% -10.90; 13 h 4 tr 0 won -39.21. As predicted (one day, peu)."
    ],
    "next": "Re-read by src once real_pool_split is built."
   },
@@ -2826,6 +2827,17 @@
     "veille.log: asleep since 10-18 08:10 (night.lock)"
    ],
    "saw": "Critic right on stop-width money (h2 negative at 3.5/4/4.5). Nervous-flip stake cut neutral-positive (+1 to +2). rr1.2 only works with the flip brake. Day watch blocked by stale lock. No new pile: nervous flip after a loss (28 tr) sits inside flip_hot and flip_after_loss."
+  },
+  {
+   "t": "2026-10-20T12:00:40Z",
+   "night": "veille",
+   "looked": [
+    "wake_context: 12 closes since Mon 14:00 (most already seen by the 11:30 night); last BOS BUY -4.14 at 11:49",
+    "scrutiny --by hour, --by gap, --streaks",
+    "twins ext700 -27.37 (21 tr, was -19.68 on 18), fit3 -14.63 (15), debtnerv -11.56 (5), bul4 -9.01 (5)",
+    "asks.json: none open"
+   ],
+   "saw": "Night/day split again today: night 3/4 +7.65, day 1/7 -15.90. gap <15 min 43 tr 37% -46.83 (h 33/42), 30-60 34 tr 62% +34.45: same picture. After 2 losses in a row 19 tr 21% -45.45 (peu). All four twins fell this morning along with the real robot (under 30, hint). No run, no pile, no proposal. Day watch awake again (lock cleared)."
   }
  ],
  "lessons": [
