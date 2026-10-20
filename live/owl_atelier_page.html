@@ -797,6 +797,12 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
  if(q.get('ask')){const ask=q.get('ask');history.replaceState(null,'',location.pathname+(CID?'?c='+CID:''));let n=0;const w=setInterval(()=>{n++;if(CID&&C&&C.status!=='thinking'){clearInterval(w);$('tx').value=ask;send();}else if(n>40)clearInterval(w);},300);}
  getJ('robots_data').then(j=>{PIECES=((j.builder||{}).pieces)||[];const owl=((j.builder||{}).robots||[]).find(r=>r.id==='owl');OWL=(owl&&(owl.resolved||owl.parts))||{};if(C)paintBP();}).catch(()=>{});})();
 
+/* ---------- 2026-10-20: "still here" - while the chat is open and quiet, a tiny ping every 6 s; reload only on news
+   (a message Kino sent on its own, a result). Kino also knows you are looking at the conversation. */
+setInterval(async()=>{if(!CID||!C||document.visibilityState!=='visible'||POLL&&C.status!=='ready')return;
+ try{const p=await getJ('chat_ping?id='+encodeURIComponent(CID));if(p.err)return;
+  const M=C.msgs||[],lt=(M[M.length-1]||{}).t||0;
+  if(p.n!==M.length||p.last_t!==lt||p.status!==C.status||p.draft||(p.rev||0)!==(C.rev||0)||(p.test||null)!==((C.test||{}).state||null))load(CID);}catch(e){}},6000);
 /* ---------- 2026-10-20: the header's "more" menu (search, notebook) - the name keeps its room */
 function moreSh(btn){rxClose();const r=btn.getBoundingClientRect(),d=document.createElement('div');d.id='rxbar';d.className='lpm';
  d.innerHTML='<button class="it" data-a="s">🔍&nbsp; '+T('Chercher dans la conversation','Search the conversation')+'</button><button class="it" data-a="n">📓&nbsp; '+T('Le carnet du robot','The robot’s notebook')+'</button><button class="it" data-a="k">🦉&nbsp; '+T('Kino et toi','Kino and you')+'</button>';

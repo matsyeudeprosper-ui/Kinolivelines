@@ -16920,6 +16920,19 @@ def _chat_result(c):
             "owl_curve": (p.get("curve") or [])[-60:], "market": t.get("sym") or "BTCUSD"}
 
 
+def chat_ping(user, cid):
+    """2026-10-20: the open chat page says "still here" every few seconds (tiny answer): Kino knows the member is looking,
+    and the page reloads only when something changed (a message Kino sent on its own, a test result)"""
+    c = _chat_load(user, cid)
+    if c is None:
+        return {"err": "missing"}
+    _CHAT_SEEN[user.get("id")] = (time.time(), cid)
+    _CHAT_VIEW[cid] = time.time()
+    M = c.get("msgs") or []
+    return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state")}
+
+
 _CHAT_VIEW = {}          # 2026-10-20 (owner UI item 7): cid -> last time the member had it open (unread badges)
 
 
@@ -25118,7 +25131,7 @@ class H(BaseHTTPRequestHandler):
                 self._not_found()
             else:
                 self._send_file_fresh(os.path.join(CHAT_IMG, _f), "image/png" if _f.endswith(".png") else "image/jpeg")
-        elif sub in ("atelier", "chat_get", "chat_list"):
+        elif sub in ("atelier", "chat_get", "chat_list", "chat_ping"):
             # 2026-10-19 (owner): L'atelier - build a robot by chatting with the AI (Strategie members + admin, from disk)
             _ok = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
             import urllib.parse as _upr
@@ -25131,6 +25144,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"err": "strategy"}), "application/json")
             elif sub == "chat_get":
                 self._send(json.dumps(chat_get(user, _q.get("id", [""])[0]), ensure_ascii=False), "application/json")
+            elif sub == "chat_ping":
+                self._send(json.dumps(chat_ping(user, _q.get("id", [""])[0])), "application/json")
             else:
                 self._send(json.dumps(chat_list(user), ensure_ascii=False), "application/json")
         elif sub in ("chart_replay", "studio_get", "ai_get"):
