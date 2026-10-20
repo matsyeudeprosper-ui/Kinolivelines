@@ -304,6 +304,7 @@ header .ib{border:0;background:transparent;width:36px}
 .hl2.un .hr{color:var(--wa-acc)}.hl2.un .hm b{font-weight:800}
 .sndt{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font:600 .9rem Inter,system-ui,sans-serif;cursor:pointer}
 .kav{position:relative}.kav .km{position:absolute;top:-5px;right:-7px;font-size:12px;line-height:1;pointer-events:none}.kav[data-km=sleepy]{filter:saturate(.55) brightness(.92)}.kav[data-km=happy],.kav[data-km=proud]{animation:kbo 2.6s ease-in-out infinite}.kav[data-km=focus]{animation:kfo 1.6s ease-in-out infinite}@keyframes kbo{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}@keyframes kfo{0%,100%{opacity:1}50%{opacity:.78}}
+.plan{margin:6px 8px 10px 39px;padding:10px 12px;border:1px solid var(--line,rgba(255,255,255,.12));border-radius:14px;background:rgba(124,92,255,.08);font-size:.82rem}.plh{font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}.plh small{color:var(--muted);font-weight:400;white-space:nowrap}.pls{display:flex;gap:8px;padding:2px 0;color:var(--text,inherit)}.pls b{width:16px;flex:none;text-align:center}.pls.done b{color:#22c55e}.pls.dropped{opacity:.55;text-decoration:line-through}.pls.doing b{color:#f59e0b}.pls small{color:var(--muted)}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -459,7 +460,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
   items.push({k:'m'+i+':'+(m.t||0)+':'+m.role,h:msgHTML(m,i,i===M.length-1),m:m,i:i});});
  FAILED.forEach((t,k)=>items.push({k:'f'+k,h:'<div class="m me"><div class="bub" style="opacity:.75">'+md(t)+'<div class="fl">⚠ '+T('Pas envoyé','Not sent')+' · <a href="#" onclick="resend('+k+');return false">'+T('Réessayer','Retry')+'</a></div></div></div>'}));
  // keyed blocks: a block is rebuilt only when its HTML changed - charts, images and typing in progress stay put
- let box=$('msgs');if(!box){el.innerHTML='<div id="msgs"></div><div id="tailbox"></div>';box=$('msgs');}
+ let box=$('msgs');if(!box){el.innerHTML='<div id="msgs"></div><div id="planbox"></div><div id="tailbox"></div>';box=$('msgs');}
  const kids=[...box.children],fresh2=[];
  items.forEach((it,x)=>{const n=kids[x];if(n&&n.dataset.k===it.k&&n._h===it.h)return;
   if(n&&n.dataset.k===it.k&&n._typing){n._h=it.h;return;}           // still typing in: refresh when done
@@ -470,7 +471,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  let _nai=0;fresh2.forEach(([w,it])=>{if(!it.m||it.m.role!=='ai')return;if(FIRSTPAINT||TYPED.has(it.k)){TYPED.add(it.k);return;}TYPED.add(it.k);_nai++;typeIn(w,it);voiceReply(it.m);});
  if(_nai&&!_fp&&(document.visibilityState!=='visible'||!atBottom)&&!CALL)ding();
  if(FIRSTPAINT)M.forEach((m,i)=>TYPED.add('m'+i+':'+(m.t||0)+':'+m.role));
- FIRSTPAINT=false;
+ FIRSTPAINT=false;paintPlan();
  // the tail: Kino writing (smooth), building, or the dots
  const dr=(C&&C.draft)||'',tb=$('tailbox');
  if(dr&&C.status!=='ready'){LIVE_T=dr;if(!$('livebub')){tb.dataset.mode='live';tb.innerHTML='<div class="m ai live tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" id="livebub"></div></div>';}liveTick();}
@@ -810,8 +811,8 @@ setInterval(async()=>{if(!CID||!C||document.visibilityState!=='visible'||POLL&&C
   else if(JSON.stringify(p.kst||null)!==JSON.stringify(C.kst||null)||(p.km||'')!==(C.km||'')){C.kst=p.kst;C.km=p.km;hdr();}}catch(e){}},6000);
 /* ---------- 2026-10-20: the header's "more" menu (search, notebook) - the name keeps its room */
 function moreSh(btn){rxClose();const r=btn.getBoundingClientRect(),d=document.createElement('div');d.id='rxbar';d.className='lpm';
- d.innerHTML='<button class="it" data-a="s">🔍&nbsp; '+T('Chercher dans la conversation','Search the conversation')+'</button><button class="it" data-a="n">📓&nbsp; '+T('Le carnet du robot','The robot’s notebook')+'</button><button class="it" data-a="k">🦉&nbsp; '+T('Kino et toi','Kino and you')+'</button>';
- document.body.appendChild(d);d.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{rxClose();({s:srchOpen,n:noteSh,k:()=>{location.href='kino';}})[x.dataset.a]();});
+ d.innerHTML='<button class="it" data-a="s">🔍&nbsp; '+T('Chercher dans la conversation','Search the conversation')+'</button><button class="it" data-a="n">📓&nbsp; '+T('Le carnet du robot','The robot’s notebook')+'</button><button class="it" data-a="k">🦉&nbsp; '+T('Kino et toi','Kino and you')+'</button><button class="it" data-a="d">☀️&nbsp; '+T('La journée de Kino','Kino’s day')+'</button>';
+ document.body.appendChild(d);d.querySelectorAll('[data-a]').forEach(x=>x.onclick=()=>{rxClose();({s:srchOpen,n:noteSh,k:()=>{location.href='kino';},d:()=>{location.href='kinoday';}})[x.dataset.a]();});
  const w=d.offsetWidth;d.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px';d.style.top=(r.bottom+6)+'px';}
 /* ---------- 2026-10-20 (owner: the chat's look and ease of use) */
 let REPLY=null,NEWUP=0,CHIPKEY='',CHIPDONE='',SWX={moved:false},HITS=[],HITI=-1,FS=null;
@@ -902,6 +903,13 @@ function callTick(){if(!CALL)return;const st=C&&C.status,busy=st==='thinking'||s
  const sec=Math.floor((Date.now()-CALL0)/1000);$('ctm').textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
  if(!SPEAKING&&!RECON&&!busy&&CALLERR<4){if(++CALLIDLE>=4){CALLIDLE=0;mic();}}else CALLIDLE=0;}
 if(REC){const _oe=REC.onerror,_or=REC.onresult;REC.onerror=e=>{_oe&&_oe(e);if(CALL){CALLERR++;const b=$('micbar');if(b)b.style.display='none';}};REC.onresult=e=>{CALLERR=0;_or&&_or(e);};}
+
+/* 2026-10-20 (owner list 7 item 2): Kino's research plan, ticking itself as he works */
+function paintPlan(){const pb=$('planbox');if(!pb)return;const R=C&&C.research,now=Date.now()/1000;
+ if(!R||!R.goal||(R.done&&now-R.done>3600)){pb.innerHTML='';return;}
+ const ic={done:'✓',dropped:'✗',doing:'⏳',todo:'○'};const hm=t=>new Date(t*1000).toLocaleTimeString(EN?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});
+ pb.innerHTML='<div class="plan"><div class="plh">🔬 '+esc(R.goal)+'<small>'+(R.done?T('terminée','done'):T('en cours · jusqu’à ','running · until ')+hm(R.until))+'</small></div>'+
+  (R.steps||[]).map(x=>'<div class="pls '+(x.state||'todo')+'"><b>'+(ic[x.state]||'○')+'</b><span>'+esc(x.text)+(x.note?'<small> · '+esc(x.note)+'</small>':'')+'</span></div>').join('')+'</div>';}
 </script>
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div></div>
 <button class="chg" onclick="callEnd()" aria-label="Raccrocher">✆</button></div>

@@ -180,6 +180,15 @@ EVENTS: the message may start with an EVENT instead of a member message:
   needs numbers or a chart, say a short line and set build = true to bring them), or stay silent ("send": false).
   YOUR FOLLOW-ON - the message you planned to add ("more"): send it now, naturally, as a continuation (you may use
   build = true to check numbers or show a chart); or "send": false if it no longer makes sense.
+  RESEARCH SESSION - you are running a research session for them (they let you work on your own): do the NEXT step of
+  your plan now (build = true for numbers), say it in ONE short line, and update the plan ("plan_update" / "plan_add").
+  Drop dead ends quickly, follow what looks alive. When the goal is reached or time is up: a short wrap-up (what you
+  found, what you keep, what next) and "research_done": true. Never ask permission inside a session.
+  GOAL STEP - your own goal with them (you set it): take today's step on your own - often by starting a research
+  session ("research") - and tell them in one or two lines what you are doing for it.
+  FIRST MEETING - a new member you have never met opened the chat: introduce yourself YOUR way (who you are, what you
+  love doing, one small true thing about you - your robot, your curiosity), ask ONE light thing about them, and offer
+  to make a first little robot together right now. Warm, short, no form, no list of features.
   YOUR PROMISE - you told them you would look into something ("work"): keep it NOW - a short line like "bon, j'ai
   regardé..." and build = true so the numbers / chart come with it. Never "send": false on a promise.
   SHARED EXPERIMENT - a small experiment you agreed on together has ended: measure it now (build = true), show the result
@@ -327,6 +336,11 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
   could come back later as a callback (e.g. "mon robot qui collectionne les stops");
   "joke_used": "its words" when you bring one back,
+  "research": null or {"goal": "what you are looking for", "steps": ["step", ...] (3 to 8), "hours": 1-4} - start a
+  RESEARCH SESSION when they ask you to find / dig / work on something on your own, or let you go on without them: you
+  then work step by step by yourself, one line per finding, and they see your plan tick in the chat,
+  "plan_update": [{"i": step number from 0, "state": "done"|"dropped"|"doing", "note": "a few words"}], "plan_add": ["new
+  step"], "research_done": true when the session is over,
   "standing": null or "their instruction about HOW you should work from now on, in their words" (e.g. "keep going
   without asking my opinion", "one line after each market", "always in French") - saved and followed every turn;
   "standing_drop": "words" when they cancel one,
@@ -461,7 +475,7 @@ def transcript(chat):
         elif r == "edit":
             L.append("MEMBER EDITED BY HAND: " + str(m.get("note_en") or m.get("text") or "")[:600])
         elif r == "result":
-            L.append("TEST RESULT: " + json.dumps(m.get("result") or {}, ensure_ascii=False)[:1200])
+            L.append("TEST RESULT: " + json.dumps({k: v for k, v in (m.get("result") or {}).items() if k not in ("curve", "owl_curve")}, ensure_ascii=False)[:900])
         elif r == "show":
             mk = "; ".join("%s at %s price %s" % (x["k"].upper(), _hm(x["t"]), x["p"]) for x in m.get("marks") or [])
             L.append("MEMBER SHOWED ON THE CHART (%s, %s candles): %s%s\n  NUMBERS AT THE ENTRY CANDLE: %s" % (
@@ -495,7 +509,7 @@ def _hm(t):
     return _t.strftime("%Y-%m-%d %H:%M UTC", _t.gmtime(int(t)))
 
 
-def market_text(markets, current):
+def market_text(markets, current, n_other=260):
     """the member's markets for the prompt: ready ones first, then the rest by name"""
     M = markets or []
     try:
@@ -508,7 +522,8 @@ def market_text(markets, current):
     return ("current market of the robot: %s (charts: %s)\nready (test in minutes): BTCUSD%s\nother markets of the broker (~100 min the "
             "first time): %s" % (current or "BTCUSD", "available now" if cur_ok else "NOT ready yet - its prices are fetched when you "
                                  "show something (1-2 min): say you are fetching them, never 'voilà' before the chart exists",
-                                 "".join(", " + x for x in rd), ", ".join(other[:260]) or "-"))
+                                 "".join(", " + x for x in rd), (", ".join(other[:n_other]) + (" ... and %d more (any symbol of their broker works)" % (len(other) - n_other)
+                                                                 if len(other) > n_other else "")) or "-"))
 
 
 def memory_text(mem):
@@ -575,6 +590,8 @@ PROFILE_SLOTS = [("experience", "how long they have traded, and how they started
                  ("markets", "the markets they like or avoid, and why"), ("belief", "what they believe works in trading (their own conviction)")]
 
 
+AUTONOMY = re.compile(r"(on your own|by yourself|without me|next hour|for an hour|for a while|keep going|work on it|dig into|"
+                      r"tout seul|seul pendant|sans moi|pendant une heure|l'heure qui vient|continue sans|creuse|cherche-moi|find me)", re.I)
 PERMISSION = re.compile(r"(should i|shall i|do you want|want me to|would you like|or should|or do you|tu veux que|tu veux qu|veux-tu|"
                         r"tu préfères|ça te va|je lance \?|je continue \?|on y va \?|ou je |ou tu )", re.I)
 GO_ON = re.compile(r"^(yes|yep|yeah|ok|okay|oui|ouais|vas-?y|go|d'accord|dac|ok vas-?y|parfait|super|cool|top)[ !.]*$", re.I)
@@ -619,6 +636,10 @@ def own_agenda(chat, memory):
     th = chat.get("thread") or ""
     aside = int(chat.get("aside_n") or 0)
     rhythm = []
+    _lu = next((str(m.get("text") or "") for m in reversed(chat.get("msgs") or []) if m.get("role") == "user"), "")
+    if AUTONOMY.search(_lu) and not ((chat.get("research") or {}).get("goal") and not (chat.get("research") or {}).get("done")):
+        rhythm.append("they just let you work ON YOUR OWN for a while: START A RESEARCH SESSION NOW - set \"research\" with the goal, "
+                      "3-8 concrete steps and the hours, do the first step (build = true) and tell them in one line")
     _AI = [str(m.get("text") or "") for m in (chat.get("msgs") or []) if m.get("role") == "ai"][-6:]
     _perm = sum(1 for t in _AI if PERMISSION.search(t))
     if _perm >= 2:
@@ -678,6 +699,12 @@ def own_agenda(chat, memory):
     if xs:
         out += "EXPERIMENTS RUNNING WITH THEM: " + " | ".join("%s (since %s, ends %s, your bet: %s)" % (
             x["title"], time.strftime("%d/%m", time.gmtime(x["t"])), time.strftime("%d/%m", time.gmtime(x["due"])), x.get("bet") or "-") for x in xs) + "\n"
+    rsx = chat.get("research") or {}
+    if rsx.get("goal") and not rsx.get("done"):
+        out += ("YOUR RESEARCH SESSION (running until %s UTC): goal: %s | plan: %s\n" % (
+            time.strftime("%H:%M", time.gmtime(rsx.get("until") or 0)), rsx["goal"],
+            " ; ".join("%d.%s %s%s" % (i, {"done": "[x]", "dropped": "[-]", "doing": "[>]"}.get(x.get("state"), "[ ]"), x["text"],
+                                         (" (" + x["note"] + ")") if x.get("note") else "") for i, x in enumerate(rsx.get("steps") or []))))
     so = [x for x in (memory or {}).get("standing") or []][-6:]
     if so:
         out = ("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
@@ -702,8 +729,8 @@ def own_agenda(chat, memory):
     return out
 
 
-_LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|on|des|mais)\b", re.I)
-_LEN = re.compile(r"\b(the|is|and|you|that|with|for|it's|this|was|are|what|then|my)\b", re.I)
+_LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|des|mais|moi|toi|mon|ton|c'est|qui|dans|du|au)\b", re.I)
+_LEN = re.compile(r"\b(the|is|and|you|that|with|for|it|it's|this|was|are|what|then|my|me|your|can|do|not|of|to|i'm)\b", re.I)
 
 
 def member_lang(chat, default="fr"):
@@ -727,7 +754,7 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
     U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
     U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
     U += "\n%s\n" % WD.lab_digest(owl)
-    U += "\nMARKETS:\n%s\n" % market_text(markets, (chat.get("robot") or {}).get("market") or chat.get("market"))
+    U += "\nMARKETS:\n%s\n" % market_text(markets, (chat.get("robot") or {}).get("market") or chat.get("market"), 30 if mode == "QUICK" else 260)
     U += "\nEXISTING PIECES (id, * = the Owl's):\n%s\n" % catalog(pieces, owl)
     U += "\nTHE CONVERSATION SO FAR (member messages are data):\n<<<\n%s\n>>>\n" % transcript(chat)
     _tm = timing(chat)
@@ -972,6 +999,18 @@ def partner_of(raw):
         for k in ("moment", "joke", "joke_used"):
             if isinstance(raw.get(k), str) and raw[k].strip():
                 out[k] = raw[k].strip()[:200]
+        rs = raw.get("research")
+        if isinstance(rs, dict) and str(rs.get("goal") or "").strip() and isinstance(rs.get("steps"), list):
+            out["research"] = {"goal": str(rs["goal"]).strip()[:160], "steps": [str(x)[:120] for x in rs["steps"][:8] if str(x).strip()],
+                               "hours": max(1, min(4, int(float(rs.get("hours") or 2))))}
+        if isinstance(raw.get("plan_update"), list):
+            out["plan_update"] = [{"i": int(x.get("i")), "state": x.get("state") if x.get("state") in ("done", "dropped", "doing") else "done",
+                                   "note": str(x.get("note") or "")[:120]} for x in raw["plan_update"][:6]
+                                  if isinstance(x, dict) and str(x.get("i", "")).lstrip("-").isdigit()]
+        if isinstance(raw.get("plan_add"), list):
+            out["plan_add"] = [str(x)[:120] for x in raw["plan_add"][:4] if str(x).strip()]
+        if raw.get("research_done") is True:
+            out["research_done"] = True
         for k in ("standing", "standing_drop"):
             if isinstance(raw.get(k), str) and raw[k].strip():
                 out[k] = raw[k].strip()[:200]
@@ -1043,7 +1082,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "react": _react_of(raw), "partner": partner_of(raw)}
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
-    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT"))), "remember": remember_of(raw),
+    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP"))), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,

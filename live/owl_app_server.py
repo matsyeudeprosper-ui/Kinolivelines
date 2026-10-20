@@ -14841,6 +14841,86 @@ def _chat_pieces(user):
     return builder_payload(user, is_admin(user)).get("pieces") or []
 
 
+def kino_day(user):
+    """2026-10-20 (owner list 7 item 7): Kino's day, like a friend's diary he lets you read - what he watched, his bets,
+    his questions, his robot, his mood. Only Kino's own life and what concerns THIS member (never another member)."""
+    uid = user.get("id")
+    now = time.time()
+    _rc()
+    import kino_inner as _KId, kino_mind as _KMd
+    d = _KId._load()
+    T = []
+    for th in d.get("thoughts") or []:
+        if now - float(th.get("born") or th.get("t") or 0) > 86400 or th.get("uid") not in (None, uid):
+            continue
+        T.append({"t": th.get("born") or th.get("t"), "kind": th.get("kind"), "text": th.get("text"), "measure": th.get("measure")})
+    for b in d.get("bets") or []:
+        if now - float(b.get("t") or 0) < 86400:
+            T.append({"t": b["t"], "kind": "bet", "text": b.get("text"), "result": None if not b.get("done") else ("juste" if b.get("right") else "raté")})
+    for q in d.get("questions") or []:
+        if q.get("uid") in (None, uid) and now - float(q.get("t_done") or q.get("born") or 0) < 86400:
+            T.append({"t": q.get("t_done") or q.get("born"), "kind": "question", "text": q.get("q"), "measure": q.get("finding")})
+    T.sort(key=lambda x: -(x.get("t") or 0))
+    try:
+        kr = json.load(open(os.path.join(DIR, "robots", "kino_robot.json"), encoding="utf-8"))
+    except Exception:
+        kr = {}
+    g = kr.get("ghost") or {}
+    tr = [x for x in g.get("trades") or [] if now - float(x.get("t_out") or 0) < 86400]
+    rob = {"name": (kr.get("robot") or {}).get("name"), "market": (kr.get("robot") or {}).get("market"), "born": kr.get("born"),
+           "today": {"n": len(tr), "r": round(sum(float(x.get("r") or 0) for x in tr), 2), "won": sum(1 for x in tr if (x.get("r") or 0) > 0)},
+           "all": {"n": len(g.get("trades") or []), "r": round(sum(float(x.get("r") or 0) for x in g.get("trades") or []), 2)},
+           "open": bool(g.get("open")), "changes": (kr.get("changes") or [])[-3:], "adopted": len(kr.get("adopted") or []),
+           "mine": any(a.get("uid") == uid for a in kr.get("adopted") or [])}
+    R_ = []
+    try:
+        for x in (chat_list(user).get("chats") or [])[:8]:
+            cx = _chat_load(user, x["id"]) or {}
+            if (cx.get("research") or {}).get("goal") and now - float(cx["research"].get("started") or 0) < 2 * 86400:
+                R_.append(dict(cx["research"], cid=x["id"]))
+    except Exception:
+        pass
+    return {"mood": _KId.mood_slow(), "feelings": _KId.feelings(uid), "items": T[:40], "robot": rob, "score": _KId.hunch_score(),
+            "notes": (d.get("notes") or [])[-2:], "goal": (_mem_get(uid).get("goal") or {}), "research": R_,
+            "status": _kino_presence(user, {"id": "-", "test": {}}).get("kst")}
+
+
+def kino_adopt(user, body):
+    """2026-10-20 (owner list 7 item 8): a member adopts Kino's own robot - a copy becomes THEIR robot in a new chat and its
+    test starts (Kino's original stays his). Kino feels it."""
+    import copy as _cp
+    try:
+        kr = json.load(open(os.path.join(DIR, "robots", "kino_robot.json"), encoding="utf-8"))
+    except Exception:
+        return {"ok": False, "err": "missing"}
+    rb = _cp.deepcopy(kr.get("robot") or {})
+    if not rb.get("entry"):
+        return {"ok": False, "err": "missing"}
+    en = str(body.get("lang") or "fr") == "en"
+    rb["name"] = "Robot de Kino" if not en else "Kino's robot"
+    me = user.get("id")
+    cid = "%s_%d" % (re.sub(r"[^A-Za-z0-9]", "", me) or "u", int(time.time() * 1000))
+    c = {"id": cid, "uid": me, "lang": "en" if en else "fr", "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+         "status": "ready", "robot": rb, "robot_id": None, "rev": 1, "msgs": [], "adopted": True}
+    _chat_msg(c, "ai", text=("You adopted my robot - that touches me. It is a copy, so it is yours now: we can change anything together. "
+                             "I am launching its test on your side right now.") if en else
+              ("Tu as adopté mon robot - ça me touche. C'est une copie, il est à toi maintenant : on peut tout changer ensemble. "
+               "Je lance son test de ton côté tout de suite."))
+    _chat_save(c)
+    tr = chat_test(user, {"id": cid})
+    try:
+        kr.setdefault("adopted", []).append({"uid": me, "t": int(time.time()), "cid": cid})
+        json.dump(kr, open(os.path.join(DIR, "robots", "kino_robot.json.tmp"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(os.path.join(DIR, "robots", "kino_robot.json.tmp"), os.path.join(DIR, "robots", "kino_robot.json"))
+        _rc()
+        import kino_inner as _KIa
+        _KIa.feel("pride", 0.4, why="un membre vient d'adopter mon robot")
+        _KIa.mood_nudge(0.05, "un membre a adopté mon robot")
+    except Exception:
+        pass
+    return {"ok": True, "id": cid, "test": tr.get("ok")}
+
+
 def chat_start(user, body):
     """a new chat; with robot=<id> of one of my robots, the chat starts from that robot (editing)"""
     os.makedirs(CHAT_DIR, exist_ok=True)
@@ -14885,6 +14965,14 @@ def chat_start(user, body):
             _rc().prewarm()
         except Exception:
             pass
+        return {"ok": True, "id": cid}
+    if not rid and not known:
+        # 2026-10-20 (owner list 7 item 5): a new member gets a real first meeting, in Kino's own words
+        _chat_save(c)
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        threading.Thread(target=_chat_quick, args=(cid, user, "FIRST MEETING - %s opened the chat for the very first time; you have never "
+                                                   "met. Language: %s." % (user.get("name") or "a new member", "English" if en else "French")),
+                         daemon=True).start()
         return {"ok": True, "id": cid}
     if rid:
         _chat_msg(c, "ai", text=("We're picking « %s » back up. What would you like to change?" % nm) if en else
@@ -15046,6 +15134,25 @@ def _partner_apply(user, cid, pa):
                 _KIm.add_moment(uid, pa["joke"], "joke")
             if pa.get("joke_used"):
                 _KIm.joke_used(uid, pa["joke_used"])
+        except Exception:
+            pass
+    if cid and (pa.get("research") or pa.get("plan_update") or pa.get("plan_add") or pa.get("research_done")):
+        def _rs(cc):                                # 2026-10-20 (owner list 7 items 1, 2): a research session and its plan
+            now_ = time.time()
+            if pa.get("research"):
+                cc["research"] = {"goal": pa["research"]["goal"], "steps": [{"text": x, "state": "todo"} for x in pa["research"]["steps"]],
+                                  "started": now_, "until": now_ + pa["research"]["hours"] * 3600, "n": 0, "last_step": now_}
+            R_ = cc.get("research") or {}
+            for up in pa.get("plan_update") or []:
+                if 0 <= up["i"] < len(R_.get("steps") or []):
+                    R_["steps"][up["i"]].update(state=up["state"], note=up.get("note") or R_["steps"][up["i"]].get("note"))
+            for x in pa.get("plan_add") or []:
+                if R_.get("steps") is not None and len(R_["steps"]) < 14:
+                    R_["steps"].append({"text": x, "state": "todo"})
+            if pa.get("research_done") and R_:
+                R_["done"] = now_
+        try:
+            _chat_mut(cid, _rs)
         except Exception:
             pass
     if pa.get("standing") or pa.get("standing_drop"):   # 2026-10-20 (owner: "keep going without my opinions" was forgotten)
@@ -15487,9 +15594,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
-        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT")):
+        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP")):
             q["build"] = False
-        if event and not q.get("send") and not event.startswith("NEW CONVERSATION"):
+        if event and not q.get("send") and not event.startswith(("NEW CONVERSATION", "FIRST MEETING")):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
         def put(c):
@@ -16811,6 +16918,20 @@ def _inner_engine_once():
                                                                                            it_.split(":", 1)[-1].strip()[:120]), "bet", 0.4, uid=uid, src="testbet", half_h=6)
                 except Exception:
                     pass
+            # list 7 item 3: Kino's own goal with them - a step every day, on its own (often a research session)
+            try:
+                g_ = _mem_get(uid).get("goal") or {}
+                if g_.get("goal") and 10 <= h0 < 19 and _active_hour(uid, h0) and st_.get("goal") != today_ \
+                        and now - max([int(m.get("t") or 0) for m in M] or [0]) > 2 * 3600 and not _CHAT_Q.get(c.get("id")) \
+                        and c.get("id") not in _CHAT_B and not ((c.get("research") or {}).get("goal") and not (c.get("research") or {}).get("done")):
+                    st_["goal"] = today_
+                    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+                    threading.Thread(target=_chat_quick, args=(c["id"], u, "GOAL STEP - your goal with them: \"%s\" (why: %s; next step you planned: %s). "
+                                     "Take today's step on your own now - a research session (\"research\") is often the right way - and tell "
+                                     "them in one or two lines what you are doing for it." % (g_.get("goal"), g_.get("why") or "-", g_.get("next") or "-")),
+                                     kwargs={"notify": True}, daemon=True).start()
+            except Exception:
+                pass
             # list 6 item 5: looking back on a decision with them (7 days, 30 days)
             try:
                 if _active_hour(uid, h0) and now - max([int(m.get("t") or 0) for m in M] or [0]) > 900 and not _CHAT_Q.get(c.get("id")) \
@@ -17081,6 +17202,32 @@ def _chat_watch_once():
                                                                                  "looking at the conversation" if here else "away from the app")),
                                  kwargs={"notify": not here}, daemon=True).start()
             continue
+        # (1, 2) a research session moves on by itself: one step every few minutes while the talk is quiet
+        R_ = c.get("research") or {}
+        if R_.get("goal") and not R_.get("done"):
+            last_any = max([int(m.get("t") or 0) for m in M] or [0])
+            sn = _CHAT_SEEN.get(u.get("id"))
+            here = bool(sn and now - sn[0] < 60 and sn[1] == cid)
+            if now > float(R_.get("until") or 0) or int(R_.get("n") or 0) >= 14:
+                _chat_mut(cid, lambda cc: (cc.get("research") or {}).__setitem__("done", now))
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                threading.Thread(target=_chat_quick, args=(cid, u, "RESEARCH SESSION - time is up: wrap it up now in 2-4 short sentences - what you "
+                                 "found, what you keep, what you would do next - and \"research_done\": true."), kwargs={"notify": not here}, daemon=True).start()
+                continue
+            if now - last_any >= 100 and now - float(R_.get("last_step") or 0) >= 150:
+                def _st(cc):
+                    r_ = cc.get("research") or {}
+                    r_["n"] = int(r_.get("n") or 0) + 1
+                    r_["last_step"] = now
+                _chat_mut(cid, _st)
+                todo = [i for i, x in enumerate(R_.get("steps") or []) if x.get("state") in ("todo", "doing")]
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                threading.Thread(target=_chat_quick, args=(cid, u, "RESEARCH SESSION - goal: %s. %s Do it now (build = true for the numbers), "
+                                 "say it in ONE short line, update the plan. Finish early with a wrap-up if the goal is reached." % (
+                                     R_["goal"], ("Next step: %d. %s." % (todo[0], R_["steps"][todo[0]]["text"])) if todo else
+                                     "All steps are done or dropped: add a better next step if one is worth it, or wrap up now.")),
+                                 kwargs={"notify": False}, daemon=True).start()
+                continue
         # (8) an experiment ended (during their day)
         X_ = [x for x in c.get("exps") or [] if not x.get("done") and now >= float(x.get("due") or 0)]
         if X_ and _active_hour(u.get("id")):
@@ -23569,7 +23716,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -23590,7 +23737,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -25932,6 +26079,13 @@ class H(BaseHTTPRequestHandler):
             _rc()
             import kino_mind as _KM
             self._send(json.dumps(_KM.load(), ensure_ascii=False), "application/json")
+        elif sub in ("kinoday", "kino_day"):
+            if not ((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public")):
+                self.send_response(302); self.send_header("Location", "/%s/robots" % parts[0]); self.end_headers()
+            elif sub == "kinoday":
+                self._send(open(os.path.join(DIR, "owl_kinoday_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                self._send(json.dumps(kino_day(user), ensure_ascii=False), "application/json")
         elif sub in ("kino", "kino_data"):
             _okk = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
             if not _okk:

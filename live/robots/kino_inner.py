@@ -492,6 +492,12 @@ def add_question(q, uid=None, formula=None, side="buy", market="BTCUSD", src="")
     q = str(q or "").strip()[:240]
     if not q or BAD.search(q):
         return None
+    ql = q.lower()                       # the market named in the question wins over the chat's market
+    for words, sym in ((("bitcoin", "btc"), "BTCUSD"), (("l'or", " or ", "gold", "xau"), "XAUUSD"), (("nasdaq", "ustec"), "USTEC"),
+                       (("pétrole", "petrole", "oil", "usoil"), "USOIL"), (("dow", "us30"), "US30")):
+        if any(w in " " + ql + " " for w in words):
+            market = sym
+            break
 
     def f(d):
         Q = d.setdefault("questions", [])
