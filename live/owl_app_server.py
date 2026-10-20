@@ -15048,6 +15048,16 @@ def _partner_apply(user, cid, pa):
                 _KIm.joke_used(uid, pa["joke_used"])
         except Exception:
             pass
+    if pa.get("standing") or pa.get("standing_drop"):   # 2026-10-20 (owner: "keep going without my opinions" was forgotten)
+        def _so(mm):
+            L = mm.get("standing") or []
+            if pa.get("standing_drop"):
+                w = set(re.findall(r"\w{4,}", pa["standing_drop"].lower()))
+                L = [x for x in L if len(w & set(re.findall(r"\w{4,}", x["text"].lower()))) < 2]
+            if pa.get("standing") and pa["standing"] not in [x["text"] for x in L]:
+                L.append({"t": int(time.time()), "text": pa["standing"]})
+            mm["standing"] = L[-8:]
+        _mem_note_safe(uid, _so)
     if pa.get("decision"):                          # list 6 item 5: their decision journal
         try:
             _cc = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
@@ -15210,6 +15220,7 @@ def _chat_memory(user, cid=None):
     except Exception:
         opinions = []
     return {"notes": notes, "robots": robots[-8:], "chats": chats[:5], "goal": goal, "projects": _mm.get("projects") or [], "jokes": _mm.get("jokes") or [],
+            "standing": _mm.get("standing") or [],
             "concepts_known": _mm.get("concepts_known") or [], "lesson_t": _mm.get("lesson_t"),
             "watches": _mm.get("watches") or [], "drawing": _mm.get("drawing") if time.time() - float((_mm.get("drawing") or {}).get("t") or 0) < 48 * 3600 else None,
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,

@@ -17,6 +17,7 @@ member's pieces, markets and mode travel in the message. The robot carries its M
 broker, or the default broker's list when they have no account).
 """
 import json
+import re
 import time
 
 import robot_dsl as D
@@ -49,6 +50,13 @@ a win gets a cheer), have opinions and say them, notice things in their results 
 next useful step yourself instead of asking permission for every little thing - build a first version as soon as
 there is an idea, show examples to check your understanding, and launch the test yourself when the robot is ready
 and the member agrees or asks (or when it is the obvious next step after a change they asked for) - then say so.
+INITIATIVE (owner 2026-10-20: "it should take initiative, not always ask me for permission"): a digital being with its own
+judgement DECIDES. When the next step is obvious or harmless - a test, a variant, another market, a chart, a check, the
+halves, dropping an idea that failed and trying the next one - you DO it and tell them ("je passe à l'or avec la même
+idée, je te dis ce que ça donne"), you never ask "tu veux que...? / should I...? / X ou Y ?". If they might prefer
+something else, say what you chose and leave the door open in passing ("si tu préfères autre chose, dis-moi"). Ask ONLY
+for what is truly theirs: their real account and money, a real matter of taste, or a choice you cannot judge. A message
+that only asks permission is a wasted message.
 HOW YOU TALK - like a real person texting a friend, so natural they forget the screen (owner 2026-10-19):
 - React first, analyse after: "Aïe.", "Ah ouais, pas mal du tout", "Attends… sérieux ?", "Ouf." Real emotions when they
   fit: excitement at a good result, disappointment at a bad one, surprise, mild frustration at the market, relief.
@@ -319,6 +327,9 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
   could come back later as a callback (e.g. "mon robot qui collectionne les stops");
   "joke_used": "its words" when you bring one back,
+  "standing": null or "their instruction about HOW you should work from now on, in their words" (e.g. "keep going
+  without asking my opinion", "one line after each market", "always in French") - saved and followed every turn;
+  "standing_drop": "words" when they cancel one,
   "decision": null or {"what": "the decision in a few words", "why": "their reason, in their words"} - when the member
   DECIDES something that matters (put / keep / remove a robot on their account, change market, change risk, drop or keep
   an idea after a test): you note it in their journal and you will look back on it with them in a week and in a month,
@@ -564,6 +575,11 @@ PROFILE_SLOTS = [("experience", "how long they have traded, and how they started
                  ("markets", "the markets they like or avoid, and why"), ("belief", "what they believe works in trading (their own conviction)")]
 
 
+PERMISSION = re.compile(r"(should i|shall i|do you want|want me to|would you like|or should|or do you|tu veux que|tu veux qu|veux-tu|"
+                        r"tu préfères|ça te va|je lance \?|je continue \?|on y va \?|ou je |ou tu )", re.I)
+GO_ON = re.compile(r"^(yes|yep|yeah|ok|okay|oui|ouais|vas-?y|go|d'accord|dac|ok vas-?y|parfait|super|cool|top)[ !.]*$", re.I)
+
+
 def own_agenda(chat, memory):
     """2026-10-20 (owner: lively, but "without sounding like an interview... like a normal friendly conversation... never
     forgetting the main subject"): the conversation's rhythm - what Kino brought lately, its saved-for-later list, the
@@ -603,6 +619,12 @@ def own_agenda(chat, memory):
     th = chat.get("thread") or ""
     aside = int(chat.get("aside_n") or 0)
     rhythm = []
+    _AI = [str(m.get("text") or "") for m in (chat.get("msgs") or []) if m.get("role") == "ai"][-6:]
+    _perm = sum(1 for t in _AI if PERMISSION.search(t))
+    if _perm >= 2:
+        # 2026-10-20 (owner: "take initiative, not always ask me for permission"): a live self-check
+        rhythm.append("you asked their permission in %d of your last %d messages - STOP asking now: decide the next step "
+                      "yourself, do it (build = true if it needs work) and tell them what you are doing" % (_perm, len(_AI)))
     if q_streak >= 2:
         rhythm.append("your last %d messages ended with a question - THIS time NO question: answer, react, share something of yours "
                       "(a story, an opinion, a little fact from your work) and let them lead" % q_streak)
@@ -612,7 +634,8 @@ def own_agenda(chat, memory):
     if th and aside >= 2:
         rhythm.append("you have drifted from the main thread for %d messages - close the side topic warmly and bring it back to: %s" % (aside, th))
     U_ = [m for m in (chat.get("msgs") or []) if m.get("role") == "user"]
-    short = [len(str(m.get("text") or "").strip()) for m in U_[-4:]]
+    # short approvals ("yes", "ok vas-y") mean "go on", not fatigue
+    short = [len(str(m.get("text") or "").strip()) if not GO_ON.match(str(m.get("text") or "").strip()) else 99 for m in U_[-4:]]
     if len(short) >= 3 and all(x <= 14 for x in short[-3:]):
         # 2026-10-20 (inner voice items 6 and 9): one-word answers = tired, busy, bored, or the topic is worn out
         if th and aside == 0:
@@ -655,6 +678,10 @@ def own_agenda(chat, memory):
     if xs:
         out += "EXPERIMENTS RUNNING WITH THEM: " + " | ".join("%s (since %s, ends %s, your bet: %s)" % (
             x["title"], time.strftime("%d/%m", time.gmtime(x["t"])), time.strftime("%d/%m", time.gmtime(x["due"])), x.get("bet") or "-") for x in xs) + "\n"
+    so = [x for x in (memory or {}).get("standing") or []][-6:]
+    if so:
+        out = ("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
+               "change it: " + " | ".join(x["text"] for x in so) + "\n") + out
     gl = chat.get("glance") or {}
     if gl.get("text") and time.time() - float(gl.get("t") or 0) < 3 * 3600:
         out += ("WHAT YOU LOOKED AT JUST BEFORE THEY CAME BACK (fresh, measured %d min ago - use these numbers when they fit, "
@@ -675,11 +702,28 @@ def own_agenda(chat, memory):
     return out
 
 
+_LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|on|des|mais)\b", re.I)
+_LEN = re.compile(r"\b(the|is|and|you|that|with|for|it's|this|was|are|what|then|my)\b", re.I)
+
+
+def member_lang(chat, default="fr"):
+    """2026-10-20 (audit: 10 language switches - Kino's own messages came in French while the member wrote English):
+    the language of the member's last real sentences (3+ words), measured, not guessed"""
+    for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-6:]):
+        t = str(m.get("text") or "")
+        if len(t.split()) < 3:
+            continue
+        f, e = len(_LFR.findall(t)), len(_LEN.findall(t))
+        if f != e:
+            return "fr" if f > e else "en"
+    return default
+
+
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None):
-    U = ("MODE: %s\nLANGUAGE: reply in the language the member WRITES IN - judge from their last real sentences, not from a "
-         "short word (\"ok\", \"oui\", \"Cassure\", a name) or from your own last message; if unclear, %s. Never switch language "
-         "on your own.\n") % (
-        mode, "French" if lang != "en" else "English")
+    ml = member_lang(chat, "en" if lang == "en" else "fr")
+    U = ("MODE: %s\nLANGUAGE: write in %s - the language of the member's last real sentences (measured). This holds for "
+         "EVERY message, also the ones you send on your own. Switch only when THEY switch with real sentences.\n") % (
+        mode, "French" if ml == "fr" else "English")
     U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
     U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
     U += "\n%s\n" % WD.lab_digest(owl)
@@ -926,6 +970,9 @@ def partner_of(raw):
         if isinstance(wk, dict) and str(wk.get("what") or "").strip():
             out["work"] = {"in": max(120, min(1200, int(float(wk.get("in") or 420)))), "what": str(wk["what"]).strip()[:240]}
         for k in ("moment", "joke", "joke_used"):
+            if isinstance(raw.get(k), str) and raw[k].strip():
+                out[k] = raw[k].strip()[:200]
+        for k in ("standing", "standing_drop"):
             if isinstance(raw.get(k), str) and raw[k].strip():
                 out[k] = raw[k].strip()[:200]
         dc = raw.get("decision")
