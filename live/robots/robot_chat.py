@@ -371,7 +371,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   ONLY: tests, luck tests, all accounts), "confirm" ({"action": "pause"|"resume"} - THEY press the button to pause / restart
   the robot on THEIR account; you never do it yourself), "onaccount" (put THIS chat's robot on their real account - they
   confirm with their password; the card says plainly if it is not possible yet and why), "compare" (this robot vs the Owl,
-  step by step), "robots" (ALL their robots with where each one stands - use it for "liste mes robots"). Use a card whenever they ask about their account, results, a day,
+  step by step), "robots" (ALL their robots with where each one stands - use it for "liste mes robots"), "week" (their week at a glance:
+  account, robots, next step - for the Sunday look back). To STOP a luck test that waits in line: "act": "luck_cancel". Use a card whenever they ask about their account, results, a day,
   a market now, or an app area - and do NOT repeat the numbers the card shows,
   "setting": null or {"sound": true|false, "lang": "fr"|"en", "big": true|false, "brief_h": 0-23} - when they ask to change
   how the app behaves ("coupe le son", "parle-moi en français", "écris plus gros", "réveille-moi à 8 h"): applied at once,
@@ -507,7 +508,7 @@ def transcript(chat):
         elif r == "ai":
             L.append("YOU: " + str(m.get("text") or "")[:1200])
             if m.get("mreact"):
-                L.append("  (the member reacted %s to this message)" % m["mreact"])
+                L.append("  (the member reacted %s to this message%s)" % (m["mreact"], (" - why: " + str(m.get("mwhy"))) if m.get("mwhy") else ""))
             if m.get("tools"):
                 L.append("  (YOU COMPUTED: " + json.dumps(m["tools"], ensure_ascii=False)[:900] + ")")
         elif r == "edit":
@@ -1079,7 +1080,7 @@ def partner_of(raw):
                 out[k] = raw[k].strip()[:200]
         if isinstance(raw.get("cards"), list):
             out["cards"] = [{"kind": x["kind"], "args": x.get("args") if isinstance(x.get("args"), dict) else {}} for x in raw["cards"][:2]
-                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots")]
+                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots", "week")]
         st_ = raw.get("setting")
         if isinstance(st_, dict):
             ok = {k: v for k, v in st_.items() if (k in ("sound", "big") and isinstance(v, bool)) or (k == "lang" and v in ("fr", "en"))
@@ -1176,15 +1177,30 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
     return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP"))), "remember": remember_of(raw),
-            "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
+            "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
             "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw)}
 
 
+ON_STEP = None          # 2026-10-20 (owner: visible thinking): the server shows Kino's real steps while it works
+TOOL_WORDS = {"idea_stats": ("je mesure l'idée contre le hasard", "measuring the idea against chance"),
+              "compare": ("je compare les variantes", "comparing the variants"), "robot_replay": ("je rejoue le robot sur les vrais prix", "replaying the robot on real prices"),
+              "trade_explain": ("je regarde ce trade de près", "looking closely at that trade"), "search_chats": ("je relis nos conversations", "rereading our conversations")}
+
+
+def _step(chat, fr, en):
+    try:
+        if ON_STEP:
+            ON_STEP(chat.get("id"), fr if chat.get("lang") != "en" else en)
+    except Exception:
+        pass
+
+
 def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on_say=None, member=None, images=None):
     """the BUILD turn (+ one repair turn when needed) -> (answer, problems) or (None, reason)"""
     prev = chat.get("robot")
+    _step(chat, "🧠 je relis ton idée et ton robot", "🧠 rereading your idea and your robot")
     up = prompt(chat, view(prev, pieces) or "nothing built yet", pieces, owl, markets, "BUILD", lang, memory, None, member)
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
     raw = W.ask_json(system(), _content(up, images), log=log, on_text=cb)
@@ -1194,6 +1210,9 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
         calls = raw.get("tools") if isinstance(raw, dict) else None
         if not calls:
             break
+        for _c in calls[:3]:
+            _w = TOOL_WORDS.get(str((_c or {}).get("tool") or ""), ("je fais un calcul", "running a calculation"))
+            _step(chat, "🧮 " + _w[0], "🧮 " + _w[1])
         try:
             import robot_tools as T
             import robot_demo as RD
@@ -1211,6 +1230,7 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
         raw = raw2
     if raw is None:
         return None, "model"
+    _step(chat, "🔧 j'assemble les étapes du robot", "🔧 assembling the robot's steps")
     ans, probs = clean(raw, pieces, owl, prev, markets)
     ans["note"] = str(raw.get("note") or "").strip()[:200] if isinstance(raw, dict) else ""
     ans["partner"] = partner_of(raw)

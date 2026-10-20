@@ -15878,7 +15878,12 @@ def _kino_act(cid, user, act, en=False):
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
         line = None
-        if act in ("tests_resume", "tests_pause"):
+        if act == "luck_cancel":
+            r_ = chat_luck_cancel(user, {"id": cid})
+            if not r_.get("ok"):
+                line = {"running": ("This luck test is already running - it finishes on its own." if en else "Ce test de chance tourne déjà - il ira au bout tout seul."),
+                        "none": ("No luck test waiting for this robot." if en else "Aucun test de chance en attente pour ce robot.")}.get(r_.get("err"))
+        elif act in ("tests_resume", "tests_pause"):
             if not is_admin(user):
                 return
             r = tests_control(act == "tests_resume", "Kino for %s" % (user.get("name") or user.get("id")))
@@ -15907,6 +15912,24 @@ def _kino_act(cid, user, act, en=False):
 
 
 _CHAT_ACT = {}          # cid -> what Kino is doing right now, shown under its name (2026-10-20 owner review item 8)
+_CHAT_STEPS = {}        # cid -> [(t, text)] Kino's real steps while it builds (2026-10-20: visible thinking)
+
+
+def _hook_steps():
+    try:
+        _rc().ON_STEP = _on_step
+    except Exception:
+        pass
+
+
+def _on_step(cid, text):
+    if not cid:
+        return
+    L = [x for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240]
+    if not L or L[-1][1] != text:
+        L.append((time.time(), text))
+    _CHAT_STEPS[cid] = L[-6:]
+    _CHAT_ACT[cid] = text
 
 
 def _chat_quick0(cid, user, event=None, notify=False, important=False):
@@ -16057,6 +16080,8 @@ def _chat_build(cid, user):
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
             en = c.get("lang") == "en"
             n0, rev0 = len(c.get("msgs") or []), c.get("rev")
+            _rc().ON_STEP = _on_step
+            _CHAT_STEPS.pop(cid, None)
             ans, probs = _rc().answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                                       markets=_chat_markets(user), memory=_chat_memory(user, cid),
                                       on_say=lambda t: _CHAT_DRAFT.__setitem__(cid + ":b", t), member=_chat_member(user, c),
@@ -16515,6 +16540,7 @@ def _companion_tick():
                             " ; ".join(n["text"] for n in (_KIw._load().get("notes") or [])[-2:])[:400])
                     except Exception:
                         pass
+                    _chat_mut(ch[0]["id"], lambda cc: _chat_msg(cc, "card", kind="week", args={}))
                     threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "WEEKLY REVIEW - it is Sunday evening for them: a LOOK BACK TOGETHER, "
                                      "like two friends who trade side by side: their week in one line (and how their robot behaved compared with "
                                      "its test), YOUR week in one line (your hunches, your robot, a question you solved - honest, with humour), "
@@ -18351,7 +18377,7 @@ def chat_ping(user, cid):
     _CHAT_VIEW[cid] = time.time()
     M = c.get("msgs") or []
     return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
-            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid),
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [],
             **_kino_presence(user, c)}
 
 
@@ -18429,6 +18455,7 @@ def chat_get(user, cid, ui=""):
         out["ui_lang"] = _rc().member_lang2(c)
         out["admin"] = bool(is_admin(user))
         out["act"] = _CHAT_ACT.get(c["id"])
+        out["steps"] = [x[1] for x in _CHAT_STEPS.get(c["id"]) or [] if time.time() - x[0] < 240] if c["id"] in _CHAT_B else []
         out["money_plain"] = _money_plain((c.get("robot") or {}).get("money") or {})
         _ow = _ai_owl() or {}
         out["owl_view"] = _rc().view({k: {"use": _ow[k]} for k in ("entry", "stop", "exit", "recovery", "money") if _ow.get(k)} |
@@ -18960,6 +18987,48 @@ def chat_react(user, body):
         _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("jokes", ((mm.get("jokes") or []) + [{"t": int(time.time()), "text": str(jk)[:160],
                                                                                                           "e": e}])[-10:]))
     return {"ok": True}
+
+
+def chat_why(user, body):
+    """2026-10-20 (owner list): the reason behind a 👎 on one of Kino's messages (too long / unclear / wrong / other) -
+    Kino sees it in the conversation, its nightly review learns from it"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    try:
+        i = int(body.get("i"))
+    except Exception:
+        return {"ok": False}
+    why = str(body.get("why") or "").strip()[:120]
+    if c is None or not why:
+        return {"ok": False}
+
+    def put(cc):
+        M = cc.get("msgs") or []
+        if 0 <= i < len(M) and M[i].get("role") == "ai":
+            M[i]["mwhy"] = why
+            return True
+    return {"ok": bool(_chat_mut(c["id"], put))}
+
+
+def chat_luck_cancel(user, body):
+    """2026-10-20 (owner: "stop the random test for this"): the member removes THEIR robot's luck test while it still waits
+    in line (a running one finishes on its own)"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot_id"):
+        return {"ok": False, "err": "missing"}
+    rid, sym = c["robot_id"], (c.get("robot") or {}).get("market") or "BTCUSD"
+    lk = _luck_of(rid, sym) or {}
+    if lk.get("state") == "running":
+        return {"ok": False, "err": "running"}
+    if lk.get("state") != "queued":
+        return {"ok": False, "err": "none"}
+    sd = os.path.join(os.path.dirname(DIR), "study", "luck")
+    qf = os.path.join(sd, "queue.json")
+    q = json.load(open(qf, encoding="utf-8"))
+    n0 = len(q)
+    q = [e for e in q if not (e.get("rid") == rid and e.get("sym") == sym)]
+    _atomic_json(qf, q, ensure_ascii=False, indent=1)
+    _chat_mut(c["id"], lambda cc: _chat_msg(cc, "sys", text=("Luck test removed from the line." if cc.get("lang") == "en" else "Test de chance retiré de la file.")))
+    return {"ok": n0 != len(q)}
 
 
 def chat_explain(user, body):
@@ -24578,7 +24647,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -24599,7 +24668,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -27476,6 +27545,7 @@ if __name__ == "__main__":
     threading.Thread(target=_cand_watch, daemon=True).start()
     threading.Thread(target=_companion_loop, daemon=True).start()
     threading.Thread(target=_inner_clock_loop, daemon=True).start()
+    _hook_steps()
     threading.Thread(target=_inner_engine_loop, daemon=True).start()  # 2026-10-20: feelings, thoughts, daydreams   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
