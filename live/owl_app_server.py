@@ -18323,6 +18323,14 @@ def chat_get(user, cid):
         out["owl_view"] = _rc().view({k: {"use": _ow[k]} for k in ("entry", "stop", "exit", "recovery", "money") if _ow.get(k)} |
                                      {"filters": [{"use": f} for f in _ow.get("filters") or []], "market": "BTCUSD", "name": "Owl"}, _chat_pieces(user))
         out["can_undo"] = bool(c.get("robot_hist"))
+        try:                                     # 2026-10-20 (owner: "start AND end a full robot from the chat")
+            _B = acct_robot_block(user, is_admin(user))
+            _cids = [x.get("id") for x in _B.get("choices") or []]
+            out["acct"] = {"can": bool(_B.get("can")), "cur": (_B.get("current") or {}).get("name_fr") or (_B.get("current") or {}).get("id"),
+                           "is_cur": bool(c.get("robot_id") and (_B.get("current") or {}).get("id") == c.get("robot_id")),
+                           "allowed": bool(c.get("robot_id") and c.get("robot_id") in _cids), "pending": bool(_B.get("pending"))}
+        except Exception:
+            pass
     except Exception:
         pass
     for m in out.get("msgs") or []:

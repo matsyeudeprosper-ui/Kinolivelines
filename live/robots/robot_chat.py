@@ -354,7 +354,9 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   trade), "day" ({"d": "14/10"} one day's trades), "history" (their last days), "page" ({"page": "wealth"|"rentabilite"|
   "place"|"robots"|"mesrobots"|"chart"|"parrainage"|"" (home)} opens that app page right inside the chat), "lab" (OWNER
   ONLY: tests, luck tests, all accounts), "confirm" ({"action": "pause"|"resume"} - THEY press the button to pause / restart
-  the robot on THEIR account; you never do it yourself). Use a card whenever they ask about their account, results, a day,
+  the robot on THEIR account; you never do it yourself), "onaccount" (put THIS chat's robot on their real account - they
+  confirm with their password; the card says plainly if it is not possible yet and why), "compare" (this robot vs the Owl,
+  step by step). Use a card whenever they ask about their account, results, a day,
   a market now, or an app area - and do NOT repeat the numbers the card shows,
   "setting": null or {"sound": true|false, "lang": "fr"|"en", "big": true|false, "brief_h": 0-23} - when they ask to change
   how the app behaves ("coupe le son", "parle-moi en français", "écris plus gros", "réveille-moi à 8 h"): applied at once,
@@ -1062,7 +1064,7 @@ def partner_of(raw):
                 out[k] = raw[k].strip()[:200]
         if isinstance(raw.get("cards"), list):
             out["cards"] = [{"kind": x["kind"], "args": x.get("args") if isinstance(x.get("args"), dict) else {}} for x in raw["cards"][:2]
-                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page")]
+                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare")]
         st_ = raw.get("setting")
         if isinstance(st_, dict):
             ok = {k: v for k, v in st_.items() if (k in ("sound", "big") and isinstance(v, bool)) or (k == "lang" and v in ("fr", "en"))
