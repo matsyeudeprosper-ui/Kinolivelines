@@ -786,7 +786,7 @@ def own_agenda(chat, memory):
 
 
 _LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|des|mais|moi|toi|mon|ton|c'est|qui|dans|du|au)\b", re.I)
-_LEN = re.compile(r"\b(the|is|and|you|that|with|for|it|it's|this|was|are|what|then|my|me|your|can|do|not|of|to|i'm)\b", re.I)
+_LEN = re.compile(r"\b(the|is|and|you|that|with|for|it|it's|this|was|are|what|then|my|me|your|can|do|not|of|to|i'm|how|why|so|going|things|far|doing|done|yet|just|move|we|our|current|again|look|will|would|should|have|has|i|is|up|any|there|stop|run)\b", re.I)
 
 
 def member_lang(chat, default="fr"):
