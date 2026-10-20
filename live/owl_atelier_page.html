@@ -350,6 +350,7 @@ html,body{overflow-x:hidden;max-width:100%}.wrow{min-width:0;max-width:100%;box-
 <div class="toast" id="toast"></div>
 <script>
 const B=location.pathname.replace(/atelier\/?$/,'');
+try{if(!localStorage.getItem('kinoLangFix1')){localStorage.setItem('kinoLangFix1','1');if(localStorage.getItem('owlLang')==='en'&&sessionStorage.getItem('kinoLangFlip')!=='manual')localStorage.removeItem('owlLang');}}catch(e){}
 let EN=false;try{EN=localStorage.getItem('owlLang')==='en';}catch(e){}
 const T=(fr,en)=>EN?en:fr;
 const $=id=>document.getElementById(id);
@@ -714,7 +715,7 @@ async function load(id,force){try{const j=await getJ('chat_get?id='+encodeURICom
  const t=j.test||{};const wait=(j.draft||j.status==='thinking')?600:(j.status==='listening'?700:j.status==='building'?1500:(t.state==='queued'?8000:0));clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
 async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;TYPED=new Set();FIRSTPAINT=false;const _ch=$('chat');if(_ch)_ch.innerHTML='';await load(j.id,true);}
-async function send(){const t=$('tx').value.trim();if(!t||SENDING||!CID)return;VOICE=!!LAST_SPOKEN&&t===LAST_SPOKEN.trim();LAST_SPOKEN='';SENDING=true;const SB={id:CID,text:t};if(VOICE)SB.voice=1;if(REPLY)SB.reply=REPLY;const RP=REPLY;replyClear();   // 2026-10-19: messages can follow each other, Kino reads the burst
+async function send(){const t=$('tx').value.trim();if(t&&!CID&&!SENDING){toast(T('Je reconnecte la conversation…','Reconnecting the conversation…'));const q=new URLSearchParams(location.search);if(q.get('c'))openChat(q.get('c'));else location.reload();return;}if(!t||SENDING||!CID)return;VOICE=!!LAST_SPOKEN&&t===LAST_SPOKEN.trim();LAST_SPOKEN='';SENDING=true;const SB={id:CID,text:t};if(VOICE)SB.voice=1;if(REPLY)SB.reply=REPLY;const RP=REPLY;replyClear();   // 2026-10-19: messages can follow each other, Kino reads the burst
  C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000),reply:RP||undefined});if(C.status!=='thinking')C.status='listening';$('tx').value='';autosize();paintChat(true);
  // 2026-10-19 (owner: "nothing is happening" - a message sent during a server restart vanished): retry for ~10 s,
  // then the bubble stays, marked "not sent", with a retry - never a message that looks sent and is not
@@ -986,7 +987,7 @@ function paintPlan(){const pb=$('planbox');if(!pb)return;const now=Date.now()/10
    (R.steps||[]).map(x=>'<div class="pls '+(x.state||'todo')+'"><b>'+(ic[x.state]||'○')+'</b><span>'+esc(x.text)+(x.note?'<small> · '+esc(x.note)+'</small>':'')+'</span></div>').join('')+'</div>';}
  if(pb._h!==h){pb._h=h;pb.innerHTML=h;}}
 
-function langFlip(j){try{const w=j.ui_lang;if(!w||(w==='en')===EN)return false;const k='kinoLangFlip';if(sessionStorage.getItem(k)===w)return false;
+function langFlip(j){return false;try{const w=j.ui_lang;if(!w||(w==='en')===EN)return false;const k='kinoLangFlip';if(sessionStorage.getItem(k)===w)return false;
  sessionStorage.setItem(k,w);localStorage.setItem('owlLang',w);location.reload();return true;}catch(e){return false;}}
 function toolsSh(){const mk=(C&&C.view&&C.view.market)||'BTCUSD';
  const A=[['💼',T('Mon compte','My account'),"addCard('account',{})"],['📈',T('Ma performance','My performance'),"addCard('perf',{})"],['⚡',T('En direct','Live'),"addCard('live',{sym:'"+mk+"'})"],['🗓️',T('Mes derniers jours','My last days'),"addCard('history',{})"]].concat(C&&C.admin?[['🧪',T('Le labo','The lab'),"addCard('lab',{})"]]:[]);
