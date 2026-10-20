@@ -19289,7 +19289,7 @@ def _tts_mp3(text, lang="fr"):
     mp3 = None
     for _try in (1, 2):                  # 2026-10-20: ~1 call in 10 hangs at OpenAI; a fresh retry answers in ~3 s
         try:
-            mp3 = urllib.request.urlopen(rq, timeout=15).read()
+            mp3 = urllib.request.urlopen(rq, timeout=8 if _try == 1 else 25).read()
             break
         except Exception:
             if _try == 2:
@@ -27760,5 +27760,14 @@ if __name__ == "__main__":
     _hook_steps()
     threading.Thread(target=_inner_engine_loop, daemon=True).start()  # 2026-10-20: feelings, thoughts, daydreams   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
+    def _tts_warm():                     # 2026-10-20: the first OpenAI call after a restart hung ~15 s; open the road early
+        try:
+            import urllib.request as _uw
+            _k = os.environ.get("OPENAI_API_KEY")
+            if _k:
+                _uw.urlopen(_uw.Request("https://api.openai.com/v1/models", headers={"Authorization": "Bearer " + _k, "User-Agent": "OwlNest/1.0"}), timeout=30).read(200)
+        except Exception:
+            pass
+    threading.Thread(target=_tts_warm, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 
