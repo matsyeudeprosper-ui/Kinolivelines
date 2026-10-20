@@ -14825,7 +14825,10 @@ def _chat_member(user, c):
             if mk:
                 st += "; market tests: " + ", ".join(mk)
             ok = any((x.get("id") == rid) for x in (acct_robot_block(user, is_admin(user)).get("choices") or []))
-            st += "; can go on their account now: %s" % ("yes" if ok else "no (it needs its Bitcoin test first, and the Automatique plan)")
+            st += "; can go on their account now: %s" % ("yes" if ok else "no - the app's current rule: a robot goes on a real account only with a positive BITCOIN "
+                                                     "test (the account robots were built around Bitcoin), plus the Automatique plan. A robot made for another "
+                                                     "market (gold...) therefore cannot qualify yet, even with a good test on its own market - it is a limit of the "
+                                                     "app the owner may lift; say it plainly, never 'I don't know why'")
             L.append(st)
         except Exception:
             pass
@@ -18340,7 +18343,7 @@ def chat_get(user, cid, ui=""):
         try:                                     # 2026-10-20 (owner: "start AND end a full robot from the chat")
             _B = acct_robot_block(user, is_admin(user))
             _cids = [x.get("id") for x in _B.get("choices") or []]
-            out["acct"] = {"can": bool(_B.get("can")), "cur": (_B.get("current") or {}).get("name_fr") or (_B.get("current") or {}).get("id"),
+            out["acct"] = {"market": ((c.get("robot") or {}).get("market") or "BTCUSD").upper(), "can": bool(_B.get("can")), "cur": (_B.get("current") or {}).get("name_fr") or (_B.get("current") or {}).get("id"),
                            "is_cur": bool(c.get("robot_id") and (_B.get("current") or {}).get("id") == c.get("robot_id")),
                            "allowed": bool(c.get("robot_id") and c.get("robot_id") in _cids), "pending": bool(_B.get("pending"))}
         except Exception:
