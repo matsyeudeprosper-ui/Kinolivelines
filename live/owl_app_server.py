@@ -15769,6 +15769,7 @@ def _companion_tick():
                         return True
                 _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
                 if _chat_mut(c["id"], put):
+                    _inner_feel_result(uid, res)             # 2026-10-20: the away path feels it too (was only chat_get)
                     threading.Thread(target=_chat_quick, args=(c["id"], u), kwargs={"notify": True, "important": True}, daemon=True).start()
                 else:
                     _CHAT_Q[c["id"]] -= 1
@@ -16584,6 +16585,11 @@ def _inner_clock_once():
                 continue                                     # something happened meanwhile
             _mem_note_safe(uid, lambda mm2: mm2.__setitem__("inner_log", [t for t in (mm2.get("inner_log") or []) if time.time() - t < 86400] + [time.time()]))
             _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+            try:
+                import kino_inner as _KIc
+                _KIc.record_sent(uid, "relance", cid, h0, "clock")
+            except Exception:
+                pass
             threading.Thread(target=_chat_quick, args=(cid, u, "INNER VOICE - the conversation went quiet %d minutes ago and a thought came back to you: "
                              "\"%s\". Write it now, naturally, like a friend who just thought of it (never a reminder, never 'tu es toujours "
                              "là ?' as a reflex, never repeat yourself); or \"send\": false if, re-reading, it is not worth it." % (
@@ -16592,6 +16598,8 @@ def _inner_clock_once():
 
 
 _REV_NEXT = {}        # uid -> next reverie moment (irregular)
+_Q_NEXT = 0           # v2: next moment Kino works on one of its own questions
+_INNER_DAY = {}       # uid -> {"dream": day, "antic": day} - once a (local) day
 
 
 def _inner_block(uid):
@@ -16613,6 +16621,8 @@ def _inner_feel_result(uid, res):
             _KI.feel("excitement", 0.35, uid=uid, why="son test vient de sortir positif (%+.2f $)" % net)
         else:
             _KI.feel("worry", 0.15, uid=uid, why="son test vient de sortir négatif (%+.2f $)" % net)
+        _KI.mood_nudge(0.04 if net > 0 else -0.03, "un test de membre est sorti %s" % ("positif" if net > 0 else "négatif"))
+        _KI.resolve_test_bet(uid, net)
     except Exception:
         pass
 
@@ -16628,6 +16638,17 @@ def _inner_engine_once():
         _KI.perceive_market(_RG.live_bars)
     except Exception:
         pass
+    try:
+        _KI.check_bets(_RG.live_bars)                       # v2 item 3: hunches checked ~2 h later
+    except Exception:
+        pass
+    global _Q_NEXT
+    if now >= _Q_NEXT:                                      # v2 item 4: Kino works on one of its own questions
+        _Q_NEXT = now + random.uniform(5400, 12600)
+        try:
+            _KI.work_question(_RT)
+        except Exception:
+            pass
     for u in users():
         uid = u.get("id")
         if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
@@ -16646,20 +16667,112 @@ def _inner_engine_once():
             except Exception:
                 pass
             h0 = _local_hour(uid)
+            _W_ = _rc().W if hasattr(_rc(), "W") else __import__("robot_warm")
+            mk_ = (c.get("robot") or {}).get("market") or "BTCUSD"
+            today_ = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
+            st_ = _INNER_DAY.setdefault(uid, {})
+            # v2 item 7: a bet on their running test (once per test)
+            t_ = c.get("test") or {}
+            if t_.get("state") == "queued" and t_.get("job") and not _KI.has_test_bet(uid, t_["job"]):
+                try:
+                    hist_ = [m.get("result") or {} for m in M if m.get("role") == "result"][-4:]
+                    b_ = _W_.ask_json("You are Kino's gut feeling - a trading companion making a friendly private bet on a member's "
+                                      "robot test. Answer ONE JSON object and nothing else: {\"intent\": \"positive: why, a few French "
+                                      "words\"} or {\"intent\": \"negative: why...\"}",
+                                      "Their robot '%s' is being tested on %s. Its earlier results: %s. The last talk:\n%s\n"
+                                      "Your gut: will this test come out positive?" % (
+                                              (c.get("robot") or {}).get("name") or "-", t_.get("sym") or "BTCUSD",
+                                              json.dumps([{"net": r.get("net"), "trades": r.get("trades")} for r in hist_]),
+                                              _rc().transcript(dict(c, msgs=M[-8:]))[-1500:]), models=("haiku",), timeout=60, warm=False)
+                    it_ = str((b_ or {}).get("intent") or "")
+                    if it_.lower().startswith(("positive", "negative")):
+                        g_ = "positive" if it_.lower().startswith("positive") else "negative"
+                        lab_ = "%s sur %s" % ((c.get("robot") or {}).get("name") or "son robot", t_.get("sym") or "BTCUSD")
+                        if _KI.test_bet(uid, t_["job"], c.get("id"), g_, it_.split(":", 1)[-1].strip(), lab_):
+                            _KI.add_thought("Je parie que son test (%s) va sortir %s - %s" % (lab_, "positif" if g_ == "positive" else "négatif",
+                                                                                           it_.split(":", 1)[-1].strip()[:120]), "bet", 0.4, uid=uid, src="testbet", half_h=6)
+                except Exception:
+                    pass
+            # v2 item 5: at their night, Kino sleeps on their day and wakes up with one thing
+            if (h0 in (2, 3, 4, 5) or (h0 in (0, 1, 6) and not _active_hour(uid, h0))) and st_.get("dream") != today_ and now - last_user < 30 * 3600:
+                st_["dream"] = today_
+                try:
+                    day_ = []
+                    for x_ in ch[:4]:
+                        cx_ = _chat_load(u, x_["id"]) or {}
+                        Mx_ = [m for m in cx_.get("msgs") or [] if now - int(m.get("t") or 0) < 26 * 3600]
+                        if any(m.get("role") == "user" for m in Mx_):
+                            day_.append("=== chat about '%s' (%s)\n%s" % ((cx_.get("robot") or {}).get("name"), (cx_.get("robot") or {}).get("market"),
+                                                                       _rc().transcript(dict(cx_, msgs=Mx_[-30:]))[-4000:]))
+                    try:
+                        nd_ = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+                        trd_ = [{"p": t.get("p"), "dur": t.get("dur"), "when": t.get("d") or t.get("t")} for t in (nd_.get("trades") or [])[:12]]
+                    except Exception:
+                        trd_ = []
+                    mem = _chat_memory(u, c.get("id"))
+                    dr_ = _KI.dream(uid, "THEIR DAY (%s):\n%s\n\nTHEIR LATEST LIVE TRADES: %s\nWHAT YOU KNOW ABOUT THEM: %s\nYOUR THOUGHTS ABOUT THEM: %s\n"
+                                    "YOUR QUESTIONS: %s\nYOUR MOOD THESE DAYS: %s" % (
+                                        today_, "\n\n".join(day_)[-12000:] or "(no talk today)", json.dumps(trd_)[:1200],
+                                        " | ".join(str(n) for n in (mem.get("notes") or [])[-20:])[:2000],
+                                        json.dumps([t["text"] for t in _KI.thoughts(uid, 6, 0.05)], ensure_ascii=False)[:1200],
+                                        json.dumps([q["q"] for q in _KI.open_questions(uid)], ensure_ascii=False)[:600],
+                                        json.dumps(_KI.mood_slow(), ensure_ascii=False)[:300]), _W_) or {}
+                    dd_ = dr_.get("dream") if isinstance(dr_.get("dream"), dict) else None
+                    if dd_ and dd_.get("text"):
+                        ex_ = None
+                        if dd_.get("formula"):
+                            try:
+                                sx_ = _RT.idea_stats(mk_, dd_["formula"], dd_.get("side") if dd_.get("side") in ("buy", "sell") else "buy", 30)
+                                if not sx_.get("error"):
+                                    ex_ = {"formula": dd_["formula"], "side": dd_.get("side") or "buy", "market": mk_,
+                                           "measure": "%s fois par jour, bat le hasard dans %s %% des tirages, sur %s" % (sx_.get("per_day"), sx_.get("beats_random_pct"), mk_)}
+                            except Exception:
+                                pass
+                        _KI.add_thought(dd_["text"], "dream", 0.78, uid=uid, src="dream", half_h=14, extra=ex_)
+                    wq_ = dr_.get("wonder") if isinstance(dr_.get("wonder"), dict) else None
+                    if wq_ and wq_.get("q"):
+                        _KI.add_question(wq_["q"], uid, wq_.get("formula"), "buy", mk_, "dream")
+                except Exception:
+                    pass
+            # v2 item 7: shortly before they usually arrive, a reverie that prepares what they will want
+            arr_ = None
+            act_ = (_mem_get(uid).get("act") or {})
+            if sum(int(v) for v in act_.values()) >= 40:
+                mx_ = max(int(v) for v in act_.values()) or 1
+                arr_ = next((H for H in range(5, 23) if int(act_.get(str(H), 0)) >= 0.3 * mx_), None)
+            antic_ = bool(arr_ is not None and h0 == (arr_ - 1) % 24 and st_.get("antic") != today_)
             # REVERIE - at irregular moments, during their day
             if uid not in _REV_NEXT:
                 _REV_NEXT[uid] = now + random.uniform(600, 1800)
-            if now >= _REV_NEXT[uid] and _active_hour(uid, h0):
+            if (now >= _REV_NEXT[uid] and _active_hour(uid, h0)) or antic_:
                 _REV_NEXT[uid] = now + random.uniform(2700, 7200)
+                if antic_:
+                    st_["antic"] = today_
                 mem = _chat_memory(u, c.get("id"))
+                try:                                        # v2 item 8: their older ideas + what the lab learned (anonymous)
+                    older_ = "; ".join("%s (%s)" % (x_.get("name") or "?", x_.get("market") or "?") for x_ in ch[1:10])
+                except Exception:
+                    older_ = "-"
+                try:
+                    lab_ = (_KM.playbook_block() or "-")[:1500]
+                except Exception:
+                    lab_ = "-"
                 ctx = ("TODAY: %s, their local time %02d h.\nWHAT YOU KNOW ABOUT THEM: %s\nTHEIR ROBOT IN THIS CHAT: %s (market %s)\n"
-                       "THINGS ON YOUR MIND ALREADY: %s\nHOW YOU FEEL: %s\nYOUR OWN ROBOT: %s\nTHE LAST TALK:\n%s" % (
+                       "THEIR OLDER IDEAS (other chats): %s\nWHAT THE LAB LEARNED (anonymous): %s\n"
+                       "THINGS ON YOUR MIND ALREADY: %s\nYOUR OPEN QUESTIONS: %s\nHOW YOU FEEL: %s\nYOUR MOOD THESE DAYS: %s\nYOUR OWN ROBOT: %s\n%s\nTHE LAST TALK:\n%s" % (
                            time.strftime("%A %d %B %Y"), h0, " | ".join(str(n) for n in (mem.get("notes") or [])[-20:])[:2500],
-                           ((c.get("robot") or {}).get("name") or "-"), ((c.get("robot") or {}).get("market") or "-"),
+                           ((c.get("robot") or {}).get("name") or "-"), ((c.get("robot") or {}).get("market") or "-"), older_ or "-", lab_,
                            json.dumps([t["text"] for t in _KI.thoughts(uid, 5, 0.1)], ensure_ascii=False)[:1200],
-                           json.dumps(_KI.feelings(uid)[:4], ensure_ascii=False)[:600], (_KM.my_robot_block() or "-")[:800],
+                           json.dumps([q["q"] for q in _KI.open_questions(uid)], ensure_ascii=False)[:500],
+                           json.dumps(_KI.feelings(uid)[:4], ensure_ascii=False)[:600], json.dumps(_KI.mood_slow(), ensure_ascii=False)[:300],
+                           (_KM.my_robot_block() or "-")[:800],
+                           ("ANTICIPATE: they usually arrive around %02d h - one of your thoughts should be the thing they will want or enjoy "
+                            "when they open the app (what happened to their robot, their test, the market they follow), strength 0.7." % arr_) if antic_ else "",
                            _rc().transcript(dict(c, msgs=M[-20:]))[-5000:]))
-                for th in _KI.reverie(uid, ctx, _rc().W if hasattr(_rc(), "W") else __import__("robot_warm")):
+                for th in _KI.reverie(uid, ctx, _W_):
+                    if th["kind"] == "wonder":
+                        _KI.add_question(th["text"], uid, th.get("formula"), th.get("side") or "buy", mk_, "reverie")
+                        continue
                     extra = None
                     if th["kind"] == "daydream" and th.get("formula"):
                         try:            # a daydream that can be measured is measured (vs random moments)
@@ -16674,7 +16787,10 @@ def _inner_engine_once():
                             pass
                     _KI.add_thought(th["text"], th["kind"], th["s"], uid=uid, src="reverie", half_h=10 if th["kind"] != "memory" else 16, extra=extra)
             # A THOUGHT COMES OUT - only a strong one, never mid-conversation, and the inner voice decides
-            top = _KI.thoughts(uid, 1, 0.55)
+            # v2 item 1: weighted by how this member welcomed that kind of message (and at this time of day)
+            top = sorted([dict(t, eff=t["now"] * _KI.kind_weight(uid, t["kind"], h0)) for t in _KI.thoughts(uid, 6, 0.35)
+                          if t["kind"] != "wonder"], key=lambda z: -z["eff"])
+            top = [t for t in top if t["eff"] >= 0.55][:1]
             if not top or now - max([int(m.get("t") or 0) for m in M] or [0]) < 900 or _CHAT_Q.get(c.get("id")) or c.get("id") in _CHAT_B:
                 continue
             mm = _mem_get(uid)
@@ -16684,15 +16800,33 @@ def _inner_engine_once():
             th = top[0]
             sn = _CHAT_SEEN.get(uid)
             here = bool(sn and now - sn[0] < 30 and sn[1] == c.get("id"))
+            tb_ = _KI.track_block(uid)
             d = _KM.inner_decide("A THOUGHT ON YOUR MIND (%s, strength %.1f): %s%s\n\nTHE LAST TALK (ended %d min ago):\n%s\n\nThey are %s, their local "
-                                 "time %02d h. Would Kino naturally text this thought now?" % (
+                                 "time %02d h.%s Would Kino naturally text this thought now?" % (
                                      th["kind"], th["now"], th["text"], (" (measured: %s)" % th["measure"]) if th.get("measure") else "",
                                      (now - max([int(m.get("t") or 0) for m in M] or [now])) / 60, _rc().transcript(dict(c, msgs=M[-10:]))[-3000:],
-                                     "looking at the app" if here else "away", h0))
+                                     "looking at the app" if here else "away", h0, ("\n" + tb_) if tb_ else ""))
             if not d or not d.get("now"):
-                _KI._mut(lambda dd: [x.__setitem__("s", round(float(x.get("s") or 0) * 0.8, 3)) for x in dd.get("thoughts") or [] if x["id"] == th["id"]])
+                _KI.weaken(th["id"])
                 continue
+            # v2 item 2: the second thought - true? new? worth it? (rewritten better, or dropped)
+            rf_ = _KI.refine(th, "THE CONVERSATION (the end):\n%s\n\nFACTS: %s\nWHAT YOU KNOW ABOUT THEM: %s" % (
+                _rc().transcript(dict(c, msgs=M[-14:]))[-4000:], (lambda F_: F_ if isinstance(F_, str) else " | ".join(F_))(_chat_member(u, c))[:2500],
+                " | ".join(str(n) for n in (_chat_memory(u, c.get("id")).get("notes") or [])[-12:])[:1500]), _W_)
+            try:
+                import io as _io
+                _io.open(os.path.join(CHAT_DIR, c["id"] + ".log"), "a", encoding="utf-8").write(
+                    "\n--- spontaneous %s --- thought %s | decide %s | second thought %s\n" % (time.strftime("%H:%M:%S"), json.dumps(th, ensure_ascii=False)[:400],
+                                                                                            json.dumps(d, ensure_ascii=False), json.dumps(rf_, ensure_ascii=False)))
+            except Exception:
+                pass
+            if rf_ is not None and not rf_.get("keep"):
+                _KI.drop_thought(th["id"], rf_.get("why") or "second thought")
+                continue
+            if rf_ and str(rf_.get("text") or "").strip():
+                th = dict(th, text=str(rf_["text"]).strip()[:300])
             _KI.use_thought(th["id"], uid)
+            _KI.record_sent(uid, th["kind"], c["id"], h0, "spont")
             _mem_note_safe(uid, lambda mm2: mm2.__setitem__("spont_log", [t for t in (mm2.get("spont_log") or []) if time.time() - t < 86400] + [time.time()]))
             _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
             threading.Thread(target=_chat_quick, args=(c["id"], u, "A THOUGHT CAME TO YOU (%s): \"%s\"%s. Say it the way a friend texts something that "
@@ -16930,6 +17064,11 @@ def kino_data(user):
                         pass
             out["mind_more"].update({"projects": prj[-12:], "fixes": sorted(fx, key=lambda z: -z["t"])[:6], "night_ideas": ideas,
                                      "wishes": _KM.wishes()[:12]})
+            try:                                      # 2026-10-20 (inner v2): its inner life, for its creator
+                import kino_inner as _KIv
+                out["mind_more"]["inner"] = _KIv.mind_view(user.get("id"))
+            except Exception:
+                pass
         except Exception:
             pass
         try:
@@ -17154,6 +17293,12 @@ def chat_send(user, body):
         _ex["reply"] = {"who": "ai" if rp.get("who") == "ai" else "me", "text": str(rp["text"])[:200], "i": int(rp.get("i") or 0) if str(rp.get("i") or "0").isdigit() else 0}
     _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **_ex))
     _CHAT_TYPING.pop(c["id"], None)
+    try:                                         # 2026-10-20 (inner v2 item 1): did they answer what Kino sent on its own?
+        _rc()
+        import kino_inner as _KIs
+        _KIs.record_reply(user.get("id"), c["id"], len(text))
+    except Exception:
+        pass
     if c["id"] in _CHAT_WAIT:
         return {"ok": True}                      # Kino is already listening to this burst
     if _CHAT_Q.get(c["id"]):
