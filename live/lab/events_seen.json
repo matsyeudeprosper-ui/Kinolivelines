@@ -27,7 +27,10 @@
   "cont_wait",
   "real_pool_split",
   "battery_live_base",
-  "veille_wake_marker"
+  "veille_wake_marker",
+  "time_exit",
+  "tight_stop_size",
+  "night_lock_release"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -42,6 +45,7 @@
   "ask_1791655206_quick",
   "ask_1791725405_europe",
   "ask_1791806415_day_after_loss",
-  "ask_1791887322_cont_day"
+  "ask_1791887322_cont_day",
+  "ask_1792407475_cont_rested"
  ]
 }

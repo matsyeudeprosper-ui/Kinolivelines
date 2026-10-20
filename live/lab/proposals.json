@@ -3374,7 +3374,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-17",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 116.39,
     "worst": 54.32,
@@ -3386,7 +3386,9 @@
     "trades": 152,
     "at": "2026-10-17 chercheur",
     "base_label": "robot avec le filtre souple / robot with the looser filter"
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-19"
   },
   {
    "id": "pb_choch_ext600",
@@ -3406,7 +3408,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-17",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 107.27,
     "worst": 53.45,
@@ -3418,7 +3420,9 @@
     "trades": 160,
     "at": "2026-10-17 chercheur",
     "base_label": "robot avec le filtre souple / robot with the looser filter"
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-19"
   },
   {
    "id": "pb_ext450",
@@ -3438,7 +3442,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-17",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 92.35,
     "worst": 15.18,
@@ -3450,7 +3454,9 @@
     "trades": 57,
     "at": "2026-10-17 chercheur",
     "base_label": "robot avec le filtre des comptes réels / robot with the real accounts' filter"
-   }
+   },
+   "verdict": "A",
+   "done": "2026-10-19"
   },
   {
    "id": "pb_choch_ext500_rr09",
@@ -3470,7 +3476,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-17",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 123.98,
     "worst": 68.16,
@@ -3482,7 +3488,9 @@
     "trades": 156,
     "at": "2026-10-17 chercheur",
     "base_label": "filtre souple + pas d'entrée après 500 points / looser filter + no entry after 500 points"
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-19"
   },
   {
    "id": "pb_choch_chase500",
@@ -3502,7 +3510,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-17",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 135.49,
     "worst": 57.38,
@@ -3527,7 +3535,227 @@
      "diff_net": 70.83,
      "diff_worst": -64.81
     }
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-19"
+  },
+  {
+   "id": "pb_choch_ext500_cost175",
+   "family": "structure",
+   "title_fr": "Filtre souple et 500 points : refuser les stops de moins de 175 points",
+   "title_en": "Looser filter and 500 points: refuse stops under 175 points",
+   "why_fr": "Hors des sentiers : les gagnants ont un stop large (300 points et plus : 22 trades, +109 $ ; les 120 autres +22 $). Refuser les trades au stop très serré : +36 $, trou de 11 au lieu de 57, mais la seconde moitié perd 20 $ et un réglage plus strict perd. Prudence : 57 trades seulement.",
+   "why_en": "Out of the box: winners have a wide stop (300 points or more: 22 trades, +$109; the other 120 +$22). Refusing very tight stops: +$36, hole 11 instead of 57, but the second half loses $20 and a stricter setting loses. Caution: only 57 trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500,
+    "cost_max": 4
+   },
+   "pretest": {
+    "net": 165.1,
+    "worst": 11.17,
+    "h1": 85.66,
+    "h2": -19.58,
+    "base_net": 128.96,
+    "base_worst": 57.38,
+    "verdict": "B",
+    "trades": 57,
+    "at": "2026-10-19",
+    "vs": "filtre souple + 500 points"
+   },
+   "by": "chercheur",
+   "date": "2026-10-19",
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-10-20"
+  },
+  {
+   "id": "pb_ext450_cost175",
+   "family": "structure",
+   "title_fr": "Filtre officiel et 450 points : refuser les stops de moins de 175 points",
+   "title_en": "Official filter and 450 points: refuse stops under 175 points",
+   "why_fr": "La même idée sur le filtre des comptes réels : ne pas prendre un trade dont le stop est très serré, car les gros gains viennent des stops larges. Pas encore testé à ce réglage ; un réglage plus strict garde le même argent avec un trou de 9 au lieu de 15, sur 18 trades seulement.",
+   "why_en": "The same idea on the real accounts' filter: do not take a trade whose stop is very tight, because the big gains come from wide stops. Not yet tested at this setting; a stricter one keeps the same money with a hole of 9 instead of 15, on only 18 trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "cost_max": 4
+   },
+   "by": "chercheur",
+   "date": "2026-10-19",
+   "status": "done",
+   "pretest": {
+    "net": 106.86,
+    "worst": 9.24,
+    "h1": 48.22,
+    "h2": 91.69,
+    "base_net": 35.5,
+    "base_worst": 88.18,
+    "base_h1": -5.69,
+    "base_h2": -13.84,
+    "verdict": "A",
+    "trades": 23,
+    "at": "2026-10-19 06:29",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -17.52,
+     "diff_worst": -65.79
+    },
+    "real": {
+     "n_real": 95,
+     "trades": 8,
+     "diff_net": 56.46,
+     "diff_worst": -68.18
+    }
+   },
+   "verdict": "A",
+   "done": "2026-10-20"
+  },
+  {
+   "id": "pb_choch_ext500_bul4",
+   "family": "argent",
+   "title_fr": "Filtre souple et 500 points : jusqu'à quatre trades de rattrapage",
+   "title_en": "Looser filter and 500 points: up to four catch-up trades",
+   "why_fr": "Sauvetage : avec le filtre souple, un trade de rattrapage de plus rapporte +21 $ en 42 jours, tout dans la seconde moitié (+28 $) ; la première perd 4 $ et le plus gros trou passe de 57 à 67. Non de peu au test ; la batterie dira ce que disent 69 jours et les vrais trades.",
+   "why_en": "Rescue: with the looser filter, one more catch-up trade earns +$21 over 42 days, all in the second half (+$28); the first loses $4 and the biggest hole goes from 57 to 67. A narrow no in the test; the battery will say what 69 days and the real trades say.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 4,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500
+   },
+   "pretest": {
+    "net": 152.03,
+    "worst": 67.44,
+    "h1": -4.18,
+    "h2": 27.62,
+    "base_net": 130.59,
+    "base_worst": 57.38,
+    "verdict": "C",
+    "trades": 142,
+    "at": "2026-10-19",
+    "vs": "filtre souple + 500 points"
+   },
+   "by": "chercheur",
+   "date": "2026-10-19",
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-20"
+  },
+  {
+   "id": "pb_choch_ext500_fh05",
+   "family": "argent",
+   "title_fr": "Miser moitié moins sur un changement de sens en marché nerveux",
+   "title_en": "Stake half on a change of direction in a nervous market",
+   "why_fr": "Réponse à la question du labo : les changements de sens pris en marché nerveux gagnent 43 % du temps contre 54 %. Sur le robot filtré, miser moitié moins sur eux : +2 $, trou de 52 au lieu de 57, les deux moitiés un peu mieux. Petit : moins qu'un seul trade.",
+   "why_en": "Answer to the lab question: changes of direction in a nervous market win 43 % of the time against 54 %. On the filtered robot, staking half on them: +$2, hole 52 instead of 57, both halves a little better. Small: less than one single trade.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500,
+    "flip_hot_size": 0.5
+   },
+   "pretest": {
+    "net": 131.18,
+    "worst": 52.38,
+    "h1": 1.9,
+    "h2": 5.0,
+    "verdict": "A",
+    "trades": 150,
+    "base_net": 128.92,
+    "base_worst": 57.38,
+    "at": "2026-10-20",
+    "vs": "filtre souple + 500 points"
+   },
+   "by": "chercheur",
+   "date": "2026-10-20",
+   "status": "pending",
+   "ask": "ask_1792493031_flip_hot"
+  },
+  {
+   "id": "pb_choch_ext500_rr12_fh075",
+   "family": "cible",
+   "title_fr": "Viser plus haut et miser moins sur les changements de sens nerveux",
+   "title_en": "Aim higher and stake less on nervous changes of direction",
+   "why_fr": "Hors des sentiers : viser 1,2 fois ce qu'on risque, et miser un quart de moins sur un changement de sens en marché nerveux. +9 $, les deux moitiés mieux (+12 et +13), trou de 48 au lieu de 57. Prudence : viser 1,1 perd 17 $, et sur 69 jours viser 1,2 seul perd 66 $.",
+   "why_en": "Out of the box: aim for 1.2 times what we risk, and stake a quarter less on a change of direction in a nervous market. +$9, both halves better (+12 and +13), hole 48 instead of 57. Caution: aiming 1.1 loses $17, and over 69 days aiming 1.2 alone loses $66.",
+   "cfg": {
+    "rr": 1.2,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 138.15,
+    "worst": 47.7,
+    "h1": 12.2,
+    "h2": 13.0,
+    "verdict": "A",
+    "trades": 127,
+    "base_net": 128.92,
+    "base_worst": 57.38,
+    "at": "2026-10-20",
+    "vs": "filtre souple + 500 points"
+   },
+   "by": "chercheur",
+   "date": "2026-10-20",
+   "status": "pending"
+  },
+  {
+   "id": "pb_choch_ext500_cost4_fh075",
+   "family": "argent",
+   "title_fr": "Refuser les stops très serrés, miser moins sur les changements nerveux",
+   "title_en": "Refuse very tight stops, stake less on nervous changes",
+   "why_fr": "Une limite de trou, pas une idée d'argent : refuser les stops de moins de 175 points et miser un quart de moins sur un changement de sens nerveux. +22 $, trou de 12 au lieu de 57. Mais la seconde moitié perd 27 $, comme à chaque réglage voisin (3,5 et 4,5) : le critique a raison sur l'argent.",
+   "why_en": "A hole limit, not a money idea: refuse stops under 175 points and stake a quarter less on a nervous change of direction. +$22, hole 12 instead of 57. But the second half loses $27, as at every neighbouring setting (3.5 and 4.5): the critic is right about the money.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500,
+    "cost_max": 4,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 150.8,
+    "worst": 12.37,
+    "h1": 62.9,
+    "h2": -27.2,
+    "verdict": "B",
+    "trades": 60,
+    "base_net": 128.92,
+    "base_worst": 57.38,
+    "at": "2026-10-20",
+    "vs": "filtre souple + 500 points"
+   },
+   "by": "chercheur",
+   "date": "2026-10-20",
+   "status": "pending"
   }
  ]
 }

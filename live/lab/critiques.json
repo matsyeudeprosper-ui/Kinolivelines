@@ -212,6 +212,126 @@
     "overlap: same filter as ext500/ext300, cut at another line; the 600 gain is the same big loss fit3 trims",
     "drag: auto = same as no drag (C, -6.81); --drag 1 printed the variant charged (-431) against an uncharged base, so that run tells nothing - trade count 256 vs 255, a per-trade cost would not rescue it either"
    ]
+  },
+  {
+   "id": "debtnerv",
+   "date": "2026-10-19",
+   "verdict": "doute",
+   "fr": "Ne pas trader quand on est dans le rouge et que le marché est nerveux réduit le plus gros trou (88 à 50) à chaque essai, et gagne 66 $ de plus sur les vrais trades. Mais ce soir le gain (+27 $) tient à une seule grosse perte évitée (−39 $), et la seconde moitié est un peu pire. Mon inquiétude : sur 69 jours il perd 57 $.",
+   "en": "Not trading while in the red and the market is nervous makes the biggest hole smaller (88 to 50) on every run, and earns $66 more on the real trades. But tonight's gain (+$27) is one single big loss avoided (−$39), and the second half is a little worse. What worries me most: over 69 days it loses $57.",
+   "checks": [
+    "dose: the dial is on/off, so neighbours are 'off' (deployed rules) and 'always refuse when nervous' (nerv_gate). Harness 2026-10-19 ~10:30, base 37.13 / hole 88.18 / 239 trades: idea 63.98 (+26.85, B) / hole 49.67 / 149 trades; always-refuse 40.22 (+3.09, B) / hole 49.67 / 139 trades. No sign flip; the hole cut is the same at both, the money is not",
+    "halves (harness): idea h1 +40.32 (43.84 vs 3.52) / h2 -6.39 (8.03 vs 14.42); always-refuse h1 +35.73 / h2 -31.48. Battery tonight said h1 +35.3 / h2 +21.5 against another base - the re-run gives B, not A, and the second half turns slightly negative: carried by the first half",
+    "shapes: battery byref base and capped rows identical (+48.61 / hole -36.64 both) - no independent capped result",
+    "long window: 69 days -57.32 net (h1 -131.72 / h2 +74.36), hole 38.51 shallower -> C; a loss there, with halves of opposite sign = the main doubt",
+    "real trades: +65.72 on 47 kept of 94 (47 blocked), real net +35.56, hole 43.59 shallower - the strongest point in its favour",
+    "concentration: the base's -39.16 trade (2026-09-24) and the -9.16 after it are gone in the variant; +26.85 < 39.16 - the whole 42-day gain is that one avoided loss chain (the same trade that carried fit3, ext600, ext500_nosun)",
+    "past: registry 'nerv' (refuse when nervous) listed deployed B, but the harness base runs with it off; 'sizehot' (smaller stake when nervous) still an idea. History C x9 (10-05..10-14), B x2, A only tonight; no twin, not archived",
+    "mechanism: after a loss the robot's catch-up trade is bigger; in a fast market that bigger trade hits its stop more often and deeper - a plausible real cause, and the halved hole on every run supports it; nothing explains a money gain beyond the one avoided loss",
+    "overlap: largely the old 'refuse when nervous' idea cut to 'only while in the red' - same worst hole (49.67) and mostly the same second-half trades as nerv_gate; the 'in the red' condition is what keeps the money (+27 vs +3)",
+    "real gap: --drag auto not run separately (past critiques found it null under 30 measured trades). --drag 1 charges the variant only, so I ran deployed rules at drag 1: -373.73 vs idea -187.03 -> idea +186.7 under the same charge; it trades 88 fewer (149 vs 237), so the gap favours it"
+   ]
+  },
+  {
+   "id": "pb_ext450",
+   "date": "2026-10-19",
+   "verdict": "doute",
+   "fr": "La règle tient : à 350, 450 ou 550 points, elle gagne pareil et fait mieux que le filtre seul sur les deux moitiés (+58 $, trou 15 au lieu de 52). Mais il ne reste que 47 trades en 42 jours, et la moitié du gain reste la même grosse perte évitée (−39 $). Mon inquiétude : sur 69 jours elle perd 12 $, première moitié à −115 $.",
+   "en": "The rule holds: at 350, 450 or 550 points it earns about the same, and it beats the filter alone on both halves (+$58, hole 15 instead of 52). But only 47 trades are left in 42 days, and half the gain is again the same big loss avoided (−$39). What worries me most: over 69 days it loses $12, with a first half at −$115.",
+   "checks": [
+    "dose (harness 2026-10-19 ~10:40, deployed rules 37.13 / hole 88.18 / 239 trades): ext350 88.81 / hole 15.18 / 41 tr (A); ext450 88.60 / 15.18 / 47 tr (A); ext550 77.21 / 19.26 / 50 tr (A) - no sign flip, a flat plateau",
+    "isolating the 450 rule: the real accounts' filter alone gives 30.66 / hole 51.81 / 44 tr (C), h1 -24.48 / h2 +70.37; adding ext450 -> h1 +15.77 / h2 +86.66, so the rule adds +40 on h1 and +16 on h2 - both halves, first half carries most",
+    "shapes: byref base and capped rows identical (+26.04 / -68.93 both) - no independent capped result",
+    "long window: 69 days -12.09 vs deployed (C), h1 -115.33 / h2 +80.50 - a loss there, halves of opposite sign = the main doubt",
+    "real trades: 12 kept of 94 (82 blocked), +51.72 vs real, hole 69 shallower - good sign, but 12 trades is too few to lean on",
+    "concentration: the h1 swing (+40) is about the size of the base's -39.16 chain of 2026-09-24, the trade that already carried fit3, ext600, debtnerv; largest single wins in the variant 20.37 / 18.8 / 17.3 / 31.44 vs a +58 gain on 47 trades",
+    "past: ext300 archived (three C nights), ext700 blocked 2026-10-17, ext400/ext500 combos watched; this is the first night (history A x1) and the first time on top of the filter",
+    "mechanism: plausible - with the filter the robot only buys pullbacks in the trend; after a 450-point hour the trend is stretched and the pullback is often the start of a reversal. Not proven, but more than 'the numbers say so'",
+    "overlap: the same 'do not chase a stretched market' rule as ext300-700, now on the filtered robot; on the filter its effect is new (h2 +16), on the -39 trade it is old",
+    "real gap: --drag auto = no charge yet (88.60, A); --drag 1 charges the variant only (27.25, h1 -19.23, vs uncharged base 37.13 -> printed C); under the same charge deployed rules would drop ~239 $, so the idea (45 tr) survives the dollar against them; vs the filter alone the trade counts are equal (44 vs 47), so the gap does not decide it"
+   ]
+  },
+  {
+   "id": "noday",
+   "date": "2026-10-19",
+   "verdict": "bloque",
+   "fr": "Le gain d'argent ne tient pas : couper une heure de moins gagne 6 $, une heure de plus perd 8 $, mon test donne +0,45 $ en 42 jours. Tout le bon vient de l'après-midi (12–16 h) ; couper le matin (8–12 h) fait perdre 33 $. Sur 69 jours : −30 $. Le plus gros trou baisse vraiment. Pour changer d'avis : l'après-midi seul, gagnant sur 69 jours.",
+   "en": "The money gain does not hold: cutting one hour less earns $6, one hour more loses $8, and my test gives +$0.45 over 42 days. All the good comes from the afternoon (12–16 UTC); cutting the morning (8–12) loses $33. Over 69 days it loses $30. The biggest hole does shrink for real. To change my mind: the afternoon alone, winning over 69 days.",
+   "checks": [
+    "dose: harness (deployed rules) 08-16 diff +0.45 (printed B), hole 88.18->35.03; 09-15 +5.71 (B), hole ->48.30; 07-17 -8.17 (C), hole ->58.88. Money sign flips between neighbours; the hole cut holds on all three",
+    "split: 08-12 alone -32.62 (both halves negative, -10.22 / -19.43); 12-16 alone +35.21 (both halves positive, +31.12 / +25.48, hole 88->56). The idea is a good afternoon cut diluted by a losing morning cut",
+    "halves: battery +5.31 first / +55.36 second (carried by the second half); harness +21.71 first / -15.38 second - the carrying half swaps between replays, a sign of noise",
+    "shapes: battery uncapped and capped references identical (+25.75, hole -53.2) - no shape-specific effect",
+    "long window: 69 days -29.92 (first half -85.67, second +59.96) - a loss, not just weaker",
+    "real trades: +31.99 on 94 real trades, hole -51.62 - the best evidence for it, mostly a smaller-hole effect",
+    "history: C seven nights (10-05..10-12), B four, A only tonight; its own net slid 127 -> 63 over two weeks",
+    "concentration: the cut removes the base's best trade (+31.44), bigger than the harness money gain; the gain fits inside one or two trades",
+    "real gap: --drag auto = no charge yet (same +0.45); --drag 1 charges the variant only (-254.75 on 163 tr vs uncharged base 37.13); base under the same dollar ~ 37 - 239 = -202, so the idea ends ~53 $ worse - it does not survive the dollar",
+    "past/overlap: same family as rejected wait / weekend / one_day; the sunday observation also flipped between halves. No twin before",
+    "mechanism: plausible for 12-16 (US open spikes run through tight stops), none for 08-12 - which is half the window"
+   ]
+  },
+  {
+   "id": "pb_choch_ext500_cost175",
+   "date": "2026-10-20",
+   "verdict": "doute",
+   "fr": "Le plus gros trou baisse vraiment : 11 à 18 au lieu de 57, à chaque réglage, et la règle tient même si chaque trade coûte 1 $ de plus (+70 $, alors que sans elle on perd 150 $). Mon inquiétude : face au filtre souple seul, le gain d'argent (+20 $) vient de la première moitié ; la seconde perd 17 à 28 $ à chaque réglage, et un réglage plus strict perd 25 $.",
+   "en": "The biggest hole really shrinks: 11 to 18 instead of 57, at every setting, and the rule holds even if each trade costs $1 more (+$70, while without it the robot loses $150). What worries me: against the soft filter alone, the money gain (+$20) comes from the first half; the second half loses $17 to $28 at every setting, and a stricter setting loses $25.",
+   "checks": [
+    "run ~10:30 2026-10-20, harness numbers differ from the context (variant 150.50 vs 76.84; deployed 14.15 / hole 88.18 / 241 tr) - data moved since the battery; read diffs, not levels",
+    "parent (soft filter + ext500, no stop rule): 130.59 / hole 57.38 / 148 tr, h1 2.13 / h2 114.66 - the real comparison for the stop rule",
+    "dose vs parent: cost3 105.48 (-25.1, hole 18.16, 39 tr); cost4 150.50 (+19.9, hole 11.17, 60 tr); cost5 155.21 (+24.6, hole 14.30, 80 tr). Money flips sign between 3 and 4; the hole cut holds at all three; 5 is at least as good as 4",
+    "halves vs parent: h1 +33.8 / +60.2 / +59.0, h2 -28.2 / -28.2 / -17.5 (cost 3/4/5) - the money gain sits in the first half only; the second half loses at every setting (pretest said the same: h2 -19.58)",
+    "shapes: byref base and capped rows identical (+59.37 / -62.91 both) - no independent capped result",
+    "long window (69 d, vs deployed): +89.76, but h1 -63.81 / h2 +157.07 - a loss on one half there; no 69-day run vs the parent available",
+    "real trades: 21 kept of 96, +74.35 vs real, hole 63.6 shallower - good sign, too few trades to lean on",
+    "concentration: +19.9 vs parent is smaller than one top trade (23.46, 20.37 kept in both); the hole cut (57 -> 11) is the robust part",
+    "past: every solo cost_max dose (3/4/5/6/8 %) scored C on 2026-09-29; chercheur memo 2026-10-19 itself called 2.5/3/4 jagged (C/C/B); no twin before",
+    "mechanism: real - the 7-point spread is ~4 % of a 175-point stop but ~1 % of a wide one, and tight-stop losses chain catch-up trades; winners carry wide stops (22 tr >=300 pts, +109)",
+    "real gap: --drag auto = no charge yet (same 150.50); --drag 1: idea 70.19 / hole 35.37 / 57 tr (h1 -11.37 / h2 +72.46) vs parent at the same dollar -150.18 / hole 151.25 / 143 tr - survives the dollar by far, it trades less",
+    "overlap: new on the filtered robot; the 09-29 solo cost cuts were the same filter on the unfiltered robot and lost"
+   ]
+  },
+  {
+   "id": "pb_ext450_cost175",
+   "date": "2026-10-20",
+   "verdict": "doute",
+   "fr": "Le plus gros trou baisse (9 au lieu de 15) à chaque réglage, et la règle tient même si chaque trade coûte 1 $ de plus. Mon inquiétude : face à la règle des 450 points seule, le gain d'argent (+18 $) vient de la première moitié ; la seconde perd 15 à 29 $ à chaque réglage. Sur 69 jours, elle n'ajoute rien.",
+   "en": "The biggest hole shrinks (9 instead of 15) at every setting, and the rule holds even if each trade costs $1 more. What worries me: against the 450-point rule alone, the money gain (+$18) comes from the first half; the second half loses $15 to $29 at every setting. Over 69 days it adds nothing.",
+   "checks": [
+    "run ~10:30 2026-10-20, harness levels differ from the context (variant 110.21 vs 61.38; deployed 12.88 / 230 tr) - data moved; read diffs, not levels",
+    "parent (real accounts' filter + ext450, no stop rule): 91.94 / hole 15.18 / 50 tr, h1 23.52 / h2 85.87 - the real comparison for the stop rule",
+    "dose vs parent: cost3 100.65 (+8.7, 19 tr); cost4 110.21 (+18.3, hole 9.24, 26 tr); cost5 113.73 (+21.8, hole 9.24, 32 tr) - no sign flip, 5 at least as good as 4; ext400 110.59 / ext500 110.21 at cost4 - flat",
+    "halves vs parent: h1 +25.7 / +32.4 / +37.0, h2 -29.1 / -16.5 / -14.7 (cost 3/4/5) - money gain in the first half only, second half loses at every dose; same pattern as sibling pb_choch_ext500_cost175 (doute today)",
+    "shapes: byref base and capped rows identical (+43.91 / -68.93 both) - no independent capped result",
+    "long window: 69 d -12.6 vs deployed (C), h1 -115.59 / h2 +122.86; parent pb_ext450 was -12.09 there - the stop rule adds ~0 over 69 days; the first-half loss is inherited",
+    "real trades: 8 kept of 96, +61.0 vs real (parent 12 kept, +51.72) - +9 on 4 fewer trades, far too few to lean on",
+    "concentration: +18 vs parent is below one top trade (23.46, 20.37, 18.8 kept in all doses); the hole cut 15 -> 9 is the solid part",
+    "past: every solo cost_max dose (3/4/5/6/8 %) scored C on 2026-09-29 (unfiltered robot); pb_ext450 doute 2026-10-19; history A x1; no twin, not archived",
+    "mechanism: real - the 7-point spread is ~4 % of a 175-point stop but ~1 % of a wide one; tight stops get clipped by noise and wide-stop trades carry the wins",
+    "overlap: pb_ext450 with a stop cut on top; half its trades removed (50 -> 26), ~0.6 trade a day",
+    "real gap: --drag auto = no charge yet (cfg drag None, same 110.21); --drag 1: 82.44 / hole 10.24 / 25 tr vs parent ~42 under the same dollar (50 tr) - survives, it trades less"
+   ]
+  },
+  {
+   "id": "bul4",
+   "date": "2026-10-20",
+   "verdict": "doute",
+   "fr": "Un trade de rattrapage en plus ne choisit pas de meilleurs trades : il mise plus gros après une perte. À quatre, +15 $ mais le plus gros trou s'approfondit de 13 $ ; à cinq, +25 $ et 36 $ de trou en plus. La deuxième moitié perd aux deux réglages, les vrais trades perdent 3 $. Ce qui m'inquiète : le gain ne grandit qu'avec le trou.",
+   "en": "One more catch-up trade does not pick better trades: it bets bigger after a loss. Wins grow, and so do losses. At four, +$15 but the biggest hole gets $13 deeper; at five, +$25 and $36 more hole. The second half loses at both settings, and the real trades lose $3. What worries me: the gain only grows along with the hole.",
+   "checks": [
+    "run ~10:40 2026-10-20; harness levels differ from the context (deployed 11.61-12.88 / 241 tr vs 17.47 / 230) - data moved; read diffs, not levels",
+    "dose: bullets 3 = deployed; 4: +15.28 net / hole +12.75 (C); 5: +25.34 / hole +35.62 (C) - no sign flip, but the hole grows ~3x faster than the gain",
+    "halves: 4 -> h1 +14.2 / h2 -5.5; 5 -> h1 +28.4 / h2 -21.1 - gain sits in the first half, second half loses and worsens with dose (context had h2 +2.97: thin either way)",
+    "shapes: byref base and capped rows identical (+21.63 / -0.09) - no independent capped-account result",
+    "long window: 69 d +38.39 net but hole +12.75 (C) - a caution, not a loss",
+    "real trades: 79 kept of 96, -3.28 vs real, hole +10.2 - a small loss where it counts: a doubt",
+    "concentration: 59 changed blocks, largest +8.44 vs a 39.16 top trade - spread out, not one lucky trade; every block is the same trade scaled up or down",
+    "past: own critique 2026-10-08 doute (gain grows with the hole); history A 3 nights of 12, net decayed 177.8 -> 39.1 since 10-06; twin running since 2026-10-20 09:42",
+    "mechanism: none beyond stake - same 241-243 trades, same win rate (55.1 vs 55.4), bigger lot on catch-up trades; a mild martingale",
+    "overlap: same family as jar (deployed, also recovery money after a loss) - a bigger recovery stake, not a new entry rule",
+    "real gap: --drag auto = no charge yet (cfg drag None, identical to no drag); --drag 1 gives -477.87 but charges the variant only (base stays 11.61) - harness asymmetry, unusable; trade count is equal so a fair per-trade charge should be ~neutral"
+   ]
   }
  ]
 }

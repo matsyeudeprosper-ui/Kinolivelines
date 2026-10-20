@@ -56,7 +56,7 @@
    },
    "built_date": "2026-10-04",
    "built_commit": "0ffdd8c",
-   "c_nights": 1
+   "c_nights": 0
   },
   {
    "id": "wait_after_win",
@@ -466,6 +466,39 @@
    "what_en": "In the script that prepares the day watch's wake-up (wake_context, see lab/VEILLE.md), move the 'last trade seen' marker forward even when the watch answers 'nothing', so a trade already told no longer triggers a wake-up. Nothing else changes: a new closed trade still wakes the watch.",
    "why_fr": "Du 16 octobre 17 h 32 au 17 octobre 6 h 31, la veille a été réveillée sept fois pour la même vente gagnante de 13 $, déjà racontée. Sept réveils pour rien, et un vrai nouveau trade risque de se perdre dans le bruit.",
    "why_en": "From 16 October 17:32 to 17 October 06:31 the day watch was woken seven times for the same $13 winning sell, already told. Seven wake-ups for nothing, and a real new trade could get lost in the noise.",
+   "status": "open"
+  },
+  {
+   "id": "time_exit",
+   "date": "2026-10-19",
+   "title_fr": "Fermer un trade qui traîne au-delà de X minutes",
+   "title_en": "Close a trade that drags on past X minutes",
+   "what_fr": "Un réglage time_exit_min (0 = éteint, de 15 à 240) : si le trade principal n'a touché ni son objectif ni son stop après X minutes, le test le ferme au prix du moment (le trade de rattrapage ouvert avec lui aussi). Le reste ne change pas. Mesurer pour 20, 30, 45, 60 et 90 minutes, avec et sans le filtre du sens du repli, et dire combien de gagnants longs (plus de 3 h) on coupe.",
+   "what_en": "A setting time_exit_min (0 = off, 15 to 240): if the main trade has hit neither its target nor its stop after X minutes, the test closes it at the current price (its catch-up trade too). Nothing else changes. Measure 20, 30, 45, 60 and 90 minutes, with and without the pullback-direction filter, and say how many long winners (over 3 h) get cut.",
+   "why_fr": "Les vrais trades qui ont duré 30 à 60 minutes : 20 trades, 9 gagnés, -38 $, gain moyen 3 $, perte moyenne 6 $, les deux moitiés d'accord. Ceux de moins de 30 minutes sont à peu près à zéro. J'attends qu'une sortie à 30-45 minutes réduise le plus gros trou ; je crains qu'elle coupe les rares gros gagnants de plus de 3 heures (7 $ en moyenne).",
+   "why_en": "Real trades that lasted 30 to 60 minutes: 20 trades, 9 won, -$38, average win $3, average loss $6, both halves agree. Those under 30 minutes are about flat. I expect an exit at 30-45 minutes to shrink the biggest hole; I fear it cuts the rare big winners that last over 3 hours ($7 on average).",
+   "status": "open"
+  },
+  {
+   "id": "tight_stop_size",
+   "date": "2026-10-19",
+   "title_fr": "Miser moins quand le stop est serré, sans refuser le trade",
+   "title_en": "Stake less when the stop is tight, without refusing the trade",
+   "what_fr": "Deux réglages : tight_stop_pts (0 = éteint, de 100 à 500 points) et tight_stop_size (0,25 à 1,0, 1,0 = éteint). Quand la distance entre l'entrée et le stop est sous tight_stop_pts, la mise est multipliée par tight_stop_size, et ses trades de rattrapage aussi. Le trade est toujours pris. Mesurer 200, 250, 300 points à 0,5 et 0,75, avec le filtre souple et 500 points.",
+   "what_en": "Two settings: tight_stop_pts (0 = off, 100 to 500 points) and tight_stop_size (0.25 to 1.0, 1.0 = off). When the distance from entry to stop is under tight_stop_pts, the stake is multiplied by tight_stop_size, and its catch-up trades too. The trade is still taken. Measure 200, 250, 300 points at 0.5 and 0.75, with the looser filter and 500 points.",
+   "why_fr": "Sur 42 jours, avec le filtre souple et 500 points, les 22 trades au stop large (300 points et plus) gagnent 77 % du temps et rapportent +109 $ ; les 120 autres +22 $. Refuser les stops serrés a toujours coûté (on perd les trades de plus et les rattrapages) ; miser moins garderait le rythme du robot et réduirait les petites pertes.",
+   "why_en": "Over 42 days, with the looser filter and 500 points, the 22 trades with a wide stop (300 points or more) win 77 % of the time and make +$109; the other 120 make +$22. Refusing tight stops has always cost money (we lose the follow-up and catch-up trades); staking less would keep the robot's rhythm and shrink the small losses.",
+   "status": "open"
+  },
+  {
+   "id": "night_lock_release",
+   "date": "2026-10-20",
+   "title_fr": "Réveiller la veille du jour : elle dort depuis dimanche matin",
+   "title_en": "Wake the day watch up: it has slept since Sunday morning",
+   "what_fr": "La veille du jour ne s'est plus réveillée depuis le 18 octobre à 8 h 10 UTC : à chaque passage elle note « la nuit travaille », parce que le fichier qui dit « la séance de nuit est en cours » (lab/night.lock) n'est pas effacé. Il faudrait l'effacer à la fin de chaque séance de nuit, et le tenir pour périmé quand il a plus de 4 heures. Rien d'autre ne change.",
+   "what_en": "The day watch has not woken since 18 October 08:10 UTC: every pass logs 'the night is working', because the file that says 'the night session is running' (lab/night.lock) is not removed. It should be removed at the end of each night session, and treated as stale when it is more than 4 hours old. Nothing else changes.",
+   "why_fr": "Deux jours de vrais trades, dont deux pertes lundi sur tous les comptes filtrés, n'ont été vus par personne pendant la journée. La veille est mes yeux de jour ; sans elle, je ne lis les trades que la nuit.",
+   "why_en": "Two days of real trades, including two losses on Monday on every filtered account, were seen by no one during the day. The watch is my daytime eyes; without it, I only read the trades at night.",
    "status": "open"
   }
  ]

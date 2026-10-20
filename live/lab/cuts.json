@@ -358,6 +358,26 @@
      ]
     }
    ]
+  },
+  {
+   "id": "slow_30_60",
+   "title_fr": "Les trades qui durent de 30 minutes à une heure",
+   "title_en": "Trades that last 30 minutes to an hour",
+   "by": "chercheur",
+   "date": "2026-10-19",
+   "status": "open",
+   "why_fr": "Un trade qui n'a pas fini au bout de 30 minutes semble mal parti : 20 trades qui ont duré 30 à 60 minutes, 9 gagnés seulement, -38 $, les deux moitiés d'accord. Ils gagnent peu (3 $ en moyenne) et perdent gros (6 $). Plus vite ou plus longtemps, c'est à peu près à zéro. Cette pile dira si fermer un trade qui traîne aiderait.",
+   "why_en": "A trade not finished after 30 minutes seems to be in trouble: 20 trades that lasted 30 to 60 minutes, only 9 won, -$38, both halves agree. They win little ($3 on average) and lose big ($6). Faster or longer trades are about flat. This pile will tell whether closing a trade that drags on would help.",
+   "where": [
+    {
+     "field": "dur_min",
+     "op": "between",
+     "value": [
+      30,
+      60
+     ]
+    }
+   ]
   }
  ]
 }

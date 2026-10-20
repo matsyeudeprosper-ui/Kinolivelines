@@ -1,24 +1,82 @@
 {
- "date": "2026-10-17",
- "headline_fr": "Avec le filtre plus souple, ne pas entrer après une heure qui a trop couru gagne à 400, 500 et 600 points, et tient sur 69 jours.",
- "headline_en": "With the looser filter, not entering after an hour that ran too far wins at 400, 500 and 600 points, and holds over 69 days.",
- "proposals": ["pb_choch_ext400", "pb_choch_ext600", "pb_ext450", "pb_choch_ext500_rr09", "pb_choch_chase500"],
- "fr": "Ce soir : avec le filtre plus souple, ne pas entrer après une heure qui a trop couru gagne à 400, 500 et 600 points, sur les deux moitiés, et tient sur 69 jours (+84 $, trou de 57 au lieu de 94). Sans la perte de 39 $ évitée, il reste environ +35 $. Les verdicts : 36 idées testées sans filtre, 3 mieux sur les deux moitiés, 11 un peu mieux, 22 non ; le robot sans filtre perd sur la seconde moitié, donc tout ce qui trade moins a l'air meilleur. Les comptes filtrés depuis le 10 octobre : 22 trades, 15 gagnés ; la référence sans filtre perd. Avec le filtre, la nuit ne porte plus le robot (trop peu de trades). Pas de nouvelle pile : 3 trades nouveaux seulement, et le journal mêle encore les deux robots. Je propose 400 et 600 points avec le filtre souple, 450 avec le filtre officiel, un sauvetage visant 0,9 fois ce qu'on risque, et, hors des sentiers, ne refuser que l'heure qui a couru dans notre sens. Je demande que la veille ne soit réveillée qu'une fois par trade.",
- "en": "Tonight: with the looser filter, not entering after an hour that ran too far wins at 400, 500 and 600 points, on both halves, and holds over 69 days (+$84, hole 57 instead of 94). Without the avoided $39 loss, about +$35 remains. The verdicts: 36 ideas tested without the filter, 3 better on both halves, 11 a little better, 22 no; the unfiltered robot loses in the second half, so anything that trades less looks better. The filtered accounts since 10 October: 22 trades, 15 won; the unfiltered reference loses. With the filter, the night no longer carries the robot (too few trades). No new pile: only 3 new trades, and the journal still mixes both robots. I propose 400 and 600 points with the looser filter, 450 with the official filter, a rescue aiming for 0.9 times what we risk, and, out of the box, refusing only the hour that ran our way. I ask for the day watch to be woken once per trade.",
+ "date": "2026-10-20",
+ "headline_fr": "Viser un peu plus haut et miser moins sur les changements de sens nerveux fait mieux sur les deux moitiés ; je reste prudent.",
+ "headline_en": "Aiming a little higher and staking less on nervous changes of direction does better on both halves; I stay careful.",
+ "proposals": [
+  "pb_choch_ext500_fh05",
+  "pb_choch_ext500_rr12_fh075",
+  "pb_choch_ext500_cost4_fh075"
+ ],
+ "fr": "**Ce soir : sur le robot filtré, viser 1,2 fois ce qu'on risque et miser un quart de moins sur les changements de sens nerveux fait mieux sur les deux moitiés, mais le réglage voisin perd.**\n\n**Les verdicts.** 35 idées, testées sur 42 jours sans le filtre des comptes réels : 6 mieux sur les deux moitiés, 8 un peu mieux, 21 non. Refuser les stops très serrés : mieux sur les deux moitiés contre le robot sans filtre, +74 $ sur les vrais trades. Mais contre le filtre seul, le critique a raison : à trois réglages voisins, la seconde moitié perd 27 à 38 $. Le trou, lui, passe de 57 à 11.\n\n**Ce que je crois.** RENFORCÉ : un trade qui traîne 30 à 60 minutes est mal parti (22 trades, -49 $). RENFORCÉ : repartir moins de 15 minutes après le trade d'avant perd (42 trades, 38 % gagnés, -45 $), après 30 à 60 minutes on gagne (33 trades, +39 $). AFFAIBLI : les stops larges comme règle d'argent ; ils restent une limite de trou. AFFAIBLI : miser moins sur le premier mouvement d'une tendance, avec le filtre (-8 $).\n\n**Ce que les trades apprennent.** Deux pertes lundi sur tous les comptes filtrés, rien depuis. Depuis le 10 octobre, 25 trades filtrés, à peu près à zéro ; changements de sens nerveux 3 gagnés sur 8, calmes 5 sur 6 : trop peu de trades. La veille du jour dort depuis dimanche matin. Pas de nouvelle pile : la seule idée (changement de sens nerveux après une perte, 28 trades, -30 $) est presque entièrement dans deux piles existantes.\n\n**Je propose.** Réponse au labo : miser moitié moins sur un changement de sens nerveux (+2 $, trou de 52 au lieu de 57 ; petit). Hors des sentiers : viser 1,2 fois et miser un quart de moins sur ces trades (+9 $, +12 et +13 sur les moitiés), avec prudence. Une limite de trou : stops serrés refusés et mise réduite (trou de 12 au lieu de 57).\n\n**Je demande.** Effacer le verrou de nuit pour réveiller la veille. Le constructeur n'a rien construit depuis le 14 : 15 demandes attendent.",
+ "en": "**Tonight: on the filtered robot, aiming for 1.2 times what we risk and staking a quarter less on nervous changes of direction does better on both halves, but the neighbouring setting loses.**\n\n**The verdicts.** 35 ideas, tested on 42 days without the real accounts' filter: 6 better on both halves, 8 a little better, 21 no. Refusing very tight stops: better on both halves against the unfiltered robot, +$74 on the real trades. But against the filter alone the critic is right: at three neighbouring settings the second half loses $27 to $38. The hole, though, drops from 57 to 11.\n\n**What I believe.** STRENGTHENED: a trade that drags 30 to 60 minutes is in trouble (22 trades, -$49). STRENGTHENED: starting again less than 15 minutes after the previous trade loses (42 trades, 38 % won, -$45); after 30 to 60 minutes it wins (33 trades, +$39). WEAKENED: wide stops as a money rule; they stay a hole limit. WEAKENED: staking less on a trend's first move, with the filter (-$8).\n\n**What the trades teach.** Two losses on Monday on every filtered account, nothing since. Since 10 October, 25 filtered trades, about flat; nervous changes of direction won 3 of 8, calm ones 5 of 6: too few trades. The day watch has slept since Sunday morning. No new pile: the only idea (nervous change of direction after a loss, 28 trades, -$30) sits almost entirely inside two existing piles.\n\n**I propose.** Answer to the lab: stake half on a nervous change of direction (+$2, hole 52 instead of 57; small). Out of the box: aim 1.2 times and stake a quarter less on those trades (+$9, +12 and +13 on the halves), with caution. A hole limit: tight stops refused and smaller stake (hole 12 instead of 57).\n\n**I ask for.** Removing the night lock so the day watch wakes up. The builder has built nothing since the 14th: 15 requests are waiting.\n\n---\nRuns tonight (17 what-ifs + 3 bases; 42 days unless said; S = choch filter + ext 500, vs S, not the raw base):\nS base 150 tr +128.92 hole 57.38 (h -0.24/+114.46).\nflip_hot 0.75 A +1.4 (h +3.8/+2.5, hole 54.9); 0.6 C -0.3; 0.5 A +2.3 (h +1.9/+5.0, hole 52.4); fh0.75+flip_loss 0.75 C -0.3.\ncost_max 3.5 B +3.1 (h +60.9/-37.8, 52 tr, hole 11.2); 4.5 B +15.8 (h +59.1/-28.7, 70 tr, hole 11.2); cost4+fh0.75 B +21.9 (h +62.9/-27.2, 60 tr, hole 12.4).\nfirst_move 0.5 C -7.6; 0.75 B -2.4. n_cont 2 C -70.6. rr1.1 C -17.3; rr1.2 A +0.3 (h +6.4/+9.4, hole 50.3); rr1.2+fh0.75 A +9.2 (h +12.2/+13.0, hole 47.7).\nOfficial trend+ext450 base 50 tr +91.94 hole 15.18: +fh0.75 B +0.8; +fm0.5 C -1.6.\n69 days (S base +253.76, 252 tr): fh0.75 A +1.0; rr1.2 C -65.9 (h -84.9/+21.4).\nReal pool since 10-10 (per 0.01 lot): filtered 25 tr +2.62, reference 69 tr -8.34. Drag +0.469 on 72, frozen since 10-15. Twins: ext700 -19.68 (18 tr), fit3 -6.94 (12), debtnerv -3.84 (2), bul4 -1.32 (2). Day watch asleep: lab/night.lock seen as present on every pass since 18 Oct 08:10 UTC.",
  "beliefs": [
-  {"fr": "Le filtre des comptes réels écarte surtout des trades perdants.", "en": "The real accounts' filter mostly removes losing trades.", "evidence": "Depuis le 10 octobre, chaque compte filtré gagne (22 trades, 15 gagnés) ; le compte de référence sans filtre perd."},
-  {"fr": "Avec le filtre, ne pas entrer après une heure de 400 à 600 points rapporte.", "en": "With the filter, not entering after a 400 to 600-point hour pays.", "evidence": "Mieux sur les deux moitiés à 400, 500 et 600 points ; sur 69 jours +84 $, trou de 57 au lieu de 94 ; +35 $ même sans la plus grosse perte évitée."},
-  {"fr": "Un trade de plus dans le même sens gagne surtout après une pause de 15 minutes à 3 heures.", "en": "One more trade the same way wins mostly after a pause of 15 minutes to 3 hours.", "evidence": "28 trades, 71 % gagnés, +60 $, contre 46 % pour le reste. Encore moins de 30 trades dans la pile."},
-  {"fr": "Le jour, juste après une perte, le robot court après son argent et perd.", "en": "By day, right after a loss, the robot chases its money and loses.", "evidence": "52 trades, 38 % gagnés, -60 $, les deux moitiés d'accord ; c'est surtout le compte sans filtre."},
-  {"fr": "Les changements de sens rapportent peu ; un trade de plus dans le même sens porte le robot.", "en": "Changes of direction earn little; one more trade the same way carries the robot.", "evidence": "Comptes filtrés : changement de sens 8 sur 12, presque 0 $ ; même sens 7 sur 10, en gain. Trop peu de trades."},
-  {"fr": "La nuit portait le robot ; avec le filtre, ce n'est plus si clair.", "en": "The night used to carry the robot; with the filter it is less clear.", "evidence": "Comptes filtrés : nuit 8 trades, 5 gagnés, à peu près 0 $ ; soir 5 sur 5. Trop peu de trades."}
+  {
+   "fr": "Le filtre des comptes réels écarte surtout des trades perdants.",
+   "en": "The real accounts' filter mostly removes losing trades.",
+   "evidence": "Depuis le 10 octobre, 25 trades filtrés à peu près à zéro, le compte sans filtre perd ; deux pertes lundi, rien depuis."
+  },
+  {
+   "fr": "Avec le filtre, ne pas entrer après une heure qui a déjà bougé de 450 à 500 points rapporte.",
+   "en": "With the filter, not entering after an hour that already moved 450 to 500 points pays.",
+   "evidence": "Mieux sur les deux moitiés les nuits passées ; c'est la base de tous mes essais de ce soir (+129 $ sur 42 jours)."
+  },
+  {
+   "fr": "Repartir trop vite coûte : un trade pris moins de 15 minutes après le précédent perd.",
+   "en": "Starting again too fast costs: a trade taken less than 15 minutes after the previous one loses.",
+   "evidence": "Vrais trades : moins de 15 minutes, 42 trades, 38 % gagnés, -45 $ ; 30 à 60 minutes, 33 trades, +39 $. Les deux moitiés d'accord."
+  },
+  {
+   "fr": "Un trade qui traîne entre 30 minutes et une heure est mal parti.",
+   "en": "A trade that drags between 30 minutes and an hour is in trouble.",
+   "evidence": "22 trades, 9 gagnés, -49 $, les deux moitiés d'accord ; lundi encore une perte après 54 minutes."
+  },
+  {
+   "fr": "Les changements de sens en marché nerveux gagnent moins souvent ; miser moins sur eux aide un peu.",
+   "en": "Changes of direction in a nervous market win less often; staking less on them helps a little.",
+   "evidence": "49 trades, 43 % gagnés contre 54 % ; dans le test, moitié moins de mise : +2 $, trou de 52 au lieu de 57. Petit."
+  },
+  {
+   "fr": "Refuser les stops très serrés réduit beaucoup le trou, mais ne fait pas gagner plus.",
+   "en": "Refusing very tight stops shrinks the hole a lot, but does not earn more.",
+   "evidence": "Trou de 11 au lieu de 57 à trois réglages voisins ; la seconde moitié perd 27 à 38 $ à chaque fois."
+  }
  ],
  "sections": [
-  {"title_fr": "Ce soir", "title_en": "Tonight", "fr": "Les vrais comptes ont un filtre depuis le 10 octobre. Avec la version plus souple de ce filtre, qui trade presque à leur rythme, ne pas entrer après une heure qui a déjà trop bougé gagne à chaque réglage essayé : 400, 500 et 600 points. Et cela tient sur 69 jours : +84 $, trou de 57 au lieu de 94.", "en": "The real accounts have a filter since 10 October. With a looser version of it, which trades almost at their pace, not entering after an hour that already moved too much wins at every setting tried: 400, 500 and 600 points. And it holds over 69 days: +$84, hole 57 instead of 94."},
-  {"title_fr": "Les verdicts", "title_en": "The verdicts", "fr": "36 idées testées sur les 42 derniers jours, sans le filtre : 3 mieux sur les deux moitiés, 11 un peu mieux, 22 non. Attention : le robot sans filtre perd sur la seconde moitié, alors tout ce qui trade moins paraît meilleur. Le critique bloque l'idée des 700 points et doute de la limite de perte à 3 % du compte.", "en": "36 ideas tested on the last 42 days, without the filter: 3 better on both halves, 11 a little better, 22 no. Careful: the unfiltered robot loses in the second half, so anything that trades less looks better. The critic blocks the 700-point idea and doubts the loss limit at 3 % of the account."},
-  {"title_fr": "Ce que les trades apprennent", "title_en": "What the trades teach", "fr": "Week-end calme : aucun trade depuis vendredi 17 h. Comptes filtrés depuis le 10 octobre : 22 trades, 15 gagnés. Un trade de plus dans le même sens : 7 sur 10, en gain. Changement de sens : 8 sur 12, presque rien. Le soir 5 sur 5, la nuit à peu près nulle. Trop peu de trades. Pas de nouvelle pile : le journal mêle encore les deux robots.", "en": "Quiet weekend: no trade since Friday 17:00. Filtered accounts since 10 October: 22 trades, 15 won. One more trade the same way: 7 of 10, a gain. Change of direction: 8 of 12, almost nothing. Evening 5 of 5, night about flat. Too few trades. No new pile: the journal still mixes both robots."},
-  {"title_fr": "Ce que je crois", "title_en": "What I believe", "fr": "Le filtre marche. Avec lui, éviter les heures qui ont trop couru rapporte, et ce n'est pas une seule perte évitée : sans la perte de 39 $, il reste environ +35 $. Le jour, après une perte, le robot sans filtre court après son argent. La nuit, elle, n'est plus si sûre avec le filtre.", "en": "The filter works. With it, skipping hours that ran too far pays, and it is not one avoided loss: without the $39 loss, about +$35 remains. By day, after a loss, the unfiltered robot chases its money. The night is less certain with the filter."},
-  {"title_fr": "Ce que je propose", "title_en": "What I propose", "fr": "Le filtre souple avec 400 puis 600 points, pour que le test de nuit voie le palier. Le filtre officiel avec 450 points : 92 $ au lieu de 34. Un sauvetage : viser 0,9 fois ce qu'on risque, non de peu au test mais +29 $ sur 45 vrais trades. Hors des sentiers : ne refuser que l'heure qui a couru dans notre sens.", "en": "The looser filter with 400 then 600 points, so the night test sees the plateau. The official filter with 450 points: $92 instead of $34. A rescue: aim for 0.9 times what we risk, a narrow no in the test but +$29 on 45 real trades. Out of the box: refuse only the hour that ran our way."},
-  {"title_fr": "Ce que je demande", "title_en": "What I ask for", "fr": "Que la veille de jour ne soit réveillée qu'une fois par trade fermé : cette nuit, sept réveils pour la même vente gagnante. Et toujours : séparer le robot filtré du compte de référence, et juger chaque idée sur le robot qui tourne vraiment.", "en": "That the day watch be woken only once per closed trade: tonight, seven wake-ups for the same winning sell. And still: separate the filtered robot from the reference account, and judge every idea on the robot that really runs."}
+  {
+   "title_fr": "Ce soir",
+   "title_en": "Tonight",
+   "fr": "J'ai testé 17 idées sur le robot filtré, celui des comptes réels. La meilleure : viser 1,2 fois ce qu'on risque et miser un quart de moins sur un changement de sens quand le marché est nerveux. +9 $, les deux moitiés mieux, trou de 48 au lieu de 57. Mais viser 1,1 perd, et sur 69 jours viser 1,2 seul perd aussi : prudence.",
+   "en": "I tested 17 ideas on the filtered robot, the one the real accounts run. The best: aim for 1.2 times what we risk and stake a quarter less on a change of direction when the market is nervous. +$9, both halves better, hole 48 instead of 57. But aiming 1.1 loses, and over 69 days aiming 1.2 alone loses too: caution."
+  },
+  {
+   "title_fr": "Les verdicts",
+   "title_en": "The verdicts",
+   "fr": "Sur 35 idées testées sans le filtre : 6 mieux sur les deux moitiés, 8 un peu mieux, 21 non. Refuser les stops très serrés gagne contre le robot sans filtre. Contre le filtre seul, le critique a raison : à trois réglages voisins, la seconde moitié perd 27 à 38 $. Le trou, lui, passe de 57 à 11 : c'est une limite de trou, pas un gain.",
+   "en": "Of 35 ideas tested without the filter: 6 better on both halves, 8 a little better, 21 no. Refusing very tight stops wins against the unfiltered robot. Against the filter alone, the critic is right: at three neighbouring settings the second half loses $27 to $38. The hole drops from 57 to 11: a hole limit, not a gain."
+  },
+  {
+   "title_fr": "Ce que les trades apprennent",
+   "title_en": "What the trades teach",
+   "fr": "Lundi, deux pertes sur tous les comptes filtrés, rien depuis. Depuis le 10 octobre, 25 trades filtrés, à peu près à zéro : trop peu de trades. Repartir moins de 15 minutes après un trade perd 45 $ sur 42 trades. Pas de nouvelle pile : ma seule idée tient déjà dans deux piles existantes.",
+   "en": "On Monday, two losses on every filtered account, nothing since. Since 10 October, 25 filtered trades, about flat: too few trades. Starting again less than 15 minutes after a trade loses $45 over 42 trades. No new pile: my only idea already fits inside two existing piles."
+  },
+  {
+   "title_fr": "Ce que je crois",
+   "title_en": "What I believe",
+   "fr": "Renforcé : repartir trop vite coûte, et un trade qui traîne 30 à 60 minutes est mal parti (22 trades, -49 $). Affaibli : les stops larges comme règle d'argent, et miser moins sur le premier mouvement d'une tendance (-8 $ avec le filtre). Toujours vrai : le filtre et la limite de 450 à 500 points portent le robot.",
+   "en": "Strengthened: starting again too fast costs, and a trade that drags 30 to 60 minutes is in trouble (22 trades, -$49). Weakened: wide stops as a money rule, and staking less on a trend's first move (-$8 with the filter). Still true: the filter and the 450 to 500 point limit carry the robot."
+  },
+  {
+   "title_fr": "Ce que je propose",
+   "title_en": "What I propose",
+   "fr": "Réponse au labo : miser moitié moins sur un changement de sens en marché nerveux (+2 $, trou de 52 au lieu de 57 ; petit). Hors des sentiers : viser 1,2 fois ce qu'on risque avec ce même frein (+9 $). Une limite de trou : refuser les stops très serrés et miser moins sur ces trades (trou de 12 au lieu de 57).",
+   "en": "Answer to the lab: stake half on a change of direction in a nervous market (+$2, hole 52 instead of 57; small). Out of the box: aim for 1.2 times what we risk with the same brake (+$9). A hole limit: refuse very tight stops and stake less on those trades (hole 12 instead of 57)."
+  },
+  {
+   "title_fr": "Ce que je demande",
+   "title_en": "What I ask for",
+   "fr": "La veille du jour dort depuis dimanche matin : un fichier qui dit « la nuit travaille » n'est jamais effacé. Je demande qu'il le soit. Et 15 demandes attendent le constructeur depuis le 14 octobre, dont fermer un trade qui traîne et miser moins quand le stop est serré.",
+   "en": "The day watch has slept since Sunday morning: a file that says 'the night is working' is never removed. I ask that it be removed. And 15 requests have waited for the builder since 14 October, including closing a trade that drags on and staking less when the stop is tight."
+  }
  ]
 }

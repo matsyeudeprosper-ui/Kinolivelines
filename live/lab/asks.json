@@ -173,6 +173,29 @@
    "status": "answered",
    "answer_fr": "C'est vrai : le jour, les trades de plus dans le même sens gagnent moins (43 %, contre 54 %), mais les changements de sens du jour perdent encore plus, donc c'est la journée entière qui fuit, pas ce type de trade. Couper ou réduire des heures fixes échoue toujours sur une moitié ; j'ai demandé un frein qui suit les heures qui perdent en ce moment, et une mise plus petite le jour après une perte.",
    "answer_en": "True: by day, one more trade the same way wins less (43 %, against 54 %), but day changes of direction lose even more, so it is the whole day that leaks, not this kind of trade. Cutting or shrinking fixed hours always fails on one half; I asked for a brake that follows the hours losing right now, and a smaller stake by day after a loss."
+  },
+  {
+   "id": "ask_1792407475_cont_rested",
+   "seed": "cont_rested",
+   "seed_fr": "Un trade de plus dans le même sens, pris après une pause",
+   "seed_en": "One more trade the same way, taken after a pause",
+   "by": "labo",
+   "date": "2026-10-19",
+   "note": "31 trades, 68 % gagnés contre 47 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answer_fr": "Oui, la pause compte, mais surtout la nuit : sur les 31 trades, les 16 pris entre minuit et 7 h UTC ont rapporté +55 $ à eux tous, les 15 du jour sont à zéro. Le test ne sait pas encore attendre seulement avant un trade de plus dans le même sens ; je l'ai demandé le 15 octobre et je le redemande, et je suis cette pile chaque nuit.",
+   "answer_en": "Yes, the pause matters, but mostly at night: of the 31 trades, the 16 taken between midnight and 07:00 UTC made +$55 between them, the 15 by day are flat. The test cannot yet wait only before one more trade the same way; I asked for it on 15 October and ask again, and I follow this pile every night."
+  },
+  {
+   "id": "ask_1792493031_flip_hot",
+   "seed": "flip_hot",
+   "seed_fr": "Changement de sens quand le marché est nerveux",
+   "seed_en": "Change of direction in a nervous market",
+   "by": "labo",
+   "date": "2026-10-20",
+   "note": "49 trades, 43 % gagnés contre 54 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "proposed",
+   "proposal": "pb_choch_ext500_fh05"
   }
  ]
 }
