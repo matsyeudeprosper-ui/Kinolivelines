@@ -15427,7 +15427,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
-        if event and not event.startswith("YOUR FOLLOW-ON"):
+        if event and not (event.startswith("YOUR FOLLOW-ON") or event.startswith("INNER VOICE")):
             q["build"] = False
         if event and not q.get("send") and not event.startswith("NEW CONVERSATION"):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
@@ -16088,7 +16088,7 @@ def _companion_tick():
                 here = bool(sn and now - sn[0] < 60 and sn[1] == cf["id"])
                 due = (here and el >= 150 + rnd * 270) or (not here and 1500 + rnd * 3300 <= el <= 4 * 3600 and _active_hour(uid, h0))
                 fu_today = [t for t in (m.get("fu_log") or []) if now - t < 86400]
-                if not due or len(fu_today) >= 10 or (fu_today and now - max(fu_today) < 600):   # 2026-10-20: 3/day kept him silent in a lively chat
+                if INNER_ON or not due or len(fu_today) >= 10 or (fu_today and now - max(fu_today) < 600):   # 2026-10-20: 3/day kept him silent in a lively chat
                     continue
 
                 def mark(c, _t=lm.get("t")):
@@ -16460,6 +16460,132 @@ def _kino_night_mind():
         pass
     finally:
         _NIGHT_BUSY = False
+
+
+_CLOCK = {}          # cid -> {"next": t, "checks": n} - the inner clock's next "do I feel like writing?" moment
+INNER_ON = True      # 2026-10-20 (owner: "build it"): the inner clock replaces the fixed follow-up windows
+
+
+def _reply_rhythm(M):
+    """how fast this member usually answers Kino (median seconds, answers under 2 h)"""
+    gaps = []
+    for i in range(1, len(M)):
+        if M[i].get("role") == "user" and M[i - 1].get("role") == "ai":
+            g = int(M[i].get("t") or 0) - int(M[i - 1].get("t") or 0)
+            if 0 < g < 7200:
+                gaps.append(g)
+    gaps.sort()
+    return gaps[len(gaps) // 2] if gaps else 120
+
+
+def _inner_clock_once():
+    """every 30 s: for each conversation that went quiet in the last hours, when its moment comes (an irregular interval
+    that grows with the silence and follows the member's own rhythm), Kino's inner voice decides - by intuition, with
+    the conversation in front of it - whether it would write now. Usually not."""
+    import random
+    now = time.time()
+    U_ = {re.sub(r"[^A-Za-z0-9]", "", x.get("id") or ""): x for x in users()}     # chat files are named <clean id>_<n>
+    recent = {}                                  # uid -> its 2 most recent conversations active in the last 6 h
+    try:
+        for f in os.listdir(CHAT_DIR):
+            if f.endswith(".json"):
+                fp = os.path.join(CHAT_DIR, f)
+                mt = os.path.getmtime(fp)
+                if now - mt < 6 * 3600:
+                    recent.setdefault(f.split("_")[0], []).append((mt, f[:-5]))
+    except Exception:
+        return
+    for uid0, L_ in recent.items():
+        u = U_.get(uid0)
+        if not u:
+            continue
+        uid = u.get("id")
+        if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+            continue
+        for _mt, cid in sorted(L_, reverse=True)[:2]:
+            if _CHAT_Q.get(cid) or cid in _CHAT_B or cid in _CHAT_WAIT:
+                continue
+            try:
+                c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            except Exception:
+                continue
+            if c.get("uid") != uid or c.get("hidden"):
+                continue
+            M = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai", "demo", "result")]
+            if not M or not any(m.get("role") == "user" for m in M) or c.get("more"):
+                continue
+            last_t = int(M[-1].get("t") or 0)
+            quiet = now - last_t
+            if quiet < 25 or quiet > 6 * 3600:
+                _CLOCK.pop(cid, None)
+                continue
+            st = _CLOCK.get(cid)
+            if not st or st.get("last_t") != last_t:          # new silence: the first moment comes after an irregular pause
+                rh = _reply_rhythm(M)
+                st = {"last_t": last_t, "next": last_t + max(40, min(900, rh * random.uniform(1.2, 3.0))), "n": 0}
+                _CLOCK[cid] = st
+            if now < st["next"]:
+                continue
+            st["n"] += 1
+            st["next"] = now + max(60, min(2700, quiet * random.uniform(0.35, 0.9)))   # later and later, never regular
+            run = 0
+            for m in reversed(M):
+                if m.get("role") == "user":
+                    break
+                if m.get("role") == "ai":
+                    run += 1
+            mm = _mem_get(uid)
+            day = [t for t in (mm.get("inner_log") or []) if now - t < 86400]
+            if run >= 3 or len(day) >= 12:
+                continue
+            sn = _CHAT_SEEN.get(uid)
+            here = bool(sn and now - sn[0] < 30 and sn[1] == cid)
+            h0 = _local_hour(uid)
+            if not here and not _active_hour(uid, h0):
+                continue
+            try:
+                _rc()
+                import kino_mind as _KM
+                tr = _rc().transcript(dict(c, msgs=(c.get("msgs") or [])[-14:]))
+                ctx = ("THE CONVERSATION (the end):\n%s\n\nSILENCE: %d minutes since the last message (%s). This member usually answers "
+                       "Kino in about %d s. Kino has sent %d message(s) in a row without an answer. They are %s. Their local time: %02d h. "
+                       "Main thread: %s. Kino saved for later: %s. Kino's mood: %s." % (
+                           tr[-5000:], quiet / 60, "Kino wrote last" if M[-1].get("role") != "user" else "THEY wrote last and got no answer",
+                           _reply_rhythm(M), run, "looking at the conversation right now" if here else "away from the app", h0,
+                           c.get("thread") or "-", json.dumps(c.get("later") or [], ensure_ascii=False)[:400],
+                           json.dumps((_KM.load().get("mood") or {}), ensure_ascii=False)[:160]))
+                d = _KM.inner_decide(ctx)
+            except Exception:
+                d = None
+            try:
+                import io as _io
+                _io.open(os.path.join(CHAT_DIR, cid + ".log"), "a", encoding="utf-8").write(
+                    "\n--- inner clock %s (quiet %d min, here %s) --- %s\n" % (time.strftime("%H:%M:%S"), quiet / 60, here, json.dumps(d, ensure_ascii=False)))
+            except Exception:
+                pass
+            if not d or not d.get("now") or _CHAT_Q.get(cid):
+                continue
+            c2 = json.load(open(_chat_path(cid), encoding="utf-8"))
+            if int(((c2.get("msgs") or [{}])[-1]).get("t") or 0) != int((c.get("msgs") or [{}])[-1].get("t") or 0):
+                continue                                     # something happened meanwhile
+            _mem_note_safe(uid, lambda mm2: mm2.__setitem__("inner_log", [t for t in (mm2.get("inner_log") or []) if time.time() - t < 86400] + [time.time()]))
+            _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+            threading.Thread(target=_chat_quick, args=(cid, u, "INNER VOICE - the conversation went quiet %d minutes ago and a thought came back to you: "
+                             "\"%s\". Write it now, naturally, like a friend who just thought of it (never a reminder, never 'tu es toujours "
+                             "là ?' as a reflex, never repeat yourself); or \"send\": false if, re-reading, it is not worth it." % (
+                                 quiet / 60, str(d.get("intent") or "")[:240])), kwargs={"notify": not here}, daemon=True).start()
+            break
+
+
+def _inner_clock_loop():
+    time.sleep(60)
+    while True:
+        try:
+            if INNER_ON:
+                _inner_clock_once()
+        except Exception:
+            pass
+        time.sleep(30)
 
 
 def _companion_loop():
@@ -25586,7 +25712,8 @@ def _cand_watch():
 if __name__ == "__main__":
     print(f"OwlNest v2 serving on port {PORT}, token {TOKEN}")
     threading.Thread(target=_cand_watch, daemon=True).start()
-    threading.Thread(target=_companion_loop, daemon=True).start()     # 2026-10-19: the workshop AI reaches out on its own
+    threading.Thread(target=_companion_loop, daemon=True).start()
+    threading.Thread(target=_inner_clock_loop, daemon=True).start()   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 

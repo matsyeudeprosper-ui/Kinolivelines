@@ -112,7 +112,7 @@ def partial_say(buf):
     return "".join(out)
 
 
-def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None):
+def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
     sp, h = _sysfile(system)
     key = h + model
@@ -167,7 +167,8 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None):
     except Exception:
         txt = None
     _kill(p)
-    threading.Thread(target=_fill, args=(key,), daemon=True).start()
+    if warm:                              # warm=False (2026-10-20): a background call keeps no processes for its prompt
+        threading.Thread(target=_fill, args=(key,), daemon=True).start()
     if log:
         try:
             io.open(log, "a", encoding="utf-8").write("\n--- warm %s ---\n%s\n" % (model, (txt or "(none)")[-6000:]))
@@ -176,12 +177,12 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None):
     return txt
 
 
-def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on_text=None, salvage=False):
+def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on_text=None, salvage=False, warm=True):
     """the first JSON object of the answer; the next model if one fails; on_text(partial text) while it is written.
     salvage=True (2026-10-20, a 2 min 20 s reply: the quick answer came as plain text, was thrown away, and the slow turn
     had to answer): a plain chat message without JSON is kept as {"say": text} instead of trying another model"""
     for m in models:
-        txt = ask_text(system, user, m, timeout, log, on_text) or ""
+        txt = ask_text(system, user, m, timeout, log, on_text, warm=warm) or ""
         j = IV.first_json(txt)
         if j is not None:
             return j

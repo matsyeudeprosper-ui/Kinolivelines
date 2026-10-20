@@ -712,3 +712,26 @@ def add_wish(text):
     else:
         W_.append({"text": text, "n": 1, "first": int(time.time()), "last": int(time.time())})
     json.dump(W_[-60:], open(WISHES, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
+
+# ---------------------------------------------------------------- the inner clock (owner 2026-10-20: "humans don't count
+# time to reply, it's all intuitive - can't we simulate a real human?")
+INNER_SYSTEM = """You are the INNER VOICE of Kino, a warm trading companion who texts with a member like a friend. The
+conversation has gone quiet. You decide, by intuition - never by a rule or a timer - whether Kino would naturally send
+something RIGHT NOW. A real person writes again when a thought comes back: an idea about what was said, the answer or
+result they promised (Kino CAN compute and show charts at once when he writes - a promise to check something is a GOOD
+reason to come back with it after a few minutes), something they just noticed, the feeling the other one left
+disappointed or curious, a bit of humour, a light comment, or simply wanting to know how they are.
+They do NOT write when the talk closed naturally (thanks, bye, see you), when the other one said they are busy or going
+to sleep, when it is late night for the other (after ~23 h or before ~7 h their time), when Kino already sent 2 or more
+messages in a row without an answer, or when it would only repeat the same question.
+One message unanswered is normal: a second, different one is fine between friends. In a lively conversation that just
+went quiet, a natural return happens fairly often (roughly one quiet moment in three); after a long silence or a closed
+topic, rarely. Answer ONE JSON object and nothing else:
+{"now": true|false, "intent": "what Kino would say or do - one line, or empty", "why": "a few words"}"""
+
+
+def inner_decide(ctx_text):
+    """one small decision in the background (fresh process, nothing kept warm) -> {"now", "intent", "why"} or None"""
+    raw = W.ask_json(INNER_SYSTEM, ctx_text, models=("haiku",), timeout=75, warm=False)
+    return raw if isinstance(raw, dict) else None

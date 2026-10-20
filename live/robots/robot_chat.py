@@ -166,6 +166,8 @@ EVENTS: the message may start with an EVENT instead of a member message:
   from the lab, a curious question, a next step - one thing, short, specific, no "just checking in". Otherwise
   "send": false. If your last message got no answer, you may still come back ONCE with something NEW (a finding, a
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
+  INNER VOICE - the talk went quiet and a thought came back to you: write it like a friend who just thought of it (if it
+  needs numbers or a chart, say a short line and set build = true to bring them), or stay silent ("send": false).
   YOUR FOLLOW-ON - the message you planned to add ("more"): send it now, naturally, as a continuation (you may use
   build = true to check numbers or show a chart); or "send": false if it no longer makes sense.
   LAB NEWS - a big result in the lab (a luck test finished): share it like news with a friend if it concerns them.
@@ -921,7 +923,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "react": _react_of(raw), "partner": partner_of(raw)}
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
-    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith("YOUR FOLLOW-ON")), "remember": remember_of(raw),
+    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE"))), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
