@@ -799,6 +799,10 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
         except Exception:
             pass
     if event:
+        so = [x.get("text") for x in (memory or {}).get("standing") or []][-6:]
+        U += ("\nWHEN YOU WRITE ON YOUR OWN (this message is yours, nobody asked): never end it by asking permission (\"tu veux "
+              "que...? / do you want me to...?\") - decide, do it, and say what you are doing; a question only if it is a real, light "
+              "curiosity about THEM.%s\n" % ((" THEIR STANDING INSTRUCTIONS (follow them): " + " | ".join(so)) if so else ""))
         U += "\nEVENT: %s\n" % event
     U += ("\nAnswer %s right away. One JSON object {say, chips, build, remember}." % ("the EVENT" if event else "the last message")
           if mode == "QUICK" else "\nFollow up on your quick reply and build. One JSON object, the full JSON.")

@@ -14769,6 +14769,17 @@ def _chat_member(user, c):
     try:
         L.append("plan: Signal %s, Stratégie %s, Automatique %s%s" % tuple(["yes" if has(uid, k) else "no" for k in ("manual", "strategy", "family")]
                                                                         + [" (the nest's owner)" if is_admin(user) else ""]))
+        try:                                     # 2026-10-20 (owner asked Kino "my package plan is active until when?")
+            _e = ent(uid)
+            _ends = ["%s until %s" % ({"family_until": "Automatique", "strategy_until": "Stratégie", "manual_until": "Signal"}.get(k, k[:-6]),
+                                      time.strftime("%d/%m/%Y", time.gmtime(int(v)))) for k, v in _e.items()
+                     if k.endswith("_until") and isinstance(v, (int, float)) and v > 0]
+            if uid in OWNER_UIDS:
+                L.append("plan end dates: this is an owner account - its plans never expire%s" % ((" (recorded period: " + ", ".join(_ends) + ")") if _ends else ""))
+            elif _ends:
+                L.append("plan end dates: " + ", ".join(_ends))
+        except Exception:
+            pass
     except Exception:
         pass
     try:
@@ -16382,6 +16393,9 @@ def _companion_tick():
                         ev = ("LIVE TRADE OPENED on their account: %s %s lot %s at %s, stop %s, target %s (%s). Today so far %+.2f $." % (
                             "BUY" if o.get("d") == "A" else "SELL", o.get("sym"), o.get("lot"), o.get("e"), o.get("sl") or "-", o.get("tp") or "-",
                             time.strftime("%H:%M UTC", time.gmtime(int(o.get("t") or now))), nd.get("today") or 0))
+                    elif last_cl.get("pid") and last_cl.get("pid") != ts.get("closed") and \
+                            now - (_trade_epoch(last_cl.get("w")) + 60 * float(last_cl.get("dur") or 0)) > 3 * 3600:
+                        pass                                 # an old trade (memory reset / reordering): remembered below, never announced
                     elif last_cl.get("pid") and last_cl.get("pid") != ts.get("closed"):
                         streak = 0
                         for t in nd.get("trades") or []:
@@ -16396,7 +16410,9 @@ def _companion_tick():
                                       why="un trade %s sur son compte (%+.2f $)" % ("perdant" if (last_cl.get("p") or 0) < 0 else "gagnant", last_cl.get("p") or 0))
                         except Exception:
                             pass
-                        ev = ("LIVE TRADE CLOSED on their account: %+.2f $ after %s min (%s). %d %s in a row. Today %+.2f $, week %+.2f $." % (
+                        _ce = _trade_epoch(last_cl.get("w")) + 60 * float(last_cl.get("dur") or 0)
+                        ev = ("LIVE TRADE CLOSED on their account %d min ago (%s UTC): %+.2f $ after %s min (%s). %d %s in a row. Today %+.2f $, week %+.2f $." % (
+                            max(0, (now - _ce) / 60), time.strftime("%H:%M", time.gmtime(_ce)),
                             last_cl.get("p") or 0, last_cl.get("dur"), "buy" if last_cl.get("dir") == "A" else "sell", streak,
                             "wins" if (last_cl.get("p") or 0) > 0 else "losses", nd.get("today") or 0, nd.get("week") or 0))
                     if not ev and main and now - _LAST_SEEN.get(uid, 0) < 150:
