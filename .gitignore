@@ -169,6 +169,8 @@ study/luck/*.tmp
 # 2026-10-19 Atelier: member conversations, AI memory, chart caches stay off git
 live/robots/chats/
 live/robots/replay/
+live/robots/live_usage.json
+live/robots/live.log
 live/robots/chat_memory/
 live/robots/demo_cache/
 live/robots/tests_paused.json

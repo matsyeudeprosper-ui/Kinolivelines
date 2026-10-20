@@ -800,7 +800,7 @@ function speak0(text,then){if(!('speechSynthesis' in window)||!text){then&&then(
  const u=new SpeechSynthesisUtterance(clean);u.lang=EN?'en-US':'fr-FR';u.rate=1.05;u.pitch=1;VOICE_PICK=VOICE_PICK||pickVoice();if(VOICE_PICK)u.voice=VOICE_PICK;
  SPEAKING=true;u.onend=u.onerror=()=>{SPEAKING=false;then&&then();};speechSynthesis.speak(u);}
 function sayIt(i){const m=C&&C.msgs[i];if(!m)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;return;}speak(m.text);}
-function voiceReply(m){if(CALL)VOICE=true;if(!VOICE){if(AUTOREAD&&m&&m.text)speak(m.text);return;}speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
+function voiceReply(m){if(LV)return;if(CALL)VOICE=true;if(!VOICE){if(AUTOREAD&&m&&m.text)speak(m.text);return;}speak(m.text,()=>{if(VOICE&&!SPEAKING&&!$('tx').value.trim()){setTimeout(()=>{if(VOICE)mic();},350);}});}
 async function applyP(i){const j=await post('chat_apply',{id:CID,i:i});if(!j.ok){toast(T('Déjà appliquée ou introuvable.','Already applied or missing.'));return;}load(CID,true);}
 /* 2026-10-19 (owner item 10): the robot's notebook - its story: pieces made, tests, edits, proposals applied, Kino's notes */
 function noteSh(){const M=(C&&C.msgs)||[],E=[];
@@ -980,12 +980,12 @@ window.addEventListener('DOMContentLoaded',function(){const cv=$('fcv');if(!cv)r
  cv.addEventListener('wheel',e=>{e.preventDefault();fsZoom(e.deltaY<0?1:-1);},{passive:false});});
 /* 2026-10-19 (owner next-list item 5): the call - talk, Kino answers out loud, then listens again; hang up to end */
 let CALL=false,CALLT=null,CALLERR=0,CALLIDLE=0,CALL0=0;
-function callStart(){if(!REC){toast(T('Ton navigateur ne permet pas l’appel vocal ici. Essaie avec Chrome.','Your browser can’t do voice calls here. Try Chrome.'));return;}
+function callStart(){if(!CALL_OLD&&LIVE_OK!==false&&window.RTCPeerConnection&&navigator.mediaDevices){liveStart();return;}if(!REC){toast(T('Ton navigateur ne permet pas l’appel vocal ici. Essaie avec Chrome.','Your browser can’t do voice calls here. Try Chrome.'));return;}
  if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}
  CALL=true;VOICE=true;CALLERR=0;CALLIDLE=0;CALL0=Date.now();$('call').style.display='flex';clearInterval(CALLT);CALLT=setInterval(callTick,400);callTick();
  try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}setTimeout(()=>{if(CALL&&!RECON&&!SPEAKING)mic();},500);}
-function callEnd(){bargeStop();CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}
-function callTap(){if(!CALL)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}CALLERR=0;if(!RECON)mic();}
+function callEnd(){if(LV){liveEnd();return;}bargeStop();CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}
+function callTap(){if(LV){const tr=LV.ms.getAudioTracks()[0];if(tr){tr.enabled=!tr.enabled;lvSet(tr.enabled?T('Micro remis','Mic back on'):T('Micro coupé · touche le hibou pour le remettre','Mic off · tap the owl to turn it back on'),tr.enabled?'listen':'');}return;}if(!CALL)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}CALLERR=0;if(!RECON)mic();}
 function callTick(){if(!CALL)return;const st=C&&C.status,busy=st==='thinking'||st==='listening'||st==='building'||!!(C&&C.draft)||SENDING;
  const av=$('cav');let s,cls='';
  if(SPEAKING){s=T('Kino parle… (touche pour l’interrompre)','Kino is speaking… (tap to interrupt)');cls='talk';}
@@ -1646,6 +1646,51 @@ function bargeStart(){if(!CALL||BARGE_ON||RECON)return;const S=window.SpeechReco
   BARGE.onend=()=>{BARGE_ON=false;if(CALL&&SPEAKING)setTimeout(bargeStart,200);};BARGE.onerror=()=>{BARGE_ON=false;};BARGE.start();BARGE_ON=true;}catch(e){BARGE_ON=false;}}
 function bargeStop(){try{if(BARGE&&BARGE_ON)BARGE.abort();}catch(e){}BARGE_ON=false;}
 setInterval(()=>{if(CALL&&SPEAKING&&!BARGE_ON&&!RECON)bargeStart();else if((!CALL||!SPEAKING)&&BARGE_ON)bargeStop();},700);
+
+/* 2026-10-20 (owner: "the same experience as ChatGPT voice, real live", "solve the less-sharp-on-details part", "a model good
+   enough for the credit"): the live call. OpenAI gpt-live-1 talks (full duplex, interruptible) and hands every fact to Kino's
+   real brain: the question goes through chat_send like a typed message, Kino's answer goes back to the voice as commentary. */
+var LV=null,LIVE_OK=null,CALL_OLD=false;
+function lvSet(s,cls){const a=$('cst'),v=$('cav');if(a)a.textContent=s;if(v)v.className='cav '+(cls||'');}
+function lvSend(o){try{if(LV&&LV.dc&&LV.dc.readyState==='open')LV.dc.send(JSON.stringify(o));}catch(e){}}
+async function liveStart(){if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}if(LV)return;
+ $('call').style.display='flex';$('ctx').textContent='';$('ctm').textContent='0:00';lvSet(T('J’appelle Kino…','Calling Kino…'),'think');
+ let ms;try{ms=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}
+ catch(e){lvSet(T('Autorise le micro pour appeler Kino (le cadenas à côté de l’adresse).','Allow the microphone to call Kino (the lock next to the address).'));setTimeout(()=>{$('call').style.display='none';},3500);return;}
+ const pc=new RTCPeerConnection(),au=document.createElement('audio');au.autoplay=true;au.setAttribute('playsinline','');document.body.appendChild(au);
+ pc.ontrack=e=>{au.srcObject=e.streams[0];};ms.getTracks().forEach(t=>pc.addTrack(t,ms));
+ const dc=pc.createDataChannel('oai-events');LV={pc:pc,dc:dc,ms:ms,au:au,t0:0,cur:'',out:'',tr:[],busy:0,max:20,tick:null};dc.onmessage=e=>{try{lvEv(JSON.parse(e.data));}catch(x){}};
+ pc.onconnectionstatechange=()=>{if(LV&&['failed','disconnected'].includes(pc.connectionState)&&LV.t0){lvSet(T('La ligne a coupé.','The line dropped.'));setTimeout(()=>liveEnd(),1200);}};
+ try{const off=await pc.createOffer();await pc.setLocalDescription(off);
+  await new Promise(ok=>{if(pc.iceGatheringState==='complete')return ok();const t=setTimeout(ok,2500);pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);ok();}});});
+  const j=await post('live_session',{id:CID,sdp:pc.localDescription.sdp});
+  if(!j||!j.ok){lvKill();if(j&&j.err==='livecap'){lvSet(T('Tu as utilisé ton heure d’appel du jour. On continue par écrit ?','You used today’s hour of calls. Shall we go on in writing?'));setTimeout(()=>{$('call').style.display='none';},4000);return;}
+   LIVE_OK=false;CALL_OLD=true;toast(T('Appel direct indisponible, je passe en appel classique.','Live call unavailable, switching to the classic call.'));$('call').style.display='none';callStart();CALL_OLD=false;return;}
+  LV.max=j.max_min||20;await pc.setRemoteDescription({type:'answer',sdp:j.sdp});}
+ catch(e){lvKill();LIVE_OK=false;CALL_OLD=true;$('call').style.display='none';callStart();CALL_OLD=false;return;}
+ LV.t0=Date.now();LIVE_OK=true;try{navigator.vibrate&&navigator.vibrate(40);}catch(e){}
+ LV.tick=setInterval(()=>{if(!LV)return;const s=Math.floor((Date.now()-LV.t0)/1000);$('ctm').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(s>=LV.max*60){lvSet(T('Fin de l’appel (20 min).','Call ended (20 min).'));liveEnd();}},500);}
+function lvTurn(){if(LV&&LV.cur.trim()){LV.tr.push((EN?'Member: ':'Membre : ')+LV.cur.trim());LV.last=LV.cur.trim();LV.cur='';}}
+function lvEv(e){if(!LV)return;const t=e.type||'';try{const G=(window.LVLOG=window.LVLOG||[]);G.push(t+(t==='error'?':'+JSON.stringify(e.error||e).slice(0,160):''));if(G.length>300)G.shift();}catch(x){}
+ if(t==='session.started'){lvSet(T('En ligne · parle quand tu veux','Connected · talk any time'),'listen');}
+ else if(t==='session.input_transcript.delta'){if(LV.out.trim()){LV.tr.push('Kino: '+LV.out.trim());LV.out='';}LV.cur+=e.delta||'';lvSet(T('Je t’écoute…','Listening…'),'listen');$('ctx').textContent='« '+LV.cur.trim().slice(-160)+' »';}
+ else if(t==='session.output_transcript.delta'){lvTurn();LV.out+=e.delta||'';lvSet(LV.busy?T('Kino vérifie… (tu peux parler)','Kino is checking… (you can talk)'):T('Kino parle… (coupe-le quand tu veux)','Kino is talking… (cut in any time)'),LV.busy?'think':'talk');$('ctx').textContent=LV.out.trim().slice(-200);}
+ else if(t==='session.delegation.created'){const id=(e.delegation||{}).id;lvTurn();const q=LV.last||'';if(id&&q)lvAsk(id,q);}
+ else if(t==='error'){console.warn('live',e);}
+ else if(t==='session.closed'){lvKill();}}
+async function lvAsk(id,q){LV.busy++;lvSend({type:'session.thinking.append',event_id:'th_'+id,delegation_id:id,content:(EN?'Kino’s brain is checking: ':'Le cerveau de Kino vérifie : ')+q.slice(0,300)});
+ const t0=Date.now()/1000;let ok=false;
+ for(let k=0;k<6&&!ok;k++){try{const j=await post('chat_send',{id:CID,text:q,voice:true});if(j&&j.ok!==false){ok=true;break;}}catch(e){}await new Promise(r=>setTimeout(r,2500));}
+ let ans='';const end=Date.now()+45000;
+ while(LV&&Date.now()<end){await new Promise(r=>setTimeout(r,1500));try{await load(CID);}catch(e){}
+  const M=((C&&C.msgs)||[]).filter(m=>m.role==='ai'&&m.text&&(m.t||0)>=t0-1);if(M.length&&C.status==='ready'&&!C.draft){ans=M.map(m=>m.text).join('\n');break;}}
+ if(!LV)return;LV.busy=Math.max(0,LV.busy-1);
+ lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?String(ans).replace(/\*\*/g,'').slice(0,1600):
+  (EN?'I do not have the answer yet; it will be in the conversation in a moment.':'Je n’ai pas encore la réponse : elle arrive dans la conversation dans un instant.')});}
+function lvKill(){if(!LV)return;const L=LV;LV=null;clearInterval(L.tick);try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.remove();}catch(e){}return L;}
+async function liveEnd(){if(!LV){$('call').style.display='none';return;}lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());
+ const L=lvKill(),mins=L.t0?(Date.now()-L.t0)/60000:0;$('call').style.display='none';
+ try{await post('live_end',{id:CID,min:+mins.toFixed(2),transcript:L.tr.join('\n').slice(-3000)});}catch(e){}load(CID,true);}
 
 </script>
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div></div>

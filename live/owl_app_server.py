@@ -19717,6 +19717,131 @@ def _replay_block(user, cid):
     return "\n".join(L)
 
 
+
+# ---------------------------------------------------------------- the live call
+# 2026-10-20 (owner: "the same experience as ChatGPT voice, real live" + "solve the 'less sharp on details' part" + "a model good
+# enough for the credit per minute"): OpenAI gpt-live-1 (full duplex, $0.05/min) speaks as Kino and DELEGATES every fact to
+# Kino's real brain (client delegation: the page sends the question through chat_send and gives the answer back to the voice).
+# The voice never invents a number - it has none; the brain has the memory, the account, the lab, the tools.
+LIVE_USAGE = os.path.join(DIR, "robots", "live_usage.json")
+LIVE_MAX_MIN = 20
+
+
+def _live_instructions(user, c):
+    fr = c.get("lang") != "en"
+    nm = (user.get("name") or user.get("display") or "").split(" ")[0]
+    rob = (c.get("robot") or {}).get("name") or ""
+    return (
+        "You are Kino, the AI companion of the OwlNest trading app, on a live voice call with %s. You are warm, calm, a friend "
+        "who knows trading - natural, relaxed, short sentences, a light smile in the voice, never salesy, never robotic. Speak %s "
+        "(natural %s accent) unless they switch language.\n\n"
+        "THE MOST IMPORTANT RULE - YOU KNOW NO FACTS ABOUT THEM. Their account, balance, trades, robots%s, tests, luck tests, the lab, "
+        "markets, prices, news, the app, their history, what you said before, ANY number: you do NOT know it and you NEVER guess. "
+        "For anything like that, DELEGATE at once (your backend is Kino's real brain with his memory and tools). While it works, keep "
+        "the conversation natural in one short line (\"je regarde ça\", \"attends, je vérifie\") - do not fill silence with guesses. "
+        "When the result arrives, say it in your own words, short, keeping every number exactly as given. If it says something is "
+        "being prepared, say so honestly.\n"
+        "You may answer alone ONLY for greetings, small talk, feelings, and general trading ideas with no number and no claim about "
+        "them. You never change, stop or start a robot, and you never touch their account - the brain and the app handle that with "
+        "their password.\n"
+        "Keep each turn short (one to three sentences); let them interrupt; ask at most one question at a time."
+        % (nm or ("the member" if not fr else "le membre"), "French" if fr else "English", "French" if fr else "English",
+           (" (this conversation: '%s')" % rob) if rob else ""))
+
+
+def _live_input(c):
+    """the last messages of this conversation as context for the voice (capped by the API: 128 messages / 8192 tokens)"""
+    out, tot = [], 0
+    for m in reversed([m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")][-24:]):
+        t = str(m.get("text"))[:600]
+        tot += len(t) // 3
+        if tot > 6000:
+            break
+        u_ = m["role"] == "user"
+        out.append({"role": "user" if u_ else "assistant", "content": [{"type": "input_text" if u_ else "output_text", "text": t}]})
+    return list(reversed(out))
+
+
+def live_session(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    sdp = str(body.get("sdp") or "")
+    key = os.environ.get("OPENAI_API_KEY")
+    if not sdp or not key:
+        return {"ok": False, "err": "nolive"}
+    uid = user.get("id")
+    try:
+        U = json.load(open(LIVE_USAGE, encoding="utf-8"))
+    except Exception:
+        U = {}
+    day = time.strftime("%Y-%m-%d")
+    used = float(((U.get(uid) or {}).get(day) or 0))
+    if not is_admin(user) and used >= 60:
+        return {"ok": False, "err": "livecap"}          # one hour of live voice a day for a member
+    try:
+        cf = json.load(open(TTS_CONF, encoding="utf-8"))
+    except Exception:
+        cf = {}
+    sess = {"model": cf.get("live_model") or "gpt-live-1", "instructions": _live_instructions(user, c), "input": _live_input(c),
+            "delegation": {"type": "client"}}
+    if cf.get("live_voice"):
+        sess["audio"] = {"output": {"voice": cf["live_voice"]}}
+    import urllib.request, urllib.error
+    rq = urllib.request.Request("https://api.openai.com/v1/live/sessions", data=json.dumps({"session": sess, "transport": {"type": "webrtc", "sdp": sdp}}).encode(),
+                                headers={"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "OwlNest/1.0"})
+    try:
+        r = json.loads(urllib.request.urlopen(rq, timeout=25).read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        try:
+            msg = e.read().decode("utf-8", "replace")[:400]
+        except Exception:
+            msg = ""
+        _log_live("ERR %s %s %s" % (uid, e.code, msg))
+        return {"ok": False, "err": "live_http", "code": e.code}
+    except Exception as e:
+        _log_live("ERR %s %s" % (uid, e))
+        return {"ok": False, "err": "live_down"}
+    ans = (r.get("transport") or {}).get("sdp")
+    if not ans:
+        _log_live("ERR %s no sdp %s" % (uid, json.dumps(r)[:300]))
+        return {"ok": False, "err": "live_down"}
+    _log_live("START %s %s %s" % (uid, c["id"], (r.get("session") or {}).get("id") or r.get("id")))
+    return {"ok": True, "sdp": ans, "sid": (r.get("session") or {}).get("id") or r.get("id"), "max_min": LIVE_MAX_MIN}
+
+
+def _log_live(line):
+    try:
+        with open(os.path.join(DIR, "robots", "live.log"), "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + line + "\n")
+    except Exception:
+        pass
+
+
+def live_end(user, body):
+    """minutes used (the daily cap) + one line in the conversation so Kino knows the call happened"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    try:
+        mins = max(0.0, min(float(body.get("min") or 0), 120.0))
+    except Exception:
+        mins = 0.0
+    uid = user.get("id")
+    try:
+        U = json.load(open(LIVE_USAGE, encoding="utf-8"))
+    except Exception:
+        U = {}
+    day = time.strftime("%Y-%m-%d")
+    _ud = U.setdefault(uid, {})
+    _ud[day] = round(float(_ud.get(day) or 0) + mins, 2)
+    _atomic_json(LIVE_USAGE, U)
+    _log_live("END %s %.2f min" % (uid, mins))
+    tr = str(body.get("transcript") or "")[-3000:]
+    if c is not None and mins >= 0.2:
+        fr = c.get("lang") != "en"
+        _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)),
+                                                call=tr))
+    return {"ok": True}
+
 def _live_tick(sym):
     """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
     _rc()
@@ -24954,7 +25079,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -24976,7 +25101,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot}[_parts[1]]
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

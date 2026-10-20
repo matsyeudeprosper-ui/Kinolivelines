@@ -513,6 +513,8 @@ def transcript(chat):
                 L.append("  (the member reacted %s to this message%s)" % (m["mreact"], (" - why: " + str(m.get("mwhy"))) if m.get("mwhy") else ""))
             if m.get("tools"):
                 L.append("  (YOU COMPUTED: " + json.dumps(m["tools"], ensure_ascii=False)[:900] + ")")
+        elif r == "sys" and m.get("call"):          # 2026-10-20: a live voice call - what was said, so you remember it
+            L.append("LIVE VOICE CALL with them (%s), transcript: %s" % (str(m.get("text") or ""), str(m.get("call"))[-1500:]))
         elif r == "edit":
             L.append("MEMBER EDITED BY HAND: " + str(m.get("note_en") or m.get("text") or "")[:600])
         elif r == "result":
