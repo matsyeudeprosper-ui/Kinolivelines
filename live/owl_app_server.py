@@ -14825,10 +14825,9 @@ def _chat_member(user, c):
             if mk:
                 st += "; market tests: " + ", ".join(mk)
             ok = any((x.get("id") == rid) for x in (acct_robot_block(user, is_admin(user)).get("choices") or []))
-            st += "; can go on their account now: %s" % ("yes" if ok else "no - the app's current rule: a robot goes on a real account only with a positive BITCOIN "
-                                                     "test (the account robots were built around Bitcoin), plus the Automatique plan. A robot made for another "
-                                                     "market (gold...) therefore cannot qualify yet, even with a good test on its own market - it is a limit of the "
-                                                     "app the owner may lift; say it plainly, never 'I don't know why'")
+            st += "; can go on their account now: %s" % ("yes" if ok else "no - the rule: a Bitcoin robot needs a positive Bitcoin test; a robot made for another market "
+                                                     "(gold, Nasdaq...) needs a positive test on ITS market AND a passed luck test (100 random robots, at most 5 as "
+                                                     "good) - owner decision 2026-10-20; plus the Automatique plan. Say plainly which part is still missing")
             L.append(st)
         except Exception:
             pass
@@ -19595,6 +19594,29 @@ def acct_robot_block(user, admin=False):
         return out
     for r in reg.get("robots") or []:
         rid = r.get("id")
+        _mk = str(r.get("market") or "BTCUSD").upper()
+        if rid != "owl" and _mk.rstrip("M") != "BTCUSD":
+            # 2026-10-20 (owner decision): a robot built for another market qualifies on ITS market - a positive test there
+            # AND a passed luck test (100 random robots, at most 5 as good); own robots only (others: the marketplace rules)
+            if not (r.get("by_uid") == uid or (admin and r.get("by_uid") in (None, uid)) or rid == cur):
+                continue
+            try:
+                _mj = json.load(open(os.path.join(DIR, "robots", "results", "%s@%s.json" % (rid, r.get("market"))), encoding="utf-8"))
+                _mt = dict({k: _mj.get(k) for k in ("balance", "window_utc", "days") if _mj.get(k) is not None}, **(_mj.get("robot") or {}))
+            except Exception:
+                _mt = {}
+            _lk = _luck_of(rid, r.get("market")) or {}
+            if rid != cur and not (float(_mt.get("net") or 0) > 0 and _lk.get("state") == "pass"):
+                continue
+            try:
+                robot_package(dict(r, resolved=robot_resolve(rid, byid)), reg.get("pieces") or [], base, None)
+            except Exception:
+                continue
+            out["choices"].append(dict(nm(r), id=rid, net=_mt.get("net"), dd=_mt.get("cc_dd"), trades=_mt.get("trades"),
+                                       win_rate=_mt.get("win_rate"), days=_mt.get("days") or 60, balance=_mt.get("balance") or 200,
+                                       window_utc=_mt.get("window_utc"), owl=False, mine=r.get("by_uid") == uid, market=r.get("market"),
+                                       public=bool(r.get("public")), current=rid == cur, luck="pass"))
+            continue
         if rid != "owl":
             if r.get("stage") not in ("tested", "real", "demo"):
                 continue
