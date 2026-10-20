@@ -16019,6 +16019,15 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             for cd in _cards[:2]:
                 if cd.get("kind") in ("lab",) and not is_admin(user):
                     continue
+                if cd.get("kind") == "replay":          # 2026-10-20: "look, I'll show you" -> the replay room at that moment
+                    try:
+                        _a = cd.get("args") or {}
+                        _t = _a.get("t") or _a.get("date")
+                        if isinstance(_t, str) and _t.strip():
+                            _t = int(datetime.strptime(_t.strip()[:16].replace("T", " "), "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc).timestamp())
+                        cd = {"kind": "replay", "args": {"t": int(_t) if _t else 0, "why": str(_a.get("why") or "")[:160]}}
+                    except Exception:
+                        cd = {"kind": "replay", "args": {"t": 0, "why": str((cd.get("args") or {}).get("why") or "")[:160]}}
                 _chat_msg(c, "card", kind=cd["kind"], args=cd.get("args") or {})
             if _pa.get("setting"):
                 _chat_msg(c, "setting", setting=_pa["setting"])
@@ -16412,6 +16421,22 @@ def _companion_tick():
                                                "J'ai écrit ce que j'ai compris de toi comme trader (page Kino). Tu me corriges si je me trompe ?", False)
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("portrait", dict(mm.get("portrait") or {}, t=time.time())))
                     threading.Thread(target=_pt, daemon=True).start()
+            except Exception:
+                pass
+            # (1r) 2026-10-20 (owner all 12): a week of replay -> Kino writes 3 lessons from their trades and notes, and keeps them
+            try:
+                _RA = _replay_all(uid)
+                _rn = sum(len(v.get("trades") or []) for v in _RA.values())
+                _rl = m.get("replay_lessons") or {}
+                if _RA and _rn - int(_rl.get("n") or 0) >= 5 and now - float(_rl.get("t") or 0) > 6 * 86400 and _active_hour(uid, h0):
+                    _rc_ = max(_RA.items(), key=lambda kv: kv[1].get("updated") or 0)[0]
+                    if any(x["id"] == _rc_ for x in ch) and not busy(_rc_):
+                        _mem_note_safe(uid, lambda mm: mm.__setitem__("replay_lessons", {"t": now, "n": _rn}))
+                        _CHAT_Q[_rc_] = _CHAT_Q.get(_rc_, 0) + 1
+                        threading.Thread(target=_chat_quick, args=(_rc_, u, "REPLAY WEEK: they practised in the replay room (see REPLAY PRACTICE). "
+                                         "Write them THREE short lessons drawn from THEIR trades and notes (what works for them, what costs them, one thing "
+                                         "to try next session) - concrete, with their numbers, like a coach friend. Keep the three lessons in your memory "
+                                         "(remember) and invite them back to the room."), kwargs={"notify": True}, daemon=True).start()
             except Exception:
                 pass
             # (1j) 2026-10-19: tests came back on - a member whose test waited hears it at once
@@ -19572,6 +19597,11 @@ def _replay_clean(x, prev):
                 "sl0": num(p.get("sl0")), "tp": num(p.get("tp")), "tf": str(p.get("tf") or "")[:4]} if isinstance(p, dict) and p.get("e") else None
     s["notes"] = [{"t": int(num(n.get("t"))), "text": str(n.get("text") or "")[:600]} for n in (x.get("notes") or [])[-60:] if str(n.get("text") or "").strip()]
     s["levels"] = [{"p": num(l.get("p")), "label": str(l.get("label") or "")[:30]} for l in (x.get("levels") or [])[-12:]]
+    g = x.get("goal")         # 2026-10-20 (owner all 12): session goal, risk in money, trend lines, zones
+    s["goal"] = {"text": str(g.get("text") or "")[:200], "n": int(num(g.get("n"))), "t": int(num(g.get("t")))} if isinstance(g, dict) and str(g.get("text") or "").strip() else None
+    s["risk"] = max(0.0, min(100000.0, num(x.get("risk"), 0)))
+    s["lines"] = [{"t1": int(num(l.get("t1"))), "p1": num(l.get("p1")), "t2": int(num(l.get("t2"))), "p2": num(l.get("p2"))} for l in (x.get("lines") or [])[-10:]]
+    s["zones"] = [{"p1": num(z.get("p1")), "p2": num(z.get("p2"))} for z in (x.get("zones") or [])[-8:]]
     return s
 
 
@@ -19595,6 +19625,35 @@ def replay_save(user, body):
             _chat_msg(c, "replay", market=s["market"], cursor=s["cursor"], start=s["start"], stats=st, tfs=s["tfs"])
         _chat_mut(c["id"], put)
     return {"ok": True, "stats": _replay_stats(s)}
+
+
+_REPLAY_ROBOT = {}
+
+
+def _replay_robot_trades(user, cid):
+    """the chat robot's own trades on its market (times, prices, R), cached per robot version"""
+    c = _chat_load(user, cid)
+    if c is None or not c.get("robot"):
+        return None
+    key = (cid, c.get("rev"), _chat_market(c))
+    if key in _REPLAY_ROBOT:
+        return _REPLAY_ROBOT[key]
+    RD = _rd()
+    rules, rr = RD.rules_of(c["robot"], _chat_pieces(user))
+    ex = RD.examples(_chat_market(c), rules, 3, [], rr, "all") or {}
+    out = ex.get("all")
+    if len(_REPLAY_ROBOT) > 40:
+        _REPLAY_ROBOT.clear()
+    _REPLAY_ROBOT[key] = out
+    return out
+
+
+def replay_robot(user, body):
+    try:
+        T = _replay_robot_trades(user, str(body.get("id") or ""))
+    except Exception:
+        T = None
+    return {"ok": T is not None, "trades": T or []}
 
 
 def replay_list(user, body):
@@ -19634,6 +19693,21 @@ def _replay_block(user, cid):
             L.append("  their note (%s): %s" % (fm(n.get("t")), n.get("text")))
         for l in (s.get("levels") or [])[-6:]:
             L.append("  level they marked: %s %s" % (l.get("p"), l.get("label") or ""))
+        for l in (s.get("lines") or [])[-4:]:
+            L.append("  trend line they drew: %s at %s -> %s at %s" % (l.get("p1"), fm(l.get("t1")), l.get("p2"), fm(l.get("t2"))))
+        for z in (s.get("zones") or [])[-4:]:
+            L.append("  zone they drew: %s - %s" % (z.get("p1"), z.get("p2")))
+        if s.get("goal"):
+            L.append("  their GOAL for this session: %s%s" % (s["goal"].get("text"), (" (%d trades)" % s["goal"]["n"]) if s["goal"].get("n") else ""))
+        if s.get("risk"):
+            L.append("  they count %.2f $ per 1R -> total %+.2f $" % (s["risk"], st["r"] * s["risk"]))
+        try:
+            rb = _replay_robot_trades(user, cid)
+            if rb is not None:
+                rt = [t for t in rb if int(s.get("start") or 0) <= t["t_out"] <= int(s.get("cursor") or 0)]
+                L.append("  THEIR ROBOT over the same stretch (you play it in the duel): %d trades, %+.2fR" % (len(rt), sum(t["r"] for t in rt)))
+        except Exception:
+            pass
     others = [(k, v) for k, v in A.items() if k != cid]
     if others:
         tn = sum(len(v.get("trades") or []) for _, v in others)
@@ -19771,6 +19845,27 @@ def _chat_title_status(c):
     return title, st
 
 
+def _chat_news(c, seen):
+    """2026-10-20 (owner all 12): the reason to open a conversation, in a few words"""
+    N = [m for m in c.get("msgs") or [] if int(m.get("t") or 0) > seen]
+    if not N:
+        return ""
+    fr = c.get("lang") != "en"
+    if any(m.get("role") == "result" for m in N):
+        r = next(m.get("result") or {} for m in reversed(N) if m.get("role") == "result")
+        n = float(r.get("net") or 0)
+        return ("test terminé : %+.0f $" % n) if fr else ("test finished: %+.0f $" % n)
+    if any(m.get("role") == "test" for m in N):
+        return "test lancé" if fr else "test started"
+    if any(m.get("role") == "card" and m.get("kind") in ("onaccount", "confirm") for m in N):
+        return "une décision t'attend" if fr else "a decision is waiting"
+    if any(m.get("role") == "ideacard" for m in N):
+        return "Kino te redit ton idée" if fr else "Kino restates your idea"
+    if any(m.get("role") == "demo" for m in N):
+        return "des trades à regarder" if fr else "trades to look at"
+    return ""
+
+
 def chat_list(user):
     me = re.sub(r"[^A-Za-z0-9]", "", user.get("id") or "")
     out = []
@@ -19798,7 +19893,8 @@ def chat_list(user):
                         "last": str(last.get("text") or "")[:90], "n": sum(1 for m in c.get("msgs") or [] if m.get("role") == "user"),
                         "understood": c.get("understood"), "last_t": int(last.get("t") or 0), "last_role": last.get("role"),
                         "market": (c.get("robot") or {}).get("market") or c.get("market"),
-                        "unread": sum(1 for m in c.get("msgs") or [] if m.get("role") == "ai" and int(m.get("t") or 0) > seen)})
+                        "unread": sum(1 for m in c.get("msgs") or [] if m.get("role") == "ai" and int(m.get("t") or 0) > seen),
+                        "news": _chat_news(c, seen)})
             if len(out) >= 30:
                 break
     except Exception:
@@ -24858,7 +24954,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -24880,7 +24976,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list}[_parts[1]]
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

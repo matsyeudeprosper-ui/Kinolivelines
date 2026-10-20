@@ -327,6 +327,7 @@ html,body{overflow-x:hidden;max-width:100%}.wrow{min-width:0;max-width:100%;box-
 .rpcard{flex-wrap:wrap}.rpcb{flex:1 1 180px}.rpcard .btn{flex:1 1 100%;width:auto;margin:0}
 .cbar .cdots{position:relative;align-items:flex-start;padding:2px 0 0}.cbar .cdots:before{content:'';position:absolute;left:10%;right:10%;top:18px;height:2px;border-radius:2px;background:var(--border2);z-index:0}.cbar .cd{position:relative;z-index:1;gap:5px;padding:0}.cbar .cd i{width:32px;height:32px;font-size:14px;font-weight:800;border:1.5px solid var(--border2);background:var(--surface);box-shadow:0 0 0 4px var(--surface);color:var(--muted)}.cbar .cd.done i{background:linear-gradient(rgba(46,204,113,.2),rgba(46,204,113,.2)),var(--surface);border-color:rgba(46,204,113,.6);color:var(--up)}.cbar .cd.now i{background:linear-gradient(rgba(109,92,246,.28),rgba(109,92,246,.28)),var(--surface);border-color:var(--accent);color:#fff}.cbar .cd.run i{background:linear-gradient(rgba(245,158,11,.18),rgba(245,158,11,.18)),var(--surface);border-color:#f59e0b;color:#f59e0b}.cbar .cd.bad i{background:linear-gradient(rgba(255,92,92,.18),rgba(255,92,92,.18)),var(--surface);border-color:rgba(255,92,92,.6);color:var(--down)}.cbar .cd small{font-size:.66rem;font-weight:700;line-height:1.1;color:var(--muted);box-shadow:none!important;padding:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}.cbar .cd.done small{color:var(--up)}.cbar .cd.now small{color:var(--text)}.cbar .cd.run small{color:#f59e0b}.cbar .cd.bad small{color:var(--down)}
 .cbar .cd i{box-sizing:border-box;flex:none;margin:0;animation:none!important;transform:none!important}.cbar .cd.run i{box-shadow:0 0 0 4px var(--surface)}.cbar .cd{justify-content:flex-start;gap:5px!important}.cbar .cd small{display:block;height:14px;line-height:14px;margin:0!important;padding:0!important}
+.rptools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.rptools.v{grid-template-columns:1fr}.rptb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:16px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:700 .82rem Inter,system-ui,sans-serif;cursor:pointer}.rptools.v .rptb{flex-direction:row;justify-content:flex-start;text-align:left;gap:12px}.rptb span{font-size:1.2rem}.rptb small{margin-left:auto;color:var(--muted2);font-weight:500;font-size:.74rem}.rptb.on{border-color:var(--accent);background:linear-gradient(rgba(109,92,246,.2),rgba(109,92,246,.2)),var(--surface2)}.rpduel{display:flex;align-items:center;justify-content:space-around;padding:12px;border-radius:16px;background:var(--surface2);margin:6px 0 4px}.rpduel div{display:flex;flex-direction:column;align-items:center;gap:2px}.rpduel b{font-size:1.4rem}.rpduel small{color:var(--muted2);font-size:.72rem}.rpduel .vs{color:var(--muted);font-weight:800}.rpgoal{display:flex;align-items:center;gap:8px;margin:6px 0 10px}.rpgoal input{min-width:0;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px 12px;font:500 .88rem Inter,system-ui,sans-serif}.rpgoal input:first-child{flex:1}.rpgoal input[type=number]{width:76px}.rpgoal .btn{width:auto;flex:none;padding:10px 14px;margin:0}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
 <symbol id="owl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l3 2.5h8L19 4v8.5a7 7 0 0 1-14 0z"/><circle cx="9.5" cy="11.5" r="2"/><circle cx="14.5" cy="11.5" r="2"/><path d="M11.2 15.2h1.6L12 16.6z" fill="currentColor"/></symbol>
@@ -789,7 +790,7 @@ function pickVoice(){if(!('speechSynthesis' in window))return null;const L=speec
 try{speechSynthesis.onvoiceschanged=()=>{VOICE_PICK=pickVoice();};}catch(e){}
 let TTS_OK=null,TTS_A=null,TTS_FAIL=0;   // 2026-10-20: one slow answer no longer drops the natural voice for the whole visit
 function speak(text,then){if(TTS_OK!==false&&text){const clean0=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'').slice(0,900);
-  try{if(TTS_A){TTS_A.pause();}TTS_A=new Audio('kino_tts?l='+(EN?'en':'fr')+'&t='+encodeURIComponent(clean0));SPEAKING=true;
+  try{SPOKEN_T=clean0;if(TTS_A){TTS_A.pause();}TTS_A=new Audio('kino_tts?l='+(EN?'en':'fr')+'&t='+encodeURIComponent(clean0));SPEAKING=true;
    TTS_A.onended=()=>{SPEAKING=false;then&&then();};
    TTS_A.onerror=()=>{TTS_FAIL++;if(TTS_FAIL>=3)TTS_OK=false;SPEAKING=false;speak0(text,then);};
    TTS_A.play().then(()=>{TTS_OK=true;TTS_FAIL=0;}).catch(()=>{if(!TTS_A.error){SPEAKING=false;speak0(text,then);}});return;}catch(e){TTS_OK=false;}}
@@ -867,7 +868,7 @@ async function histSh(){let L=[];try{L=(await getJ('chat_list')).chats||[];}catc
  shOpen('<h4>'+T('Mes conversations','My conversations')+'</h4><input id="hq" class="hq" placeholder="'+T('Chercher une conversation…','Search a conversation…')+'" oninput="histPaint()" enterkeyhint="search">'+
   '<button class="btn pri" style="margin:10px 0 12px" onclick="shClose();start()">+ '+T('Nouvelle conversation','New conversation')+'</button><div id="hlist"></div>');histPaint();}
 let HLD={};
-function histRow(c){const dup=(HLD[c.title||c.name||'']||0)>1;const un=(c.unread||0)>0&&c.id!==CID,mk=c.market?MKN(c.market):null,sub=c.status||((c.last_role==='user'?T('Toi : ','You: '):'')+(c.last||c.understood||''));
+function histRow(c){const dup=(HLD[c.title||c.name||'']||0)>1;const un=(c.unread||0)>0&&c.id!==CID,mk=c.market?MKN(c.market):null,sub=un?(c.unread+' '+(c.unread>1?T('nouveaux messages','new messages'):T('nouveau message','new message'))+(c.news?' · '+c.news:'')):(c.status||((c.last_role==='user'?T('Toi : ','You: '):'')+(c.last||c.understood||'')));
  return '<button class="hl2'+(un?' un':'')+'" onclick="openChat(\''+esc(c.id)+'\')"><span class="ha">'+(mk?'<span class="hae">'+mk[0]+'</span>':mkIcon(c.market))+'</span><span class="hm"><b>'+esc(c.title||c.name||T('Nouvelle idée','New idea'))+(dup&&c.last_t?' <small style="display:inline;color:var(--muted)">· '+new Date(c.last_t*1000).toLocaleDateString(EN?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'})+'</small>':'')+'</b><small'+(c.status?' class="hst"':'')+'>'+esc(sub)+(mk?' · '+esc(mk[1]):'')+'</small></span><span class="hr">'+whenL(c.last_t)+(un?'<i>'+c.unread+'</i>':'')+'</span></button>';}
 function histPaint(){const q=(($('hq')||{}).value||'').toLowerCase().trim(),now=Date.now()/1000,box=$('hlist');if(!box)return;
  const L=HL.filter(c=>!q||((c.title||c.name||'')+' '+(c.last||'')+' '+(c.market||'')+' '+(c.status||'')).toLowerCase().includes(q));
@@ -983,7 +984,7 @@ function callStart(){if(!REC){toast(T('Ton navigateur ne permet pas l’appel vo
  if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}
  CALL=true;VOICE=true;CALLERR=0;CALLIDLE=0;CALL0=Date.now();$('call').style.display='flex';clearInterval(CALLT);CALLT=setInterval(callTick,400);callTick();
  try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}setTimeout(()=>{if(CALL&&!RECON&&!SPEAKING)mic();},500);}
-function callEnd(){CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}
+function callEnd(){bargeStop();CALL=false;VOICE=false;clearInterval(CALLT);$('call').style.display='none';try{if(RECON)REC.abort();}catch(e){}try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}
 function callTap(){if(!CALL)return;if(SPEAKING){try{speechSynthesis.cancel();}catch(e){}if(TTS_A)TTS_A.pause();SPEAKING=false;}CALLERR=0;if(!RECON)mic();}
 function callTick(){if(!CALL)return;const st=C&&C.status,busy=st==='thinking'||st==='listening'||st==='building'||!!(C&&C.draft)||SENDING;
  const av=$('cav');let s,cls='';
@@ -1019,7 +1020,7 @@ function toolsSh(){const mk=(C&&C.view&&C.view.market)||'BTCUSD';
  const A=[['🤖',T('Mes robots','My robots'),"addCard('robots',{})"],['💼',T('Mon compte','My account'),"addCard('account',{})"],['📈',T('Ma performance','My performance'),"addCard('perf',{})"],['⚡',T('En direct','Live'),"addCard('live',{sym:'"+mk+"'})"],['🗓️',T('Mes derniers jours','My last days'),"addCard('history',{})"]].concat(C&&C.admin?[['🧪',T('Le labo','The lab'),"addCard('lab',{})"]]:[]);
  const P=[['',T('Accueil','Home')],['wealth',T('Patrimoine','Wealth')],['rentabilite',T('Rentabilité','Profitability')],['mesrobots',T('Gérer mes robots','Manage my robots')],['place',T('La place','Marketplace')],['chart',T('Graphique','Chart')],['kinoday',T('Sa journée','His day')],['kino',T('Ce qu’il sait de moi','What he knows')]];
  const K=[['🗺️',T('Le plan du robot','The robot’s plan'),'bpSh()'],['💬',T('Mes conversations','My conversations'),'histSh()'],['📓',T('Le carnet','The notebook'),'noteSh()'],['🔍',T('Chercher','Search'),'srchOpen()'],['📞',T('Appeler Kino','Call Kino'),'callStart()'],
-  ['🔤',T('Mode simple (grand texte)','Simple mode (big text)'),'bigToggle()'],['📌',T('Mes réponses gardées','My kept answers'),'savedSh()'],['🔊',T('Lecture à voix haute : ','Read aloud: ')+(AUTOREAD?T('oui','on'):T('non','off')),'readToggle(this)'],['🌓',T('Thème clair / sombre','Light / dark theme'),'themeToggle()'],['👓',T('Contraste fort','High contrast'),'hcToggle()'],['🔔',T('Son : ','Sound: ')+(SND?T('activé','on'):T('coupé','off')),'sndToggle(this)']];
+  ['🔤',T('Mode simple (grand texte)','Simple mode (big text)'),'bigToggle()'],['📈',T('Salle de replay','Replay room'),'rpOpen()'],['🧭',T('Le parcours en 1 minute','The path in 1 minute'),'tourShow(true)'],['📌',T('Mes réponses gardées','My kept answers'),'savedSh()'],['🔊',T('Lecture à voix haute : ','Read aloud: ')+(AUTOREAD?T('oui','on'):T('non','off')),'readToggle(this)'],['🌓',T('Thème clair / sombre','Light / dark theme'),'themeToggle()'],['👓',T('Contraste fort','High contrast'),'hcToggle()'],['🔔',T('Son : ','Sound: ')+(SND?T('activé','on'):T('coupé','off')),'sndToggle(this)']];
  const g=L=>'<div class="tgrid">'+L.map(x=>'<button onclick="'+(x[2].startsWith('sndToggle')||x[2].startsWith('readToggle')||x[2].startsWith('addCard')||x[2].startsWith('openPage')||x[2].startsWith('savedSh')?'':'shClose();')+x[2]+'"><i>'+x[0]+'</i><span>'+x[1]+'</span></button>').join('')+'</div>';
  shOpen('<h4>'+T('Tout depuis le chat','Everything from the chat')+'</h4><p class="sub">'+T('Ou demande-le simplement à Kino : « montre-moi mon compte », « ouvre mon patrimoine »…','Or just ask Kino: "show me my account", "open my wealth"…')+'</p>'+
   '<div class="tsec">'+T('En un coup d’œil','At a glance')+'</div>'+g(A)+'<div class="tsec">'+T('Les pages de l’app, ici','The app’s pages, right here')+'</div>'+g(P.map(x=>[(PG[x[0]]||['📄'])[0],x[1],"openPage('"+x[0]+"')"]))+'<div class="tsec">'+T('Kino et la conversation','Kino and the conversation')+'</div>'+g(K));}
@@ -1036,7 +1037,7 @@ function sparkSvg(a,col){a=(a||[]).map(Number).filter(x=>!isNaN(x));if(a.length<
 const PG={'':['🏠',T('Accueil','Home')],wealth:['💰',T('Patrimoine','Wealth')],rentabilite:['📊',T('Rentabilité','Profitability')],place:['🏪',T('La place des robots','Robot marketplace')],
  robots:['🤖',T('Robots','Robots')],mesrobots:['🧰',T('Mes robots','My robots')],chart:['📈',T('Graphique','Chart')],parrainage:['🤝',T('Parrainage','Referral')],
  kinoday:['☀️',T('La journée de Kino','Kino’s day')],kino:['🦉',T('Ce qu’il sait de moi','What he knows about me')],offres:['🎟️',T('Les offres','The offers')]};
-const CK={week:['🗓️',T('Ta semaine','Your week')],robots:['🤖',T('Mes robots','My robots')],onaccount:['🚀',T('Sur mon compte','On my account')],compare:['⚖️',T('Ton robot et l’Owl','Your robot and the Owl')],account:['💼',T('Mon compte','My account')],perf:['📈',T('Ma performance','My performance')],live:['⚡',T('En direct','Live')],day:['📅',T('Une journée','A day')],
+const CK={replay:['📈',T('Salle de replay','Replay room')],week:['🗓️',T('Ta semaine','Your week')],robots:['🤖',T('Mes robots','My robots')],onaccount:['🚀',T('Sur mon compte','On my account')],compare:['⚖️',T('Ton robot et l’Owl','Your robot and the Owl')],account:['💼',T('Mon compte','My account')],perf:['📈',T('Ma performance','My performance')],live:['⚡',T('En direct','Live')],day:['📅',T('Une journée','A day')],
  history:['🗓️',T('Mes derniers jours','My last days')],confirm:['✋',T('À toi de confirmer','Your confirmation')],lab:['🧪',T('Le labo','The lab')],page:['📄',T('Page','Page')]};
 function cardTitle(k,a){if(k==='page'){const p=PG[a.page||'']||['📄',a.page];return p[0]+' '+p[1];}if(k==='live')return '⚡ '+T('En direct · ','Live · ')+MKN(a.sym||'BTCUSD')[1];
  if(k==='day')return '📅 '+T('Journée du ','Day ')+(a.d||'');if(a.title)return a.title;return (CK[k]||['•',k]).join(' ');}
@@ -1079,6 +1080,7 @@ async function cardFill(el){const k=el.dataset.kind,a=JSON.parse(el.dataset.args
  if(k==='onaccount'){onAccountFill(b);return;}
  if(k==='robots'){await robotsFill(b);return;}
  if(k==='week'){await weekFill(b);return;}
+ if(k==='replay'){replayFill(b,a);return;}
  if(k==='page'){const p=PG[a.page||'']||['📄',a.page];b.innerHTML='<div class="kact"><button class="pri" onclick="openPage(\''+esc(a.page||'')+'\')">'+p[0]+' '+T('Ouvrir ici','Open here')+'</button><button onclick="location.href=\''+esc(a.page||'./')+'\'">↗ '+T('Aller sur la page','Go to the page')+'</button></div>';return;}}
 function perfP(btn,p){const el=btn.closest('.kc');const a=JSON.parse(el.dataset.args||'{}');a.p=p;el.dataset.args=JSON.stringify(a);cardFill(el);}
 function addCard(k,a){shOpen(cardShell(k,a||{},'s'+Date.now()));[60,500,4500].forEach(ms=>setTimeout(()=>cardsFill(),ms));}
@@ -1379,19 +1381,19 @@ function voteSet(i,yes){const m=(C&&C.msgs[i])||{},el=document.querySelector('.c
  if(yes){$('tx').value=mom?T('Oui, c’est bien ce moment-là que je veux.','Yes, that is the moment I mean.'):T('Oui, il trade comme je voulais.','Yes, it trades the way I wanted.');autosize();send();}
  else{$('tx').value=n>1?T('Pas tout à fait (l’exemple '+j+') : ','Not quite (example '+j+'): '):T('Pas tout à fait : ','Not quite: ');autosize();$('tx').focus();sdPaint();toast(T('Dis-moi ce qui cloche.','Tell me what’s off.'));}}
 function rpBar(id,call){return '<div class="rpg"><i id="pg_'+id+'"></i></div><div class="chf"><button class="cb" id="pb_'+id+'" onclick="'+call+'"><svg><use href="#play"/></svg><span>'+T('Rejouer','Replay')+'</span></button>'+
- '<button class="cb sp" id="sp_'+id+'" onclick="rpSpeed(\''+id+'\')" aria-label="'+T('Vitesse','Speed')+'">×1</button><button class="cb fsb" onclick="fsOpen($(\''+id+'\'))" aria-label="'+T('Plein écran','Full screen')+'">⤢</button></div>';}
-function rpRun(id,n,start,draw){const st=CH[id]||(CH[id]={});st.n=n;
- if(st.timer){clearInterval(st.timer);st.timer=null;st.paused=true;rpUi(id);return;}
+ '<button class="cb sp" id="sp_'+id+'" onclick="cpSpeed(\''+id+'\')" aria-label="'+T('Vitesse','Speed')+'">×1</button><button class="cb fsb" onclick="fsOpen($(\''+id+'\'))" aria-label="'+T('Plein écran','Full screen')+'">⤢</button></div>';}
+function cpRun(id,n,start,draw){const st=CH[id]||(CH[id]={});st.n=n;
+ if(st.timer){clearInterval(st.timer);st.timer=null;st.paused=true;cpUi(id);return;}
  if(!st.paused||st.k==null||st.k>=n-1)st.k=start;st.paused=false;draw(st.k);
- st.timer=setInterval(()=>{st.k=Math.min(n-1,st.k+(st.sp||1));draw(st.k);if(st.k>=n-1){clearInterval(st.timer);st.timer=null;st.paused=false;}rpUi(id);},65);rpUi(id);}
-function rpUi(id){const st=CH[id]||{},n=st.n||0,b=$('pb_'+id),g=$('pg_'+id),s=$('sp_'+id);
+ st.timer=setInterval(()=>{st.k=Math.min(n-1,st.k+(st.sp||1));draw(st.k);if(st.k>=n-1){clearInterval(st.timer);st.timer=null;st.paused=false;}cpUi(id);},65);cpUi(id);}
+function cpUi(id){const st=CH[id]||{},n=st.n||0,b=$('pb_'+id),g=$('pg_'+id),s=$('sp_'+id);
  if(b)b.innerHTML=st.timer?'<span>⏸ '+T('Pause','Pause')+'</span>':'<svg><use href="#play"/></svg><span>'+(st.paused?T('Reprendre','Resume'):T('Rejouer','Replay'))+'</span>';
  if(g)g.style.width=(st.k!=null&&n>1?Math.round(100*st.k/(n-1)):0)+'%';if(s)s.textContent='×'+(st.sp||1);}
-function rpSpeed(id){const st=CH[id]||(CH[id]={});st.sp=(st.sp||1)===1?4:1;rpUi(id);}
+function cpSpeed(id){const st=CH[id]||(CH[id]={});st.sp=(st.sp||1)===1?4:1;cpUi(id);}
 function playM(id,i,j){const x=C.msgs[i].moments[j];const ie=idxAt(x.candles,x.t);
- rpRun(id,x.candles.length,Math.max(5,ie-30),k=>{const cv=$(id);if(cv)drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:k>=ie?x.marks:[],upto:k});});}
+ cpRun(id,x.candles.length,Math.max(5,ie-30),k=>{const cv=$(id);if(cv)drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:k>=ie?x.marks:[],upto:k});});}
 function play(id,i,j){const t=C.msgs[i].trades[j];const ie=idxAt(t.candles,t.t_in);
- rpRun(id,t.candles.length,Math.max(5,ie-30),k=>{const cv=$(id);if(cv)drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:k});});}
+ cpRun(id,t.candles.length,Math.max(5,ie-30),k=>{const cv=$(id);if(cv)drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:k});});}
 function showFrom(M){const id=C&&C.id;if(SHOWCID!==id){SHOWCID=id;SHOWT=M.length>30?(M[M.length-30].t||0):0;}
  if(!SHOWT){SHOWN0=0;return 0;}const x=M.findIndex(m=>(m.t||0)>=SHOWT);SHOWN0=x<0?0:x;return SHOWN0;}
 function olderLoad(){if(OLDBUSY||!SHOWN0||!C)return;OLDBUSY=true;const b=$('olderb');if(b)b.innerHTML='<svg class="ospin"><use href="#owl"/></svg>'+T('Chargement…','Loading…');
@@ -1416,17 +1418,18 @@ function rpEl(){let el=$('rproom');if(el)return el;el=document.createElement('di
  '<div class="rph"><button class="rpx" onclick="rpClose()" aria-label="'+T('Fermer','Close')+'">✕</button><div class="rpt"><b id="rpmk"></b><small id="rptm"></small></div>'+
  '<button class="rpchip" id="rpprog" onclick="rpProg()"></button><button class="rpi" onclick="rpSplit()" id="rpsplit" aria-label="'+T('Un ou deux graphiques','One or two charts')+'"></button><button class="rpi rpk" onclick="rpAskSh()" aria-label="Kino"><svg><use href="#owl"/></svg></button></div>'+
  '<div class="rpbody" id="rpbody"></div><div class="rpbub" id="rpbub"></div><div class="rppos" id="rppos"></div>'+
- '<div class="rpctl"><div class="rpplay"><button onclick="rpBack()" aria-label="'+T('Bougie précédente','Previous candle')+'">⏮</button><button class="rpgo" id="rpgo" onclick="rpPlay()"></button><button onclick="rpStep()" aria-label="'+T('Bougie suivante','Next candle')+'">⏭</button><button class="rpsp" id="rpsp" onclick="rpSpeed()"></button></div>'+
- '<div class="rptr"><button class="rpbuy" onclick="rpTrade(1)">'+T('Acheter','Buy')+'</button><button class="rpsell" onclick="rpTrade(-1)">'+T('Vendre','Sell')+'</button><button class="rpi" id="rplvl" onclick="rpLevelMode()" aria-label="'+T('Marquer un niveau','Mark a level')+'">📍</button><button class="rpi" onclick="rpNotes()" aria-label="'+T('Mes notes','My notes')+'">📝</button></div></div>'+
+ '<div class="rpctl"><div class="rpplay"><button onclick="rpBack()" aria-label="'+T('Bougie précédente','Previous candle')+'">⏮</button><button class="rpgo" id="rpgo" onclick="rpPlay()"></button><button onclick="rpStep()" aria-label="'+T('Bougie suivante','Next candle')+'">⏭</button><button onclick="rpJump()" aria-label="'+T('Aller à','Jump to')+'">⏩</button><button class="rpsp" id="rpsp" onclick="rpSpeed()"></button></div>'+
+ '<div class="rptr"><button class="rpbuy" onclick="rpTrade(1)">'+T('Acheter','Buy')+'</button><button class="rpsell" onclick="rpTrade(-1)">'+T('Vendre','Sell')+'</button><button class="rpi" id="rplvl" onclick="rpTools()" aria-label="'+T('Dessiner','Draw')+'">✏️</button><button class="rpi" onclick="rpNotes()" aria-label="'+T('Mes notes','My notes')+'">📝</button></div></div>'+
  '<div class="rppan" id="rppan"></div>';document.body.appendChild(el);
- $('rplvl').addEventListener('contextmenu',e=>{e.preventDefault();if(!RP)return;RP.levels=[];RP.mode=null;RP.dirty=true;rpDraw();rpUi();toast(T('Niveaux effacés.','Levels cleared.'));});return el;}
+ $('rplvl').addEventListener('contextmenu',e=>{e.preventDefault();if(RP)rpClearDraw();});return el;}
 async function rpOpen(){if(!CID){toast(T('Ouvre d’abord une conversation.','Open a conversation first.'));return;}shClose();const el=rpEl();el.classList.add('on');document.body.style.overflow='hidden';
  $('rpbody').innerHTML='<div class="kload"><div class="kl">'+(typeof OWLV!=='undefined'?OWLV:'')+'</div>'+T('J’ouvre ta salle de replay…','Opening your replay room…')+'</div>';
  if(RP&&RP.cid===CID&&RP.rows.length){rpLayout();rpDraw();rpUi();return;}     // same project, still in memory: back at once
  let j;try{j=await rpPost('replay_get',{id:CID},20000);}catch(e){j=null;}
  if(!j||!j.ok){$('rpbody').innerHTML='<div class="rpmsg">'+(j&&j.err==='nodata'?T('Pas encore de prix pour ce marché : lance d’abord un test.','No prices for this market yet: run a test first.'):T('Je n’arrive pas à ouvrir le replay (réseau lent ?).','I could not open the replay (slow network?).')+'<br><br><button class="btn pri" onclick="rpOpen()">'+T('Réessayer','Try again')+'</button>')+'</div>';return;}
  const s=j.sess||{};RP={cid:CID,mk:j.market,name:j.name,first:j.first,last:j.last,rows:[],ci:0,tfs:s.tfs||['M15','M5'],split:s.split||(innerWidth<360?1:2),speed:s.speed||1,timer:null,
-  pos:s.pos||null,trades:s.trades||[],notes:s.notes||[],levels:s.levels||[],start:s.start||0,view:[{z:70,off:0},{z:70,off:0}],dirty:false,askT:0,fresh:0,mode:null,busy:false,minT:0};
+  pos:s.pos||null,trades:s.trades||[],notes:s.notes||[],levels:s.levels||[],start:s.start||0,view:[{z:70,off:0},{z:70,off:0}],dirty:false,askT:0,fresh:0,mode:null,busy:false,minT:0,
+  goal:s.goal||null,risk:s.risk||0,lines:s.lines||[],zones:s.zones||[],robo:null,tool:null,draft:null,snap:null,ghost:(()=>{try{return localStorage.getItem('rpGhost')!=='0';}catch(e){return true;}})()};rpRobot();
  RP.minT=RP.trades.length?RP.trades[RP.trades.length-1].to:0;if(RP.pos)RP.minT=Math.max(RP.minT,RP.pos.ti);
  $('rpmk').textContent=(RP.name?RP.name+' · ':'')+RP.mk;
  if(!s.cursor){rpStartPick();return;}await rpLoadAt(s.cursor);}
@@ -1434,7 +1437,7 @@ function rpStartPick(){$('rproom').classList.add('pick');const L=RP.last,F=RP.fi
  $('rpbody').innerHTML='<div class="rpstart"><div class="rpso">'+(typeof OWLV!=='undefined'?OWLV:'🦉')+'</div><h3>'+T('Où veux-tu commencer ?','Where do you want to start?')+'</h3><p>'+T('Le graphique s’arrête à ce moment-là. Tu avances bougie par bougie, tu prends tes trades, et Kino suit tes progrès. Je garde ta place : tu reprends quand tu veux.','The chart stops at that moment. You move candle by candle, take your trades, and Kino follows your progress. I keep your place: come back any time.')+'</p>'+
   o.map(x=>'<button onclick="rpBegin('+Math.floor(x[1])+')">'+x[0]+'<small>'+rpFmt(rpDay(x[1]))+'</small></button>').join('')+'</div>';}
 function rpDay(t){return Math.floor(t/86400)*86400+7*3600;}
-async function rpBegin(t){t=rpDay(t);RP.start=t;RP.trades=[];RP.notes=[];RP.levels=[];RP.pos=null;RP.minT=0;await rpLoadAt(t);RP.dirty=true;rpSave();}
+async function rpBegin(t){t=rpDay(t);RP.start=t;RP.trades=[];RP.notes=[];RP.levels=[];RP.lines=[];RP.zones=[];RP.pos=null;RP.minT=0;await rpLoadAt(t);RP.dirty=true;rpSave();}
 function rpPost(fn,body,ms){return Promise.race([post(fn,body),new Promise((_,ko)=>setTimeout(()=>ko(new Error('timeout')),ms||25000))]);}
 async function rpFetch(a,b){const j=await rpPost('replay_bars',{market:RP.mk,a:Math.floor(a),b:Math.floor(b)});return j&&j.ok?j.rows:[];}
 async function rpLoadAt(t){let rows=[];try{rows=await rpFetch(t-2*86400,t+86400);}catch(e){$('rpbody').innerHTML='<div class="rpmsg">'+T('Je n’arrive pas à ouvrir le replay (réseau lent ?).','I could not open the replay (slow network?).')+'<br><br><button class="btn pri" onclick="rpOpen()">'+T('Réessayer','Try again')+'</button></div>';return;}if(!rows.length){$('rpbody').innerHTML='<div class="rpmsg">'+T('Pas de prix à cette date.','No prices at that date.')+'</div>';return;}
@@ -1452,39 +1455,8 @@ function rpAgg(s,ci,need){const out=[];let cur=null;for(let i=ci;i>=0;i--){const
 function rpDraw(){if(!RP||!RP.rows.length)return;for(let p=0;p<RP.split;p++){const cv=$('rpc'+p);if(!cv)continue;const v=RP.view[p],s=RTF[RP.tfs[p]],rows=rpAgg(s,RP.ci,v.z+v.off+2);
   const to=Math.max(1,rows.length-v.off),from=Math.max(0,to-v.z),marks=[];
   const P=RP.pos;if(P){marks.push({k:'pad',t:0,p:P.sl});marks.push({k:'pad',t:0,p:P.tp});}
-  const last=RP.rows[RP.ci][4],o={rows:rows,from:from,to:to,marks:marks,busy:P?[P.e,P.sl,P.tp,last]:[last]};drawChart(cv,o);rpOver(cv,o,p);}}
-function rpMarks(g,o){const rows=o.rows,X=o._X,Y=o._Y,a=o.from,b=o.to,t0=rows[a]?rows[a][0]:0,up=cssv('--up'),dn=cssv('--down');
- const at=t=>{const i=idxAt(rows,t);return i>=a&&i<b?X(i):null;};
- const tri=(x,y,d,col)=>{g.fillStyle=col;g.beginPath();if(d===1){g.moveTo(x,y+3);g.lineTo(x-5,y+11);g.lineTo(x+5,y+11);}else{g.moveTo(x,y-3);g.lineTo(x-5,y-11);g.lineTo(x+5,y-11);}g.fill();};
- RP.trades.forEach(t=>{if(t.to<t0)return;const x1=at(t.ti),x2=at(t.to),col=t.r>0?up:dn;
-  if(x1!=null&&x2!=null){g.strokeStyle=col;g.lineWidth=1.2;g.setLineDash([3,3]);g.beginPath();g.moveTo(x1,Y(t.e));g.lineTo(x2,Y(t.x));g.stroke();g.setLineDash([]);}
-  if(x1!=null)tri(x1,Y(t.e),t.d,t.d===1?up:dn);if(x2!=null){g.fillStyle=col;g.beginPath();g.arc(x2,Y(t.x),3.5,0,7);g.fill();g.strokeStyle=cssv('--surface');g.lineWidth=1;g.stroke();}});
- const P=RP.pos;if(P){const x=at(P.ti);if(x!=null)tri(x,Y(P.e),P.d,P.d===1?up:dn);}}
-function rpOver(cv,o,p){const g=cv.getContext('2d'),W=cv.clientWidth,Rr=46,Y=o._Y,lo=o._lo,hi=o._hi;if(!Y)return;
- const lab=(y,col,txt)=>{g.fillStyle=col;g.fillRect(W-Rr+1,y-7,Rr-2,14);g.fillStyle='#fff';g.font='bold 9px Inter,system-ui';g.fillText(txt,W-Rr+4,y+3);};
- const line=(v,col,dash,txt)=>{if(v<lo||v>hi)return;const y=Y(v);g.strokeStyle=col;g.lineWidth=1.4;g.setLineDash(dash);g.beginPath();g.moveTo(0,y);g.lineTo(W-Rr,y);g.stroke();g.setLineDash([]);if(txt)lab(y,col,txt);};
- RP.levels.forEach(l=>line(l.p,cssv('--violet'),[2,3],''));rpMarks(g,o);
- const last=RP.rows[RP.ci][4];if(last>=lo&&last<=hi)lab(Y(last),cssv('--surface3'),px(last));
- const P=RP.pos;if(P){line(P.sl,cssv('--down'),[5,3],'stop');line(P.tp,cssv('--up'),[5,3],T('cible','target'));line(P.e,cssv('--accent'),[],T('entrée','entry'));
-  const r=P.d*(last-P.e)/Math.abs(P.e-P.sl0||1),t=(r>=0?'+':'')+r.toFixed(2)+'R';g.font='bold 12px Inter,system-ui';const tw=g.measureText(t).width+12;g.fillStyle=r>=0?cssv('--up'):cssv('--down');g.globalAlpha=.9;g.fillRect(6,26,tw,20);g.globalAlpha=1;g.fillStyle='#fff';g.fillText(t,12,40);}
- if(RP.view[p].off>0){g.fillStyle=cssv('--muted');g.font='bold 10px Inter,system-ui';g.fillText(T('◀ passé · double-tape pour revenir','◀ past · double-tap to come back'),8,o._H-22);}}
+  const last=RP.rows[RP.ci][4],o={rows:rows,from:from,to:to,marks:marks,s:s,busy:P?[P.e,P.sl,P.tp,last]:[last]};drawChart(cv,o);rpOver(cv,o,p);}}
 function rpPrice(cv,y){const o=cv._o;return o._hi-(y-o._T)*(o._hi-o._lo)/(o._H-o._T-o._Bm);}
-function rpTouch(cv,p){const pts=new Map();let drag=null,last=0,pinch0=0,z0=0;
- cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const r=cv.getBoundingClientRect(),y=e.clientY-r.top,P=RP.pos,o=cv._o;
-  if(pts.size===2){const a=[...pts.values()];pinch0=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);z0=RP.view[p].z;drag=null;return;}
-  drag={x:e.clientX,off:RP.view[p].off,k:null,moved:false};
-  if(P&&o&&o._Y){for(const k of ['sl','tp'])if(Math.abs(o._Y(P[k])-y)<16){drag.k=k;break;}}});
- cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(pts.size===2&&pinch0){const a=[...pts.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);RP.view[p].z=Math.max(25,Math.min(220,Math.round(z0*pinch0/d)));rpDraw();return;}
-  if(!drag)return;const r=cv.getBoundingClientRect();if(Math.abs(e.clientX-drag.x)>6)drag.moved=true;
-  if(drag.k){const v=rpPrice(cv,e.clientY-r.top),P=RP.pos;if(drag.k==='sl'&&P.d*(P.e-v)>0)P.sl=v;if(drag.k==='tp'&&P.d*(v-P.e)>0)P.tp=v;drag.moved=true;rpDraw();rpUi();return;}
-  const cw=cv._o&&cv._o._cw||6;RP.view[p].off=Math.max(0,Math.round(drag.off+(e.clientX-drag.x)/cw));rpDraw();});
- const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch0=0;if(!drag)return;const d=drag;drag=null;if(d.k){RP.dirty=true;return;}
-  if(!d.moved){const now=Date.now();if(now-last<320){RP.view[p].off=0;rpDraw();}last=now;
-   if(RP.mode==='level'){const r=cv.getBoundingClientRect();RP.levels.push({p:+rpPrice(cv,e.clientY-r.top).toFixed(5),label:''});RP.levels=RP.levels.slice(-12);RP.mode=null;RP.dirty=true;rpUi();rpDraw();toast(T('📍 Niveau marqué. Touche 📍 longtemps pour tout effacer.','📍 Level marked. Long-press 📍 to clear them.'));}}};
- cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
- cv.addEventListener('wheel',e=>{e.preventDefault();RP.view[p].z=Math.max(25,Math.min(220,Math.round(RP.view[p].z*(e.deltaY>0?1.12:.89))));rpDraw();},{passive:false});}
-function rpLevelMode(){RP.mode=RP.mode==='level'?null:'level';rpUi();if(RP.mode)toast(T('Touche le graphique à la hauteur du niveau.','Tap the chart at the level’s height.'));}
 function rpNext(dir){const t=rpT(),s=rpUnit(),done=(t+60)%s===0;let end;
  if(dir>0){end=done?t+60+s:Math.ceil((t+60)/s)*s;}else{end=done?t+60-s:Math.floor(t/s)*s;}
  let ni=RP.ci;if(dir>0){while(ni+1<RP.rows.length&&RP.rows[ni+1][0]<end)ni++;if(ni===RP.ci&&ni+1<RP.rows.length)ni++;}
@@ -1503,20 +1475,8 @@ function rpAtr(){const s=rpUnit(),r=rpAgg(s,RP.ci,15);if(r.length<3)return Math.
 function rpTrade(d){if(!RP||!RP.rows.length)return;if(RP.pos){toast(T('Tu as déjà un trade ouvert : ferme-le d’abord.','You already have an open trade: close it first.'));return;}
  const e=RP.rows[RP.ci][4],a=rpAtr()*1.5,tf=RP.tfs.slice(0,RP.split).sort((x,y)=>RTF[x]-RTF[y])[0];RP.pos={d:d,e:e,sl:e-d*a,sl0:e-d*a,tp:e+d*a,ti:rpT(),tf:tf};RP.dirty=true;
  try{navigator.vibrate&&navigator.vibrate(20);}catch(x){}rpDraw();rpUi();toast(T('Glisse les lignes stop et cible pour les placer, puis avance.','Drag the stop and target lines to place them, then move on.'));}
-function rpExit(x,why,t){const P=RP.pos;if(!P)return;const r=P.d*(x-P.e)/Math.abs(P.e-P.sl0||1);
- RP.trades.push({d:P.d,ti:P.ti,to:t,e:P.e,sl:P.sl,tp:P.tp,x:x,r:+r.toFixed(2),why:why,tf:P.tf,note:''});RP.pos=null;RP.minT=t;RP.fresh++;RP.dirty=true;
- const st=rpStats();rpBub((r>0?'✓ ':'✗ ')+({target:T('Cible touchée','Target hit'),stop:T('Stop touché','Stop hit'),manual:T('Trade fermé','Trade closed')}[why]||'')+' · '+(r>=0?'+':'')+r.toFixed(2)+'R'+
-  '<small>'+st.n+T(' trades · ',' trades · ')+st.wr+T(' % gagnés · ',' % won · ')+(st.r>=0?'+':'')+st.r.toFixed(1)+'R</small><span class="kact"><button onclick="rpNoteTrade()">📝 '+T('Pourquoi ce trade ?','Why this trade?')+'</button>'+(RP.fresh>=3?'<button onclick="rpAsk(true)">🦉 '+T('Kino, fais le point','Kino, review me')+'</button>':'')+'</span>',9000);
- if(typeof ding==='function'&&r>0)try{ding();}catch(e){}}
 function rpCloseTrade(){if(RP&&RP.pos){rpExit(RP.rows[RP.ci][4],'manual',rpT());rpDraw();rpUi();}}
 function rpBub(h,ms){const b=$('rpbub');if(!b)return;b.innerHTML='<div>'+h+'</div><button class="rpbx" onclick="this.parentNode.classList.remove(\'on\')">✕</button>';b.classList.add('on');clearTimeout(b._t);if(ms)b._t=setTimeout(()=>b.classList.remove('on'),ms);}
-function rpUi(){if(!RP)return;const t=rpT();if(t)$('rptm').textContent=new Date(t*1000).toLocaleDateString(EN?'en-GB':'fr-FR',{weekday:'short',timeZone:'UTC'})+' '+dm(t)+' · '+hm(t);const st=rpStats();
- $('rpprog').innerHTML='<b>'+st.days.toFixed(1).replace('.',EN?'.':',')+T(' j',' d')+'</b> · '+st.n+' trades'+(st.n?' · <i class="'+(st.r>=0?'pos':'neg')+'">'+(st.r>=0?'+':'')+st.r.toFixed(1)+'R</i>':'');
- $('rpgo').innerHTML=RP.timer?'⏸':'▶';$('rpsp').textContent=['','×1','×3','×10'][RP.speed]||'×1';$('rplvl').classList.toggle('on',RP.mode==='level');
- const P=RP.pos,pb=$('rppos');if(P){const last=RP.rows[RP.ci][4],r=P.d*(last-P.e)/Math.abs(P.e-P.sl0||1),rr=Math.abs(P.tp-P.e)/Math.abs(P.e-P.sl||1);
-  pb.innerHTML='<span class="'+(P.d===1?'b':'s')+'">'+(P.d===1?T('Achat','Buy'):T('Vente','Sell'))+'</span><span>'+px(P.e)+'</span><span class="mut">'+T('gain/risque ','reward/risk ')+rr.toFixed(1)+'</span><b class="'+(r>=0?'pos':'neg')+'">'+(r>=0?'+':'')+r.toFixed(2)+'R</b><button onclick="rpCloseTrade()">'+T('Fermer','Close')+'</button>';pb.classList.add('on');}
- else pb.classList.remove('on');}
-function rpSaveBody(){return {market:RP.mk,tfs:RP.tfs,split:RP.split,start:RP.start,cursor:rpT(),speed:RP.speed,trades:RP.trades,pos:RP.pos,notes:RP.notes,levels:RP.levels};}
 async function rpSave(closing){if(!RP||!RP.rows.length)return;if(!RP.dirty&&!closing)return;RP.dirty=false;try{await post('replay_save',{id:RP.cid,sess:rpSaveBody(),closing:!!closing});}catch(e){RP.dirty=true;}}
 setInterval(()=>{if(RP&&$('rproom')&&$('rproom').classList.contains('on'))rpSave();},8000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&RP&&RP.dirty)rpSave();});
@@ -1528,14 +1488,6 @@ function rpNotes(){const N=RP.notes.slice().reverse();rpPanel('<h4>📝 '+T('Mes
 function rpNoteAdd(){const x=$('rpnt'),v=x&&x.value.trim();if(!v)return;RP.notes.push({t:rpT(),text:v});RP.dirty=true;rpSave();rpNotes();toast(T('Note gardée, Kino la lira.','Note kept, Kino will read it.'));}
 function rpNoteTrade(){const t=RP.trades[RP.trades.length-1];if(!t)return;rpPanel('<h4>📝 '+T('Pourquoi ce trade ?','Why this trade?')+'</h4><p class="sub">'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' '+px(t.e)+' → '+(t.r>=0?'+':'')+t.r.toFixed(2)+'R</p><textarea id="rpnt" rows="3">'+esc(t.note||'')+'</textarea><button class="btn pri" onclick="rpNoteTradeSave()">'+T('Garder','Keep')+'</button>');}
 function rpNoteTradeSave(){const t=RP.trades[RP.trades.length-1],x=$('rpnt');if(t&&x){t.note=x.value.trim().slice(0,300);RP.dirty=true;rpSave();}$('rppan').classList.remove('on');toast(T('Noté.','Noted.'));}
-async function rpProg(){const st=rpStats();let L=[];try{L=((await post('replay_list',{})).sessions||[]);}catch(e){}
- rpPanel('<h4>📈 '+T('Ta progression','Your progress')+'</h4><div class="kq"><div><b>'+st.n+'</b><span>trades</span></div><div><b>'+st.wr+' %</b><span>'+T('gagnés','won')+'</span></div><div><b class="'+(st.r>=0?'pos':'neg')+'">'+(st.r>=0?'+':'')+st.r.toFixed(1)+'R</b><span>'+T('au total','in total')+'</span></div></div>'+
-  '<canvas id="rpcurve" class="rpcurve"></canvas><p class="sub">'+T('Commencé le ','Started on ')+rpFmt(RP.start)+' · '+st.days.toFixed(1)+T(' jours rejoués',' days replayed')+'</p>'+
-  (L.length>1?'<div class="bpsec">'+T('Tes autres projets','Your other projects')+'</div>'+L.filter(x=>x.id!==RP.cid).map(x=>'<div class="svd"><small>'+esc(x.market||'')+' · '+rpFmt(x.cursor||0)+'</small><p><b>'+esc(x.name||'')+'</b> — '+x.stats.n+' trades · '+x.stats.wr+' % · '+(x.stats.r>=0?'+':'')+x.stats.r+'R</p></div>').join(''):'')+
-  '<div class="kact"><button onclick="rpRestart()">↺ '+T('Recommencer à une autre date','Start again at another date')+'</button></div>');
- const cv=$('rpcurve');if(cv){const g=cv.getContext('2d'),W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;cv.width=W*dpr;cv.height=H*dpr;g.scale(dpr,dpr);let c=0;const P=[0].concat(RP.trades.map(t=>c+=t.r));
-  const lo=Math.min.apply(null,P),hi=Math.max.apply(null,P),Yc=v=>H-6-(v-lo)/((hi-lo)||1)*(H-12);g.strokeStyle=cssv('--border');g.beginPath();g.moveTo(0,Yc(0));g.lineTo(W,Yc(0));g.stroke();
-  g.strokeStyle=c>=0?cssv('--up'):cssv('--down');g.lineWidth=2;g.beginPath();P.forEach((v,i)=>{const x=P.length>1?i/(P.length-1)*W:0;i?g.lineTo(x,Yc(v)):g.moveTo(x,Yc(v));});g.stroke();}}
 function rpRestart(){if(RP.pos){toast(T('Ferme d’abord ton trade.','Close your trade first.'));return;}if(!confirm(T('Recommencer à une autre date ? Les trades de cette séance repartent de zéro.','Start again at another date? This session’s trades start again from zero.')))return;$('rppan').classList.remove('on');rpStop();RP.rows=[];rpStartPick();}
 function rpAskSh(){if(!RP||!RP.rows.length)return;rpBub('🦉 <b>'+T('Demande à Kino','Ask Kino')+'</b><small>'+T('Il voit ton graphique jusqu’à maintenant, jamais la suite.','He sees your chart up to now, never what comes next.')+'</small><div class="rpq"><input id="rpqi" placeholder="'+T('Ex. : tu entrerais ici ?','E.g. would you enter here?')+'" onkeydown="if(event.key===\'Enter\')rpAsk(false,this.value)"><button onclick="rpAsk(false,$(\'rpqi\').value)" aria-label="'+T('Envoyer','Send')+'">➤</button></div>'+
  '<span class="kact"><button onclick="rpAsk(false,\'\')">👀 '+T('Regarde mon graphique','Look at my chart')+'</button>'+(RP.trades.length?'<button onclick="rpAsk(true)">📊 '+T('Fais le point sur mes trades','Review my trades')+'</button>':'')+'</span>',0);setTimeout(()=>{const i=$('rpqi');if(i)i.focus();},100);}
@@ -1546,7 +1498,11 @@ async function rpAsk(auto,q){if(!RP||!RP.rows.length)return;q=String(q||'').trim
  const last=RP.rows[RP.ci][4],P=RP.pos,cs=rpAgg(s,RP.ci,10).map(c=>hm(c[0])+' '+px(c[1])+'/'+px(c[2])+'/'+px(c[3])+'/'+px(c[4])).join('; ');
  const note=T('[Salle de replay] Je suis au ','[Replay room] I am at ')+rpFmt(rpT())+' UTC, '+RP.tfs.slice(0,RP.split).join('+')+' · '+st.n+' trades, '+st.wr+' %, '+(st.r>=0?'+':'')+st.r.toFixed(1)+'R. '+
   T('Prix maintenant : ','Price now: ')+px(last)+'. '+(P?T('Trade ouvert : ','Open trade: ')+(P.d===1?T('achat','buy'):T('vente','sell'))+' '+px(P.e)+', stop '+px(P.sl)+', '+T('cible ','target ')+px(P.tp)+', '+(P.d*(last-P.e)/Math.abs(P.e-P.sl0||1)).toFixed(2)+'R. ':'')+
-  T('Dernières bougies ','Last candles ')+tf+' ('+T('heure o/h/b/c','time o/h/l/c')+') : '+cs+'. ';
+  T('Dernières bougies ','Last candles ')+tf+' ('+T('heure o/h/b/c','time o/h/l/c')+') : '+cs+'. '+
+  (RP.goal?T('Mon objectif : ','My goal: ')+RP.goal.text+(RP.goal.n?' ('+rpGoalN()+'/'+RP.goal.n+')':'')+'. ':'')+(RP.risk?'1R = '+RP.risk+' $. ':'')+
+  ((RP.lines||[]).length?T('Mes lignes : ','My lines: ')+RP.lines.map(l=>px(l.p1)+'@'+hm(l.t1)+'→'+px(l.p2)+'@'+hm(l.t2)).join(', ')+'. ':'')+
+  ((RP.zones||[]).length?T('Mes zones : ','My zones: ')+RP.zones.map(z=>px(z.p1)+'-'+px(z.p2)).join(', ')+'. ':'')+
+  (rpDuel()?T('Mon robot sur la même période : ','My robot over the same stretch: ')+rpDuel().n+' trades, '+rpDuel().r.toFixed(1)+'R. ':'');
  const ask_=(
   auto?T('Fais-moi le point sur mes derniers trades.','Review my last trades.'):(q||T('Qu’est-ce que tu vois sur mon graphique ?','What do you see on my chart?')));
  try{const j=await post('chat_show',{id:RP.cid,market:RP.mk,tf:tf,marks:marks.slice(0,12),note:'📈 '+ask_,ctx:note,upto:rpT()});if(!j.ok){toast(ERR[j.err]||T('Kino est occupé, réessaie dans un instant.','Kino is busy, try again in a moment.'));return;}}catch(e){return;}
@@ -1555,8 +1511,141 @@ setInterval(()=>{if(!RP||!RP.askT||!C||C.id!==RP.cid)return;const m=(C.msgs||[])
  if(m&&m.text){RP.askT=0;if($('rproom')&&$('rproom').classList.contains('on'))rpBub('🦉 '+md(String(m.text).slice(0,600))+'<span class="kact"><button onclick="rpClose()">💬 '+T('Répondre dans la conversation','Reply in the conversation')+'</button></span>',0);}
  else if(Date.now()/1000-RP.askT<90){if(!RP._pl||Date.now()-RP._pl>2500){RP._pl=Date.now();load(CID);}}else RP.askT=0;},1500);
 function rpCardHTML(m){const st=m.stats||{};return '<div class="att"><div class="rpcard"><div class="rpci">'+'📈'+'</div><div class="rpcb"><b>'+T('Salle de replay','Replay room')+' · '+esc(m.market||'')+'</b><span>'+T('Tu t’es arrêté au ','You stopped at ')+'<b>'+rpFmt(m.cursor||0)+'</b></span>'+
- '<small>'+String(st.days||0).replace('.',EN?'.':',')+T(' jours rejoués · ',' days replayed · ')+(st.n||0)+' trades'+(st.n?' · '+st.wr+' % · '+(st.r>=0?'+':'')+st.r+'R':'')+'</small></div><button class="btn pri" onclick="rpOpen()">'+T('Reprendre','Resume')+'</button></div></div>';}
+ '<small>'+String(st.days||0).replace('.',EN?'.':',')+T(' jours rejoués · ',' days replayed · ')+ntr(st.n||0)+(st.n?' · '+st.wr+' % · '+(st.r>=0?'+':'')+st.r+'R':'')+'</small></div><button class="btn pri" onclick="rpOpen()">'+T('Reprendre','Resume')+'</button></div></div>';}
 window.addEventListener('resize',()=>{if(RP&&$('rproom')&&$('rproom').classList.contains('on'))rpDraw();});
+
+function rpMarks(g,o){const rows=o.rows,X=o._X,Y=o._Y,a=o.from,b=o.to,t0=rows[a]?rows[a][0]:0,up=cssv('--up'),dn=cssv('--down'),now=rpT();
+ const at=t=>{const i=idxAt(rows,t);return i>=a&&i<b?X(i):null;};
+ const tri=(x,y,d,col,hollow)=>{g.beginPath();if(d===1){g.moveTo(x,y+3);g.lineTo(x-5,y+11);g.lineTo(x+5,y+11);}else{g.moveTo(x,y-3);g.lineTo(x-5,y-11);g.lineTo(x+5,y-11);}g.closePath();if(hollow){g.strokeStyle=col;g.lineWidth=1.3;g.stroke();}else{g.fillStyle=col;g.fill();}};
+ // the robot's own trades, faint, once they are in the past (never ahead of the paused minute)
+ if(RP.ghost&&RP.robo)RP.robo.forEach(t=>{if(t.t_out>now||t.t_out<t0)return;const x1=at(t.t_in),x2=at(t.t_out),col=cssv('--violet');g.globalAlpha=.55;
+  if(x1!=null&&x2!=null){g.strokeStyle=col;g.lineWidth=1;g.setLineDash([2,3]);g.beginPath();g.moveTo(x1,Y(t.e));g.lineTo(x2,Y(t.x));g.stroke();g.setLineDash([]);}
+  if(x1!=null)tri(x1,Y(t.e),t.d,col,true);if(x2!=null){g.strokeStyle=col;g.lineWidth=1.2;g.beginPath();g.arc(x2,Y(t.x),3,0,7);g.stroke();}g.globalAlpha=1;});
+ RP.trades.forEach(t=>{if(t.to<t0)return;const x1=at(t.ti),x2=at(t.to),col=t.r>0?up:dn;
+  if(x1!=null&&x2!=null){g.strokeStyle=col;g.lineWidth=1.2;g.setLineDash([3,3]);g.beginPath();g.moveTo(x1,Y(t.e));g.lineTo(x2,Y(t.x));g.stroke();g.setLineDash([]);}
+  if(x1!=null)tri(x1,Y(t.e),t.d,t.d===1?up:dn);if(x2!=null){g.fillStyle=col;g.beginPath();g.arc(x2,Y(t.x),3.5,0,7);g.fill();g.strokeStyle=cssv('--surface');g.lineWidth=1;g.stroke();}});
+ const P=RP.pos;if(P){const x=at(P.ti);if(x!=null)tri(x,Y(P.e),P.d,P.d===1?up:dn);}}
+function rpXt(o,t){const r=o.rows,a=o.from;if(!r[a])return 0;return o._X(a)+(t-r[a][0])/o.s*o._cw;}
+function rpOver(cv,o,p){const g=cv.getContext('2d'),W=cv.clientWidth,Rr=46,Y=o._Y,lo=o._lo,hi=o._hi;if(!Y)return;
+ const lab=(y,col,txt)=>{g.fillStyle=col;g.fillRect(W-Rr+1,y-7,Rr-2,14);g.fillStyle='#fff';g.font='bold 9px Inter,system-ui';g.fillText(txt,W-Rr+4,y+3);};
+ const line=(v,col,dash,txt)=>{if(v<lo||v>hi)return;const y=Y(v);g.strokeStyle=col;g.lineWidth=1.4;g.setLineDash(dash);g.beginPath();g.moveTo(0,y);g.lineTo(W-Rr,y);g.stroke();g.setLineDash([]);if(txt)lab(y,col,txt);};
+ const vi=cssv('--violet');
+ (RP.zones||[]).forEach(z=>{const a=Math.max(lo,Math.min(z.p1,z.p2)),b=Math.min(hi,Math.max(z.p1,z.p2));if(b<=a)return;g.fillStyle=vi;g.globalAlpha=.12;g.fillRect(0,Y(b),W-Rr,Y(a)-Y(b));g.globalAlpha=.5;g.strokeStyle=vi;g.lineWidth=1;g.strokeRect(0,Y(b),W-Rr,Y(a)-Y(b));g.globalAlpha=1;});
+ (RP.lines||[]).forEach(l=>{if(l.t2===l.t1)return;const x1=rpXt(o,l.t1),x2=rpXt(o,l.t2),y1=Y(l.p1),y2=Y(l.p2),k=(y2-y1)/(x2-x1),xe=W-Rr;g.save();g.beginPath();g.rect(0,0,W-Rr,o._H);g.clip();
+  g.strokeStyle=vi;g.lineWidth=1.6;g.beginPath();g.moveTo(x1,y1);g.lineTo(xe,y1+k*(xe-x1));g.stroke();g.fillStyle=vi;[[x1,y1],[x2,y2]].forEach(q=>{g.beginPath();g.arc(q[0],q[1],2.5,0,7);g.fill();});g.restore();});
+ if(RP.draft&&RP.draft.p===p){const d=RP.draft;g.fillStyle=vi;if(d.k==='line'){g.beginPath();g.arc(rpXt(o,d.t1),Y(d.p1),4,0,7);g.fill();}else line(d.p1,vi,[4,3],'');}
+ RP.levels.forEach(l=>line(l.p,vi,[2,3],''));rpMarks(g,o);
+ const last=RP.rows[RP.ci][4];if(last>=lo&&last<=hi)lab(Y(last),cssv('--surface3'),px(last));
+ const P=RP.pos;if(P){line(P.sl,cssv('--down'),[5,3],'stop');line(P.tp,cssv('--up'),[5,3],T('cible','target'));line(P.e,cssv('--accent'),[],T('entrée','entry'));
+  const r=P.d*(last-P.e)/Math.abs(P.e-P.sl0||1),t=(r>=0?'+':'')+r.toFixed(2)+'R'+(RP.risk?' · '+(r*RP.risk>=0?'+':'')+(r*RP.risk).toFixed(2)+' $':'');g.font='bold 12px Inter,system-ui';const tw=g.measureText(t).width+12;g.fillStyle=r>=0?cssv('--up'):cssv('--down');g.globalAlpha=.9;g.fillRect(6,26,tw,20);g.globalAlpha=1;g.fillStyle='#fff';g.fillText(t,12,40);}
+ if(RP.snap&&RP.snap.p===p&&RP.snap.v>=lo&&RP.snap.v<=hi){const y=Y(RP.snap.v),s='↳ '+RP.snap.lab;g.font='bold 10px Inter,system-ui';const tw=g.measureText(s).width+10;g.fillStyle=cssv('--surface3');g.fillRect(W-Rr-tw-6,y-20,tw,15);g.fillStyle=cssv('--text');g.fillText(s,W-Rr-tw-1,y-9);}
+ if(RP.view[p].off>0){g.fillStyle=cssv('--muted');g.font='bold 10px Inter,system-ui';g.fillText(T('◀ passé · double-tape pour revenir','◀ past · double-tap to come back'),8,o._H-22);}}
+/* prices that mean something: yesterday's high / low, today's, the last swing, round numbers, their own levels and zones */
+function rpSnapList(){const L=[],t=rpT(),day=Math.floor(t/86400)*86400,R=RP.rows;let yh=-Infinity,yl=Infinity,th=-Infinity,tl=Infinity;
+ for(let i=RP.ci;i>=0;i--){const r=R[i];if(r[0]<day-86400)break;if(r[0]>=day){th=Math.max(th,r[2]);tl=Math.min(tl,r[3]);}else{yh=Math.max(yh,r[2]);yl=Math.min(yl,r[3]);}}
+ if(yh>-Infinity){L.push([yh,T('plus haut d’hier','yesterday’s high')]);L.push([yl,T('plus bas d’hier','yesterday’s low')]);}
+ if(th>-Infinity){L.push([th,T('plus haut du jour','today’s high')]);L.push([tl,T('plus bas du jour','today’s low')]);}
+ const sw=rpAgg(rpUnit(),RP.ci,31).slice(0,-1);if(sw.length>3){L.push([Math.max.apply(null,sw.map(x=>x[2])),T('dernier sommet','last swing high')]);L.push([Math.min.apply(null,sw.map(x=>x[3])),T('dernier creux','last swing low')]);}
+ RP.levels.forEach(l=>L.push([l.p,T('ton niveau','your level')]));(RP.zones||[]).forEach(z=>{L.push([z.p1,T('ta zone','your zone')]);L.push([z.p2,T('ta zone','your zone')]);});return L;}
+function rpSnap(cv,v,p){const o=cv._o;if(!o||!o._Y)return v;const y=o._Y(v),c=rpSnapList(),base=Math.pow(10,Math.floor(Math.log10(Math.abs(v)||1))-2)*(Math.abs(v)>=1000?5:1),rn=Math.round(v/base)*base;
+ c.push([rn,T('chiffre rond','round number')]);let best=null;c.forEach(x=>{const d=Math.abs(o._Y(x[0])-y);if(d<9&&(!best||d<best.d))best={d:d,v:x[0],lab:x[1]};});
+ RP.snap=best?{v:best.v,lab:best.lab,p:p}:null;return best?best.v:v;}
+function rpTouch(cv,p){const pts=new Map();let drag=null,last=0,pinch0=0,z0=0;
+ cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const r=cv.getBoundingClientRect(),y=e.clientY-r.top,P=RP.pos,o=cv._o;
+  if(pts.size===2){const a=[...pts.values()];pinch0=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);z0=RP.view[p].z;drag=null;return;}
+  drag={x:e.clientX,off:RP.view[p].off,k:null,moved:false};
+  if(P&&o&&o._Y&&!RP.tool){for(const k of ['sl','tp'])if(Math.abs(o._Y(P[k])-y)<16){drag.k=k;break;}}});
+ cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2&&pinch0){const a=[...pts.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);RP.view[p].z=Math.max(25,Math.min(220,Math.round(z0*pinch0/d)));rpDraw();return;}
+  if(!drag)return;const r=cv.getBoundingClientRect();if(Math.abs(e.clientX-drag.x)>6)drag.moved=true;
+  if(drag.k){let v=rpSnap(cv,rpPrice(cv,e.clientY-r.top),p);const P=RP.pos;if(drag.k==='sl'&&P.d*(P.e-v)>0)P.sl=v;if(drag.k==='tp'&&P.d*(v-P.e)>0)P.tp=v;drag.moved=true;rpDraw();rpUi();return;}
+  if(RP.tool)return;const cw=cv._o&&cv._o._cw||6;RP.view[p].off=Math.max(0,Math.round(drag.off+(e.clientX-drag.x)/cw));rpDraw();});
+ const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch0=0;if(!drag)return;const d=drag;drag=null;if(d.k){RP.snap=null;RP.dirty=true;rpDraw();return;}
+  if(d.moved)return;const now=Date.now(),r=cv.getBoundingClientRect(),o=cv._o,pr=+rpPrice(cv,e.clientY-r.top).toFixed(5);
+  if(!RP.tool){if(now-last<320){RP.view[p].off=0;rpDraw();}last=now;return;}
+  if(RP.tool==='level'){RP.levels.push({p:pr,label:''});RP.levels=RP.levels.slice(-12);rpToolDone(T('📍 Niveau marqué.','📍 Level marked.'));return;}
+  const i=Math.max(o.from,Math.min(o.to-1,o.from+Math.floor((e.clientX-r.left)/(o._cw||6)))),tt=o.rows[i]?o.rows[i][0]:rpT();
+  if(!RP.draft||RP.draft.k!==RP.tool||RP.draft.p!==p){RP.draft={k:RP.tool,p:p,t1:tt,p1:pr};rpDraw();toast(RP.tool==='line'?T('Touche le deuxième point de ta ligne.','Tap the second point of your line.'):T('Touche l’autre bord de ta zone.','Tap the other edge of your zone.'));return;}
+  const D=RP.draft;RP.draft=null;if(RP.tool==='line'){if(tt===D.t1){toast(T('Choisis un deuxième point à un autre moment.','Pick a second point at another time.'));RP.draft=D;return;}RP.lines=(RP.lines||[]).concat([tt>D.t1?{t1:D.t1,p1:D.p1,t2:tt,p2:pr}:{t1:tt,p1:pr,t2:D.t1,p2:D.p1}]).slice(-10);rpToolDone(T('Ligne tracée.','Line drawn.'));}
+  else{RP.zones=(RP.zones||[]).concat([{p1:Math.min(D.p1,pr),p2:Math.max(D.p1,pr)}]).slice(-8);rpToolDone(T('Zone tracée.','Zone drawn.'));}};
+ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+ cv.addEventListener('wheel',e=>{e.preventDefault();RP.view[p].z=Math.max(25,Math.min(220,Math.round(RP.view[p].z*(e.deltaY>0?1.12:.89))));rpDraw();},{passive:false});}
+function rpToolDone(msg){RP.tool=null;RP.draft=null;RP.dirty=true;rpUi();rpDraw();toast(msg);}
+function rpLevelMode(){rpTools();}
+function rpTools(){const b=(k,ic,t)=>'<button class="rptb'+(RP.tool===k?' on':'')+'" onclick="rpTool(\''+k+'\')"><span>'+ic+'</span>'+t+'</button>';
+ rpPanel('<h4>✏️ '+T('Dessiner','Draw')+'</h4><p class="sub">'+T('Kino voit tout ce que tu dessines.','Kino sees everything you draw.')+'</p><div class="rptools">'+b('level','―',T('Niveau','Level'))+b('line','／',T('Ligne de tendance','Trend line'))+b('zone','▭',T('Zone','Zone'))+'</div>'+
+  '<div class="kact"><button onclick="rpClearDraw()">🗑 '+T('Tout effacer','Clear all')+'</button><button onclick="rpGhost()">'+(RP.ghost?'🙈 ':'👻 ')+(RP.ghost?T('Cacher les trades du robot','Hide the robot’s trades'):T('Montrer les trades du robot','Show the robot’s trades'))+'</button></div>');}
+function rpTool(k){RP.tool=RP.tool===k?null:k;RP.draft=null;$('rppan').classList.remove('on');rpUi();if(RP.tool)toast({level:T('Touche le graphique à la hauteur du niveau.','Tap the chart at the level’s height.'),line:T('Touche le premier point de ta ligne.','Tap the first point of your line.'),zone:T('Touche un bord de ta zone.','Tap one edge of your zone.')}[k]);}
+function rpClearDraw(){RP.levels=[];RP.lines=[];RP.zones=[];RP.tool=null;RP.draft=null;RP.dirty=true;$('rppan').classList.remove('on');rpDraw();rpUi();toast(T('Dessins effacés.','Drawings cleared.'));}
+function rpGhost(){RP.ghost=!RP.ghost;try{localStorage.setItem('rpGhost',RP.ghost?'1':'0');}catch(e){}$('rppan').classList.remove('on');if(RP.ghost&&!RP.robo)rpRobot();rpDraw();rpUi();}
+async function rpRobot(){try{const j=await rpPost('replay_robot',{id:RP.cid},40000);if(j&&j.ok&&RP){RP.robo=j.trades;rpDraw();rpUi();}}catch(e){}}
+function ntr(n){return n+(n>1?' trades':' trade');}
+function rpDuel(){if(!RP.robo)return null;const now=rpT(),T_=RP.robo.filter(t=>t.t_out>=RP.start&&t.t_out<=now);return {n:T_.length,r:T_.reduce((a,t)=>a+t.r,0)};}
+function rpMoney(r){return (r>=0?'+':'')+(r*RP.risk).toFixed(RP.risk*Math.abs(r)>=100?0:2)+' $';}
+function rpGoalN(){const g=RP.goal;if(!g||!g.n)return null;return RP.trades.filter(t=>t.ti>=(g.t||0)).length;}
+function rpUi(){if(!RP)return;const t=rpT();if(t)$('rptm').textContent=new Date(t*1000).toLocaleDateString(EN?'en-GB':'fr-FR',{weekday:'short',timeZone:'UTC'})+' '+dm(t)+' · '+hm(t);const st=rpStats(),du=rpDuel(),gn=rpGoalN();
+ $('rpprog').innerHTML=(gn!=null?'🎯 '+gn+'/'+RP.goal.n+' · ':'<b>'+st.days.toFixed(1).replace('.',EN?'.':',')+T(' j',' d')+'</b> · ')+ntr(st.n)+(st.n?' · <i class="'+(st.r>=0?'pos':'neg')+'">'+(RP.risk?rpMoney(st.r):(st.r>=0?'+':'')+st.r.toFixed(1)+'R')+'</i>':'')+(du&&RP.ghost?' · 🤖 '+(du.r>=0?'+':'')+du.r.toFixed(1)+'R':'');
+ $('rpgo').innerHTML=RP.timer?'⏸':'▶';$('rpsp').textContent=['','×1','×3','×10'][RP.speed]||'×1';$('rplvl').classList.toggle('on',!!RP.tool);
+ const P=RP.pos,pb=$('rppos');if(P){const last=RP.rows[RP.ci][4],r=P.d*(last-P.e)/Math.abs(P.e-P.sl0||1),rr=Math.abs(P.tp-P.e)/Math.abs(P.e-P.sl||1);
+  pb.innerHTML='<span class="'+(P.d===1?'b':'s')+'">'+(P.d===1?T('Achat','Buy'):T('Vente','Sell'))+'</span><span>'+px(P.e)+'</span><span class="mut">'+T('gain/risque ','reward/risk ')+rr.toFixed(1)+(RP.risk?' · '+T('risque ','risk ')+(Math.abs(P.e-P.sl)/Math.abs(P.e-P.sl0||1)*RP.risk).toFixed(0)+' $':'')+'</span><b class="'+(r>=0?'pos':'neg')+'">'+(RP.risk?rpMoney(r):(r>=0?'+':'')+r.toFixed(2)+'R')+'</b><button onclick="rpCloseTrade()">'+T('Fermer','Close')+'</button>';pb.classList.add('on');}
+ else pb.classList.remove('on');}
+function rpSaveBody(){return {market:RP.mk,tfs:RP.tfs,split:RP.split,start:RP.start,cursor:rpT(),speed:RP.speed,trades:RP.trades,pos:RP.pos,notes:RP.notes,levels:RP.levels,goal:RP.goal,risk:RP.risk,lines:RP.lines,zones:RP.zones};}
+function rpExit(x,why,t){const P=RP.pos;if(!P)return;const r=P.d*(x-P.e)/Math.abs(P.e-P.sl0||1);
+ RP.trades.push({d:P.d,ti:P.ti,to:t,e:P.e,sl:P.sl,tp:P.tp,x:x,r:+r.toFixed(2),why:why,tf:P.tf,note:''});RP.pos=null;RP.minT=t;RP.fresh++;RP.dirty=true;
+ const st=rpStats(),gn=rpGoalN(),du=rpDuel();rpBub((r>0?'✓ ':'✗ ')+({target:T('Cible touchée','Target hit'),stop:T('Stop touché','Stop hit'),manual:T('Trade fermé','Trade closed')}[why]||'')+' · '+(RP.risk?rpMoney(r)+' ('+(r>=0?'+':'')+r.toFixed(2)+'R)':(r>=0?'+':'')+r.toFixed(2)+'R')+
+  '<small>'+st.n+T(' trades · ',' trades · ')+st.wr+T(' % gagnés · ',' % won · ')+(RP.risk?rpMoney(st.r):(st.r>=0?'+':'')+st.r.toFixed(1)+'R')+(du?T(' · ton robot ',' · your robot ')+(du.r>=0?'+':'')+du.r.toFixed(1)+'R':'')+(gn!=null?' · 🎯 '+gn+'/'+RP.goal.n:'')+'</small>'+
+  (gn!=null&&gn===RP.goal.n?'<small>🎉 '+T('Objectif atteint !','Goal reached!')+'</small>':'')+
+  '<span class="kact"><button onclick="rpNoteTrade()">📝 '+T('Pourquoi ce trade ?','Why this trade?')+'</button>'+(RP.fresh>=3||(gn!=null&&gn===RP.goal.n)?'<button onclick="rpAsk(true)">🦉 '+T('Kino, fais le point','Kino, review me')+'</button>':'')+'</span>',9000);
+ if(typeof ding==='function'&&r>0)try{ding();}catch(e){}}
+async function rpProg(){const st=rpStats(),du=rpDuel();let L=[];try{L=((await post('replay_list',{})).sessions||[]);}catch(e){}
+ rpPanel('<h4>📈 '+T('Ta progression','Your progress')+'</h4><div class="kq"><div><b>'+st.n+'</b><span>trades</span></div><div><b>'+st.wr+' %</b><span>'+T('gagnés','won')+'</span></div><div><b class="'+(st.r>=0?'pos':'neg')+'">'+(st.r>=0?'+':'')+st.r.toFixed(1)+'R</b><span>'+(RP.risk?rpMoney(st.r):T('au total','in total'))+'</span></div></div>'+
+  '<canvas id="rpcurve" class="rpcurve"></canvas><p class="sub">'+T('Commencé le ','Started on ')+rpFmt(RP.start)+' · '+st.days.toFixed(1)+T(' jours rejoués',' days replayed')+(RP.ghost?' · <span style="color:var(--violet)">'+T('violet : ton robot','violet: your robot')+'</span>':'')+'</p>'+
+  '<div class="bpsec">'+T('Duel avec ton robot (joué par Kino)','Duel with your robot (played by Kino)')+'</div>'+(du?'<div class="rpduel"><div><small>'+T('Toi','You')+'</small><b class="'+(st.r>=0?'pos':'neg')+'">'+(st.r>=0?'+':'')+st.r.toFixed(1)+'R</b><small>'+ntr(st.n)+'</small></div><div class="vs">vs</div><div><small>'+T('Ton robot','Your robot')+'</small><b class="'+(du.r>=0?'pos':'neg')+'">'+(du.r>=0?'+':'')+du.r.toFixed(1)+'R</b><small>'+ntr(du.n)+'</small></div></div>':
+   '<p class="sub">'+(RP.robo===null||RP.robo===undefined?T('Je prépare les trades de ton robot…','Preparing your robot’s trades…'):T('Pas de robot dans cette conversation.','No robot in this conversation.'))+'</p>')+
+  '<div class="bpsec">'+T('Objectif de la séance','Session goal')+'</div><div class="rpgoal"><input id="rpgt" placeholder="'+T('Ex. : seulement dans le sens de la tendance','E.g. only with the trend')+'" value="'+esc((RP.goal||{}).text||'')+'"><input id="rpgn" type="number" min="0" max="200" placeholder="'+T('trades','trades')+'" value="'+((RP.goal||{}).n||'')+'"><button class="btn pri" onclick="rpGoalSave()">OK</button></div>'+
+  '<div class="bpsec">'+T('Ton risque','Your risk')+'</div><div class="rpgoal"><span class="sub">1R =</span><input id="rprk" type="number" min="0" step="1" placeholder="10" value="'+(RP.risk||'')+'"><span class="sub">$</span><button class="btn pri" onclick="rpRiskSave()">OK</button></div>'+
+  '<div class="kact"><button onclick="rpLessons()">🧠 '+T('Kino, tire mes leçons','Kino, draw my lessons')+'</button><button onclick="rpRestart()">↺ '+T('Autre date','Another date')+'</button></div>'+
+  (L.length>1?'<div class="bpsec">'+T('Tes autres projets','Your other projects')+'</div>'+L.filter(x=>x.id!==RP.cid).map(x=>'<div class="svd"><small>'+esc(x.market||'')+' · '+rpFmt(x.cursor||0)+'</small><p><b>'+esc(x.name||'')+'</b> — '+x.stats.n+' trades · '+x.stats.wr+' % · '+(x.stats.r>=0?'+':'')+x.stats.r+'R</p></div>').join(''):''));
+ const cv=$('rpcurve');if(cv){const g=cv.getContext('2d'),W=cv.clientWidth,H=cv.clientHeight,dpr=devicePixelRatio||1;cv.width=W*dpr;cv.height=H*dpr;g.scale(dpr,dpr);let c=0;const P=[0].concat(RP.trades.map(t=>c+=t.r));
+  let c2=0;const now=rpT(),Q=[0].concat((RP.robo||[]).filter(t=>t.t_out>=RP.start&&t.t_out<=now).map(t=>c2+=t.r));const all=P.concat(RP.ghost?Q:[]);
+  const lo=Math.min.apply(null,all),hi=Math.max.apply(null,all),Yc=v=>H-6-(v-lo)/((hi-lo)||1)*(H-12);g.strokeStyle=cssv('--border');g.beginPath();g.moveTo(0,Yc(0));g.lineTo(W,Yc(0));g.stroke();
+  const plot=(A,col,w)=>{g.strokeStyle=col;g.lineWidth=w;g.beginPath();A.forEach((v,i)=>{const x=A.length>1?i/(A.length-1)*W:0;i?g.lineTo(x,Yc(v)):g.moveTo(x,Yc(v));});g.stroke();};
+  if(RP.ghost&&Q.length>1)plot(Q,cssv('--violet'),1.5);plot(P,c>=0?cssv('--up'):cssv('--down'),2.2);}}
+function rpGoalSave(){const t=($('rpgt').value||'').trim(),n=parseInt($('rpgn').value||'0',10)||0;RP.goal=t||n?{text:t||T('objectif','goal'),n:n,t:rpT()}:null;RP.dirty=true;rpSave();rpUi();$('rppan').classList.remove('on');toast(RP.goal?T('🎯 Objectif noté, Kino le suit.','🎯 Goal set, Kino follows it.'):T('Objectif retiré.','Goal removed.'));}
+function rpRiskSave(){RP.risk=Math.max(0,parseFloat($('rprk').value||'0')||0);RP.dirty=true;rpSave();rpUi();rpDraw();$('rppan').classList.remove('on');toast(RP.risk?T('Tes résultats sont maintenant en dollars.','Your results are now in dollars.'):T('Retour en R.','Back to R.'));}
+function rpLessons(){$('rppan').classList.remove('on');rpAsk(false,T('Tire-moi 3 leçons de mes trades et de mes notes de replay (ce qui marche, ce qui me coûte, une chose à essayer), et garde-les en mémoire.','Draw me 3 lessons from my replay trades and notes (what works, what costs me, one thing to try), and keep them in memory.'));}
+/* jumps forward - never back, and an open trade is checked minute by minute on the way */
+function rpNextAt(h,m){let t=Math.floor(rpT()/86400)*86400+h*3600+m*60;if(t<=rpT())t+=86400;for(let k=0;k<3;k++){const wd=new Date(t*1000).getUTCDay();if(wd===6)t+=2*86400;else if(wd===0)t+=86400;}return t;}
+function rpJump(){const nr=RP.robo?RP.robo.find(t=>t.t_in>rpT()+60):null,b=(t,ic,lab)=>'<button class="rptb" onclick="rpJumpTo('+t+')"><span>'+ic+'</span>'+lab+'<small>'+rpFmt(t)+'</small></button>';
+ rpPanel('<h4>⏩ '+T('Aller à…','Jump to…')+'</h4><p class="sub">'+T('Toujours vers l’avant. Un trade ouvert est suivi minute par minute en chemin.','Always forward. An open trade is followed minute by minute on the way.')+'</p><div class="rptools v">'+
+  b(rpNextAt(7,0),'🇬🇧',T('Ouverture de Londres','London open'))+b(rpNextAt(13,30),'🇺🇸',T('Ouverture de New York','New York open'))+(nr?b(Math.max(rpT()+60,nr.t_in-rpUnit()*3),'🤖',T('Juste avant le prochain trade de ton robot','Just before your robot’s next trade')):'')+
+  b(rpT()+3600,'⏱',T('Dans une heure','In one hour'))+'</div>');}
+async function rpJumpTo(t){$('rppan').classList.remove('on');rpStop();let n=0;while(RP.rows[RP.rows.length-1][0]<t&&RP.rows[RP.rows.length-1][0]<RP.last&&n<6){RP.busy=false;await rpMore();n++;}
+ let ni=RP.ci;while(ni+1<RP.rows.length&&RP.rows[ni+1][0]<t)ni++;if(ni===RP.ci){toast(T('Pas de prix plus loin pour l’instant.','No prices further yet.'));return;}rpGo(ni);}
+async function rpOpenAt(t){await rpOpen();if(!RP||!t)return;const go=async()=>{if(!RP.rows.length){RP.start=t;RP.trades=[];RP.notes=[];RP.pos=null;RP.minT=0;await rpLoadAt(t);RP.dirty=true;rpSave();return;}
+  if(t>rpT())await rpJumpTo(t);else if(confirm(T('Recommencer la séance au ','Restart the session at ')+rpFmt(t)+' ?'+T(' Les trades de cette séance repartent de zéro.',' This session’s trades start again from zero.'))){RP.rows=[];RP.start=t;RP.trades=[];RP.pos=null;RP.minT=0;await rpLoadAt(t);RP.dirty=true;rpSave();}};
+ const w=()=>{if($('rproom').classList.contains('pick')||RP.rows.length)go();else setTimeout(w,300);};w();}
+
+/* 2026-10-20 (owner, all 12): Kino's replay card, the path in one minute with THEIR robot, and cutting Kino off by voice in a call */
+function replayFill(b,a){const t=+(a&&a.t)||0;b.innerHTML=(a&&a.why?'<p class="sub" style="margin:0 0 10px">'+esc(a.why)+'</p>':'')+
+ '<button class="btn pri" style="width:100%" onclick="rpOpenAt('+t+')">📈 '+(t?T('Ouvrir le replay au ','Open the replay at ')+rpFmt(t):T('Ouvrir ma salle de replay','Open my replay room'))+'</button>';}
+function tourShow(force){if(!force)return tourMaybe();const v=C&&C.view,nm=v&&v.name?'« '+v.name+' »':'',r=(()=>{try{return lastRes();}catch(e){return null;}})(),lk=(C&&C.luck)||{},ac=(C&&C.acct)||{};
+ const S=[['💡',T('1 · L’idée','1 · The idea'),nm?T('Ton robot '+nm+' est né d’une idée racontée à Kino. Il te l’a redite dans une carte, tu as dit oui : c’est la base de tout.','Your robot '+nm+' was born from an idea told to Kino. He said it back in a card and you agreed: that is the base of everything.'):T('Tu racontes ton idée avec tes mots (ou un document). Kino te la redit dans une carte : tu confirmes avant qu’il construise.','You tell your idea in your words (or a document). Kino says it back in a card: you confirm before he builds.')],
+  ['🧪',T('2 · Le test','2 · The test'),r?T('Kino le fait trader sur 42 jours de vrais prix : '+(r.net>=0?'+':'')+(+r.net||0).toFixed(0)+' $ sur '+(r.trades||0)+' trades.','Kino trades it on 42 days of real prices: '+(r.net>=0?'+':'')+(+r.net||0).toFixed(0)+' $ over '+(r.trades||0)+' trades.'):T('Kino fait trader ton robot sur 42 jours de vrais prix, en quelques minutes.','Kino trades your robot on 42 days of real prices, in a few minutes.')],
+  ['🎲',T('3 · La chance','3 · Luck'),T('Puis 100 robots au hasard font la même chose. Si plus de 5 font aussi bien, c’était de la chance.','Then 100 random robots do the same. If more than 5 do as well, it was luck.')+(lk.state?' '+T('Le tien : ','Yours: ')+({pass:T('réussi ✓','passed ✓'),fail:T('raté','failed'),running:T('en cours','running'),queued:T('dans la file','in line')}[lk.state]||lk.state)+'.':'')],
+  ['🚀',T('4 · Le compte','4 · The account'),T('Seulement après les deux, tu peux le mettre sur ton vrai compte, avec ton mot de passe. Kino ne le fait jamais seul.','Only after both can you put it on your real account, with your password. Kino never does it alone.')+(ac.is_cur?' '+T('Il y est déjà ✓','It is already there ✓'):'')],
+  ['📈',T('5 · Entraîne-toi','5 · Practise'),T('Dans la salle de replay (le +), tu trades le passé bougie par bougie, contre ton robot. Kino suit tes progrès et garde ta place.','In the replay room (the +), you trade the past candle by candle, against your robot. Kino follows your progress and keeps your place.')]];
+ let k=0;const paint=()=>{shOpen('<div class="tour"><div class="ti">'+S[k][0]+'</div><h4>'+S[k][1]+'</h4><p>'+S[k][2]+'</p><div class="tdots">'+S.map((_,i)=>'<i class="'+(i===k?'on':'')+'"></i>').join('')+'</div><button class="btn pri" id="tnext">'+(k<S.length-1?T('Suivant','Next'):T('C’est parti','Let’s go'))+'</button></div>');
+  const b=$('tnext');if(b)b.onclick=()=>{k++;if(k<S.length)paint();else shClose();};};paint();}
+let BARGE=null,BARGE_ON=false,SPOKEN_T='';
+function bargeStart(){if(!CALL||BARGE_ON||RECON)return;const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S)return;
+ try{BARGE=new S();BARGE.lang=EN?'en-US':'fr-FR';BARGE.continuous=true;BARGE.interimResults=true;
+  BARGE.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;const w=t.trim().toLowerCase().split(/\s+/).filter(x=>x.length>1);if(w.length<2)return;
+   const said=SPOKEN_T.toLowerCase();if(w.filter(x=>said.includes(x)).length/w.length>.6)return;     // Kino's own voice coming back through the mic
+   bargeStop();if(TTS_A)TTS_A.pause();try{speechSynthesis.cancel();}catch(x){}SPEAKING=false;const tx=$('tx');if(tx)tx.value=t.trim();setTimeout(()=>{if(CALL&&!RECON)mic();},150);};
+  BARGE.onend=()=>{BARGE_ON=false;if(CALL&&SPEAKING)setTimeout(bargeStart,200);};BARGE.onerror=()=>{BARGE_ON=false;};BARGE.start();BARGE_ON=true;}catch(e){BARGE_ON=false;}}
+function bargeStop(){try{if(BARGE&&BARGE_ON)BARGE.abort();}catch(e){}BARGE_ON=false;}
+setInterval(()=>{if(CALL&&SPEAKING&&!BARGE_ON&&!RECON)bargeStart();else if((!CALL||!SPEAKING)&&BARGE_ON)bargeStop();},700);
 
 </script>
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div></div>
