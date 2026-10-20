@@ -14976,6 +14976,61 @@ def _chat_save(c):
     os.replace(tmp, _chat_path(c["id"]))
 
 
+def _slot_names(rb):
+    """the name of each step of a robot (piece names from the registry when the step uses an existing piece)"""
+    try:
+        P = {x["id"]: (x.get("name_fr") or x["id"]) for x in robot_reg().get("pieces") or []}
+    except Exception:
+        P = {}
+    nm = lambda v: (v.get("name") or P.get(v.get("use"), v.get("use")) or "?") if isinstance(v, dict) else ""
+    out = {k: nm((rb or {}).get(k)) for k in ("entry", "stop", "exit", "recovery", "money") if (rb or {}).get(k)}
+    out["filters"] = ", ".join(nm(f) for f in (rb or {}).get("filters") or [])
+    return out
+
+
+def _robot_diff(a_rb, b_rb):
+    a, b = _slot_names(a_rb), _slot_names(b_rb)
+    d = [{"slot": k, "from": a.get(k) or "", "to": b.get(k) or ""} for k in ("entry", "filters", "stop", "exit", "recovery", "money")
+         if (a.get(k) or "") != (b.get(k) or "")]
+    if (a_rb or {}).get("market") != (b_rb or {}).get("market") and (a_rb or {}).get("market"):
+        d.append({"slot": "market", "from": a_rb.get("market"), "to": (b_rb or {}).get("market")})
+    return d
+
+
+def _robot_set(c, new, src, quiet=False):
+    """2026-10-20 (owner list, item 5): the robot changes - the previous version is kept (10 back) and a 'change' line says
+    what changed, before -> after, with an undo"""
+    old = c.get("robot") or {}
+    if old:
+        c["robot_hist"] = ((c.get("robot_hist") or []) + [{"robot": old, "rev": c.get("rev"), "t": int(time.time()), "src": src}])[-10:]
+    c["robot"] = new
+    c["rev"] = int(c.get("rev") or 0) + 1
+    d = _robot_diff(old, new) if old else []
+    if d and not quiet:
+        _chat_msg(c, "change", diff=d, rev=c["rev"], src=src)
+    return d
+
+
+def chat_undo(user, body):
+    """one tap: the robot goes back to its previous version"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot_hist"):
+        return {"ok": False, "err": "nothing"}
+
+    def put(cc):
+        H = cc.get("robot_hist") or []
+        if not H:
+            return False
+        h = H.pop()
+        cur = cc.get("robot") or {}
+        cc["robot_hist"] = H
+        cc["robot"] = h["robot"]
+        cc["rev"] = int(cc.get("rev") or 0) + 1
+        _chat_msg(cc, "change", diff=_robot_diff(cur, h["robot"]), rev=cc["rev"], src="undo", undo=True)
+        return True
+    return {"ok": bool(_chat_mut(c["id"], put))}
+
+
 def _chat_msg(c, role, **kw):
     m = {"role": role, "t": int(time.time())}
     m.update(kw)
@@ -15919,7 +15974,7 @@ def _chat_build(cid, user):
                               else "Hmm, je n'ai pas réussi à l'assembler cette fois - tu me le redis autrement ?")
                     return
                 if ans.get("robot"):
-                    c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+                    _robot_set(c, ans["robot"], "kino")
                 txt = ans.get("say") or ""
                 if probs:
                     txt += ("\n\n(One piece didn't pass the checks, so I kept the previous one.)" if en else
@@ -18255,6 +18310,11 @@ def chat_get(user, cid):
         out["luck"] = _luck_of(c.get("robot_id"), (c.get("robot") or {}).get("market") or "BTCUSD")
         out["ui_lang"] = _rc().member_lang2(c)
         out["admin"] = bool(is_admin(user))
+        out["money_plain"] = _money_plain((c.get("robot") or {}).get("money") or {})
+        _ow = _ai_owl() or {}
+        out["owl_view"] = _rc().view({k: {"use": _ow[k]} for k in ("entry", "stop", "exit", "recovery", "money") if _ow.get(k)} |
+                                     {"filters": [{"use": f} for f in _ow.get("filters") or []], "market": "BTCUSD", "name": "Owl"}, _chat_pieces(user))
+        out["can_undo"] = bool(c.get("robot_hist"))
     except Exception:
         pass
     for m in out.get("msgs") or []:
@@ -18264,6 +18324,10 @@ def chat_get(user, cid):
             _tr_view(out)
         except Exception:
             pass
+    try:
+        _fix_names(out)
+    except Exception:
+        pass
     return out
 
 
@@ -18275,6 +18339,74 @@ _FR_HINT = re.compile(r"\b(le|la|les|quand|prix|au-dessus|sous|après|avant|ach�
 def _looks_en(t):
     t = str(t or "")
     return len(t) > 3 and len(_EN_HINT.findall(t)) > len(_FR_HINT.findall(t))
+
+
+def _money_plain(sl):
+    """the money step in plain words: lot, growth with the balance, add-ons, the net loss that stops everything"""
+    try:
+        packs = json.load(open(PKG_FILE, encoding="utf-8")).get("packages") or {}
+        d, _, _ = _pkg_resolved((sl or {}).get("use") or "base", packs)
+        if not d:
+            return None
+        return {"lot": d.get("base_lot"), "grow": bool(d.get("scale_with_balance")), "ref": d.get("scale_ref_balance"), "extra": d.get("max_extra"),
+                "kill": d.get("kill_net"), "risk_pct": d.get("max_risk_pct"), "day_cap": d.get("day_cap"), "min_bal": d.get("min_balance")}
+    except Exception:
+        return None
+
+
+_NAME_FIX = os.path.join(DIR, "robots", "name_fix.json")
+_NF_BUSY = set()
+
+
+def _fix_names(out):
+    """names saved before 2026-10-20 were cut at 30 characters mid-word ("...plus haut d'hie"): a repaired name from the
+    cache at once; the missing ones are completed in the background from the step's description"""
+    try:
+        cache = json.load(open(_NAME_FIX, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    todo = []
+
+    def fx(d):
+        n = d.get("name")
+        if isinstance(n, str) and len(n) == 30:
+            if n in cache:
+                d["name"] = cache[n]
+            else:
+                todo.append((n, str(d.get("plain") or "")))
+    v = out.get("view") or {}
+    for k in ("entry", "stop", "exit", "recovery", "money"):
+        if isinstance(v.get(k), dict):
+            fx(v[k])
+    for f in v.get("filters") or []:
+        if isinstance(f, dict):
+            fx(f)
+    for m in out.get("msgs") or []:
+        for p_ in m.get("made") or []:
+            fx(p_)
+    todo = [t for t in todo if t[0] not in _NF_BUSY][:10]
+    if todo:
+        _NF_BUSY.update(t[0] for t in todo)
+
+        def bg():
+            try:
+                raw = (_rc().W if hasattr(_rc(), "W") else __import__("robot_warm")).ask_json(
+                    "Each robot step name below was cut at 30 characters, sometimes mid-word. Give each its complete short name "
+                    "(max 40 characters, same language, same meaning, use the description). Answer ONE JSON object {\"names\": [same count, same order]}.",
+                    json.dumps([{"cut": a, "description": b} for a, b in todo], ensure_ascii=False), models=("haiku",), timeout=60, warm=False)
+                L = (raw or {}).get("names") if isinstance(raw, dict) else None
+                if isinstance(L, list) and len(L) == len(todo):
+                    try:
+                        cc = json.load(open(_NAME_FIX, encoding="utf-8"))
+                    except Exception:
+                        cc = {}
+                    for (a, _), b in zip(todo, L):
+                        if str(b).strip():
+                            cc[a] = str(b).strip()[:44]
+                    _atomic_json(_NAME_FIX, cc, ensure_ascii=False)
+            finally:
+                _NF_BUSY.difference_update(t[0] for t in todo)
+        threading.Thread(target=bg, daemon=True).start()
 
 
 def _tr_view(out):
@@ -18360,7 +18492,7 @@ def chat_edit(user, body):
         return {"ok": False, "err": "check", "why": probs[:3]}
 
     def put(c):
-        c["robot"] = ans["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+        _robot_set(c, ans["robot"], "hand", quiet=True)
         _chat_msg(c, "edit", note_en=note + ": " + json.dumps(body.get("piece") or body.get("market") or {}, ensure_ascii=False)[:300],
                   text=("You " + note) if en else ("Modifié à la main : " + {"name": "le nom", "filters": "les filtres", "entry": "l'entrée", "stop": "le stop",
                                                                               "exit": "la sortie", "recovery": "le rattrapage", "money": "l'argent",
@@ -18968,7 +19100,7 @@ def chat_apply(user, body):
         M = c.get("msgs") or []
         if not (0 <= i < len(M)) or M[i].get("role") != "proposal" or M[i].get("applied"):
             return False
-        c["robot"] = M[i]["robot"]; c["rev"] = int(c.get("rev") or 0) + 1
+        _robot_set(c, M[i]["robot"], "proposal")
         M[i]["applied"] = int(time.time())
         _chat_msg(c, "edit", text=("Proposition de Kino appliquée : " if (c.get("lang") or "fr") != "en" else "Kino's proposal applied: ") + str(M[i].get("why") or "")[:160],
                   note_en="applied your proposal: " + str(M[i].get("why") or "")[:200])
@@ -24219,7 +24351,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -24240,7 +24372,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
