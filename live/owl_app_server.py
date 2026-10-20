@@ -19275,7 +19275,10 @@ def _tts_mp3(text, lang="fr"):
         if cf.get("instructions") and "mini-tts" in body["model"]:
             body["instructions"] = cf["instructions"] + (" Speak English." if lang == "en" else " Parle en français, accent naturel de France.")
         rq = urllib.request.Request("https://api.openai.com/v1/audio/speech", data=json.dumps(body).encode(),
-                                    headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
+                                    headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
+                                             # 2026-10-20: with Python's default user agent OpenAI answered in 11-20+ s (timeouts = no
+                                             # voice); with a named client it answers in ~2 s
+                                             "User-Agent": "OwlNest/1.0"})
     else:
         from xml.sax.saxutils import escape as _esc
         vc = cf.get("voice_en" if lang == "en" else "voice_fr") or ("en-US-AndrewNeural" if lang == "en" else "fr-FR-HenriNeural")
@@ -19283,7 +19286,14 @@ def _tts_mp3(text, lang="fr"):
         rq = urllib.request.Request("https://%s.tts.speech.microsoft.com/cognitiveservices/v1" % (cf.get("region") or "westeurope"), data=ssml.encode("utf-8"),
                                     headers={"Ocp-Apim-Subscription-Key": key, "Content-Type": "application/ssml+xml",
                                              "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3", "User-Agent": "OwlNest"})
-    mp3 = urllib.request.urlopen(rq, timeout=20).read()
+    mp3 = None
+    for _try in (1, 2):                  # 2026-10-20: ~1 call in 10 hangs at OpenAI; a fresh retry answers in ~3 s
+        try:
+            mp3 = urllib.request.urlopen(rq, timeout=15).read()
+            break
+        except Exception:
+            if _try == 2:
+                raise
     if mp3:
         open(fn, "wb").write(mp3)
     return mp3 or None

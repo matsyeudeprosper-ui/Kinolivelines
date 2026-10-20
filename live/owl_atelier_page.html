@@ -787,12 +787,12 @@ let VOICE=false,SPEAKING=false,VOICE_PICK=null;
 function pickVoice(){if(!('speechSynthesis' in window))return null;const L=speechSynthesis.getVoices()||[];const lang=EN?'en':'fr';
  const c=L.filter(v=>(v.lang||'').toLowerCase().startsWith(lang));return c.find(v=>/natural|neural|google|premium|enhanced/i.test(v.name))||c[0]||null;}
 try{speechSynthesis.onvoiceschanged=()=>{VOICE_PICK=pickVoice();};}catch(e){}
-let TTS_OK=null,TTS_A=null;
+let TTS_OK=null,TTS_A=null,TTS_FAIL=0;   // 2026-10-20: one slow answer no longer drops the natural voice for the whole visit
 function speak(text,then){if(TTS_OK!==false&&text){const clean0=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'').slice(0,900);
   try{if(TTS_A){TTS_A.pause();}TTS_A=new Audio('kino_tts?l='+(EN?'en':'fr')+'&t='+encodeURIComponent(clean0));SPEAKING=true;
    TTS_A.onended=()=>{SPEAKING=false;then&&then();};
-   TTS_A.onerror=()=>{TTS_OK=false;SPEAKING=false;speak0(text,then);};
-   TTS_A.play().then(()=>{TTS_OK=true;}).catch(()=>{if(!TTS_A.error){SPEAKING=false;speak0(text,then);}});return;}catch(e){TTS_OK=false;}}
+   TTS_A.onerror=()=>{TTS_FAIL++;if(TTS_FAIL>=3)TTS_OK=false;SPEAKING=false;speak0(text,then);};
+   TTS_A.play().then(()=>{TTS_OK=true;TTS_FAIL=0;}).catch(()=>{if(!TTS_A.error){SPEAKING=false;speak0(text,then);}});return;}catch(e){TTS_OK=false;}}
  speak0(text,then);}
 function speak0(text,then){if(!('speechSynthesis' in window)||!text){then&&then();return;}try{speechSynthesis.cancel();}catch(e){}
  const clean=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'');
