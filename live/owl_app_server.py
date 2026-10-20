@@ -16088,7 +16088,7 @@ def _companion_tick():
                 here = bool(sn and now - sn[0] < 60 and sn[1] == cf["id"])
                 due = (here and el >= 150 + rnd * 270) or (not here and 1500 + rnd * 3300 <= el <= 4 * 3600 and _active_hour(uid, h0))
                 fu_today = [t for t in (m.get("fu_log") or []) if now - t < 86400]
-                if not due or len(fu_today) >= 3:
+                if not due or len(fu_today) >= 10 or (fu_today and now - max(fu_today) < 600):   # 2026-10-20: 3/day kept him silent in a lively chat
                     continue
 
                 def mark(c, _t=lm.get("t")):
