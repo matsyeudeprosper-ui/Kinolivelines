@@ -18306,6 +18306,7 @@ def _tr_view(out):
     for m in out.get("msgs") or []:
         for p_ in m.get("made") or []:
             fix(p_, ("plain", "name"))
+    fix(out, ("understood",))
     todo = [t for t in dict.fromkeys(todo) if t not in _TR_BUSY][:30]
     if todo:
         _TR_BUSY.update(todo)
