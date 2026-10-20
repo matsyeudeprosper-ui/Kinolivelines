@@ -15017,6 +15017,24 @@ def _robot_set(c, new, src, quiet=False):
     return d
 
 
+def chat_manage(user, body):
+    """2026-10-20 (owner review item 7): archive / bring back / delete a conversation from the chat (delete = moved aside)"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    act = str(body.get("act") or "")
+    if c is None or act not in ("archive", "unarchive", "delete"):
+        return {"ok": False}
+    if act == "delete":
+        tr = os.path.join(CHAT_DIR, "_trash")
+        os.makedirs(tr, exist_ok=True)
+        for ext in (".json", ".log"):
+            src = os.path.join(CHAT_DIR, c["id"] + ext)
+            if os.path.exists(src):
+                os.replace(src, os.path.join(tr, c["id"] + ext))
+        return {"ok": True}
+    _chat_mut(c["id"], lambda cc: cc.__setitem__("archived", act == "archive"))
+    return {"ok": True}
+
+
 def chat_undo(user, body):
     """one tap: the robot goes back to its previous version"""
     c = _chat_load(user, str(body.get("id") or ""))
@@ -15821,6 +15839,29 @@ def _kino_factcheck(cid, user, text):
         pass
 
 
+def _alarm_log(cid, what):
+    try:
+        open(os.path.join(DIR, "robots", "kino_alarm.log"), "a", encoding="utf-8").write("%s %s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, what))
+    except Exception:
+        pass
+
+
+def _test_retry(cid, user, en):
+    """2026-10-20 (owner review item 6): a test that failed to start is retried once, quietly; the member sees the outcome"""
+    time.sleep(60)
+    try:
+        tr = chat_test(user, {"id": cid})
+        if tr.get("ok"):
+            line = "Test started on the second try." if en else "C'est reparti : le test est lancé."
+        else:
+            _alarm_log(cid, "test start failed twice: %s" % tr.get("err"))
+            line = ("Still stuck - I've flagged it to the app's creator, it will be fixed." if en else
+                    "Toujours bloqué - j'ai prévenu le créateur de l'app, ce sera réglé.")
+        _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=line))
+    except Exception:
+        pass
+
+
 def _kino_act(cid, user, act, en=False):
     """2026-10-19 (owner): Kino acts on tests directly - its own member's test, and (the nest's owner only) the nest's
     test switch. A short system line tells what really happened."""
@@ -15844,11 +15885,18 @@ def _kino_act(cid, user, act, en=False):
                 tr = chat_test(user, {"id": cid})
                 if not tr.get("ok"):
                     line = ("Nothing changed from the Owl, so there is nothing new to test." if en else "Rien ne change par rapport à l'Owl : rien de nouveau à tester.") \
-                        if tr.get("err") == "same" else (("Couldn't start the test (%s)." if en else "Le test n'a pas pu démarrer (%s).") % tr.get("err"))
+                        if tr.get("err") == "same" else (("A small technical hiccup starting the test - I'm trying again in a minute." if en else
+                                                          "Petit souci technique au démarrage du test - je réessaie dans une minute."))
+                if not tr.get("ok") and tr.get("err") != "same":
+                    _alarm_log(cid, "test start failed: %s - retry in 60 s" % tr.get("err"))
+                    threading.Thread(target=_test_retry, args=(cid, user, en), daemon=True).start()
         if line:
             _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=line))
     except Exception:
         pass
+
+
+_CHAT_ACT = {}          # cid -> what Kino is doing right now, shown under its name (2026-10-20 owner review item 8)
 
 
 def _chat_quick0(cid, user, event=None, notify=False, important=False):
@@ -15856,6 +15904,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
     en = False
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        try:
+            _lm = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "doc", "image")), {})
+            fr_ = c.get("lang") != "en"
+            if event and event.startswith("RESEARCH"):
+                _R = c.get("research") or {}
+                _dn = sum(1 for x in _R.get("steps") or [] if x.get("state") in ("done", "dropped"))
+                _CHAT_ACT[cid] = ("🔬 recherche : étape %d/%d" if fr_ else "🔬 research: step %d/%d") % (_dn + 1, max(1, len(_R.get("steps") or [])))
+            elif not event and _lm.get("role") == "doc":
+                _CHAT_ACT[cid] = "📄 lit ton document…" if fr_ else "📄 reading your document…"
+            elif not event and _lm.get("role") == "image":
+                _CHAT_ACT[cid] = "🖼️ regarde ta capture…" if fr_ else "🖼️ looking at your screenshot…"
+            else:
+                _CHAT_ACT.pop(cid, None)
+        except Exception:
+            pass
         en = c.get("lang") == "en"
         c["decisions_v"] = _decisions_for(user, c)
         _CHAT_DRAFT[cid] = ""
@@ -15870,6 +15933,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         q = _rc().quick(c, _pc, _ow, c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                         markets=_mk, memory=_me, event=event, on_say=_say_, member=_mb, images=_chat_images(c))
         _CHAT_DRAFT.pop(cid, None)
+        _CHAT_ACT.pop(cid, None)
         try:                                     # 2026-10-20 (list 5 item 10): how long the first words took
             open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f\n" % (
                 time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), _tfw[0] if _tfw else -1, time.time() - _t0q, _tctx))
@@ -15919,7 +15983,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _chat_msg(c, "card", kind=cd["kind"], args=cd.get("args") or {})
             if _pa.get("setting"):
                 _chat_msg(c, "setting", setting=_pa["setting"])
-            if _pa.get("idea_card"):                # 2026-10-20 (owner: "make sure the user and Kino fully agree on the idea")
+            if _pa.get("idea_card") and _pa["idea_card"].get("new") and c.get("robot") and c.get("robot_id"):
+                # 2026-10-20 (owner review item 3): one robot per conversation - the new idea gets its own chat
+                _nid = "%s_%d" % (re.sub(r"[^A-Za-z0-9]", "", user.get("id") or "") or "u", int(time.time() * 1000))
+                _nc = {"id": _nid, "uid": user.get("id"), "lang": c.get("lang") or "fr", "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                       "status": "ready", "robot": None, "robot_id": None, "rev": 0, "msgs": [], "idea_pending": _pa["idea_card"],
+                       "thread": _pa["idea_card"].get("summary", "")[:80]}
+                _last_u = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+                if _last_u:
+                    _nc["msgs"].append(dict(_last_u))
+                if q.get("say"):
+                    _nc["msgs"].append({"role": "ai", "text": q["say"], "t": int(time.time()), "quick": True})
+                _nc["msgs"].append({"role": "ideacard", "card": _pa["idea_card"], "t": int(time.time())})
+                _chat_save(_nc)
+                _chat_msg(c, "moved", cid=_nid, title=_pa["idea_card"].get("summary", "")[:90])
+            elif _pa.get("idea_card"):                # 2026-10-20 (owner: "make sure the user and Kino fully agree on the idea")
                 _chat_msg(c, "ideacard", card=_pa["idea_card"])
                 c["idea_pending"] = _pa["idea_card"]
             if q.get("seen"):
@@ -18263,7 +18341,7 @@ def chat_ping(user, cid):
     _CHAT_VIEW[cid] = time.time()
     M = c.get("msgs") or []
     return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
-            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state"),
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid),
             **_kino_presence(user, c)}
 
 
@@ -18317,6 +18395,12 @@ def chat_get(user, cid, ui=""):
             c["test"]["ahead"] = live.index(job["id"]) if job.get("id") in live else 0
             c["test"]["stage"] = {"building": "testing", "testing": "testing"}.get(job.get("state"), "queued")
             c["test"]["mstate"] = job.get("state")
+            try:
+                _et = _mq_eta().get(job.get("id"))
+                if _et:
+                    c["test"]["eta_t"] = int(time.time() + _et[0] * 60)
+            except Exception:
+                pass
         except Exception:
             pass
     elif (c.get("test") or {}).get("state") == "queued":
@@ -18334,6 +18418,7 @@ def chat_get(user, cid, ui=""):
         out["luck"] = _luck_of(c.get("robot_id"), (c.get("robot") or {}).get("market") or "BTCUSD")
         out["ui_lang"] = _rc().member_lang2(c)
         out["admin"] = bool(is_admin(user))
+        out["act"] = _CHAT_ACT.get(c["id"])
         out["money_plain"] = _money_plain((c.get("robot") or {}).get("money") or {})
         _ow = _ai_owl() or {}
         out["owl_view"] = _rc().view({k: {"use": _ow[k]} for k in ("entry", "stop", "exit", "recovery", "money") if _ow.get(k)} |
@@ -19344,9 +19429,21 @@ def _luck_of(rid, sym):
                     pass
                 if not (s2.get("state") in ("pass", "fail", "data_changed") and str(s2.get("updated") or "") >= e["at"]):
                     ahead += 1
-            return {"state": "queued", "ahead": ahead}
+            hrs = 0.0                                 # the line ahead: the running one's hours left + ~a full test each
+            for e in q:
+                if e is mine[-1]:
+                    break
+                try:
+                    s2 = json.load(open(os.path.join(sd, "%s_%s.status.json" % (e["rid"], e["sym"])), encoding="utf-8"))
+                except Exception:
+                    s2 = {}
+                if s2.get("state") in ("pass", "fail", "data_changed") and str(s2.get("updated") or "") >= e["at"]:
+                    continue
+                hrs += float(s2.get("eta_h") or 0) if s2.get("state") == "running" else 100 * float(s2.get("sec_per_draw") or 775) / 3600.0
+            own = 100 * float(st.get("sec_per_draw") or 775) / 3600.0
+            return {"state": "queued", "ahead": ahead, "eta_t": int(time.time() + (hrs + own) * 3600), "start_t": int(time.time() + hrs * 3600)}
         return {"state": st.get("state"), "n": st.get("n"), "max": st.get("max") or 100, "beats": st.get("beats"), "allow": st.get("allow") or 5,
-                "eta_h": st.get("eta_h"), "updated": st.get("updated")}
+                "eta_h": st.get("eta_h"), "eta_t": int(time.time() + float(st.get("eta_h") or 0) * 3600) if st.get("eta_h") else None, "updated": st.get("updated")}
     except Exception:
         return None
 
@@ -19402,8 +19499,13 @@ def chat_list(user):
             seen = max(float(c.get("seen_t") or 0), _CHAT_VIEW.get(c["id"], 0),
                        max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") == "user"] or [0]))
             _ttl, _stl = _chat_title_status(c)
+            _lr = next((m.get("result") or {} for m in reversed(c.get("msgs") or []) if m.get("role") == "result"), None)
+            _rb = c.get("robot") or {}
+            _jr = {"idea": bool(c.get("idea_ok")), "plan": bool(_rb.get("entry") and _rb.get("stop") and _rb.get("exit")),
+                   "test": "run" if (c.get("test") or {}).get("state") == "queued" else (("pos" if float(_lr.get("net") or 0) > 0 else "neg") if _lr else None),
+                   "net": (_lr or {}).get("net"), "luck": ((_luck_of(c.get("robot_id"), _rb.get("market") or "BTCUSD") or {}).get("state")) if c.get("robot_id") else None}
             out.append({"id": c["id"], "name": (c.get("robot") or {}).get("name"), "updated": c.get("updated"), "robot_id": c.get("robot_id"),
-                        "title": _ttl, "status": _stl,
+                        "title": _ttl, "status": _stl, "jr": _jr if _rb else None, "archived": bool(c.get("archived")),
                         "last": str(last.get("text") or "")[:90], "n": sum(1 for m in c.get("msgs") or [] if m.get("role") == "user"),
                         "understood": c.get("understood"), "last_t": int(last.get("t") or 0), "last_role": last.get("role"),
                         "market": (c.get("robot") or {}).get("market") or c.get("market"),
@@ -24466,7 +24568,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -24487,7 +24589,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

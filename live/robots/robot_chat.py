@@ -353,7 +353,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "joke_used": "its words" when you bring one back,
   "idea_card": null or {"summary": "the idea in one plain sentence", "market": "...", "entry": "when it gets in, plain words",
   "filters": "extra conditions or empty", "stop": "its protection, plain words or 'à choisir'", "exit": "when it gets out",
-  "unclear": [{"q": "a short question", "options": ["answer 1", "answer 2", ...]}] (0-3, the points you are NOT sure of)}
+  "unclear": [{"q": "a short question", "options": ["answer 1", "answer 2", ...]}] (0-3, the points you are NOT sure of),
+  "new": true when it is ANOTHER robot than the one of this conversation (it then gets its own conversation)}
   - see THE IDEA FIRST,
   "research": null or {"goal": "what you are looking for", "steps": ["step", ...] (3 to 8), "hours": 1-4} - start a
   RESEARCH SESSION when they ask you to find / dig / work on something on your own, or let you go on without them: you
@@ -368,7 +369,7 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   ONLY: tests, luck tests, all accounts), "confirm" ({"action": "pause"|"resume"} - THEY press the button to pause / restart
   the robot on THEIR account; you never do it yourself), "onaccount" (put THIS chat's robot on their real account - they
   confirm with their password; the card says plainly if it is not possible yet and why), "compare" (this robot vs the Owl,
-  step by step). Use a card whenever they ask about their account, results, a day,
+  step by step), "robots" (ALL their robots with where each one stands - use it for "liste mes robots"). Use a card whenever they ask about their account, results, a day,
   a market now, or an app area - and do NOT repeat the numbers the card shows,
   "setting": null or {"sound": true|false, "lang": "fr"|"en", "big": true|false, "brief_h": 0-23} - when they ask to change
   how the app behaves ("coupe le son", "parle-moi en français", "écris plus gros", "réveille-moi à 8 h"): applied at once,
@@ -1076,7 +1077,7 @@ def partner_of(raw):
                 out[k] = raw[k].strip()[:200]
         if isinstance(raw.get("cards"), list):
             out["cards"] = [{"kind": x["kind"], "args": x.get("args") if isinstance(x.get("args"), dict) else {}} for x in raw["cards"][:2]
-                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare")]
+                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots")]
         st_ = raw.get("setting")
         if isinstance(st_, dict):
             ok = {k: v for k, v in st_.items() if (k in ("sound", "big") and isinstance(v, bool)) or (k == "lang" and v in ("fr", "en"))
@@ -1086,6 +1087,7 @@ def partner_of(raw):
         ic = raw.get("idea_card")
         if isinstance(ic, dict) and str(ic.get("summary") or "").strip():
             out["idea_card"] = {k: str(ic.get(k) or "")[:300] for k in ("summary", "market", "entry", "filters", "stop", "exit")}
+            out["idea_card"]["new"] = bool(ic.get("new"))
             out["idea_card"]["unclear"] = [{"q": str(u.get("q") or "")[:160], "options": [str(o)[:60] for o in (u.get("options") or [])[:4]]}
                                            for u in (ic.get("unclear") or [])[:3] if isinstance(u, dict) and str(u.get("q") or "").strip()]
         rs = raw.get("research")
