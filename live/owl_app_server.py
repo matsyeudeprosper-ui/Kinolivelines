@@ -17996,7 +17996,14 @@ def _kino_presence(user, c):
             kst = {"fr": "un peu soucieux", "en": "a bit worried"}
         elif km == "happy":
             kst = {"fr": "de bonne humeur ☀️", "en": "in a good mood ☀️"}
-    return {"kst": kst, "km": km}
+    kwhy = ""
+    try:
+        F2 = _KIp.feelings(uid)
+        if F2:
+            kwhy = F2[0].get("why") or ""
+    except Exception:
+        pass
+    return {"kst": kst, "km": km, "kwhy": kwhy}
 
 
 def _trade_epoch(w):
@@ -18223,6 +18230,11 @@ def chat_get(user, cid):
             pass
     out = {k: v for k, v in c.items() if k != "uid"}
     out["view"] = _rc().view(c.get("robot"), _chat_pieces(user))
+    try:                                         # 2026-10-20 (owner UI review items 6, 8)
+        out["luck"] = _luck_of(c.get("robot_id"), (c.get("robot") or {}).get("market") or "BTCUSD")
+        out["ui_lang"] = _rc().member_lang2(c)
+    except Exception:
+        pass
     for m in out.get("msgs") or []:
         m.pop("probs", None)
     if c.get("lang") != "en":
@@ -19010,6 +19022,73 @@ def chat_show(user, body):
     return {"ok": True}
 
 
+def _luck_of(rid, sym):
+    """the luck test of a robot on a market: progress or verdict (study/luck/<rid>_<sym>.status.json + its queue)"""
+    if not rid:
+        return None
+    try:
+        sd = os.path.join(os.path.dirname(DIR), "study", "luck")
+        try:
+            st = json.load(open(os.path.join(sd, "%s_%s.status.json" % (rid, sym)), encoding="utf-8"))
+        except Exception:
+            st = {}
+        q = json.load(open(os.path.join(sd, "queue.json"), encoding="utf-8"))
+        mine = [e for e in q if e.get("rid") == rid and e.get("sym") == sym]
+        if not st and not mine:
+            return None
+        if mine and not (st.get("state") in ("pass", "fail", "data_changed") and str(st.get("updated") or "") >= mine[-1]["at"]) and st.get("state") != "running":
+            ahead = 0
+            for e in q:
+                if e is mine[-1]:
+                    break
+                s2 = {}
+                try:
+                    s2 = json.load(open(os.path.join(sd, "%s_%s.status.json" % (e["rid"], e["sym"])), encoding="utf-8"))
+                except Exception:
+                    pass
+                if not (s2.get("state") in ("pass", "fail", "data_changed") and str(s2.get("updated") or "") >= e["at"]):
+                    ahead += 1
+            return {"state": "queued", "ahead": ahead}
+        return {"state": st.get("state"), "n": st.get("n"), "max": st.get("max") or 100, "beats": st.get("beats"), "allow": st.get("allow") or 5,
+                "eta_h": st.get("eta_h"), "updated": st.get("updated")}
+    except Exception:
+        return None
+
+
+def _chat_title_status(c):
+    """2026-10-20 (owner UI review item 1): a title people recognise (the robot, else the subject, else their first words)
+    and a one-line status with an icon"""
+    rb = c.get("robot") or {}
+    M = c.get("msgs") or []
+    first = next((str(m.get("text") or "") for m in M if m.get("role") == "user" and len(str(m.get("text") or "")) > 8), "")
+    title = rb.get("name") or c.get("thread") or (" ".join(first.split()[:6]) + ("…" if len(first.split()) > 6 else "")) or ""
+    R_ = c.get("research") or {}
+    t_ = c.get("test") or {}
+    st = ""
+    if R_.get("goal") and not R_.get("done"):
+        st = "🔬 recherche en cours"
+    elif t_.get("state") == "queued":
+        st = "🧪 test en cours"
+    else:
+        lk = _luck_of(c.get("robot_id"), rb.get("market") or "BTCUSD")
+        if lk and lk.get("state") == "running":
+            st = "🎲 test de chance %s/%s" % (lk.get("n"), lk.get("max"))
+        elif lk and lk.get("state") == "pass":
+            st = "🏆 a passé le test de chance"
+        elif lk and lk.get("state") == "fail":
+            st = "🎲 test de chance raté"
+        else:
+            lr = next((m.get("result") or {} for m in reversed(M) if m.get("role") == "result"), None)
+            if lr:
+                n = float(lr.get("net") or 0)
+                a, b = lr.get("first_half"), lr.get("later_half")
+                a = a.get("net") if isinstance(a, dict) else a
+                b = b.get("net") if isinstance(b, dict) else b
+                st = ("👎 perd %.0f $" % abs(n)) if n <= 0 else (("🤔 fragile, %+.0f $" % n) if (a is not None and b is not None and (float(a) <= 0 or float(b) <= 0))
+                                                              else ("👍 prometteur, %+.0f $" % n))
+    return title, st
+
+
 def chat_list(user):
     me = re.sub(r"[^A-Za-z0-9]", "", user.get("id") or "")
     out = []
@@ -19026,7 +19105,9 @@ def chat_list(user):
             last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "ai")), {})
             seen = max(float(c.get("seen_t") or 0), _CHAT_VIEW.get(c["id"], 0),
                        max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") == "user"] or [0]))
+            _ttl, _stl = _chat_title_status(c)
             out.append({"id": c["id"], "name": (c.get("robot") or {}).get("name"), "updated": c.get("updated"), "robot_id": c.get("robot_id"),
+                        "title": _ttl, "status": _stl,
                         "last": str(last.get("text") or "")[:90], "n": sum(1 for m in c.get("msgs") or [] if m.get("role") == "user"),
                         "understood": c.get("understood"), "last_t": int(last.get("t") or 0), "last_role": last.get("role"),
                         "market": (c.get("robot") or {}).get("market") or c.get("market"),
