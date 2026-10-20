@@ -14977,12 +14977,59 @@ def _rc_norm(x):
     return "".join(c for c in unicodedata.normalize("NFD", str(x or "").lower()) if unicodedata.category(c) != "Mn" and (c.isalnum() or c == " "))
 
 
+def _more_plan(user, cid, mo):
+    """Kino planned to text again by itself: kept in the chat (survives a restart) and fired by a timer"""
+    c = json.load(open(_chat_path(cid), encoding="utf-8"))
+    M = c.get("msgs") or []
+    run = 0
+    for m in reversed(M):
+        if m.get("role") == "user":
+            break
+        if m.get("role") == "ai":
+            run += 1
+    day = [t for t in (_mem_get(user.get("id")).get("more_log") or []) if time.time() - t < 86400]
+    if run >= 3 or len(day) >= 15:
+        return
+    last_user = max([int(m.get("t") or 0) for m in M if m.get("role") == "user"] or [0])
+    plan = {"due": time.time() + mo["in"], "what": mo["what"], "user_t": last_user}
+    _chat_mut(cid, lambda cc: cc.__setitem__("more", plan))
+    threading.Timer(mo["in"], _more_fire, args=(user, cid)).start()
+
+
+def _more_fire(user, cid):
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        pl = c.get("more")
+        if not pl or time.time() < float(pl.get("due") or 0) - 2:
+            return
+        _chat_mut(cid, lambda cc: cc.pop("more", None))
+        M = c.get("msgs") or []
+        last_user = max([int(m.get("t") or 0) for m in M if m.get("role") == "user"] or [0])
+        if last_user > int(pl.get("user_t") or 0) or _CHAT_Q.get(cid) or cid in _CHAT_B or cid in _CHAT_WAIT:
+            return                                   # they wrote meanwhile: the conversation moved on
+        if time.time() - float(pl["due"]) > 3 * 3600:
+            return                                   # too old (after a long restart)
+        _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("more_log", [t for t in (mm.get("more_log") or []) if time.time() - t < 86400] + [time.time()]))
+        sn = _CHAT_SEEN.get(user.get("id"))
+        here = bool(sn and time.time() - sn[0] < 60 and sn[1] == cid)
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        _chat_quick(cid, user, "YOUR FOLLOW-ON - a moment ago you planned to add: \"%s\". They have not written since; they are %s." % (
+            pl["what"], "looking at the conversation" if here else "away from the app"), notify=not here)
+    except Exception:
+        pass
+
+
 def _partner_apply(user, cid, pa):
     """2026-10-19 (owner: "user and Kino complete each other"): Kino's projects for the member, what members teach it
     (anonymous, shared), its questions to the nest and the answers it collects - never a name or a project crosses"""
     if not pa:
         return
     uid = user.get("id")
+    if cid and pa.get("more"):                     # 2026-10-20 (owner: "free to continue adding messages without my reply")
+        try:
+            _more_plan(user, cid, pa["more"])
+        except Exception:
+            pass
     if cid and any(k in pa for k in ("thread", "aside", "later", "later_used")):      # 2026-10-20: the conversation's flow
         def putf(cc):
             if pa.get("thread"):
@@ -15380,7 +15427,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
-        if event:
+        if event and not event.startswith("YOUR FOLLOW-ON"):
             q["build"] = False
         if event and not q.get("send") and not event.startswith("NEW CONVERSATION"):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
@@ -16012,6 +16059,11 @@ def _companion_tick():
                                          daemon=True).start()
                 except Exception:
                     pass
+            # (2a) 2026-10-20: a planned follow-on lost by a restart fires here
+            for x in ch[:3]:
+                cm = _chat_load(u, x["id"])
+                if cm and cm.get("more") and now > float(cm["more"].get("due") or 0) + 60 and not busy(cm["id"]):
+                    threading.Thread(target=_more_fire, args=(u, cm["id"]), daemon=True).start()
             # (2b) 2026-10-19 (owner: "follow up sometimes like humans do ... not predictable or systematic, but smartly,
             # intuitively"): Kino asked or proposed something and got no answer. Still on the chat: after a random
             # 2.5-7 min. Gone: after a random 25-80 min, by day, as a push. Once per message, never after a follow-up,
@@ -16027,8 +16079,9 @@ def _companion_tick():
                 if not any(mm.get("role") == "user" for mm in M):
                     continue
                 txt = str(lm.get("text") or "")
-                if not (txt.rstrip().endswith("?") or lm.get("chips") or lm.get("ready")):
-                    continue                                  # nothing was asked or proposed
+                lively = sum(1 for mm in M[-10:] if mm.get("role") == "user" and int(lm.get("t") or 0) - int(mm.get("t") or 0) < 900) >= 3
+                if not (txt.rstrip().endswith("?") or lm.get("chips") or lm.get("ready") or lively) or cf.get("more"):
+                    continue                                  # nothing was asked, the talk was not lively, or a follow-on is planned
                 el = now - int(lm.get("t") or now)
                 rnd = (abs(hash("%s%s" % (cf["id"], lm.get("t")))) % 1000) / 1000.0
                 sn = _CHAT_SEEN.get(uid)

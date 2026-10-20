@@ -166,6 +166,8 @@ EVENTS: the message may start with an EVENT instead of a member message:
   from the lab, a curious question, a next step - one thing, short, specific, no "just checking in". Otherwise
   "send": false. If your last message got no answer, you may still come back ONCE with something NEW (a finding, a
   chart of their idea, a better version, a result) - never repeat or chase the old question; after that, wait for them.
+  YOUR FOLLOW-ON - the message you planned to add ("more"): send it now, naturally, as a continuation (you may use
+  build = true to check numbers or show a chart); or "send": false if it no longer makes sense.
   LAB NEWS - a big result in the lab (a luck test finished): share it like news with a friend if it concerns them.
   GESTURE - a small spontaneous moment (Friday evening, an anniversary of your first talk, a market holiday): one or two
   warm lines, or {"send": false} if it would feel forced.
@@ -298,6 +300,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "thread": null or the conversation's MAIN subject in a few words (only when it is new or changed),
   "aside": true when this message is a side topic away from the main thread (false when you are on it or bring it back),
   "later": [{"kind": "ask"|"tell", "text": "..."}] things to bring up later, "later_used": "the text" when you used one,
+  "more": null or {"in": seconds (15 to 1800), "what": "what you will add"} - you will TEXT AGAIN by yourself if they have
+  not written by then (see YOU CAN TEXT AGAIN),
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
   (see TEACHING AT THEIR PACE),
   "remember": [...], "show": null or
@@ -590,6 +594,19 @@ def own_agenda(chat, memory):
            "come from what they JUST said, never from a list. Short answers from them (\"Cassure\", \"ok\") = they are not in "
            "the mood to elaborate: build on it yourself instead of asking again. No service offers (\"Tu veux que je...?\") - "
            "just do the obvious thing. Set \"own\" when your message brings something of yours.\n")
+    run = 0
+    for m in reversed(chat.get("msgs") or []):
+        if m.get("role") == "user":
+            break
+        if m.get("role") == "ai":
+            run += 1
+    out += ("YOU CAN TEXT AGAIN WITHOUT WAITING FOR THEM (not ping-pong): like a friend, when you naturally have more to say - "
+            "you are going to check something, a second thought, the chart you promised, a little joke, a reaction to their "
+            "silence - set \"more\": {\"in\": seconds, \"what\": \"...\"} and you will send it yourself if they have not "
+            "written by then (15-60 s for 'je regarde...', minutes for a second thought). If you say you will show or check "
+            "something, either do it now or plan it with \"more\" - never promise and wait. %s\n" % (
+                "You already sent %d messages in a row without an answer - no \"more\" now, let them breathe." % run if run >= 3 else
+                "Not every message - only when a person would."))
     out += "MAIN THREAD of this conversation: %s\n" % (th or "(not set yet - set \"thread\" to the main subject in a few words)")
     if rhythm:
         out += "RIGHT NOW: " + " | ".join(rhythm) + "\n"
@@ -845,6 +862,12 @@ def partner_of(raw):
             out["knows"] = kn[:4]
     except Exception:
         pass
+    try:                      # 2026-10-20 (owner: "not ping pong - he is free to add more messages without my reply")
+        mo = raw.get("more")
+        if isinstance(mo, dict) and str(mo.get("what") or "").strip():
+            out["more"] = {"in": max(15, min(1800, int(float(mo.get("in") or 60)))), "what": str(mo["what"]).strip()[:240]}
+    except Exception:
+        pass
     try:                      # 2026-10-20: the conversation's thread and saved-for-later items
         if str(raw.get("thread") or "").strip():
             out["thread"] = str(raw["thread"]).strip()[:120]
@@ -898,7 +921,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "react": _react_of(raw), "partner": partner_of(raw)}
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
-    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and not event, "remember": remember_of(raw),
+    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith("YOUR FOLLOW-ON")), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
