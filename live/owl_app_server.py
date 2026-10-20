@@ -14702,10 +14702,18 @@ def _chat_member(user, c):
         mk_ = (c.get("robot") or {}).get("market") or "BTCUSD"
         t_ = c.get("test") or {}
         line_ = "testing this robot on %s: possible right now with \"act\": \"test\" (any market of their broker; %s)" % (
-            mk_, "the market is prepared - a few minutes" if (mk_ == "BTCUSD" or _pack_ready(mk_)) else "first time on this market - its prices are prepared first, ~45 min more")
+            mk_, "the market is prepared - the test itself takes a few minutes once its turn comes" if (mk_ == "BTCUSD" or _pack_ready(mk_)) else "first time on this market - its prices are prepared first, ~45 min more")
         if t_:
             cur = t_.get("rev") == c.get("rev") and (t_.get("sym") or "BTCUSD") == mk_
             js = next((x for x in _mq_load() if x.get("id") == t_.get("job")), None) if t_.get("job") else None
+            try:
+                Q_ = [x for x in _mq_load() if x.get("state") in ("queued", "building", "testing")]
+                ix_ = next((k for k, x in enumerate(Q_) if x.get("id") == t_.get("job")), None)
+                if ix_:
+                    line_ += "; IN LINE behind %d test(s): %s" % (ix_, ", ".join("%s on %s (%s)" % ("a member's robot" if x.get("uid") != user.get("id") else x["rid"],
+                                                                                                     x["sym"], x.get("state")) for x in Q_[:ix_]))
+            except Exception:
+                pass
             line_ += "; its last test request: %s on %s, %s%s" % (
                 "THIS version" if cur else "an OLDER version / another market (not the robot as it is now)", t_.get("sym") or "BTCUSD",
                 (js or {}).get("state") or t_.get("state"), (", waiting since %s" % str(t_.get("at"))[11:16] + " UTC") if (js or {}).get("state", t_.get("state")) == "queued" else "")
@@ -15370,7 +15378,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         break
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event),
-                          followup=bool(event and event.startswith("FOLLOW-UP")))
+                          followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
                 _tg_demo(user.get("id"), _qdm)
@@ -15453,7 +15461,7 @@ def _chat_build(cid, user):
                 if txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
-                              follow=True, link=ans.get("link"), tools=ans.get("tools_used"))
+                              follow=True, link=ans.get("link"), tools=ans.get("tools_used"), **({"own": ans["own"]} if ans.get("own") else {}))
                 for _cht in ans.get("charts") or []:       # 2026-10-19 (owner list-4 item 3): the real trade, replayed
                     c.setdefault("msgs", []).append({"role": "demo", "market": "BTCUSD", "count": 1, "won": 1 if (_cht.get("usd") or 0) > 0 else 0,
                                                      "trades": [_cht], "by": "ai", "real": True, "t": int(time.time())})
@@ -16779,6 +16787,11 @@ def chat_open(user, body):
         ai_nudge_seen(user, {"cid": c["id"]})
     except Exception:
         pass
+    _CHAT_VIEW[c["id"]] = time.time()
+    try:
+        _chat_mut(c["id"], lambda cc: cc.__setitem__("seen_t", int(time.time())))      # survives a restart
+    except Exception:
+        pass
     M = c.get("msgs") or []
     last = max([int(m.get("t") or 0) for m in M] or [0])
     away = time.time() - last
@@ -16801,7 +16814,11 @@ def chat_send(user, body):
         return {"ok": False, "err": "empty"}
     if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
         return {"ok": False, "err": "cap"}
-    _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **({"voice": True} if body.get("voice") else {})))
+    _ex = {"voice": True} if body.get("voice") else {}
+    rp = body.get("reply") if isinstance(body.get("reply"), dict) else None     # 2026-10-20 (owner UI item 1): a quoted message
+    if rp and str(rp.get("text") or "").strip():
+        _ex["reply"] = {"who": "ai" if rp.get("who") == "ai" else "me", "text": str(rp["text"])[:200], "i": int(rp.get("i") or 0) if str(rp.get("i") or "0").isdigit() else 0}
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **_ex))
     _CHAT_TYPING.pop(c["id"], None)
     if c["id"] in _CHAT_WAIT:
         return {"ok": True}                      # Kino is already listening to this burst
@@ -16832,11 +16849,15 @@ def _chat_result(c):
             "owl_curve": (p.get("curve") or [])[-60:], "market": t.get("sym") or "BTCUSD"}
 
 
+_CHAT_VIEW = {}          # 2026-10-20 (owner UI item 7): cid -> last time the member had it open (unread badges)
+
+
 def chat_get(user, cid):
     c = _chat_load(user, cid)
     if c is None:
         return {"err": "missing"}
     _CHAT_SEEN[user.get("id")] = (time.time(), cid)
+    _CHAT_VIEW[cid] = time.time()
     res = _chat_result(c)
     if res is not None and not _CHAT_Q.get(c["id"]):
         def put(c):
@@ -17573,9 +17594,13 @@ def chat_list(user):
             if c.get("uid") != user.get("id") or c.get("hidden"):
                 continue
             last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "ai")), {})
+            seen = max(float(c.get("seen_t") or 0), _CHAT_VIEW.get(c["id"], 0),
+                       max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") == "user"] or [0]))
             out.append({"id": c["id"], "name": (c.get("robot") or {}).get("name"), "updated": c.get("updated"), "robot_id": c.get("robot_id"),
                         "last": str(last.get("text") or "")[:90], "n": sum(1 for m in c.get("msgs") or [] if m.get("role") == "user"),
-                        "understood": c.get("understood")})
+                        "understood": c.get("understood"), "last_t": int(last.get("t") or 0), "last_role": last.get("role"),
+                        "market": (c.get("robot") or {}).get("market") or c.get("market"),
+                        "unread": sum(1 for m in c.get("msgs") or [] if m.get("role") == "ai" and int(m.get("t") or 0) > seen)})
             if len(out) >= 30:
                 break
     except Exception:

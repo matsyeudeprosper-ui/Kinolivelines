@@ -293,6 +293,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "draw": null or {"market", "lines": [{"price", "label"}], "zones": [{"from", "to", "label"}]} or {"clear": true} - draws
   on THEIR live chart page (Graphique) to show a level or a zone; then add "link": "chart" so they can open it,
   "missing": null or "one line: a tool or ability you LACKED to help them properly" (the app's creator reads it),
+  "own": null or "question" | "opinion" | "hypothesis" | "story" | "idea" - set it when your message brings something of YOUR
+  OWN (see YOUR OWN AGENDA), not a service question,
   "lesson": null or a concept key when you slip in a mini-lesson, "knows": [concept keys they just showed they understand]
   (see TEACHING AT THEIR PACE),
   "remember": [...], "show": null or
@@ -407,7 +409,9 @@ def transcript(chat):
         if t and r in ("user", "ai"):
             prev_t = t
         if r == "user":
-            L.append("MEMBER: " + str(m.get("text") or "")[:1500])
+            rp = m.get("reply") or {}
+            L.append("MEMBER: " + (("(replying to %s message: \"%s\") " % ("YOUR" if rp.get("who") == "ai" else "their own", str(rp.get("text"))[:160]))
+                                   if rp.get("text") else "") + str(m.get("text") or "")[:1500])
         elif r == "ai":
             L.append("YOU: " + str(m.get("text") or "")[:1200])
             if m.get("mreact"):
@@ -524,6 +528,49 @@ def system():
     return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "")
 
 
+PROFILE_SLOTS = [("experience", "how long they have traded, and how they started"), ("hours", "when they look at the market / their daily rhythm"),
+                 ("life", "their job or what fills their days"), ("why", "why they trade, what they want from it (a goal, a number, freedom...)"),
+                 ("risk", "how a losing day really feels for them, what dip they can stand"), ("manual", "whether they also trade by hand, and how"),
+                 ("markets", "the markets they like or avoid, and why"), ("belief", "what they believe works in trading (their own conviction)")]
+
+
+def own_agenda(chat, memory):
+    """2026-10-20 (owner: "Kino still feels like a support assistant... it should be a lively conversation"): what Kino
+    itself wants from this conversation right now, and how long it has only been answering"""
+    M = [m for m in (chat.get("msgs") or []) if m.get("role") == "ai" and not m.get("event")]
+    streak = 0
+    for m in reversed(M[-6:]):
+        if m.get("own"):
+            break
+        streak += 1
+    mem = memory or {}
+    L = []
+    for pj in (mem.get("projects") or [])[-4:]:
+        if pj.get("status") != "done" and pj.get("need"):
+            L.append("for your project '%s' you still need: %s" % (pj.get("title"), pj.get("need")))
+    try:
+        import kino_mind as KM
+        for o in [o for o in (KM.load().get("opinions") or []) if o.get("confidence") in ("low", "medium")][:3]:
+            L.append("you are not sure yet about '%s' (your view: %s) - their experience could help you decide" % (o.get("topic"), o.get("view")))
+    except Exception:
+        pass
+    for q in (mem.get("nest_open") or [])[:1]:
+        L.append("a question from the nest you could ask them: %s" % (q.get("q") if isinstance(q, dict) else q))
+    notes = " ".join(str(n).lower() for n in (mem.get("notes") or []))
+    gaps = [d for k, d in PROFILE_SLOTS if not any(w in notes for w in {"experience": ("years", "ans", "since", "depuis", "started"), "hours": ("morning", "evening", "matin", "soir", "hours", "heure"),
+                                                                         "life": ("job", "work", "travail", "boulot", "métier"), "why": ("goal", "objectif", "want", "freedom", "liberté"),
+                                                                         "risk": ("risk", "risque", "loss", "perte", "dip"), "manual": ("manual", "by hand", "à la main", "manuel"),
+                                                                         "markets": ("market", "marché", "gold", "or ", "nasdaq"), "belief": ("believe", "pense que", "conviction")}[k])]
+    if gaps:
+        L.append("things you do not know yet about THEM (ask one, naturally, when it fits): " + "; ".join(gaps[:4]))
+    head = ("YOUR OWN AGENDA (you are a partner with your own curiosity and research, not a help desk): " +
+            ("you have ONLY ANSWERED for your last %d messages - THIS reply must also bring something of YOUR OWN: one question you "
+             "really want answered (from the list), an opinion you hold, a hypothesis, or a story from your work. " % streak if streak >= 2 else
+             "when the moment fits (they are not upset or in a hurry), add ONE thing of your own after answering. "))
+    return (head + "Do NOT end on a service offer (\"Tu veux que je...?\", \"Je lance ?\") when a real question of your own fits "
+            "better - you can just do the obvious thing. Set \"own\" in your JSON when you did. Your agenda now:\n- " + "\n- ".join(L or ["(nothing yet - be curious about them)"]))
+
+
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None):
     U = "MODE: %s\nLANGUAGE: reply in the language of the member's LAST message (they may switch); if unclear, %s\n" % (
         mode, "French" if lang != "en" else "English")
@@ -551,6 +598,11 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
                   "sentences), natural spoken words, no lists, no emoji, no links, no formulas read out - say what a formula means.\n")
     except Exception:
         pass
+    if not event:
+        try:
+            U += "\n" + own_agenda(chat, memory) + "\n"
+        except Exception:
+            pass
     if event:
         U += "\nEVENT: %s\n" % event
     U += ("\nAnswer %s right away. One JSON object {say, chips, build, remember}." % ("the EVENT" if event else "the last message")
@@ -698,6 +750,11 @@ def _react_of(raw):
     return r if (0 < len(r) <= 8 and not any(ch.isalnum() for ch in r)) else None     # one emoji, never words
 
 
+def _own_of(raw):
+    o = str((raw or {}).get("own") or "").strip().lower() if isinstance(raw, dict) else ""
+    return o if o in ("question", "opinion", "hypothesis", "story", "idea") else None
+
+
 def partner_of(raw):
     """the partner fields of an answer, cleaned (2026-10-19)"""
     if not isinstance(raw, dict):
@@ -800,7 +857,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
-            "react": _react_of(raw), "partner": partner_of(raw)}
+            "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw)}
 
 
 def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on_say=None, member=None, images=None):
@@ -835,6 +892,7 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
     ans, probs = clean(raw, pieces, owl, prev, markets)
     ans["note"] = str(raw.get("note") or "").strip()[:200] if isinstance(raw, dict) else ""
     ans["partner"] = partner_of(raw)
+    ans["own"] = _own_of(raw)
     pr = raw.get("proposal") if isinstance(raw, dict) else None
     if isinstance(pr, dict) and isinstance(pr.get("robot"), dict):
         pa, pp = clean({"robot": pr["robot"]}, pieces, owl, prev, markets)
