@@ -343,6 +343,16 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   then work step by step by yourself, one line per finding, and they see your plan tick in the chat,
   "plan_update": [{"i": step number from 0, "state": "done"|"dropped"|"doing", "note": "a few words"}], "plan_add": ["new
   step"], "research_done": true when the session is over,
+  "cards": [{"kind": "account"|"perf"|"live"|"day"|"history"|"confirm"|"lab"|"page", "args": {...}}] (0-2) - LIVE CARDS shown
+  under your message, drawn from the app's real data and updating by themselves: "account" (their balance, today, week,
+  open trade), "perf" (their performance curve and figures), "live" ({"sym": "XAUUSD"} live price + chart + their open
+  trade), "day" ({"d": "14/10"} one day's trades), "history" (their last days), "page" ({"page": "wealth"|"rentabilite"|
+  "place"|"robots"|"mesrobots"|"chart"|"parrainage"|"" (home)} opens that app page right inside the chat), "lab" (OWNER
+  ONLY: tests, luck tests, all accounts), "confirm" ({"action": "pause"|"resume"} - THEY press the button to pause / restart
+  the robot on THEIR account; you never do it yourself). Use a card whenever they ask about their account, results, a day,
+  a market now, or an app area - and do NOT repeat the numbers the card shows,
+  "setting": null or {"sound": true|false, "lang": "fr"|"en", "big": true|false, "brief_h": 0-23} - when they ask to change
+  how the app behaves ("coupe le son", "parle-moi en français", "écris plus gros", "réveille-moi à 8 h"): applied at once,
   "standing": null or "their instruction about HOW you should work from now on, in their words" (e.g. "keep going
   without asking my opinion", "one line after each market", "always in French") - saved and followed every turn;
   "standing_drop": "words" when they cancel one,
@@ -1039,6 +1049,15 @@ def partner_of(raw):
         for k in ("moment", "joke", "joke_used"):
             if isinstance(raw.get(k), str) and raw[k].strip():
                 out[k] = raw[k].strip()[:200]
+        if isinstance(raw.get("cards"), list):
+            out["cards"] = [{"kind": x["kind"], "args": x.get("args") if isinstance(x.get("args"), dict) else {}} for x in raw["cards"][:2]
+                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page")]
+        st_ = raw.get("setting")
+        if isinstance(st_, dict):
+            ok = {k: v for k, v in st_.items() if (k in ("sound", "big") and isinstance(v, bool)) or (k == "lang" and v in ("fr", "en"))
+                  or (k == "brief_h" and isinstance(v, int) and 0 <= v <= 23)}
+            if ok:
+                out["setting"] = ok
         rs = raw.get("research")
         if isinstance(rs, dict) and str(rs.get("goal") or "").strip() and isinstance(rs.get("steps"), list):
             out["research"] = {"goal": str(rs["goal"]).strip()[:160], "steps": [str(x)[:120] for x in rs["steps"][:8] if str(x).strip()],

@@ -4,6 +4,7 @@
    Served from disk at /<token>/kino_fab.js; data: ai_nudge {can, unread, nudge}. */
 (function(){
  if(window.__kinoFab)return;window.__kinoFab=1;
+ try{if(window.top!==window)return;}catch(e){return;}   /* 2026-10-20: a page opened inside Kino's chat needs no Kino bubble */
  var seg=location.pathname.split('/').filter(Boolean);if(!seg.length)return;var B0='/'+seg[0]+'/';
  var here=seg[1]||'';if(here==='atelier'||here==='kino')return;
  var en=false;try{en=localStorage.getItem('owlLang')==='en'}catch(e){}

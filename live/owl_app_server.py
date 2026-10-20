@@ -14923,6 +14923,13 @@ def _chat_member(user, c):
     except Exception:
         pass
     out = "\n".join("- " + x for x in L)
+    try:                                         # 2026-10-20 (owner: "Kino reads any part of the app")
+        _ndd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        out += "\n\nTHEIR ACCOUNT DAY BY DAY (this month, UTC days): " + ", ".join("%s %+.2f $" % (d.get("d")[5:], d.get("p") or 0) for d in (_ndd.get("month_days") or [])[-31:]) + \
+               " | balance %.2f $, today %+.2f $, week %+.2f $, month %+.2f $ | open trades: %d" % (float(_ndd.get("balance") or 0), float(_ndd.get("today") or 0),
+                                                                                                  float(_ndd.get("week") or 0), float(_ndd.get("month") or 0), len(_ndd.get("open_list") or []))
+    except Exception:
+        pass
     try:                                         # 2026-10-20 (owner: "access to know about packages, everything around it, and every change")
         out += "\n\nPACKAGES (money management - owl_packages.json, live):\n" + _pkg_block(user)
     except Exception:
@@ -15310,6 +15317,8 @@ def _partner_apply(user, cid, pa):
                 L.append({"t": int(time.time()), "text": pa["standing"]})
             mm["standing"] = L[-8:]
         _mem_note_safe(uid, _so)
+    if (pa.get("setting") or {}).get("brief_h") is not None:     # 2026-10-20: "réveille-moi à 8 h" - the morning coffee hour
+        _mem_note_safe(uid, lambda mm: mm.__setitem__("brief_h", int(pa["setting"]["brief_h"])))
     if pa.get("decision"):                          # list 6 item 5: their decision journal
         try:
             _cc = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
@@ -15824,12 +15833,23 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                             mm["react"] = q["react"]
                         mm["answered"] = True              # a chosen silence, not a lost reply
                         break
+            _pa = (q or {}).get("partner") or {}
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event),
                           followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
                 _tg_demo(user.get("id"), _qdm)
+            # 2026-10-20 (owner: "all is possible from the chat"): live cards Kino attaches, settings it applies
+            _cards = list(_pa.get("cards") or [])
+            if q["say"] and event and event.startswith(("LIVE TRADE OPENED", "LIVE TRADE CLOSED")) and not _cards:
+                _cards = [{"kind": "account", "args": {}}]
+            for cd in _cards[:2]:
+                if cd.get("kind") in ("lab",) and not is_admin(user):
+                    continue
+                _chat_msg(c, "card", kind=cd["kind"], args=cd.get("args") or {})
+            if _pa.get("setting"):
+                _chat_msg(c, "setting", setting=_pa["setting"])
             if q.get("seen"):
                 for m in reversed(c.get("msgs") or []):
                     if m.get("role") == "image":
@@ -16264,7 +16284,8 @@ def _companion_tick():
             # only if Kino finds something worth saying (it may stay silent)
             try:
                 _dkm = time.strftime("%Y-%m-%d", time.gmtime(now))
-                if 7 <= h0 < 10 and _active_hour(uid, h0) and m.get("brief") != _dkm and not busy(ch[0]["id"]) and now - _LAST_SEEN.get(uid, 0) > 120:
+                _bh = m.get("brief_h")
+                if ((h0 == int(_bh)) if _bh is not None else (7 <= h0 < 10 and _active_hour(uid, h0))) and m.get("brief") != _dkm and not busy(ch[0]["id"]) and now - _LAST_SEEN.get(uid, 0) > 120:
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("brief", _dkm))
                     _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
                     _cof = ""
@@ -18233,6 +18254,7 @@ def chat_get(user, cid):
     try:                                         # 2026-10-20 (owner UI review items 6, 8)
         out["luck"] = _luck_of(c.get("robot_id"), (c.get("robot") or {}).get("market") or "BTCUSD")
         out["ui_lang"] = _rc().member_lang2(c)
+        out["admin"] = bool(is_admin(user))
     except Exception:
         pass
     for m in out.get("msgs") or []:
@@ -19020,6 +19042,55 @@ def chat_show(user, body):
     _chat_mut(c["id"], lambda c: _chat_msg(c, "show", text=note, marks=marks, market=mk, tf=tf, facts=fx, candles=rows[-160:]))
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
+
+
+def _live_tick(sym):
+    """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
+    _rc()
+    import robot_ghost as _RGt
+    R, k = _RGt.live_bars(sym)
+    c = (R["close"].astype(float) / k)
+    tm = R["time"].astype(int)
+    n24 = int((tm >= tm[-1] - 86400).sum())
+    return {"sym": sym, "price": round(float(c[-1]), 5), "t": int(tm[-1]), "chg24": round(100 * (c[-1] / c[-max(2, n24)] - 1), 2),
+            "spark": [round(float(x), 5) for x in c[-120:]]}
+
+
+def _kino_lab():
+    """the owner's lab at a glance: tests paused?, the test queue, the luck tests, every account's robot and day"""
+    out = {"paused": os.path.exists(TESTS_PAUSED), "queue": [], "luck": [], "accounts": []}
+    try:
+        for x in _mq_load()[-40:]:
+            if x.get("state") in ("queued", "building", "testing"):
+                out["queue"].append({"rid": x.get("rid"), "sym": x.get("sym"), "state": x.get("state")})
+    except Exception:
+        pass
+    try:
+        sd = os.path.join(os.path.dirname(DIR), "study", "luck")
+        for e in json.load(open(os.path.join(sd, "queue.json"), encoding="utf-8"))[-12:]:
+            st = {}
+            try:
+                st = json.load(open(os.path.join(sd, "%s_%s.status.json" % (e["rid"], e["sym"])), encoding="utf-8"))
+            except Exception:
+                pass
+            done = st.get("state") in ("pass", "fail", "data_changed") and str(st.get("updated") or "") >= e["at"]
+            out["luck"].append({"rid": e["rid"], "sym": e["sym"], "state": st.get("state") if (done or st.get("state") == "running") else "queued",
+                                "n": st.get("n"), "beats": st.get("beats"), "eta_h": st.get("eta_h")})
+    except Exception:
+        pass
+    try:
+        accts = json.load(open(PKG_FILE, encoding="utf-8")).get("accounts") or {}
+        for u in users():
+            uid = u.get("id")
+            try:
+                nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+            except Exception:
+                continue
+            out["accounts"].append({"id": uid, "name": u.get("name") or uid, "pkg": accts.get(uid, "base"), "balance": nd.get("balance"),
+                                    "today": nd.get("today"), "week": nd.get("week"), "open": len(nd.get("open_list") or [])})
+    except Exception:
+        pass
+    return out
 
 
 def _luck_of(rid, sym):
@@ -26525,6 +26596,19 @@ class H(BaseHTTPRequestHandler):
                 self._send(open(os.path.join(DIR, "owl_kino_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
                 self._send(json.dumps(kino_data(user), ensure_ascii=False), "application/json")
+        elif sub in ("live_tick", "kino_lab"):
+            # 2026-10-20 (owner: "all is possible from the chat"): data for the chat's live cards
+            try:
+                import urllib.parse as _uqp
+                _q = _uqp.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                if sub == "live_tick":
+                    self._send(json.dumps(_live_tick((_q.get("sym", ["BTCUSD"])[0] or "BTCUSD").upper()[:12])), "application/json")
+                elif is_admin(user):
+                    self._send(json.dumps(_kino_lab(), ensure_ascii=False), "application/json")
+                else:
+                    self._send(json.dumps({"err": "owner"}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:80]}), "application/json")
         elif sub == "kino_draw":
             # 2026-10-19 (owner list-4 item 1): Kino's lines / zones on the member's live chart; the chart page also says
             # it is open (Kino knows they are looking at the chart)
