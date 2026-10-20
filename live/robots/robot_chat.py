@@ -518,7 +518,7 @@ def transcript(chat):
         elif r == "show":
             mk = "; ".join("%s at %s price %s" % (x["k"].upper(), _hm(x["t"]), x["p"]) for x in m.get("marks") or [])
             L.append("MEMBER SHOWED ON THE CHART (%s, %s candles): %s%s\n  NUMBERS AT THE ENTRY CANDLE: %s" % (
-                m.get("market"), m.get("tf"), mk, (" | they say: " + str(m.get("text"))[:600]) if m.get("text") else "",
+                m.get("market"), m.get("tf"), mk, ((" | they say: " + str(m.get("text"))[:600]) if m.get("text") else "") + ((" | REPLAY ROOM (they are paused at this moment, never reveal what comes after): " + str(m.get("ctx"))[:1800]) if m.get("ctx") else ""),
                 json.dumps(m.get("facts") or {}, ensure_ascii=False)[:1400]))
         elif r == "proposal":
             L.append("YOU PROPOSED (card with an Apply button): %s - %s" % (str(m.get("why") or "")[:200],

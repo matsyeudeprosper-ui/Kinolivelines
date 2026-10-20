@@ -14936,6 +14936,12 @@ def _chat_member(user, c):
         out += "\n\nPACKAGES (money management - owl_packages.json, live):\n" + _pkg_block(user)
     except Exception:
         pass
+    try:                                         # 2026-10-20 (owner: the replay room - Kino remembers where they left off)
+        _rpb = _replay_block(user, c.get("id"))
+        if _rpb:
+            out += "\n\nREPLAY PRACTICE (the member trades the past in the replay room):\n" + _rpb
+    except Exception:
+        pass
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
         import robot_reality as _RW
@@ -19447,7 +19453,7 @@ def chat_show(user, body):
             pass
     if not marks:
         return {"ok": False, "err": "marks"}
-    note = str(body.get("note") or "").strip()[:600]
+    note = str(body.get("note") or "").strip()[:1800 if body.get("upto") else 600]
     RD = _rd()
     ent = next((m for m in marks if m["k"] in ("buy", "sell")), marks[0])
     fx = RD.facts(mk, ent["t"])
@@ -19455,10 +19461,169 @@ def chat_show(user, body):
     s_ = RD.TFS.get(tf, 300)
     win = RD.candles(mk, tf, t1 + 30 * s_, 240) or {}
     rows = [r for r in win.get("candles") or [] if r[0] >= t0 - 60 * s_]
+    if body.get("upto"):                         # 2026-10-20: the replay room - Kino sees nothing after the paused time
+        try:
+            _up = int(body.get("upto"))
+            win = RD.candles(mk, tf, _up, 160) or {}
+            rows = [r for r in win.get("candles") or [] if r[0] + s_ <= _up + 60]
+        except Exception:
+            pass
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
-    _chat_mut(c["id"], lambda c: _chat_msg(c, "show", text=note, marks=marks, market=mk, tf=tf, facts=fx, candles=rows[-160:]))
+    _ctx = str(body.get("ctx") or "").strip()[:1800]          # 2026-10-20: the replay room's numbers, for Kino only
+    _chat_mut(c["id"], lambda c: _chat_msg(c, "show", text=note, marks=marks, market=mk, tf=tf, facts=fx, candles=rows[-160:], **({"ctx": _ctx} if _ctx else {})))
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
+
+
+
+# ---------------------------------------------------------------- the replay room
+# 2026-10-20 (owner: "replace 'montre sur graphique' by a full screen replay trading space, multiple timeframes split (2 max on
+# mobile), Kino takes note and understands, remembers where you left off, continue anytime for that project, we track progress")
+# One session per conversation (= per project). The phone gets one-minute prices and builds every timeframe itself, so a
+# half-formed candle is exact; the server only keeps the session and tells Kino about it.
+REPLAY_DIR = os.path.join(DIR, "robots", "replay")
+_REPLAY_LOCK = threading.Lock()
+
+
+def _replay_path(uid):
+    return os.path.join(REPLAY_DIR, re.sub(r"[^A-Za-z0-9_.-]", "_", str(uid)) + ".json")
+
+
+def _replay_all(uid):
+    try:
+        return json.load(open(_replay_path(uid), encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _replay_stats(s):
+    T = s.get("trades") or []
+    w = sum(1 for t in T if float(t.get("r") or 0) > 0)
+    return {"n": len(T), "won": w, "wr": round(100.0 * w / len(T)) if T else 0, "r": round(sum(float(t.get("r") or 0) for t in T), 2),
+            "days": round(max(0, int(s.get("cursor") or 0) - int(s.get("start") or 0)) / 86400.0, 1)}
+
+
+def replay_get(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    s = _replay_all(user.get("id")).get(c["id"])
+    mk = str((s or {}).get("market") or _chat_market(c))
+    D = _rd().data(mk)
+    if D is None:
+        return {"ok": False, "err": "nodata", "market": mk}
+    T = D[0]["time"]
+    return {"ok": True, "sess": s, "market": mk, "first": int(T[0]), "last": int(T[-1]), "name": (c.get("robot") or {}).get("name") or c.get("title") or ""}
+
+
+def replay_bars(user, body):
+    """one-minute candles of a market between a and b (10 days at most)"""
+    mk = str(body.get("market") or "")
+    D = _rd().data(mk)
+    if D is None:
+        return {"ok": False, "err": "nodata"}
+    R, k = D[0], D[1]
+    import numpy as _np
+    a = int(body.get("a") or 0)
+    b = min(int(body.get("b") or 0), a + 10 * 86400)
+    i0 = int(_np.searchsorted(R["time"], a, side="left"))
+    i1 = int(_np.searchsorted(R["time"], b, side="right"))
+    return {"ok": True, "market": mk, "rows": _rd()._rows(R, k, i0, i1, "M1"), "first": int(R["time"][0]), "last": int(R["time"][-1])}
+
+
+def _replay_clean(x, prev):
+    def num(v, d=0.0):
+        try:
+            v = float(v)
+            return v if v == v and abs(v) < 1e12 else d
+        except Exception:
+            return d
+    s = {"market": str(x.get("market") or prev.get("market") or "")[:20],
+         "tfs": [t for t in (x.get("tfs") or []) if t in ("M1", "M5", "M15", "H1", "H4")][:2] or ["M15", "M5"],
+         "split": 2 if int(num(x.get("split"), 2)) == 2 else 1,
+         "start": int(num(x.get("start"))), "cursor": int(num(x.get("cursor"))), "speed": int(num(x.get("speed"), 1)) or 1,
+         "created": int(prev.get("created") or time.time()), "updated": int(time.time())}
+    T = []
+    for t in (x.get("trades") or [])[-300:]:
+        T.append({"d": 1 if int(num(t.get("d"), 1)) == 1 else -1, "ti": int(num(t.get("ti"))), "to": int(num(t.get("to"))),
+                  "e": num(t.get("e")), "sl": num(t.get("sl")), "tp": num(t.get("tp")), "x": num(t.get("x")),
+                  "r": round(num(t.get("r")), 2), "why": str(t.get("why") or "")[:12], "tf": str(t.get("tf") or "")[:4],
+                  "note": str(t.get("note") or "")[:300]})
+    s["trades"] = T
+    p = x.get("pos")
+    s["pos"] = {"d": 1 if int(num(p.get("d"), 1)) == 1 else -1, "ti": int(num(p.get("ti"))), "e": num(p.get("e")), "sl": num(p.get("sl")),
+                "sl0": num(p.get("sl0")), "tp": num(p.get("tp")), "tf": str(p.get("tf") or "")[:4]} if isinstance(p, dict) and p.get("e") else None
+    s["notes"] = [{"t": int(num(n.get("t"))), "text": str(n.get("text") or "")[:600]} for n in (x.get("notes") or [])[-60:] if str(n.get("text") or "").strip()]
+    s["levels"] = [{"p": num(l.get("p")), "label": str(l.get("label") or "")[:30]} for l in (x.get("levels") or [])[-12:]]
+    return s
+
+
+def replay_save(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    uid = user.get("id")
+    with _REPLAY_LOCK:
+        A = _replay_all(uid)
+        s = _replay_clean(body.get("sess") or {}, A.get(c["id"]) or {})
+        A[c["id"]] = s
+        os.makedirs(REPLAY_DIR, exist_ok=True)
+        _atomic_json(_replay_path(uid), A, ensure_ascii=False)
+    if body.get("closing"):
+        # the chat keeps ONE "where you left off" card, moved to the bottom when the member comes back from the room
+        st = _replay_stats(s)
+
+        def put(c):
+            c["msgs"] = [m for m in c.get("msgs") or [] if m.get("role") != "replay"]
+            _chat_msg(c, "replay", market=s["market"], cursor=s["cursor"], start=s["start"], stats=st, tfs=s["tfs"])
+        _chat_mut(c["id"], put)
+    return {"ok": True, "stats": _replay_stats(s)}
+
+
+def replay_list(user, body):
+    """every replay session of the member, for the progress view"""
+    uid = user.get("id")
+    out = []
+    for cid, s in _replay_all(uid).items():
+        c = _chat_load(user, cid)
+        if c is None:
+            continue
+        out.append({"id": cid, "name": (c.get("robot") or {}).get("name") or c.get("title") or "", "market": s.get("market"),
+                    "cursor": s.get("cursor"), "start": s.get("start"), "updated": s.get("updated"), "stats": _replay_stats(s),
+                    "curve": [t.get("r") for t in (s.get("trades") or [])][-120:]})
+    out.sort(key=lambda x: -(x.get("updated") or 0))
+    return {"ok": True, "sessions": out}
+
+
+def _replay_block(user, cid):
+    """what Kino knows of the member's replay practice (this project first)"""
+    A = _replay_all(user.get("id"))
+    if not A:
+        return ""
+    fm = lambda t: time.strftime("%a %d %b %H:%M UTC", time.gmtime(int(t or 0)))
+    L = []
+    s = A.get(cid)
+    if s:
+        st = _replay_stats(s)
+        L.append("THIS project: %s, replay started at %s, now paused at %s (%s days replayed), charts %s; %d trades, %d%% won, %+.2fR total" %
+                 (s.get("market"), fm(s.get("start")), fm(s.get("cursor")), st["days"], "+".join(s.get("tfs") or []), st["n"], st["wr"], st["r"]))
+        for t in (s.get("trades") or [])[-6:]:
+            L.append("  trade: %s %s at %s, stop %s, target %s -> %s %+.2fR%s" % ("BUY" if t.get("d") == 1 else "SELL", fm(t.get("ti")), t.get("e"), t.get("sl"),
+                                                                                 t.get("tp"), t.get("why"), float(t.get("r") or 0), (" | note: " + t["note"]) if t.get("note") else ""))
+        if s.get("pos"):
+            p = s["pos"]
+            L.append("  OPEN position: %s at %s, stop %s, target %s" % ("BUY" if p.get("d") == 1 else "SELL", p.get("e"), p.get("sl"), p.get("tp")))
+        for n in (s.get("notes") or [])[-5:]:
+            L.append("  their note (%s): %s" % (fm(n.get("t")), n.get("text")))
+        for l in (s.get("levels") or [])[-6:]:
+            L.append("  level they marked: %s %s" % (l.get("p"), l.get("label") or ""))
+    others = [(k, v) for k, v in A.items() if k != cid]
+    if others:
+        tn = sum(len(v.get("trades") or []) for _, v in others)
+        L.append("other projects: %d replay sessions, %d trades in all" % (len(others), tn))
+    L.append("RULE: in a replay never reveal or hint at what price does AFTER the paused time - judge their reading, their entries, stops "
+             "and notes as a coach; remember where they left off and invite them back when it fits.")
+    return "\n".join(L)
 
 
 def _live_tick(sym):
@@ -24675,13 +24840,14 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel"):
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
+                                              "replay_get", "replay_bars", "replay_save", "replay_list"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
                 return
             try:
-                _cap = 2_800_000 if _parts[1] == "chat_image" else (11_000_000 if _parts[1] == "chat_doc" else 40000)    # a screenshot / a document is bigger
+                _cap = 2_800_000 if _parts[1] == "chat_image" else (11_000_000 if _parts[1] == "chat_doc" else (300000 if _parts[1] in ("replay_save", "chat_show") else 40000))    # a screenshot / a document is bigger
                 _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), _cap)).decode("utf-8", "replace") or "{}")
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
@@ -24696,7 +24862,8 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel}[_parts[1]]
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
