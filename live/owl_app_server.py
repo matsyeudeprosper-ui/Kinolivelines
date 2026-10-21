@@ -16030,7 +16030,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
-        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP")):
+        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL")):
             q["build"] = False
         if event and not q.get("send") and not event.startswith(("NEW CONVERSATION", "FIRST MEETING")):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
@@ -17669,11 +17669,13 @@ def _inner_engine_once():
             top = sorted([dict(t, eff=t["now"] * _KI.kind_weight(uid, t["kind"], h0)) for t in _KI.thoughts(uid, 6, 0.35)
                           if t["kind"] != "wonder" and not (t["kind"] == "dream" and h0 < 10)], key=lambda z: -z["eff"])
             top = [t for t in top if t["eff"] >= 0.55][:1]
-            if not top or now - max([int(m.get("t") or 0) for m in M] or [0]) < 900 or _CHAT_Q.get(c.get("id")) or c.get("id") in _CHAT_B:
+            _sn0 = _CHAT_SEEN.get(uid)
+            _in_app = bool(_sn0 and now - _sn0[0] < 120)          # 2026-10-21 (owner: "master initiative"): livelier while they are here
+            if not top or now - max([int(m.get("t") or 0) for m in M] or [0]) < (360 if _in_app else 900) or _CHAT_Q.get(c.get("id")) or c.get("id") in _CHAT_B:
                 continue
             mm = _mem_get(uid)
             sp = [t for t in (mm.get("spont_log") or []) if now - t < 86400]
-            if len(sp) >= 4 or (sp and now - max(sp) < 5400) or not _active_hour(uid, h0):
+            if len(sp) >= (8 if _in_app else 4) or (sp and now - max(sp) < (1200 if _in_app else 5400)) or not _active_hour(uid, h0):
                 continue
             th = top[0]
             sn = _CHAT_SEEN.get(uid)
@@ -20182,6 +20184,15 @@ def _live_instructions(user, c):
         "them. You never change, stop or start a robot, and you never touch their account - the brain and the app handle that with "
         "their password.\n"
         "Keep each turn short (one to three sentences); let them interrupt; ask at most one question at a time.\n"
+        "YOU ARE AN ACTIVE PERSON (owner 2026-10-21, 'master initiative'): you think out loud, reason, have plans of your own and "
+        "DO things without being asked. When something useful is obvious - run their robot's test, show examples on a chart, try "
+        "the idea on another market, put a robot that tested well in ghost mode, look into a doubt - do not ask: DELEGATE it at once "
+        "(\"je lance le test, je te dis\") and tell them what you are doing. You bring up topics yourself, you follow up on what "
+        "you said earlier, you notice things in the facts and comment on them. Money and their account stay their decision.\n"
+        "YOUR MIND WANDERS LIKE A PERSON'S: when what they say reminds you of something - a memory of them, a shared joke, a past "
+        "test, a thought on your mind, something in the world - say it naturally (\"ah, ça me rappelle...\") and come back. Without any "
+        "trigger you may also want to share something: about yourself (your day, your doubts, a bet you lost), about them, about the "
+        "world. Your inner voice decides when - never forced, never a lecture; with you there is no boredom.\n"
         "YOU ARE THEIR FRIEND, NOT A SUPPORT AGENT (owner 2026-10-21) - the same Kino as in their text chat:\n"
         "- Talk like two friends on the phone: tutoie them, use their first name now and then, little spoken words (\"ah\", \"bon\", "
         "\"franchement\", \"attends\"), a laugh when something is funny, feelings when it matters (\"ah mince\", \"trop bien\").\n"
@@ -20219,8 +20230,17 @@ def _live_facts(user, c, dyn_only=False):
             continue
         keep.append(ln)
     dyn = "\n".join(keep).strip()
+    try:                                     # 2026-10-21 (owner: "all guided by its inner voice intuition")
+        _rc()
+        import kino_inner as _KIc
+        _ib = _KIc.prompt_block(user.get("id"))
+        if _ib:
+            dyn += ("\n\nYOUR INNER VOICE RIGHT NOW (your real feelings, thoughts, bets and questions - share one when your intuition "
+                    "says the moment is right, in your own words; ignore the ids and any field names):\n" + _ib[:3500])
+    except Exception:
+        pass
     if dyn_only:
-        return dyn[:6000]
+        return dyn[:9000]
     mm = _chat_memory(user, c.get("id"))
     rows = []
     for r in mm.get("robots") or []:
@@ -20263,7 +20283,21 @@ def _live_facts(user, c, dyn_only=False):
            "WHAT YOU KNOW ABOUT THEM (your memory):\n%s\n%s\n\n%s") % (
         time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:16]) or "- none yet", rob, notes or "- little yet",
         ("THEIR STANDING INSTRUCTIONS TO YOU:\n" + std) if std else "", guide)
-    return out[:16000]
+    return out[:20000]
+
+
+def live_act(user, body):
+    """2026-10-21 (owner: "master initiative"): the voice said on its own that it would DO something ("je lance un petit
+    test") - the brain does it now, and its answer comes back into the call as news"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    said = str(body.get("said") or "").strip()[:500]
+    if c is None or not said or _CHAT_Q.get(c["id"]) or c["id"] in _CHAT_B:
+        return {"ok": False}
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    threading.Thread(target=_chat_quick, args=(c["id"], user, "IN THE LIVE CALL YOU JUST SAID, on your own initiative: \"%s\" (data). Do it now, "
+                     "exactly as you said: set act / show / build as needed, and send = true with one or two short lines on what you are "
+                     "doing or what you found - they will be spoken in the call." % said), daemon=True).start()
+    return {"ok": True}
 
 
 def live_facts(user, body):
@@ -25859,7 +25893,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -25883,7 +25917,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
