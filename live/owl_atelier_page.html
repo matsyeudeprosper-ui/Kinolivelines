@@ -1114,7 +1114,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* 2026-10-20 (owner: building and editing a robot must be understandable and alive): the robot's status in its plan, money
    in plain words, changes shown before -> after with an undo, the comparison with the Owl */
 let LASTFL=null;
-function lastRes(){const m=((C&&C.msgs)||[]).filter(x=>x.role==='result').pop();return m?m.result:null;}
+function lastRes(){const m=((C&&C.msgs)||[]).filter(x=>x.role==='result'&&!(x.result||{}).kino_variant).pop();return m?m.result:null;}
 function robotStatus(){const r=lastRes(),lk=(C&&C.luck)||{},GH=(C&&C.ghosts)||[];const L=[];
  if(r){const n=+r.net||0,a=halfV(r.first_half),b=halfV(r.later_half);L.push(n<=0?'👎 '+T('perd ','loses ')+money(n,0):((a!=null&&b!=null&&(a<=0||b<=0))?'🤔 '+T('fragile ','fragile ')+money(n,0):'👍 '+T('prometteur ','promising ')+money(n,0)));}
  else L.push('🧪 '+T('pas encore testé','not tested yet'));
