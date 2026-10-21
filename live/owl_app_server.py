@@ -16096,6 +16096,10 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         r"je reviens (vers toi|avec)|je te redis ça|i'?ll (check|look) and (get back|tell you))", str(q["say"]), re.I):
                     _w = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
                     _wt = next((x for x in _w if re.search(r"(vérifie|regarde|compte|calcule|creuse|check|look)", x, re.I)), _w[-1])
+                    # 2026-10-21 (owner: the tray showed "Je vérifie l'état exact du test maintenant et..."): the thing itself, short
+                    _wm = re.search(r"je (?:vérifie|regarde|compte|calcule|creuse|check|look (?:at|into))\s+(.{3,90}?)(?:\s+(?:maintenant|tout de suite|now))?(?:\s*(?:,|et |puis |and |pour )|[.!?]|$)", _wt, re.I)
+                    if _wm:
+                        _wt = _wm.group(1).strip(" ,.")
                     c["work"] = ((c.get("work") or []) + [{"due": time.time() + 300, "what": _wt[:200], "t": time.time()}])[-3:]
             except Exception:
                 pass
