@@ -20443,9 +20443,9 @@ def live_session(user, body):
                  "practise on past days; and that calls use minutes (the + button in the chat, 'Mes minutes d'appel'). No numbers.")
     sess = {"model": cf.get("live_model") or "gpt-live-1", "instructions": _ins, "input": _live_input(c),
             "delegation": {"type": "client"}}
-    _pv = ((_mem_get(uid).get("prefs") or {}).get("voice"))
-    if _pv in KINO_VOICES or cf.get("live_voice"):
-        sess["audio"] = {"output": {"voice": _pv if _pv in KINO_VOICES else cf["live_voice"]}}
+    _pv = ((_mem_get(uid).get("prefs") or {}).get("voice")) or cf.get("live_voice") or cf.get("voice")
+    if _pv:
+        sess["audio"] = {"output": {"voice": _pv}}
     import urllib.request, urllib.error
     rq = urllib.request.Request("https://api.openai.com/v1/live/sessions", data=json.dumps({"session": sess, "transport": {"type": "webrtc", "sdp": sdp}}).encode(),
                                 headers={"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "OwlNest/1.0"})
@@ -20454,6 +20454,7 @@ def live_session(user, body):
             r = json.loads(urllib.request.urlopen(rq, timeout=25).read().decode("utf-8"))
         except urllib.error.HTTPError as e0:
             if e0.code == 400 and sess.pop("audio", None) is not None:        # that voice is not offered live: the default one
+                _log_live("VOICE_FALLBACK %s %s (not offered live)" % (uid, _pv))
                 rq = urllib.request.Request(rq.full_url, data=json.dumps({"session": sess, "transport": {"type": "webrtc", "sdp": sdp}}).encode(), headers=dict(rq.header_items()))
                 r = json.loads(urllib.request.urlopen(rq, timeout=25).read().decode("utf-8"))
             else:
