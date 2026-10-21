@@ -16172,6 +16172,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         except Exception:
             _CHAT_B.discard(cid)
             raise
+        if not q.get("act") and not q["build"] and q.get("say") and c.get("robot") and re.search(r"\bje (te )?(lance|relance|démarre|lancerai)\b[^.!?]{0,30}\b(le|un|ton|son|ce) test\b(?! de chance)", str(q["say"]), re.I):
+            q["act"] = "test"
         if q.get("act"):
             _kino_act(cid, user, q["act"], en)
 
@@ -16268,6 +16270,8 @@ def _chat_build(cid, user):
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
 
+            if ans and not ans.get("act") and c.get("robot") and re.search(r"\bje (te )?(lance|relance|démarre|lancerai)\b[^.!?]{0,30}\b(le|un|ton|son|ce) test\b(?! de chance)", str(ans.get("say") or ""), re.I):
+                ans["act"] = "test"
             if ans and ans.get("act") in ("test", "tests_resume", "tests_pause"):
                 _kino_act(cid, user, ans["act"], en)          # the AI acts itself
             if ans and ans.get("act") in ("ghost", "duel") and c.get("robot"):
