@@ -15978,10 +15978,25 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             _CHAT_DRAFT[cid] = t
         _pc, _ow, _mk, _me, _mb = _ctx_get(user, cid, c) if not event else (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
         _tctx = time.time() - _t0q
+        # 2026-10-21 (humanity watch): two unprompted messages in a row ended with the SAME unanswered question
+        _openq = []
+        for _m in reversed(c.get("msgs") or []):
+            if _m.get("role") in ("user", "doc", "image", "show"):
+                break
+            if _m.get("role") == "ai" and str(_m.get("text") or "").rstrip().endswith("?"):
+                _openq.append(re.split(r"(?<=[.!?])\s+", str(_m["text"]).strip())[-1])
+        if event and _openq:
+            event += (" NOTE: your last message asked them \"%s\" and they have not answered yet - do NOT ask any question in this "
+                      "message, and never repeat that one; just give the news." % _openq[0][:160])
         q = _rc().quick(c, _pc, _ow, c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                         markets=_mk, memory=_me, event=event, on_say=_say_, member=_mb, images=_chat_images(c))
         _CHAT_DRAFT.pop(cid, None)
         _CHAT_ACT.pop(cid, None)
+        if event and _openq and q and q.get("say"):
+            _sx = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
+            _nq = lambda x: re.sub(r"\W+", " ", x.lower()).strip()
+            if len(_sx) > 1 and _sx[-1].endswith("?") and any(_nq(_sx[-1]) == _nq(o) for o in _openq):
+                q["say"] = " ".join(_sx[:-1])           # the same question again, unanswered: dropped
         try:                                     # 2026-10-20 (list 5 item 10): how long the first words took
             open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f\n" % (
                 time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), _tfw[0] if _tfw else -1, time.time() - _t0q, _tctx))
