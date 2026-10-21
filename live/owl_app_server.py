@@ -16121,6 +16121,16 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         q["say"] = _rest[:1].upper() + _rest[1:]
             except Exception:
                 pass
+            try:                                     # 2026-10-21 (humanity watch): "décide toi-même" is standing, yet "X ou Y ?" kept coming
+                if q.get("say") and any(str(x.get("text") or "").startswith("Decide yourself") for x in (_mem_get(user.get("id")).get("standing") or [])):
+                    _ss = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
+                    if _ss and _ss[-1].endswith("?") and re.search(r"(\bou\b|\bor\b|tu veux que|tu préfères|ça te va|ca te va|do you want|would you like)", _ss[-1], re.I):
+                        _cm = re.search(r",\s*(et\s+|alors\s+|donc\s+)(tu veux|tu préfères|ça te va|ca te va|on [^,?]* ou )[^?]*\?$", _ss[-1], re.I)
+                        _rest = (" ".join(_ss[:-1] + [_ss[-1][:_cm.start()].rstrip() + "."]) if _cm else " ".join(_ss[:-1])).strip()
+                        if len(_rest) >= 40:
+                            q["say"] = _rest
+            except Exception:
+                pass
             # (3) the same answer twice (two turns for one message): the second one is dropped
             try:
                 _pa_ = next((x for x in reversed(c.get("msgs") or []) if x.get("role") in ("ai", "user")), {})
