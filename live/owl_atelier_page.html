@@ -808,10 +808,10 @@ function pickVoice(){if(!('speechSynthesis' in window))return null;const L=speec
 try{speechSynthesis.onvoiceschanged=()=>{VOICE_PICK=pickVoice();};}catch(e){}
 let TTS_OK=null,TTS_A=null,TTS_FAIL=0;   // 2026-10-20: one slow answer no longer drops the natural voice for the whole visit
 function speak(text,then){if(TTS_OK!==false&&text){const clean0=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'').slice(0,900);
-  try{SPOKEN_T=clean0;if(TTS_A){TTS_A.pause();}TTS_A=ttsEl();TTS_A.src='kino_tts?l='+(EN?'en':'fr')+(KVOICE?'&v='+KVOICE:'')+'&t='+encodeURIComponent(clean0);SPEAKING=true;
-   TTS_A.onended=()=>{SPEAKING=false;then&&then();};
-   TTS_A.onerror=()=>{TTS_FAIL++;if(TTS_FAIL>=3){TTS_OK=false;setTimeout(()=>{TTS_OK=null;TTS_FAIL=0;},120000);}SPEAKING=false;speak0(text,then);};
-   TTS_A.play().then(()=>{TTS_OK=true;TTS_FAIL=0;}).catch(()=>{if(!TTS_A.error){SPEAKING=false;speak0(text,then);}});return;}catch(e){TTS_OK=false;}}
+  try{SPOKEN_T=clean0;try{speechSynthesis.cancel();}catch(e){}if(TTS_A){TTS_A.pause();}const my=++TTS_N;TTS_A=ttsEl();TTS_A._busy=1;TTS_A.src='kino_tts?l='+(EN?'en':'fr')+(KVOICE?'&v='+KVOICE:'')+'&t='+encodeURIComponent(clean0);SPEAKING=true;
+   TTS_A.onended=()=>{if(my!==TTS_N)return;TTS_A._busy=0;SPEAKING=false;then&&then();};
+   TTS_A.onerror=()=>{if(my!==TTS_N)return;TTS_A._busy=0;TTS_FAIL++;if(TTS_FAIL>=3){TTS_OK=false;setTimeout(()=>{TTS_OK=null;TTS_FAIL=0;},120000);}SPEAKING=false;speak0(text,then);};
+   TTS_A.play().then(()=>{if(my!==TTS_N)return;TTS_OK=true;TTS_FAIL=0;try{speechSynthesis.cancel();}catch(e){}}).catch(e=>{if(my!==TTS_N||(e&&e.name==='AbortError')||TTS_A.error)return;TTS_A._busy=0;SPEAKING=false;speak0(text,then);});return;}catch(e){TTS_OK=false;}}
  speak0(text,then);}
 function speak0(text,then){if(!('speechSynthesis' in window)||!text){then&&then();return;}try{speechSynthesis.cancel();}catch(e){}
  const clean=String(text).replace(/\*\*/g,'').replace(/[`#>]/g,'').replace(/https?:\S+/g,'').replace(/\p{Extended_Pictographic}/gu,'');
@@ -2052,9 +2052,9 @@ async function tidyBack(btn,id){btn.disabled=true;let j=null;try{j=await post('r
 /* 2026-10-21 (owner: "the read-aloud voice is back to the weird default voice"): one audio player, unlocked by the first tap
    (phones block sound that starts without a gesture -> the robot voice took over), and the natural voice is never switched off
    for good after a few failures (a server restart was enough) - it comes back by itself after 2 minutes */
-let TTS_EL=null;
+let TTS_EL=null,TTS_N=0;
 function ttsEl(){if(!TTS_EL){TTS_EL=new Audio();TTS_EL.setAttribute('playsinline','');TTS_EL.preload='auto';}return TTS_EL;}
-(function(){const un=()=>{const a=ttsEl();if(a._ok)return;a._ok=1;try{a.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8isVNoMPMjAAAA0gAAABEVFGmgqK////9bP/6XCykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';a.play().then(()=>{a.pause();}).catch(()=>{});}catch(e){}};
+(function(){const un=()=>{const a=ttsEl();if(a._ok||a._busy)return;a._ok=1;try{a.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8isVNoMPMjAAAA0gAAABEVFGmgqK////9bP/6XCykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';a.play().then(()=>{a.pause();}).catch(()=>{});}catch(e){}};
  ['pointerdown','touchstart','keydown'].forEach(ev=>document.addEventListener(ev,un,{once:true,passive:true}));})();
 
 /* 2026-10-21 (owner: "default the voice to Cedar"): the voice saved on their account wins over an old choice kept by this phone */
