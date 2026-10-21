@@ -1684,8 +1684,8 @@ async function liveStart(cont){if(!CID){toast(T('Ouvre d’abord une conversatio
  $('call').style.display='flex';$('ctx').textContent='';if(!cont){$('ctm').textContent='0:00';lvSet(T('J’appelle Kino…','Calling Kino…'),'think');}
  let ms;try{ms=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}
  catch(e){lvSet(T('Autorise le micro pour appeler Kino (le cadenas à côté de l’adresse).','Allow the microphone to call Kino (the lock next to the address).'));setTimeout(()=>{$('call').style.display='none';},3500);return;}
- const pc=new RTCPeerConnection(),au=document.createElement('audio');au.autoplay=true;au.setAttribute('playsinline','');document.body.appendChild(au);
- pc.ontrack=e=>{au.srcObject=e.streams[0];};ms.getTracks().forEach(t=>pc.addTrack(t,ms));
+ const pc=new RTCPeerConnection(),au=lvAu();au.muted=false;
+ pc.ontrack=e=>{au.srcObject=e.streams[0];lvPlay(au);};ms.getTracks().forEach(t=>pc.addTrack(t,ms));
  const dc=pc.createDataChannel('oai-events');LV={pc:pc,dc:dc,ms:ms,au:au,t0:0,cur:'',out:'',tr:[],busy:0,max:20,tick:null,cid:CID};if(cont&&LVCONT){LV.trAll=LVCONT.tr;LV.tps=LVCONT.tps;LV.news=LVCONT.news;LV.dyn=LVCONT.dyn;LV.base=LVCONT.base;LVCONT=null;}dc.onmessage=e=>{try{lvEv(JSON.parse(e.data));}catch(x){}};
  pc.onconnectionstatechange=()=>{if(!LV||LV.pc!==pc||!LV.t0)return;if(['failed','disconnected'].includes(pc.connectionState)){lvSet(T('La ligne a coupé… je te reconnecte','The line dropped… reconnecting'),'think');
   setTimeout(()=>{if(LV&&LV.pc===pc&&['failed','disconnected'].includes(pc.connectionState)){if(LVDROPS<4){LVDROPS++;lvRenew();}else liveEnd();}},2500);}};
@@ -1719,7 +1719,7 @@ async function lvAsk(id,q){LV.busy++;LV.deleg=(LV.deleg||0)+1;lvSend({type:'sess
  if(!LV)return;LV.busy=Math.max(0,LV.busy-1);
  lvWaitMark();lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?(early?'MORE NOTES from your brain (written, NOT a script; you already told the start: "'+early.slice(0,220)+'"): tell only what is new, in your own spoken words, short: '+String(ans).replace(/\*\*/g,'').replace(early,'').slice(0,1500):'NOTES from your brain (written, NOT a script) - tell it in your own spoken words, short, like on the phone: '+String(ans).replace(/\*\*/g,'').slice(0,1600)):
   (EN?'I do not have the answer yet; it will be in the conversation in a moment.':'Je n’ai pas encore la réponse : elle arrive dans la conversation dans un instant.')});}
-function lvKill(){if(!LV)return;const L=LV;LV=null;LVSEEN=0;try{const p=$('callpill');if(p)p.classList.remove('on');const b=$('cvis');if(b)b.classList.remove('on');}catch(e){}clearInterval(L.tick);clearInterval(L.alive);clearInterval(L.fct);try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.remove();}catch(e){}try{L.wl&&L.wl.release();}catch(e){}clearInterval(L.cht);try{const cx=$('ctx');if(cx)cx.style.display='';['caps','cchart','ptt'].forEach(i=>{const n=$(i);if(n)n.remove();});}catch(e){}return L;}
+function lvKill(){if(!LV)return;const L=LV;LV=null;LVSEEN=0;try{const p=$('callpill');if(p)p.classList.remove('on');const b=$('cvis');if(b)b.classList.remove('on');}catch(e){}clearInterval(L.tick);clearInterval(L.alive);clearInterval(L.fct);try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.pause();L.au.srcObject=null;}catch(e){}try{L.wl&&L.wl.release();}catch(e){}clearInterval(L.cht);try{const cx=$('ctx');if(cx)cx.style.display='';['caps','cchart','ptt'].forEach(i=>{const n=$(i);if(n)n.remove();});}catch(e){}return L;}
 async function liveEnd(){if(!LV){$('call').style.display='none';return;}lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());
  const L=lvKill(),mins=L.t0?(Date.now()-L.t0)/60000:0;$('call').style.display='none';setTimeout(()=>{LVDROPS=0;},3000);
  let r_=null;try{r_=await post('live_end',{id:L.cid||CID,min:+mins.toFixed(2),usage_s:((L.usage||{}).usage||{}).seconds||0,deleg:L.deleg||0,wait:(L.waits&&L.waits.length?L.waits.reduce((a,b)=>a+b,0)/L.waits.length:0),drops:LVDROPS,spec:L.spec||0,transcript:(L.trAll||[]).concat(L.tr).join('\n').slice(-3000)});}catch(e){}if(r_&&r_.wallet&&r_.wallet.left<5)setTimeout(()=>voiceShop(T('Il te reste ','You have ')+vMin(r_.wallet.left)+T(' d’appel.',' of calls left.')),900);if(r_&&r_.usd!=null&&(C&&C.admin))toast('📞 '+T('Appel terminé · ','Call ended · ')+Math.round((r_.billed_s||0)/6)/10+' min · '+(+r_.usd).toFixed(2).replace('.',EN?'.':',')+' $');load(CID,true);}
@@ -1968,6 +1968,10 @@ async function lvFacts(){if(!LV||!CID)return;let j=null;try{j=await post('live_f
    voice messages, delete, a message as a picture, the away card, the agenda */
 var LVCONT=null,VMLP=false;
 function lvCont(){return !!(LV&&(LV.left==null||LV.left>LV.max+0.5));}
+var LVAU=null;
+function lvAu(){if(!LVAU){LVAU=document.createElement('audio');LVAU.autoplay=true;LVAU.setAttribute('playsinline','');document.body.appendChild(LVAU);}return LVAU;}
+function lvPlay(au){const p=au.play();if(p&&p.catch)p.catch(()=>{if(!LV)return;lvSet(T('Touche l’écran pour entendre Kino','Tap the screen to hear Kino'),'think');
+ const go=()=>{document.removeEventListener('pointerdown',go,true);au.play().then(()=>{if(LV)lvSet(T('Je t’écoute','Listening'),'listen');}).catch(()=>{});};document.addEventListener('pointerdown',go,true);});}
 async function lvRenew(){if(!LV||LV.renewing)return;LV.renewing=1;lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());
  const L=lvKill(),mins=L.t0?(Date.now()-L.t0)/60000:0;
  LVCONT={tr:(L.trAll||[]).concat(L.tr||[]),tps:L.tps,news:L.news,dyn:L.dyn,base:(L.base||0)+Math.floor(mins*60)};
