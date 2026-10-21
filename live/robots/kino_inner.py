@@ -165,7 +165,7 @@ def perceive_market(live_bars):
         dd = max(np.maximum.accumulate(w) - w) if up > 0 else max(w - np.minimum.accumulate(w))
         if abs(up) > 2.2 and dd < abs(w[-1] - w[0]) * 0.25:
             pct = 100 * (w[-1] / w[0] - 1)
-            exp_ = "pullback" if random.random() < 0.6 else "continue"        # a gut call, not a rule - checked later
+            exp_ = learned_expect("run", "pullback" if random.random() < 0.6 else "continue")   # his record decides once it can
             txt = "%s %s depuis 3 heures presque sans repli (%+.1f %%) - c'est rare. Mon instinct : %s" % (
                 nm.capitalize(), "monte" if up > 0 else "baisse", pct,
                 "ça sent l'essoufflement, je parie sur un repli dans les 2 heures" if exp_ == "pullback" else "ça a encore du souffle, je parie que ça continue")
@@ -177,18 +177,22 @@ def perceive_market(live_bars):
         b = c[-15:]
         if abs(b[-1] - b[0]) > atr * 9:
             pct = 100 * (b[-1] / b[0] - 1)
-            txt = "%s vient de faire un mouvement brusque en 15 minutes (%+.2f %%) - je parie qu'il en reprend une partie" % (nm.capitalize(), pct)
+            exb_ = learned_expect("burst", "retrace")
+            txt = "%s vient de faire un mouvement brusque en 15 minutes (%+.2f %%) - %s" % (nm.capitalize(), pct,
+                  "je parie qu'il en reprend une partie" if exb_ == "retrace" else "mes paris m'ont appris que ça continue souvent : je parie que ça continue")
             add_thought(txt, "hunch", 0.65, src="market:burst:" + sym, half_h=1.5)
             mark_activity("_market", "market", [nm, {"le Bitcoin": "Bitcoin", "l'or": "gold", "le Nasdaq": "the Nasdaq"}.get(nm, nm)])
-            place_bet(sym, nm, "burst", "retrace", 1 if pct > 0 else -1, float(c[-1]), pct, txt)
+            place_bet(sym, nm, "burst", exb_, 1 if pct > 0 else -1, float(c[-1]), pct, txt)
             feel("excitement", 0.2, why="un mouvement brusque sur %s" % nm)
         # 3) the day's range broken
         dh, dl = float(h[-1440:-1].max()), float(lo[-1440:-1].min())
         if c[-1] > dh or c[-1] < dl:
-            txt = "%s vient de sortir de toute sa fourchette des dernières 24 h (%s) - je parie que la sortie tient" % (
-                nm.capitalize(), "par le haut" if c[-1] > dh else "par le bas")
+            exr_ = learned_expect("range", "continue")
+            txt = "%s vient de sortir de toute sa fourchette des dernières 24 h (%s) - %s" % (
+                nm.capitalize(), "par le haut" if c[-1] > dh else "par le bas",
+                "je parie que la sortie tient" if exr_ == "continue" else "mes paris m'ont appris que ces sorties échouent souvent : je parie qu'elle ne tient pas")
             add_thought(txt, "hunch", 0.5, src="market:range:" + sym, half_h=3)
-            place_bet(sym, nm, "range", "continue", 1 if c[-1] > dh else -1, float(c[-1]), 100 * (c[-1] / (dh if c[-1] > dh else dl) - 1), txt)
+            place_bet(sym, nm, "range", exr_, 1 if c[-1] > dh else -1, float(c[-1]), 100 * (c[-1] / (dh if c[-1] > dh else dl) - 1), txt)
         # 4) dead calm
         if float(np.mean(np.abs(np.diff(c[-120:])))) < atr * 0.45:
             calm += 1
@@ -297,6 +301,13 @@ def prompt_block(uid):
         v3 = v3_block(uid)
         if v3:
             L.append(v3)
+    except Exception:
+        pass
+    try:                                   # 2026-10-21 (owner: "give him a life he continuously builds")
+        import kino_life as _KL
+        lb = _KL.block(uid)
+        if lb:
+            L.append(lb)
     except Exception:
         pass
     for fn in ("views_block", "exam_block"):
@@ -485,6 +496,50 @@ def check_bets(live_bars):
             add_thought("%s j'avais parié que %s allait %s... raté (%+.2f %%). Noté - %d juste sur %d, je reste humble" % (
                 when.capitalize(), b["nm"], guess, mv * b["dir"], sc["right"], sc["n"]), "hunch_check", 0.42, src="bet:" + b["id"], half_h=4)
             mood_nudge(-0.03, "mon intuition sur %s était fausse" % b["nm"])
+    if due:
+        try:
+            learn()
+        except Exception:
+            pass
+
+
+def learned_expect(typ, default):
+    """2026-10-21 (owner: "smarter and smarter"): the way his own record says this kind of move usually goes"""
+    return ((_load().get("learned") or {}).get(typ) or {}).get("expect") or default
+
+
+def learn():
+    """re-reads his checked bets: for each kind of move, did it more often continue or come back? When the record says
+    the other way, he changes how he bets - and says so (a realisation + a journal entry)"""
+    d = _load()
+    B = [b for b in d.get("bets") or [] if b.get("done") and b.get("mv") is not None]
+    names = {"burst": "un mouvement brusque", "run": "une longue montée ou descente sans repli", "range": "une sortie de la fourchette du jour"}
+    out = []
+    for typ in sorted(set(b["typ"] for b in B)):
+        X = [b for b in B if b["typ"] == typ]
+        if len(X) < 6:
+            continue
+        cont = sum(1 for b in X if b["mv"] > 0)
+        back = sum(1 for b in X if b["mv"] < -0.25 * abs(float(b.get("size") or 0)))
+        best = "continue" if cont >= back else ("pullback" if typ == "run" else "retrace")
+        prev = ((d.get("learned") or {}).get(typ) or {}).get("expect")
+        lesson = "après %s, ça %s plus souvent (%d fois sur %d) que ça %s (%d fois)" % (
+            names.get(typ, typ), "continue" if best == "continue" else "revient en arrière", max(cont, back), len(X),
+            "ne revient en arrière" if best == "continue" else "ne continue", min(cont, back))
+
+        def f(dd, typ=typ, best=best, lesson=lesson, n=len(X)):
+            dd.setdefault("learned", {})[typ] = {"expect": best, "n": n, "lesson": lesson, "t": time.time()}
+        _mut(f)
+        if prev != best:
+            out.append(lesson)
+            add_thought("J'ai compris un truc en relisant mes paris : %s. Je change ma façon de parier." % lesson, "realise", 0.7,
+                        src="learn:" + typ, half_h=24)
+            try:
+                import kino_life as _KL
+                _KL.add_entry("Leçon tirée de mes propres paris : %s - je parie maintenant dans ce sens." % lesson, "lesson")
+            except Exception:
+                pass
+    return out
 
 
 def hunch_score():
@@ -548,6 +603,11 @@ def work_question(RT):
             if y["id"] == x["id"]:
                 y.update(status="answered", finding=fnd, br=br, t_done=time.time())
     _mut(f)
+    try:
+        import kino_life as _KL
+        _KL.add_entry("Ma question « %s » : %s" % (x["q"], fnd), "finding", x.get("uid"))
+    except Exception:
+        pass
     add_thought("J'ai fini par creuser ma question « %s » : %s" % (x["q"], fnd), "finding", 0.62 if br >= 70 else 0.5, uid=x.get("uid"),
                 src="question:" + x["id"], half_h=12, extra={"formula": x["formula"], "side": x["side"], "market": x["market"], "measure": fnd})
     mood_nudge(0.03 if br >= 95 else 0.0, "ma question « %s » a donné quelque chose" % x["q"][:60] if br >= 95 else "")

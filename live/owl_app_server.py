@@ -15365,6 +15365,13 @@ def _partner_apply(user, cid, pa):
     if not pa:
         return
     uid = user.get("id")
+    if pa.get("human_asked") and cid:             # 2026-10-21 (owner: Kino's life - curiosity about human life)
+        try:
+            _rc()
+            import kino_life as _KLh
+            _KLh.human_asked(uid, pa["human_asked"], cid)
+        except Exception:
+            pass
     if pa.get("thought_used"):
         try:
             _rc()
@@ -16539,6 +16546,10 @@ def _companion_tick():
                 pass
             try:
                 _week_recap(u, uid, m, ch, now, h0, busy)
+            except Exception:
+                pass
+            try:
+                _kino_headsup(u, uid, ch, now, h0, busy)
             except Exception:
                 pass
             # (1r) 2026-10-20 (owner all 12): a week of replay -> Kino writes 3 lessons from their trades and notes, and keeps them
@@ -18469,6 +18480,12 @@ def chat_open(user, body):
 
 def chat_send(user, body):
     _CHAT_SENT_T[0] = time.time()                    # 2026-10-21 item 1: the luck tests give Kino the machine
+    try:
+        _rc()
+        import kino_life as _KLa
+        _KLa.human_answer_maybe(user.get("id"), str(body.get("id") or ""), str(body.get("text") or ""))
+    except Exception:
+        pass
     try:                                             # 2026-10-21 (humanity watch): "Laisse choisir" in one chat, "X ou Y ?" in the next
         if re.search(r"(choisis|choisi toi|laisse[- ]?(moi |le |toi )?choisir|à toi de (voir|choisir|décider)|c'est toi qui (vois|choisis|décides)|"
                      r"you (choose|decide|pick)|your call|up to you)", str(body.get("text") or ""), re.I):
@@ -19453,6 +19470,44 @@ def _brain_costs_for(calls):
                 tot += float(b.get("usd") or 0)
                 n += 1
     return {"usd": round(tot, 3), "turns": n}
+
+
+def _kino_headsup(u, uid, ch, now, h0, busy):
+    """2026-10-21 (owner: "feels almost like it is looking into the future"): shortly before an hour when a market usually
+    moves much more (measured), or a big economic news, Kino tells them what USUALLY happens - never a direction"""
+    if not ch or busy(ch[0]["id"]) or not _active_hour(uid, h0):
+        return
+    _rc()
+    import kino_life as _KL
+    import robot_ghost as _RGl
+    try:
+        _KL.daily_market_fact(lambda s_: _rd().data(s_), _RGl.live_bars)
+    except Exception:
+        pass
+    syms = ["BTCUSD"]
+    for x in ch[:6]:
+        mk = ((_chat_load(u, x["id"]) or {}).get("robot") or {}).get("market")
+        if mk and mk.upper() not in syms:
+            syms.append(mk.upper())
+    try:
+        import robot_reality as _RRl
+        cal = (_RRl._load() or {}).get("cal") or []
+    except Exception:
+        cal = []
+    names = {"BTCUSD": "le Bitcoin", "XAUUSD": "l'or", "USTEC": "le Nasdaq", "US30": "le Dow", "USOIL": "le pétrole"}
+    hu = _KL.headsup_due(uid, syms, lambda s_: _rd().data(s_), cal, names, now)
+    if not hu:
+        return
+    off = (h0 - time.gmtime(now).tm_hour) % 24
+    loc = (hu["hour_utc"] + off) % 24
+    what = ("%s usually moves %.1fx more in that hour than in a normal hour (measured over %s days of real one-minute prices)" % (
+        hu["name"], hu["ratio"], hu["days"])) if hu.get("sym") else ""
+    news = ("big economic news at that time: " + "; ".join(hu["news"])) if hu.get("news") else ""
+    _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "HEADS-UP (a measured habit, NOT a prediction): in about %d minutes it is %02dh their time. %s%s. "
+                     "Tell them in one or two short lines like a friend who knows the market's habits (\"dans 20 min, ...\") - what usually "
+                     "happens, never a direction, never \"ça va monter\"; mention their robot if it trades that market. send = true."
+                     % (hu["in_min"], loc, what, ("; " if what and news else "") + news)), kwargs={"notify": True}, daemon=True).start()
 
 
 def _week_recap(u, uid, m, ch, now, h0, busy):
