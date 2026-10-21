@@ -16133,13 +16133,13 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             except Exception:
                 pass
             try:
-                if q.get("say") and not ((q.get("partner") or {}).get("work")) and not (event or "").startswith("YOUR PROMISE") and re.search(
-                        r"(je (vérifie|regarde|compte|calcule|creuse)[^.!?]{0,40}(et|puis) je (te |t')(donne|dis|reviens|préviens)|je te donne le chiffre|"
-                        r"je reviens (vers toi|avec)|je te redis ça|i'?ll (check|look) and (get back|tell you))", str(q["say"]), re.I):
+                if q.get("say") and not ((q.get("partner") or {}).get("work")) and not (event or "").startswith("YOUR PROMISE") and not c.get("work") and re.search(
+                        r"(je (vérifie|regarde|compte|calcule|creuse|mesure|analyse|cherche|lance la mesure|lance le calcul|m'y mets)[^?]{0,220}(je (te |t')(donne|dis|reviens|préviens|écris|envoie)|dès que|tout de suite|juste après)|"
+                        r"je te donne (le chiffre|les chiffres)|je reviens (vers toi|avec)|je te redis ça|i'?ll (check|look|measure) and (get back|tell you))", str(q["say"]), re.I):
                     _w = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
-                    _wt = next((x for x in _w if re.search(r"(vérifie|regarde|compte|calcule|creuse|check|look)", x, re.I)), _w[-1])
+                    _wt = next((x for x in _w if re.search(r"(vérifie|regarde|compte|calcule|creuse|mesure|analyse|cherche|check|look)", x, re.I)), _w[-1])
                     # 2026-10-21 (owner: the tray showed "Je vérifie l'état exact du test maintenant et..."): the thing itself, short
-                    _wm = re.search(r"je (?:vérifie|regarde|compte|calcule|creuse|check|look (?:at|into))\s+(.{3,90}?)(?:\s+(?:maintenant|tout de suite|now))?(?:\s*(?:,|et |puis |and |pour )|[.!?]|$)", _wt, re.I)
+                    _wm = re.search(r"je (?:vérifie|regarde|compte|calcule|creuse|mesure|analyse|cherche|lance la mesure d[eu']s?|lance le calcul d[eu']s?|check|look (?:at|into))\s*(.{3,110}?)(?:\s+(?:maintenant|tout de suite|now))?(?:\s*(?:,|et |puis |and |pour |:)|[.!?]|$)", _wt, re.I)
                     if _wm:
                         _wt = _wm.group(1).strip(" ,.")
                     c["work"] = ((c.get("work") or []) + [{"due": time.time() + 300, "what": _wt[:200], "t": time.time()}])[-3:]
