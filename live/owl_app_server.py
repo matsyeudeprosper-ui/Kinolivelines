@@ -16073,6 +16073,25 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     _vn = {"vn": True}
             except Exception:
                 pass
+            try:
+                if q.get("say") and not ((q.get("partner") or {}).get("work")) and not (event or "").startswith("YOUR PROMISE") and re.search(
+                        r"(je (vérifie|regarde|compte|calcule|creuse)[^.!?]{0,40}(et|puis) je (te |t')(donne|dis|reviens|préviens)|je te donne le chiffre|"
+                        r"je reviens (vers toi|avec)|je te redis ça|i'?ll (check|look) and (get back|tell you))", str(q["say"]), re.I):
+                    _w = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
+                    _wt = next((x for x in _w if re.search(r"(vérifie|regarde|compte|calcule|creuse|check|look)", x, re.I)), _w[-1])
+                    c["work"] = ((c.get("work") or []) + [{"due": time.time() + 300, "what": _wt[:200], "t": time.time()}])[-3:]
+            except Exception:
+                pass
+            # (3) the same answer twice (two turns for one message): the second one is dropped
+            try:
+                _pa_ = next((x for x in reversed(c.get("msgs") or []) if x.get("role") in ("ai", "user")), {})
+                if q.get("say") and not event and _pa_.get("role") == "ai" and time.time() - float(_pa_.get("t") or 0) < 90:
+                    _ww = lambda x: set(re.findall(r"\w{4,}", str(x).lower()))
+                    _a, _b = _ww(_pa_.get("text")), _ww(q["say"])
+                    if _b and len(_a & _b) >= 0.35 * len(_b):
+                        q["say"] = None
+            except Exception:
+                pass
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), **_vn,
                           followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
@@ -18448,6 +18467,17 @@ def chat_open(user, body):
 
 def chat_send(user, body):
     _CHAT_SENT_T[0] = time.time()                    # 2026-10-21 item 1: the luck tests give Kino the machine
+    try:                                             # 2026-10-21 (humanity watch): "Laisse choisir" in one chat, "X ou Y ?" in the next
+        if re.search(r"(choisis|choisi toi|laisse[- ]?(moi |le |toi )?choisir|à toi de (voir|choisir|décider)|c'est toi qui (vois|choisis|décides)|"
+                     r"you (choose|decide|pick)|your call|up to you)", str(body.get("text") or ""), re.I):
+            _st = "Decide yourself: they said '%s' - never offer them a choice (X or Y?), say what you do and why" % str(body.get("text"))[:60]
+
+            def _sp(mm, _st=_st):
+                L = [x for x in mm.get("standing") or [] if not str(x.get("text") or "").startswith("Decide yourself:")]
+                mm["standing"] = (L + [{"t": int(time.time()), "text": _st}])[-8:]
+            _mem_note_safe(user.get("id"), _sp)
+    except Exception:
+        pass
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None:
         return {"ok": False, "err": "missing"}
