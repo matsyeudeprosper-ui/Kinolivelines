@@ -13875,6 +13875,8 @@ def _ctl_state():
                 st = "error"
             elif fresh and ls.get("state") in ("running", "paused"):
                 st = "running"
+            elif fresh and ls.get("state") == "dropped":
+                st = "dropped"                     # 2026-10-21 (owner): its own test went negative - out of the line by itself
             row = {"rid": j["rid"], "sym": j["sym"], "at": j["at"], "state": st, "mine": None}
             if fresh:
                 row.update(n=ls.get("n"), max=ls.get("max"), beats=ls.get("beats"), allow=ls.get("allow"),

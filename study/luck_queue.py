@@ -20,7 +20,39 @@ from when_free import free_gb, heavy_running
 LDIR = os.path.join(HERE, "luck")
 QF = os.path.join(LDIR, "queue.json")
 NEED_GB = float(os.environ.get("LUCK_NEED_GB", "3.0"))   # ONE process (~1.3 GB); this VPS idles at 2.5-3.6 GB free, 4.5 never came (10-17)
-FINAL = ("pass", "fail", "data_changed")
+FINAL = ("pass", "fail", "data_changed", "dropped")
+RES = os.path.join(os.path.dirname(HERE), "live", "robots", "results")
+
+
+def still_winning(e):
+    """2026-10-21 (owner): a robot whose own test is no longer positive (20+ trades) leaves the luck queue by itself.
+    No result file = unknown = kept."""
+    if e["rid"] == "owl":
+        return True
+    f = os.path.join(RES, ("%s.json" % e["rid"]) if e["sym"] == "BTCUSD" else ("%s@%s.json" % (e["rid"], e["sym"])))
+    try:
+        r = json.load(open(f, encoding="utf-8")).get("robot") or {}
+    except Exception:
+        return True
+    return (r.get("net") or 0) > 0 and (r.get("trades") or 0) >= 20
+
+
+def drop_losers():
+    q = load()
+    keep, out = [], []
+    for e in q:
+        if not finished(e) and not e.get("launched") and not still_winning(e):
+            out.append(e)
+        else:
+            keep.append(e)
+    if out:
+        save(keep)
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        for e in out:
+            p = os.path.join(LDIR, "%s_%s.status.json" % (e["rid"], e["sym"]))
+            json.dump({"state": "dropped", "updated": now, "why": "its own test is no longer positive"}, open(p + ".tmp", "w", encoding="utf-8"))
+            os.replace(p + ".tmp", p)
+    return out
 
 
 def load():
@@ -79,6 +111,7 @@ def lock_held():
 
 
 def kick():
+    drop_losers()
     q = load()
     todo = [e for e in q if not finished(e) and int(e.get("starts") or 0) < 30]     # 30 starts without a verdict = broken, skip it
     if not todo:
