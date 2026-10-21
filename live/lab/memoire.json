@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-20T18:32:00Z",
+ "updated": "2026-10-21T07:01:00Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -2870,6 +2870,11 @@
    "t": "2026-10-20T18:32:00Z",
    "look": "veille: new FLIP-BOS BUY -4.89 (18:25, pace 1.398, day); piles flip_hot / flip_day",
    "saw": "flip_hot 51 tr 41% -47.99 (h 33/48), after a loss 30 tr 37% -41.19; flip_day 68 tr 41% -60.20 (h 26/56). Tuesday day 10 tr 1 won ~-34. Nothing new to test; no open ask."
+  },
+  {
+   "t": "2026-10-21T07:01:00Z",
+   "look": "veille (4 h timer): wake_context, heartbeat, --streaks",
+   "saw": "0 closes since 10-20 18:25; heartbeat 07:01 alive, open=3. Twins unchanged (ext700 22 tr -33.62, fit3 16 -21.21, debtnerv 5 -11.56, bul4 6 -15.26). Streaks: after 2 losses 19 tr 21% -45.45 (peu), after 1 loss 38 tr 50% +3.36. No ask, no run. Wrote rien; waiting for the 3 open trades to close (night_carries)."
   }
  ],
  "lessons": [
