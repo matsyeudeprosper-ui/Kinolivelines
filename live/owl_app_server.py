@@ -19677,6 +19677,39 @@ If the question truly needs deeper work you cannot do here (building or changing
 not in the facts), set "full": true and say one short natural line that you are on it.
 Reply with JSON only: {"say": "...", "act": null, "show": null, "full": false}"""
 _VB_SYS = {}        # cid -> (time, system prompt) for the call brain
+_VB_SPEC = {}       # cid -> {"q", "t", "draft", "raw", "done"}: an answer started early from their words (call x12 item 1)
+
+
+def live_spec(user, body):
+    """the call page heard a question (their words, before the voice decided to delegate): the call brain starts on it now"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    q = str(body.get("q") or "").strip()[:400]
+    if c is None or not q or _LIVE_CID.get(user.get("id")) != c["id"]:
+        return {"ok": False}
+    x = _VB_SYS.get(c["id"])
+    if not x:
+        return {"ok": False}
+    sp = {"q": q, "t": time.time(), "draft": "", "raw": None, "done": False}
+    _VB_SPEC[c["id"]] = sp
+    M = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")][-9:]
+    conv = "\n".join(("MEMBER: " if m["role"] == "user" else "YOU: ") + str(m["text"])[:500] for m in M) + "\nMEMBER: " + q
+
+    def run():
+        def cb(t):
+            try:
+                say = _rc().W.partial_say(t)
+                if say:
+                    sp["draft"] = say
+            except Exception:
+                pass
+        try:
+            sp["raw"] = _rc().W.ask_json(x[1], "THE CALL SO FAR (latest last):\n" + conv + "\n\nAnswer their last message now.", models=("sonnet",),
+                                         timeout=40, on_text=cb, salvage=True)
+        except Exception:
+            sp["raw"] = None
+        sp["done"] = True
+    threading.Thread(target=run, daemon=True).start()
+    return {"ok": True}
 
 
 def _vb_refresh(user, cid):
@@ -19727,11 +19760,25 @@ def _voice_brain(cid, user):
         except Exception:
             pass
     raw = None
-    try:
-        raw = _rc().W.ask_json(sysp, "THE CALL SO FAR (latest last):\n" + conv + "\n\nAnswer their last message now.", models=("sonnet", "haiku"),
-                               timeout=45, on_text=cb, salvage=True)
-    except Exception:
-        raw = None
+    sp = _VB_SPEC.get(cid)                           # 2026-10-21 (call x12 item 1): started early from their words?
+    _lq = str((M[-1] if M else {}).get("text") or "")
+    _ws = lambda x: set(re.findall(r"\w{3,}", str(x).lower()))
+    if sp and time.time() - sp["t"] < 30 and _ws(_lq) and len(_ws(_lq) & _ws(sp["q"])) >= 0.6 * len(_ws(_lq)):
+        _e = time.time() + 20
+        while not sp.get("done") and time.time() < _e:
+            if sp.get("draft"):
+                _CHAT_DRAFT[cid] = sp["draft"]
+                if not first:
+                    first.append(time.time() - t0)
+            time.sleep(0.15)
+        raw = sp.get("raw") if sp.get("done") else None
+        _VB_SPEC.pop(cid, None)
+    if raw is None:
+        try:
+            raw = _rc().W.ask_json(sysp, "THE CALL SO FAR (latest last):\n" + conv + "\n\nAnswer their last message now.", models=("sonnet", "haiku"),
+                                   timeout=45, on_text=cb, salvage=True)
+        except Exception:
+            raw = None
     _CHAT_DRAFT.pop(cid, None)
     try:
         open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=CALL_BRAIN first=%.1f total=%.1f ctx=0.00\n" % (
@@ -20967,6 +21014,12 @@ def _live_instructions(user, c):
         "them. You never change, stop or start a robot, and you never touch their account - the brain and the app handle that with "
         "their password.\n"
         "Keep each turn short (one to three sentences); let them interrupt; ask at most one question at a time.\n"
+        "WAIT FOR THE END OF THEIR SENTENCE: people pause mid-sentence (\"euh...\", looking for a word) - if what they said sounds "
+        "unfinished, wait for the rest instead of answering half a thought.\n"
+        "\"CHUT\": if they say chut / tais-toi / attends / the baby is sleeping, stop talking at once and stay silent until they speak "
+        "to you again.\n"
+        "LET YOUR MOOD COLOUR YOUR VOICE (see HOW YOU FEEL in the sheet): brighter on good news, calmer and softer after a loss, quieter "
+        "and slower late at night.\n"
         "YOU ARE AN ACTIVE PERSON (owner 2026-10-21, 'master initiative'): you think out loud, reason, have plans of your own and "
         "DO things without being asked. When something useful is obvious - run their robot's test, show examples on a chart, try "
         "the idea on another market, put a robot that tested well in ghost mode, look into a doubt - do not ask: DELEGATE it at once "
@@ -21163,6 +21216,23 @@ def live_session(user, body):
     except Exception:
         cf = {}
     _ins = _live_instructions(user, c)
+    try:                                             # call x12 items 4, 8, 9: their speed, the last call, their hour
+        _pf = (_mem_get(uid).get("prefs") or {})
+        if _pf.get("speak") == "slow":
+            _ins += "\nTHEY ASKED YOU TO SPEAK MORE SLOWLY: speak noticeably slower, with clear pauses."
+        elif _pf.get("speak") == "fast":
+            _ins += "\nTHEY LIKE A QUICKER PACE: speak a bit faster and more briskly."
+        _ins += "\nTHEIR LOCAL TIME NOW: %02d:%02d." % (_local_hour(uid), time.gmtime().tm_min)
+        if not body.get("cont"):
+            _M = c.get("msgs") or []
+            _ci = max([i for i, m in enumerate(_M) if m.get("role") == "sys" and m.get("call")] or [-1])
+            if _ci >= 0 and time.time() - float(_M[_ci].get("t") or 0) < 7 * 86400:
+                _sm = next((m for m in _M[_ci + 1:_ci + 4] if m.get("role") == "ai" and m.get("text")), None)
+                _ins += ("\nYOUR LAST CALL WITH THEM (%s ago): %s - if it fits, pick up the thread naturally in your first words." % (
+                    ("%d h" % ((time.time() - float(_M[_ci]["t"])) / 3600)) if time.time() - float(_M[_ci]["t"]) < 86400 else ("%d days" % ((time.time() - float(_M[_ci]["t"])) / 86400)),
+                    (_sm or {}).get("text", "")[:400] or str(_M[_ci].get("call") or "")[-400:]))
+    except Exception:
+        pass
     if body.get("cont"):                             # 2026-10-21 item 1: the call simply goes on (a new line every 20 min)
         _ins += "\nTHIS CALL IS CONTINUING (the line was renewed a second ago): do NOT greet, do not say anything about it - just keep listening."
     try:                                             # item 5: their very first call = a short spoken tour
@@ -21227,6 +21297,8 @@ def kino_pref(user, body):
             P["ring"] = body["ring"]
         if body.get("voice") in KINO_VOICES:
             P["voice"] = body["voice"]
+        if body.get("speak") in ("slow", "normal", "fast"):     # call x12 item 4
+            P["speak"] = body["speak"]
         if body.get("tour_done"):                    # 2026-10-21 (owner UI review): the tour once per account, not per phone
             P["tour_done"] = True
         if "quiet" in body:                          # 2026-10-21 item 7: their own quiet hours, e.g. [22, 8]; null = off
@@ -21386,6 +21458,23 @@ def _log_live(line):
         pass
 
 
+def _call_wait(c, mins):
+    """call x12 item 12: the average time between a question spoken in the call and Kino's written answer to it"""
+    try:
+        t1 = time.time()
+        t0 = t1 - mins * 60 - 10
+        M = [m for m in (c or {}).get("msgs") or [] if t0 <= float(m.get("t") or 0) <= t1 + 5]
+        W = []
+        for i, m in enumerate(M):
+            if m.get("role") == "user" and m.get("voice"):
+                nx = next((x for x in M[i + 1:] if x.get("role") == "ai"), None)
+                if nx and float(nx["t"]) - float(m["t"]) < 120:
+                    W.append(float(nx["t"]) - float(m["t"]))
+        return round(sum(W) / len(W), 1) if W else 0.0
+    except Exception:
+        return 0.0
+
+
 def live_end(user, body):
     _LIVE_ON.pop(user.get("id"), None)
     _LIVE_CID.pop(user.get("id"), None)
@@ -21424,7 +21513,7 @@ def live_end(user, body):
     except Exception:
         _dg = 0
     CL.append({"t": int(time.time()), "uid": uid, "cid": (c or {}).get("id"), "secs": round(mins * 60, 1), "openai_s": _us, "billed_s": round(billed, 1), "usd": cost,
-               "deleg": _dg})
+               "deleg": _dg, "wait": _call_wait(c, mins) or round(float(body.get("wait") or 0), 1), "drops": int(body.get("drops") or 0), "spec": int(body.get("spec") or 0)})
     _atomic_json(LIVE_CALLS, CL[-2000:])
     _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
     tr = str(body.get("transcript") or "")[-3000:]
@@ -21461,7 +21550,10 @@ def live_costs(user, body):
     return {"ok": True, "today": agg(td), "month": agg(mo), "all": agg(CL), "per": {k: agg(v) for k, v in per.items()}, "last": CL[-5:][::-1],
             "price_min": LIVE_PRICE_MIN, "deleg": sum(int(x.get("deleg") or 0) for x in mo),
             "sold_month": sold([x for x in P_ if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]), "sold_all": sold(P_),
-            "brain_month": _brain_costs_for(mo), "tts_month": _tts_cost_month(m0)}
+            "brain_month": _brain_costs_for(mo), "tts_month": _tts_cost_month(m0),
+            "quality": {"calls": len(mo), "wait": round(sum(float(x.get("wait") or 0) for x in mo if x.get("wait")) / max(1, len([x for x in mo if x.get("wait")])), 1),
+                        "drops": sum(int(x.get("drops") or 0) for x in mo), "deleg_per_call": round(sum(int(x.get("deleg") or 0) for x in mo) / max(1, len(mo)), 1),
+                        "last": [{"t": x.get("t"), "min": round(float(x.get("secs") or 0) / 60, 1), "deleg": x.get("deleg"), "wait": x.get("wait"), "drops": x.get("drops")} for x in mo[-5:][::-1]]}}
 
 def _live_tick(sym):
     """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
@@ -26718,7 +26810,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -26742,7 +26834,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
