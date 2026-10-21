@@ -19795,6 +19795,12 @@ def live_session(user, body):
     used = float(((U.get(uid) or {}).get(day) or 0))
     if not is_admin(user) and used >= 60:
         return {"ok": False, "err": "livecap"}          # one hour of live voice a day for a member
+    _vleft = None
+    if not is_admin(user):
+        _vv = _vw_view(uid)
+        _vleft = _vv["left"]
+        if _vleft < 0.5:
+            return {"ok": False, "err": "nominutes", "wallet": _vv}
     try:
         cf = json.load(open(TTS_CONF, encoding="utf-8"))
     except Exception:
@@ -19831,7 +19837,8 @@ def live_session(user, body):
         _log_live("ERR %s no sdp %s" % (uid, json.dumps(r)[:300]))
         return {"ok": False, "err": "live_down"}
     _log_live("START %s %s %s" % (uid, c["id"], (r.get("session") or {}).get("id") or r.get("id")))
-    return {"ok": True, "sdp": ans, "sid": (r.get("session") or {}).get("id") or r.get("id"), "max_min": LIVE_MAX_MIN}
+    return {"ok": True, "sdp": ans, "sid": (r.get("session") or {}).get("id") or r.get("id"),
+            "max_min": LIVE_MAX_MIN if _vleft is None else max(0.5, min(LIVE_MAX_MIN, _vleft)), "left": _vleft}
 
 
 # ---- 2026-10-20 (owner, all 12): Kino's voice, "Kino t'appelle", search across conversations ----
@@ -19878,6 +19885,122 @@ def chat_search(user, body):
     return {"ok": True, "hits": out[:40]}
 
 
+
+# ---- 2026-10-20 (owner: "users pay for their calls separately, like phone airtime" + "payable via NOWPayments as usual"):
+# call minutes. Order of use: the monthly minutes included in Strategie -> the "Kino Vocal" add-on (30 days) -> top-ups (never
+# expire). Prices live in robots/voice_offer.json (the owner can change them); the owner/admin calls without counting.
+VOICE_WALLET = os.path.join(DIR, "robots", "voice_wallet.json")
+VOICE_OFFER = os.path.join(DIR, "robots", "voice_offer.json")
+VOICE_DEFAULT = {"included_min": 30,
+                 "packs": {"t30": {"kind": "topup", "min": 30, "usd": 4, "fr": "30 minutes", "en": "30 minutes"},
+                           "t120": {"kind": "topup", "min": 120, "usd": 13, "fr": "2 heures", "en": "2 hours"},
+                           "addon": {"kind": "addon", "min": 300, "usd": 25, "days": 30, "fr": "Kino Vocal · 5 h par mois", "en": "Kino Vocal · 5 h a month"}}}
+_VOICE_LOCK = threading.Lock()
+
+
+def voice_offer():
+    try:
+        o = json.load(open(VOICE_OFFER, encoding="utf-8"))
+        return o if isinstance(o, dict) and o.get("packs") else VOICE_DEFAULT
+    except Exception:
+        return VOICE_DEFAULT
+
+
+def _vw_all():
+    try:
+        return json.load(open(VOICE_WALLET, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _vw_view(uid, W=None):
+    W = (_vw_all() if W is None else W).get(uid) or {}
+    mo = time.strftime("%Y-%m")
+    inc_total = float(voice_offer().get("included_min") or 0) if has(uid, "strategy") else 0.0
+    inc_used = float(W.get("inc_used") or 0) if W.get("inc_month") == mo else 0.0
+    ad = W.get("addon") or {}
+    ad_left = max(0.0, float(ad.get("min") or 0) - float(ad.get("used") or 0)) if float(ad.get("until") or 0) > time.time() else 0.0
+    inc_left = max(0.0, inc_total - inc_used)
+    top = max(0.0, float(W.get("topup") or 0))
+    return {"included": round(inc_left, 1), "included_total": inc_total, "addon": round(ad_left, 1), "addon_until": int(ad.get("until") or 0) if ad_left else 0,
+            "topup": round(top, 1), "left": round(inc_left + ad_left + top, 1)}
+
+
+def _vw_spend(uid, mins):
+    """take call minutes: included -> add-on -> top-up"""
+    with _VOICE_LOCK:
+        A = _vw_all()
+        W = A.setdefault(uid, {})
+        mo = time.strftime("%Y-%m")
+        if W.get("inc_month") != mo:
+            W["inc_month"], W["inc_used"] = mo, 0.0
+        v = _vw_view(uid, A)
+        m = float(mins)
+        a = min(m, v["included"]); W["inc_used"] = round(float(W.get("inc_used") or 0) + a, 2); m -= a
+        if m > 0 and v["addon"] > 0:
+            b = min(m, v["addon"]); W.setdefault("addon", {})["used"] = round(float(W["addon"].get("used") or 0) + b, 2); m -= b
+        if m > 0:
+            W["topup"] = round(max(0.0, float(W.get("topup") or 0) - m), 2)
+        _atomic_json(VOICE_WALLET, A)
+        return _vw_view(uid, A)
+
+
+def _vw_credit(uid, pack, paid, ref):
+    """a pack paid (NOWPayments IPN): top-up minutes, or 30 more days of the add-on with its minutes"""
+    P = (voice_offer().get("packs") or {}).get(pack)
+    if not P or paid + 0.01 < float(P["usd"]) * 0.97:
+        return False
+    with _VOICE_LOCK:
+        A = _vw_all()
+        W = A.setdefault(uid, {})
+        if P["kind"] == "addon":
+            ad = W.get("addon") or {}
+            live_ = float(ad.get("until") or 0) > time.time()
+            W["addon"] = {"until": (float(ad["until"]) if live_ else time.time()) + int(P.get("days") or 30) * 86400,
+                          "min": (float(ad.get("min") or 0) if live_ else 0) + float(P["min"]), "used": float(ad.get("used") or 0) if live_ else 0.0}
+        else:
+            W["topup"] = round(float(W.get("topup") or 0) + float(P["min"]), 2)
+        W.setdefault("pays", []).append({"t": int(time.time()), "pack": pack, "usd": paid, "min": P["min"], "ref": ref})
+        _atomic_json(VOICE_WALLET, A)
+    return True
+
+
+def voice_wallet(user, body):
+    uid = user.get("id")
+    cfg = nest_config()
+    o = voice_offer()
+    return {"ok": True, "admin": is_admin(user), "wallet": _vw_view(uid), "pay_ready": bool(cfg.get("np_api_key")),
+            "packs": [dict(v, id=k) for k, v in (o.get("packs") or {}).items()], "included_min": o.get("included_min")}
+
+
+def voice_buy(user, body):
+    """a NOWPayments invoice for a minutes pack (same flow as the packages: the IPN credits it)"""
+    import urllib.request as _urq
+    pack = str(body.get("pack") or "")
+    P = (voice_offer().get("packs") or {}).get(pack)
+    cfg = nest_config()
+    if not P:
+        return {"ok": False, "err": "bad pack"}
+    if not cfg.get("np_api_key"):
+        return {"ok": False, "err": "not ready"}
+    origin = cfg.get("public_origin") or "https://owltrader.duckdns.org"
+    api = "https://api-sandbox.nowpayments.io" if cfg.get("np_sandbox") else "https://api.nowpayments.io"
+    back = "%s/%s/atelier%s" % (origin, user.get("token"), ("?c=" + str(body.get("cid"))) if body.get("cid") else "")
+    req = _urq.Request(api + "/v1/invoice", data=json.dumps({
+        "price_amount": P["usd"], "price_currency": "usd", "order_id": "%s|voice-%s|%d" % (user.get("id"), pack, int(time.time())),
+        "order_description": "OwlNest - Kino, %s" % P.get("fr"), "ipn_callback_url": origin + "/np_ipn",
+        "success_url": back, "cancel_url": back}).encode(), method="POST", headers={"x-api-key": cfg["np_api_key"], "Content-Type": "application/json"})
+    try:
+        with _urq.urlopen(req, timeout=20) as r:
+            inv = json.loads(r.read().decode("utf-8", "replace"))
+    except Exception as e:
+        return {"ok": False, "err": str(e)[:120]}
+    if not inv.get("invoice_url"):
+        return {"ok": False, "err": "no invoice"}
+    fn_count("pay_created")
+    return {"ok": True, "url": inv["invoice_url"]}
+
+
 def _log_live(line):
     try:
         with open(os.path.join(DIR, "robots", "live.log"), "a", encoding="utf-8") as f:
@@ -19914,7 +20037,15 @@ def live_end(user, body):
         CL = json.load(open(LIVE_CALLS, encoding="utf-8"))
     except Exception:
         CL = []
-    CL.append({"t": int(time.time()), "uid": uid, "cid": (c or {}).get("id"), "secs": round(mins * 60, 1), "openai_s": _us, "billed_s": round(billed, 1), "usd": cost})
+    _wl = None
+    if not is_admin(user) and billed > 0:
+        _wl = _vw_spend(uid, billed / 60.0)
+    try:
+        _dg = int(body.get("deleg") or 0)
+    except Exception:
+        _dg = 0
+    CL.append({"t": int(time.time()), "uid": uid, "cid": (c or {}).get("id"), "secs": round(mins * 60, 1), "openai_s": _us, "billed_s": round(billed, 1), "usd": cost,
+               "deleg": _dg})
     _atomic_json(LIVE_CALLS, CL[-2000:])
     _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
     tr = str(body.get("transcript") or "")[-3000:]
@@ -19928,7 +20059,7 @@ def live_end(user, body):
             threading.Thread(target=_chat_quick, args=(c["id"], user, "CALL ENDED: you just had a live voice call with them (see LIVE VOICE CALL). "
                              "Write the call in THREE short lines, like a friend's text after a call: what you talked about, what you will do "
                              "(and do it), the one thing still open. No greeting, no question unless one is truly open."), daemon=True).start()
-    return {"ok": True, "usd": cost, "billed_s": round(billed, 1)}
+    return {"ok": True, "usd": cost, "billed_s": round(billed, 1), "wallet": _wl}
 
 
 def live_costs(user, body):
@@ -19946,8 +20077,11 @@ def live_costs(user, body):
     per = {}
     for x in mo:
         per.setdefault(x.get("uid"), []).append(x)
+    P_ = [x for w in _vw_all().values() for x in (w.get("pays") or [])]
+    sold = lambda L: {"n": len(L), "usd": round(sum(float(x.get("usd") or 0) for x in L), 2), "min": sum(float(x.get("min") or 0) for x in L)}
     return {"ok": True, "today": agg(td), "month": agg(mo), "all": agg(CL), "per": {k: agg(v) for k, v in per.items()}, "last": CL[-5:][::-1],
-            "price_min": LIVE_PRICE_MIN}
+            "price_min": LIVE_PRICE_MIN, "deleg": sum(int(x.get("deleg") or 0) for x in mo),
+            "sold_month": sold([x for x in P_ if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]), "sold_all": sold(P_)}
 
 def _live_tick(sym):
     """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
@@ -25186,7 +25320,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -25208,7 +25342,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs}[_parts[1]]
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -25490,6 +25624,16 @@ class H(BaseHTTPRequestHandler):
                                     rec["granted"] = "short"
                             except Exception as _e:
                                 rec["granted"] = "robot_err:" + str(_e)[:60]
+                        if _pkg.startswith("voice-"):
+                            # 2026-10-20 (owner): call minutes, paid in crypto like the packages
+                            _vp = float(data.get("price_amount") or 0)
+                            if _vw_credit(_uid, _pkg[6:], _vp, f"nowpayments:{data.get('payment_id')}"):
+                                rec["granted"] = "voice"
+                                _vk = (voice_offer().get("packs") or {}).get(_pkg[6:]) or {}
+                                queue_push(_uid, "📞 Minutes ajoutées", "Merci ! %s pour parler avec Kino. Touche 📞 dans la conversation." % _vk.get("fr", ""))
+                                queue_push("kino", "📞 Minutes vendues", "%s · %s · $%.2f" % (_uid, _vk.get("fr", _pkg), _vp))
+                            else:
+                                rec["granted"] = "short"
                         if _pkg in PACKAGES:
                             paid = float(data.get("price_amount") or 0)
                             if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
