@@ -13603,6 +13603,8 @@ def robot_update(user, body):
     if "public" in body:
         r["public"] = bool(body["public"])
     if "archived" in body:                      # 2026-10-18: archived robots leave the lists, keep their history
+        if body["archived"] and r.get("id") == _acct_cur_robot(user):
+            return {"ok": False, "err": "on_account"}
         if body["archived"]:
             r["archived"] = True
             r["public"] = False
@@ -14809,6 +14811,16 @@ def _chat_member(user, c):
             ch = [x.get("name_fr") or x.get("id") for x in A.get("choices") or []]
             if ch:
                 L.append("robots they may choose right now: " + ", ".join(ch[:10]))
+                try:                             # 2026-10-21: tidy the robots
+                    _cc = _cleanup_candidates(user)
+                    if _cc:
+                        L.append("ROBOTS THAT NO LONGER SERVE (%d - you may propose to put them away, reversible, with the card \"tidy\"; "
+                                 "never do it yourself): %s" % (len(_cc), "; ".join("%s (%s)" % (x["name"], x["why"]) for x in _cc[:10])))
+                    _aw = [r.get("name_fr") or r["id"] for r in robot_reg().get("robots") or [] if r.get("by_uid") == user.get("id") and r.get("archived")]
+                    if _aw:
+                        L.append("PUT AWAY by them (hidden, history kept, they come back with the card \"tidy\"): " + ", ".join(_aw[:12]))
+                except Exception:
+                    pass
         else:
             L.append("trading account: none connected yet (they can test robots; to trade one they need an account - Automatique)")
     except Exception:
@@ -16166,6 +16178,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     _cards.append({"kind": "account", "args": {}})
             except Exception:
                 pass
+            if q.get("say") and event and "[[TIDY]]" in event and not any(cd.get("kind") == "tidy" for cd in _cards):
+                _cards.append({"kind": "tidy", "args": {}})
             if q["say"] and event and event.startswith(("LIVE TRADE OPENED", "LIVE TRADE CLOSED")) and not _cards:
                 _cards = [{"kind": "account", "args": {}}]
                 # 2026-10-21 (owner chat list item 12): a trade opens -> a small chart of it (entry, stop, target), live
@@ -19733,6 +19747,107 @@ def _voice_brain(cid, user):
                          "(it will be spoken)." % say[:200]), daemon=True).start()
 
 
+# ---- 2026-10-21 (owner: "users can remove their own robots - and bring them back - and Kino proposes to remove the useless ones") ----
+def _acct_cur_robot(user):
+    try:
+        return ((acct_robot_block(user, is_admin(user)) or {}).get("current") or {}).get("id")
+    except Exception:
+        return None
+
+
+def _cleanup_candidates(user):
+    """their robots that no longer serve, each with a plain reason (never the account's robot, a proven one, or one in a test)"""
+    import glob as _gl
+    uid = user.get("id")
+    reg = robot_reg()
+    mine = [r for r in reg.get("robots") or [] if r.get("by_uid") == uid and r.get("id") != "owl" and not r.get("archived")]
+    cur = _acct_cur_robot(user)
+    busy_ids = {x.get("rid") for x in _mq_load() if x.get("state") in ("queued", "building", "testing")}
+    res = {}
+    for r in mine:
+        L_ = []
+        for f in _gl.glob(os.path.join(DIR, "robots", "results", r["id"] + ".json")) + _gl.glob(os.path.join(DIR, "robots", "results", r["id"] + "@*.json")):
+            try:
+                x = json.load(open(f, encoding="utf-8")).get("robot") or {}
+                sym = os.path.basename(f)[len(r["id"]) + 1:-5] if "@" in os.path.basename(f) else "BTCUSD"
+                if x.get("net") is not None:
+                    L_.append((sym, float(x["net"]), int(x.get("trades") or 0)))
+            except Exception:
+                pass
+        res[r["id"]] = L_
+    base = lambda i: re.sub(r"(-\d+|-k)$", "", i)
+    groups = {}
+    for r in mine:
+        groups.setdefault(base(r["id"]), []).append(r)
+    out = []
+    for r in mine:
+        rid = r["id"]
+        if rid == cur or rid in busy_ids:
+            continue
+        try:
+            if _proven(rid):
+                continue
+        except Exception:
+            pass
+        R_ = res.get(rid) or []
+        good = any(n > 0 and t >= 20 for _, n, t in R_)
+        why = None
+        luck_failed = []
+        for sym, _, _ in R_:
+            lk = _luck_of(rid, sym) or {}
+            if lk.get("state") == "fail":
+                luck_failed.append(sym)
+        if luck_failed:
+            why = "test de chance raté (%s)" % ", ".join(luck_failed)
+        elif R_ and not good and max(t for _, _, t in R_) >= 20:
+            why = "ses tests perdent (%s)" % ", ".join("%s %+.0f $" % (s_, n) for s_, n, _ in R_[:3])
+        else:
+            G = groups.get(base(rid)) or []
+            newer = [g for g in G if g is not r and (str(g.get("created") or ""), g["id"]) > (str(r.get("created") or ""), rid)]
+            if len(G) > 1 and newer and not good:
+                why = "remplacé par une version plus récente (%s)" % (newer[-1].get("name_fr") or newer[-1]["id"])
+            elif not R_ and str(r.get("created") or "") and str(r.get("created")) < time.strftime("%Y-%m-%d", time.gmtime(time.time() - 3 * 86400)):
+                why = "jamais testé depuis le %s" % str(r.get("created"))[5:].replace("-", "/")
+        if why:
+            _v = re.search(r"-(\d+|k)$", rid)
+            out.append({"id": rid, "name": (r.get("name_fr") or rid) + ((" (v%s)" % _v.group(1)) if _v else ""), "why": why})
+    return out
+
+
+def robots_tidy(user, body):
+    """list the robots that no longer serve (+ the ones put away), put away a selection, or bring some back - reversible"""
+    uid = user.get("id")
+    act = str(body.get("action") or "list")
+    ids = [str(x) for x in (body.get("ids") or [])][:60]
+    reg = robot_reg()
+    cur = _acct_cur_robot(user)
+    done = []
+    if act in ("archive", "restore") and ids:
+        for r in reg.get("robots") or []:
+            if r.get("id") not in ids or not _robot_mine(user, r) or r.get("id") == "owl":
+                continue
+            if act == "archive":
+                if r["id"] == cur:
+                    continue                             # the robot on their account is never put away
+                r["archived"] = True
+                r["archived_at"] = int(time.time())
+                r["public"] = False
+            else:
+                r.pop("archived", None)
+                r.pop("archived_at", None)
+            done.append(r["id"])
+        if done:
+            _robot_save(reg)
+            try:
+                _mem_note_safe(uid, lambda mm: mm.__setitem__("tidy_t", time.time()))
+            except Exception:
+                pass
+    away = [{"id": r["id"], "name": (r.get("name_fr") or r["id"]) + ((" (v%s)" % re.search(r"-(\d+|k)$", r["id"]).group(1)) if re.search(r"-(\d+|k)$", r["id"]) else ""),
+             "t": r.get("archived_at")} for r in reg.get("robots") or []
+            if r.get("by_uid") == uid and r.get("archived")]
+    return {"ok": True, "done": done, "candidates": _cleanup_candidates(user), "away": sorted(away, key=lambda z: -(z.get("t") or 0))[:40]}
+
+
 def _quick_answers(user, c, mb):
     """the answers people ask for most in a call, ready at the top of the voice's sheet (no brain needed)"""
     L = []
@@ -19836,12 +19951,21 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
             mats.append(("human", "a question you are genuinely curious about, about their life: \"%s\" (set human_asked: \"%s\")" % (hq["fr"], hq["id"])))
     except Exception:
         J = []
+    try:
+        _cc = _cleanup_candidates(u)
+        if len(_cc) >= 3 and now - float(m.get("tidy_t") or 0) > 3 * 86400 and now - float(m.get("tidy_ask_t") or 0) > 3 * 86400:
+            mats.insert(0, ("tidy", "you noticed %d of their robots no longer serve (%s): propose, warmly, to put them away so their list "
+                                    "stays clear - nothing is lost, they can bring any back. [[TIDY]]" % (len(_cc), "; ".join("%s: %s" % (x["name"], x["why"]) for x in _cc[:5]))))
+    except Exception:
+        pass
     mats.append(("market", "the market right now (see THE WORLD RIGHT NOW: a price that moved, a session opening, a news item) and what it means for their robot"))
     mats.append(("followup", "something THEY said or asked earlier in this conversation or the last days that is still open - come back to it naturally (\"tu m'avais dit...\")"))
     mats.append(("own", "what YOU have been doing or thinking (a bet, a lesson, a question you are digging into, an idea for their robot) - and if a useful step is obvious, DO it (act/build) and say so"))
     pick = next((x for x in mats if x[0] not in used), mats[0])
     _mem_note_safe(uid, lambda mm2: mm2.__setitem__("initiative", ([x for x in (mm2.get("initiative") or []) if now - float(x.get("t") or 0) < 86400]
                                                                   + [{"t": now, "kind": pick[0], "cid": cid}])[-30:]))
+    if pick[0] == "tidy":
+        _mem_note_safe(uid, lambda mm2: mm2.__setitem__("tidy_ask_t", now))
     if pick[0] == "finding" and J:
         _mem_note_safe(uid, lambda mm2: mm2.__setitem__("init_journal_t", J[0]["t"]))
     _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
@@ -26573,7 +26697,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -26597,7 +26721,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

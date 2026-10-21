@@ -386,7 +386,9 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   ONLY: tests, luck tests, all accounts), "confirm" ({"action": "pause"|"resume"} - THEY press the button to pause / restart
   the robot on THEIR account; you never do it yourself), "onaccount" (put THIS chat's robot on their real account - they
   confirm with their password; the card says plainly if it is not possible yet and why), "compare" (this robot vs the Owl,
-  step by step), "robots" (ALL their robots with where each one stands - use it for "liste mes robots"), "week" (their week at a glance:
+  step by step), "robots" (ALL their robots with where each one stands - use it for "liste mes robots"), "tidy" (their robots
+  that no longer serve, with a reason each, to put away in one tap - hidden, history kept - and the ones put away, to bring
+  back: use it for "range / supprime / nettoie mes robots", "remets X", or when you see ROBOTS THAT NO LONGER SERVE), "week" (their week at a glance:
   account, robots, next step - for the Sunday look back), "replay" ({"t": "YYYY-MM-DD HH:MM" UTC or omitted, "why": "..."} -
   opens THEIR replay room - to SHOW a moment instead of describing it, or to invite them to practise; the room never shows what comes
   after the paused minute). To STOP a luck test that waits in line: "act": "luck_cancel". Use a card whenever they ask about their account, results, a day,
@@ -1212,7 +1214,7 @@ def partner_of(raw):
                 out[k] = raw[k].strip()[:200]
         if isinstance(raw.get("cards"), list):
             out["cards"] = [{"kind": x["kind"], "args": x.get("args") if isinstance(x.get("args"), dict) else {}} for x in raw["cards"][:2]
-                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots", "week", "replay")]
+                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots", "week", "replay", "tidy")]
         st_ = raw.get("setting")
         if isinstance(st_, dict):
             ok = {k: v for k, v in st_.items() if (k in ("sound", "big") and isinstance(v, bool)) or (k == "lang" and v in ("fr", "en"))
