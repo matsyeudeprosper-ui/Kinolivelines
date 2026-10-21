@@ -65,6 +65,8 @@ def add_entry(text, kind, uid=None, data=None):
     text = str(text or "").strip()[:400]
     if not text:
         return False
+    import re as _re0
+    text = _re0.sub(r"(\d)\.(\d)", r"\1,\2", text)        # French decimals, like the rest of what he says
 
     def f(d):
         J = d.setdefault("journal", [])
@@ -261,6 +263,26 @@ def headsup_due(uid, syms, data_fn, cal, names, now=None):
     _mut(f)
     return {"sym": best[0] if best else None, "name": names.get(best[0]) if best else None, "ratio": round(best[1], 1) if best else None,
             "days": best[2] if best else None, "hour_utc": nxt, "in_min": mins, "news": news[:3]}
+
+
+def admin_view():
+    """the owner's view of Kino's life (never shown to members): journal, record, lessons, curiosity, market habits"""
+    d = _load()
+    try:
+        import kino_inner as KI
+        sc, lr, oq = KI.hunch_score(), (KI._load().get("learned") or {}), [x["q"] for x in KI.open_questions(None, 6)]
+    except Exception:
+        sc, lr, oq = {}, {}, []
+    hum = []
+    for uid, H in (d.get("human") or {}).items():
+        for a in H.get("answers") or []:
+            hum.append({"q": HUMAN_Q[a["i"]][0], "a": a["a"], "t": a["t"]})
+    top = {}
+    for sym, P in (d.get("profile") or {}).items():
+        r = sorted(((int(h), v) for h, v in (P.get("ratio") or {}).items()), key=lambda z: -z[1])[:3]
+        top[sym] = [{"h": h, "x": v} for h, v in r]
+    return {"journal": (d.get("journal") or [])[-30:][::-1], "score": sc, "lessons": [v.get("lesson") for v in lr.values() if v.get("lesson")],
+            "open_questions": oq, "human": sorted(hum, key=lambda z: -z["t"])[:10], "habits": top}
 
 
 # ---------------------------------------------------------------- what he knows about his own life (for the prompts)

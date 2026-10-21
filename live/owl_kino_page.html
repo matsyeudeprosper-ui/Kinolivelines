@@ -85,6 +85,22 @@ function paint(){let h='';const g=D.goal||{};
  if(D.admin&&D.mind){const M=D.mind,S=M.self||{},PE=M.personality||{};
   /* 2026-10-19 (owner next-list item 7): more of the mind for its creator */
   const MM=D.mind_more||{};
+  /* 2026-10-21 (owner: "Kino's life only visible to me admin") */
+  if(D.life){const Lf=D.life,sc=Lf.score||{},dt=t=>new Date(t*1000).toLocaleDateString(EN?'en-GB':'fr-FR',{day:'numeric',month:'short'});
+   h+='<div class="card"><h2><i>✦</i>'+T('Sa vie · visible par toi seul','His life · only you see this')+'</h2>'+
+    '<p class="sub">'+T('Ses paris sur les marchés : ','His market bets: ')+'<b>'+(sc.right||0)+'/'+(sc.n||0)+'</b>'+T(' justes',' right')+(sc.by?' · '+Object.entries(sc.by).map(([k,v])=>esc(k)+' '+esc(v)).join(' · '):'')+'</p>'+
+    (Lf.lessons||[]).map(x=>'<div class="it"><span>💡 '+esc(x)+'</span></div>').join('')+
+    ((Lf.journal||[]).length?'<p class="sub" style="margin:12px 0 4px"><b>'+T('Son carnet de vie','His life journal')+'</b></p>'+Lf.journal.slice(0,14).map(x=>'<div class="jr"><b>'+dt(x.t)+' · '+esc(x.kind)+'</b><p>'+esc(x.text)+'</p></div>').join(''):'')+
+    ((Lf.human||[]).length?'<p class="sub" style="margin:12px 0 4px"><b>'+T('Ce que les humains lui ont appris','What humans taught him')+'</b></p>'+Lf.human.map(x=>'<div class="jr"><b>'+esc(x.q)+'</b><p>'+esc(x.a)+'</p></div>').join(''):'')+
+    ((Lf.open_questions||[]).length?'<p class="sub" style="margin:12px 0 4px"><b>'+T('Les questions qu’il creuse','The questions he is digging into')+'</b></p>'+Lf.open_questions.map(q=>'<div class="it"><span>❓ '+esc(q)+'</span></div>').join(''):'')+
+    (Object.keys(Lf.habits||{}).length?'<p class="sub" style="margin:12px 0 4px"><b>'+T('Les heures qui bougent (mesuré)','The hours that move (measured)')+'</b></p>'+Object.entries(Lf.habits).map(([s_,L_])=>'<div class="it"><span><b>'+esc(s_)+'</b> · '+L_.map(z=>z.h+'h UTC ×'+String(z.x).replace('.',EN?'.':',')).join(' · ')+'</span></div>').join(''):'')+'</div>';}
+  if(D.kino_report){const R=D.kino_report,cl=R.calls||{};
+   h+='<div class="card"><h2><i>✓</i>'+T('Son bulletin · 7 derniers jours','His report card · last 7 days')+'</h2><div class="list">'+
+    [[T('Messages','Messages'),R.msgs],[T('Venus de lui-même','On his own'),R.own_pct+' %'],[T('Finissent par une question','End with a question'),R.q_pct+' %'],[T('Demandent la permission','Ask permission'),R.perm_pct+' %'],
+     [T('Promesses tenues','Promises kept'),R.kept],[T('Réponses en retard (réveillé)','Late answers (woken up)'),R.missed],[T('Se corrige lui-même','Corrects himself'),R.corrections],[T('Notes vocales','Voice notes'),R.voice_notes],
+     [T('Appels','Calls'),(cl.n||0)+' · '+(cl.min||0)+' min · '+(cl.usd||0)+' $ · '+(cl.deleg||0)+T(' questions au cerveau',' brain questions')],
+     [T('Coût du cerveau','Brain cost'),R.brain_usd==null?'—':R.brain_usd+' $'],[T('Coût voix haute','Read-aloud cost'),R.tts_usd==null?'—':R.tts_usd+' $']]
+     .map(r=>'<div class="it"><span>'+esc(r[0])+'</span><b>'+esc(String(r[1]))+'</b></div>').join('')+'</div></div>';}
   if(MM.mood&&MM.mood.why)h+='<div class="card"><h2><i>☀</i>'+T('Son humeur','Its mood')+'</h2><div class="mood">'+(['😔','😕','😐','🙂','😄'][(MM.mood.level|0)+2]||'😐')+' « '+esc(MM.mood.why)+' »</div></div>';
   if(MM.exp_now&&MM.exp_now.running){const E=MM.exp_now.results||{},f=k=>{const x=E[k]||{};return (x.kino_msgs||0)+' '+T('messages','messages')+' · '+(x.answered||0)+' '+T('réponses','replies')+' · 👍 '+(x.liked||0)+' · 👎 '+(x.disliked||0);};
    h+='<div class="card"><h2><i>⚗</i>'+T('Où en est son test','How its test is going')+' · '+MM.exp_now.days+' '+T('j','d')+'</h2><div class="list"><div class="it"><span><b>A</b> · '+f('a')+'</span></div><div class="it"><span><b>B</b> · '+f('b')+'</span></div></div>'+

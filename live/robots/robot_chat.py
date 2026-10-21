@@ -347,6 +347,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "later": [{"kind": "ask"|"tell", "text": "..."}] things to bring up later, "later_used": "the text" when you used one,
   "thought_used": null or the id of the ON YOUR MIND thought you just brought up,
   "human_asked": null or the id of A QUESTION YOU ARE GENUINELY CURIOUS ABOUT when you just asked it,
+  "remind": null or {"in_min": minutes from now, "what": "what to remind them of"} when they ask you to remind them of
+   something later ("rappelle-moi demain à 9h...": count the minutes from THEIR clock) - you will come back at that time,
   "more": null or {"in": seconds (15 to 1800), "what": "what you will add"} - you will TEXT AGAIN by yourself if they have
   not written by then (see YOU CAN TEXT AGAIN),
   "work": null or {"in": seconds (120 to 1200), "what": "exactly what you will look into"} - when you are NOT SURE and say
@@ -1184,6 +1186,12 @@ def partner_of(raw):
         pass
     if str(raw.get("thought_used") or "").strip():
         out["thought_used"] = str(raw["thought_used"]).strip()[:120]
+    try:
+        rm = raw.get("remind")
+        if isinstance(rm, dict) and str(rm.get("what") or "").strip() and 1 <= float(rm.get("in_min") or 0) <= 60 * 24 * 30:
+            out["remind"] = {"in_min": float(rm["in_min"]), "what": str(rm["what"]).strip()[:240]}
+    except Exception:
+        pass
     if str(raw.get("human_asked") or "").strip().startswith("h"):
         out["human_asked"] = str(raw["human_asked"]).strip()[:8]
     try:                      # 2026-10-20 (owner list 5): promised work, shared moments, running jokes, experiments together

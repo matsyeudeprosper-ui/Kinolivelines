@@ -15365,6 +15365,13 @@ def _partner_apply(user, cid, pa):
     if not pa:
         return
     uid = user.get("id")
+    if pa.get("remind") and cid:                     # 2026-10-21 item 5: "rappelle-moi ..."
+        try:
+            _rm = pa["remind"]
+            _mem_note_safe(uid, lambda mm: mm.__setitem__("reminders", ((mm.get("reminders") or []) + [{
+                "due": time.time() + 60 * float(_rm["in_min"]), "what": _rm["what"], "cid": cid, "t": time.time()}])[-20:]))
+        except Exception:
+            pass
     if pa.get("human_asked") and cid:             # 2026-10-21 (owner: Kino's life - curiosity about human life)
         try:
             _rc()
@@ -16074,6 +16081,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _lv = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("vn")] or [0])
                 if event and event.startswith("WEEK RECAP") and q.get("say"):
                     _vn = {"vn": True}
+                elif not event and q.get("say") and len(str(q["say"])) <= 400 and _rnd.random() < 0.6 and (
+                        next((x for x in reversed(c.get("msgs") or []) if x.get("role") == "user"), {}).get("audio")):
+                    _vn = {"vn": True}                       # 2026-10-21 item 4: a voice message often gets a voice note back
                 elif q.get("say") and len(str(q["say"])) <= 260 and "\n\n" not in str(q["say"]) and time.time() - _lv > 6 * 3600 and (
                         (event and event.startswith(("MORNING BRIEF", "MILESTONE", "LUCK TEST FINI", "NEW CONVERSATION", "WELCOME BACK")) and _rnd.random() < 0.35)
                         or (not event and len(str(q["say"])) <= 160 and _rnd.random() < 0.04)):
@@ -16554,6 +16564,19 @@ def _companion_tick():
                 pass
             try:
                 _kino_headsup(u, uid, ch, now, h0, busy)
+            except Exception:
+                pass
+            try:                                     # 2026-10-21 item 5: the reminders they asked for, at the right time
+                _due = [r_ for r_ in (m.get("reminders") or []) if now >= float(r_.get("due") or 0)]
+                if _due:
+                    r_ = _due[0]
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("reminders", [x for x in mm.get("reminders") or [] if x.get("t") != r_.get("t")]))
+                    _rcid = r_.get("cid") if any(x["id"] == r_.get("cid") for x in ch) else ch[0]["id"]
+                    if now - float(r_["due"]) < 6 * 3600 and not busy(_rcid) and not str(r_.get("cid") or "").endswith("9999999999999"):
+                        _CHAT_Q[_rcid] = _CHAT_Q.get(_rcid, 0) + 1
+                        threading.Thread(target=_chat_quick, args=(_rcid, u, "REMINDER they asked you for (%d min ago): \"%s\". Remind them now, short and "
+                                         "warm, like a friend keeping his word, with anything useful you know about it; send = true." % (
+                                             (now - float(r_["t"])) / 60, r_["what"])), kwargs={"notify": True, "important": True}, daemon=True).start()
             except Exception:
                 pass
             # (1r) 2026-10-20 (owner all 12): a week of replay -> Kino writes 3 lessons from their trades and notes, and keeps them
@@ -18099,6 +18122,13 @@ def kino_data(user):
                 out["mind_more"]["inner"] = _KIv.mind_view(user.get("id"))
             except Exception:
                 pass
+            try:                                      # 2026-10-21 (owner: "Kino's life only visible to me admin")
+                if is_admin(user):
+                    import kino_life as _KLv
+                    out["life"] = _KLv.admin_view()
+                    out["kino_report"] = _kino_report()
+            except Exception:
+                pass
         except Exception:
             pass
         try:
@@ -18458,6 +18488,12 @@ def chat_open(user, body):
     except Exception:
         pass
     _CHAT_VIEW[c["id"]] = time.time()
+    try:                                             # 2026-10-21 item 8: back after 6 h+ -> one "while you were away" card
+        _aw = _away_card(user, c, float(c.get("seen_t") or 0))
+        if _aw:
+            _chat_mut(c["id"], lambda cc: _chat_msg(cc, "away", away=_aw))
+    except Exception:
+        pass
     try:
         _chat_mut(c["id"], lambda cc: cc.__setitem__("seen_t", int(time.time())))      # survives a restart
     except Exception:
@@ -19460,6 +19496,16 @@ def share_page(tok):
     return _flow_page("La progression d'un robot", body, doc_title="OwlNest · " + _h.escape(rb.get("name") or "Robot"))
 
 
+def _tts_cost_month(m0):
+    """item 12: read-aloud (gpt-4o-mini-tts) this month - estimated from the text length, cache hits cost nothing"""
+    try:
+        L_ = [json.loads(x) for x in open(os.path.join(DIR, "robots", "tts_costs.jsonl"), encoding="utf-8").read().splitlines() if x.strip()]
+    except Exception:
+        L_ = []
+    L_ = [x for x in L_ if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]
+    return {"n": len(L_), "min": round(sum(float(x.get("min") or 0) for x in L_), 1), "usd": round(sum(float(x.get("usd") or 0) for x in L_), 3)}
+
+
 def _brain_costs_for(calls):
     """item 12: what Kino's brain (the turns answered during each call) cost, from robots/brain_costs.jsonl"""
     try:
@@ -19543,6 +19589,212 @@ def _week_recap(u, uid, m, ch, now, h0, busy):
                      "Facts: account this week %s; tests this week: %s; next step on their path: %s. End warmly, no question."
                      % ("%+.2f $" % wkm if wkm is not None else "unknown", "; ".join(tests[-4:]) or "none", nxt or "-")),
                      kwargs={"notify": True}, daemon=True).start()
+
+
+# ---- 2026-10-21 (owner: "next upgrades in the chat space - all 12") ----
+CHAT_AUD = os.path.join(DIR, "robots", "chat_audio")
+
+
+def _openai_key():
+    k = os.environ.get("OPENAI_API_KEY")
+    if not k:
+        try:
+            k = json.load(open(TTS_CONF, encoding="utf-8")).get("key")
+        except Exception:
+            k = None
+    return k
+
+
+def _transcribe(b, ext, lang):
+    """item 4: a voice message -> text (OpenAI transcription), None on failure"""
+    import urllib.request, uuid
+    key = _openai_key()
+    if not key:
+        return None
+    bd = "----owl" + uuid.uuid4().hex
+    parts = []
+    for k_, v_ in (("model", "gpt-4o-mini-transcribe"), ("language", "en" if lang == "en" else "fr")):
+        parts.append(("--%s\r\nContent-Disposition: form-data; name=\"%s\"\r\n\r\n%s\r\n" % (bd, k_, v_)).encode())
+    parts.append(("--%s\r\nContent-Disposition: form-data; name=\"file\"; filename=\"voice.%s\"\r\nContent-Type: audio/%s\r\n\r\n" % (bd, ext, ext)).encode() + b + b"\r\n")
+    parts.append(("--%s--\r\n" % bd).encode())
+    rq = urllib.request.Request("https://api.openai.com/v1/audio/transcriptions", data=b"".join(parts),
+                                headers={"Authorization": "Bearer " + key, "Content-Type": "multipart/form-data; boundary=" + bd, "User-Agent": "OwlNest/1.0"})
+    for _t in (30, 60):
+        try:
+            return (json.loads(urllib.request.urlopen(rq, timeout=_t).read().decode("utf-8")).get("text") or "").strip() or None
+        except Exception:
+            continue
+    return None
+
+
+def chat_audio(user, body):
+    """item 4: a voice message like WhatsApp - kept as audio beside the chat, transcribed, then sent as their message"""
+    import base64
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    d = str(body.get("data") or "")
+    mime = d[5:d.find(";")] if d.startswith("data:") else ""
+    if d.startswith("data:"):
+        d = d.split(",", 1)[-1]
+    try:
+        b = base64.b64decode(d, validate=True)
+    except Exception:
+        return {"ok": False, "err": "audio"}
+    if len(b) < 1500 or len(b) > 6_000_000:
+        return {"ok": False, "err": "audio"}
+    ext = "mp4" if "mp4" in mime or "aac" in mime else "ogg" if "ogg" in mime else "wav" if "wav" in mime else "webm"
+    txt = _transcribe(b, ext, _rc().member_lang(c, c.get("lang") or "fr"))
+    if not txt:
+        return {"ok": False, "err": "transcribe"}
+    os.makedirs(CHAT_AUD, exist_ok=True)
+    fn = "%s_%d.%s" % (c["id"], int(time.time() * 1000), ext)
+    open(os.path.join(CHAT_AUD, fn), "wb").write(b)
+    r = chat_send(user, {"id": c["id"], "text": txt, "voice": 1})
+
+    def put(cc):
+        for m in reversed(cc.get("msgs") or []):
+            if m.get("role") == "user" and m.get("text") == txt:
+                m["audio"] = fn
+                m["dur"] = round(float(body.get("dur") or 0), 1)
+                return True
+    _chat_mut(c["id"], put)
+    return dict(r or {}, ok=bool((r or {}).get("ok", True)), text=txt)
+
+
+def chat_msg_del(user, body):
+    """item 6: delete one of their messages (30 min) - Kino forgets it (it leaves the conversation he reads)"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    try:
+        i = int(body.get("i"))
+    except Exception:
+        return {"ok": False}
+    if c is None:
+        return {"ok": False}
+
+    def put(c):
+        M = c.get("msgs") or []
+        if not (0 <= i < len(M)) or M[i].get("role") not in ("user", "image", "doc") or time.time() - float(M[i].get("t") or 0) > 1800:
+            return False
+        M[i] = {"role": "deleted", "t": M[i].get("t")}
+        return True
+    return {"ok": bool(_chat_mut(c["id"], put))}
+
+
+def agenda(user, body):
+    """item 10: the big economic news of the week, each with what their market usually does at that hour (measured)"""
+    _rc()
+    try:
+        import robot_reality as _RRa
+        cal = (_RRa._load() or {}).get("cal") or []
+    except Exception:
+        cal = []
+    import kino_life as _KLa
+    syms = ["BTCUSD"]
+    for x in (chat_list(user).get("chats") or [])[:6]:
+        mk = ((_chat_load(user, x["id"]) or {}).get("robot") or {}).get("market")
+        if mk and mk.upper() not in syms:
+            syms.append(mk.upper())
+    prof = {s_: (_KLa.hour_profile(lambda q_: _rd().data(q_), s_) or {}).get("ratio") or {} for s_ in syms[:4]}
+    out, now = [], time.time()
+    for x in cal:
+        try:
+            te = datetime.fromisoformat(x["date"]).astimezone(timezone.utc).timestamp()
+        except Exception:
+            continue
+        if x.get("impact") != "High" or te < now - 3600 or te > now + 7 * 86400:
+            continue
+        h = str(time.gmtime(te).tm_hour)
+        out.append({"t": int(te), "cc": x.get("cc"), "title": x.get("title"), "forecast": x.get("forecast"), "previous": x.get("previous"),
+                    "habit": {s_: prof[s_].get(h) for s_ in prof if prof[s_].get(h)}})
+    return {"ok": True, "events": sorted(out, key=lambda z: z["t"])[:14], "markets": syms[:4]}
+
+
+def _kino_report():
+    """item 11 (owner only): Kino's week - initiative, questions, permission, promises, self-corrections, calls and costs"""
+    _rc()
+    import robot_chat as _RCr
+    t0 = time.time() - 7 * 86400
+    ai = []
+    kept = 0
+    for f in os.listdir(CHAT_DIR):
+        if not f.endswith(".json") or "9999999999999" in f:
+            continue
+        try:
+            c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+        except Exception:
+            continue
+        ai += [m for m in c.get("msgs") or [] if m.get("role") == "ai" and float(m.get("t") or 0) >= t0 and m.get("text")]
+        kept += sum(1 for k in c.get("kept") or [] if float(k.get("t") or 0) >= t0)
+    n = len(ai) or 1
+    q = sum(1 for m in ai if str(m["text"]).rstrip().endswith("?"))
+    perm = sum(1 for m in ai if _RCr.PERMISSION.search(str(m["text"])))
+    own = sum(1 for m in ai if m.get("event"))
+    corr = sum(1 for m in ai if re.search(r"(je me suis tromp|c'était faux|n'avait pas de fond|périmé|j'avais tort|ma phrase .{0,30} fausse)", str(m["text"]), re.I))
+    vn = sum(1 for m in ai if m.get("vn"))
+    try:
+        miss = sum(1 for l_ in open(os.path.join(DIR, "robots", "kino_alarm.log"), encoding="utf-8").read().splitlines()
+                   if l_[:19] >= time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t0)) and "no answer" in l_)
+    except Exception:
+        miss = 0
+    try:
+        CL = [x for x in json.load(open(LIVE_CALLS, encoding="utf-8")) if float(x.get("t") or 0) >= t0]
+    except Exception:
+        CL = []
+    try:
+        BC = [json.loads(x) for x in open(os.path.join(DIR, "robots", "brain_costs.jsonl"), encoding="utf-8").read().splitlines()[-20000:] if x.strip()]
+        brain = round(sum(float(b.get("usd") or 0) for b in BC if float(b.get("t") or 0) >= t0), 2)
+    except Exception:
+        brain = None
+    try:
+        TC = [json.loads(x) for x in open(os.path.join(DIR, "robots", "tts_costs.jsonl"), encoding="utf-8").read().splitlines() if x.strip()]
+        tts = round(sum(float(b.get("usd") or 0) for b in TC if float(b.get("t") or 0) >= t0), 3)
+    except Exception:
+        tts = None
+    try:
+        import kino_inner as _KIr
+        sc = _KIr.hunch_score()
+    except Exception:
+        sc = {}
+    return {"msgs": len(ai), "own_pct": round(100.0 * own / n), "q_pct": round(100.0 * q / n), "perm_pct": round(100.0 * perm / n),
+            "kept": kept, "missed": miss, "corrections": corr, "voice_notes": vn,
+            "calls": {"n": len(CL), "min": round(sum(float(x.get("billed_s") or 0) for x in CL) / 60.0, 1), "usd": round(sum(float(x.get("usd") or 0) for x in CL), 2),
+                      "deleg": sum(int(x.get("deleg") or 0) for x in CL)},
+            "brain_usd": brain, "tts_usd": tts, "bets": sc}
+
+
+def _away_card(user, c, prev_seen):
+    """item 8: back after 6 h or more - one card: what happened while they were away (real numbers only)"""
+    now = time.time()
+    if not prev_seen or now - prev_seen < 6 * 3600:
+        return None
+    M = c.get("msgs") or []
+    res = [m.get("result") or {} for m in M if m.get("role") == "result" and float(m.get("t") or 0) > prev_seen and not (m.get("result") or {}).get("kino_variant")]
+    kmsg = sum(1 for m in M if m.get("role") == "ai" and float(m.get("t") or 0) > prev_seen)
+    tr, pnl = 0, 0.0
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", user.get("id") + ".json"), encoding="utf-8"))
+        for t in nd.get("trades") or []:
+            try:
+                te = _trade_epoch(t.get("w")) + 60 * float(t.get("dur") or 0)
+            except Exception:
+                continue
+            if te > prev_seen:
+                tr += 1
+                pnl += float(t.get("p") or 0)
+    except Exception:
+        pass
+    fnd = []
+    try:
+        _rc()
+        import kino_life as _KLw
+        fnd = [x["text"] for x in _KLw.journal(user.get("id"), 10) if x["t"] > prev_seen][:2]
+    except Exception:
+        pass
+    if not (res or tr or fnd or kmsg >= 2):
+        return None
+    return {"hours": round((now - prev_seen) / 3600.0, 1), "trades": tr, "pnl": round(pnl, 2), "tests": [{"net": r.get("net"), "trades": r.get("trades"),
+            "market": r.get("market")} for r in res[-3:]], "kino_msgs": kmsg, "findings": fnd}
 
 
 def chat_why(user, body):
@@ -19815,6 +20067,12 @@ def _tts_mp3(text, lang="fr", voice=None):
                 raise
     if mp3:
         open(fn, "wb").write(mp3)
+        try:                                  # 2026-10-21 item 12: what read-aloud costs (~14 characters a second, ~$0.015/min)
+            _mn = len(text) / 14.0 / 60.0
+            open(os.path.join(DIR, "robots", "tts_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
+                {"t": int(time.time()), "chars": len(text), "min": round(_mn, 3), "usd": round(_mn * 0.015, 5), "voice": cf.get("voice")}) + "\n")
+        except Exception:
+            pass
     return mp3 or None
 
 
@@ -20433,6 +20691,8 @@ def live_session(user, body):
     except Exception:
         cf = {}
     _ins = _live_instructions(user, c)
+    if body.get("cont"):                             # 2026-10-21 item 1: the call simply goes on (a new line every 20 min)
+        _ins += "\nTHIS CALL IS CONTINUING (the line was renewed a second ago): do NOT greet, do not say anything about it - just keep listening."
     try:                                             # item 5: their very first call = a short spoken tour
         if not any(x.get("uid") == uid for x in json.load(open(LIVE_CALLS, encoding="utf-8"))):
             raise ValueError
@@ -20724,7 +20984,7 @@ def live_costs(user, body):
     return {"ok": True, "today": agg(td), "month": agg(mo), "all": agg(CL), "per": {k: agg(v) for k, v in per.items()}, "last": CL[-5:][::-1],
             "price_min": LIVE_PRICE_MIN, "deleg": sum(int(x.get("deleg") or 0) for x in mo),
             "sold_month": sold([x for x in P_ if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]), "sold_all": sold(P_),
-            "brain_month": _brain_costs_for(mo)}
+            "brain_month": _brain_costs_for(mo), "tts_month": _tts_cost_month(m0)}
 
 def _live_tick(sym):
     """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
@@ -25978,13 +26238,13 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
                 return
             try:
-                _cap = 2_800_000 if _parts[1] == "chat_image" else (11_000_000 if _parts[1] == "chat_doc" else (300000 if _parts[1] in ("replay_save", "chat_show") else 40000))    # a screenshot / a document is bigger
+                _cap = 2_800_000 if _parts[1] == "chat_image" else 8_200_000 if _parts[1] == "chat_audio" else (11_000_000 if _parts[1] == "chat_doc" else (300000 if _parts[1] in ("replay_save", "chat_show") else 40000))    # a screenshot / a document is bigger
                 _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), _cap)).decode("utf-8", "replace") or "{}")
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
@@ -26002,7 +26262,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -28430,6 +28690,15 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 pass
             self._send(json.dumps(ai_nudge(user), ensure_ascii=False), "application/json")
+        elif sub == "chat_aud":                          # 2026-10-21 item 4: their voice messages
+            import urllib.parse as _upr
+            _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            _c = _chat_load(user, _q.get("id", [""])[0]) if not user.get("public") else None
+            _f = os.path.basename(_q.get("f", [""])[0])
+            if _c is None or not _f.startswith(_c["id"] + "_") or not any(m.get("audio") == _f for m in _c.get("msgs") or []):
+                self._not_found()
+            else:
+                self._send_file_fresh(os.path.join(CHAT_AUD, _f), "audio/mp4" if _f.endswith(".mp4") else "audio/ogg" if _f.endswith(".ogg") else "audio/wav" if _f.endswith(".wav") else "audio/webm")
         elif sub == "chat_img":
             import urllib.parse as _upr
             _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
