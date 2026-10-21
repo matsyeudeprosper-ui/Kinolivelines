@@ -2057,6 +2057,9 @@ function ttsEl(){if(!TTS_EL){TTS_EL=new Audio();TTS_EL.setAttribute('playsinline
 (function(){const un=()=>{const a=ttsEl();if(a._ok)return;a._ok=1;try{a.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8isVNoMPMjAAAA0gAAABEVFGmgqK////9bP/6XCykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';a.play().then(()=>{a.pause();}).catch(()=>{});}catch(e){}};
  ['pointerdown','touchstart','keydown'].forEach(ev=>document.addEventListener(ev,un,{once:true,passive:true}));})();
 
+/* 2026-10-21 (owner: "default the voice to Cedar"): the voice saved on their account wins over an old choice kept by this phone */
+setTimeout(()=>{try{post('kino_pref',{}).then(j=>{const v=j&&j.prefs&&j.prefs.voice;if(v&&v!==KVOICE){KVOICE=v;try{localStorage.setItem('kinoVoice',v);}catch(e){}}}).catch(()=>{});}catch(e){}},1500);
+
 </script>
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div><div class="cbtns" id="cbtns"></div><button class="cvis" id="cvis" onclick="liveMin()"></button><button class="cmin" onclick="liveMin()">⌄ Voir la conversation</button></div>
 <button class="chg" onclick="callEnd()" aria-label="Raccrocher">✆</button></div>

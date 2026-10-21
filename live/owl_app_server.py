@@ -29130,7 +29130,8 @@ class H(BaseHTTPRequestHandler):
                 import urllib.parse as _upt
                 _qt = _upt.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
                 _lg = (_qt.get("l", ["fr"])[0] or "fr")[:2]
-                _mp3 = _tts_mp3(_spoken((_qt.get("t", [""])[0] or "")[:900], _lg), _lg, (_qt.get("v", [""])[0] or "")[:12])
+                _vq = (_qt.get("v", [""])[0] or "")[:12] or ((_mem_get(user.get("id")).get("prefs") or {}).get("voice") or "")   # their chosen voice, like calls
+                _mp3 = _tts_mp3(_spoken((_qt.get("t", [""])[0] or "")[:900], _lg), _lg, _vq)
                 if not _mp3:
                     self._not_found()
                 else:
