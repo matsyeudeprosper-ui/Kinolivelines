@@ -918,9 +918,26 @@ _LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|des|mais|mo
 _LEN = re.compile(r"\b(the|is|and|you|that|with|for|it|it's|this|was|are|what|then|my|me|your|can|do|not|of|to|i'm|how|why|so|going|things|far|doing|done|yet|just|move|we|our|current|again|look|will|would|should|have|has|i|is|up|any|there|stop|run)\b", re.I)
 
 
-def member_lang(chat, default="fr"):
+def member_lang(chat, default="fr", dominant=False):
     """2026-10-20 (audit: 10 language switches - Kino's own messages came in French while the member wrote English):
-    the language of the member's last real sentences (3+ words), measured, not guessed"""
+    the language of the member's last real sentences (3+ words), measured, not guessed.
+    dominant=True (2026-10-21, humanity watch: ONE English line -> all his own messages after it in English): the language
+    most of their last 8 real sentences are in - for what Kino says on his own"""
+    if dominant:
+        V = []
+        for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-20:]):
+            t = str(m.get("text") or "")
+            if len(t.split()) < 3:
+                continue
+            f, e = len(_LFR.findall(t)), len(_LEN.findall(t))
+            if f != e:
+                V.append("fr" if f > e else "en")
+            if len(V) >= 8:
+                break
+        if V:
+            nf = V.count("fr")
+            return "fr" if nf * 2 > len(V) else ("en" if nf * 2 < len(V) else V[0])
+        return default
     for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-6:]):
         t = str(m.get("text") or "")
         if len(t.split()) < 3:
@@ -947,7 +964,7 @@ def member_lang2(chat):
 
 
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None):
-    ml = member_lang(chat, "en" if lang == "en" else "fr")
+    ml = member_lang(chat, "en" if lang == "en" else "fr", dominant=bool(event))
     U = ("MODE: %s\nLANGUAGE: write in %s - the language of the member's last real sentences (measured). This holds for "
          "EVERY message, also the ones you send on your own. Switch only when THEY switch with real sentences.\n") % (
         mode, "French" if ml == "fr" else "English")
