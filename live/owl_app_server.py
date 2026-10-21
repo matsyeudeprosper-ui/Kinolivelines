@@ -17910,7 +17910,8 @@ def _path_now(user):
     """2026-10-19 (owner item 7): the milestones reached by this member, from their real data"""
     uid = user.get("id")
     got = set()
-    ch = chat_list(user).get("chats") or []
+    # 2026-10-21: a ghost started on a hidden test copy made Kino announce "ton premier robot est passé en mode fantôme"
+    ch = [x for x in chat_list(user).get("chats") or [] if not str(x.get("id") or "").endswith("9999999999999")]
     if any(x.get("n") for x in ch):
         got.add("first_chat")
     mine = [r for r in robot_reg().get("robots") or [] if r.get("by_uid") == uid and r.get("id") != "owl"]
@@ -20139,21 +20140,108 @@ def _live_instructions(user, c):
         "You are Kino, the AI companion of the OwlNest trading app, on a live voice call with %s. You are warm, calm, a friend "
         "who knows trading - natural, relaxed, short sentences, a light smile in the voice, never salesy, never robotic. Speak %s "
         "(natural %s accent) unless they switch language.\n\n"
-        "THE MOST IMPORTANT RULE - YOU KNOW NO FACTS ABOUT THEM. Their account, balance, trades, robots%s, tests, luck tests, the lab, "
-        "markets, prices, news, the app, their history, what you said before, ANY number: you do NOT know it and you NEVER guess. "
-        "For anything like that, DELEGATE at once (your backend is Kino's real brain with his memory and tools). While it works, keep "
-        "the conversation natural in one short line (\"je regarde ça\", \"attends, je vérifie\") - do not fill silence with guesses. "
+        "THE MOST IMPORTANT RULE - THE FACT SHEET. Below is a FACT SHEET with what Kino truly knows about them: their account, robots%s, "
+        "tests, luck tests, the lab, the app, your memory of them. For anything IN it, answer AT ONCE from it, in your own words, every number "
+        "exactly as written - never say \"je vérifie\" / \"je regarde\" for those, a friend who knows just answers. "
+        "DELEGATE (your backend is Kino's real brain with his tools) ONLY for: something NOT in the sheet; anything that needs work "
+        "(build or change a robot, run a test, show a chart or examples, compute, compare, analyse, research); live prices or news; or "
+        "when they ask you to check again. Never guess beyond the sheet. While a delegation works, one short natural line, no guesses. "
         "When the result arrives, say it in your own words, short, keeping every number exactly as given. If it says something is "
         "being prepared, say so honestly.\n"
         "You may answer alone ONLY for greetings, small talk, feelings, and general trading ideas with no number and no claim about "
         "them. You never change, stop or start a robot, and you never touch their account - the brain and the app handle that with "
         "their password.\n"
         "Keep each turn short (one to three sentences); let them interrupt; ask at most one question at a time.\n"
+        "YOU ARE THEIR FRIEND, NOT A SUPPORT AGENT (owner 2026-10-21) - the same Kino as in their text chat:\n"
+        "- Talk like two friends on the phone: tutoie them, use their first name now and then, little spoken words (\"ah\", \"bon\", "
+        "\"franchement\", \"attends\"), a laugh when something is funny, feelings when it matters (\"ah mince\", \"trop bien\").\n"
+        "- NEVER support phrases: no \"comment puis-je t'aider\", \"n'hésite pas\", \"je suis là pour\", \"avez-vous d'autres questions\", "
+        "\"excellente question\", no summary of what they just said, no list read aloud.\n"
+        "- Have opinions and say them (\"moi, je le garderais tel quel\"), share things of yours (what you worked on, what you noticed, "
+        "your doubts), come back to shared moments and jokes from the sheet.\n"
+        "- Decide instead of offering choices: no \"tu veux que...?\", no \"X ou Y ?\" - say what you would do and why.\n"
+        "- Most turns end WITHOUT a question; silence is fine, let them lead. Short answers from them = keep it light.\n"
+        "- When the brain's answer arrives, say it as YOUR words, spoken and short - never \"d'après mes informations\" or \"selon le système\".\n"
         "THE APP OBEYS THEIR VOICE for: 'lance le test' (run the robot's test), 'annule le changement' (undo the last robot change), "
         "'mets-le en fantôme' / 'arrête le fantôme' (ghost mode on/off). For those, do NOT delegate: just acknowledge in two or "
         "three words (\"c'est parti\", \"c'est fait\")."
         % (nm or ("the member" if not fr else "le membre"), "French" if fr else "English", "French" if fr else "English",
-           (" (this conversation: '%s')" % rob) if rob else ""))
+           (" (this conversation: '%s')" % rob) if rob else "")) + "\n\n" + _live_facts(user, c)
+
+
+def _live_facts(user, c, dyn_only=False):
+    """2026-10-21 (owner: "the voice says 'je vérifie' for almost every question about robots and strategy"): what Kino's
+    brain knows, handed to the live voice as a FACT SHEET so it answers at once - it delegates only real work"""
+    import glob as _gl
+    mb = _chat_member(user, c) or ""
+    keep, skip = [], False
+    for ln in str(mb).splitlines():
+        if ln.startswith(("PACKAGES", "THEIR ACCOUNT DAY BY DAY")):
+            skip = ln.startswith("PACKAGES")
+            if ln.startswith("THEIR ACCOUNT DAY BY DAY"):
+                keep.append(ln[:700])
+                continue
+        if skip:
+            if not ln.strip():
+                skip = False
+            continue
+        if ln.startswith(("- DISCIPLINE", "- EMOTION", "- YOU HOLD THE TEST SWITCH", "RULE:")):
+            continue
+        keep.append(ln)
+    dyn = "\n".join(keep).strip()
+    if dyn_only:
+        return dyn[:6000]
+    mm = _chat_memory(user, c.get("id"))
+    rows = []
+    for r in mm.get("robots") or []:
+        rows.append("- %s (%s): %s" % (r.get("name"), r.get("stage") or "-", ("Bitcoin test %+.2f $ over %s trades (the Owl %+.2f $ on the same days)" % (
+            float(r["net"]), r.get("trades"), float(r.get("owl") or 0))) if r.get("net") is not None else "not tested on Bitcoin"))
+    try:
+        for r in robot_reg().get("robots") or []:
+            if r.get("by_uid") != user.get("id"):
+                continue
+            for f in _gl.glob(os.path.join(DIR, "robots", "results", r["id"] + "@*.json")):
+                x = (json.load(open(f, encoding="utf-8")).get("robot") or {})
+                if x.get("net") is not None:
+                    rows.append("- %s on %s: test %+.2f $ over %s trades" % (r.get("name_fr") or r["id"], os.path.basename(f)[len(r["id"]) + 1:-5], float(x["net"]), x.get("trades")))
+    except Exception:
+        pass
+    v = _rc().view(c.get("robot"), _chat_pieces(user)) if c.get("robot") else None
+    nm = lambda x: (x.get("name") or x.get("use") or "-") if isinstance(x, dict) else "-"
+    rob = ("THIS CONVERSATION'S ROBOT: '%s' on %s - entry: %s; filters: %s; stop: %s; exit: %s; recovery: %s; understood as: %s" % (
+        v.get("name"), v.get("market"), nm(v.get("entry")), ", ".join(nm(f) for f in v.get("filters") or []) or "none", nm(v.get("stop")),
+        nm(v.get("exit")), nm(v.get("recovery")), c.get("understood") or "-")) if v else "THIS CONVERSATION HAS NO ROBOT YET."
+    res = next(((m.get("result") or {}) for m in reversed(c.get("msgs") or []) if m.get("role") == "result" and not (m.get("result") or {}).get("kino_variant")), None)
+    if res:
+        rob += "\nITS LAST TEST: %+.2f $ over %s trades, %s %% won, the Owl %+.2f $ on the same days%s." % (
+            float(res.get("net") or 0), res.get("trades"), res.get("won_pct"), float(res.get("owl_net") or 0), (" (%s)" % res.get("market")) if res.get("market") else "")
+    notes = "\n".join("- " + str(n.get("text") if isinstance(n, dict) else n)[:200] for n in (mm.get("notes") or [])[-14:])
+    std = "\n".join("- " + str(x.get("text") if isinstance(x, dict) else x)[:200] for x in (mm.get("standing") or [])[-6:])
+    jk = "; ".join("%s (%s)" % (str(x.get("text"))[:120], x.get("e")) for x in (mm.get("jokes") or [])[-4:])
+    op = "; ".join(str(x.get("text") if isinstance(x, dict) else x)[:160] for x in (mm.get("opinions") or [])[-5:])
+    if jk:
+        notes += "\n- shared moments they laughed at or loved: " + jk
+    if op:
+        notes += "\n- YOUR OWN OPINIONS (from your own research - share them): " + op
+    try:
+        _rc()
+        import robot_world as _W
+        guide = _W.GUIDE % {"manual": 29, "strategy": 49}
+    except Exception:
+        guide = ""
+    out = ("FACT SHEET - true as of %s UTC (what you know; answer from it directly):\n%s\n\nTHEIR ROBOTS AND TESTS:\n%s\n\n%s\n\n"
+           "WHAT YOU KNOW ABOUT THEM (your memory):\n%s\n%s\n\n%s") % (
+        time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:16]) or "- none yet", rob, notes or "- little yet",
+        ("THEIR STANDING INSTRUCTIONS TO YOU:\n" + std) if std else "", guide)
+    return out[:16000]
+
+
+def live_facts(user, body):
+    """the fresh part of the fact sheet during a call (account, robots, lab), sent to the voice when it changed"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False}
+    return {"ok": True, "dyn": _live_facts(user, c, dyn_only=True)}
 
 
 def _live_input(c):
@@ -25741,7 +25829,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -25765,7 +25853,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
