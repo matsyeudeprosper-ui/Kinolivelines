@@ -15897,6 +15897,15 @@ def _kino_act(cid, user, act, en=False):
                     ("Tests relancés." if not r.get("already") else "Les tests tournaient déjà.")) if act == "tests_resume" else \
                    (("Tests paused (luck tests continue)." if not r.get("already") else "Tests were already paused.") if en else
                     ("Tests en pause (les tests de chance continuent)." if not r.get("already") else "Les tests étaient déjà en pause."))
+        elif act in ("ghost", "duel"):
+            # 2026-10-20 (humanity watch): a quick turn said "je le lance" in ghost mode and nothing ran
+            if not c.get("robot"):
+                line = ("No robot in this conversation, so I can't start ghost mode here: open the robot's conversation." if en else
+                        "Pas de robot dans cette conversation, donc pas de mode fantôme ici : ouvre la conversation du robot.")
+            else:
+                r_ = chat_ghost(user, {"id": cid, "action": "duel" if act == "duel" else "start"}) or {}
+                if not r_.get("ok") and r_.get("err") == "full":
+                    line = ("Two robots are already in ghost mode here." if en else "Deux robots sont déjà en mode fantôme ici.")
         elif act == "test" and c.get("robot"):
             t0 = c.get("test") or {}
             same = t0.get("state") == "queued" and t0.get("rev") == c.get("rev") and (t0.get("sym") or "BTCUSD") == (c["robot"].get("market") or "BTCUSD")
@@ -16422,7 +16431,10 @@ def _companion_tick():
                         nxt = next((lb for k_, lb in PATH_STEPS if k_ not in P_), None)
                         _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
                         threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "MILESTONE reached on their path with you: '%s'. Celebrate it like "
-                                         "a friend (short, genuine, maybe an emoji), and point to the next step%s." % (lab, (" ('%s')" % nxt) if nxt else "")),
+                                         "a friend (short, genuine, maybe an emoji), and point to the next step%s. If your last message already told this news, do not "
+                                         "tell it again: one warm line and the next step. Never say you are starting something unless you set act now "
+                                         "and this conversation has that robot (%s) - otherwise propose it." % (lab, (" ('%s')" % nxt) if nxt else "",
+                                         "it has one" if (_chat_load(u, ch[0]["id"]) or {}).get("robot") else "it has NO robot")),
                                          kwargs={"notify": True}, daemon=True).start()
                 # (owner item 9) the portrait: every 21 days, then Kino invites them to correct it
                 if time.time() - float((m.get("portrait") or {}).get("t") or 0) > 21 * 86400 and len(m.get("notes") or []) >= 5 and _active_hour(uid, h0):
