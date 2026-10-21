@@ -154,6 +154,11 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                         except Exception:
                             pass
                 if j.get("type") == "result":
+                    try:                          # 2026-10-21 (owner item 12): what each answer costs
+                        io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
+                            {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else ""}) + "\n")
+                    except Exception:
+                        pass
                     out.put(j.get("result") if not j.get("is_error") else None)
                     return
         except Exception:

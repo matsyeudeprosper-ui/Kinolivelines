@@ -251,10 +251,13 @@ SW = (
     "n>1?'Kino · '+n+(en?' new messages':' nouveaux messages'):(d.title||'OwlNest'),{body:d.body||'',icon:'icon192.png',"
     "badge:'icon192.png',tag:d.tag||'owl',renotify:true,requireInteraction:!!d.sticky,"
     "data:{url:d.url||'',n:n},image:d.image||undefined,"
+    "actions:d.tag==='atelier'?[{action:'like',title:'👍'},{action:'open',title:en?'Open':'Ouvrir'}]:undefined,"
     "vibrate:d.sticky?[120,60,120,60,120]:[80,40,80]});});}));});"
     "self.addEventListener('notificationclick',e=>{"
     "e.notification.close();"
     "const u=(e.notification.data&&e.notification.data.url)||'';"
+    "if(e.action==='like'){const k=u.indexOf('/atelier?c=');if(k>0){e.waitUntil(fetch(u.slice(0,k)+'/chat_like',{method:'POST',"
+    "headers:{'Content-Type':'application/json'},body:JSON.stringify({id:decodeURIComponent(u.slice(k+11).split('&')[0])})}).catch(()=>{}));}return;}"
     "e.waitUntil(clients.matchAll({type:'window',"
     "includeUncontrolled:true}).then(cs=>{"
     "for(const c of cs){if('focus' in c){if(u&&c.navigate){return c.navigate(u).then(w=>w&&w.focus()).catch(()=>c.focus());}return c.focus();}}"
@@ -16062,7 +16065,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             try:
                 import random as _rnd
                 _lv = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("vn")] or [0])
-                if q.get("say") and len(str(q["say"])) <= 260 and "\n\n" not in str(q["say"]) and time.time() - _lv > 6 * 3600 and (
+                if event and event.startswith("WEEK RECAP") and q.get("say"):
+                    _vn = {"vn": True}
+                elif q.get("say") and len(str(q["say"])) <= 260 and "\n\n" not in str(q["say"]) and time.time() - _lv > 6 * 3600 and (
                         (event and event.startswith(("MORNING BRIEF", "MILESTONE", "LUCK TEST FINI", "NEW CONVERSATION", "WELCOME BACK")) and _rnd.random() < 0.35)
                         or (not event and len(str(q["say"])) <= 160 and _rnd.random() < 0.04)):
                     _vn = {"vn": True}
@@ -16340,6 +16345,9 @@ def _active_hour(uid, h=None):
 
 def _companion_can_push(uid, n):
     h = _local_hour(uid)
+    _q = ((_mem_get(uid).get("prefs") or {}).get("quiet"))
+    if _q and ((_q[0] <= h < _q[1]) if _q[0] < _q[1] else (h >= _q[0] or h < _q[1])):
+        return False                                        # 2026-10-21 item 7: their quiet hours - kept for the morning
     if (h >= 22 or h < 8) and not _active_hour(uid, h):
         return False                                        # their night (unless they are a night owl): kept for later
     if time.time() - _LAST_SEEN.get(uid, 0) < 120:
@@ -16508,6 +16516,10 @@ def _companion_tick():
                 pass
             try:
                 _day_recap(u, uid, m, ch, now, h0, busy)
+            except Exception:
+                pass
+            try:
+                _week_recap(u, uid, m, ch, now, h0, busy)
             except Exception:
                 pass
             # (1r) 2026-10-20 (owner all 12): a week of replay -> Kino writes 3 lessons from their trades and notes, and keeps them
@@ -18434,6 +18446,7 @@ def chat_open(user, body):
 
 
 def chat_send(user, body):
+    _CHAT_SENT_T[0] = time.time()                    # 2026-10-21 item 1: the luck tests give Kino the machine
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None:
         return {"ok": False, "err": "missing"}
@@ -19244,6 +19257,202 @@ def _day_recap(u, uid, m, ch, now, h0, busy):
     _chat_mut(best["id"], lambda cc: _chat_msg(cc, "recap", recap=data))
 
 
+# ---- 2026-10-21 (owner: "next upgrades - all 12") ----
+_LUCK_HOLD = {"on": False, "since": 0.0, "last_busy": 0.0, "cool": 0.0, "pids": []}
+_LIVE_ON = {}            # uid -> start time of a live call in progress
+_CHAT_SENT_T = [0.0]     # last member message, any member
+
+
+def _luck_pids():
+    """the running luck tests (study/random_control_market.py), found from their command line"""
+    import subprocess as _sp
+    try:
+        out = _sp.run(["powershell", "-NoProfile", "-Command",
+                       "Get-CimInstance Win32_Process -Filter \"Name like 'python%'\" | Where-Object {$_.CommandLine -like '*random_control_market*'} | ForEach-Object {$_.ProcessId}"],
+                      capture_output=True, text=True, timeout=25, creationflags=0x08000000).stdout
+        return [int(x) for x in out.split() if x.strip().isdigit()]
+    except Exception:
+        return []
+
+
+def _proc_suspend(pid, on):
+    import ctypes
+    k = ctypes.windll.kernel32
+    h = k.OpenProcess(0x0800, False, int(pid))            # PROCESS_SUSPEND_RESUME
+    if not h:
+        return False
+    try:
+        (ctypes.windll.ntdll.NtSuspendProcess if on else ctypes.windll.ntdll.NtResumeProcess)(h)
+        return True
+    finally:
+        k.CloseHandle(h)
+
+
+def _kino_busy_now():
+    now = time.time()
+    if any(v for v in _CHAT_Q.values()) or _CHAT_B:
+        return True
+    if now - _CHAT_SENT_T[0] < 90:
+        return True
+    return any(now - t < 25 * 60 for t in _LIVE_ON.values())
+
+
+def _luck_hold_loop():
+    """item 1: Kino gets the machine first - the luck tests are frozen while a member talks with Kino (a turn running, a
+    message in the last 90 s, a live call), and run again 60 s after; never frozen more than 20 min in a row (then 5 min
+    of running). A server start always unfreezes what a previous one may have left frozen."""
+    for pid in _luck_pids():
+        try:
+            _proc_suspend(pid, False)
+        except Exception:
+            pass
+    H = _LUCK_HOLD
+    while True:
+        try:
+            now = time.time()
+            busy = _kino_busy_now()
+            if busy:
+                H["last_busy"] = now
+            if busy and not H["on"] and now >= H["cool"]:
+                P = _luck_pids()
+                ok = [p for p in P if _proc_suspend(p, True)]
+                if ok:
+                    H.update(on=True, since=now, pids=ok)
+            elif H["on"] and (now - H["last_busy"] > 60 or now - H["since"] > 20 * 60):
+                forced = now - H["since"] > 20 * 60
+                for p in H["pids"]:
+                    try:
+                        _proc_suspend(p, False)
+                    except Exception:
+                        pass
+                H.update(on=False, pids=[], cool=(now + 300) if forced else 0.0)
+        except Exception:
+            pass
+        time.sleep(4)
+
+
+def chat_like(user, body):
+    """item 4: the 👍 button of a notification - a thumbs-up on Kino's last message, without opening the app"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False}
+
+    def put(c):
+        for m in reversed(c.get("msgs") or []):
+            if m.get("role") == "ai":
+                m["mreact"] = "👍"
+                return True
+    return {"ok": bool(_chat_mut(c["id"], put))}
+
+
+def chat_ghosts(user, body):
+    """item 8: the live ghost card - each ghost robot of this conversation, its pretend results right now"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False}
+    _rc()
+    import robot_ghost as _RG
+    out = []
+    for g in c.get("ghosts") or []:
+        o = g.get("open") or None
+        out.append({"name": g.get("name"), "market": g.get("market"), "sum": _RG.summary(g),
+                    "open": {"d": o.get("d"), "e": o.get("e_show"), "sl": o.get("sl_show")} if o else None,
+                    "last": (g.get("trades") or [])[-3:][::-1]})
+    return {"ok": True, "ghosts": out}
+
+
+SHARES_FILE = os.path.join(DIR, "robots", "shares.json")
+
+
+def share_make(user, body):
+    """item 10: a view-only link to a robot's journey (name, plan, tests, luck test) - never the account"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot"):
+        return {"ok": False, "err": "norobot"}
+    import secrets as _sc
+    try:
+        S = json.load(open(SHARES_FILE, encoding="utf-8"))
+    except Exception:
+        S = {}
+    tok = next((k for k, v in S.items() if v.get("cid") == c["id"]), None) or _sc.token_urlsafe(9)
+    S[tok] = {"uid": user.get("id"), "cid": c["id"], "t": int(time.time())}
+    json.dump(S, open(SHARES_FILE + ".tmp", "w", encoding="utf-8"))
+    os.replace(SHARES_FILE + ".tmp", SHARES_FILE)
+    return {"ok": True, "path": "/s/" + tok}
+
+
+def share_page(tok):
+    try:
+        S = json.load(open(SHARES_FILE, encoding="utf-8"))
+        sh = S[tok]
+        c = json.load(open(_chat_path(sh["cid"]), encoding="utf-8"))
+        u = next(x for x in users() if x.get("id") == sh["uid"])
+    except Exception:
+        return None
+    import html as _h
+    rb = c.get("robot") or {}
+    v = _rc().view(rb, _chat_pieces(u)) or {}
+    nm = lambda x: _h.escape(str((x or {}).get("name") or (x or {}).get("use") or "-")) if isinstance(x, dict) else "-"
+    res = next(((m.get("result") or {}) for m in reversed(c.get("msgs") or []) if m.get("role") == "result" and not (m.get("result") or {}).get("kino_variant")), {})
+    lk = _luck_of(c.get("robot_id"), rb.get("market") or "BTCUSD") or {}
+    first = _h.escape(((u.get("name") or u.get("display") or "").split(" ") or [""])[0])
+    luck = {"pass": "Prouvé contre le hasard ★", "fail": "Pas prouvé contre le hasard", "running": "Test de chance en cours (%s/100)" % (lk.get("n") or 0),
+            "queued": "Test de chance en attente"}.get(lk.get("state"), "Pas encore de test de chance")
+    rows = "".join("<p><b>%s</b> %s</p>" % (a, b) for a, b in (("Entrée :", nm(v.get("entry"))), ("Stop :", nm(v.get("stop"))), ("Sortie :", nm(v.get("exit")))))
+    tr = ("<p><b>Test sur 42 jours de vrais prix :</b> %s%.2f $ sur %s trades</p>" % ("+" if (res.get("net") or 0) >= 0 else "", float(res.get("net") or 0), res.get("trades") or 0)) if res.get("net") is not None else "<p>Pas encore testé.</p>"
+    body = ("<p style=\"font-size:1.25rem;font-weight:800;margin:0 0 4px\">🤖 %s</p><p class=\"sub\">%s · le robot de %s, construit avec Kino</p>%s%s<p><b>%s</b></p>"
+            "<p class=\"sub\" style=\"margin-top:14px\">Un test passé n'est pas une promesse. Aucun chiffre de compte n'est montré ici.</p>"
+            "<a class=\"go\" href=\"/\">Découvrir OwlNest</a>") % (_h.escape(rb.get("name") or "Robot"), _h.escape(rb.get("market") or "BTCUSD"), first or "un membre", rows, tr, luck)
+    return _flow_page("La progression d'un robot", body, doc_title="OwlNest · " + _h.escape(rb.get("name") or "Robot"))
+
+
+def _brain_costs_for(calls):
+    """item 12: what Kino's brain (the turns answered during each call) cost, from robots/brain_costs.jsonl"""
+    try:
+        L = [json.loads(x) for x in open(os.path.join(DIR, "robots", "brain_costs.jsonl"), encoding="utf-8").read().splitlines()[-20000:] if x.strip()]
+    except Exception:
+        L = []
+    tot, n = 0.0, 0
+    for x in calls:
+        t1, t0 = float(x.get("t") or 0), float(x.get("t") or 0) - float(x.get("secs") or 0) - 5
+        for b in L:
+            if b.get("tag") == "%s.log" % x.get("cid") and t0 <= float(b.get("t") or 0) <= t1 + 90:
+                tot += float(b.get("usd") or 0)
+                n += 1
+    return {"usd": round(tot, 3), "turns": n}
+
+
+def _week_recap(u, uid, m, ch, now, h0, busy):
+    """item 6: Sunday 18:00 their time, a one-minute voice note about the week"""
+    off = (h0 - time.gmtime(now).tm_hour + 12) % 24 - 12
+    g = time.gmtime(now + off * 3600)
+    wk = time.strftime("%Y-%W", g)
+    if g.tm_wday != 6 or h0 != 18 or m.get("week_vn") == wk or not ch or busy(ch[0]["id"]):
+        return
+    _mem_note_safe(uid, lambda mm: mm.__setitem__("week_vn", wk))
+    start = now - 7 * 86400
+    tests = []
+    for x in ch[:6]:
+        c = _chat_load(u, x["id"]) or {}
+        for mm in c.get("msgs") or []:
+            r = mm.get("result") or {}
+            if mm.get("role") == "result" and float(mm.get("t") or 0) >= start and not r.get("kino_variant"):
+                tests.append("%s %s: %+.2f $ over %s trades" % ((c.get("robot") or {}).get("name") or "robot", r.get("market") or "", float(r.get("net") or 0), r.get("trades")))
+    wkm = None
+    try:
+        wkm = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8")).get("week")
+    except Exception:
+        pass
+    P_ = m.get("path") or {}
+    nxt = next((lb for k_, lb in PATH_STEPS if k_ not in P_), None)
+    _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "WEEK RECAP (it becomes a voice note): the week with them in 4 or 5 short spoken "
+                     "sentences, like a friend leaving a voice message on Sunday evening - no list, no emoji, numbers exactly as given. "
+                     "Facts: account this week %s; tests this week: %s; next step on their path: %s. End warmly, no question."
+                     % ("%+.2f $" % wkm if wkm is not None else "unknown", "; ".join(tests[-4:]) or "none", nxt or "-")),
+                     kwargs={"notify": True}, daemon=True).start()
+
+
 def chat_why(user, body):
     """2026-10-20 (owner list): the reason behind a 👎 on one of Kino's messages (too long / unclear / wrong / other) -
     Kino sees it in the conversation, its nightly review learns from it"""
@@ -19365,12 +19574,14 @@ def chat_ghost(user, body):
                 return "noprop"
             c["ghosts"] = [_ghost_new(c["robot"], (c["robot"].get("name") or "Robot")[:22] + " (A)"), _ghost_new(pr["robot"], "Variante de Kino (B)")]
             _chat_msg(c, "sys", text="Duel lancé : ton robot contre la variante de Kino, en argent fictif sur les vrais prix. Verdict dans 7 jours.")
+            _chat_msg(c, "card", kind="ghost", args={})
             return True
         if len(G) >= 2:
             return "full"
         G.append(_ghost_new(c["robot"]))
         _chat_msg(c, "sys", text="Mode fantôme lancé : %s trade en argent fictif sur les prix en direct de %s." % (c["robot"].get("name") or "ton robot",
                                                                                                              c["robot"].get("market") or "BTCUSD"))
+        _chat_msg(c, "card", kind="ghost", args={})     # 2026-10-21 item 8: the live scoreboard
         return True
     r = _chat_mut(c["id"], put)
     if r is True:
@@ -19937,7 +20148,10 @@ def _live_instructions(user, c):
         "You may answer alone ONLY for greetings, small talk, feelings, and general trading ideas with no number and no claim about "
         "them. You never change, stop or start a robot, and you never touch their account - the brain and the app handle that with "
         "their password.\n"
-        "Keep each turn short (one to three sentences); let them interrupt; ask at most one question at a time."
+        "Keep each turn short (one to three sentences); let them interrupt; ask at most one question at a time.\n"
+        "THE APP OBEYS THEIR VOICE for: 'lance le test' (run the robot's test), 'annule le changement' (undo the last robot change), "
+        "'mets-le en fantôme' / 'arrête le fantôme' (ghost mode on/off). For those, do NOT delegate: just acknowledge in two or "
+        "three words (\"c'est parti\", \"c'est fait\")."
         % (nm or ("the member" if not fr else "le membre"), "French" if fr else "English", "French" if fr else "English",
            (" (this conversation: '%s')" % rob) if rob else ""))
 
@@ -19982,7 +20196,16 @@ def live_session(user, body):
         cf = json.load(open(TTS_CONF, encoding="utf-8"))
     except Exception:
         cf = {}
-    sess = {"model": cf.get("live_model") or "gpt-live-1", "instructions": _live_instructions(user, c), "input": _live_input(c),
+    _ins = _live_instructions(user, c)
+    try:                                             # item 5: their very first call = a short spoken tour
+        if not any(x.get("uid") == uid for x in json.load(open(LIVE_CALLS, encoding="utf-8"))):
+            raise ValueError
+    except Exception:
+        _ins += ("\nTHIS IS THEIR FIRST CALL WITH YOU: after hello, offer a short spoken tour (two minutes at most, stop as soon as they "
+                 "want something else): they tell you a trading idea in their words and you build it into a robot; the steps idea, plan, "
+                 "test on real prices, luck test, then their account (always their decision, with their password); the replay room to "
+                 "practise on past days; and that calls use minutes (the + button in the chat, 'Mes minutes d'appel'). No numbers.")
+    sess = {"model": cf.get("live_model") or "gpt-live-1", "instructions": _ins, "input": _live_input(c),
             "delegation": {"type": "client"}}
     _pv = ((_mem_get(uid).get("prefs") or {}).get("voice"))
     if _pv in KINO_VOICES or cf.get("live_voice"):
@@ -20014,6 +20237,7 @@ def live_session(user, body):
         _log_live("ERR %s no sdp %s" % (uid, json.dumps(r)[:300]))
         return {"ok": False, "err": "live_down"}
     _log_live("START %s %s %s" % (uid, c["id"], (r.get("session") or {}).get("id") or r.get("id")))
+    _LIVE_ON[uid] = time.time()
     return {"ok": True, "sdp": ans, "sid": (r.get("session") or {}).get("id") or r.get("id"),
             "max_min": LIVE_MAX_MIN if _vleft is None else max(0.5, min(LIVE_MAX_MIN, _vleft)), "left": _vleft}
 
@@ -20032,6 +20256,9 @@ def kino_pref(user, body):
             P["ring"] = body["ring"]
         if body.get("voice") in KINO_VOICES:
             P["voice"] = body["voice"]
+        if "quiet" in body:                          # 2026-10-21 item 7: their own quiet hours, e.g. [22, 8]; null = off
+            q_ = body.get("quiet")
+            P["quiet"] = [int(q_[0]) % 24, int(q_[1]) % 24] if isinstance(q_, list) and len(q_) == 2 else None
         m["prefs"] = P
         return P
     P = _mem_note_safe(uid, put)
@@ -20187,6 +20414,7 @@ def _log_live(line):
 
 
 def live_end(user, body):
+    _LIVE_ON.pop(user.get("id"), None)
     """minutes used (the daily cap) + one line in the conversation so Kino knows the call happened"""
     c = _chat_load(user, str(body.get("id") or ""))
     try:
@@ -20258,7 +20486,8 @@ def live_costs(user, body):
     sold = lambda L: {"n": len(L), "usd": round(sum(float(x.get("usd") or 0) for x in L), 2), "min": sum(float(x.get("min") or 0) for x in L)}
     return {"ok": True, "today": agg(td), "month": agg(mo), "all": agg(CL), "per": {k: agg(v) for k, v in per.items()}, "last": CL[-5:][::-1],
             "price_min": LIVE_PRICE_MIN, "deleg": sum(int(x.get("deleg") or 0) for x in mo),
-            "sold_month": sold([x for x in P_ if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]), "sold_all": sold(P_)}
+            "sold_month": sold([x for x in P_ if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]), "sold_all": sold(P_),
+            "brain_month": _brain_costs_for(mo)}
 
 def _live_tick(sym):
     """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
@@ -25401,6 +25630,21 @@ class H(BaseHTTPRequestHandler):
             self._server_error(_e)
 
     def _send(self, body, ctype, cookie=None):
+        try:                                             # 2026-10-21 item 2: ask Kino from any page
+            if ctype.startswith("text/html"):
+                _pp = [x for x in self.path.split("?")[0].split("/") if x]
+                _pg = _pp[1] if len(_pp) > 1 else ""
+                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app") and not _pg.startswith("chat_"):
+                    _uk = user_by_token(_pp[0])
+                    if _uk and (is_admin(_uk) or has(_uk.get("id"), "strategy")):
+                        _b = body.decode("utf-8") if isinstance(body, bytes) else body
+                        if "</body>" in _b and "id=\"kfab\"" not in _b:
+                            _fab = ("<a id=\"kfab\" href=\"/%s/atelier?ask=%s\" aria-label=\"Kino\" style=\"position:fixed;right:16px;bottom:92px;z-index:20;"
+                                    "width:52px;height:52px;border-radius:50%%;background:linear-gradient(135deg,#6d5cf6,#3b82f6);display:flex;align-items:center;"
+                                    "justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:26px;text-decoration:none\">🦉</a>") % (_pp[0], _pg)
+                            body = _b.replace("</body>", _fab + "</body>", 1)
+        except Exception:
+            pass
         if isinstance(body, str):
             body = body.encode("utf-8")
         _gz = ctype.startswith("text/html") and len(body) > 2048 and "gzip" in (self.headers.get("Accept-Encoding") or "")
@@ -25497,7 +25741,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -25520,7 +25764,8 @@ class H(BaseHTTPRequestHandler):
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
-                       "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin}[_parts[1]]
+                       "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
+                       "share_make": share_make}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -27133,6 +27378,13 @@ class H(BaseHTTPRequestHandler):
     def _do_GET(self):
         p = self.path.split("?")[0].rstrip("/")
         parts = [x for x in p.split("/") if x]
+        if len(parts) == 2 and parts[0] == "s":          # 2026-10-21 item 10: a robot's journey, view-only, shared by its owner
+            _sp_ = share_page(parts[1])
+            if _sp_ is None:
+                self._not_found()
+            else:
+                self._send(_sp_, "text/html; charset=utf-8")
+            return
         # Owner 2026-10-10: the state of the two Nid-wide switches (admin only)
         if len(parts) == 2 and parts[1] == "nest_switches":
             u = user_by_token(parts[0])
@@ -28419,5 +28671,6 @@ if __name__ == "__main__":
         except Exception:
             pass
     threading.Thread(target=_tts_warm, daemon=True).start()
+    threading.Thread(target=_luck_hold_loop, daemon=True).start()      # 2026-10-21 item 1: Kino gets the machine first
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 

@@ -183,3 +183,5 @@ live/kino_bridge.secret
 live/robots/kino_feed.json
 live/robots/kino_asks.json
 live/robots/kino_taught.json
+live/robots/shares.json
+live/robots/brain_costs.jsonl
