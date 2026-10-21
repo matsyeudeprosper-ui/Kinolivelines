@@ -1683,7 +1683,7 @@ async function liveStart(cont){if(!CID){toast(T('Ouvre d’abord une conversatio
  catch(e){lvSet(T('Autorise le micro pour appeler Kino (le cadenas à côté de l’adresse).','Allow the microphone to call Kino (the lock next to the address).'));setTimeout(()=>{$('call').style.display='none';},3500);return;}
  const pc=new RTCPeerConnection(),au=document.createElement('audio');au.autoplay=true;au.setAttribute('playsinline','');document.body.appendChild(au);
  pc.ontrack=e=>{au.srcObject=e.streams[0];};ms.getTracks().forEach(t=>pc.addTrack(t,ms));
- const dc=pc.createDataChannel('oai-events');LV={pc:pc,dc:dc,ms:ms,au:au,t0:0,cur:'',out:'',tr:[],busy:0,max:20,tick:null};if(cont&&LVCONT){LV.trAll=LVCONT.tr;LV.tps=LVCONT.tps;LV.news=LVCONT.news;LV.dyn=LVCONT.dyn;LV.base=LVCONT.base;LVCONT=null;}dc.onmessage=e=>{try{lvEv(JSON.parse(e.data));}catch(x){}};
+ const dc=pc.createDataChannel('oai-events');LV={pc:pc,dc:dc,ms:ms,au:au,t0:0,cur:'',out:'',tr:[],busy:0,max:20,tick:null,cid:CID};if(cont&&LVCONT){LV.trAll=LVCONT.tr;LV.tps=LVCONT.tps;LV.news=LVCONT.news;LV.dyn=LVCONT.dyn;LV.base=LVCONT.base;LVCONT=null;}dc.onmessage=e=>{try{lvEv(JSON.parse(e.data));}catch(x){}};
  pc.onconnectionstatechange=()=>{if(LV&&['failed','disconnected'].includes(pc.connectionState)&&LV.t0){lvSet(T('La ligne a coupé.','The line dropped.'));setTimeout(()=>liveEnd(),1200);}};
  try{const off=await pc.createOffer();await pc.setLocalDescription(off);
   await new Promise(ok=>{if(pc.iceGatheringState==='complete')return ok();const t=setTimeout(ok,2500);pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);ok();}});});
@@ -1706,16 +1706,19 @@ function lvEv(e){if(!LV)return;const t=e.type||'';try{const G=(window.LVLOG=wind
 async function lvAsk(id,q){LV.busy++;LV.deleg=(LV.deleg||0)+1;lvSend({type:'session.thinking.append',event_id:'th_'+id,delegation_id:id,content:(EN?'Kino’s brain is checking: ':'Le cerveau de Kino vérifie : ')+q.slice(0,300)});
  const t0=Date.now()/1000;let ok=false;
  for(let k=0;k<6&&!ok;k++){try{const j=await post('chat_send',{id:CID,text:q,voice:true});if(j&&j.ok!==false){ok=true;break;}}catch(e){}await new Promise(r=>setTimeout(r,2500));}
- let ans='';const end=Date.now()+45000;
- while(LV&&Date.now()<end){await new Promise(r=>setTimeout(r,1500));try{await load(CID);}catch(e){}
-  const M=((C&&C.msgs)||[]).filter(m=>m.role==='ai'&&m.text&&(m.t||0)>=t0-1);if(M.length&&C.status==='ready'&&!C.draft){ans=M.map(m=>m.text).join('\n');break;}}
+ let ans='',early='',n0=-1;const end=Date.now()+45000,cid=CID;
+ while(LV&&Date.now()<end){await new Promise(r=>setTimeout(r,600));let p=null;try{p=await getJ('chat_ping?id='+encodeURIComponent(cid));}catch(e){}
+  if(p&&!early){const d=String(p.dtx||'').replace(/\*\*/g,'');const mm=d.match(/^[\s\S]{25,}?[.!?…](\s|$)/);
+   if(mm&&mm[0].trim().length<d.length){early=mm[0].trim();lvSend({type:'session.commentary.append',event_id:'coe_'+id,delegation_id:id,content:'FIRST PART of the answer - say it now, the rest follows in a moment: '+early});}}
+  if(p&&p.status==='ready'&&!p.draft&&p.n!==n0){n0=p.n;try{await load(cid);}catch(e){}
+   const M=((C&&C.msgs)||[]).filter(m=>m.role==='ai'&&m.text&&(m.t||0)>=t0-1);if(M.length){ans=M.map(m=>m.text).join('\n');break;}}}
  if(!LV)return;LV.busy=Math.max(0,LV.busy-1);
- lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?String(ans).replace(/\*\*/g,'').slice(0,1600):
+ lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?(early?'THE REST of the answer - you already said "'+early.slice(0,220)+'": continue naturally from there, do not repeat it: '+String(ans).replace(/\*\*/g,'').replace(early,'').slice(0,1500):String(ans).replace(/\*\*/g,'').slice(0,1600)):
   (EN?'I do not have the answer yet; it will be in the conversation in a moment.':'Je n’ai pas encore la réponse : elle arrive dans la conversation dans un instant.')});}
 function lvKill(){if(!LV)return;const L=LV;LV=null;LVSEEN=0;try{const p=$('callpill');if(p)p.classList.remove('on');const b=$('cvis');if(b)b.classList.remove('on');}catch(e){}clearInterval(L.tick);clearInterval(L.alive);clearInterval(L.fct);try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.remove();}catch(e){}return L;}
 async function liveEnd(){if(!LV){$('call').style.display='none';return;}lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());
  const L=lvKill(),mins=L.t0?(Date.now()-L.t0)/60000:0;$('call').style.display='none';
- let r_=null;try{r_=await post('live_end',{id:CID,min:+mins.toFixed(2),usage_s:((L.usage||{}).usage||{}).seconds||0,deleg:L.deleg||0,transcript:(L.trAll||[]).concat(L.tr).join('\n').slice(-3000)});}catch(e){}if(r_&&r_.wallet&&r_.wallet.left<5)setTimeout(()=>voiceShop(T('Il te reste ','You have ')+vMin(r_.wallet.left)+T(' d’appel.',' of calls left.')),900);if(r_&&r_.usd!=null&&(C&&C.admin))toast('📞 '+T('Appel terminé · ','Call ended · ')+Math.round((r_.billed_s||0)/6)/10+' min · '+(+r_.usd).toFixed(2).replace('.',EN?'.':',')+' $');load(CID,true);}
+ let r_=null;try{r_=await post('live_end',{id:L.cid||CID,min:+mins.toFixed(2),usage_s:((L.usage||{}).usage||{}).seconds||0,deleg:L.deleg||0,transcript:(L.trAll||[]).concat(L.tr).join('\n').slice(-3000)});}catch(e){}if(r_&&r_.wallet&&r_.wallet.left<5)setTimeout(()=>voiceShop(T('Il te reste ','You have ')+vMin(r_.wallet.left)+T(' d’appel.',' of calls left.')),900);if(r_&&r_.usd!=null&&(C&&C.admin))toast('📞 '+T('Appel terminé · ','Call ended · ')+Math.round((r_.billed_s||0)/6)/10+' min · '+(+r_.usd).toFixed(2).replace('.',EN?'.':',')+' $');load(CID,true);}
 
 /* 2026-10-20 (owner, all 12): the call shows what Kino shows, "Kino t'appelle", Kino's voice; the replay room comments, challenges,
    turns your trades into a robot and plays your session back; a line for today; search everywhere; shortcuts that learn */
@@ -1962,7 +1965,7 @@ function lvCont(){return !!(LV&&(LV.left==null||LV.left>LV.max+0.5));}
 async function lvRenew(){if(!LV||LV.renewing)return;LV.renewing=1;lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());
  const L=lvKill(),mins=L.t0?(Date.now()-L.t0)/60000:0;
  LVCONT={tr:(L.trAll||[]).concat(L.tr||[]),tps:L.tps,news:L.news,dyn:L.dyn,base:(L.base||0)+Math.floor(mins*60)};
- post('live_end',{id:CID,cont:1,min:+mins.toFixed(2),usage_s:((L.usage||{}).usage||{}).seconds||0,deleg:L.deleg||0,transcript:''}).catch(()=>{});
+ post('live_end',{id:L.cid||CID,cont:1,min:+mins.toFixed(2),usage_s:((L.usage||{}).usage||{}).seconds||0,deleg:L.deleg||0,transcript:''}).catch(()=>{});
  await liveStart(true);}
 function lvBtnsPaint(){const b=$('cbtns');if(!b)return;b.innerHTML='<button onclick="lvBtn(\'show\')">📈 '+T('Montre-moi','Show me')+'</button><button onclick="lvBtn(\'test\')">🧪 '+T('Lance le test','Run the test')+'</button><button onclick="lvBtn(\'later\')">⏸ '+T('Plus tard','Later')+'</button>';}
 function lvBtn(a){if(!LV)return;LV.act=Date.now();

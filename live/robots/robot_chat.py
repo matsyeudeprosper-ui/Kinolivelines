@@ -1281,14 +1281,14 @@ def prewarm():
 QUICK_LAT = [4.0]           # 2026-10-19 (owner item 4): Kino's recent quick-reply times (s)
 
 
-def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, event=None, on_say=None, member=None, images=None):
+def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, event=None, on_say=None, member=None, images=None, fast=False):
     """the reply in a few seconds -> {"say", "chips", "build", "remember", "show", "seen"} or None; on_say(partial say).
     When the machine is busy (recent quick replies over ~9 s), the quick reply uses the faster model; building keeps the
     stronger one."""
     import time as _t
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
     busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 16.0     # was 9 s: the switch itself met cold haiku processes (2026-10-20)
-    models = ("haiku", "sonnet") if busy else ("sonnet", "haiku")
+    models = ("haiku", "sonnet") if (busy or fast) else ("sonnet", "haiku")     # fast: a question asked in a live call (2026-10-21)
     if busy:
         try:
             W.prewarm(system(), "haiku")

@@ -15702,12 +15702,21 @@ def _chat_listen(cid, user):
             lu = max([int(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image", "doc")] or [0])
             lt_ = str(((c.get("msgs") or [{}])[-1]).get("text") or "").strip()
             done_ = len(lt_) >= 12 and (lt_[-1:] in "?!.)" or ord(lt_[-1:] or " ") > 0x2600)     # it looks finished
-            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= (0.9 if done_ else 1.8):
+            _vc = bool(((c.get("msgs") or [{}])[-1]).get("voice")) and _LIVE_CID.get(user.get("id")) == cid
+            if time.time() - max(lu, _CHAT_TYPING.get(cid, 0)) >= (0.15 if _vc else 0.9 if done_ else 1.8):
                 break
             time.sleep(0.25)
     except Exception:
         pass
     _CHAT_WAIT.discard(cid)
+    try:
+        _cl = json.load(open(_chat_path(cid), encoding="utf-8"))
+        _lm = ((_cl.get("msgs") or [{}])[-1])
+        if _lm.get("role") == "user" and _lm.get("voice") and _LIVE_CID.get(user.get("id")) == cid:
+            _voice_brain(cid, user)                     # 2026-10-21: the call brain (fast), full brain only when needed
+            return
+    except Exception:
+        pass
     _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
     _chat_quick(cid, user)
 
@@ -16583,6 +16592,10 @@ def _companion_tick():
                 pass
             try:
                 _kino_headsup(u, uid, ch, now, h0, busy)
+            except Exception:
+                pass
+            try:
+                _initiative_tick(u, uid, m, ch, now, h0, busy)
             except Exception:
                 pass
             try:                                     # 2026-10-21 item 5: the reminders they asked for, at the right time
@@ -18622,7 +18635,7 @@ def chat_ping(user, cid):
     _CHAT_VIEW[cid] = time.time()
     M = c.get("msgs") or []
     return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
-            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [],
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "dtx": str(_CHAT_DRAFT.get(cid) or "")[:600], "test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [],
             **_kino_presence(user, c)}
 
 
@@ -19374,6 +19387,7 @@ def _day_recap(u, uid, m, ch, now, h0, busy):
 # ---- 2026-10-21 (owner: "next upgrades - all 12") ----
 _LUCK_HOLD = {"on": False, "since": 0.0, "last_busy": 0.0, "cool": 0.0, "pids": []}
 _LIVE_ON = {}            # uid -> start time of a live call in progress
+_LIVE_CID = {}           # uid -> the conversation the call is in (2026-10-21: voice typing in another chat went to the call brain)
 _CHAT_SENT_T = [0.0]     # last member message, any member
 
 
@@ -19582,6 +19596,250 @@ def _kino_headsup(u, uid, ch, now, h0, busy):
                      "Tell them in one or two short lines like a friend who knows the market's habits (\"dans 20 min, ...\") - what usually "
                      "happens, never a direction, never \"ça va monter\"; mention their robot if it trades that market. send = true."
                      % (hu["in_min"], loc, what, ("; " if what and news else "") + news)), kwargs={"notify": True}, daemon=True).start()
+
+
+# ---- 2026-10-21 (owner: "the voice pauses a lot to check the brain" + "Kino is passive, we need professional solutions") ----
+def _live_ctx_loop(user, cid):
+    """during a call, Kino's whole context is kept ready (it took 3-5 s on every question)"""
+    uid = user.get("id")
+    t0 = time.time()
+    _vbt = _vbp = 0.0
+    while uid in _LIVE_ON and time.time() - t0 < 4 * 3600:
+        try:
+            if time.time() - _vbt > 1200 and not _CHAT_Q.get(cid):
+                _vb_refresh(user, cid)                  # the call brain: fresh facts every 20 min (+ primed)
+                _vbt = _vbp = time.time()
+            elif time.time() - _vbp > 240 and not _CHAT_Q.get(cid) and _VB_SYS.get(cid):
+                _vb_prime(_VB_SYS[cid][1])              # keep the prompt cache hot (it lasts ~5 min)
+                _vbp = time.time()
+            if not _CHAT_Q.get(cid) and cid not in _CHAT_B:
+                _ctx_prefetch(user, cid)
+        except Exception:
+            pass
+        time.sleep(12)
+
+
+# ---- 2026-10-21 (owner: "the voice is still not natural, lots of pauses to check the brain"): the CALL BRAIN ----
+# Each question in a call went to the full brain: ~108 000 characters of prompt -> 10-17 s before the first word, whatever the
+# model. The call brain gets the same facts the voice has (~20 000 characters), prepared and warmed at the call start, and
+# per question only the last exchanges + the question. Real work (building / changing a robot, research) goes to the full brain.
+VOICE_BRAIN = """You are Kino's brain, answering ONE question asked during a live VOICE call; the voice will say your answer out loud.
+Answer in one to three short spoken sentences, in the language they speak, numbers exactly as in the facts, no lists, no
+markdown, never restate the question, no "je vérifie". Use ONLY the facts below - never invent a number, a price or an event.
+If something useful can be done right away, do it: "act": "test" (run this conversation's robot test) or "ghost" (ghost mode),
+or "show": {"examples": 3, "pick": "mix"} (put examples on a chart) - and say in a few words that you are doing it.
+If the question truly needs deeper work you cannot do here (building or changing a robot, a new analysis, research, numbers
+not in the facts), set "full": true and say one short natural line that you are on it.
+Reply with JSON only: {"say": "...", "act": null, "show": null, "full": false}"""
+_VB_SYS = {}        # cid -> (time, system prompt) for the call brain
+
+
+def _vb_refresh(user, cid):
+    """the call brain's instructions: built once and kept IDENTICAL (a cached prompt answers in ~2.4 s instead of 14 s - measured
+    2026-10-21), then primed with a tiny warm-up question so the cache is hot before the first real question"""
+    c = _chat_load(user, cid)
+    if c is None:
+        return None
+    sysp = VOICE_BRAIN + "\n\n" + _live_facts(user, c)
+    _VB_SYS[cid] = (time.time(), sysp)
+    try:                                             # two processes start at once: one primes, one waits for the first question
+        _rc().W.prewarm(sysp, "sonnet")
+        _rc().W.prewarm(sysp, "sonnet")
+    except Exception:
+        pass
+    time.sleep(9)                                    # let them boot (a CLI process needs ~8-10 s)
+    _vb_prime(sysp)
+    return sysp
+
+
+def _vb_prime(sysp):
+    try:
+        _rc().W.ask_json(sysp, "Warm-up, not a real question: reply {\"say\": \"ok\"}", models=("sonnet",), timeout=60)
+    except Exception:
+        pass
+
+
+def _voice_brain(cid, user):
+    """one question from a live call, answered by the call brain (falls back to the full brain)"""
+    c = json.load(open(_chat_path(cid), encoding="utf-8"))
+    en = c.get("lang") == "en"
+    x = _VB_SYS.get(cid)
+    sysp = x[1] if x and time.time() - x[0] < 1500 else (VOICE_BRAIN + "\n\n" + _live_facts(user, c))   # never wait for a warm-up here
+    M = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")][-10:]
+    conv = "\n".join(("MEMBER: " if m["role"] == "user" else "YOU: ") + str(m["text"])[:500] for m in M)
+    _CHAT_DRAFT[cid] = ""
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1            # busy while it answers (no other turn starts)
+    t0 = time.time()
+    first = []
+
+    def cb(t):
+        try:
+            say = _rc().W.partial_say(t)
+            if say:
+                if not first:
+                    first.append(time.time() - t0)
+                _CHAT_DRAFT[cid] = say
+        except Exception:
+            pass
+    raw = None
+    try:
+        raw = _rc().W.ask_json(sysp, "THE CALL SO FAR (latest last):\n" + conv + "\n\nAnswer their last message now.", models=("sonnet", "haiku"),
+                               timeout=45, on_text=cb, salvage=True)
+    except Exception:
+        raw = None
+    _CHAT_DRAFT.pop(cid, None)
+    try:
+        open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=CALL_BRAIN first=%.1f total=%.1f ctx=0.00\n" % (
+            time.strftime("%m-%d %H:%M:%S"), cid, first[0] if first else -1, time.time() - t0))
+    except Exception:
+        pass
+    if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
+        _chat_quick(cid, user)                      # the full brain answers instead (it releases the busy mark)
+        return
+    say = str(raw["say"]).strip()[:700]
+    sh = raw.get("show") if isinstance(raw.get("show"), dict) else None
+    dm = None
+    try:
+        dm = _chat_show(c, user, sh) if sh else None
+    except Exception:
+        dm = None
+
+    def put(cc):
+        cc.setdefault("msgs", [])
+        _chat_msg(cc, "ai", text=say, quick=True, call_brain=True)
+        if dm and not dm.get("nodata"):
+            cc["msgs"].append(dict(dm, t=int(time.time())))
+    _chat_mut(cid, put)
+    _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+    if raw.get("act") in ("test", "ghost", "duel"):
+        try:
+            _kino_act(cid, user, raw["act"], en)
+        except Exception:
+            pass
+    if raw.get("full"):
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        threading.Thread(target=_chat_quick, args=(cid, user, "IN THE LIVE CALL they asked something that needs your full work - you already told "
+                         "them \"%s\". Do it now (build / act / show as needed) and send = true with the result in one or two short lines "
+                         "(it will be spoken)." % say[:200]), daemon=True).start()
+
+
+def _quick_answers(user, c, mb):
+    """the answers people ask for most in a call, ready at the top of the voice's sheet (no brain needed)"""
+    L = []
+    rob, seen = [], set()
+    for x in (chat_list(user).get("chats") or [])[:60]:
+        if str(x.get("id") or "").endswith("9999999999999"):
+            continue
+        cx = _chat_load(user, x["id"]) or {}
+        rb = cx.get("robot")
+        if not rb or (rb.get("name") or "") in seen:
+            continue
+        seen.add(rb.get("name") or "")
+        t_ = cx.get("test") or {}
+        res = next(((m.get("result") or {}) for m in reversed(cx.get("msgs") or []) if m.get("role") == "result" and not (m.get("result") or {}).get("kino_variant")), None)
+        lk = _luck_of(cx.get("robot_id"), rb.get("market") or "BTCUSD") or {}
+        st = ("test running or waiting its turn" if t_.get("state") == "queued" else
+              ("tested %+.2f $ over %s trades" % (float(res.get("net") or 0), res.get("trades")) if res else "not tested yet"))
+        lks = {"pass": "luck test PASSED", "fail": "luck test failed", "running": "luck test running %s/100" % (lk.get("n") or 0),
+               "queued": "luck test waiting its turn"}.get(lk.get("state"), "")
+        rob.append("%s (%s): %s%s" % (rb.get("name"), rb.get("market") or "BTCUSD", st, ("; " + lks) if lks else ""))
+    if rob:
+        L.append("THEIR ROBOTS (%d distinct, duplicates ignored): %s" % (len(rob), " | ".join(rob)))
+    try:
+        sd = os.path.join(os.path.dirname(DIR), "study", "luck")
+        q = json.load(open(os.path.join(sd, "queue.json"), encoding="utf-8"))
+        line = []
+        for e in q:
+            try:
+                s2 = json.load(open(os.path.join(sd, "%s_%s.status.json" % (e["rid"], e["sym"])), encoding="utf-8"))
+            except Exception:
+                s2 = {}
+            if s2.get("state") in ("pass", "fail", "data_changed", "dropped") and str(s2.get("updated") or "") >= e["at"]:
+                continue
+            nm_ = next((r.get("name_fr") or r["id"] for r in robot_reg().get("robots") or [] if r.get("id") == e["rid"]), e["rid"])
+            if any(l_.startswith("%s on %s" % (next((r.get("name_fr") or r["id"] for r in robot_reg().get("robots") or [] if r.get("id") == e["rid"]), e["rid"]), e["sym"])) for l_ in line):
+                continue
+            line.append("%s on %s%s" % (nm_, e["sym"], (" (running, %s/100, about %.0f h left)" % (s2.get("n"), float(s2.get("eta_h") or 0))) if s2.get("state") == "running" else ""))
+        if line:
+            L.append("LUCK TESTS: one at a time for the whole nest, in this order: " + " -> ".join(line[:8]) + ". Each takes many hours (about 100 draws).")
+    except Exception:
+        pass
+    L.append("WHAT HAPPENS NEXT: robot test (a few minutes once its turn comes; robot tests also run one after another) -> if positive, the "
+             "luck test (100 random robots on the same days, at most 5 may do as well) -> if they want, a week in ghost mode (pretend "
+             "money on live prices) -> their account only by their own decision with their trading password.")
+    mm = re.search(r"stops everything at this net loss \(\$\) = (-?[\d.]+)", str(mb))
+    bb = re.search(r"stops below this balance \(\$\) = ([\d.]+)", str(mb))
+    ac = re.search(r"robot on it now: ([^,]+), (\d+) trades since it started, ([-+\d.]+ \$)", str(mb))
+    if ac or mm:
+        L.append("THEIR ACCOUNT'S ROBOT: %s%s%s" % (("%s, %s trades since it started, %s in all" % (ac.group(1), ac.group(2), ac.group(3))) if ac else "",
+                                                  ("; it stops everything by itself at %s $ of total loss" % mm.group(1)) if mm else "",
+                                                  ("; and below a balance of %s $" % bb.group(1)) if bb else ""))
+    return "QUICK ANSWERS (read these first - most questions in a call are answered here, instantly, no delegation):\n- " + "\n- ".join(L)
+
+
+def _initiative_tick(u, uid, m, ch, now, h0, busy):
+    """2026-10-21 (owner: "Kino is passive, it doesn't initiate as much as I do - one way stream"): while they are around and the
+    talk has gone quiet, Kino opens a subject himself from REAL material, rotating kinds, backing off when he is not answered.
+    Aim: he starts about half of the conversations."""
+    if not ch:
+        return
+    cid = ch[0]["id"]
+    if busy(cid) or uid in _LIVE_ON:
+        return
+    in_app = now - _LAST_SEEN.get(uid, 0) < 120
+    if not in_app and not _active_hour(uid, h0):
+        return
+    c = _chat_load(u, cid) or {}
+    M = c.get("msgs") or []
+    last_any = max([float(x.get("t") or 0) for x in M if x.get("role") in ("user", "ai")] or [0])
+    log = [x for x in (m.get("initiative") or []) if now - float(x.get("t") or 0) < 86400]
+    def answered(e):
+        cc = _chat_load(u, e.get("cid")) or {}
+        return any(x.get("role") == "user" and 0 < float(x.get("t") or 0) - float(e["t"]) < 1800 for x in cc.get("msgs") or [])
+    streak = 0
+    for e in reversed(log):
+        if now - float(e["t"]) < 1800 or answered(e):
+            break
+        streak += 1
+    if streak >= 3 and now - float(log[-1]["t"]) < 3 * 3600:
+        return
+    quiet = (6 * 60 if in_app else 50 * 60) * (1 + streak)
+    if now - last_any < quiet or len(log) >= (14 if in_app else 6):
+        return
+    if (m.get("prefs") or {}).get("quiet"):
+        q_ = m["prefs"]["quiet"]
+        if (q_[0] <= h0 < q_[1]) if q_[0] < q_[1] else (h0 >= q_[0] or h0 < q_[1]):
+            return
+    used = [x.get("kind") for x in log[-4:]]
+    mats = []
+    t_ = c.get("test") or {}
+    if t_.get("state") == "queued":
+        mats.append(("test", "their robot's test is waiting / running - where it stands and what you expect, honestly"))
+    try:
+        _rc()
+        import kino_life as _KLi
+        J = [x for x in _KLi.journal(uid, 6) if x["t"] > float(m.get("init_journal_t") or 0)]
+        if J:
+            mats.append(("finding", "one of YOUR recent findings: \"%s\" - tell it as yours, why it matters to them" % J[0]["text"][:260]))
+        hq = _KLi.human_question(uid)
+        if hq:
+            mats.append(("human", "a question you are genuinely curious about, about their life: \"%s\" (set human_asked: \"%s\")" % (hq["fr"], hq["id"])))
+    except Exception:
+        J = []
+    mats.append(("market", "the market right now (see THE WORLD RIGHT NOW: a price that moved, a session opening, a news item) and what it means for their robot"))
+    mats.append(("followup", "something THEY said or asked earlier in this conversation or the last days that is still open - come back to it naturally (\"tu m'avais dit...\")"))
+    mats.append(("own", "what YOU have been doing or thinking (a bet, a lesson, a question you are digging into, an idea for their robot) - and if a useful step is obvious, DO it (act/build) and say so"))
+    pick = next((x for x in mats if x[0] not in used), mats[0])
+    _mem_note_safe(uid, lambda mm2: mm2.__setitem__("initiative", ([x for x in (mm2.get("initiative") or []) if now - float(x.get("t") or 0) < 86400]
+                                                                  + [{"t": now, "kind": pick[0], "cid": cid}])[-30:]))
+    if pick[0] == "finding" and J:
+        _mem_note_safe(uid, lambda mm2: mm2.__setitem__("init_journal_t", J[0]["t"]))
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+    threading.Thread(target=_chat_quick, args=(cid, u, "YOUR INITIATIVE - you start the conversation now (quiet for %d min%s). Like a friend who has "
+                     "something real for them, open with: %s. One to three short lines, concrete, numbers exactly as you know them, in "
+                     "your own voice; end with a statement or a light hook, not an interview question. send = true." % (
+                         (now - last_any) / 60, ", they are in the app" if in_app else "", pick[1])),
+                     kwargs={"notify": not in_app}, daemon=True).start()
 
 
 def _week_recap(u, uid, m, ch, now, h0, busy):
@@ -20645,11 +20903,15 @@ def _live_facts(user, c, dyn_only=False):
         guide = _W.GUIDE % {"manual": 29, "strategy": 49}
     except Exception:
         guide = ""
-    out = ("FACT SHEET - true as of %s UTC (what you know; answer from it directly):\n%s\n\nTHEIR ROBOTS AND TESTS:\n%s\n\n%s\n\n"
+    try:
+        _qa = _quick_answers(user, c, mb) + "\n\n"
+    except Exception:
+        _qa = ""
+    out = _qa + ("FACT SHEET - true as of %s UTC (what you know; answer from it directly):\n%s\n\nTHEIR ROBOTS AND TESTS:\n%s\n\n%s\n\n"
            "WHAT YOU KNOW ABOUT THEM (your memory):\n%s\n%s\n\n%s") % (
         time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:40]) or "- none yet", rob, notes or "- little yet",
         ("THEIR STANDING INSTRUCTIONS TO YOU:\n" + std) if std else "", guide)
-    return out[:24000]
+    return out[:26000]
 
 
 def live_act(user, body):
@@ -20759,6 +21021,8 @@ def live_session(user, body):
         return {"ok": False, "err": "live_down"}
     _log_live("START %s %s %s" % (uid, c["id"], (r.get("session") or {}).get("id") or r.get("id")))
     _LIVE_ON[uid] = time.time()
+    _LIVE_CID[uid] = c["id"]
+    threading.Thread(target=_live_ctx_loop, args=(user, c["id"]), daemon=True).start()
     return {"ok": True, "sdp": ans, "sid": (r.get("session") or {}).get("id") or r.get("id"),
             "max_min": LIVE_MAX_MIN if _vleft is None else max(0.5, min(LIVE_MAX_MIN, _vleft)), "left": _vleft}
 
@@ -20938,6 +21202,7 @@ def _log_live(line):
 
 def live_end(user, body):
     _LIVE_ON.pop(user.get("id"), None)
+    _LIVE_CID.pop(user.get("id"), None)
     """minutes used (the daily cap) + one line in the conversation so Kino knows the call happened"""
     c = _chat_load(user, str(body.get("id") or ""))
     try:
@@ -20977,7 +21242,7 @@ def live_end(user, body):
     _atomic_json(LIVE_CALLS, CL[-2000:])
     _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
     tr = str(body.get("transcript") or "")[-3000:]
-    if c is not None and mins >= 0.2:
+    if c is not None and mins >= 0.2 and not body.get("cont"):
         fr = c.get("lang") != "en"
         _ct = (" · %.2f $" % cost).replace(".", "," if fr else ".") if is_admin(user) else ""      # the price: owner only
         _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)) + _ct,
