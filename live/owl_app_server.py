@@ -15377,6 +15377,27 @@ def _partner_apply(user, cid, pa):
     if not pa:
         return
     uid = user.get("id")
+    if pa.get("ghost_robot") and cid:                # 2026-10-21 (humanity watch): ghost mode for a robot of another conversation
+        try:
+            _gn = re.sub(r"\W+", "", str(pa["ghost_robot"]).lower())
+            _hit = None
+            for _x in chat_list(user).get("chats") or []:
+                if str(_x.get("id") or "").endswith("9999999999999"):
+                    continue
+                _cx = _chat_load(user, _x["id"]) or {}
+                if re.sub(r"\W+", "", str((_cx.get("robot") or {}).get("name") or "").lower()) == _gn:
+                    _hit = _cx
+                    break
+            if _hit:
+                _r = chat_ghost(user, {"id": _hit["id"], "action": "start"}) or {}
+                _ln = ("Mode fantôme lancé pour « %s » (argent fictif sur les prix en direct) - il tourne dans sa propre conversation." % (_hit["robot"].get("name"))
+                       if _r.get("ok") else ("« %s » est déjà en mode fantôme." % _hit["robot"].get("name") if _r.get("err") == "full" else
+                                             "Le mode fantôme de « %s » n'a pas pu démarrer." % _hit["robot"].get("name")))
+            else:
+                _ln = "Je ne trouve pas de conversation avec le robot « %s » : ouvre-le une fois dans le chat et je le lance en fantôme." % pa["ghost_robot"]
+            _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=_ln))
+        except Exception:
+            pass
     if pa.get("remind") and cid:                     # 2026-10-21 item 5: "rappelle-moi ..."
         try:
             _rm = pa["remind"]

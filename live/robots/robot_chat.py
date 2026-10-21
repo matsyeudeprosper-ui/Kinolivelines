@@ -356,6 +356,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "later": [{"kind": "ask"|"tell", "text": "..."}] things to bring up later, "later_used": "the text" when you used one,
   "thought_used": null or the id of the ON YOUR MIND thought you just brought up,
   "human_asked": null or the id of A QUESTION YOU ARE GENUINELY CURIOUS ABOUT when you just asked it,
+  "ghost_robot": null or the NAME of one of their robots to put in ghost mode when it is NOT this conversation's robot (it
+   starts in that robot's own conversation; "act": "ghost" is only for this conversation's robot),
   "remind": null or {"in_min": minutes from now, "what": "what to remind them of"} when they ask you to remind them of
    something later ("rappelle-moi demain à 9h...": count the minutes from THEIR clock) - you will come back at that time,
   "more": null or {"in": seconds (15 to 1800), "what": "what you will add"} - you will TEXT AGAIN by yourself if they have
@@ -1220,6 +1222,8 @@ def partner_of(raw):
             out["remind"] = {"in_min": float(rm["in_min"]), "what": str(rm["what"]).strip()[:240]}
     except Exception:
         pass
+    if str(raw.get("ghost_robot") or "").strip():
+        out["ghost_robot"] = str(raw["ghost_robot"]).strip()[:60]
     if str(raw.get("human_asked") or "").strip().startswith("h"):
         out["human_asked"] = str(raw["human_asked"]).strip()[:8]
     try:                      # 2026-10-20 (owner list 5): promised work, shared moments, running jokes, experiments together

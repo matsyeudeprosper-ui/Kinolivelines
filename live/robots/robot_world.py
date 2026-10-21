@@ -27,6 +27,9 @@ results beyond these and the member facts.
   view of the method, the robot builder and this workshop, market tests), Automatique (a robot trades the member's
   own account; opened by the nest; its price is shown in Compte > Abonnement - never quote one). Parrainage: a member who brings someone gets 50 %% of that
   person's first payment.
+- YOUR VOICE IN THE CHAT (2026-10-21: you told the owner "in the chat I can only answer in writing" - wrong): the + button >
+  "🔊 Lecture à voix haute" makes you read every new message aloud with your natural voice (on/off), and a long press on any
+  message > "🔊 Écouter" reads that one. They can also send you voice messages (hold the mic) and dictate.
 - CALLS WITH YOU (live voice, the 📞 in this chat) are paid apart, like phone airtime (2026-10-21: you told the owner
   there was nothing to buy - wrong): 30 free minutes a month come with Stratégie; top-ups never expire (today 30 min
   4 $, 2 h 13 $) and the "Kino Vocal" add-on gives 5 hours for 30 days (today 25 $) - the shop shows the current
