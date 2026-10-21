@@ -16031,8 +16031,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     _w = lambda x: set(re.findall(r"\w{3,}", x.lower()))
                     if q.get("say") and _la and len(_w(q["say"]) & _w(_la)) >= 0.5 * max(1, len(_w(q["say"]))):
                         q["say"] = None                     # it says again what it just said: silence instead
-                    if q.get("react") and len(_U) > 1 and _U[-2].get("react") == q["react"]:
-                        q["react"] = None                   # never the same emoji on two messages in a row
+                _Ur = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "image")]
+                if q.get("react") and len(_Ur) > 1 and _Ur[-2].get("react") == q["react"]:
+                    q["react"] = None                       # never the same emoji on two messages in a row (any message)
             except Exception:
                 pass
 

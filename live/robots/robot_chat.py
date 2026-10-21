@@ -700,6 +700,44 @@ def gut(chat):
     return ch, why
 
 
+# 2026-10-21 (owner: "not only on the word ok - any message worth an emoji"): what kind of message it is, and how
+# likely a person is to put an emoji on it (with their reply)
+_EMO_KIND = [
+    ("joke", re.compile(r"(😂|🤣|😅|😆|\b(mdr|ptdr|lol|haha+|hihi|xd)\b)", re.I), 0.85, "😂 🤣 😄"),
+    ("thanks", re.compile(r"\b(merci|thanks|thank you|thx|t'es (un|le) (bon|meilleur|top))\b", re.I), 0.75, "🙏 ❤️"),
+    ("win", re.compile(r"(🎉|🔥|💰|🚀|\b(gagn|win|won|profit|tp touché|en vert|passé|réussi|bravo|enfin|yes+)\w*)", re.I), 0.7, "🎉 🔥 💪"),
+    ("loss", re.compile(r"(😩|😭|😡|😤|\b(perdu|perte|lost|loss|sl touché|stop touché|rouge|énervé|marre|nul|merde|putain|fuck)\w*)", re.I), 0.45, "😬 (or nothing - never a cheerful one)"),
+    ("wow", re.compile(r"(!{2,}|\?!|\b(regarde|look|incroyable|wow|waouh|ouf|dingue|crazy|j'ai une idée|idée)\b)", re.I), 0.5, "👀 🤔 🤯"),
+    ("feel", re.compile(r"\b(fatigué|tired|content|heureux|happy|fier|proud|stress|peur|inquiet|worried|triste|sad)\b", re.I), 0.5, "❤️ 💪 🫶"),
+]
+
+
+def gut_emoji(chat):
+    """any real message: does a person put an emoji on this one? a roll shaped by its kind and the last reactions"""
+    import random
+    M = chat.get("msgs") or []
+    U = [m for m in M if m.get("role") in ("user", "image")]
+    if not U:
+        return None
+    last = U[-1]
+    t = str(last.get("text") or "")
+    kind, p, pick = "ordinary", 0.15, "👍 🙂 👌"
+    if last.get("role") == "image":
+        kind, p, pick = "screenshot", 0.6, "👀 🤔"
+    for k, rx, pp, pk in _EMO_KIND:
+        if rx.search(t):
+            kind, p, pick = k, pp, pk
+            break
+    if t.rstrip().endswith("?") and kind == "ordinary":
+        p = 0.07                                            # a plain question wants an answer, rarely an emoji
+    prev = U[-2] if len(U) > 1 else {}
+    if prev.get("react"):
+        p -= 0.2                                            # I reacted to their last one: less likely again
+    if sum(1 for m in U[-6:] if m.get("react")) >= 3:
+        p -= 0.2                                            # I have been reacting a lot lately
+    return kind, (random.random() < max(0.03, p)), pick
+
+
 GO_ON = re.compile(r"^(yes|yep|yeah|ok|okay|oui|ouais|vas-?y|go|d'accord|dac|ok vas-?y|parfait|super|cool|top)[ !.]*$", re.I)
 
 
@@ -759,6 +797,11 @@ def own_agenda(chat, memory):
                "words": "a few words of your own only if you have something NEW (never repeat what you already said); otherwise nothing"}[_g[0]]
         rhythm.append("their last message is just an acknowledgement. YOUR GUT this time%s: %s. Never restate a promise you already made."
                       % ((" (" + "; ".join(_g[1]) + ")") if _g[1] else "", _gw))
+    _ge = None if _g else gut_emoji(chat)
+    if _ge:
+        rhythm.append(("YOUR GUT on their message (%s): put ONE emoji on it with your reply (\"react\" - what you feel, e.g. %s; "
+                       "never the one you used last)" % (_ge[0], _ge[2])) if _ge[1] else
+                      "YOUR GUT on their message (%s): no emoji this time (\"react\": null) - just answer" % _ge[0])
     if q_streak >= 2:
         rhythm.append("your last %d messages ended with a question - THIS time NO question: answer, react, share something of yours "
                       "(a story, an opinion, a little fact from your work) and let them lead" % q_streak)
