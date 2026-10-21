@@ -16006,6 +16006,14 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), _tfw[0] if _tfw else -1, time.time() - _t0q, _tctx))
         except Exception:
             pass
+        # 2026-10-21 (humanity watch): "je te mets à l'écran..." said with no chart sent - the owner had to ask for it
+        try:
+            if q and q.get("say") and not q.get("show") and re.search(
+                    r"(je te (le |la |les )?(montre|mets à l['’]écran|affiche)|je t['’]affiche|regarde à l['’]écran|i['’]ll show you|here it is on (the )?screen|on screen now)",
+                    str(q["say"]), re.I):
+                q["show"] = {"examples": 3, "pick": "mix", "overlays": []}
+        except Exception:
+            pass
         _qdm = _chat_show(c, user, (q or {}).get("show"))
         if q is None and event:
             q = {"say": None, "chips": [], "build": False}

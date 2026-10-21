@@ -810,6 +810,13 @@ def own_agenda(chat, memory):
         rhythm.append(("YOUR GUT on their message (%s): put ONE emoji on it with your reply (\"react\" - what you feel, e.g. %s; "
                        "never the one you used last)" % (_ge[0], _ge[2])) if _ge[1] else
                       "YOUR GUT on their message (%s): no emoji this time (\"react\": null) - just answer" % _ge[0])
+    # 2026-10-21 (humanity watch): the owner said "Choisis toi" then "Laisse choisir" and Kino kept offering "X ou Y ?"
+    _UC = [str(m.get("text") or "") for m in (chat.get("msgs") or []) if m.get("role") == "user"][-40:]
+    _ch = next((t for t in reversed(_UC) if re.search(r"(choisis|choisi toi|laisse[- ]?(moi |le |toi )?choisir|à toi de (voir|choisir|décider)|"
+                                                      r"c'est toi qui (vois|choisis|décides)|you (choose|decide|pick)|your call|up to you)", t, re.I)), None)
+    if _ch:
+        rhythm.append("they told you to choose yourself (\"%s\"): NEVER offer them a choice again (no \"X ou Y ?\", no \"tu préfères...?\", "
+                      "no \"ça te va ?\") - you decide, say what and why in one line, and do it" % _ch[:60])
     if q_streak >= 2:
         rhythm.append("your last %d messages ended with a question - THIS time NO question: answer, react, share something of yours "
                       "(a story, an opinion, a little fact from your work) and let them lead" % q_streak)
