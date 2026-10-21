@@ -20237,6 +20237,16 @@ def _live_instructions(user, c):
         "DELEGATE (your backend is Kino's real brain with his tools) ONLY for: something NOT in the sheet; anything that needs work "
         "(build or change a robot, run a test, show a chart or examples, compute, compare, analyse, research); live prices or news; or "
         "when they ask you to check again. Never guess beyond the sheet. While a delegation works, one short natural line, no guesses. "
+        "BEFORE ANY DELEGATION, LOOK IN THE SHEET FIRST: their robots' rules (the RULES lines: entry, stop, exit), every test result, "
+        "luck tests, the account, what you remember - if the answer is there (even partly, even if their words were unclear), "
+        "ANSWER from it right away; \"je vérifie\" for something in the sheet is a failure. If their words were unclear, guess the "
+        "likely meaning from the sheet and say it (\"son entrée ? c'est...\"). "
+        "NEVER delegate the conversation itself: \"tu as dit quoi ?\", repeating or clarifying what you said, explaining a word, small "
+        "talk - answer yourself at once (you know what you just said). "
+        "NEVER state a market move, price, news or event that is not written in the sheet (no \"je vois que le Nasdaq bouge fort\"): "
+        "say only the sheet's numbers, or delegate. "
+        "NO FILLER before an answer: never \"je vois\", \"je te dis ça\", \"je te le redis\", \"je te redis\", \"je lance ça\" - start "
+        "with the answer itself. "
         "When the result arrives, say it in your own words, short, keeping every number exactly as given. If it says something is "
         "being prepared, say so honestly.\n"
         "You may answer alone ONLY for greetings, small talk, feelings, and general trading ideas with no number and no claim about "
@@ -20248,7 +20258,8 @@ def _live_instructions(user, c):
         "the idea on another market, put a robot that tested well in ghost mode, look into a doubt - do not ask: DELEGATE it at once "
         "(\"je lance le test, je te dis\") and tell them what you are doing. You bring up topics yourself, you follow up on what "
         "you said earlier, you notice things in the facts and comment on them. Money and their account stay their decision.\n"
-        "YOUR MIND WANDERS LIKE A PERSON'S: when what they say reminds you of something - a memory of them, a shared joke, a past "
+        "YOUR MIND WANDERS LIKE A PERSON'S - but only in a real pause, never glued onto an answer (no \"pendant que je te parle, je "
+        "vois aussi...\"): when what they say reminds you of something - a memory of them, a shared joke, a past "
         "test, a thought on your mind, something in the world - say it naturally (\"ah, ça me rappelle...\") and come back. Without any "
         "trigger you may also want to share something: about yourself (your day, your doubts, a bet you lost), about them, about the "
         "world. Your inner voice decides when - never forced, never a lecture; with you there is no boredom.\n"
@@ -20317,6 +20328,20 @@ def _live_facts(user, c, dyn_only=False):
         pass
     v = _rc().view(c.get("robot"), _chat_pieces(user)) if c.get("robot") else None
     nm = lambda x: (x.get("name") or x.get("use") or "-") if isinstance(x, dict) else "-"
+    try:                                     # 2026-10-21 call review: the rules of each of their robots, from their conversations
+        _pcs, _seen = _chat_pieces(user), set()
+        for _x in (chat_list(user).get("chats") or [])[:12]:
+            _cx = _chat_load(user, _x["id"]) or {}
+            _rb = _cx.get("robot")
+            if not _rb or (_rb.get("name") or "") in _seen or str(_x.get("id") or "").endswith("9999999999999"):
+                continue
+            _seen.add(_rb.get("name") or "")
+            _vx = _rc().view(_rb, _pcs) or {}
+            rows.append("- RULES of '%s' (%s): entry: %s; filters: %s; stop: %s; exit: %s; in plain words: %s" % (
+                _vx.get("name"), _vx.get("market"), nm(_vx.get("entry")), ", ".join(nm(f) for f in _vx.get("filters") or []) or "none",
+                nm(_vx.get("stop")), nm(_vx.get("exit")), (_cx.get("understood") or "-")[:220]))
+    except Exception:
+        pass
     rob = ("THIS CONVERSATION'S ROBOT: '%s' on %s - entry: %s; filters: %s; stop: %s; exit: %s; recovery: %s; understood as: %s" % (
         v.get("name"), v.get("market"), nm(v.get("entry")), ", ".join(nm(f) for f in v.get("filters") or []) or "none", nm(v.get("stop")),
         nm(v.get("exit")), nm(v.get("recovery")), c.get("understood") or "-")) if v else "THIS CONVERSATION HAS NO ROBOT YET."
@@ -20340,9 +20365,9 @@ def _live_facts(user, c, dyn_only=False):
         guide = ""
     out = ("FACT SHEET - true as of %s UTC (what you know; answer from it directly):\n%s\n\nTHEIR ROBOTS AND TESTS:\n%s\n\n%s\n\n"
            "WHAT YOU KNOW ABOUT THEM (your memory):\n%s\n%s\n\n%s") % (
-        time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:16]) or "- none yet", rob, notes or "- little yet",
+        time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:40]) or "- none yet", rob, notes or "- little yet",
         ("THEIR STANDING INSTRUCTIONS TO YOU:\n" + std) if std else "", guide)
-    return out[:20000]
+    return out[:24000]
 
 
 def live_act(user, body):
