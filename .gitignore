@@ -170,6 +170,7 @@ study/luck/*.tmp
 live/robots/chats/
 live/robots/replay/
 live/robots/live_usage.json
+live/robots/live_calls.json
 live/robots/live.log
 live/robots/chat_memory/
 live/robots/demo_cache/

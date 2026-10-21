@@ -19739,6 +19739,8 @@ def _replay_block(user, cid):
 # The voice never invents a number - it has none; the brain has the memory, the account, the lab, the tools.
 LIVE_USAGE = os.path.join(DIR, "robots", "live_usage.json")
 LIVE_MAX_MIN = 20
+LIVE_CALLS = os.path.join(DIR, "robots", "live_calls.json")
+LIVE_PRICE_MIN = 0.05            # gpt-live-1, OpenAI price list (2026-10-20)
 
 
 def _live_instructions(user, c):
@@ -19900,18 +19902,52 @@ def live_end(user, body):
     _ud = U.setdefault(uid, {})
     _ud[day] = round(float(_ud.get(day) or 0) + mins, 2)
     _atomic_json(LIVE_USAGE, U)
-    _log_live("END %s %.2f min" % (uid, mins))
+    # 2026-10-20 (owner: "know how much a call costs after each call"): gpt-live-1 bills $0.05/min to the second, 15 s minimum
+    # (charged when the line opens); OpenAI's own counter (session.usage.updated "seconds") vs the real length - the larger one
+    try:
+        _us = float(body.get("usage_s") or 0)
+    except Exception:
+        _us = 0.0
+    billed = max(15.0, mins * 60.0, _us) if (mins > 0 or _us > 0) else 0.0
+    cost = round(billed * LIVE_PRICE_MIN / 60.0, 4)
+    try:
+        CL = json.load(open(LIVE_CALLS, encoding="utf-8"))
+    except Exception:
+        CL = []
+    CL.append({"t": int(time.time()), "uid": uid, "cid": (c or {}).get("id"), "secs": round(mins * 60, 1), "openai_s": _us, "billed_s": round(billed, 1), "usd": cost})
+    _atomic_json(LIVE_CALLS, CL[-2000:])
+    _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
     tr = str(body.get("transcript") or "")[-3000:]
     if c is not None and mins >= 0.2:
         fr = c.get("lang") != "en"
-        _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)),
-                                                call=tr))
+        _ct = (" · %.2f $" % cost).replace(".", "," if fr else ".") if is_admin(user) else ""      # the price: owner only
+        _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)) + _ct,
+                                                call=tr, usd=cost))
         if mins >= 1 and len(tr) > 60 and not _CHAT_Q.get(c["id"]):      # 2026-10-20 (owner item 2): the call in three lines
             _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
             threading.Thread(target=_chat_quick, args=(c["id"], user, "CALL ENDED: you just had a live voice call with them (see LIVE VOICE CALL). "
                              "Write the call in THREE short lines, like a friend's text after a call: what you talked about, what you will do "
                              "(and do it), the one thing still open. No greeting, no question unless one is truly open."), daemon=True).start()
-    return {"ok": True}
+    return {"ok": True, "usd": cost, "billed_s": round(billed, 1)}
+
+
+def live_costs(user, body):
+    """owner: what the live calls cost (today, this month, all), per member"""
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    try:
+        CL = json.load(open(LIVE_CALLS, encoding="utf-8"))
+    except Exception:
+        CL = []
+    d0, m0 = time.strftime("%Y-%m-%d"), time.strftime("%Y-%m")
+    agg = lambda L: {"n": len(L), "min": round(sum(x.get("billed_s") or 0 for x in L) / 60.0, 1), "usd": round(sum(x.get("usd") or 0 for x in L), 2)}
+    td = [x for x in CL if time.strftime("%Y-%m-%d", time.localtime(x["t"])) == d0]
+    mo = [x for x in CL if time.strftime("%Y-%m", time.localtime(x["t"])) == m0]
+    per = {}
+    for x in mo:
+        per.setdefault(x.get("uid"), []).append(x)
+    return {"ok": True, "today": agg(td), "month": agg(mo), "all": agg(CL), "per": {k: agg(v) for k, v in per.items()}, "last": CL[-5:][::-1],
+            "price_min": LIVE_PRICE_MIN}
 
 def _live_tick(sym):
     """the last price and the last ~2 h of closes of a market (live feed), for the chat's live card"""
@@ -25150,7 +25186,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -25172,7 +25208,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search}[_parts[1]]
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
