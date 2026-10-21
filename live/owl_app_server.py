@@ -16099,6 +16099,15 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     c["work"] = ((c.get("work") or []) + [{"due": time.time() + 300, "what": _wt[:200], "t": time.time()}])[-3:]
             except Exception:
                 pass
+            try:                                     # 2026-10-21 (humanity watch): the support-desk tic of restating their question
+                for _k in range(2) if q.get("say") else ():
+                    _op = re.match(r"\s*(si je (comprends|résume|reformule)[^.:!?]*[:.,]|je résume\s*:|en résumé\s*:|tu (demandes|veux savoir|me demandes) (si|s.|pourquoi|comment|ce qu|quel|quelle|combien)[^.!?]*[.:]"
+                                   r"|if i understand( you)? (correctly|right)[^.:]*[:.,]|so you('re| are) asking[^.!?]*[.:])\s*", str(q["say"]), re.I)
+                    if _op and len(str(q["say"])) - _op.end() > 40:
+                        _rest = str(q["say"])[_op.end():].lstrip()
+                        q["say"] = _rest[:1].upper() + _rest[1:]
+            except Exception:
+                pass
             # (3) the same answer twice (two turns for one message): the second one is dropped
             try:
                 _pa_ = next((x for x in reversed(c.get("msgs") or []) if x.get("role") in ("ai", "user")), {})
@@ -16121,6 +16130,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             if q.get("say") and not any(cd.get("kind") == "replay" for cd in _cards) and re.search(
                     r"(j['’]ouvre|je t['’]ouvre|j['’]ouvre pour toi|opening|i['’]ll open|i open)[^.!?]{0,40}replay", str(q["say"]), re.I):
                 _cards.append({"kind": "replay", "args": {}})
+            try:                                     # 2026-10-21 (humanity watch): "je te mets les derniers jours juste en dessous" - and nothing came
+                if q.get("say") and not _cards and re.search(r"(juste en dessous|ci-dessous|là en dessous|je te (mets|montre|affiche|sors) (les|tes|ses) (derniers|dernières) (jours|trades)|"
+                                                             r"right below|i'?ll (put|show) (you )?(the|your) last (days|trades))", str(q["say"]), re.I):
+                    _cards.append({"kind": "history", "args": {}})
+            except Exception:
+                pass
             # 2026-10-20: asked about their account -> the account card comes with the answer, never "tu veux que je te le montre ?"
             try:
                 _lu = next((str(m.get("text") or "") for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), "")
