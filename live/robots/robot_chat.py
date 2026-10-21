@@ -660,6 +660,46 @@ AUTONOMY = re.compile(r"(on your own|by yourself|without me|next hour|for an hou
                       r"tout seul|seul pendant|sans moi|pendant une heure|l'heure qui vient|continue sans|creuse|cherche-moi|find me)", re.I)
 PERMISSION = re.compile(r"(should i|shall i|do you want|want me to|would you like|or should|or do you|tu veux que|tu veux qu|veux-tu|"
                         r"tu préfères|ça te va|je lance \?|je continue \?|on y va \?|ou je |ou tu )", re.I)
+ACK = re.compile(r"^(ok+|okay|oki|ok ok|d'accord|dac|merci( beaucoup)?|thanks|thx|cool|top|super|parfait|nickel|ça marche|ca marche|"
+                 r"bien|yes|oui|ouais|noted|got it|compris|👍|🙏|👌|🙂)[ !.]*$", re.I)
+
+
+def gut(chat):
+    """2026-10-21 (owner: "let the inner voice be free to put a 👍 or not, it's not compulsory to reply - inconstant and
+    unpredictable but based on how the conversation goes, feelings"): for a bare "ok", Kino's gut picks what it does this
+    time. Returns None when the last message is not a bare acknowledgement, else (choice, why)."""
+    import random
+    M = chat.get("msgs") or []
+    U = [m for m in M if m.get("role") == "user"]
+    if not U or not ACK.match(str(U[-1].get("text") or "").strip()):
+        return None
+    prev = U[-2] if len(U) > 1 else {}
+    p_react, p_quiet, p_words = 0.40, 0.45, 0.15
+    why = []
+    if prev.get("react"):                                   # I just put an emoji on their last one: less likely again
+        p_react -= 0.22
+        why.append("you already reacted to their previous message")
+    if prev and ACK.match(str(prev.get("text") or "").strip()):
+        p_words -= 0.10                                     # a chain of "ok": words are the last thing they need
+        p_quiet += 0.10
+        why.append("it is a chain of acknowledgements")
+    last_ai = next((str(m.get("text") or "") for m in reversed(M) if m.get("role") == "ai"), "")
+    if re.search(r"(je (creuse|regarde|reviens|te (dis|donne|préviens))|i'll (come back|tell you|let you know)|d'ici|dans \d+ ?min)", last_ai, re.I):
+        p_words -= 0.10                                     # my promise stands: no need to say it again
+        p_quiet += 0.05
+        p_react += 0.05
+        why.append("your last message already said what you are doing - it stands")
+    if any(m.get("mreact") in ("😂", "🔥", "❤️", "🎉", "🙏") for m in M[-8:]):
+        p_react += 0.12                                     # a warm moment: more expressive
+        why.append("the mood is warm")
+    h = time.localtime().tm_hour
+    if h >= 23 or h < 6:
+        p_quiet += 0.15
+    w = [max(0.02, p_react), max(0.02, p_quiet), max(0.02, p_words)]
+    ch = random.choices(["react", "quiet", "words"], weights=w)[0]
+    return ch, why
+
+
 GO_ON = re.compile(r"^(yes|yep|yeah|ok|okay|oui|ouais|vas-?y|go|d'accord|dac|ok vas-?y|parfait|super|cool|top)[ !.]*$", re.I)
 
 
@@ -712,6 +752,13 @@ def own_agenda(chat, memory):
         # 2026-10-20 (owner: "take initiative, not always ask me for permission"): a live self-check
         rhythm.append("you asked their permission in %d of your last %d messages - STOP asking now: decide the next step "
                       "yourself, do it (build = true if it needs work) and tell them what you are doing" % (_perm, len(_AI)))
+    _g = gut(chat)
+    if _g:
+        _gw = {"react": "put ONE emoji on their message (pick what you feel, not 👍 by habit - 👌 🙂 🙏 💪 or 👍) and send nothing (\"send\": false)",
+               "quiet": "do nothing at all: no emoji, no reply (\"send\": false, \"react\": null) - like a friend who just reads it",
+               "words": "a few words of your own only if you have something NEW (never repeat what you already said); otherwise nothing"}[_g[0]]
+        rhythm.append("their last message is just an acknowledgement. YOUR GUT this time%s: %s. Never restate a promise you already made."
+                      % ((" (" + "; ".join(_g[1]) + ")") if _g[1] else "", _gw))
     if q_streak >= 2:
         rhythm.append("your last %d messages ended with a question - THIS time NO question: answer, react, share something of yours "
                       "(a story, an opinion, a little fact from your work) and let them lead" % q_streak)

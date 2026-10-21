@@ -16022,6 +16022,20 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if event and not q.get("send") and not event.startswith(("NEW CONVERSATION", "FIRST MEETING")):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
+        if q and not event:
+            # 2026-10-21 (owner: a bare "ok" got 👍 + the same promise again): hard guards for acknowledgements
+            try:
+                _U = [m for m in c.get("msgs") or [] if m.get("role") == "user"]
+                if _U and _rc().ACK.match(str(_U[-1].get("text") or "").strip()):
+                    _la = next((str(m.get("text") or "") for m in reversed(c.get("msgs") or []) if m.get("role") == "ai"), "")
+                    _w = lambda x: set(re.findall(r"\w{3,}", x.lower()))
+                    if q.get("say") and _la and len(_w(q["say"]) & _w(_la)) >= 0.5 * max(1, len(_w(q["say"]))):
+                        q["say"] = None                     # it says again what it just said: silence instead
+                    if q.get("react") and len(_U) > 1 and _U[-2].get("react") == q["react"]:
+                        q["react"] = None                   # never the same emoji on two messages in a row
+            except Exception:
+                pass
+
         def put(c):
             if (q.get("react") or not q.get("say")) and not event:
                 # 2026-10-19 (owner): Kino may just react to the message, or not answer at all - like a person
