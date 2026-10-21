@@ -346,7 +346,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "missing": null or "one line: a tool or ability you LACKED to help them properly" (the app's creator reads it),
   "own": null or "question" | "opinion" | "hypothesis" | "story" | "idea" - set it when your message brings something of YOUR
   OWN, not a service question,
-  "thread": null or the conversation's MAIN subject in a few words (only when it is new or changed),
+  "thread": null or the conversation's MAIN subject in a few words, IN THEIR LANGUAGE, written as a title for THEM (e.g.
+   "mon compte", "le Nasdaq à la baisse" - never "his account" / "ses marchés") - only when it is new or changed,
   "aside": true when this message is a side topic away from the main thread (false when you are on it or bring it back),
   "later": [{"kind": "ask"|"tell", "text": "..."}] things to bring up later, "later_used": "the text" when you used one,
   "thought_used": null or the id of the ON YOUR MIND thought you just brought up,

@@ -18702,6 +18702,11 @@ def chat_get(user, cid, ui=""):
         out["owl_view"] = _rc().view({k: {"use": _ow[k]} for k in ("entry", "stop", "exit", "recovery", "money") if _ow.get(k)} |
                                      {"filters": [{"use": f} for f in _ow.get("filters") or []], "market": "BTCUSD", "name": "Owl"}, _chat_pieces(user))
         out["can_undo"] = bool(c.get("robot_hist"))
+        try:
+            _pf = _mem_get(user.get("id")).get("prefs") or {}
+            out["tour_done"] = bool(_pf.get("tour_done")) or _chat_day_count(user.get("id")) > 0 and len([m for m in c.get("msgs") or [] if m.get("role") == "user"]) > 3
+        except Exception:
+            pass
         try:                                     # 2026-10-20 (owner: "start AND end a full robot from the chat")
             _B = acct_robot_block(user, is_admin(user))
             _cids = [x.get("id") for x in _B.get("choices") or []]
@@ -20768,6 +20773,8 @@ def kino_pref(user, body):
             P["ring"] = body["ring"]
         if body.get("voice") in KINO_VOICES:
             P["voice"] = body["voice"]
+        if body.get("tour_done"):                    # 2026-10-21 (owner UI review): the tour once per account, not per phone
+            P["tour_done"] = True
         if "quiet" in body:                          # 2026-10-21 item 7: their own quiet hours, e.g. [22, 8]; null = off
             q_ = body.get("quiet")
             P["quiet"] = [int(q_[0]) % 24, int(q_[1]) % 24] if isinstance(q_, list) and len(q_) == 2 else None
@@ -21101,7 +21108,10 @@ def _chat_title_status(c):
     rb = c.get("robot") or {}
     M = c.get("msgs") or []
     first = next((str(m.get("text") or "") for m in M if m.get("role") == "user" and len(str(m.get("text") or "")) > 8), "")
-    title = rb.get("name") or c.get("thread") or (" ".join(first.split()[:6]) + ("…" if len(first.split()) > 6 else "")) or ""
+    _th = str(c.get("thread") or "")
+    if _th and (c.get("lang") or "fr") != "en" and re.search(r"\b(his|her|their|checking|the|account|ses|son|sa|leurs?)\b", _th, re.I):
+        _th = ""                                   # 2026-10-21 (owner UI review): "checking his account", "ses marchés habituels"
+    title = rb.get("name") or _th or (" ".join(first.split()[:6]) + ("…" if len(first.split()) > 6 else "")) or ""
     R_ = c.get("research") or {}
     t_ = c.get("test") or {}
     st = ""
