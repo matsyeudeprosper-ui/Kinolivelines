@@ -790,6 +790,14 @@ def own_agenda(chat, memory):
         # 2026-10-20 (owner: "take initiative, not always ask me for permission"): a live self-check
         rhythm.append("you asked their permission in %d of your last %d messages - STOP asking now: decide the next step "
                       "yourself, do it (build = true if it needs work) and tell them what you are doing" % (_perm, len(_AI)))
+    # 2026-10-21 (owner chat list item 4): answering late because you were busy -> say it like a person
+    _Ms = chat.get("msgs") or []
+    if _Ms and _Ms[-1].get("role") == "user":
+        _late = time.time() - float(_Ms[-1].get("t") or time.time())
+        if 50 < _late < 900:
+            rhythm.append("you are answering %d seconds after their message (you were busy with the robot / a test): open with a "
+                          "short natural word for it, like a person (\"désolé, j'étais dans le test\" / \"sorry, I was in the middle of the build\"), "
+                          "then answer" % _late)
     _g = gut(chat)
     if _g:
         _gw = {"react": "put ONE emoji on their message (pick what you feel, not 👍 by habit - 👌 🙂 🙏 💪 or 👍) and send nothing (\"send\": false)",
