@@ -16035,7 +16035,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         # 2026-10-21 (humanity watch): "je te mets à l'écran..." said with no chart sent - the owner had to ask for it
         try:
             if q and q.get("say") and not q.get("show") and re.search(
-                    r"(je te (le |la |les )?(montre|mets à l['’]écran|affiche)|je t['’]affiche|regarde à l['’]écran|i['’]ll show you|here it is on (the )?screen|on screen now)",
+                    r"(je te (le |la |les )?(montre|mets à l['’]écran|affiche)|je t['’]affiche|regarde à l['’]écran|je te (sors|prépare|mets) (les |des )?exemples|exemples arrivent|exemples sur le graphique|i['’]ll show you|here it is on (the )?screen|on screen now)",
                     str(q["say"]), re.I):
                 q["show"] = {"examples": 3, "pick": "mix", "overlays": []}
         except Exception:
@@ -16134,7 +16134,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             # (3) the same answer twice (two turns for one message): the second one is dropped
             try:
                 _pa_ = next((x for x in reversed(c.get("msgs") or []) if x.get("role") in ("ai", "user")), {})
-                if q.get("say") and not event and _pa_.get("role") == "ai" and time.time() - float(_pa_.get("t") or 0) < 90:
+                if q.get("say") and (not event or event.startswith(("IN THE LIVE CALL", "YOUR INITIATIVE", "INNER VOICE", "A THOUGHT"))) and _pa_.get("role") == "ai" and time.time() - float(_pa_.get("t") or 0) < (300 if event else 90):
                     _ww = lambda x: set(re.findall(r"\w{4,}", str(x).lower()))
                     _a, _b = _ww(_pa_.get("text")), _ww(q["say"])
                     if _b and len(_a & _b) >= 0.35 * len(_b):
@@ -20924,6 +20924,9 @@ def _live_facts(user, c, dyn_only=False):
     return out[:26000]
 
 
+_LIVE_ACT_T = {}
+
+
 def live_act(user, body):
     """2026-10-21 (owner: "master initiative"): the voice said on its own that it would DO something ("je lance un petit
     test") - the brain does it now, and its answer comes back into the call as news"""
@@ -20931,6 +20934,12 @@ def live_act(user, body):
     said = str(body.get("said") or "").strip()[:500]
     if c is None or not said or _CHAT_Q.get(c["id"]) or c["id"] in _CHAT_B:
         return {"ok": False}
+    if time.time() - _LIVE_ACT_T.get(c["id"], 0) < 120:      # 2026-10-21: a loop (voice says "je construis" -> brain -> spoken -> again) x7
+        return {"ok": False, "err": "recent"}
+    _LIVE_ACT_T[c["id"]] = time.time()
+    if c.get("idea_pending") and not c.get("idea_ok"):
+        said += (" [NOTE: their idea card is still waiting for their OK - you cannot build before it. Show examples if useful (show), "
+                 "and ask for the OK in one short line instead of saying you are building.]")
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     threading.Thread(target=_chat_quick, args=(c["id"], user, "IN THE LIVE CALL YOU JUST SAID, on your own initiative: \"%s\" (data). Do it now, "
                      "exactly as you said: set act / show / build as needed, and send = true with one or two short lines on what you are "
