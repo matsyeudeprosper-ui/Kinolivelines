@@ -16018,6 +16018,13 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             if q.get("say") and not any(cd.get("kind") == "replay" for cd in _cards) and re.search(
                     r"(j['’]ouvre|je t['’]ouvre|j['’]ouvre pour toi|opening|i['’]ll open|i open)[^.!?]{0,40}replay", str(q["say"]), re.I):
                 _cards.append({"kind": "replay", "args": {}})
+            # 2026-10-20: asked about their account -> the account card comes with the answer, never "tu veux que je te le montre ?"
+            try:
+                _lu = next((str(m.get("text") or "") for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), "")
+                if q.get("say") and not _cards and not event and re.search(r"(compte|solde|balance|account|combien j['’]ai|how much (do )?i have)", _lu, re.I):
+                    _cards.append({"kind": "account", "args": {}})
+            except Exception:
+                pass
             if q["say"] and event and event.startswith(("LIVE TRADE OPENED", "LIVE TRADE CLOSED")) and not _cards:
                 _cards = [{"kind": "account", "args": {}}]
             for cd in _cards[:2]:
@@ -16274,8 +16281,9 @@ def _companion_can_push(uid, n):
 
 def _companion_push(user, n):
     uid = user.get("id")
-    queue_push(uid, "Kino", n["text"][:160],
-               path="atelier?c=" + n["cid"], sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
+    _ring = bool(n.get("important")) and bool((_mem_get(uid).get("prefs") or {}).get("ring")) and 9 <= _local_hour(uid) < 22
+    queue_push(uid, "📞 Kino t'appelle" if _ring else "Kino", n["text"][:160],
+               path="atelier?c=" + n["cid"] + ("&call=1" if _ring else ""), sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
     n["pushed"] = int(time.time())
 
 
@@ -19283,7 +19291,7 @@ TTS_CONF = os.path.join(DIR, "robots", "tts.json")
 TTS_CACHE = os.path.join(DIR, "robots", "demo_cache", "tts")
 
 
-def _tts_mp3(text, lang="fr"):
+def _tts_mp3(text, lang="fr", voice=None):
     """2026-10-19 (owner list-4 item 8): text -> mp3 with the configured voice service ({"provider": "azure", "key",
     "region", "voice_fr", "voice_en"} or {"provider": "openai", "key", "voice"}); cached by text; None when not set up"""
     try:
@@ -19296,7 +19304,9 @@ def _tts_mp3(text, lang="fr"):
         return None
     import hashlib, urllib.request
     os.makedirs(TTS_CACHE, exist_ok=True)
-    fn = os.path.join(TTS_CACHE, hashlib.sha1(("%s|%s|%s" % (cf.get("provider"), lang, text)).encode("utf-8")).hexdigest() + ".mp3")
+    if voice in KINO_VOICES and cf.get("provider") == "openai":
+        cf = dict(cf, voice=voice)
+    fn = os.path.join(TTS_CACHE, hashlib.sha1(("%s|%s|%s|%s" % (cf.get("provider"), lang, cf.get("voice"), text)).encode("utf-8")).hexdigest() + ".mp3")
     if os.path.exists(fn):
         return open(fn, "rb").read()
     if cf.get("provider") == "openai":
@@ -19789,13 +19799,21 @@ def live_session(user, body):
         cf = {}
     sess = {"model": cf.get("live_model") or "gpt-live-1", "instructions": _live_instructions(user, c), "input": _live_input(c),
             "delegation": {"type": "client"}}
-    if cf.get("live_voice"):
-        sess["audio"] = {"output": {"voice": cf["live_voice"]}}
+    _pv = ((_mem_get(uid).get("prefs") or {}).get("voice"))
+    if _pv in KINO_VOICES or cf.get("live_voice"):
+        sess["audio"] = {"output": {"voice": _pv if _pv in KINO_VOICES else cf["live_voice"]}}
     import urllib.request, urllib.error
     rq = urllib.request.Request("https://api.openai.com/v1/live/sessions", data=json.dumps({"session": sess, "transport": {"type": "webrtc", "sdp": sdp}}).encode(),
                                 headers={"Authorization": "Bearer " + key, "Content-Type": "application/json", "User-Agent": "OwlNest/1.0"})
     try:
-        r = json.loads(urllib.request.urlopen(rq, timeout=25).read().decode("utf-8"))
+        try:
+            r = json.loads(urllib.request.urlopen(rq, timeout=25).read().decode("utf-8"))
+        except urllib.error.HTTPError as e0:
+            if e0.code == 400 and sess.pop("audio", None) is not None:        # that voice is not offered live: the default one
+                rq = urllib.request.Request(rq.full_url, data=json.dumps({"session": sess, "transport": {"type": "webrtc", "sdp": sdp}}).encode(), headers=dict(rq.header_items()))
+                r = json.loads(urllib.request.urlopen(rq, timeout=25).read().decode("utf-8"))
+            else:
+                raise
     except urllib.error.HTTPError as e:
         try:
             msg = e.read().decode("utf-8", "replace")[:400]
@@ -19812,6 +19830,50 @@ def live_session(user, body):
         return {"ok": False, "err": "live_down"}
     _log_live("START %s %s %s" % (uid, c["id"], (r.get("session") or {}).get("id") or r.get("id")))
     return {"ok": True, "sdp": ans, "sid": (r.get("session") or {}).get("id") or r.get("id"), "max_min": LIVE_MAX_MIN}
+
+
+# ---- 2026-10-20 (owner, all 12): Kino's voice, "Kino t'appelle", search across conversations ----
+KINO_VOICES = ("marin", "cedar", "ash", "coral")
+
+
+def kino_pref(user, body):
+    """the member's call preferences: Kino may ring for big news (never at night), Kino's voice"""
+    uid = user.get("id")
+
+    def put(m):
+        P = dict(m.get("prefs") or {})
+        if isinstance(body.get("ring"), bool):
+            P["ring"] = body["ring"]
+        if body.get("voice") in KINO_VOICES:
+            P["voice"] = body["voice"]
+        m["prefs"] = P
+        return P
+    P = _mem_note_safe(uid, put)
+    return {"ok": True, "prefs": P, "voices": list(KINO_VOICES)}
+
+
+def chat_search(user, body):
+    """words in all of this member's conversations (accents and case ignored)"""
+    import unicodedata as _ud
+    nz = lambda s: "".join(ch for ch in _ud.normalize("NFD", str(s or "").lower()) if _ud.category(ch) != "Mn")
+    q = nz(str(body.get("q") or "").strip())
+    if len(q) < 2:
+        return {"ok": True, "hits": []}
+    out = []
+    for x in chat_list(user).get("chats") or []:
+        if str(x.get("id") or "").endswith("9999999999999"):
+            continue
+        c = _chat_load(user, x["id"])
+        if not c:
+            continue
+        for i, m in enumerate(c.get("msgs") or []):
+            if m.get("role") in ("user", "ai") and q in nz(m.get("text")):
+                t = str(m.get("text") or "")
+                k = nz(t).find(q)
+                out.append({"cid": c["id"], "title": x.get("title") or x.get("name") or "", "i": i, "t": m.get("t"), "role": m["role"],
+                            "snip": ("…" if k > 50 else "") + t[max(0, k - 50):k + 90] + ("…" if k + 90 < len(t) else "")})
+    out.sort(key=lambda h: -(h.get("t") or 0))
+    return {"ok": True, "hits": out[:40]}
 
 
 def _log_live(line):
@@ -19844,6 +19906,11 @@ def live_end(user, body):
         fr = c.get("lang") != "en"
         _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)),
                                                 call=tr))
+        if mins >= 1 and len(tr) > 60 and not _CHAT_Q.get(c["id"]):      # 2026-10-20 (owner item 2): the call in three lines
+            _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+            threading.Thread(target=_chat_quick, args=(c["id"], user, "CALL ENDED: you just had a live voice call with them (see LIVE VOICE CALL). "
+                             "Write the call in THREE short lines, like a friend's text after a call: what you talked about, what you will do "
+                             "(and do it), the one thing still open. No greeting, no question unless one is truly open."), daemon=True).start()
     return {"ok": True}
 
 def _live_tick(sym):
@@ -25083,7 +25150,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -25105,7 +25172,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end}[_parts[1]]
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -27496,7 +27563,7 @@ class H(BaseHTTPRequestHandler):
             try:
                 import urllib.parse as _upt
                 _qt = _upt.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
-                _mp3 = _tts_mp3((_qt.get("t", [""])[0] or "")[:900], (_qt.get("l", ["fr"])[0] or "fr")[:2])
+                _mp3 = _tts_mp3((_qt.get("t", [""])[0] or "")[:900], (_qt.get("l", ["fr"])[0] or "fr")[:2], (_qt.get("v", [""])[0] or "")[:12])
                 if not _mp3:
                     self._not_found()
                 else:
