@@ -1709,11 +1709,11 @@ async function lvAsk(id,q){LV.busy++;LV.deleg=(LV.deleg||0)+1;lvSend({type:'sess
  let ans='',early='',n0=-1;const end=Date.now()+45000,cid=CID;
  while(LV&&Date.now()<end){await new Promise(r=>setTimeout(r,600));let p=null;try{p=await getJ('chat_ping?id='+encodeURIComponent(cid));}catch(e){}
   if(p&&!early){const d=String(p.dtx||'').replace(/\*\*/g,'');const mm=d.match(/^[\s\S]{25,}?[.!?…](\s|$)/);
-   if(mm&&mm[0].trim().length<d.length){early=mm[0].trim();lvSend({type:'session.commentary.append',event_id:'coe_'+id,delegation_id:id,content:'FIRST PART of the answer - say it now, the rest follows in a moment: '+early});}}
+   if(mm&&mm[0].trim().length<d.length){early=mm[0].trim();lvSend({type:'session.commentary.append',event_id:'coe_'+id,delegation_id:id,content:'NOTES from your brain (written, NOT a script) - tell the gist now in your own spoken words, short; more notes follow: '+early});}}
   if(p&&p.status==='ready'&&!p.draft&&p.n!==n0){n0=p.n;try{await load(cid);}catch(e){}
    const M=((C&&C.msgs)||[]).filter(m=>m.role==='ai'&&m.text&&(m.t||0)>=t0-1);if(M.length){ans=M.map(m=>m.text).join('\n');break;}}}
  if(!LV)return;LV.busy=Math.max(0,LV.busy-1);
- lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?(early?'THE REST of the answer - you already said "'+early.slice(0,220)+'": continue naturally from there, do not repeat it: '+String(ans).replace(/\*\*/g,'').replace(early,'').slice(0,1500):String(ans).replace(/\*\*/g,'').slice(0,1600)):
+ lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?(early?'MORE NOTES from your brain (written, NOT a script; you already told the start: "'+early.slice(0,220)+'"): tell only what is new, in your own spoken words, short: '+String(ans).replace(/\*\*/g,'').replace(early,'').slice(0,1500):'NOTES from your brain (written, NOT a script) - tell it in your own spoken words, short, like on the phone: '+String(ans).replace(/\*\*/g,'').slice(0,1600)):
   (EN?'I do not have the answer yet; it will be in the conversation in a moment.':'Je n’ai pas encore la réponse : elle arrive dans la conversation dans un instant.')});}
 function lvKill(){if(!LV)return;const L=LV;LV=null;LVSEEN=0;try{const p=$('callpill');if(p)p.classList.remove('on');const b=$('cvis');if(b)b.classList.remove('on');}catch(e){}clearInterval(L.tick);clearInterval(L.alive);clearInterval(L.fct);try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.remove();}catch(e){}return L;}
 async function liveEnd(){if(!LV){$('call').style.display='none';return;}lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());

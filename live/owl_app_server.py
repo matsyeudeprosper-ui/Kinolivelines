@@ -20315,6 +20315,25 @@ TTS_CONF = os.path.join(DIR, "robots", "tts.json")
 TTS_CACHE = os.path.join(DIR, "robots", "demo_cache", "tts")
 
 
+def _spoken(text, lang="fr"):
+    """2026-10-21 (owner: "the voice reading feels unnatural"): written chat text -> what a person would SAY (no symbols, no
+    brackets read out, units in words)"""
+    t = str(text or "")
+    t = re.sub(r"[*_`#>]+", "", t)
+    t = re.sub(r"[«»“”\"]", "", t)
+    t = re.sub(r"\s*\(([^)]{1,140})\)", r", \1,", t)
+    fr = lang != "en"
+    t = re.sub(r"([+−-])\s?(\d[\d\s]*(?:[.,]\d+)?)\s?\$", lambda m: ("plus " if m.group(1) == "+" else ("moins " if fr else "minus ")) + m.group(2).strip() + (" dollars"), t)
+    t = re.sub(r"\$\s?(\d[\d\s]*(?:[.,]\d+)?)", r"\1 dollars", t)
+    t = re.sub(r"(\d[\d\s]*(?:[.,]\d+)?)\s?\$", r"\1 dollars", t)
+    t = re.sub(r"(\d)\s?%", r"\1 pour cent" if fr else r"\1 percent", t)
+    t = re.sub(r"(\d(?:[.,]\d+)?)\s?x\b", r"\1 fois" if fr else r"\1 times", t)
+    t = re.sub(r"([+−-])(\d(?:[.,]\d+)?)\s?R\b", lambda m: ("plus " if m.group(1) == "+" else "moins " if m.group(1) else "") + m.group(2) + (" fois le risque" if fr else " times the risk"), t)
+    t = t.replace(" · ", ", ").replace("→", ", puis" if fr else ", then").replace("->", ", puis" if fr else ", then").replace(" / ", " ou " if fr else " or ")
+    t = re.sub(r"\s{2,}", " ", t).replace(" ,", ",").replace(",,", ",").strip()
+    return t
+
+
 def _tts_mp3(text, lang="fr", voice=None):
     """2026-10-19 (owner list-4 item 8): text -> mp3 with the configured voice service ({"provider": "azure", "key",
     "region", "voice_fr", "voice_en"} or {"provider": "openai", "key", "voice"}); cached by text; None when not set up"""
@@ -20823,6 +20842,9 @@ def _live_instructions(user, c):
         "- Decide instead of offering choices: no \"tu veux que...?\", no \"X ou Y ?\" - say what you would do and why.\n"
         "- Most turns end WITHOUT a question; silence is fine, let them lead. Short answers from them = keep it light.\n"
         "- When the brain's answer arrives, say it as YOUR words, spoken and short - never \"d'après mes informations\" or \"selon le système\".\n"
+        "- NEVER read a text aloud word for word: what your brain sends are written NOTES, not a script. Retell them the way you "
+        "would on the phone - shorter, simpler, spoken French, one idea at a time, numbers said naturally (\"dix-sept dollars et "
+        "des poussières\" only if the exact cents do not matter; exact when they ask for the figure).\n"
         "THE APP OBEYS THEIR VOICE for: 'lance le test' (run the robot's test), 'annule le changement' (undo the last robot change), "
         "'mets-le en fantôme' / 'arrête le fantôme' (ghost mode on/off). For those, do NOT delegate: just acknowledge in two or "
         "three words (\"c'est parti\", \"c'est fait\")."
@@ -28983,7 +29005,8 @@ class H(BaseHTTPRequestHandler):
             try:
                 import urllib.parse as _upt
                 _qt = _upt.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
-                _mp3 = _tts_mp3((_qt.get("t", [""])[0] or "")[:900], (_qt.get("l", ["fr"])[0] or "fr")[:2], (_qt.get("v", [""])[0] or "")[:12])
+                _lg = (_qt.get("l", ["fr"])[0] or "fr")[:2]
+                _mp3 = _tts_mp3(_spoken((_qt.get("t", [""])[0] or "")[:900], _lg), _lg, (_qt.get("v", [""])[0] or "")[:12])
                 if not _mp3:
                     self._not_found()
                 else:
