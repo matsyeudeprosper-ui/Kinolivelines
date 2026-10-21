@@ -17048,7 +17048,7 @@ def _night_idea_shift(u):
         if grp:
             for r, i in zip(_RT.compare(mk, [i["formula"] for i in grp], side, 30).get("rows") or [], grp):
                 rows.append(dict(r, side=side, name=i["name"], why=i["why"]))
-    rp = _KM.night_idea_report(mk, rows, c.get("lang") or "fr")
+    rp = _KM.night_idea_report(mk, rows, _rc().member_lang(c, c.get("lang") or "fr"))      # 2026-10-20: the language they WRITE in
     _chat_mut(c["id"], lambda cc: cc.setdefault("night_ideas", []).append({"t": int(time.time()), "rows": rows, "sent": bool(rp and rp.get("send"))}))
     if not (rp and rp.get("send") and str(rp.get("say") or "").strip()):
         return
@@ -17102,7 +17102,7 @@ def _night_shift_variants(u):
         rows = cmp_.get("rows") or []
         for r, v in zip(rows[1:], vs):
             r["why"] = v["why"]
-        rep = _KM.night_report(entry, side, mk, rows, c.get("lang") or "fr")
+        rep = _KM.night_report(entry, side, mk, rows, _rc().member_lang(c, c.get("lang") or "fr"))
         # 2026-10-19 (owner: "Kino proposing real tests of its night variants"): tests running (not paused) and a variant
         # clearly better than the original -> Kino tests it FOR REAL on a copy of the robot ("<name> · Kino"), the member's
         # own robot untouched; the result comes in the morning (companion step (1b))

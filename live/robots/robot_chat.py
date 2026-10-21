@@ -795,7 +795,7 @@ def own_agenda(chat, memory):
     return out
 
 
-_LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|des|mais|moi|toi|mon|ton|c'est|qui|dans|du|au)\b", re.I)
+_LFR = re.compile(r"\b(je|tu|le|la|les|est|pas|que|pour|avec|ça|une|des|mais|moi|toi|mon|ton|c'est|qui|dans|du|au|et|ma|ta|de|un|il|elle|ce|sur|mes|tes|ses|sont|oui|non|très|aussi|quoi|comment|pourquoi|j'ai|nous|vous|ils|fait|été|changé|où|ou|cette|cet|alors|donc|voilà|merci|bonjour|salut)\b", re.I)
 _LEN = re.compile(r"\b(the|is|and|you|that|with|for|it|it's|this|was|are|what|then|my|me|your|can|do|not|of|to|i'm|how|why|so|going|things|far|doing|done|yet|just|move|we|our|current|again|look|will|would|should|have|has|i|is|up|any|there|stop|run)\b", re.I)
 
 
