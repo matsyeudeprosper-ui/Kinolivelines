@@ -1722,7 +1722,7 @@ function lvEv(e){if(!LV)return;const t=e.type||'';try{const G=(window.LVLOG=wind
  else if(t==='session.closed'){lvKill();}}
 /* 2026-10-22 (owner: "when it reads it sounds unnatural, you can sense a bot; when it uses its own words it's more alive"):
    the voice never gets finished sentences - only fact fragments, which it has to say in its own words */
-const LVF='FACTS from your brain - bare fragments, NOT a script: never read them out as they are; turn them into your own natural spoken sentences, like on the phone, short, round a number when that sounds more natural. ';
+const LVF='FACTS from your brain - bare fragments, NOT a script: never read them out as they are. Talk like their friend, not a helpdesk: react first (a feeling), then say it in your own spoken words, then your take or hunch (ressenti/avis), short, like on the phone; round a number when that sounds more natural. ';
 function lvFrag(t){return String(t||'').replace(/\*\*/g,'').split(/\s*(?:\n+|[.!?…;:,](?=\s|$))\s*/).map(x=>x.trim()).filter(Boolean).join(' · ');}
 async function lvAsk(id,q){LV.busy++;LV.deleg=(LV.deleg||0)+1;lvSend({type:'session.thinking.append',event_id:'th_'+id,delegation_id:id,content:(EN?'Kino’s brain is checking: ':'Le cerveau de Kino vérifie : ')+q.slice(0,300)});
  const t0=Date.now()/1000;let ok=false;
