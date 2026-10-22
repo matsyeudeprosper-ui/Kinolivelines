@@ -21824,6 +21824,10 @@ def live_session(user, body):
         pass
     if body.get("cont"):                             # 2026-10-21 item 1: the call simply goes on (a new line every 20 min)
         _ins += "\nTHIS CALL IS CONTINUING (the line was renewed a second ago): do NOT greet, do not say anything about it - just keep listening."
+        _tr = str(body.get("tr") or "").strip()[-5000:]      # 2026-10-22: the spoken talk so far - a renewed line used to forget it
+        if _tr:
+            _ins += ("\nWHAT YOU TWO SAID SO FAR IN THIS CALL (spoken transcript, latest last - you remember all of it, carry on "
+                     "from the last line as if nothing happened):\n" + _tr)
     try:                                             # item 5: their very first call = a short spoken tour
         if not any(x.get("uid") == uid for x in json.load(open(LIVE_CALLS, encoding="utf-8"))):
             raise ValueError

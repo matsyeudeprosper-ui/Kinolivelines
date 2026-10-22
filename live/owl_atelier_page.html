@@ -1705,7 +1705,7 @@ async function liveStart(cont){if(!CID){toast(T('Ouvre d’abord une conversatio
   setTimeout(()=>{if(LV&&LV.pc===pc&&['failed','disconnected'].includes(pc.connectionState)){if(LVDROPS<4){LVDROPS++;lvRenew();}else liveEnd();}},2500);}};
  try{const off=await pc.createOffer();await pc.setLocalDescription(off);
   await new Promise(ok=>{if(pc.iceGatheringState==='complete')return ok();const t=setTimeout(ok,2500);pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);ok();}});});
-  const j=await post('live_session',{id:CID,sdp:pc.localDescription.sdp,cont:cont?1:0});
+  const j=await post('live_session',{id:CID,sdp:pc.localDescription.sdp,cont:cont?1:0,tr:(cont&&LV&&LV.trAll)?LV.trAll.join('\n').slice(-5000):''});
   if(!j||!j.ok){lvKill();if(j&&j.err==='nominutes'){$('call').style.display='none';voiceShop(T('Tu n’as plus de minutes d’appel : recharge pour parler avec Kino de vive voix.','You have no call minutes left: top up to talk with Kino live.'));return;}if(j&&j.err==='livecap'){lvSet(T('Tu as utilisé ton heure d’appel du jour. On continue par écrit ?','You used today’s hour of calls. Shall we go on in writing?'));setTimeout(()=>{$('call').style.display='none';},4000);return;}
    LIVE_OK=false;CALL_OLD=true;toast(T('Appel direct indisponible, je passe en appel classique.','Live call unavailable, switching to the classic call.'));$('call').style.display='none';callStart();CALL_OLD=false;return;}
   LV.max=j.max_min||20;LV.left=(j.left==null?null:+j.left);await pc.setRemoteDescription({type:'answer',sdp:j.sdp});}
