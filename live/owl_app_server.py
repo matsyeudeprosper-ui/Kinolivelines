@@ -22118,6 +22118,8 @@ def live_end(user, body):
     _ud = U.setdefault(uid, {})
     _ud[day] = round(float(_ud.get(day) or 0) + mins, 2)
     _atomic_json(LIVE_USAGE, U)
+    if body.get("why"):                              # 2026-10-22: why the line ended (hangup / renew / server_closed + its event)
+        _log_live("WHY %s %.2f min %s" % (uid, mins, str(body.get("why"))[:420]))
     # 2026-10-20 (owner: "know how much a call costs after each call"): gpt-live-1 bills $0.05/min to the second, 15 s minimum
     # (charged when the line opens); OpenAI's own counter (session.usage.updated "seconds") vs the real length - the larger one
     try:
