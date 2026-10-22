@@ -270,6 +270,11 @@ header .ib{border:0;background:transparent;width:36px}
 #call .ctx{max-width:560px;min-height:66px;margin:22px auto 0;font:500 16px/1.45 Inter,system-ui,sans-serif;color:#c6d3df;opacity:.92}
 #call .ctm{font:500 13px Inter,system-ui,sans-serif;color:#8a9bb0;margin-top:4px}
 #call .chg{width:72px;height:72px;border-radius:50%;border:0;background:#ff3b30;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 10px 28px rgba(255,59,48,.45)}
+/* 2026-10-22 (owner: "I can't see the stop the call button any more"): captions + chart + buttons grew taller than the
+   phone and pushed the hang-up off the screen - the content scrolls in its own box, the hang-up never moves */
+#call>div:first-child{flex:1 1 auto;min-height:0;width:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#call>.chg{flex:0 0 auto;margin-top:12px}
+@media (max-height:760px){#call .cav{width:96px;height:96px;font-size:48px;margin:10px auto 8px}#call .ctx{margin-top:12px}}
 /* 2026-10-20 (owner: the chat's look and ease of use, 10 items) */
 .strip{transition:max-height .25s ease,padding .25s ease,opacity .2s;max-height:64px}
 .strip.fold{max-height:0;padding-top:0!important;padding-bottom:0!important;opacity:0;overflow:hidden}
