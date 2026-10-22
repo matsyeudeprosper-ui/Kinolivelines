@@ -296,8 +296,13 @@ def journal():
                   best=max((r["net"] for r in rows), default=None))
         if st["sec_per_draw"] and state in ("running", "paused"):
             st["eta_h"] = round((MAXN - len(rows)) * st["sec_per_draw"] / 3600 / max(1, st.get("workers") or 1), 1)     # worst case: no early stop
-        json.dump(st, open(sp + ".tmp", "w", encoding="utf-8"), indent=1)
-        os.replace(sp + ".tmp", sp)
+        with open(sp + ".tmp", "w", encoding="utf-8") as f:
+            json.dump(st, f, indent=1)
+        for k in range(20):                                   # 2026-10-22: a reader holding the file (the app) made the
+            try:                                              # replace fail with WinError 5 and killed the test at draw 37
+                os.replace(sp + ".tmp", sp); break
+            except PermissionError:
+                time.sleep(0.25)
 
     if FLAGS.get("--fresh"):
         for f in (jp, sp):
