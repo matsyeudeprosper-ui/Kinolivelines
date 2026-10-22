@@ -1733,7 +1733,7 @@ async function lvAsk(id,q){LV.busy++;LV.deleg=(LV.deleg||0)+1;lvSend({type:'sess
  if(!LV)return;LV.busy=Math.max(0,LV.busy-1);
  lvWaitMark();lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:ans?(early?LVF+'You already told: "'+early.slice(0,220)+'". Tell only what is new: '+String(ans).replace(early,'').replace(/^\s*·\s*/,'').slice(0,1500):LVF+String(ans).slice(0,1600)):
   (EN?'I do not have the answer yet; it will be in the conversation in a moment.':'Je n’ai pas encore la réponse : elle arrive dans la conversation dans un instant.')});}
-function lvKill(){if(!LV)return;const L=LV;LV=null;LVSEEN=0;try{const p=$('callpill');if(p)p.classList.remove('on');const b=$('cvis');if(b)b.classList.remove('on');}catch(e){}clearInterval(L.tick);clearInterval(L.alive);clearInterval(L.fct);try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.pause();L.au.srcObject=null;}catch(e){}try{L.wl&&L.wl.release();}catch(e){}clearInterval(L.cht);clearInterval(L.dk);lvWakeOff(L);document.body.classList.remove('lvdesk');$('call').classList.remove('desk');try{const cx=$('ctx');if(cx)cx.style.display='';['caps','cchart','ptt','cconf','cdesk'].forEach(i=>{const n=$(i);if(n)n.remove();});}catch(e){}return L;}
+function lvKill(){if(!LV)return;const L=LV;LV=null;LVSEEN=0;try{const p=$('callpill');if(p)p.classList.remove('on');const b=$('cvis');if(b)b.classList.remove('on');}catch(e){}clearInterval(L.tick);clearInterval(L.alive);clearInterval(L.fct);clearInterval(L.scr);try{const pk=$('lvpocket');if(pk)pk.remove();}catch(e){}try{L.ms.getTracks().forEach(t=>t.stop());}catch(e){}try{L.pc.close();}catch(e){}try{L.au.pause();L.au.srcObject=null;}catch(e){}try{L.wl&&L.wl.release();}catch(e){}clearInterval(L.cht);clearInterval(L.dk);lvWakeOff(L);document.body.classList.remove('lvdesk');$('call').classList.remove('desk');try{const cx=$('ctx');if(cx)cx.style.display='';['caps','cchart','ptt','cconf','cdesk'].forEach(i=>{const n=$(i);if(n)n.remove();});}catch(e){}return L;}
 async function liveEnd(){if(!LV){$('call').style.display='none';return;}lvSend({type:'session.close'});lvTurn();if(LV.out.trim())LV.tr.push('Kino: '+LV.out.trim());
  const L=lvKill(),mins=L.t0?(Date.now()-L.t0)/60000:0;$('call').style.display='none';setTimeout(()=>{LVDROPS=0;},3000);
  let r_=null;try{r_=await post('live_end',{id:L.cid||CID,min:+mins.toFixed(2),usage_s:((L.usage||{}).usage||{}).seconds||0,deleg:L.deleg||0,wait:(L.waits&&L.waits.length?L.waits.reduce((a,b)=>a+b,0)/L.waits.length:0),drops:LVDROPS,spec:L.spec||0,transcript:(L.trAll||[]).concat(L.tr).join('\n').slice(-3000)});}catch(e){}if(r_&&r_.wallet&&r_.wallet.left<5)setTimeout(()=>voiceShop(T('Il te reste ','You have ')+vMin(r_.wallet.left)+T(' d’appel.',' of calls left.')),900);if(r_&&r_.usd!=null&&(C&&C.admin))toast('📞 '+T('Appel terminé · ','Call ended · ')+Math.round((r_.billed_s||0)/6)/10+' min · '+(+r_.usd).toFixed(2).replace('.',EN?'.':',')+' $');load(CID,true);}
@@ -2089,11 +2089,29 @@ setTimeout(()=>{try{post('kino_pref',{}).then(j=>{const v=j&&j.prefs&&j.prefs.vo
 var LVOPEN=null,LVDROPS=0;
 function lvWaitMark(){if(LV&&LV.dgT0){(LV.waits=LV.waits||[]).push((Date.now()-LV.dgT0)/1000);LV.dgT0=0;}}
 function lvStartExtras(){if(!LV)return;
- try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>{if(LV)LV.wl=w;else w.release();}).catch(()=>{});}catch(e){}
+ lvScreen();clearInterval(LV.scr);LV.scr=setInterval(()=>{try{lvScreen();lvMicFix();lvPocketTick();}catch(e){}},15000);LVTOUCH=Date.now();
  try{if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:T('Appel avec Kino','Call with Kino'),artist:'OwlNest'});['pause','stop'].forEach(a=>{try{navigator.mediaSession.setActionHandler(a,()=>liveEnd());}catch(e){}});}}catch(e){}
  if(LVOPEN){const t=LVOPEN;LVOPEN=null;lvSend({type:'session.commentary.append',event_id:'open_'+Date.now(),delegation_id:null,content:(EN?'':'Parle en FRANÇAIS. ')+lvOpenWhy()+'YOU are the one calling them, because of this news: '+String(t).replace(/\*\*/g,'').slice(0,600)+' - open with it right away like a friend calling ("Allô ! ..."), short, in your own words.'});}
  lvChart();clearInterval(LV.cht);LV.cht=setInterval(lvChart,20000);clearInterval(LV.dk);LV.dk=setInterval(lvDeskTick,10000);lvPos();lvDeskAuto();}
-document.addEventListener('visibilitychange',()=>{if(LV&&document.visibilityState==='visible'&&navigator.wakeLock&&!(LV.wl&&!LV.wl.released)){navigator.wakeLock.request('screen').then(w=>{if(LV)LV.wl=w;}).catch(()=>{});}});
+/* 2026-10-22 (owner: "make sure it can still hear me when the phone goes on veilleuse, or prevent it - for continuous talk"):
+   the screen lock is taken again whenever the phone drops it (battery saver, a system sheet, a renewed call), the mic is
+   re-opened if the phone cut it, and after a minute without a touch the screen goes black ("pocket" screen: still on, so
+   the call keeps running, but nearly no battery on an OLED phone) - a touch brings it back */
+let LVTOUCH=0,LVWLNO=0;
+function lvScreen(){if(!LV||document.visibilityState!=='visible'||(LV.wl&&!LV.wl.released))return;
+ if(!navigator.wakeLock){if(!LVWLNO){LVWLNO=1;toast(T('Ce navigateur ne peut pas garder l’écran allumé : garde-le allumé toi-même pendant l’appel.','This browser cannot keep the screen on: keep it on yourself during the call.'));}return;}
+ navigator.wakeLock.request('screen').then(w=>{if(!LV){w.release();return;}LV.wl=w;LVWLNO=0;w.addEventListener('release',()=>{if(LV)setTimeout(lvScreen,800);});})
+  .catch(()=>{if(!LVWLNO){LVWLNO=1;toast(T('Le téléphone refuse de garder l’écran allumé (économie d’énergie ?) : coupe-la pendant l’appel, sinon je ne t’entends plus quand l’écran s’éteint.','The phone refuses to keep the screen on (battery saver?): turn it off during the call, or I stop hearing you when the screen goes off.'));}});}
+async function lvMicFix(){if(!LV||!LV.ms||LV.mfx)return;const old=LV.ms.getAudioTracks()[0];if(old&&old.readyState==='live')return;
+ LV.mfx=1;try{const ms=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});const nt=ms.getAudioTracks()[0];
+  if(!LV){ms.getTracks().forEach(t=>t.stop());return;}nt.enabled=old?old.enabled:true;const s=LV.pc.getSenders().find(x=>!x.track||x.track.kind==='audio');if(s)await s.replaceTrack(nt);
+  try{old&&old.stop();}catch(e){}LV.ms=ms;}catch(e){}finally{if(LV)LV.mfx=0;}}
+function lvPocketTick(){if(!LV||!LV.t0||document.visibilityState!=='visible'||lvDeskOn()||Date.now()-LVTOUCH<60000)return;let p=$('lvpocket');
+ if(!p){p=document.createElement('div');p.id='lvpocket';p.style.cssText='position:fixed;inset:0;background:#000;z-index:2147483000;display:flex;align-items:center;justify-content:center;color:#3a3a3a;font-size:.8rem;text-align:center;padding:20px';
+  p.textContent=T('Appel avec Kino en cours · touche l’écran pour revenir','Call with Kino on · touch the screen to come back');document.body.appendChild(p);}}
+function lvPocketOff(){LVTOUCH=Date.now();const p=$('lvpocket');if(p)p.remove();}
+['pointerdown','touchstart','keydown'].forEach(t=>document.addEventListener(t,lvPocketOff,{capture:true,passive:true}));
+document.addEventListener('visibilitychange',()=>{if(LV&&document.visibilityState==='visible'){lvScreen();lvMicFix();LVTOUCH=Date.now();}});
 function lvChut(b){if(!LV)return;const on=!LV.au.muted;LV.au.muted=on;b.classList.toggle('on',on);b.innerHTML=on?'🔈 '+T('Reparle','Speak again'):'🤫 '+T('Chut','Hush');
  lvSend({type:'session.instructions.append',event_id:'chut_'+Date.now(),delegation_id:null,content:on?'They asked you to be quiet (chut): say nothing until they speak to you again.':'They want to hear you again: you may speak.'});
  lvSet(on?T('Kino se tait · il t’écoute','Kino is quiet · listening'):T('Kino peut reparler','Kino may speak again'),on?'':'listen');}
