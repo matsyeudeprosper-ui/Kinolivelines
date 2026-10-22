@@ -542,6 +542,7 @@ function msgHTML(m,i,last){
  if(m.role==='replay')return rpCardHTML(m);
  if(m.role==='recap')return recapHTML(m);
  if(m.role==='ai'&&m.vn&&!m.err)return vnHTML(m,i);
+ if(m.role==='ai'&&!m.err&&!brTxt(m.text)&&!(m.made&&m.made.length)&&!m.link&&!m.ready)return '';   // markup-only reply (10-22): nothing to show
  // 2026-10-19: the AI sends two or three short messages in a row like a person (blank line = new bubble)
  const parts=[].concat(...brTxt(m.text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(splitLong)).slice(0,5);
  let h=(parts.length?parts:['']).map((p,k,A)=>'<div class="m ai'+(m.err?' err':'')+(k<A.length-1?' cont':'')+(k===0&&m._tl?' tail gap':'')+(k===A.length-1&&m.mreact?' rxm':'')+'"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub'+(p.length>420?' long':'')+'" data-i="'+i+'">'+md(p)+(p.length>420?'<button class="rdm" onclick="event.stopPropagation();this.parentNode.classList.remove(\'long\')">'+T('lire la suite','read more')+'</button>':'')+(k===A.length-1?'<span class="meta">'+hm2(m.t)+'</span>'+(m.mreact?'<span class="react mine">'+esc(m.mreact)+'</span>':''):'')+'</div></div>').join('');
@@ -598,6 +599,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
 /* typing like a person writing (owner: "like in ChatGPT") */
 /* 2026-10-22: a model reply ended in 23 "<br>" blocks, each shown as a bubble - an HTML break is a newline here */
 function brTxt(s){s=String(s||'');if(s.indexOf('<parameter name="say">')>=0)s=s.split('<parameter name="say">')[1].split('</parameter>')[0];   // a tool-call shaped reply saved as text (10-22)
+ s=s.replace(/<\/?(invoke|function_calls|parameter|antml:[a-z_]+)\b[^>]*>/gi,'');
  return s.replace(/<br\s*\/?>/gi,'\n').replace(/\n{3,}/g,'\n\n').trim();}
 let PAINTCID=null,TYPED=new Set(),FIRSTPAINT=true,LIVE_T='',LIVE_N=0,LIVE_RAF=0,CARRY=0;
 /* 2026-10-19 (owner: "it doesn't go down to the very last message"): after opening, the conversation keeps growing for a

@@ -218,6 +218,10 @@ def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on
         if j is not None:
             return j
         t = txt.strip()
+        # 2026-10-22: '<invoke name="noop"/></invoke>' was salvaged as the answer - shown 3 times, their question unanswered.
+        # Tool-call markup is never a chat message: try the next model instead.
+        if re.search(r"</?(invoke|function_calls|parameter|antml)\b", t):
+            continue
         if salvage and t and "{" not in t and len(t) < 1500 and t.lower() not in ("(none)", "none"):
             return {"say": t, "salvaged": True}
     return None

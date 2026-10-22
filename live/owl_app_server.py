@@ -15089,6 +15089,9 @@ def _chat_msg(c, role, **kw):
         import re as _re
         if '<parameter name="say">' in m["text"]:          # 2026-10-22: a tool-call shaped reply slipped through as text
             m["text"] = m["text"].split('<parameter name="say">', 1)[1].split("</parameter>", 1)[0]
+        m["text"] = _re.sub(r"</?(invoke|function_calls|parameter|antml:[a-z_]+)\b[^>]*>", "", m["text"])
+        if role == "ai" and not m["text"].strip() and not any(m.get(k) for k in ("made", "link", "ready", "vn", "show", "card", "audio")):
+            return m                                     # tool-call markup only ('<invoke name="noop"/>'): nothing to show
         m["text"] = _re.sub(r"\n{3,}", "\n\n", _re.sub(r"(?i)<br\s*/?>", "\n", m["text"])).strip()
     c.setdefault("msgs", []).append(m)
     return m
