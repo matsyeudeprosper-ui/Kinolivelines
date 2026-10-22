@@ -175,7 +175,8 @@ def journal():
     out = open(jp, "a", encoding="utf-8")
     sd = 0
     beats = lambda: sum(1 for r in rows if r["net"] >= rn)
-    while len(rows) < MAXN and beats() <= ALLOW:
+    hopeless = lambda: (len(rows) >= 10 and beats() >= 3) or (len(rows) >= 20 and beats() >= 4)    # 2026-10-21 owner list item 2
+    while len(rows) < MAXN and beats() <= ALLOW and not hopeless():
         if sd in done:
             sd += 1; continue
         while free_gb() < ROOM_GB:                            # live bots first: wait for memory between draws
@@ -188,7 +189,7 @@ def journal():
         out.write(json.dumps(row) + "\n"); out.flush(); os.fsync(out.fileno())
         rows.append(row); done.add(sd); sd += 1
         print("  draw %d: %.2f (%d as good as the robot, %d draws)" % (row["sd"], row["net"], beats(), len(rows)), flush=True)
-    passed = beats() <= ALLOW
+    passed = beats() <= ALLOW and not hopeless()
     res = summary([r["net"] for r in rows], [r["trades"] for r in rows if r.get("trades")], [r["pf"] or 0 for r in rows if "pf" in r])
     res.update(verdict="beats chance" if passed else "within luck", rule="%d draws, at most %d as good" % (MAXN, ALLOW),
                beats=beats(), stopped_early=len(rows) < MAXN)

@@ -15715,7 +15715,169 @@ def _overnight_text(uid, hours=12):
                     L.append("luck test of '%s' on %s: %s" % (mine[l["rid"]], l["sym"], "PASSED" if l["state"] == "pass" else "not proven"))
     except Exception:
         pass
+    try:                                             # owner list item 1: the idea factory's candidates of the night
+        F = json.load(open(os.path.join(DIR, "robots", "kino_factory.json"), encoding="utf-8"))
+        r = (F.get("runs") or [{}])[-1] or {}
+        if now - float(r.get("t") or 0) < hours * 3600:
+            L.append("your idea factory measured %d variants tonight; %s" % (r.get("measured") or 0, (" candidates: " + " | ".join(
+                "%s %s (%s): beats %s%% of chance, %s/day" % (c.get("seed"), c.get("why"), c.get("market"), c.get("beats"), c.get("per_day"))
+                for c in r.get("top") or [])) if r.get("top") else "no candidate good enough - said honestly"))
+    except Exception:
+        pass
     return "; ".join(L[:8])
+
+
+_RES_NIGHT = {"day": None}
+
+
+def _research_night_maybe():
+    """2026-10-21 (owner list items 1, 3, 4, 11): Kino's research desk at night - the idea factory, the lessons, the market
+    scout (Mondays), his self-review. Candles only, one detached process at below-normal priority, once a day, only with room."""
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if _RES_NIGHT["day"] == day:
+        return
+    _RES_NIGHT["day"] = day
+    try:
+        import sys as _sy
+        _sy.path.insert(0, os.path.join(os.path.dirname(DIR), "study"))
+        from when_free import free_gb as _fg
+        if _fg() < 2.0:
+            _RES_NIGHT["day"] = None                     # no room now: try again on the next tick
+            return
+    except Exception:
+        pass
+    try:
+        import sys as _sy, subprocess
+        py = _sy.executable.replace("python.exe", "pythonw.exe")
+        log = open(os.path.join(DIR, "robots", "kino_research.log"), "a", encoding="utf-8")
+        log.write("\n%s night start\n" % time.strftime("%Y-%m-%d %H:%M:%S")); log.flush()
+        subprocess.Popen([py if os.path.exists(py) else _sy.executable, os.path.join(DIR, "robots", "kino_research.py"), "night"],
+                         cwd=os.path.join(DIR, "robots"), stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000 | 0x00004000, close_fds=True)
+    except Exception:
+        pass
+
+
+def _research_mem(uid):
+    """what the research desk gives Kino's memory: the dead ideas (lessons), the factory's candidates, his habits to fix,
+    the betting score with this member"""
+    out = {}
+    try:
+        F = json.load(open(os.path.join(DIR, "robots", "kino_factory.json"), encoding="utf-8"))
+        D = sorted((F.get("dead") or {}).items(), key=lambda kv: -kv[1].get("t", 0))[:8]
+        out["lessons"] = " ; ".join("%s on %s: %s" % (v.get("name"), k.split("|")[0], v.get("why")) for k, v in D)
+        top = ((F.get("runs") or [{}])[-1] or {}).get("top") or []
+        out["factory"] = " ; ".join("%s (%s, %s): beats %s%% of random moments, %s signals/day, %+.2f ATR after the spread, both halves %s - formula %s" % (
+            c.get("seed"), c.get("why"), c.get("side"), c.get("beats"), c.get("per_day"), c.get("net_atr") or 0,
+            "/".join("%+.2f" % (h or 0) for h in c.get("halves") or []), c.get("formula")) for c in top)
+    except Exception:
+        pass
+    try:
+        R = json.load(open(os.path.join(DIR, "robots", "kino_selfreview.json"), encoding="utf-8"))
+        out["habits"] = " ; ".join((R.get("last") or {}).get("habits") or [])
+    except Exception:
+        pass
+    sc = (_mem_get(uid).get("bet_score") or {})
+    if sc:
+        out["bets"] = "you %s/%s right, them %s/%s right" % ((sc.get("kino") or [0, 0])[0], (sc.get("kino") or [0, 0])[1],
+                                                           (sc.get("you") or [0, 0])[0], (sc.get("you") or [0, 0])[1])
+    return out
+
+
+def _curve_daily(cv):
+    """a cumulative test curve [[day, cum], ...] -> {day: that day's P&L}"""
+    out, prev = {}, 0.0
+    for d, v in cv or []:
+        out[str(d)] = float(v) - prev
+        prev = float(v)
+    return out
+
+
+def _max_dd(vals):
+    pk, dd, cum = 0.0, 0.0, 0.0
+    for v in vals:
+        cum += v
+        pk = max(pk, cum)
+        dd = max(dd, pk - cum)
+    return dd
+
+
+def _risk_view(user, rid, sym):
+    """2026-10-21 (owner list items 5, 6): the risk of a robot before the account, in plain numbers - and with the robot
+    already on the account: do they lose on the same days, the worst dip of the two together"""
+    f = os.path.join(DIR, "robots", "results", ("%s.json" % rid) if sym == "BTCUSD" else ("%s@%s.json" % (rid, sym)))
+    try:
+        X = json.load(open(f, encoding="utf-8"))
+    except Exception:
+        return {"ok": False, "err": "notest"}
+    x = X.get("robot") or {}
+    try:
+        bal = float(json.load(open(os.path.join(DIR, "nest_data", user.get("id") + ".json"), encoding="utf-8")).get("balance") or 0)
+    except Exception:
+        bal = 0.0
+    out = {"ok": True, "net": x.get("net"), "trades": x.get("trades"), "dd": x.get("cc_dd"), "mtm_dd": x.get("mtm_dd"), "streak": x.get("max_loss_streak"),
+           "worst": x.get("worst"), "balance": round(bal, 2), "kill": 60, "days": X.get("days"), "test_balance": X.get("balance")}
+    if bal and x.get("mtm_dd") is not None:
+        out["dd_pct"] = round(100.0 * float(x["mtm_dd"]) / bal, 1)
+    cur = _acct_cur_robot(user) or "owl"
+    pc = None
+    import glob as _gk
+    for g in [os.path.join(DIR, "robots", "results", cur + ".json")] + _gk.glob(os.path.join(DIR, "robots", "results", "*.json")):
+        try:
+            Y = json.load(open(g, encoding="utf-8"))
+        except Exception:
+            continue
+        if os.path.basename(g) == cur + ".json" and (Y.get("robot") or {}).get("curve"):
+            pc = Y["robot"]["curve"]
+            break
+        if "@" not in os.path.basename(g) and Y.get("parent") == cur and (Y.get("parent_result") or {}).get("curve"):
+            pc = Y["parent_result"]["curve"]
+            break
+    if pc and x.get("curve") and cur != rid:
+        a, b = _curve_daily(x["curve"]), _curve_daily(pc)
+        days = sorted(set(a) | set(b))
+        both = [d for d in days if d in a and d in b]
+        out["combo"] = {"with": cur, "dd_alone": round(_max_dd([a.get(d, 0) for d in days]), 2), "dd_partner": round(_max_dd([b.get(d, 0) for d in days]), 2),
+                        "dd_together": round(_max_dd([a.get(d, 0) + b.get(d, 0) for d in days]), 2),
+                        "net_together": round(sum(a.values()) + sum(b.values()), 2), "same_bad_days": sum(1 for d in both if a[d] < 0 and b[d] < 0),
+                        "shared_days": len(both)}
+        if len(both) >= 8:
+            import statistics as _st
+            try:
+                out["combo"]["corr"] = round(_st.correlation([a[d] for d in both], [b[d] for d in both]), 2)
+            except Exception:
+                pass
+    return out
+
+
+def robot_risk(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot_id"):
+        return {"ok": False, "err": "missing"}
+    return _risk_view(user, c["robot_id"], (c.get("robot") or {}).get("market") or "BTCUSD")
+
+
+def research_board(user, body):
+    """2026-10-21 (owner list item 8): every idea / robot of this member at its stage, with Kino's note"""
+    try:
+        _rc()
+        import kino_research as _KRb
+        rows = _KRb.board(user.get("id"))
+    except Exception:
+        rows = []
+    try:
+        S = json.load(open(os.path.join(DIR, "robots", "kino_scout.json"), encoding="utf-8"))
+    except Exception:
+        S = {}
+    return {"ok": True, "rows": rows, "scout": (S.get("markets") or [])[:8]}
+
+
+def test_guess(user, body):
+    """2026-10-21 (owner list item 10): before a test result lands, the member guesses too - a running score with Kino"""
+    g = str(body.get("g") or "")
+    if g not in ("pos", "neg"):
+        return {"ok": False}
+    _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("guess", {"g": g, "t": int(time.time()), "cid": str(body.get("id") or "")}))
+    return {"ok": True}
 
 
 def _chat_memory(user, cid=None):
@@ -15771,7 +15933,7 @@ def _chat_memory(user, cid=None):
             "watches": _mm.get("watches") or [], "drawing": _mm.get("drawing") if time.time() - float((_mm.get("drawing") or {}).get("t") or 0) < 48 * 3600 else None,
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
             "nest_open": nest_open, "nest_answers": nest_answers,
-            "their_goal": _mm.get("their_goal"), "jobs_now": _jobs_text(user, cid), "track": _track_text(me)}
+            "their_goal": _mm.get("their_goal"), "jobs_now": _jobs_text(user, cid), "track": _track_text(me), "research": _research_mem(me)}
 
 
 def _track_text(uid):
@@ -16889,6 +17051,18 @@ def _companion_tick():
                                      "traded), and one light question for their day. Personal, warm, specific.%s" % _cof), kwargs={"notify": True, "important": _bc}, daemon=True).start()
             except Exception:
                 pass
+            try:          # 2026-10-21 (owner list item 9): Kino's research diary - three lines, evenings, only on days he tried something
+                _dkd = time.strftime("%Y-%m-%d", time.gmtime(now))
+                if 21 <= h0 < 22 and m.get("diary") != _dkd and not busy(ch[0]["id"]):
+                    _dfx = _overnight_text(uid, 14)
+                    if _dfx:
+                        _mem_note_safe(uid, lambda mm: mm.__setitem__("diary", _dkd))
+                        _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                        threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "RESEARCH DIARY - your evening diary for them, THREE short lines: "
+                                         "what you tried today, what died (and the lesson), what you believe now and what comes next. Honest, "
+                                         "numbers exact, no greeting. Today's facts: %s" % _dfx), kwargs={"notify": False}, daemon=True).start()
+            except Exception:
+                pass
             # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
             try:
                 _dk = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
@@ -17329,6 +17503,23 @@ def _guardian(u, ch):
                                                        "never a lecture, their choice." % len(sw), False))
     except Exception:
         pass
+    try:          # 2026-10-21 (owner list item 7): the live robot drifts away from its test - said early, not at -60 $
+        wr_t = float(test.get("win_rate") or 0)
+        wr_t = wr_t / 100.0 if wr_t > 1 else wr_t
+        L_ = tr[:30]
+        if len(L_) >= 15 and 0.05 < wr_t < 0.95:
+            wr_l = sum(1 for t in L_ if (t.get("p") or 0) > 0) / float(len(L_))
+            z = (wr_l - wr_t) / ((wr_t * (1 - wr_t) / len(L_)) ** 0.5)
+            key = "drift:%d" % (time.time() // (3 * 86400))
+            if z <= -2.0 and key not in seen:
+                alerts.append((key, "DRIFT: the robot on their account ('%s') won %d of its last %d real trades (%.0f %%) while its test won %.0f %% - "
+                                    "that gap is bigger than luck usually makes (about %.1f standard errors). Not a reason to panic: say it early, "
+                                    "calmly, with the numbers, what it could mean (the market changed, costs, a rule acting differently live), and "
+                                    "one thing they could check or do - the decision is theirs." % (
+                                        (A.get("current") or {}).get("name_fr"), sum(1 for t in L_ if (t.get("p") or 0) > 0), len(L_), 100 * wr_l,
+                                        100 * wr_t, -z), True))
+    except Exception:
+        pass
     lv = A.get("live") or {}
     if lv.get("alive") is False:
         key = "down:%d" % (time.time() // 21600)
@@ -17689,6 +17880,22 @@ def _inner_feel_result(uid, res):
             _KI.feel("worry", 0.15, uid=uid, why="son test vient de sortir négatif (%+.2f $)" % net)
         _KI.mood_nudge(0.04 if net > 0 else -0.03, "un test de membre est sorti %s" % ("positif" if net > 0 else "négatif"))
         _KI.resolve_test_bet(uid, net)
+        try:                                         # 2026-10-21 (owner list item 10): their guess vs Kino's, a running score
+            kb = (_KI._load().get("test_bets") or {}).get(uid) or {}
+
+            def _sc(mm):
+                S = mm.setdefault("bet_score", {"you": [0, 0], "kino": [0, 0]})
+                g = mm.get("guess") or {}
+                if g and not g.get("done") and time.time() - float(g.get("t") or 0) < 8 * 3600:
+                    S["you"][1] += 1
+                    S["you"][0] += 1 if (net > 0) == (g.get("g") == "pos") else 0
+                    g["done"] = True
+                if kb.get("done") and time.time() - float(kb.get("done") or 0) < 120:
+                    S["kino"][1] += 1
+                    S["kino"][0] += 1 if kb.get("right") else 0
+            _mem_note_safe(uid, _sc)
+        except Exception:
+            pass
     except Exception:
         pass
 
@@ -17781,7 +17988,8 @@ def _inner_engine_once():
                     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
                     threading.Thread(target=_chat_quick, args=(c["id"], u, "GOAL STEP - your goal with them: \"%s\" (why: %s; next step you planned: %s). "
                                      "Take today's step on your own now: pick the 3 most promising ideas toward it that are NOT already tested "
-                                     "(see their robots and YOUR JOBS RUNNING NOW), start a research session (\"research\") with them as steps, "
+                                     "(see their robots, YOUR JOBS RUNNING NOW and the IDEA FACTORY candidates in what you remember), start a "
+                                     "research session (\"research\") with them as steps, "
                                      "and tell them in one or two lines today's plan and why these three." % (g_.get("goal"), g_.get("why") or "-", g_.get("next") or "-")),
                                      kwargs={"notify": True}, daemon=True).start()
             except Exception:
@@ -18171,6 +18379,11 @@ def _companion_loop():
                             if is_admin(_o) and _o.get("id") == "kino":
                                 queue_push("kino", "Kino", "Ton rapport de la semaine est prêt : " + str(r.get("title") or "")[:120], path="kino")
                 threading.Thread(target=_rep, daemon=True).start()
+        except Exception:
+            pass
+        try:                 # 2026-10-21 (owner list): the research desk, 02:00-06:00 UTC, once a day, only with room
+            if 2 <= time.gmtime().tm_hour < 6:
+                threading.Thread(target=_research_night_maybe, daemon=True).start()
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap levels 4, 7, 8): Kino's night mind, 03:00-05:00 UTC, once a day
@@ -20413,7 +20626,25 @@ def _kino_report():
             "kept": kept, "missed": miss, "corrections": corr, "voice_notes": vn,
             "calls": {"n": len(CL), "min": round(sum(float(x.get("billed_s") or 0) for x in CL) / 60.0, 1), "usd": round(sum(float(x.get("usd") or 0) for x in CL), 2),
                       "deleg": sum(int(x.get("deleg") or 0) for x in CL)},
-            "brain_usd": brain, "tts_usd": tts, "bets": sc}
+            "brain_usd": brain, "tts_usd": tts, "bets": sc, **_report_extra(t0, CL, brain, tts)}
+
+
+def _report_extra(t0, CL, brain, tts):
+    """2026-10-21 (owner list items 11, 12): Kino's own slips from his nightly self-review; the week's money - what calls,
+    brain and voice cost against the call minutes sold"""
+    out = {}
+    try:
+        out["review"] = (json.load(open(os.path.join(DIR, "robots", "kino_selfreview.json"), encoding="utf-8")).get("last") or {})
+    except Exception:
+        pass
+    try:
+        P_ = [x for w in _vw_all().values() for x in (w.get("pays") or []) if float(x.get("t") or 0) >= t0]
+        sold = round(sum(float(x.get("usd") or 0) for x in P_), 2)
+        cost = round(sum(float(x.get("usd") or 0) for x in CL) + float(brain or 0) + float(tts or 0), 2)
+        out["money"] = {"sold": sold, "cost": cost, "margin": round(sold - cost, 2)}
+    except Exception:
+        pass
+    return out
 
 
 def _away_card(user, c, prev_seen):
@@ -27075,7 +27306,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -27099,7 +27330,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

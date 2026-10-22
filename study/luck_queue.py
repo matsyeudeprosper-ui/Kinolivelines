@@ -37,6 +37,19 @@ def still_winning(e):
     return (r.get("net") or 0) > 0 and (r.get("trades") or 0) >= 20
 
 
+def promise(e):
+    """sort key: an entry already started first (it resumes), then robots whose test won in both halves, by profit factor"""
+    if e.get("launched"):
+        return (0, 0)
+    f = os.path.join(RES, ("%s.json" % e["rid"]) if e["sym"] == "BTCUSD" else ("%s@%s.json" % (e["rid"], e["sym"])))
+    try:
+        r = json.load(open(f, encoding="utf-8")).get("robot") or {}
+    except Exception:
+        return (2, 0)
+    both = (r.get("first_half") or 0) > 0 and (r.get("later_half") or 0) > 0
+    return (1 if both else 3, -float(r.get("profit_factor") or 0))
+
+
 def drop_losers():
     q = load()
     keep, out = [], []
@@ -125,6 +138,7 @@ def kick():
     f = free_gb()
     if f < NEED_GB:
         return "waiting for room: %.1f GB free" % f
+    todo.sort(key=promise)                                   # 2026-10-21 (owner list item 2): the best chance first
     e = todo[0]
     cmd = [sys.executable, "-u", os.path.join(HERE, "random_control_market.py"), e["sym"], e["rid"], "--journal"]
     if e.get("fresh") and not e.get("launched"):

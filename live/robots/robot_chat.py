@@ -409,7 +409,10 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   confirm with their password; the card says plainly if it is not possible yet and why), "compare" (this robot vs the Owl,
   step by step), "robots" (ALL their robots with where each one stands - use it for "liste mes robots"), "tidy" (their robots
   that no longer serve, with a reason each, to put away in one tap - hidden, history kept - and the ones put away, to bring
-  back: use it for "range / supprime / nettoie mes robots", "remets X", or when you see ROBOTS THAT NO LONGER SERVE), "week" (their week at a glance:
+  back: use it for "range / supprime / nettoie mes robots", "remets X", or when you see ROBOTS THAT NO LONGER SERVE), "board" (THE RESEARCH BOARD: every idea and robot of theirs at its stage - idea, measured, tested, luck test, proven, dead - with
+  your note; use it for "où on en est ?", "montre-moi le tableau"), "risk" (the risk of THIS chat's robot before the account: worst
+  dip in $ and as a share of their balance, longest losing streak, and with the robot already on their account: same bad days,
+  worst dip of the two together - use it before any "mets-le sur mon compte"), "week" (their week at a glance:
   account, robots, next step - for the Sunday look back), "replay" ({"t": "YYYY-MM-DD HH:MM" UTC or omitted, "why": "..."} -
   opens THEIR replay room - to SHOW a moment instead of describing it, or to invite them to practise; the room never shows what comes
   after the paused minute). To STOP a luck test that waits in line: "act": "luck_cancel". Use a card whenever they ask about their account, results, a day,
@@ -681,6 +684,16 @@ def memory_text(mem):
         _top.append("YOUR JOBS RUNNING NOW (the truth about what you are doing): " + str(mem["jobs_now"]))
     if mem.get("track"):
         _top.append("YOUR TRACK RECORD: " + str(mem["track"]))
+    _rs = mem.get("research") or {}               # 2026-10-21 (owner list items 1, 4, 10, 11)
+    if _rs.get("factory"):
+        _top.append("YOUR IDEA FACTORY'S CANDIDATES (measured last night against 100 random moments, after the spread - build the "
+                    "best one when it serves their goal): " + _rs["factory"])
+    if _rs.get("lessons"):
+        _top.append("LESSONS - DEAD IDEAS (check before building; never rebuild one without a real new twist): " + _rs["lessons"])
+    if _rs.get("habits"):
+        _top.append("YOUR HABITS TO FIX (from your own review last night): " + _rs["habits"])
+    if _rs.get("bets"):
+        _top.append("YOUR BETS WITH THEM ON TEST RESULTS: " + _rs["bets"])
     L = _top + L
     return "\n".join(L) or "nothing yet"
 
@@ -1264,7 +1277,7 @@ def partner_of(raw):
                 out[k] = raw[k].strip()[:200]
         if isinstance(raw.get("cards"), list):
             out["cards"] = [{"kind": x["kind"], "args": x.get("args") if isinstance(x.get("args"), dict) else {}} for x in raw["cards"][:2]
-                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots", "week", "replay", "tidy")]
+                            if isinstance(x, dict) and x.get("kind") in ("account", "perf", "live", "day", "history", "confirm", "lab", "page", "onaccount", "compare", "robots", "week", "replay", "tidy", "board", "risk")]
         st_ = raw.get("setting")
         if isinstance(st_, dict):
             ok = {k: v for k, v in st_.items() if (k in ("sound", "big") and isinstance(v, bool)) or (k == "lang" and v in ("fr", "en"))
