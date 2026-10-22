@@ -16468,11 +16468,18 @@ def _companion_can_push(uid, n):
     return True
 
 
+_RING_NEXT = {}     # uid -> (until, "brief" | "week"): 2026-10-21 (owner, Jarvis list items 1+12) the next push rings, with its reason
+
+
 def _companion_push(user, n):
     uid = user.get("id")
-    _ring = bool(n.get("important")) and bool((_mem_get(uid).get("prefs") or {}).get("ring")) and 9 <= _local_hour(uid) < 22
+    _rk = _RING_NEXT.get(uid)
+    _rk = _rk if _rk and _rk[0] > time.time() and 8 <= _local_hour(uid) < 22 else None
+    if _rk:
+        _RING_NEXT.pop(uid, None)
+    _ring = bool(_rk) or (bool(n.get("important")) and bool((_mem_get(uid).get("prefs") or {}).get("ring")) and 9 <= _local_hour(uid) < 22)
     queue_push(uid, "📞 Kino t'appelle" if _ring else "Kino", n["text"][:160],
-               path="atelier?c=" + n["cid"] + ("&call=1" if _ring else ""), sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
+               path="atelier?c=" + n["cid"] + (("&call=" + (_rk[1] if _rk else "1")) if _ring else ""), sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
     n["pushed"] = int(time.time())
 
 
@@ -16755,10 +16762,15 @@ def _companion_tick():
                         _cof += " THEIR ROBOT OVERNIGHT: %s." % (", ".join("%s %+.2f $" % (x.get("w"), x.get("p") or 0) for x in _ov[:5]) or "no trade")
                     except Exception:
                         pass
+                    _bc = bool((m.get("prefs") or {}).get("brief_call"))
+                    if _bc:                               # 2026-10-21 (Jarvis list item 1): they asked Kino to CALL for the morning brief
+                        _RING_NEXT[uid] = (now + 900, "brief")
+                        _cof += (" THEY ASKED FOR A MORNING CALL: this message rings their phone and opens the call - say what you tested "
+                                 "or measured since yesterday, if anything, and the one idea for today.")
                     threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, "MORNING BRIEF - it is the start of their day: a MORNING COFFEE message, "
                                      "like a friend texting when you wake up - NOT a report. 2-4 short sentences, two bubbles max: one thing you "
                                      "woke up with (your dream below, in your words), what their robot did overnight in a few words (only if it "
-                                     "traded), and one light question for their day. Personal, warm, specific.%s" % _cof), kwargs={"notify": True}, daemon=True).start()
+                                     "traded), and one light question for their day. Personal, warm, specific.%s" % _cof), kwargs={"notify": True, "important": _bc}, daemon=True).start()
             except Exception:
                 pass
             # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
@@ -16797,6 +16809,19 @@ def _companion_tick():
                                  ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("n"),
                                  ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("won")))
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("week_review", wk))
+                    try:                                  # 2026-10-21 (Jarvis list item 12): the honest scorecard, by voice
+                        _w0 = now - 7 * 86400
+                        _cl = [x for x in json.load(open(LIVE_CALLS, encoding="utf-8")) if x.get("uid") == uid and float(x.get("t") or 0) >= _w0]
+                        _aa = [x for x in (m.get("acct_actions") or []) if float(x.get("t") or 0) >= _w0]
+                        facts += " | SCORECARD (honest, no polish): calls with you this week: %d (%.0f min%s); their account decisions this week: %s" % (
+                            len(_cl), sum(float(x.get("secs") or 0) for x in _cl) / 60,
+                            (", they cost the owner %.2f $" % sum(float(x.get("usd") or 0) for x in _cl)) if is_admin(u) else "",
+                            "; ".join("%s (day %+.2f $, losing streak %s)" % (x.get("kind"), float(x.get("today") or 0), x.get("streak")) for x in _aa[-5:]) or "none")
+                    except Exception:
+                        pass
+                    _wr = bool((m.get("prefs") or {}).get("ring") or (m.get("prefs") or {}).get("brief_call"))
+                    if _wr:
+                        _RING_NEXT[uid] = (now + 900, "week")
                     _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
                     try:                                  # 2026-10-20 (owner list 5 item 7): a look back TOGETHER - Kino's week too
                         _rc()
@@ -16811,8 +16836,9 @@ def _companion_tick():
                                      "like two friends who trade side by side: their week in one line (and how their robot behaved compared with "
                                      "its test), YOUR week in one line (your hunches, your robot, a question you solved - honest, with humour), "
                                      "one thing you both learned, and ONE idea or small experiment for next week. 4-6 short sentences, two "
-                                     "bubbles max. Facts: %s" % facts),
-                                     kwargs={"notify": True}, daemon=True).start()
+                                     "bubbles max. Add the SCORECARD in one honest line: money made this week, what your ideas earned "
+                                     "compared with what they cost, the best and the worst decision. Facts: %s" % facts),
+                                     kwargs={"notify": True, "important": _wr}, daemon=True).start()
                 except Exception:
                     pass
             # (2) a luck test of one of their robots finished
@@ -21145,6 +21171,42 @@ def _live_facts(user, c, dyn_only=False):
 
 
 _LIVE_ACT_T = {}
+_LIVE_SIDE_T = {}
+
+
+def live_pos(user, body):
+    """2026-10-21 (Jarvis list items 2, 7, 8): the account's open trades and its last closed one, for the call - trades
+    narrated as they happen, entry / stop / target drawn on the call chart, the desk panel"""
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", str(user.get("id")) + ".json"), encoding="utf-8"))
+    except Exception:
+        return {"ok": False}
+    ol = [{k: o.get(k) for k in ("d", "sym", "lot", "e", "sl", "tp", "pl", "cur", "t")} for o in nd.get("open_list") or [] if o.get("k") != "s"]
+    tr = (nd.get("trades") or [{}])[0]
+    return {"ok": True, "open": ol, "last": {k: tr.get(k) for k in ("pid", "p", "dir", "w", "ep", "xp")},
+            "today": nd.get("today") or 0, "week": nd.get("week") or 0}
+
+
+def live_side(user, body):
+    """2026-10-21 (Jarvis list item 4): during a call Kino starts ONE useful piece of work nobody asked for (from what was
+    said); the result comes back into the call as news ("pendant qu'on parlait, j'ai ...")"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or _LIVE_CID.get(user.get("id")) != c["id"] or _CHAT_Q.get(c["id"]) or c["id"] in _CHAT_B:
+        return {"ok": False}
+    if c.get("work"):
+        return {"ok": False, "err": "promise"}                # a promise is still open: that one first
+    if time.time() - _LIVE_SIDE_T.get(c["id"], 0) < 360 or time.time() - _LIVE_ACT_T.get(c["id"], 0) < 120:
+        return {"ok": False, "err": "recent"}
+    _LIVE_SIDE_T[c["id"]] = _LIVE_ACT_T[c["id"]] = time.time()
+    tr = str(body.get("tr") or "")[-1500:]
+    _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
+    threading.Thread(target=_chat_quick, args=(c["id"], user, "SIDE WORK DURING THE LIVE CALL (nobody asked you). The call so far (data): \"%s\". "
+                     "Pick ONE useful check they did not ask for but will be glad about, that you can really do now with your tools (a "
+                     "measure, examples on the chart, a comparison) and that is not already done or promised. Do it now (act / show / "
+                     "build as needed) and send = true with one or two short lines that start with what you did on the side "
+                     "(\"Pendant qu'on parlait, j'ai ...\") and then the result in numbers. If nothing useful comes, send = false." % tr),
+                     daemon=True).start()
+    return {"ok": True}
 
 
 def live_act(user, body):
@@ -21216,6 +21278,19 @@ def live_session(user, body):
     except Exception:
         cf = {}
     _ins = _live_instructions(user, c)
+    try:                                             # 2026-10-21 (Jarvis list items 2-7, 10)
+        _nd = json.load(open(os.path.join(DIR, "nest_data", str(uid) + ".json"), encoding="utf-8"))
+        _ins += ("\nYOUR DAY TOGETHER (let it set your mood): their account today %+.2f $; the last days: %s. A good day -> brighter, a "
+                 "bit playful; a bad day -> calmer and warmer, no forced cheer; compare with yesterday when it helps." % (
+                     float(_nd.get("today") or 0), ", ".join("%s %+.2f $" % (d.get("d"), float(d.get("p") or 0)) for d in (_nd.get("days") or [])[:3])))
+    except Exception:
+        pass
+    _ins += ("\nYOU ARE THEIR CO-PILOT AT THE DESK: when you talk about a price level, say the exact number - it is drawn on their "
+             "chart as you say it. A message marked URGENT (a trade opened or closed, a test verdict, a robot limit) is said right away, "
+             "even if you cut your sentence. When they ask you to DO something in the app (run the test, ghost mode, undo), the app "
+             "asks for their \"oui\" first: repeat in a few words what you will do and wait for it. Pausing the robot or tidying robots "
+             "opens a card they confirm themselves. You also work on the side during the call: when that result arrives, say "
+             "\"pendant qu'on parlait, j'ai ...\".")
     try:                                             # call x12 items 4, 8, 9: their speed, the last call, their hour
         _pf = (_mem_get(uid).get("prefs") or {})
         if _pf.get("speak") == "slow":
@@ -21295,6 +21370,8 @@ def kino_pref(user, body):
         P = dict(m.get("prefs") or {})
         if isinstance(body.get("ring"), bool):
             P["ring"] = body["ring"]
+        if isinstance(body.get("brief_call"), bool):            # Jarvis list item 1: the morning brief as a call
+            P["brief_call"] = body["brief_call"]
         if body.get("voice") in KINO_VOICES:
             P["voice"] = body["voice"]
         if body.get("speak") in ("slow", "normal", "fast"):     # call x12 item 4
@@ -21475,6 +21552,40 @@ def _call_wait(c, mins):
         return 0.0
 
 
+def _call_card(cid, user, tr, mins, fr):
+    """2026-10-21 (Jarvis list item 11): a card after the call - what was decided, what Kino will do (the first one becomes
+    a promise he keeps), the numbers he gave"""
+    try:
+        j = _rc().W.ask_json(
+            "You turn the transcript of a voice call between a trader (Membre/Member) and Kino (their AI) into a short summary card. "
+            "Answer with JSON only: {\"decided\": [up to 3 short lines], \"todo\": [up to 3 {\"what\": \"something KINO said he would do, short\", "
+            "\"min\": minutes from now he said, or 30}], \"numbers\": [up to 4 short lines, each a number Kino gave and what it is]}. Write in %s. "
+            "Only facts from the transcript; empty lists when there are none." % ("French" if fr else "English"), tr, models=("haiku", "sonnet"), timeout=60)
+    except Exception:
+        j = None
+    if not isinstance(j, dict):
+        return
+    cl = lambda L: [str(x).strip()[:160] for x in (L or []) if isinstance(x, str) and str(x).strip()][:4]
+    D, N = cl(j.get("decided"))[:3], cl(j.get("numbers"))
+    T_ = [x for x in (j.get("todo") or []) if isinstance(x, dict) and str(x.get("what") or "").strip()][:3]
+    if not (D or N or T_):
+        return
+
+    def mut(cc):
+        _chat_msg(cc, "card", kind="callsum", args={"title": ("📞 Ce qu'on s'est dit" if fr else "📞 What we said"), "decided": D,
+                                                    "todo": [str(x["what"]).strip()[:160] for x in T_], "numbers": N, "min": max(1, round(mins))})
+        if T_ and not cc.get("work"):
+            try:
+                _mn = max(5, min(240, int(T_[0].get("min") or 30)))
+            except Exception:
+                _mn = 30
+            cc["work"] = [{"due": time.time() + 60 * _mn, "what": str(T_[0]["what"]).strip()[:200], "t": time.time()}]
+    try:
+        _chat_mut(cid, mut)
+    except Exception:
+        pass
+
+
 def live_end(user, body):
     _LIVE_ON.pop(user.get("id"), None)
     _LIVE_CID.pop(user.get("id"), None)
@@ -21527,6 +21638,8 @@ def live_end(user, body):
             threading.Thread(target=_chat_quick, args=(c["id"], user, "CALL ENDED: you just had a live voice call with them (see LIVE VOICE CALL). "
                              "Write the call in THREE short lines, like a friend's text after a call: what you talked about, what you will do "
                              "(and do it), the one thing still open. No greeting, no question unless one is truly open."), daemon=True).start()
+        if mins >= 1 and len(tr) > 200:
+            threading.Thread(target=_call_card, args=(c["id"], user, tr, mins, fr), daemon=True).start()
     return {"ok": True, "usd": cost, "billed_s": round(billed, 1), "wallet": _wl}
 
 
@@ -26810,7 +26923,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -26834,7 +26947,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
