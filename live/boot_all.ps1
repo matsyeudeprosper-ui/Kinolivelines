@@ -9,6 +9,18 @@ function Say($m) {
 }
 Say "boot_all run"
 
+# 2026-10-22: after a reboot OwlBoot (logon) and OwlWatchdog (5 min) fired in the same second and
+# two runs each saw "not running" and both started the manager, provisioner, notifier... One run at
+# a time: a second run that finds the lock taken just leaves; the next watchdog tick covers it.
+# A run that died holding the lock leaves it "abandoned" - that still counts as ours.
+$bootLock = New-Object System.Threading.Mutex($false, "Global\OwlBootAll")
+$haveLock = $false
+try { $haveLock = $bootLock.WaitOne(0) } catch [System.Threading.AbandonedMutexException] { $haveLock = $true }
+if (-not $haveLock) {
+    Say "another boot_all is running - skipped"
+    exit 0
+}
+
 function ProcRunning($match) {
     $p = Get-CimInstance Win32_Process |
         Where-Object { $_.CommandLine -like ("*" + $match + "*") }
@@ -361,3 +373,4 @@ if (-not (Test-Path $shot) -or ((Get-Date) - (Get-Item $shot).LastWriteTime).Tot
     try { Start-Process node -ArgumentList "review\landing_shots.mjs" -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden } catch { Say ("landing shots failed: " + $_) }
 }
 Say "boot_all done"
+$bootLock.ReleaseMutex()
