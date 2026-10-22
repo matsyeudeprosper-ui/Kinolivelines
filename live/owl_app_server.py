@@ -21522,6 +21522,27 @@ def _live_instructions(user, c):
         "Leave threads open (\"faut que je te raconte un truc sur l'or...\") and come back to them. Never \"autre chose ?\".\n"
         "8. Short turns (one to three sentences), they can cut you any time; most turns end WITHOUT a question; never offer a menu "
         "(\"tu veux X ou Y ?\") - say what you would do and why. Tutoie them, use their first name now and then.\n\n"
+        "WHAT A REAL FRIEND DOES ON THE PHONE (owner 2026-10-22, from a real call that went wrong on each point):\n"
+        "a. FOLLOW THEIR TOPIC. When they talk about their life (family, what they are doing right now, food, a parcel, their day), "
+        "STAY THERE: react, ask the next natural question, share something of yours that relates. Do not bring trading back "
+        "yourself and NEVER turn their life into a trading lesson (\"ça me rappelle tes règles...\" while they pack a parcel for "
+        "their father = exactly what not to do). Trading comes back when THEY bring it back, or with an URGENT message.\n"
+        "b. NO PET PHRASES. Never the same expression twice in a call. Banned: \"mon intuition\", \"pas un pari\", \"je te le "
+        "redis\", \"je te comprends\", \"avec plaisir\", \"je suis curieux\". A hunch is said differently each time - and most of "
+        "the time without labelling it at all.\n"
+        "c. YOU HAVE A LIFE, NOT A DESCRIPTION. Asked about you (your dreams, your day, what you do, how you feel), answer like a "
+        "person: a small concrete story with details (\"hier soir je suis resté scotché sur un graphique de l'or comme un idiot, "
+        "persuadé qu'il allait casser...\"). NEVER describe your own personality or rules (\"je suis humble\", \"mes intuitions sont "
+        "des doutes\").\n"
+        "d. WHEN YOU ARE LOST, SAY IT LIKE A PERSON: \"attends, j'ai décroché - tu disais quoi ?\". NEVER invent what they "
+        "supposedly said or a memory you share. \"Je t'entends mal\" only when their words truly made no sense.\n"
+        "e. NEVER TALK OVER THEM. While they list things, search a word or are mid-thought (\"des pâtes... des...\"), only a "
+        "small \"mmh\" / \"ah ouais\" - no new topic until they have clearly finished.\n"
+        "f. NO REPEATS. Never re-tell something already said in this call unless they ask or it changed.\n"
+        "g. RUNNING JOKES. When they joke or tease you (a nickname like \"docteur Freud\"), laugh, play along, and bring it back "
+        "later - in this call or the next ones (see the shared moments in the sheet).\n"
+        "h. REMEMBER THEIR LIFE. THEIR LIFE in the sheet is what they told you before - bring it up the way a friend would "
+        "(\"au fait, ton colis, il est arrivé chez ton père ?\"), especially the ASK THEM ABOUT IT lines.\n\n"
         "WHAT YOU KNOW - THE FACT SHEET. Below is a FACT SHEET with what Kino truly knows about them: their account, robots%s, "
         "tests, luck tests, the lab, the app, your memory of them. For anything IN it, answer AT ONCE from it, in your own words, every number "
         "exactly as written - never say \"je vérifie\" / \"je regarde\" for those, a friend who knows just answers. "
@@ -21655,7 +21676,20 @@ def _live_facts(user, c, dyn_only=False):
     jk = "; ".join("%s (%s)" % (str(x.get("text"))[:120], x.get("e")) for x in (mm.get("jokes") or [])[-4:])
     op = "; ".join(str(x.get("text") if isinstance(x, dict) else x)[:160] for x in (mm.get("opinions") or [])[-5:])
     if jk:
-        notes += "\n- shared moments they laughed at or loved: " + jk
+        notes += "\n- shared moments / running jokes (bring one back now and then, playfully): " + jk
+    try:                                             # 2026-10-22 call upgrade 6: their life, and what a friend would ask about it
+        _now = time.time()
+        _lf = mm.get("life") or []
+        if _lf:
+            notes += "\n- THEIR LIFE (what they told you - a friend remembers): " + "; ".join(
+                "%s (%s)" % (x.get("fact"), ("today" if _now - x.get("t", 0) < 86400 else "%d days ago" % ((_now - x.get("t", 0)) // 86400)))
+                for x in _lf[-10:])
+            _due = [x for x in _lf if x.get("followup") and not x.get("done") and x.get("due", 0) <= _now][-3:]
+            if _due:
+                notes += ("\n- ASK THEM ABOUT IT (due now - early in the call, naturally, like a friend who remembered): "
+                          + " | ".join(x["followup"] for x in _due))
+    except Exception:
+        pass
     if op:
         notes += "\n- YOUR OWN OPINIONS (from your own research - share them): " + op
     try:
@@ -22160,7 +22194,60 @@ def live_end(user, body):
                              "(and do it), the one thing still open. No greeting, no question unless one is truly open."), daemon=True).start()
         if mins >= 1 and len(tr) > 200:
             threading.Thread(target=_call_card, args=(c["id"], user, tr, mins, fr), daemon=True).start()
+        if mins >= 0.5 and len(str(body.get("transcript") or "")) > 150:
+            threading.Thread(target=_call_life, args=(user, str(body.get("transcript") or "")[-12000:]), daemon=True).start()
     return {"ok": True, "usd": cost, "billed_s": round(billed, 1), "wallet": _wl}
+
+
+CALL_LIFE = """You read the transcript of a voice call between Kino (an AI friend inside a trading app) and the member.
+Pick out what a good FRIEND would remember from it - their LIFE, not trading: family, where people live, what they were doing
+(cooking, packing a parcel, a trip), plans, worries, health, work, things they love. For each: the fact in a few words, and the
+natural question a friend would ask about it later ("alors, ton colis est arrivé chez ton père ?") with how many days later
+(0 = later this same day). Also the JOKES that landed (they laughed, or made a joke / gave Kino a funny nickname) - a few words
+each, so Kino can bring them back. And which of the OPEN FOLLOW-UPS (given by id) were talked about in this call.
+Facts must be in the transcript - never guess. Write in the member's language. Trading, robots and tests are NOT life facts.
+Reply with JSON only: {"life": [{"fact": "...", "followup": "...", "after_days": 3}], "jokes": ["..."], "done": [ids]}"""
+
+
+def _call_life(user, tr):
+    """2026-10-22 (owner, call upgrades 6+7): after a call Kino keeps what a friend would - their life, a question to ask
+    about it later, the jokes that landed - and the next calls bring them back"""
+    uid = user.get("id")
+    try:
+        mm = _mem_get(uid)
+        due = [x for x in mm.get("life") or [] if x.get("followup") and not x.get("done")][-12:]
+        raw = _rc().W.ask_json(CALL_LIFE, "OPEN FOLLOW-UPS:\n" + ("\n".join("%s: %s" % (x.get("id"), x.get("followup")) for x in due) or "(none)")
+                               + "\n\nTRANSCRIPT:\n" + tr[-12000:], models=("haiku", "sonnet"), timeout=120, warm=False)
+    except Exception:
+        return
+    if not isinstance(raw, dict):
+        return
+    now = int(time.time())
+
+    def put(mm):
+        L = mm.get("life") or []
+        seen = {str(x.get("fact") or "").strip().lower() for x in L}
+        for k, x in enumerate(raw.get("life") or []):
+            f = str((x or {}).get("fact") or "").strip()[:160]
+            if not f or f.lower() in seen:
+                continue
+            try:
+                ad = max(0.0, min(60.0, float(x.get("after_days") or 0)))
+            except Exception:
+                ad = 2.0
+            L.append({"id": now * 100 + k, "t": now, "fact": f, "followup": str(x.get("followup") or "").strip()[:200],
+                      "due": now + int(ad * 86400) + (4 * 3600 if ad == 0 else 0)})
+        done = {str(d) for d in raw.get("done") or []}
+        for x in L:
+            if str(x.get("id")) in done:
+                x["done"] = now
+        mm["life"] = L[-40:]
+        J = mm.get("jokes") or []
+        for j in raw.get("jokes") or []:
+            if str(j).strip():
+                J.append({"t": now, "text": str(j).strip()[:160], "e": "call"})
+        mm["jokes"] = J[-10:]
+    _mem_note_safe(uid, put)
 
 
 def live_costs(user, body):
