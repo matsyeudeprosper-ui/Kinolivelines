@@ -108,6 +108,28 @@ def summary(nets, trs, pfs):
             "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
 
 
+def pack_building():
+    """a market pack is being built (study/markets/_building.json, under 5 h old and its process alive)"""
+    f = os.path.join(HERE, "markets", "_building.json")
+    try:
+        b = json.load(open(f))
+    except Exception:
+        return False
+    if time.time() - float(b.get("t") or 0) > 5 * 3600:
+        return False
+    try:
+        import ctypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, int(b.get("pid") or 0))
+        if not h:
+            return False
+        code = ctypes.c_ulong()
+        ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code))
+        ctypes.windll.kernel32.CloseHandle(h)
+        return code.value == 259                             # STILL_ACTIVE
+    except Exception:
+        return True
+
+
 MAXN, ALLOW, ROOM_GB = 100, 5, 1.2         # pause line measured WITH our own ~1.3 GB held; when_free kills at 0.9
 JDIR = os.path.join(HERE, "luck")
 
@@ -179,6 +201,8 @@ def journal():
     while len(rows) < MAXN and beats() <= ALLOW and not hopeless():
         if sd in done:
             sd += 1; continue
+        while pack_building():                               # 2026-10-21: a member waits for a market pack - step aside
+            status("paused", rows, why="market pack"); time.sleep(60)
         while free_gb() < ROOM_GB:                            # live bots first: wait for memory between draws
             status("paused", rows, why="memory"); time.sleep(120)
         status("running", rows, why=None)

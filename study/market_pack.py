@@ -116,7 +116,15 @@ def build(sym, terminal=DEFAULT_TERMINAL, log=print):
     cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": 200.0}), drag=0.0, limits_live=1))
     opps, _bars = E.streams(cfg0, D)
     t0 = time.time()
-    states = parallel_states(d, [o["i"] for o in opps], WIN, log=log)
+    BUSY = os.path.join(HERE, "markets", "_building.json")      # the luck test pauses between draws while this exists
+    json.dump({"sym": sym, "pid": os.getpid(), "t": time.time()}, open(BUSY, "w"))
+    try:
+        states = parallel_states(d, [o["i"] for o in opps], WIN, log=log)
+    finally:
+        try:
+            os.remove(BUSY)
+        except OSError:
+            pass
     import pickle
     warm_meta = json.load(open(os.path.join(d, "warm.json")))
     pickle.dump({"fingerprint": K.fingerprint(warm_meta), "bars_sha": meta["sha256"], "n_bars": len(D),
