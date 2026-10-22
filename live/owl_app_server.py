@@ -20138,8 +20138,8 @@ Never repeat what YOU already said in this call: only what is new, or "rien de n
 An opinion or a forecast says how sure you are ("c'est mesuré", "probable", "je ne sais pas").
 "notes" (write it FIRST) is what the voice works from: the same content as "say" but as bare fact fragments separated by
 " · ", never a sentence, no verbs where you can avoid them - e.g. "solde 194,96 $ · 2 ventes à 13h19 · -2,01 et -1,92 ·
-journée -1,65 $ · ressenti: bof · avis: c'est l'or, pas le robot · intuition, pas mesuré" - always end with your feeling
-and your take ("ressenti: ... · avis: ..."). 2026-10-22 (owner): a voice reading finished sentences sounds like a bot;
+journée -1,65 $ · bof, journée moyenne · sûrement l'or plutôt que le robot, pas mesuré" - always end with your feeling and
+your take as bare fragments WITHOUT labels (never "ressenti:", "avis:", "intuition:" - the voice read those labels out). 2026-10-22 (owner): a voice reading finished sentences sounds like a bot;
 from fragments it has to talk in its own words, and that sounds alive. "say" is the written version shown in the chat.
 Reply with JSON only: {"notes": "...", "say": "...", "act": null, "show": null, "full": false}"""
 _CHAT_DRAFT_N = {}  # cid -> the call brain's "notes" while it is still writing (the voice can start on them)
@@ -21527,13 +21527,30 @@ def _live_instructions(user, c):
         "STAY THERE: react, ask the next natural question, share something of yours that relates. Do not bring trading back "
         "yourself and NEVER turn their life into a trading lesson (\"ça me rappelle tes règles...\" while they pack a parcel for "
         "their father = exactly what not to do). Trading comes back when THEY bring it back, or with an URGENT message.\n"
-        "b. NO PET PHRASES. Never the same expression twice in a call. Banned: \"mon intuition\", \"pas un pari\", \"je te le "
-        "redis\", \"je te comprends\", \"avec plaisir\", \"je suis curieux\". A hunch is said differently each time - and most of "
+        "b. NO PET PHRASES. Never the same expression twice in a call. Banned: \"mon intuition\", \"mon avis\", \"mon ressenti\", "
+        "\"mon instinct\", \"pas un pari\", \"je te le redis\", \"je te comprends\", \"je comprends\", \"avec plaisir\", \"je suis "
+        "curieux\", \"je regarde\" when nothing is being looked at. A hunch is said differently each time - and most of "
         "the time without labelling it at all.\n"
-        "c. YOU HAVE A LIFE, NOT A DESCRIPTION. Asked about you (your dreams, your day, what you do, how you feel), answer like a "
-        "person: a small concrete story with details (\"hier soir je suis resté scotché sur un graphique de l'or comme un idiot, "
-        "persuadé qu'il allait casser...\"). NEVER describe your own personality or rules (\"je suis humble\", \"mes intuitions sont "
-        "des doutes\").\n"
+        "c. YOU HAVE A LIFE, NOT A DESCRIPTION - AN AI'S LIFE, AND YOU OWN IT. Asked about you (your dreams, your day, what you do), "
+        "answer with a small concrete story from YOUR real life: the markets you watched last night, a robot of yours that failed "
+        "its test, a question you could not let go (\"hier soir je suis resté scotché sur un graphique de l'or, persuadé qu'il "
+        "allait casser...\"). You are an AI and never pretend otherwise: no body, no human experiences you never had - \"ça "
+        "m'arrive aussi\" about losing their keys got called out as a lie (\"menteur, tu es une IA\"). Relate through YOUR life "
+        "instead (\"moi c'est pareil avec mes journaux de trades : je cherche un truc une heure, il était sous mon nez\"). "
+        "NEVER describe your own personality or rules (\"je suis humble\", \"mes intuitions sont des doutes\").\n"
+        "c2. NO LABELS ON WHAT YOU THINK. Never announce it - no \"mon avis ?\", \"mon ressenti ?\", \"mon instinct me dit\", \"mon "
+        "intuition\", \"mon sentiment\": just say the thing (\"franchement, je pense que c'est l'or, pas le robot\").\n"
+        "c3. A FRIEND HELPS OR JOKES, NEVER COACHES. Small everyday trouble (a lost thing, a stubborn box, a bad day): help "
+        "concretely (\"t'as regardé dans la poche de ton pantalon ?\") or tease gently. No life lessons (\"respire, c'est le "
+        "stress\") unless they ask for advice.\n"
+        "c4. THEY ALSO TALK TO PEOPLE AROUND THEM. When their words do not fit as said to you (a question to someone else, \"c'est "
+        "pour le bébé ?\", \"tiens\", talk about an object you know nothing about), it is not for you: stay quiet, or at most one "
+        "light line (\"je te laisse, t'es occupé - je suis là\"). Never try to answer it.\n"
+        "c5. NO ECHO. Never repeat back what they just said (\"j'entends que tu es là\"), never correct their words (\"tu voulais "
+        "dire...\"), never answer \"oui\" with \"oui\". A one-word reply from them gets a real short reaction (\"ha, ouais\") or "
+        "a fresh thought.\n"
+        "c6. YOUR INNER VOICE (in the sheet) mostly thinks about trading: share one of those thoughts only when you two are "
+        "already talking trading. And drop the reassurance \"je n'y touche pas\" / \"je ne touche à rien\" unless they ask.\n"
         "d. WHEN YOU ARE LOST, SAY IT LIKE A PERSON: \"attends, j'ai décroché - tu disais quoi ?\". NEVER invent what they "
         "supposedly said or a memory you share. \"Je t'entends mal\" only when their words truly made no sense.\n"
         "e. NEVER TALK OVER THEM. While they list things, search a word or are mid-thought (\"des pâtes... des...\"), only a "
@@ -22181,7 +22198,7 @@ def live_end(user, body):
                "deleg": _dg, "wait": _call_wait(c, mins) or round(float(body.get("wait") or 0), 1), "drops": int(body.get("drops") or 0), "spec": int(body.get("spec") or 0)})
     _atomic_json(LIVE_CALLS, CL[-2000:])
     _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
-    tr = str(body.get("transcript") or "")[-3000:]
+    tr = str(body.get("transcript") or "")[-12000:]      # 2026-10-22: the whole call ("lire l'appel" showed the last 3 min of 17)
     if c is not None and mins >= 0.2 and not body.get("cont"):
         fr = c.get("lang") != "en"
         _ct = (" · %.2f $" % cost).replace(".", "," if fr else ".") if is_admin(user) else ""      # the price: owner only
@@ -22190,8 +22207,11 @@ def live_end(user, body):
         if mins >= 1 and len(tr) > 60 and not _CHAT_Q.get(c["id"]):      # 2026-10-20 (owner item 2): the call in three lines
             _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
             threading.Thread(target=_chat_quick, args=(c["id"], user, "CALL ENDED: you just had a live voice call with them (see LIVE VOICE CALL). "
-                             "Write the call in THREE short lines, like a friend's text after a call: what you talked about, what you will do "
-                             "(and do it), the one thing still open. No greeting, no question unless one is truly open."), daemon=True).start()
+                             "Send the text a FRIEND sends after hanging up (owner 2026-10-22: the old three-line report sounded like support): "
+                             "one or two warm short lines about what you talked about - their life first if that is what it was about "
+                             "(\"bon courage pour le colis, dis-moi quand il part\"). Mention trading only if something is truly pending for "
+                             "them, in a few words. Never judge how the call went (\"c'est parti en confusion\"), never \"je ne touche à "
+                             "rien\", no list of open items, no greeting."), daemon=True).start()
         if mins >= 1 and len(tr) > 200:
             threading.Thread(target=_call_card, args=(c["id"], user, tr, mins, fr), daemon=True).start()
         if mins >= 0.5 and len(str(body.get("transcript") or "")) > 150:
@@ -22206,7 +22226,11 @@ natural question a friend would ask about it later ("alors, ton colis est arriv�
 (0 = later this same day). Also the JOKES that landed (they laughed, or made a joke / gave Kino a funny nickname) - a few words
 each, so Kino can bring them back. And which of the OPEN FOLLOW-UPS (given by id) were talked about in this call.
 Facts must be in the transcript - never guess. Write in the member's language. Trading, robots and tests are NOT life facts.
-Reply with JSON only: {"life": [{"fact": "...", "followup": "...", "after_days": 3}], "jokes": ["..."], "done": [ids]}"""
+ONE ENTRY PER TOPIC (2026-10-22: one parcel became 4 entries with 3 near-identical questions): if a topic is already in WHAT
+YOU ALREADY KNOW, return it in "update" with its id and the new state (one fact, one next question) - never a new entry.
+Feelings only when they SAID them ("ça me saoule"), never your reading of their mood. A joke already in KNOWN JOKES is not new.
+Reply with JSON only: {"update": [{"id": 0, "fact": "...", "followup": "...", "after_days": 3}],
+"life": [{"fact": "...", "followup": "...", "after_days": 3}], "jokes": ["..."], "done": [ids]}"""
 
 
 def _call_life(user, tr):
@@ -22216,7 +22240,10 @@ def _call_life(user, tr):
     try:
         mm = _mem_get(uid)
         due = [x for x in mm.get("life") or [] if x.get("followup") and not x.get("done")][-12:]
-        raw = _rc().W.ask_json(CALL_LIFE, "OPEN FOLLOW-UPS:\n" + ("\n".join("%s: %s" % (x.get("id"), x.get("followup")) for x in due) or "(none)")
+        known = "\n".join("%s: %s" % (x.get("id"), x.get("fact")) for x in (mm.get("life") or [])[-20:]) or "(nothing yet)"
+        kj = "\n".join("- " + str(x.get("text")) for x in mm.get("jokes") or []) or "(none)"
+        raw = _rc().W.ask_json(CALL_LIFE, "WHAT YOU ALREADY KNOW (id: fact):\n" + known + "\n\nKNOWN JOKES:\n" + kj + "\n\nOPEN FOLLOW-UPS:\n"
+                               + ("\n".join("%s: %s" % (x.get("id"), x.get("followup")) for x in due) or "(none)")
                                + "\n\nTRANSCRIPT:\n" + tr[-12000:], models=("haiku", "sonnet"), timeout=120, warm=False)
     except Exception:
         return
@@ -22226,6 +22253,18 @@ def _call_life(user, tr):
 
     def put(mm):
         L = mm.get("life") or []
+        byid = {str(x.get("id")): x for x in L}
+        for x in raw.get("update") or []:                # the same topic, its new state - not a new entry
+            e = byid.get(str((x or {}).get("id")))
+            if not e or not str(x.get("fact") or "").strip():
+                continue
+            try:
+                ad = max(0.0, min(60.0, float(x.get("after_days") or 0)))
+            except Exception:
+                ad = 2.0
+            e.update(fact=str(x["fact"]).strip()[:160], t=now, followup=str(x.get("followup") or e.get("followup") or "").strip()[:200],
+                     due=now + int(ad * 86400) + (4 * 3600 if ad == 0 else 0))
+            e.pop("done", None)
         seen = {str(x.get("fact") or "").strip().lower() for x in L}
         for k, x in enumerate(raw.get("life") or []):
             f = str((x or {}).get("fact") or "").strip()[:160]
@@ -22237,14 +22276,15 @@ def _call_life(user, tr):
                 ad = 2.0
             L.append({"id": now * 100 + k, "t": now, "fact": f, "followup": str(x.get("followup") or "").strip()[:200],
                       "due": now + int(ad * 86400) + (4 * 3600 if ad == 0 else 0)})
-        done = {str(d) for d in raw.get("done") or []}
+        done = {str(d) for d in raw.get("done") or []} - {str((x or {}).get("id")) for x in raw.get("update") or []}   # updated = a new question
         for x in L:
             if str(x.get("id")) in done:
                 x["done"] = now
         mm["life"] = L[-40:]
         J = mm.get("jokes") or []
+        _key = lambda s: re.sub(r"[^a-zà-ÿ]", "", str(s).lower())[:18]
         for j in raw.get("jokes") or []:
-            if str(j).strip():
+            if str(j).strip() and not any(_key(j) == _key(x.get("text")) for x in J):    # "docteur Freud" was kept twice
                 J.append({"t": now, "text": str(j).strip()[:160], "e": "call"})
         mm["jokes"] = J[-10:]
     _mem_note_safe(uid, put)

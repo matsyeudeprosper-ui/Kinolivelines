@@ -1728,7 +1728,7 @@ function lvEv(e){if(!LV)return;const t=e.type||'';try{const G=(window.LVLOG=wind
  if(t==='error')LV&&(LV.lastErr=JSON.stringify(e.error||e).slice(0,200));}
 /* 2026-10-22 (owner: "when it reads it sounds unnatural, you can sense a bot; when it uses its own words it's more alive"):
    the voice never gets finished sentences - only fact fragments, which it has to say in its own words */
-const LVF='FACTS from your brain - bare fragments, NOT a script: never read them out as they are. Talk like their friend, not a helpdesk: react first (a feeling), then say it in your own spoken words, then your take or hunch (ressenti/avis), short, like on the phone; round a number when that sounds more natural. ';
+const LVF='FACTS from your brain - bare fragments, NOT a script: never read them out as they are. Talk like their friend, not a helpdesk: react first (a feeling), then say it in your own spoken words, then your take or hunch - never announced with a label like "mon avis" / "mon ressenti", just said - short, like on the phone; round a number when that sounds more natural. ';
 function lvFrag(t){return String(t||'').replace(/\*\*/g,'').split(/\s*(?:\n+|[.!?…;:,](?=\s|$))\s*/).map(x=>x.trim()).filter(Boolean).join(' · ');}
 async function lvAsk(id,q){LV.busy++;LV.deleg=(LV.deleg||0)+1;lvSend({type:'session.thinking.append',event_id:'th_'+id,delegation_id:id,content:(EN?'Kino’s brain is checking: ':'Le cerveau de Kino vérifie : ')+q.slice(0,300)});
  const t0=Date.now()/1000;let ok=false;
@@ -2009,7 +2009,10 @@ function lvTics(){if(!LV)return;const K=(LV.trAll||[]).concat(LV.tr||[]).concat(
  LV.ticw=LV.ticw||{};const bad=Object.keys(cnt).filter(g=>cnt[g]>=3&&!LV.ticw[g]).slice(0,3);if(!bad.length)return;bad.forEach(g=>LV.ticw[g]=1);
  lvSend({type:'session.instructions.append',event_id:'tic_'+Date.now(),delegation_id:null,content:'YOU KEEP SAYING '+bad.map(g=>'"'+g+'"').join(', ')+' in this call - it sounds like a bot. Drop it: say it differently, or not at all.'});}
 function lvMidThought(){const c=String((LV&&LV.cur)||'').trim().toLowerCase();return /(\.\.\.|…|,|\b(des|de|du|et|un|une|le|la|les|mais|parce|que|qui|avec|pour|euh|ben|genre|the|and|a|of|to|with|um|uh))$/.test(c);}
-function lvOutDone(){if(!LV)return;const t=(LV.out||'').slice(LV.om||0);LV.om=(LV.out||'').length;try{lvLevels(t);lvSays(t);lvTics();}catch(e){}if(!t.trim()||Date.now()-(LV.dg||0)<9000||LV.busy||Date.now()-(LV.newsT||0)<30000||Date.now()-(LV.actT||0)<120000)return;LV.actT=Date.now();
+function lvOutDone(){if(!LV)return;const t=(LV.out||'').slice(LV.om||0);LV.om=(LV.out||'').length;try{lvLevels(t);lvSays(t);lvTics();}catch(e){}
+ // 2026-10-22 (call review item 7): "Attends. Ouais. Je regarde." with nothing being looked at - empty filler, not a promise
+ if(t.trim().length<45&&/\bje (regarde|vérifie|verifie|cherche|check)\b/i.test(t)&&Date.now()-(LV.dg||0)>9000&&!LV.busy){
+  lvSend({type:'session.instructions.append',event_id:'fill_'+Date.now(),delegation_id:null,content:'You just said "'+t.trim().slice(0,60)+'" but nothing is being looked up - empty filler that sounds like a bot. Never say "je regarde / je vérifie" unless you really delegate something at that moment.'});return;}if(!t.trim()||Date.now()-(LV.dg||0)<9000||LV.busy||Date.now()-(LV.newsT||0)<30000||Date.now()-(LV.actT||0)<120000)return;LV.actT=Date.now();
  if(/\bje (lance|te lance|te montre|vais te montrer|teste|vais tester|regarde|vais regarder|v\u00e9rifie|creuse|te pr\u00e9pare|te sors|mets)\b/i.test(t)){LV.dg=Date.now();post('live_act',{id:CID,said:t.slice(-400)}).catch(()=>{});}}
 async function lvFacts(){if(!LV||!CID)return;let j=null;try{j=await post('live_facts',{id:CID});}catch(e){}if(!LV||!j||!j.ok||!j.dyn)return;
  if(LV.dyn==null){LV.dyn=j.dyn;return;}if(j.dyn===LV.dyn)return;LV.dyn=j.dyn;
