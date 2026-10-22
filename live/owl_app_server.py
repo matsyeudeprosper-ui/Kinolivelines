@@ -509,7 +509,7 @@ FUNNEL_FILE = os.path.join(DIR, "owl_funnel.json")
 FUNNEL_STEPS = ("landing", "offers", "choose", "pay_created", "paid")
 FUNNEL_CLIENT = ("landing", "offers", "choose")
 # 2026-10-11 (owner): what visitors do on the landing (anonymous, one per session)
-LANDING_EVENTS = ("proof_seen", "proof_switch", "proof_open", "demo_open", "tg_open", "faq_more", "calc_use")
+LANDING_EVENTS = ("proof_seen", "proof_switch", "proof_open", "demo_open", "tg_open", "faq_more", "calc_use", "kino_pitch")
 FN_JS = "function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}}"
 _fn_lock = threading.Lock()
 
@@ -15089,6 +15089,42 @@ def _chat_msg(c, role, **kw):
 
 def _chat_pieces(user):
     return builder_payload(user, is_admin(user)).get("pieces") or []
+
+
+def kino_pitch(user):
+    """2026-10-21 (owner: "a complete acquisition job"): what the Kino page needs - the price, the call minutes included, whether
+    this member already has Kino, and the system's REAL counts (robots built, tests on real prices, ideas measured, markets)"""
+    import glob as _gp
+    st = {}
+    try:
+        st["robots"] = len([r for r in robot_reg().get("robots") or [] if r.get("id") != "owl"])
+    except Exception:
+        pass
+    try:
+        st["tests"] = len(_gp.glob(os.path.join(DIR, "robots", "results", "*.json")))
+    except Exception:
+        pass
+    try:
+        F = json.load(open(os.path.join(DIR, "robots", "kino_factory.json"), encoding="utf-8"))
+        Q = json.load(open(os.path.join(DIR, "robots", "kino_inner.json"), encoding="utf-8")).get("questions") or []
+        st["ideas"] = len(F.get("tried") or {}) + len([q for q in Q if q.get("status") == "answered"])
+    except Exception:
+        pass
+    try:
+        st["markets"] = 1 + len(_gp.glob(os.path.join(os.path.dirname(DIR), "study", "markets", "*", "bars.npz")))
+    except Exception:
+        pass
+    uid = user.get("id")
+    has_ = bool(is_admin(user) or has(uid, "strategy")) and not user.get("public")
+    until = None
+    try:
+        u_ = float(ent(uid).get("strategy_until") or 0)
+        if u_ > time.time():
+            until = time.strftime("%d/%m", time.localtime(u_))
+    except Exception:
+        pass
+    return {"ok": True, "usd": PACKAGES["strategy"]["usd"], "days": PACKAGES["strategy"]["days"], "included_min": voice_offer().get("included_min"),
+            "has": has_, "until": until, "public": bool(user.get("public")), "stats": st}
 
 
 def kino_day(user):
@@ -29730,15 +29766,21 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps(_KM.load(), ensure_ascii=False), "application/json")
         elif sub in ("kinoday", "kino_day"):
             if not ((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public")):
-                self.send_response(302); self.send_header("Location", "/%s/robots" % parts[0]); self.end_headers()
+                self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers()
             elif sub == "kinoday":
                 self._send(open(os.path.join(DIR, "owl_kinoday_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
                 self._send(json.dumps(kino_day(user), ensure_ascii=False), "application/json")
+        elif sub in ("decouvrir-kino", "kino_pitch"):
+            if sub == "decouvrir-kino":
+                fn_count("kino_pitch")
+                self._send(open(os.path.join(DIR, "owl_kino_sales_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                self._send(json.dumps(kino_pitch(user), ensure_ascii=False), "application/json")
         elif sub in ("kino", "kino_data"):
             _okk = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
             if not _okk:
-                self.send_response(302); self.send_header("Location", "/%s/robots" % parts[0]); self.end_headers()
+                self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers()
             elif sub == "kino":
                 self._send(open(os.path.join(DIR, "owl_kino_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
@@ -29824,7 +29866,7 @@ class H(BaseHTTPRequestHandler):
             _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
             if sub == "atelier":
                 if not _ok:
-                    self.send_response(302); self.send_header("Location", "/%s/robots" % parts[0]); self.end_headers(); return
+                    self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers(); return
                 self._send(open(os.path.join(DIR, "owl_atelier_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             elif not _ok:
                 self._send(json.dumps({"err": "strategy"}), "application/json")

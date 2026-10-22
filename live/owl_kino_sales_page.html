@@ -1,0 +1,406 @@
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b12">
+<title>Découvrir Kino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-10-21 (owner: "a complete acquisition job - a dedicated page that shows Kino at work and gives every reason to take
+   the plan; professional, premium, modern; sell it strong"). Same tokens as the Atelier. Data: kino_pitch; buy: POST buy
+   pkg=strategy (NOWPayments invoice, the IPN grants Stratégie). Never a promise of gains. */
+:root{--bg:#070b12;--surface:#0f1621;--surface2:#141d2b;--surface3:#1b2638;--border:#1c2737;--border2:#2a394d;
+ --text:#eef3f8;--text2:#c9d5e1;--muted:#8a9bb0;--muted2:#a9b8c8;--accent:#3b82f6;--accent2:#6d5cf6;--accent-soft:#8fc6ff;
+ --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--warn:#e8c55a;--violet:#a78bfa;--violet-soft:#c4b5fd;--r:20px}
+:root[data-theme="light"]{--bg:#f4f7fb;--surface:#fff;--surface2:#f7f9fc;--surface3:#eef2f7;--border:#e1e7ef;--border2:#cfd8e3;
+ --text:#0e1520;--text2:#2b3745;--muted:#64748b;--muted2:#4b5868}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.glow{position:absolute;inset:0 0 auto 0;height:900px;pointer-events:none;z-index:0;overflow:hidden}
+.glow:before,.glow:after{content:"";position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+.glow:before{width:520px;height:520px;left:-160px;top:-120px;background:radial-gradient(circle,rgba(109,92,246,.55),transparent 65%)}
+.glow:after{width:560px;height:560px;right:-200px;top:40px;background:radial-gradient(circle,rgba(59,130,246,.45),transparent 65%)}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 16px}
+/* top bar */
+.top{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid transparent;transition:border-color .2s}
+.top.sc{border-bottom-color:var(--border)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:62px;padding-top:env(safe-area-inset-top,0px)}
+.back{width:40px;height:40px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);display:grid;place-items:center;color:var(--text2);text-decoration:none;flex:none}
+.back svg{width:18px;height:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}
+.brand img{width:30px;height:30px;border-radius:9px}
+.top .sp{flex:1}
+.pill{border:0;border-radius:999px;padding:10px 16px;font:700 .88rem Inter,system-ui,sans-serif;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;text-decoration:none;white-space:nowrap;box-shadow:0 8px 24px rgba(91,99,246,.35)}
+/* hero */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;padding:54px 0 40px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid rgba(167,139,250,.35);background:rgba(167,139,250,.08);color:var(--violet-soft);font:600 .8rem Inter,system-ui,sans-serif}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px rgba(46,204,113,.18);animation:blink 2s infinite}
+@keyframes blink{50%{opacity:.35}}
+h1{font-size:clamp(2.1rem,5.4vw,3.6rem);line-height:1.04;letter-spacing:-.035em;margin:18px 0 16px;font-weight:900}
+h1 .g{background:linear-gradient(120deg,#8fc6ff 0%,#a78bfa 55%,#c4b5fd 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:1.08rem;line-height:1.6;color:var(--text2);margin:0 0 26px;max-width:540px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:16px;padding:16px 22px;font:800 1rem Inter,system-ui,sans-serif;text-decoration:none;cursor:pointer;border:0;transition:transform .15s,box-shadow .2s}
+.btn:active{transform:scale(.98)}
+.btn.pri{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 14px 40px rgba(91,99,246,.42)}
+.btn.pri:hover{box-shadow:0 18px 50px rgba(91,99,246,.55)}
+.btn.sec{color:var(--text);background:var(--surface);border:1px solid var(--border2)}
+.btn svg{width:18px;height:18px}
+.trust{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;color:var(--muted2);font-size:.86rem}
+.trust span{display:inline-flex;align-items:center;gap:7px}
+.trust svg{width:16px;height:16px;color:var(--up)}
+/* phone demo */
+.phone{position:relative;width:min(370px,100%);margin:0 auto;border-radius:42px;padding:12px;background:linear-gradient(160deg,#243149,#0d131d);box-shadow:0 40px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08)}
+.phone:before{content:"";position:absolute;inset:-24px 0;border-radius:60px;background:radial-gradient(60% 50% at 50% 40%,rgba(109,92,246,.35),transparent 70%);z-index:-1;filter:blur(20px)}
+.scr{border-radius:32px;overflow:hidden;background:#0b1119;height:600px;display:flex;flex-direction:column}
+.sh{display:flex;align-items:center;gap:10px;padding:16px 16px 12px;border-bottom:1px solid #1b2636}
+.sh img{width:34px;height:34px;border-radius:50%}
+.sh b{display:block;font-size:.95rem}.sh small{color:#4ade80;font-size:.74rem;font-weight:600}
+.sh .lab{margin-left:auto;font-size:.68rem;font-weight:700;color:#8a9bb0;border:1px solid #2a394d;border-radius:999px;padding:4px 8px;letter-spacing:.04em;text-transform:uppercase}
+.feed{flex:1;overflow:hidden;padding:14px 12px;display:flex;flex-direction:column;gap:9px;justify-content:flex-end}
+.m{max-width:84%;padding:10px 13px;border-radius:18px;font-size:.86rem;line-height:1.42;animation:pop .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}}
+.m.u{align-self:flex-end;background:#2563eb;color:#fff;border-bottom-right-radius:6px}
+.m.k{align-self:flex-start;background:#162132;color:#e2e8f0;border-bottom-left-radius:6px}
+.m.c{align-self:stretch;max-width:100%;background:#111a28;border:1px solid #223047;border-radius:16px;padding:12px}
+.m.c h6{margin:0 0 6px;font-size:.72rem;color:#8a9bb0;text-transform:uppercase;letter-spacing:.06em}
+.m.c .big{font-size:1.4rem;font-weight:900;color:#4ade80}.m.c .row{display:flex;justify-content:space-between;font-size:.78rem;color:#a9b8c8;margin-top:4px}
+.bar{height:7px;border-radius:9px;background:#1f2b3d;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#3b82f6,#a78bfa);transition:width 1.6s ease}
+.typing{align-self:flex-start;background:#162132;border-radius:18px;padding:12px 14px;display:flex;gap:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:#8a9bb0;animation:dot 1.2s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.sbar{display:flex;gap:8px;padding:10px 12px 16px;border-top:1px solid #1b2636}
+.sbar span{flex:1;border-radius:999px;background:#131c29;border:1px solid #223047;color:#5b6b80;font-size:.8rem;padding:10px 14px}
+.sbar b{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6d5cf6);display:grid;place-items:center}
+.sbar svg{width:16px;height:16px;color:#fff}
+.demo-note{text-align:center;color:var(--muted);font-size:.76rem;margin-top:14px}
+/* sections */
+section{padding:64px 0}
+.kick{color:var(--accent-soft);font:700 .8rem Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+h2{font-size:clamp(1.6rem,3.6vw,2.4rem);line-height:1.12;letter-spacing:-.025em;margin:0 0 14px;font-weight:850}
+.sub{color:var(--text2);font-size:1.02rem;line-height:1.6;max-width:640px;margin:0}
+.center{text-align:center}.center .sub{margin:0 auto}
+/* numbers */
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:6px}
+.num{border:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--surface2));border-radius:var(--r);padding:20px 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.num b{display:block;font-size:2rem;font-weight:900;letter-spacing:-.03em;background:linear-gradient(120deg,#fff,#a9c7ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+:root[data-theme="light"] .num b{background:linear-gradient(120deg,#0e1520,#3b5bdb);-webkit-background-clip:text;background-clip:text}
+.num span{color:var(--muted2);font-size:.86rem;line-height:1.35;display:block;margin-top:4px}
+/* features */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}
+.f{position:relative;border:1px solid var(--border);background:var(--surface);border-radius:var(--r);padding:22px;overflow:hidden;transition:transform .2s,border-color .2s}
+.f:hover{transform:translateY(-3px);border-color:var(--border2)}
+.f .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(59,130,246,.18),rgba(167,139,250,.18));border:1px solid rgba(143,198,255,.22);margin-bottom:14px}
+.f .ic svg{width:22px;height:22px;color:var(--accent-soft)}
+.f h3{margin:0 0 7px;font-size:1.06rem;letter-spacing:-.01em}
+.f p{margin:0;color:var(--muted2);font-size:.92rem;line-height:1.55}
+/* night timeline */
+.night{border:1px solid var(--border);border-radius:28px;background:radial-gradient(120% 100% at 100% 0%,rgba(109,92,246,.16),transparent 55%),var(--surface);padding:34px;margin-top:28px}
+.tl{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:22px;position:relative}
+.tl:before{content:"";position:absolute;left:4%;right:4%;top:22px;height:2px;background:linear-gradient(90deg,var(--accent),var(--violet));opacity:.4}
+.st{position:relative}
+.st .h{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:2px solid var(--accent);font:800 .8rem Inter,system-ui,sans-serif;color:var(--accent-soft);position:relative;z-index:1}
+.st:nth-child(3) .h,.st:nth-child(4) .h{border-color:var(--violet);color:var(--violet-soft)}
+.st h4{margin:12px 0 5px;font-size:.98rem}.st p{margin:0;color:var(--muted2);font-size:.88rem;line-height:1.5}
+/* truth */
+.truth{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.rules{display:flex;flex-direction:column;gap:12px}
+.rule{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px 18px}
+.rule b.n{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(46,204,113,.12);color:var(--up-soft);font-weight:800}
+.rule h4{margin:2px 0 4px;font-size:.98rem}.rule p{margin:0;color:var(--muted2);font-size:.88rem;line-height:1.5}
+/* compare */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+.col{border-radius:24px;padding:24px;border:1px solid var(--border);background:var(--surface)}
+.col.k{border-color:rgba(143,198,255,.35);background:linear-gradient(170deg,rgba(59,130,246,.10),rgba(109,92,246,.08)),var(--surface);box-shadow:0 20px 60px rgba(59,130,246,.12)}
+.col h3{margin:0 0 14px;font-size:1.08rem;display:flex;align-items:center;gap:10px}
+.col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+.col li{display:flex;gap:10px;font-size:.93rem;line-height:1.45;color:var(--text2)}
+.col li svg{flex:none;width:18px;height:18px;margin-top:2px}
+.col.s li svg{color:var(--down)}.col.k li svg{color:var(--up)}
+/* price */
+.price{max-width:560px;margin:30px auto 0;border-radius:30px;padding:2px;background:linear-gradient(135deg,rgba(59,130,246,.9),rgba(167,139,250,.9))}
+.pin{border-radius:28px;background:var(--surface);padding:32px 28px}
+.tag{display:inline-block;font:800 .74rem Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:999px;padding:6px 12px}
+.pin h3{font-size:1.5rem;margin:14px 0 4px;letter-spacing:-.02em}
+.amt{display:flex;align-items:baseline;gap:8px;margin:12px 0 4px}.amt b{font-size:3.2rem;font-weight:900;letter-spacing:-.04em}.amt span{color:var(--muted2);font-weight:600}
+.per{color:var(--muted);font-size:.88rem;margin-bottom:20px}
+.inc{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:11px}
+.inc li{display:flex;gap:11px;font-size:.95rem;color:var(--text2);line-height:1.45}.inc svg{flex:none;width:19px;height:19px;color:var(--up);margin-top:1px}
+.pin .btn{width:100%}
+.fine{color:var(--muted);font-size:.78rem;line-height:1.5;margin-top:14px;text-align:center}
+.have{display:none;margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);color:var(--up-soft);font-size:.9rem;text-align:center}
+/* faq */
+.faq{max-width:760px;margin:26px auto 0;display:flex;flex-direction:column;gap:10px}
+details{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:0 18px}
+summary{list-style:none;cursor:pointer;padding:18px 0;font-weight:700;font-size:.98rem;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";color:var(--accent-soft);font-size:1.3rem;line-height:1;transition:transform .2s}
+details[open] summary:after{transform:rotate(45deg)}
+details p{margin:0 0 18px;color:var(--muted2);font-size:.93rem;line-height:1.6}
+/* final */
+.final{margin:20px 0 40px;border-radius:32px;padding:46px 28px;text-align:center;background:radial-gradient(90% 120% at 50% 0%,rgba(109,92,246,.35),transparent 60%),linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--border2)}
+.final img{width:64px;height:64px;border-radius:18px;margin-bottom:14px;box-shadow:0 14px 40px rgba(109,92,246,.45)}
+.final h2{margin-bottom:10px}.final .sub{margin:0 auto 24px}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);transform:translateY(110%);transition:transform .3s}
+.dock.on{transform:none}.dock .btn{width:100%;padding:15px}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}.reveal.in{opacity:1;transform:none}
+footer{color:var(--muted);font-size:.78rem;text-align:center;padding:10px 0 90px;line-height:1.6}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:34px;padding-top:30px}.grid{grid-template-columns:1fr 1fr}.nums{grid-template-columns:1fr 1fr}.truth{grid-template-columns:1fr}.tl{grid-template-columns:1fr 1fr}.tl:before{display:none}}
+@media(max-width:600px){section{padding:46px 0}.grid,.cmp{grid-template-columns:1fr}.night{padding:24px 20px}.pin{padding:26px 20px}.scr{height:540px}.top .pill{display:none}.amt b{font-size:2.8rem}.lead{font-size:1rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+ <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18 9 12l6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+ <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-7-7-1z" fill="currentColor"/></symbol>
+ <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+ <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/><circle cx="9" cy="15" r="1.4" fill="currentColor"/></symbol>
+ <symbol id="i-ghost" viewBox="0 0 24 24"><path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5L14 20l-2-1.5L10 20l-2-1.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="10" cy="10" r="1" fill="currentColor"/><circle cx="14" cy="10" r="1" fill="currentColor"/></symbol>
+ <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h3l2 5-2 1a11 11 0 0 0 6 6l1-2 5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+ <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+ <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="glow"></div>
+<div class="top" id="top"><div class="wrap">
+ <a class="back" id="back" href="./" aria-label="Retour"><svg><use href="#i-back"/></svg></a>
+ <div class="brand"><img src="/icon192.png" alt=""><span>Kino</span></div><div class="sp"></div>
+ <button class="pill cta" data-t="cta_s">Activer Kino</button>
+</div></div>
+
+<div class="wrap">
+ <div class="hero">
+  <div class="reveal">
+   <span class="eyebrow"><i></i><span data-t="eye">Ton associé de trading, en ligne maintenant</span></span>
+   <h1><span data-t="h1a">Tu as l’idée.</span><br><span class="g" data-t="h1b">Kino fait tout le reste.</span></h1>
+   <p class="lead" data-t="lead">Parle-lui comme à un ami. Kino transforme ton idée en robot, le teste sur de vrais prix, vérifie que ce n’est pas de la chance — et veille sur ton compte jour et nuit. Sans une ligne de code.</p>
+   <div class="ctas"><button class="btn pri cta"><span data-t="cta">Activer Kino</span><svg><use href="#i-arrow"/></svg></button><a class="btn sec" href="#demo"><svg><use href="#i-play"/></svg><span data-t="see">Le voir au travail</span></a></div>
+   <div class="trust"><span><svg><use href="#i-check"/></svg><span data-t="t1">30 jours, sans engagement</span></span><span><svg><use href="#i-check"/></svg><span data-t="t2">Aucune connaissance en code</span></span><span><svg><use href="#i-check"/></svg><span data-t="t3">Tu gardes toujours la main</span></span></div>
+  </div>
+  <div class="reveal" id="demo">
+   <div class="phone"><div class="scr">
+    <div class="sh"><img src="/icon192.png" alt=""><div><b>Kino</b><small id="stat">● en ligne</small></div><span class="lab" data-t="ex">Exemple</span></div>
+    <div class="feed" id="feed"></div>
+    <div class="sbar"><span data-t="ph">Écris ton idée…</span><b><svg><use href="#i-send"/></svg></b></div>
+   </div></div>
+   <div class="demo-note" data-t="dnote">Exemple d’échange. Les chiffres réels dépendent de ton idée et du marché.</div>
+  </div>
+ </div>
+
+ <section class="reveal" id="numbers" style="padding-top:24px">
+  <div class="nums">
+   <div class="num"><b id="n1">—</b><span data-t="n1">robots construits avec Kino</span></div>
+   <div class="num"><b id="n2">—</b><span data-t="n2">tests sur de vrais prix</span></div>
+   <div class="num"><b id="n3">—</b><span data-t="n3">idées mesurées contre le hasard</span></div>
+   <div class="num"><b id="n4">—</b><span data-t="n4">marchés qu’il sait trader</span></div>
+  </div>
+ </section>
+
+ <section class="reveal">
+  <div class="center"><div class="kick" data-t="k1">Ce que Kino fait pour toi</div>
+  <h2 data-t="h2a">Un analyste, un testeur et un garde du corps. Dans ta poche.</h2>
+  <p class="sub" data-t="s2a">Ce qu’un trader passe des semaines à faire seul, Kino le fait en quelques minutes — et il t’explique chaque étape avec des mots simples.</p></div>
+  <div class="grid">
+   <div class="f"><div class="ic"><svg><use href="#i-chat"/></svg></div><h3 data-t="f1h">Il construit en parlant</h3><p data-t="f1p">« J’achète quand le prix casse le plus haut d’hier. » Kino comprend, te montre les moments sur le graphique, et monte le robot.</p></div>
+   <div class="f"><div class="ic"><svg><use href="#i-chart"/></svg></div><h3 data-t="f2h">Il teste sur de vrais prix</h3><p data-t="f2p">42 jours de vrais prix du marché, avec les vrais frais. Tu vois combien il aurait gagné ou perdu, et sa pire baisse.</p></div>
+   <div class="f"><div class="ic"><svg><use href="#i-dice"/></svg></div><h3 data-t="f3h">Il démasque la chance</h3><p data-t="f3p">Ton robot affronte 100 robots qui tradent au hasard. S’il ne les bat pas presque tous, Kino te le dit : ce n’était que de la chance.</p></div>
+   <div class="f"><div class="ic"><svg><use href="#i-ghost"/></svg></div><h3 data-t="f4h">Il essaie sans risque</h3><p data-t="f4p">Le mode fantôme fait trader ton robot en argent fictif sur les prix en direct. Tu vois s’il tient, avant d’y mettre un centime.</p></div>
+   <div class="f"><div class="ic"><svg><use href="#i-shield"/></svg></div><h3 data-t="f5h">Il veille sur ton compte</h3><p data-t="f5p">Série de pertes inhabituelle, grosse annonce dans 45 minutes, robot qui s’écarte de son test : Kino te prévient tout de suite.</p></div>
+   <div class="f"><div class="ic"><svg><use href="#i-phone"/></svg></div><h3 data-t="f6h">Tu peux l’appeler</h3><p data-t="f6p">Un vrai appel vocal : tu parles, il répond, il lance les tests pendant que vous discutez. 30 minutes d’appel incluses chaque mois.</p></div>
+  </div>
+ </section>
+
+ <section class="reveal">
+  <div class="night">
+   <div class="kick" data-t="k2">Pendant que tu dors</div>
+   <h2 data-t="h2b">Kino ne s’arrête jamais de chercher pour toi.</h2>
+   <p class="sub" data-t="s2b">Tu lui donnes un objectif. Il prend des initiatives, mesure, élimine ce qui ne marche pas, et te réveille avec des réponses.</p>
+   <div class="tl">
+    <div class="st"><div class="h">22 h</div><h4 data-t="tl1h">Tu partages une idée</h4><p data-t="tl1p">En deux phrases, par écrit ou à voix haute.</p></div>
+    <div class="st"><div class="h">23 h</div><h4 data-t="tl2h">Il la teste</h4><p data-t="tl2p">Vrais prix, vrais frais, résultat honnête.</p></div>
+    <div class="st"><div class="h">3 h</div><h4 data-t="tl3h">Il cherche mieux</h4><p data-t="tl3p">Il essaie des variantes sur d’autres marchés et garde les meilleures.</p></div>
+    <div class="st"><div class="h">7 h</div><h4 data-t="tl4h">Ton point du matin</h4><p data-t="tl4p">Ce qu’il a trouvé, ce qui est mort, et l’idée du jour.</p></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="reveal">
+  <div class="truth">
+   <div><div class="kick" data-t="k3">La vérité, toujours</div>
+    <h2 data-t="h2c">Kino ne te vendra jamais du rêve.</h2>
+    <p class="sub" data-t="s2c">La plupart des outils de trading te montrent des courbes parfaites. Kino fait l’inverse : il cherche ce qui cloche avant que ton argent ne le découvre.</p></div>
+   <div class="rules">
+    <div class="rule"><b class="n">1</b><div><h4 data-t="r1h">Pas de vrai argent sans preuve</h4><p data-t="r1p">Un robot passe le test sur vrais prix, puis le test de chance, avant d’approcher ton compte.</p></div></div>
+    <div class="rule"><b class="n">2</b><div><h4 data-t="r2h">Il te dit combien tu peux perdre</h4><p data-t="r2p">La pire baisse, comparée à ton solde. Tu décides si tu la supportes.</p></div></div>
+    <div class="rule"><b class="n">3</b><div><h4 data-t="r3h">Il dit quand il ne sait pas</h4><p data-t="r3p">« C’est mesuré », « probable » ou « je ne sais pas » : jamais une intuition déguisée en certitude.</p></div></div>
+   </div>
+  </div>
+ </section>
+
+ <section class="reveal">
+  <div class="center"><div class="kick" data-t="k4">La différence</div><h2 data-t="h2d">Seul, ou avec Kino.</h2></div>
+  <div class="cmp">
+   <div class="col s"><h3 data-t="cs">Seul</h3><ul>
+    <li><svg><use href="#i-x"/></svg><span data-t="s1">Des heures de graphiques pour vérifier une seule idée</span></li>
+    <li><svg><use href="#i-x"/></svg><span data-t="s2">Impossible de savoir si c’est du talent ou de la chance</span></li>
+    <li><svg><use href="#i-x"/></svg><span data-t="s3">Des décisions prises sur un coup de nerfs</span></li>
+    <li><svg><use href="#i-x"/></svg><span data-t="s4">Personne pour te prévenir quand ça tourne mal</span></li>
+    <li><svg><use href="#i-x"/></svg><span data-t="s5">Il faut savoir coder pour automatiser</span></li></ul></div>
+   <div class="col k"><h3><img src="/icon192.png" alt="" style="width:26px;height:26px;border-radius:8px"><span data-t="ck">Avec Kino</span></h3><ul>
+    <li><svg><use href="#i-check"/></svg><span data-t="k_1">Ton idée testée sur 42 jours en quelques minutes</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="k_2">Le test de chance tranche, chiffres à l’appui</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="k_3">Des règles claires, et quelqu’un pour te les rappeler</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="k_4">Une alerte dès que ton robot sort de ses habitudes</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="k_5">Tu parles, Kino construit</span></li></ul></div>
+  </div>
+ </section>
+
+ <section class="reveal" id="price">
+  <div class="center"><div class="kick" data-t="k5">La formule Stratégie</div><h2 data-t="h2e">Tout Kino, pour le prix d’un repas par semaine.</h2></div>
+  <div class="price"><div class="pin">
+   <span class="tag" data-t="tag">Le plus complet</span>
+   <h3>Stratégie</h3>
+   <div class="amt"><b id="usd">49 $</b><span data-t="mo">/ 30 jours</span></div>
+   <div class="per" data-t="per">Paiement en crypto · pas de renouvellement automatique</div>
+   <ul class="inc">
+    <li><svg><use href="#i-check"/></svg><span data-t="i1">Kino, ton associé IA, sans limite de conversations</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="i2">Construction de robots en parlant, sur tous les marchés disponibles</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="i3">Tests sur de vrais prix et test de chance contre 100 robots au hasard</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="i4">Mode fantôme : ton robot en argent fictif, en direct</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="i5">Surveillance de ton compte et alertes en temps réel</span></li>
+    <li><svg><use href="#i-check"/></svg><span id="imin" data-t="i6">30 minutes d’appel vocal avec Kino chaque mois</span></li>
+    <li><svg><use href="#i-check"/></svg><span data-t="i7">Ses recherches de nuit et ton point du matin</span></li>
+   </ul>
+   <button class="btn pri cta" id="buy"><span data-t="buy">Activer Kino maintenant</span><svg><use href="#i-arrow"/></svg></button>
+   <div class="have" id="have"></div>
+   <div class="fine"><svg style="width:13px;height:13px;vertical-align:-2px"><use href="#i-lock"/></svg> <span data-t="fine">Paiement sécurisé. Kino ne touche jamais ton compte sans ton accord. Le trading comporte un risque de perte : un test passé n’est pas une promesse de gains.</span></div>
+  </div></div>
+ </section>
+
+ <section class="reveal">
+  <div class="center"><div class="kick" data-t="k6">Questions</div><h2 data-t="h2f">Tu te demandes peut-être…</h2></div>
+  <div class="faq">
+   <details><summary data-t="q1">Je n’y connais rien en trading. C’est pour moi ?</summary><p data-t="a1">Oui. Kino parle simplement, sans jargon. Tu lui dis ce que tu as en tête, il te montre des exemples sur le graphique et t’explique chaque chiffre. Tu peux même lui demander ce qu’est un « stop ».</p></details>
+   <details><summary data-t="q2">Est-ce que Kino trade sur mon compte tout seul ?</summary><p data-t="a2">Non. Kino construit, teste et surveille. Mettre un robot sur ton compte, le mettre en pause ou le changer reste toujours ta décision, avec ton mot de passe.</p></details>
+   <details><summary data-t="q3">Est-ce que je vais gagner de l’argent ?</summary><p data-t="a3">Personne d’honnête ne peut le promettre, et Kino non plus. Ce qu’il fait : éliminer les idées qui ne tiennent pas, te montrer le vrai risque avant de commencer, et t’empêcher de décider sur un coup de nerfs.</p></details>
+   <details><summary data-t="q4">Comment fonctionne le paiement ?</summary><p data-t="a4">49 $ en crypto pour 30 jours. Aucun renouvellement automatique : à la fin, tu choisis de continuer ou non. Kino s’active dès que le paiement est confirmé.</p></details>
+   <details><summary data-t="q5">Et si j’ai déjà la formule Automatique ?</summary><p data-t="a5">Les formules se combinent. Automatique fait tourner le robot sur ton compte ; Stratégie te donne Kino pour en construire, en tester et en surveiller.</p></details>
+  </div>
+ </section>
+
+ <div class="final reveal">
+  <img src="/icon192.png" alt="">
+  <h2 data-t="h2g">Ton idée mérite un vrai test.</h2>
+  <p class="sub" data-t="s2g">Dans cinq minutes, Kino peut te dire si elle tient. Ce soir, il cherchera mieux pendant que tu dors.</p>
+  <button class="btn pri cta"><span data-t="cta2">Activer Kino · 49 $</span><svg><use href="#i-arrow"/></svg></button>
+ </div>
+ <footer data-t="foot">OwlNest · Kino est un assistant d’analyse. Le trading comporte un risque de perte en capital. Les résultats passés ne préjugent pas des résultats futurs.</footer>
+</div>
+<div class="dock" id="dock"><button class="btn pri cta"><span data-t="cta3">Activer Kino · 49 $ / 30 jours</span></button></div>
+
+<script>
+const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
+const B=location.pathname.replace(/decouvrir-kino\/?$/,'');
+const TX={cta_s:'Activate Kino',eye:'Your trading partner, online now',h1a:'You have the idea.',h1b:'Kino does all the rest.',
+ lead:'Talk to it like a friend. Kino turns your idea into a robot, tests it on real prices, checks it is not luck — and watches your account day and night. Without a line of code.',
+ cta:'Activate Kino',see:'See it at work',t1:'30 days, no commitment',t2:'No coding needed',t3:'You always stay in control',ex:'Example',ph:'Type your idea…',
+ dnote:'Example exchange. Real figures depend on your idea and the market.',n1:'robots built with Kino',n2:'tests on real prices',n3:'ideas measured against chance',n4:'markets it can trade',
+ k1:'What Kino does for you',h2a:'An analyst, a tester and a bodyguard. In your pocket.',s2a:'What a trader spends weeks doing alone, Kino does in minutes — and explains every step in plain words.',
+ f1h:'It builds as you talk',f1p:'“I buy when the price breaks yesterday’s high.” Kino understands, shows you the moments on the chart, and builds the robot.',
+ f2h:'It tests on real prices',f2p:'42 days of real market prices, with real costs. You see what it would have won or lost, and its worst dip.',
+ f3h:'It unmasks luck',f3p:'Your robot faces 100 robots trading at random. If it does not beat almost all of them, Kino tells you: it was just luck.',
+ f4h:'It tries without risk',f4p:'Ghost mode trades your robot with pretend money on live prices. You see if it holds before putting in a cent.',
+ f5h:'It watches your account',f5p:'An unusual losing streak, big news in 45 minutes, a robot drifting from its test: Kino tells you right away.',
+ f6h:'You can call it',f6p:'A real voice call: you talk, it answers, it runs tests while you chat. 30 minutes of calls included every month.',
+ k2:'While you sleep',h2b:'Kino never stops searching for you.',s2b:'Give it a goal. It takes initiatives, measures, drops what does not work, and wakes you up with answers.',
+ tl1h:'You share an idea',tl1p:'In two sentences, written or out loud.',tl2h:'It tests it',tl2p:'Real prices, real costs, an honest result.',tl3h:'It looks for better',tl3p:'It tries variants on other markets and keeps the best.',tl4h:'Your morning brief',tl4p:'What it found, what died, and the idea of the day.',
+ k3:'The truth, always',h2c:'Kino will never sell you a dream.',s2c:'Most trading tools show you perfect curves. Kino does the opposite: it looks for what is wrong before your money finds out.',
+ r1h:'No real money without proof',r1p:'A robot passes the real-price test, then the luck test, before it gets near your account.',r2h:'It tells you how much you can lose',r2p:'The worst dip, compared to your balance. You decide if you can bear it.',r3h:'It says when it does not know',r3p:'“Measured”, “likely” or “I don’t know”: never a hunch dressed up as certainty.',
+ k4:'The difference',h2d:'Alone, or with Kino.',cs:'Alone',s1:'Hours of charts to check a single idea',s2:'No way to know if it is skill or luck',s3:'Decisions made on nerves',s4:'Nobody to warn you when it goes wrong',s5:'You need to code to automate',
+ ck:'With Kino',k_1:'Your idea tested over 42 days in minutes',k_2:'The luck test decides, numbers in hand',k_3:'Clear rules, and someone to remind you',k_4:'An alert as soon as your robot leaves its habits',k_5:'You talk, Kino builds',
+ k5:'The Strategy plan',h2e:'All of Kino, for the price of one meal a week.',tag:'Most complete',mo:'/ 30 days',per:'Paid in crypto · no automatic renewal',
+ i1:'Kino, your AI partner, unlimited conversations',i2:'Robots built by talking, on every available market',i3:'Real-price tests and a luck test against 100 random robots',i4:'Ghost mode: your robot with pretend money, live',i5:'Account watch and real-time alerts',i6:'30 minutes of voice calls with Kino every month',i7:'Its night research and your morning brief',
+ buy:'Activate Kino now',fine:'Secure payment. Kino never touches your account without your OK. Trading carries a risk of loss: a past test is not a promise of gains.',
+ k6:'Questions',h2f:'You may be wondering…',q1:'I know nothing about trading. Is it for me?',a1:'Yes. Kino speaks simply, no jargon. Tell it what you have in mind, it shows you examples on the chart and explains every number. You can even ask what a “stop” is.',
+ q2:'Does Kino trade my account on its own?',a2:'No. Kino builds, tests and watches. Putting a robot on your account, pausing or changing it is always your decision, with your password.',
+ q3:'Will I make money?',a3:'Nobody honest can promise that, and neither can Kino. What it does: drop the ideas that do not hold, show you the real risk before you start, and stop you deciding on nerves.',
+ q4:'How does payment work?',a4:'$49 in crypto for 30 days. No automatic renewal: at the end, you choose to go on or not. Kino switches on as soon as the payment is confirmed.',
+ q5:'What if I already have the Automatic plan?',a5:'Plans combine. Automatic runs the robot on your account; Strategy gives you Kino to build, test and watch robots.',
+ h2g:'Your idea deserves a real test.',s2g:'In five minutes Kino can tell you if it holds. Tonight it will look for better while you sleep.',cta2:'Activate Kino · $49',cta3:'Activate Kino · $49 / 30 days',
+ foot:'OwlNest · Kino is an analysis assistant. Trading carries a risk of capital loss. Past results do not guarantee future results.'};
+if(EN){document.documentElement.lang='en';document.title='Discover Kino';document.querySelectorAll('[data-t]').forEach(n=>{const v=TX[n.dataset.t];if(v)n.textContent=v;});}
+const T=(f,e)=>EN?e:f;
+document.getElementById('back').href=B;
+/* ---- the live demo: an example conversation that plays in a loop */
+const DEMO=EN?[
+ ['u','I want to sell gold when it fails to stay above yesterday’s high.'],
+ ['k','Got it: price pokes above yesterday’s high, then falls back under it — you sell. Here are the last 3 times on the chart 👇'],
+ ['c','chart'],
+ ['u','Yes, that’s exactly it. Test it.'],
+ ['k','Building it now: stop 2 candles above, exit at 1× the risk. Test on 42 days of real prices…'],
+ ['c','test'],
+ ['k','Positive in both halves of the test. Before your money: the luck test against 100 random robots. I’ll run it tonight.'],
+ ['c','luck']]:[
+ ['u','Je veux vendre l’or quand il n’arrive pas à rester au-dessus du plus haut d’hier.'],
+ ['k','Compris : le prix dépasse le plus haut d’hier puis repasse dessous — tu vends. Voici les 3 dernières fois sur le graphique 👇'],
+ ['c','chart'],
+ ['u','Oui, c’est exactement ça. Teste-le.'],
+ ['k','Je le monte : stop 2 bougies au-dessus, sortie à 1 fois le risque. Test sur 42 jours de vrais prix…'],
+ ['c','test'],
+ ['k','Positif sur les deux moitiés du test. Avant ton argent : le test de chance contre 100 robots au hasard. Je le lance cette nuit.'],
+ ['c','luck']];
+function card(k){
+ if(k==='chart'){const P=[42,46,44,49,55,53,58,62,59,57,50,47,52,49,44,40,43,38,35,37,33,36,31];const W=300,H=90,mx=Math.max(...P),mn=Math.min(...P);
+  const d=P.map((v,i)=>(i?'L':'M')+(i*W/(P.length-1)).toFixed(1)+' '+(H-6-(v-mn)/(mx-mn)*(H-14)).toFixed(1)).join(' '),y=(H-6-(56-mn)/(mx-mn)*(H-14)).toFixed(1);
+  return '<h6>'+T('Or · 1 minute','Gold · 1 minute')+'</h6><svg viewBox="0 0 300 90" style="width:100%;height:90px;display:block"><line x1="0" x2="300" y1="'+y+'" y2="'+y+'" stroke="#e8c55a" stroke-dasharray="4 3" stroke-width="1"/><text x="296" y="'+(y-4)+'" fill="#e8c55a" font-size="9" text-anchor="end">'+T('plus haut d’hier','yesterday’s high')+'</text><path d="'+d+'" fill="none" stroke="#8fc6ff" stroke-width="2"/><circle cx="'+(9*W/22).toFixed(1)+'" cy="'+(H-6-(59-mn)/(mx-mn)*(H-14)).toFixed(1)+'" r="5" fill="#ff5c5c"/><text x="'+(9*W/22+8).toFixed(1)+'" y="22" fill="#ff9a9a" font-size="9">'+T('vente','sell')+'</text></svg>';}
+ if(k==='test')return '<h6>'+T('Test · 42 jours de vrais prix','Test · 42 days of real prices')+'</h6><div class="big">+58,14 $</div><div class="row"><span>'+T('88 trades · 60 % gagnés','88 trades · 60% won')+'</span><span>'+T('pire baisse −17,59 $','worst dip −$17.59')+'</span></div>';
+ if(k==='luck')return '<h6>'+T('Test de chance · contre 100 robots au hasard','Luck test · against 100 random robots')+'</h6><div class="row"><span>'+T('Ce soir, pendant que tu dors','Tonight, while you sleep')+'</span><span id="lk">0/100</span></div><div class="bar"><i id="lkb"></i></div>';
+ return '';}
+const feed=document.getElementById('feed'),stat=document.getElementById('stat');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function play(){while(true){feed.innerHTML='';
+ for(const [w,t] of DEMO){
+  if(w!=='u'){const ty=document.createElement('div');ty.className='typing';ty.innerHTML='<i></i><i></i><i></i>';feed.appendChild(ty);stat.textContent=T('● écrit…','● typing…');await sleep(w==='c'?1100:1300);ty.remove();stat.textContent=T('● en ligne','● online');}
+  else await sleep(900);
+  const m=document.createElement('div');m.className='m '+w;m.innerHTML=w==='c'?card(t):t.replace(/</g,'&lt;');feed.appendChild(m);
+  while(feed.children.length>6)feed.removeChild(feed.firstChild);
+  if(t==='luck'){await sleep(300);const b=document.getElementById('lkb'),l=document.getElementById('lk');let n=0;b.style.width='100%';const iv=setInterval(()=>{n=Math.min(100,n+4);if(l)l.textContent=n+'/100';if(n>=100)clearInterval(iv);},60);}
+  await sleep(w==='u'?1200:2100);}
+ await sleep(3500);}}
+/* ---- the real numbers, the price, the buy */
+let P={};
+function fmt(n){return Number(n||0).toLocaleString(EN?'en-US':'fr-FR');}
+function count(el,to){const t0=performance.now(),d=1200;function f(t){const k=Math.min(1,(t-t0)/d);el.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3))));if(k<1)requestAnimationFrame(f);}requestAnimationFrame(f);}
+fetch(B+'kino_pitch').then(r=>r.json()).then(j=>{P=j||{};const S=P.stats||{};
+ const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){count(document.getElementById('n1'),S.robots||0);count(document.getElementById('n2'),S.tests||0);count(document.getElementById('n3'),S.ideas||0);count(document.getElementById('n4'),S.markets||0);io.disconnect();}});},{threshold:.3});
+ io.observe(document.getElementById('numbers'));
+ if(P.usd)document.getElementById('usd').textContent=(EN?'$'+P.usd:P.usd+' $');
+ if(P.included_min)document.getElementById('imin').textContent=T(P.included_min+' minutes d’appel vocal avec Kino chaque mois',P.included_min+' minutes of voice calls with Kino every month');
+ if(P.has){const h=document.getElementById('have');h.style.display='block';h.innerHTML=T('Tu as déjà Kino','You already have Kino')+(P.until?T(' jusqu’au ',' until ')+P.until:'')+' · <a href="'+B+'atelier" style="font-weight:800">'+T('Ouvrir l’atelier','Open the workshop')+' →</a>';
+  document.querySelectorAll('.cta span').forEach(s=>s.textContent=T('Parler à Kino','Talk to Kino'));}
+}).catch(()=>{});
+async function buy(btn){
+ if(P.has){location.href=B+'atelier';return;}
+ if(P.public){location.href='/offres';return;}
+ const lb=btn.querySelector('span'),old=lb?lb.textContent:'';if(lb)lb.textContent=T('Un instant…','One moment…');btn.disabled=true;
+ try{const r=await fetch(B+'buy',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pkg=strategy'});const j=await r.json();
+  if(j&&j.ok&&j.url){location.href=j.url;return;}
+  alert(T('Le paiement n’est pas disponible pour l’instant. Réessaie dans un moment.','Payment is not available right now. Try again in a moment.'));}
+ catch(e){alert(T('Connexion lente, réessaie.','Slow connection, try again.'));}
+ if(lb)lb.textContent=old;btn.disabled=false;}
+document.querySelectorAll('.cta').forEach(b=>b.addEventListener('click',()=>buy(b)));
+/* ---- reveal on scroll, the sticky bar, the dock */
+const ro=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(n=>ro.observe(n));
+const dock=document.getElementById('dock'),top_=document.getElementById('top'),priceEl=document.getElementById('price');
+addEventListener('scroll',()=>{const y=scrollY;top_.classList.toggle('sc',y>10);const pr=priceEl.getBoundingClientRect();dock.classList.toggle('on',y>620&&innerWidth<900&&!(pr.top<innerHeight&&pr.bottom>0));},{passive:true});
+play();
+</script>
+</body></html>
