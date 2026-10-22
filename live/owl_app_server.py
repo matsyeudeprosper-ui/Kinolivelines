@@ -15419,6 +15419,8 @@ def _partner_apply(user, cid, pa):
             _KIu.use_thought(pa["thought_used"], uid)
         except Exception:
             pass
+    if cid and pa.get("work") and _waiting_promise(pa["work"].get("what")) and _jobs_running(uid, cid):
+        pa = dict(pa, work=None)                     # 2026-10-21: "je t'écris dès que le test tombe" - the result event does that
     if cid and pa.get("work"):                     # 2026-10-20 (owner list 5 item 3): an honest "let me look" is kept
         try:
             _chat_mut(cid, lambda cc: cc.__setitem__("work", ((cc.get("work") or []) + [{"due": time.time() + pa["work"]["in"], "what": pa["work"]["what"],
@@ -15652,6 +15654,24 @@ def _luck_rows():
     except Exception:
         pass
     return out
+
+
+_WAIT_RE = re.compile(r"(dès qu(e|'il|'ils|'elle)[^.?!]{0,60}(tombe|sort|est sorti|sont sortis|est là|sont là|est prêt|fini)|"
+                      r"(test|résultat|chiffre)[^.?!]{0,60}(sorti|tombé|tombe|sort)|revérifier le test|when (it|the test|the result) (lands|is out))", re.I)
+_NOTHING_NEW_RE = re.compile(r"(pas encore (de |sorti|tombé|là)|toujours pas|rien de neuf|aucun chiffre|n'est (toujours |pas )?(encore )?pas sorti|"
+                             r"attend (encore|toujours|son tour)|prépare encore|still (nothing|waiting)|not out yet|nothing new)", re.I)
+
+
+def _waiting_promise(text):
+    """a promise that only waits for a test / result that is announced anyway when it lands"""
+    return bool(_WAIT_RE.search(str(text or "")))
+
+
+def _jobs_running(uid, cid=None):
+    try:
+        return "NOTHING is running" not in _jobs_text({"id": uid}, cid)
+    except Exception:
+        return False
 
 
 def _jobs_text(user, cid=None):
@@ -16345,6 +16365,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             q = {"say": None, "chips": [], "build": True}
         if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK")):
             q["build"] = False
+        if event and q.get("say") and event.startswith(("YOUR PROMISE", "YOUR FOLLOW-ON", "FOLLOW-UP", "INNER VOICE", "A THOUGHT")) \
+                and _NOTHING_NEW_RE.search(str(q["say"])) and not re.search(r"\d+[.,]\d+ ?(\$|%)|[+-]\d", str(q["say"])):
+            q["send"] = False                          # 2026-10-21: "toujours pas de chiffre" x8 at 4 a.m. - a friend says nothing
+            q["build"] = False
+            if isinstance(q.get("partner"), dict):
+                q["partner"].pop("work", None)
         if event and not q.get("send") and not event.startswith(("NEW CONVERSATION", "FIRST MEETING")):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
 
@@ -16398,7 +16424,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             except Exception:
                 pass
             try:
-                if q.get("say") and not ((q.get("partner") or {}).get("work")) and not (event or "").startswith("YOUR PROMISE") and not c.get("work") and re.search(
+                if q.get("say") and not ((q.get("partner") or {}).get("work")) and not (event or "").startswith("YOUR PROMISE") and not c.get("work") \
+                        and not (_waiting_promise(q["say"]) and _jobs_running(user.get("id"), cid)) and re.search(
                         r"(je (vérifie|regarde|compte|calcule|creuse|mesure|analyse|cherche|lance la mesure|lance le calcul|m'y mets)[^?]{0,220}(je (te |t')(donne|dis|reviens|préviens|écris|envoie)|dès que|tout de suite|juste après)|"
                         r"je te donne (le chiffre|les chiffres)|je reviens (vers toi|avec)|je te redis ça|i'?ll (check|look|measure) and (get back|tell you))", str(q["say"]), re.I):
                     _w = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
@@ -18253,6 +18280,18 @@ def _chat_watch_once():
             continue
         # (3) a promise due
         W_ = [w for w in c.get("work") or [] if now >= float(w.get("due") or 0)]
+        if W_ and _waiting_promise(W_[0].get("what")) and _jobs_running(u.get("id"), cid):
+            w = W_[0]
+
+            def _ws(cc, w=w, old=now - float(w.get("t") or now) > 8 * 3600):
+                if old:
+                    cc["work"] = [x for x in cc.get("work") or [] if x.get("t") != w.get("t")]
+                else:
+                    for x in cc.get("work") or []:
+                        if x.get("t") == w.get("t"):
+                            x["due"] = now + 1800
+            _chat_mut(cid, _ws)
+            continue
         if W_:
             w = W_[0]
             def _wk(cc, w=w):
