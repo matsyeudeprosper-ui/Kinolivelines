@@ -19131,7 +19131,7 @@ def chat_ping(user, cid):
     _CHAT_VIEW[cid] = time.time()
     M = c.get("msgs") or []
     return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
-            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "dtx": str(_CHAT_DRAFT.get(cid) or "")[:600], "test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [],
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "dtx": str(_CHAT_DRAFT.get(cid) or "")[:600], "dnt": str(_CHAT_DRAFT_N.get(cid) or "")[:600],"test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [],
             **_kino_presence(user, c)}
 
 
@@ -20130,7 +20130,12 @@ NEVER say you are measuring / launching / looking at something unless "act", "sh
 "Où tu en es ? / qu'est-ce qui bloque ?" is answered from YOUR JOBS RUNNING NOW in the facts - never invented progress.
 Never repeat what YOU already said in this call: only what is new, or "rien de neuf encore" in a few words.
 An opinion or a forecast says how sure you are ("c'est mesuré", "probable", "je ne sais pas").
-Reply with JSON only: {"say": "...", "act": null, "show": null, "full": false}"""
+"notes" (write it FIRST) is what the voice works from: the same content as "say" but as bare fact fragments separated by
+" · ", never a sentence, no verbs where you can avoid them - e.g. "solde 194,96 $ · 2 ventes à 13h19 · -2,01 et -1,92 ·
+journée -1,65 $ · petite série, rien à toucher". 2026-10-22 (owner): a voice reading finished sentences sounds like a bot;
+from fragments it has to talk in its own words, and that sounds alive. "say" is the written version shown in the chat.
+Reply with JSON only: {"notes": "...", "say": "...", "act": null, "show": null, "full": false}"""
+_CHAT_DRAFT_N = {}  # cid -> the call brain's "notes" while it is still writing (the voice can start on them)
 _VB_SYS = {}        # cid -> (time, system prompt) for the call brain
 _VB_SPEC = {}       # cid -> {"q", "t", "draft", "raw", "done"}: an answer started early from their words (call x12 item 1)
 
@@ -20155,6 +20160,7 @@ def live_spec(user, body):
                 say = _rc().W.partial_say(t)
                 if say:
                     sp["draft"] = say
+                sp["notes"] = _rc().W.partial_say(t, "notes")
             except Exception:
                 pass
         try:
@@ -20216,6 +20222,7 @@ def _voice_brain(cid, user):
                 if not first:
                     first.append(time.time() - t0)
                 _CHAT_DRAFT[cid] = say
+            _CHAT_DRAFT_N[cid] = _rc().W.partial_say(t, "notes")
         except Exception:
             pass
     raw = None
@@ -20225,6 +20232,8 @@ def _voice_brain(cid, user):
     if sp and time.time() - sp["t"] < 30 and _ws(_lq) and len(_ws(_lq) & _ws(sp["q"])) >= 0.6 * len(_ws(_lq)):
         _e = time.time() + 20
         while not sp.get("done") and time.time() < _e:
+            if sp.get("notes"):
+                _CHAT_DRAFT_N[cid] = sp["notes"]
             if sp.get("draft"):
                 _CHAT_DRAFT[cid] = sp["draft"]
                 if not first:
@@ -20239,6 +20248,7 @@ def _voice_brain(cid, user):
         except Exception:
             raw = None
     _CHAT_DRAFT.pop(cid, None)
+    _CHAT_DRAFT_N.pop(cid, None)
     try:
         open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=CALL_BRAIN first=%.1f total=%.1f ctx=0.00\n" % (
             time.strftime("%m-%d %H:%M:%S"), cid, first[0] if first else -1, time.time() - t0))
@@ -20260,7 +20270,7 @@ def _voice_brain(cid, user):
 
     def put(cc):
         cc.setdefault("msgs", [])
-        _chat_msg(cc, "ai", text=say, quick=True, call_brain=True)
+        _chat_msg(cc, "ai", text=say, quick=True, call_brain=True, notes=str(raw.get("notes") or "").strip()[:700] or None)
         if dm and not dm.get("nodata"):
             cc["msgs"].append(dict(dm, t=int(time.time())))
     _chat_mut(cid, put)
@@ -21520,7 +21530,8 @@ def _live_instructions(user, c):
         "- Decide instead of offering choices: no \"tu veux que...?\", no \"X ou Y ?\" - say what you would do and why.\n"
         "- Most turns end WITHOUT a question; silence is fine, let them lead. Short answers from them = keep it light.\n"
         "- When the brain's answer arrives, say it as YOUR words, spoken and short - never \"d'après mes informations\" or \"selon le système\".\n"
-        "- NEVER read a text aloud word for word: what your brain sends are written NOTES, not a script. Retell them the way you "
+        "- NEVER read a text aloud word for word: what your brain sends are bare FACT fragments (\"a · b · c\"), not a script. Build "
+        "your own sentences from them, the way you "
         "would on the phone - shorter, simpler, spoken French, one idea at a time, numbers said naturally (\"dix-sept dollars et "
         "des poussières\" only if the exact cents do not matter; exact when they ask for the figure).\n"
         "THE APP OBEYS THEIR VOICE for: 'lance le test' (run the robot's test), 'annule le changement' (undo the last robot change), "

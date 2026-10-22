@@ -91,9 +91,9 @@ def _reaper():
 threading.Thread(target=_reaper, daemon=True).start()
 
 
-def partial_say(buf):
-    """the "say" text of a JSON answer still being written (for the typing bubble), or "" """
-    i = buf.find('"say"')
+def partial_say(buf, key="say"):
+    """the "say" text (or another string field) of a JSON answer still being written (for the typing bubble), or "" """
+    i = buf.find('"%s"' % key)
     if i < 0:
         return ""
     i = buf.find('"', buf.find(":", i) + 1)
