@@ -16164,6 +16164,16 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                             q["say"] = _rest
             except Exception:
                 pass
+            try:                                     # "awake tonight" standing: the goodnight sentences go
+                _awk = [x for x in (_mem_get(user.get("id")).get("standing") or []) if str(x.get("text") or "").startswith("Awake tonight")]
+                _awm = re.search(r"until (\d+)", str(_awk[-1].get("text"))) if _awk else None
+                if q.get("say") and _awm and time.time() < int(_awm.group(1)):
+                    _ss = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
+                    _kp = [x for x in _ss if not re.search(r"(bonne nuit|dors bien|va dormir|repose[- ]toi|à demain|on (reprend|continue|verra) demain|good ?night|sleep well|see you tomorrow)", x, re.I)]
+                    if _kp and len(_kp) < len(_ss) and len(" ".join(_kp)) >= 30:
+                        q["say"] = " ".join(_kp)
+            except Exception:
+                pass
             # (3) the same answer twice (two turns for one message): the second one is dropped
             try:
                 _pa_ = next((x for x in reversed(c.get("msgs") or []) if x.get("role") in ("ai", "user")), {})
@@ -18627,6 +18637,18 @@ def chat_send(user, body):
         _rc()
         import kino_life as _KLa
         _KLa.human_answer_maybe(user.get("id"), str(body.get("id") or ""), str(body.get("text") or ""))
+    except Exception:
+        pass
+    try:                                             # 2026-10-21 (humanity watch): "je dors pas" -> no "bonne nuit" / "demain" for 10 h
+        if re.search(r"(je (ne )?dors pas|j'?ai pas sommeil|je n'ai pas sommeil|pas fatigu|arr[êe]te de dire[^.]{0,40}(demain|reprendre|dormir)|"
+                     r"i'?m not (sleepy|tired)|i can'?t sleep|stop saying[^.]{0,30}tomorrow)", str(body.get("text") or ""), re.I):
+            _aw = "Awake tonight (until %d): they said '%s' - never say bonne nuit / go to sleep / we continue tomorrow; keep going with them now" % (
+                int(time.time()) + 36000, str(body.get("text"))[:60])
+
+            def _awp(mm, _aw=_aw):
+                L = [x for x in mm.get("standing") or [] if not str(x.get("text") or "").startswith("Awake tonight")]
+                mm["standing"] = (L + [{"t": int(time.time()), "text": _aw}])[-8:]
+            _mem_note_safe(user.get("id"), _awp)
     except Exception:
         pass
     try:                                             # 2026-10-21 (humanity watch): "Laisse choisir" in one chat, "X ou Y ?" in the next
