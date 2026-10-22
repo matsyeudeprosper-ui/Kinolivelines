@@ -70,8 +70,10 @@ def run(op, St):
 
 
 t0 = time.time()
-real = run(opps, S)
-print("%s on %s: real net %.2f, %d trades (%.0fs)" % (rid, sym, real["net"], real["trades"], time.time() - t0), flush=True)
+real = None
+if not FLAGS.get("--helper"):                  # a helper only runs draws: the robot's own replay is the main's job
+    real = run(opps, S)
+    print("%s on %s: real net %.2f, %d trades (%.0fs)" % (rid, sym, real["net"], real["trades"], time.time() - t0), flush=True)
 
 times = [int(x) for x in D["time"]]
 real_t = [o["t"] for o in opps]; real_sorted = sorted(range(len(opps)), key=lambda k: opps[k]["t"])
@@ -132,6 +134,140 @@ def pack_building():
 
 MAXN, ALLOW, ROOM_GB = 100, 5, 1.2         # pause line measured WITH our own ~1.3 GB held; when_free kills at 0.9
 JDIR = os.path.join(HERE, "luck")
+# 2026-10-22 (owner, after the VPS went to 18 GB / 8 cores: "yes" to 3 draws at once + "leave enough memory for
+# research"): the main process starts up to 2 HELPERS that run draws beside it. A helper starts only with >= 6.5 GB
+# free and no research job running, and leaves (giving its ~1.3 GB back) as soon as free memory drops under 5 GB or
+# research starts - research needs 4.5 GB (when_free) and may now run beside a luck test. Draw k is still seed
+# 1000+k, so who runs it changes nothing; each seed is claimed once (a file in <base>.claims), rows are appended
+# under a lock and read back deduplicated by seed.
+WORKERS, HELPER_START_GB, RESEARCH_GB = 3, 6.5, 5.0
+BASE = os.path.join(JDIR, "%s_%s" % (rid, sym))
+JP, CDIR = BASE + ".jsonl", BASE + ".claims"
+
+
+def jrows():
+    rows, seen = [], set()
+    try:
+        for x in open(JP, encoding="utf-8"):
+            try:
+                r = json.loads(x)
+            except Exception:
+                continue                                      # a line cut by a crash: that draw runs again
+            if r.get("kind") == "draw" and r.get("sd") not in seen:
+                seen.add(r.get("sd")); rows.append(r)
+    except OSError:
+        pass
+    return rows
+
+
+def jappend(row):
+    import msvcrt
+    with open(JP + ".wlock", "w") as lk:                       # main and helpers append one row at a time
+        while True:
+            try:
+                msvcrt.locking(lk.fileno(), msvcrt.LK_NBLCK, 1); break
+            except OSError:
+                time.sleep(0.2)
+        try:
+            with open(JP, "a", encoding="utf-8") as f:
+                f.write(json.dumps(row) + "\n"); f.flush(); os.fsync(f.fileno())
+        finally:
+            lk.seek(0); msvcrt.locking(lk.fileno(), msvcrt.LK_UNLCK, 1)
+
+
+def over(rows, rn):
+    b = sum(1 for r in rows if r["net"] >= rn)
+    return len(rows) >= MAXN or b > ALLOW or (len(rows) >= 10 and b >= 3) or (len(rows) >= 20 and b >= 4)   # 10-21 item 2
+
+
+def claim_next(rows):
+    """the lowest seed nobody has run or claimed; None when the claimed ones already reach the 100"""
+    os.makedirs(CDIR, exist_ok=True)
+    done = {r["sd"] for r in rows}
+    flying = [f for f in os.listdir(CDIR) if f.isdigit() and int(f) not in done]
+    if len(done) + len(flying) >= MAXN:
+        return None
+    sd = 0
+    while True:
+        if sd not in done:
+            try:
+                os.close(os.open(os.path.join(CDIR, str(sd)), os.O_CREAT | os.O_EXCL | os.O_WRONLY)); return sd
+            except FileExistsError:
+                pass
+        sd += 1
+
+
+def run_draw(sd):
+    t1 = time.time()
+    r = draw(sd)
+    row = {"kind": "draw", "sd": sd, "net": round(r["net"], 2), "trades": r["trades"], "pf": r["profit_factor"],
+           "sec": round(time.time() - t1), "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+    jappend(row)
+    return row
+
+
+def pid_alive(pid):
+    import ctypes
+    h = ctypes.windll.kernel32.OpenProcess(0x1000, False, int(pid))
+    if not h:
+        return False
+    code = ctypes.c_ulong(); ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code)); ctypes.windll.kernel32.CloseHandle(h)
+    return code.value == 259
+
+
+def research_running():
+    from when_free import heavy_running
+    return heavy_running(ignore_luck=True)
+
+
+def helper():
+    """a helper: claim, draw, append - until the test is over, the main is gone, memory is short or research starts"""
+    from when_free import free_gb
+    main_pid = int(FLAGS["--helper"]); n = 0
+    rn = None
+    try:
+        rn = float(json.loads(open(JP, encoding="utf-8").readline())["real"])
+    except Exception:
+        print("helper: no journal head"); return 0
+    while pid_alive(main_pid):
+        rows = jrows()
+        if over(rows, rn):
+            break
+        f = free_gb()
+        if f < RESEARCH_GB:
+            print("helper: %.1f GB free - leaving the room to research and the bots" % f, flush=True); break
+        busy = research_running()
+        if busy:
+            print("helper: research running - stepping aside (%s)" % busy[0], flush=True); break
+        sd = claim_next(rows)
+        if sd is None:
+            break
+        row = run_draw(sd); n += 1
+        print("  helper draw %d: %.2f" % (row["sd"], row["net"]), flush=True)
+    print("helper %d out after %d draws" % (os.getpid(), n), flush=True)
+    return 0
+
+
+HELPERS = []
+
+
+def helpers_alive():
+    HELPERS[:] = [p for p in HELPERS if p.poll() is None]
+    return len(HELPERS)
+
+
+def maybe_helpers():
+    """start helpers up to WORKERS-1 while there is clear room and no research job"""
+    import subprocess
+    from when_free import free_gb
+    if helpers_alive() >= WORKERS - 1 or free_gb() < HELPER_START_GB or pack_building() or research_running():
+        return
+    cmd = [sys.executable, "-u", os.path.abspath(__file__), sym, rid, "--helper=%d" % os.getpid()]
+    log = open(BASE + ".log", "a", encoding="utf-8")
+    flags = 0x00000008 | 0x08000000 | 0x00000200 | 0x00004000         # detached, no window, own group, below normal
+    p = subprocess.Popen(cmd, cwd=HERE, stdout=log, stderr=subprocess.STDOUT, creationflags=flags, close_fds=True)
+    HELPERS.append(p)
+    print("  helper started (pid %d, %.1f GB free)" % (p.pid, free_gb()), flush=True)
 
 
 def journal():
@@ -159,7 +295,7 @@ def journal():
                   sec_per_draw=round(sum(own) / len(own)) if own else None,
                   best=max((r["net"] for r in rows), default=None))
         if st["sec_per_draw"] and state in ("running", "paused"):
-            st["eta_h"] = round((MAXN - len(rows)) * st["sec_per_draw"] / 3600, 1)     # worst case: no early stop
+            st["eta_h"] = round((MAXN - len(rows)) * st["sec_per_draw"] / 3600 / max(1, st.get("workers") or 1), 1)     # worst case: no early stop
         json.dump(st, open(sp + ".tmp", "w", encoding="utf-8"), indent=1)
         os.replace(sp + ".tmp", sp)
 
@@ -193,26 +329,36 @@ def journal():
         for x in [head] + rows:
             f.write(json.dumps(x) + "\n")
     os.replace(jp + ".tmp", jp)
-    done = {r["sd"] for r in rows}
-    out = open(jp, "a", encoding="utf-8")
-    sd = 0
+    import shutil
+    shutil.rmtree(CDIR, ignore_errors=True)                  # claims of a dead run: their seeds are simply free again
     beats = lambda: sum(1 for r in rows if r["net"] >= rn)
     hopeless = lambda: (len(rows) >= 10 and beats() >= 3) or (len(rows) >= 20 and beats() >= 4)    # 2026-10-21 owner list item 2
-    while len(rows) < MAXN and beats() <= ALLOW and not hopeless():
-        if sd in done:
-            sd += 1; continue
+    while True:
+        rows = jrows()
+        if over(rows, rn):
+            break
         while pack_building():                               # 2026-10-21: a member waits for a market pack - step aside
-            status("paused", rows, why="market pack"); time.sleep(60)
+            status("paused", rows, why="market pack", workers=1 + helpers_alive()); time.sleep(60)
         while free_gb() < ROOM_GB:                            # live bots first: wait for memory between draws
-            status("paused", rows, why="memory"); time.sleep(120)
-        status("running", rows, why=None)
-        t1 = time.time()
-        r = draw(sd)
-        row = {"kind": "draw", "sd": sd, "net": round(r["net"], 2), "trades": r["trades"], "pf": r["profit_factor"],
-               "sec": round(time.time() - t1), "at": now()}
-        out.write(json.dumps(row) + "\n"); out.flush(); os.fsync(out.fileno())
-        rows.append(row); done.add(sd); sd += 1
+            status("paused", rows, why="memory", workers=1 + helpers_alive()); time.sleep(120)
+        maybe_helpers()
+        status("running", rows, why=None, workers=1 + helpers_alive())
+        sd = claim_next(rows)
+        if sd is None:                                        # the last seeds are with the helpers: wait for them
+            if not helpers_alive():
+                shutil.rmtree(CDIR, ignore_errors=True)       # a helper died holding a claim: free its seed
+            time.sleep(30); continue
+        row = run_draw(sd)
+        rows = jrows()
         print("  draw %d: %.2f (%d as good as the robot, %d draws)" % (row["sd"], row["net"], beats(), len(rows)), flush=True)
+    for p in HELPERS:                                         # the verdict is in: draws still running would not count
+        try:
+            p.kill()
+        except Exception:
+            pass
+    rows = jrows()
+    if len(rows) > MAXN:
+        rows = sorted(rows, key=lambda r: r["sd"])[:MAXN]
     passed = beats() <= ALLOW and not hopeless()
     res = summary([r["net"] for r in rows], [r["trades"] for r in rows if r.get("trades")], [r["pf"] or 0 for r in rows if "pf" in r])
     res.update(verdict="beats chance" if passed else "within luck", rule="%d draws, at most %d as good" % (MAXN, ALLOW),
@@ -232,6 +378,8 @@ def journal():
     return 0
 
 
+if FLAGS.get("--helper"):
+    sys.exit(helper())
 if FLAGS.get("--journal"):
     sys.exit(journal())
 

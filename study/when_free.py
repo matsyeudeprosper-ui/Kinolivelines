@@ -25,7 +25,13 @@ def free_gb():
     return m.ullAvailPhys / 2**30
 
 
-def heavy_running(ignore_pid=None):
+def is_luck(cmd):
+    """a journal luck test or one of its helpers (2026-10-22, owner: "leave enough memory for research"): research may
+    run beside it - the luck test's extra draws step aside for research, its main draw keeps going"""
+    return "random_control_market" in (cmd or "") and ("--journal" in cmd or "--helper" in cmd)
+
+
+def heavy_running(ignore_pid=None, ignore_luck=False):
     try:
         out = subprocess.run(["powershell", "-NoProfile", "-Command",
                               "Get-CimInstance Win32_Process -Filter \"Name='python.exe' or Name='pythonw.exe'\" | ForEach-Object { $_.ProcessId.ToString() + '|' + $_.CommandLine }"],
@@ -36,6 +42,8 @@ def heavy_running(ignore_pid=None):
     for ln in out.splitlines():
         pid, _, cmd = ln.partition("|")
         if pid.strip() in (str(os.getpid()), str(ignore_pid or -1)):
+            continue
+        if ignore_luck and is_luck(cmd):
             continue
         if any(h in (cmd or "") for h in HEAVY) and "when_free" not in (cmd or ""):
             found.append(cmd.strip()[-70:])
@@ -62,7 +70,7 @@ def main():
         for attempt in range(1, TRIES + 1):
             steady = 0
             while steady < STEADY:
-                f = free_gb(); h = heavy_running()
+                f = free_gb(); h = heavy_running(ignore_luck=True)
                 if f >= NEED_GB and not h:
                     steady += 1
                 else:
