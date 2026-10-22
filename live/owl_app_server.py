@@ -12873,6 +12873,8 @@ def strategies_payload(detail):
 # the hourly Harvest robot and the Signal robot are robots too. Names below are generic on purpose
 # (package labels carry member names).
 ROBOT_NAMES = {
+    "simple": ("Simple - ton idée seule", "Simple - your idea alone", "Une position à la fois, taille fixe : pas de rattrapage, pas de cagnotte, aucun frein de l'Owl. Le choix par défaut pour tester TON idée.",
+               "One position at a time, fixed size: no catch-up, no jar, none of the Owl's brakes. The default to test YOUR idea."),
     "base": ("Owl Standard", "Owl Standard", "Le modèle dont tous les autres héritent.", "The model every other one inherits from."),
     "valere": ("Owl 3 $ par jour", "Owl $3 a day", "S'arrête pour la journée après 3 $ de gain.", "Stops for the day after $3 of gain."),
     "valere_cap3": ("Owl plafonné", "Owl capped", "3 $ par jour, et jamais plus de 3 % du solde en risque sur un trade.", "$3 a day, and never more than 3 % of the balance at risk on one trade."),
@@ -16698,6 +16700,9 @@ def _chat_build(cid, user):
                     threading.Thread(target=_demo_later, args=(cid, user, ans.get("show")), daemon=True).start()
                 if ans.get("understood"):
                     c["understood"] = ans["understood"]
+                if ans.get("robot"):                  # 2026-10-22: the spec sheet - what Kino chose that they never said
+                    c["kino_chose"] = [{"what": str(x.get("what") or "")[:120], "why": str(x.get("why") or "")[:160]}
+                                       for x in (ans.get("kino_chose") or []) if isinstance(x, dict) and x.get("what")][:10]
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
 
@@ -22524,7 +22529,8 @@ def robot_package(r, pieces, account_pkg=None, own_money=None):
     F = R.get("filters") or []
     pk = {"extends": own_money or account_pkg or R.get("money") or "base", "label": "Robot %s" % (r.get("name_fr") or r["id"]),
           "pb_dir_gate": "tendance-fond" in F, "pb_gate_mode": "trend", "movement": "mouvement" in F, "nervosity": "nervosite" in F,
-          "debt_gate": R.get("recovery") != "rattrapage-sans-limite",
+          # 2026-10-22: the 'simple' money (a member's idea alone) never gates follow-on trades - same as the bench
+          "debt_gate": R.get("recovery") != "rattrapage-sans-limite" and (own_money or R.get("money")) != "simple",
           # 2026-10-19 (owner): the storm rule is the robot's own - the Owl's piece keeps 1.85, none = no ceiling
           "storm_ceiling": float(((P.get("orage") or {}).get("engine") or {}).get("storm") or 1.85) if "orage" in F else 0.0,
           # 2026-10-19 (owner): a member's own robot built for another market trades there; the Bitcoin bot rests
@@ -22552,6 +22558,11 @@ def robot_package(r, pieces, account_pkg=None, own_money=None):
     fr = [(P.get(f) or {}).get("rule") for f in F if (P.get(f) or {}).get("rule")]
     if fr:
         rules["filters"] = fr
+    # 2026-10-22: limit/stop orders, partial closes and trailing stops run on the BENCH only - the live bot does not
+    # place them yet, so such a robot is tested but never put on an account (it would trade something else)
+    _todo = (["order"] if (rules.get("entry") or {}).get("order") else []) + [k for k in ("partial", "trail") if (rules.get("exit") or {}).get(k)]
+    if _todo:
+        raise ValueError("bench_only:" + ",".join(_todo))
     pk["robot_rules"] = rules or None
     pk["_why"] = "%s robot builder: robot '%s' plugged by the owner" % (datetime.now(timezone.utc).strftime("%Y-%m-%d"), r["id"])
     return pk

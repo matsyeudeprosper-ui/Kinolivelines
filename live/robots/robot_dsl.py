@@ -33,6 +33,18 @@ KINDS = ("entry", "filter", "stop", "exit")
 #   exit    adds "close_buy": F | null, "close_sell": F | null        closes the trade at the close of the candle
 #                                                                    where F is true (counts as an exit on its own)
 # Formula pieces run on the bench AND in the live bot (robot_live.Candles, owner OK 2026-10-19): live: true.
+#
+# 2026-10-22 (owner: "code strategies exactly as described" - limit/stop orders, partial closes, trailing stops):
+#   entry   adds "order": {"type": "limit" | "stop", "buy": P | null, "sell": P | null, "expire_min": 5..1440}
+#           the signal does not buy at once: an order waits at that PRICE (computed at the signal candle) - limit =
+#           a better price (below for a buy), stop = a breakout further on - cancelled after expire_min, or if the
+#           target is reached first. Executed like the live bot will: when the price touches it, a market order.
+#   exit    adds "partial": {"at": 0.3..5, "pct": 10..90}   close pct % of the trade once it gains `at` R
+#           adds "trail": {"start": 0.3..5, "dist": 0.2..3}  from `start` R, the stop follows the price `dist` R
+#           behind (it only ever tightens); a trail counts as an exit on its own
+# These three run on the BENCH; the live bot does not place them yet - a robot using them cannot go on an account
+# until it does (robot_package refuses, LIVE_TODO below).
+LIVE_TODO = ("order", "partial", "trail")
 import robot_expr as X
 
 
@@ -74,12 +86,27 @@ def validate(kind, rule):
     if kind not in KINDS or not isinstance(rule, dict):
         return False, "kind"
     if kind == "entry":
+        od = None
+        if rule.get("order") is not None:
+            o = rule.get("order")
+            if not isinstance(o, dict) or o.get("type") not in ("limit", "stop") or not _num(o.get("expire_min", 60), 5, 1440):
+                return False, "order"
+            ok, ab = _sides(o)
+            if not ok:
+                return False, "order " + str(ab)
+            od = {"type": o["type"], "buy": ab[0], "sell": ab[1], "expire_min": int(o.get("expire_min", 60))}
         if rule.get("event") == "formula":
             ok, ab = _sides(rule)
-            return (True, {"event": "formula", "buy": ab[0], "sell": ab[1]}) if ok else (False, ab)
-        if rule.get("event") not in ("any", "bos", "choch"):
+            out = {"event": "formula", "buy": ab[0], "sell": ab[1]} if ok else None
+        elif rule.get("event") in ("any", "bos", "choch"):
+            ok, out = True, {"event": rule["event"]}
+        else:
             return False, "event"
-        return True, {"event": rule["event"]}
+        if not ok:
+            return False, ab
+        if od:
+            out["order"] = od
+        return True, out
     if kind == "filter":
         k = rule.get("kind")
         if k == "formula":
@@ -126,7 +153,13 @@ def validate(kind, rule):
     oa, cb = _formula(rule.get("close_buy")); ob, cs = _formula(rule.get("close_sell"))
     if not oa or not ob:
         return False, "formula: " + str(cb if not oa else cs)
-    if t is None and not c and tm is None and cb is None and cs is None:
+    pa, tr = rule.get("partial"), rule.get("trail")
+    if pa is not None and (not isinstance(pa, dict) or not _num(pa.get("at"), 0.3, 5) or not _num(pa.get("pct"), 10, 90)
+                           or (t is not None and float(pa["at"]) >= float(t))):
+        return False, "partial"
+    if tr is not None and (not isinstance(tr, dict) or not _num(tr.get("start"), 0.3, 5) or not _num(tr.get("dist"), 0.2, 3)):
+        return False, "trail"
+    if t is None and not c and tm is None and cb is None and cs is None and tr is None:
         return False, "exit_none"
     if be is not None and t is not None and float(be) >= float(t):
         return False, "breakeven"
@@ -134,7 +167,22 @@ def validate(kind, rule):
            "breakeven_at": None if be is None else round(float(be), 2)}
     if cb is not None or cs is not None:
         out.update(close_buy=cb, close_sell=cs)
+    if pa is not None:
+        out["partial"] = {"at": round(float(pa["at"]), 2), "pct": int(round(float(pa["pct"])))}
+    if tr is not None:
+        out["trail"] = {"start": round(float(tr["start"]), 2), "dist": round(float(tr["dist"]), 2)}
     return True, out
+
+
+def needs_live_support(rules):
+    """the bench-only features a robot uses (LIVE_TODO) - it may be tested, not put on an account, until the live bot runs them"""
+    rules = rules or {}
+    out = []
+    if (rules.get("entry") or {}).get("order"):
+        out.append("order")
+    ex = rules.get("exit") or {}
+    out += [k for k in ("partial", "trail") if ex.get(k)]
+    return out
 
 
 DAYS_FR = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
@@ -157,6 +205,13 @@ def _fside(rule, a, b, lead_fr, lead_en):
 
 def describe(kind, rule):
     """the piece in plain words, (fr, en) - generated, so the words always say what the rule does"""
+    if kind == "entry" and rule.get("order"):
+        o = rule["order"]
+        base = describe(kind, {k: v for k, v in rule.items() if k != "order"})
+        w = ("un ordre limite (meilleur prix)", "a limit order (better price)") if o["type"] == "limit" else ("un ordre stop (cassure)", "a stop order (breakout)")
+        fr, en = _fside(o, "buy", "sell", "Au signal, place %s au prix " % w[0], "On the signal, places %s at the price " % w[1])
+        return (base[0] + " " + fr[:-1] + " - annulé après %d min s'il n'est pas touché." % o["expire_min"],
+                base[1] + " " + en[:-1] + " - cancelled after %d min if not touched." % o["expire_min"])
     if kind == "entry" and rule.get("event") == "formula":
         return _fside(rule, "buy", "sell", "Entre à la clôture de la bougie où la formule devient vraie, ", "Enters at the close of the candle where the formula turns true, ")
     if kind == "filter" and rule.get("kind") == "formula":
@@ -206,8 +261,17 @@ def describe(kind, rule):
     if rule.get("close_sell"):
         fr.append("quand « %s » (vente)" % rule["close_sell"]); en.append("when '%s' (sell)" % rule["close_sell"])
     many = len(fr) > 1
-    s_fr = "Ferme " + ", ".join(fr[:-1]) + (" ou " if many else "") + fr[-1] + (" (le premier qui arrive)" if many else "") + ", ou au stop."
-    s_en = "Closes " + ", ".join(en[:-1]) + (" or " if many else "") + en[-1] + (" (whichever comes first)" if many else "") + ", or at the stop."
+    if fr:
+        s_fr = "Ferme " + ", ".join(fr[:-1]) + (" ou " if many else "") + fr[-1] + (" (le premier qui arrive)" if many else "") + ", ou au stop."
+        s_en = "Closes " + ", ".join(en[:-1]) + (" or " if many else "") + en[-1] + (" (whichever comes first)" if many else "") + ", or at the stop."
+    else:
+        s_fr, s_en = "Ferme au stop (qui suit le prix).", "Closes at the stop (which follows the price)."
+    if rule.get("partial"):
+        s_fr += " Ferme %d %% du trade dès qu'il gagne %s R, le reste continue." % (rule["partial"]["pct"], _f(rule["partial"]["at"])[1])
+        s_en += " Closes %d%% of the trade once it gains %sR, the rest runs." % (rule["partial"]["pct"], _f(rule["partial"]["at"])[0])
+    if rule.get("trail"):
+        s_fr += " Dès %s R de gain, le stop suit le prix à %s R derrière (il ne recule jamais)." % (_f(rule["trail"]["start"])[1], _f(rule["trail"]["dist"])[1])
+        s_en += " From %sR of gain, the stop follows the price %sR behind (it never moves back)." % (_f(rule["trail"]["start"])[0], _f(rule["trail"]["dist"])[0])
     if rule.get("breakeven_at") is not None:
         s_fr += " Le stop passe au prix d'entrée dès que le trade gagne %s R." % _f(rule["breakeven_at"])[1]
         s_en += " The stop moves to the entry price once the trade gains %sR." % _f(rule["breakeven_at"])[0]

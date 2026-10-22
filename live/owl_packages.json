@@ -227,6 +227,41 @@
    "label": "Plafond +5 %/jour",
    "day_cap_pct": 5.0,
    "_note": "2026-10-14 owner: future paid option, 5% of the morning balance. Not assigned to any account yet."
+  },
+  "robot-pekos-owl": {
+   "extends": "valere_cap3_eqhalf",
+   "label": "Robot Pekos owl",
+   "pb_dir_gate": true,
+   "pb_gate_mode": "trend",
+   "movement": true,
+   "nervosity": false,
+   "debt_gate": true,
+   "rr": 1.0,
+   "robot_rules": null,
+   "_why": "2026-10-15 robot 'pekos-owl' put on expenses by the member"
+  },
+  "simple": {
+   "label": "Simple - l'idée seule",
+   "base_lot": 0.02,
+   "max_extra": 0,
+   "adds_on": false,
+   "chest_cap": 0.0,
+   "jar": false,
+   "kill_net": -60.0,
+   "min_balance": 20.0,
+   "max_risk_pct": 0.1,
+   "debt_mode": "hwm",
+   "debt_gate": false,
+   "day_cap": null,
+   "max_trades_day": null,
+   "week_target": null,
+   "nervosity": false,
+   "scale_with_balance": false,
+   "scale_ref_balance": 200.0,
+   "rr": 1.0,
+   "k_streak": 2,
+   "pb_dir_gate": false,
+   "_why": "2026-10-22 owner ('code the strategy exactly as described'): a member's robot is tested and traded as THEIR idea - one position at a fixed size (not scaled down after losses: 0.01 cannot be half-closed), no recovery bullets, no debt jar, no debt gate on follow-on trades, no Owl pullback gate. The Owl's money system only when they ask for it."
   }
  },
  "accounts": {
@@ -237,9 +272,17 @@
   "half": "halfdebt",
   "demo": "demo",
   "infinity": "valere",
-  "expenses": "valere_cap3_eqhalf",
+  "expenses": "robot-pekos-owl",
   "labo": "labo",
   "u477508138": "reference"
  },
- "robot_plugs": {}
+ "robot_plugs": {
+  "expenses": {
+   "robot": "pekos-owl",
+   "prev": "valere_cap3_eqhalf",
+   "at": "2026-10-15T17:13:36Z",
+   "by": "member"
+  }
+ },
+ "robot_pending": {}
 }

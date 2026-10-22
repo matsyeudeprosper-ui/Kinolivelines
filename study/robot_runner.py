@@ -64,6 +64,12 @@ def arm_for(name, parts, bars, S, pieces=None, opps=None):
     cfg_b["movement"] = int(fe.get("movement", 0))
     cfg_b["nerv_gate"] = bool(fe.get("nerv_gate", False))
     cfg = H.cfg_strict(dict(cfg_b, drag=DRAG, limits_live=1))
+    try:          # 2026-10-22: a package with debt_gate false (the 'simple' money: the member's idea alone) takes every
+        _pk = (json.load(open(os.path.join(LIVE, "owl_packages.json"), encoding="utf-8")).get("packages") or {}).get(pkg) or {}
+        if _pk.get("debt_gate") is False:            # follow-on trade while in the red, like the live bot (DEBT_GATE)
+            cfg["debt_gate"] = 0
+    except Exception:
+        pass
     rec = eng(parts.get("recovery") or "rattrapage-limite").get("recovery", "current")
     return DslArm(name, cfg, bars, S, dsl=dsl, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
                     stop="protected", allowance="all_bos" if rec == "all_bos" else "current",
