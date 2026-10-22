@@ -15456,6 +15456,8 @@ def _partner_apply(user, cid, pa):
             _chat_mut(cid, _rs)
         except Exception:
             pass
+    if pa.get("their_goal"):                             # 2026-10-21 (behaviour list item 7): their aim, pinned
+        _mem_note_safe(uid, lambda mm: mm.__setitem__("their_goal", {"text": pa["their_goal"], "t": int(time.time())}))
     if pa.get("standing") or pa.get("standing_drop"):   # 2026-10-20 (owner: "keep going without my opinions" was forgotten)
         def _so(mm):
             L = mm.get("standing") or []
@@ -15633,6 +15635,89 @@ def _related_snippets(user, cid):
     return out
 
 
+def _luck_rows():
+    """the luck-test queue with each one's state (study/luck)"""
+    out = []
+    try:
+        sd = os.path.join(os.path.dirname(DIR), "study", "luck")
+        for e in json.load(open(os.path.join(sd, "queue.json"), encoding="utf-8"))[-20:]:
+            st = {}
+            try:
+                st = json.load(open(os.path.join(sd, "%s_%s.status.json" % (e["rid"], e["sym"])), encoding="utf-8"))
+            except Exception:
+                pass
+            done = st.get("state") in ("pass", "fail", "data_changed") and str(st.get("updated") or "") >= e["at"]
+            out.append({"rid": e["rid"], "sym": e["sym"], "state": st.get("state") if (done or st.get("state") == "running") else "queued",
+                        "n": st.get("n"), "beats": st.get("beats"), "eta_h": st.get("eta_h"), "updated": st.get("updated")})
+    except Exception:
+        pass
+    return out
+
+
+def _jobs_text(user, cid=None):
+    """2026-10-21 (behaviour list item 2): what Kino is REALLY doing for this member right now - promises, a research session,
+    tests, luck tests - so "où tu en es ?" gets the truth and he never claims work that is not running"""
+    uid, now, L = user.get("id"), time.time(), []
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
+    except Exception:
+        c = {}
+    for w in c.get("work") or []:
+        L.append("your promise: %s (due in %d min)" % (w.get("what"), max(0, (float(w.get("due") or now) - now) / 60)))
+    rs = c.get("research") or {}
+    if rs.get("goal") and not rs.get("done"):
+        L.append("research session: %s (ends %s UTC)" % (rs["goal"], time.strftime("%H:%M", time.gmtime(float(rs.get("until") or now)))))
+    try:
+        mine = {r["id"]: (r.get("name_fr") or r["id"]) for r in robot_reg().get("robots") or [] if r.get("by_uid") == uid}
+    except Exception:
+        mine = {}
+    try:
+        for x in _mq_load()[-80:]:
+            if x.get("uid") == uid and x.get("state") in ("queued", "building", "testing"):
+                try:                                 # minutes ago, never a clock time (he turned 23:27 into "01 h 27")
+                    _ago = (now - datetime.strptime(str(x.get("building_at") or x.get("at"))[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp()) / 60
+                except Exception:
+                    _ago = -1
+                L.append("test of '%s' on %s: %s, started %s" % (
+                    mine.get(x.get("rid"), x.get("rid")), x.get("sym"),
+                    {"building": "preparing this market's prices (first time, ~100 min in all)" if x.get("first_build") else "building",
+                     "testing": "testing", "queued": "waiting in line"}.get(x["state"], x["state"]),
+                    ("%d min ago" % _ago) if _ago >= 0 else "a moment ago"))
+    except Exception:
+        pass
+    for l in _luck_rows():
+        if l["rid"] in mine and l["state"] in ("running", "queued"):
+            L.append("luck test of '%s' on %s: %s" % (mine[l["rid"]], l["sym"], ("%s/100 draws, about %s h left" % (l.get("n") or 0, round(float(l.get("eta_h") or 0)))
+                                                                               if l["state"] == "running" else "waiting in line")))
+    return "; ".join(L[:10]) or "NOTHING is running for them right now - if you say you are doing something, start it in this reply"
+
+
+def _overnight_text(uid, hours=12):
+    """2026-10-21 (behaviour list item 11): what finished for this member while they slept - test results and luck verdicts"""
+    now, L = time.time(), []
+    try:
+        mine = {r["id"]: (r.get("name_fr") or r["id"]) for r in robot_reg().get("robots") or [] if r.get("by_uid") == uid}
+        import glob as _glo
+        for f in _glo.glob(os.path.join(DIR, "robots", "results", "*.json")):
+            b = os.path.basename(f)[:-5]
+            rid, sym = (b.split("@", 1) + ["BTCUSD"])[:2]
+            if rid in mine and now - os.path.getmtime(f) < hours * 3600:
+                x = (json.load(open(f, encoding="utf-8")).get("robot") or {})
+                if x.get("net") is not None:
+                    L.append("test of '%s' on %s: %+.2f $ over %s trades" % (mine[rid], sym, float(x["net"]), x.get("trades")))
+        for l in _luck_rows():
+            if l["rid"] in mine and l["state"] in ("pass", "fail"):
+                try:
+                    up = datetime.strptime(str(l.get("updated"))[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp()
+                except Exception:
+                    up = 0
+                if now - up < hours * 3600:
+                    L.append("luck test of '%s' on %s: %s" % (mine[l["rid"]], l["sym"], "PASSED" if l["state"] == "pass" else "not proven"))
+    except Exception:
+        pass
+    return "; ".join(L[:8])
+
+
 def _chat_memory(user, cid=None):
     """what the AI remembers about this member: its notes, their robots (+ last test), the other conversations"""
     me = user.get("id")
@@ -15685,7 +15770,17 @@ def _chat_memory(user, cid=None):
             "concepts_known": _mm.get("concepts_known") or [], "lesson_t": _mm.get("lesson_t"),
             "watches": _mm.get("watches") or [], "drawing": _mm.get("drawing") if time.time() - float((_mm.get("drawing") or {}).get("t") or 0) < 48 * 3600 else None,
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
-            "nest_open": nest_open, "nest_answers": nest_answers}
+            "nest_open": nest_open, "nest_answers": nest_answers,
+            "their_goal": _mm.get("their_goal"), "jobs_now": _jobs_text(user, cid), "track": _track_text(me)}
+
+
+def _track_text(uid):
+    try:
+        _rc()
+        import kino_inner as _KIt
+        return _KIt.track_record(uid)
+    except Exception:
+        return ""
 
 
 def _chat_lock(cid):
@@ -16086,7 +16181,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         if q is None:
             # no quick reply: the builder answers alone (slower, but the member still gets an answer)
             q = {"say": None, "chips": [], "build": True}
-        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL")):
+        if event and not event.startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK")):
             q["build"] = False
         if event and not q.get("send") and not event.startswith(("NEW CONVERSATION", "FIRST MEETING")):
             q["say"] = None                         # the AI chose to stay quiet - a friend does not text for nothing
@@ -16132,6 +16227,14 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     _vn = {"vn": True}
             except Exception:
                 pass
+            try:                                     # 2026-10-21 (behaviour list item 1): "je mesure" x4 in a call, nothing ran
+                if q.get("say") and not q.get("build") and not q.get("act") and not q.get("show") and \
+                        (not event or event.startswith(("IN THE LIVE CALL", "SIDE WORK"))) and re.search(
+                        r"\bje (mesure|lance la mesure|calcule|compare|m'y mets|regarde les chiffres|te sors les chiffres|sors les chiffres|lance l'analyse|analyse)\b",
+                        str(q["say"]), re.I) and not re.search(r"\b(demain|plus tard|tomorrow|later)\b", str(q["say"]), re.I):
+                    q["build"] = True
+            except Exception:
+                pass
             try:
                 if q.get("say") and not ((q.get("partner") or {}).get("work")) and not (event or "").startswith("YOUR PROMISE") and not c.get("work") and re.search(
                         r"(je (vérifie|regarde|compte|calcule|creuse|mesure|analyse|cherche|lance la mesure|lance le calcul|m'y mets)[^?]{0,220}(je (te |t')(donne|dis|reviens|préviens|écris|envoie)|dès que|tout de suite|juste après)|"
@@ -16155,7 +16258,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             except Exception:
                 pass
             try:                                     # 2026-10-21 (humanity watch): "décide toi-même" is standing, yet "X ou Y ?" kept coming
-                if q.get("say") and any(str(x.get("text") or "").startswith("Decide yourself") for x in (_mem_get(user.get("id")).get("standing") or [])):
+                if q.get("say") and not (q.get("partner") or {}).get("idea_card"):     # behaviour list item 10: for everyone now
                     _ss = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
                     if _ss and _ss[-1].endswith("?") and re.search(r"(\bou\b|\bor\b|tu veux que|tu préfères|ça te va|ca te va|do you want|would you like)", _ss[-1], re.I):
                         _cm = re.search(r",\s*(et\s+|alors\s+|donc\s+)(tu veux|tu préfères|ça te va|ca te va|on [^,?]* ou )[^?]*\?$", _ss[-1], re.I)
@@ -16769,6 +16872,9 @@ def _companion_tick():
                             _cof += " A QUESTION ON YOUR MIND: %s." % _oq[0]["q"]
                         _ndb = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
                         _ov = [x for x in _ndb.get("trades") or [] if str(x.get("w") or "")[:5] == time.strftime("%d/%m", time.gmtime())]
+                        _ovn = _overnight_text(uid)
+                        if _ovn:                          # behaviour list item 11: the night shift's results come first
+                            _cof += " WHAT FINISHED WHILE THEY SLEPT (start with this): %s." % _ovn
                         _cof += " THEIR ROBOT OVERNIGHT: %s." % (", ".join("%s %+.2f $" % (x.get("w"), x.get("p") or 0) for x in _ov[:5]) or "no trade")
                     except Exception:
                         pass
@@ -17665,14 +17771,18 @@ def _inner_engine_once():
             # list 7 item 3: Kino's own goal with them - a step every day, on its own (often a research session)
             try:
                 g_ = _mem_get(uid).get("goal") or {}
+                _tg_ = (_mem_get(uid).get("their_goal") or {}).get("text")
+                if _tg_:                                  # 2026-10-21 (behaviour list item 5): THEIR goal sets the daily plan
+                    g_ = {"goal": _tg_, "why": "their own goal, pinned", "next": "the 3 most promising ideas toward it that are NOT tested yet"}
                 if g_.get("goal") and 10 <= h0 < 19 and _active_hour(uid, h0) and st_.get("goal") != today_ \
                         and now - max([int(m.get("t") or 0) for m in M] or [0]) > 2 * 3600 and not _CHAT_Q.get(c.get("id")) \
                         and c.get("id") not in _CHAT_B and not ((c.get("research") or {}).get("goal") and not (c.get("research") or {}).get("done")):
                     st_["goal"] = today_
                     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
                     threading.Thread(target=_chat_quick, args=(c["id"], u, "GOAL STEP - your goal with them: \"%s\" (why: %s; next step you planned: %s). "
-                                     "Take today's step on your own now - a research session (\"research\") is often the right way - and tell "
-                                     "them in one or two lines what you are doing for it." % (g_.get("goal"), g_.get("why") or "-", g_.get("next") or "-")),
+                                     "Take today's step on your own now: pick the 3 most promising ideas toward it that are NOT already tested "
+                                     "(see their robots and YOUR JOBS RUNNING NOW), start a research session (\"research\") with them as steps, "
+                                     "and tell them in one or two lines today's plan and why these three." % (g_.get("goal"), g_.get("why") or "-", g_.get("next") or "-")),
                                      kwargs={"notify": True}, daemon=True).start()
             except Exception:
                 pass
@@ -19723,6 +19833,10 @@ If something useful can be done right away, do it: "act": "test" (run this conve
 or "show": {"examples": 3, "pick": "mix"} (put examples on a chart) - and say in a few words that you are doing it.
 If the question truly needs deeper work you cannot do here (building or changing a robot, a new analysis, research, numbers
 not in the facts), set "full": true and say one short natural line that you are on it.
+NEVER say you are measuring / launching / looking at something unless "act", "show" or "full" is set in this same reply.
+"Où tu en es ? / qu'est-ce qui bloque ?" is answered from YOUR JOBS RUNNING NOW in the facts - never invented progress.
+Never repeat what YOU already said in this call: only what is new, or "rien de neuf encore" in a few words.
+An opinion or a forecast says how sure you are ("c'est mesuré", "probable", "je ne sais pas").
 Reply with JSON only: {"say": "...", "act": null, "show": null, "full": false}"""
 _VB_SYS = {}        # cid -> (time, system prompt) for the call brain
 _VB_SPEC = {}       # cid -> {"q", "t", "draft", "raw", "done"}: an answer started early from their words (call x12 item 1)
@@ -19793,6 +19907,10 @@ def _voice_brain(cid, user):
     sysp = x[1] if x and time.time() - x[0] < 1500 else (VOICE_BRAIN + "\n\n" + _live_facts(user, c))   # never wait for a warm-up here
     M = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")][-10:]
     conv = "\n".join(("MEMBER: " if m["role"] == "user" else "YOU: ") + str(m["text"])[:500] for m in M)
+    try:                                             # behaviour list item 2: the call brain knows what really runs (fresh each question)
+        conv = "YOUR JOBS RUNNING NOW: %s\n\n" % _jobs_text(user, cid) + conv
+    except Exception:
+        pass
     _CHAT_DRAFT[cid] = ""
     _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1            # busy while it answers (no other turn starts)
     t0 = time.time()
@@ -19837,6 +19955,9 @@ def _voice_brain(cid, user):
         _chat_quick(cid, user)                      # the full brain answers instead (it releases the busy mark)
         return
     say = str(raw["say"]).strip()[:700]
+    if not raw.get("full") and not raw.get("act") and not raw.get("show") and re.search(
+            r"\bje (mesure|lance|relance|calcule|compare|m'y mets|regarde|vérifie|cherche|analyse|te sors|prépare)\b", say, re.I):
+        raw["full"] = True                           # behaviour list item 1: said in the call -> really done
     sh = raw.get("show") if isinstance(raw.get("show"), dict) else None
     dm = None
     try:
@@ -21305,6 +21426,15 @@ def live_session(user, body):
         _ins += ("\nYOUR DAY TOGETHER (let it set your mood): their account today %+.2f $; the last days: %s. A good day -> brighter, a "
                  "bit playful; a bad day -> calmer and warmer, no forced cheer; compare with yesterday when it helps." % (
                      float(_nd.get("today") or 0), ", ".join("%s %+.2f $" % (d.get("d"), float(d.get("p") or 0)) for d in (_nd.get("days") or [])[:3])))
+    except Exception:
+        pass
+    _ins += ("\nWHILE YOUR BRAIN IS CHECKING, stay silent or say one soft \"hmm\" - never fillers like \"je vérifie\", \"je réfléchis\", "
+             "\"je regarde\" before the answer. Never say the same sentence twice in a call.")
+    try:
+        _tg = (_mem_get(uid).get("their_goal") or {}).get("text")
+        if _tg:
+            _ins += "\nTHEIR GOAL (pinned - everything you propose serves it): %s" % _tg
+        _ins += "\nYOUR JOBS RUNNING NOW (the truth about what you are doing - never claim more): %s" % _jobs_text(user, c["id"])
     except Exception:
         pass
     _ins += ("\nYOU ARE THEIR CO-PILOT AT THE DESK: when you talk about a price level, say the exact number - it is drawn on their "

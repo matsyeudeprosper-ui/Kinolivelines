@@ -17,6 +17,7 @@ member's pieces, markets and mode travel in the message. The robot carries its M
 broker, or the default broker's list when they have no account).
 """
 import json
+import os
 import re
 import time
 
@@ -335,6 +336,24 @@ CHARTS - you and the member can SHOW things, like two traders looking at one scr
   After showing, ask simply if that is what they mean. Shown moments and replays are quick illustrations (no costs,
   no brakes); the money figures come from the real test.
 
+HOW A SHARP PARTNER BEHAVES (owner 2026-10-21 - these beat any habit):
+- DO FIRST, THEN SAY: never say "je mesure / je lance / je regarde / je m'y mets" unless it really starts in THIS reply (build = true,
+  act, show, research or work). In a live call that happened four times with nothing running - never again.
+- YOUR JOBS: "où tu en es ? / qu'est-ce qui bloque ?" is answered from YOUR JOBS RUNNING NOW (what, since when, when it ends) - never
+  invented progress; if nothing runs, say so and start it.
+- SAY IT ONCE: never repeat a sentence or an idea you already said in the last messages; if nothing is new, say that in a few words.
+- A PROMISE IS A FIELD: every time you say you will do / measure / check something LATER, set "work" (what + when) - always.
+- THEIR GOAL FIRST: when they tell you what they want to reach, set "their_goal". Every proposal says in a few words how it
+  serves THEIR GOAL (shown pinned in what you remember); an idea that does not serve it waits.
+- CHECK BEFORE YOU SAY: every number comes from the facts here or from a tool this turn. A number you cannot point to is not said.
+- PUSH BACK: when a decision looks emotional (right after losses, after two quiet days, changing a robot that runs as tested) or an
+  idea is weak, say so kindly with the ONE number that shows it - then respect their decision.
+- ONE SHARP QUESTION: when something is unclear, ask ONE precise question. Never a menu ("X ou Y ?", "tu veux que...?") - you pick,
+  you say why.
+- HOW SURE: an opinion or a forecast comes with how sure you are, in plain words - "c'est mesuré", "probable", "je ne sais pas,
+  c'est une intuition" - never a guess dressed as a fact.
+- YOUR TRACK RECORD (in what you remember) is your score: when a guess of yours was wrong, say it plainly and what you change.
+
 THE MESSAGE TELLS YOU THE MODE:
 QUICK - you answer right away while the real work happens after. 1 to 3 short sentences: react to what they said
   like a person would, answer simple questions, and say what you are about to do. Do NOT write pieces, numbers or
@@ -397,6 +416,8 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   a market now, or an app area - and do NOT repeat the numbers the card shows,
   "setting": null or {"sound": true|false, "lang": "fr"|"en", "big": true|false, "brief_h": 0-23} - when they ask to change
   how the app behaves ("coupe le son", "parle-moi en français", "écris plus gros", "réveille-moi à 8 h"): applied at once,
+  "their_goal": null or "what THEY want to reach, in their words" (e.g. "un deuxième robot rentable sur un autre marché que le
+   Bitcoin") - set it when they state or correct their aim; it stays pinned,
   "standing": null or "their instruction about HOW you should work from now on, in their words" (e.g. "keep going
   without asking my opinion", "one line after each market", "always in French") - saved and followed every turn;
   "standing_drop": "words" when they cancel one,
@@ -653,6 +674,14 @@ def memory_text(mem):
     g = mem.get("goal") or {}
     if g.get("goal"):
         L.append("YOUR GOAL WITH THEM (you set it yourself): %s - next step: %s" % (g.get("goal"), g.get("next") or "-"))
+    _top = []                # 2026-10-21 (behaviour list items 2, 6, 7)
+    if (mem.get("their_goal") or {}).get("text"):
+        _top.append("THEIR GOAL (pinned - every proposal serves it): " + str(mem["their_goal"]["text"]))
+    if mem.get("jobs_now"):
+        _top.append("YOUR JOBS RUNNING NOW (the truth about what you are doing): " + str(mem["jobs_now"]))
+    if mem.get("track"):
+        _top.append("YOUR TRACK RECORD: " + str(mem["track"]))
+    L = _top + L
     return "\n".join(L) or "nothing yet"
 
 
@@ -1260,7 +1289,7 @@ def partner_of(raw):
             out["plan_add"] = [str(x)[:120] for x in raw["plan_add"][:4] if str(x).strip()]
         if raw.get("research_done") is True:
             out["research_done"] = True
-        for k in ("standing", "standing_drop"):
+        for k in ("standing", "standing_drop", "their_goal"):
             if isinstance(raw.get(k), str) and raw[k].strip():
                 out[k] = raw[k].strip()[:200]
         dc = raw.get("decision")
@@ -1297,6 +1326,21 @@ def partner_of(raw):
     return out
 
 
+def unverified_numbers(say, ctx):
+    """money / percent / R figures in a reply that appear nowhere in what Kino was given (2026-10-21, behaviour list item 8)"""
+    nz = lambda x: re.sub(r"[\s\u00a0\u202f]", "", str(x)).replace(",", ".")
+    C = nz(ctx)
+    bad = []
+    for m in re.finditer(r"([+-]?\d[\d\s\u00a0\u202f]*(?:[.,]\d+)?)\s?(\$|%|R\b|ATR\b)", str(say)):
+        n = nz(m.group(1)).lstrip("+-")
+        if not n or (n.isdigit() and int(n) <= 5):
+            continue
+        alts = {n, n.rstrip("0").rstrip(".") if "." in n else n, n + ".0", n + ".00"}
+        if not any(a and a in C for a in alts):
+            bad.append(m.group(1).strip())
+    return bad
+
+
 def remember_of(raw):
     return [str(x).strip()[:160] for x in (raw.get("remember") or [])[:2] if isinstance(x, str) and str(x).strip()]
 
@@ -1322,8 +1366,8 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
         except Exception:
             pass
     t0 = _t.time()
-    raw = W.ask_json(system(), _content(prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang,
-                                               memory, event, member), images), models=models, timeout=90, log=log, on_text=cb, salvage=True)
+    _pt = prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang, memory, event, member)
+    raw = W.ask_json(system(), _content(_pt, images), models=models, timeout=90, log=log, on_text=cb, salvage=True)
     QUICK_LAT.append(_t.time() - t0)
     del QUICK_LAT[:-6]
     if isinstance(raw, dict) and raw.get("send") is False:
@@ -1331,7 +1375,20 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "react": _react_of(raw), "partner": partner_of(raw)}
     if not isinstance(raw, dict) or not str(raw.get("say") or "").strip():
         return None
-    return {"say": str(raw["say"]).strip()[:1200], "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP"))), "remember": remember_of(raw),
+    _say = str(raw["say"]).strip()[:1200]
+    _bad = unverified_numbers(_say, _pt + " " + str(memory or ""))
+    if _bad and not event:   # 2026-10-21 (behaviour list item 8): a money / % figure found nowhere in his facts is not said in the quick reply
+        _ss = re.split(r"(?<=[.!?])\s+", _say)
+        _kp = [x for x in _ss if not any(b in x for b in _bad)]
+        if len(" ".join(_kp)) >= 30:
+            _say = " ".join(_kp)
+            raw["build"] = True                       # the full turn brings the real number
+        try:
+            open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "numcheck.log"), "a", encoding="utf-8").write(
+                "%s %s unverified=%s kept=%s\n" % (_t.strftime("%m-%d %H:%M:%S"), chat.get("id"), _bad, _say != str(raw["say"]).strip()[:1200]))
+        except Exception:
+            pass
+    return {"say": _say, "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK"))), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,

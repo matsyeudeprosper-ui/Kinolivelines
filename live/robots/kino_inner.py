@@ -661,11 +661,34 @@ def resolve_test_bet(uid, net):
 
     def f(dd):
         dd["test_bets"][uid].update(done=time.time(), right=right, net=net)
+        # 2026-10-21 (behaviour list item 6): every guess is kept, so Kino knows his own score
+        dd["test_bet_log"] = ((dd.get("test_bet_log") or []) + [dict(dd["test_bets"][uid], uid=uid)])[-60:]
     _mut(f)
     add_thought(("J'avais parié que son test (%s) sortirait %s - %s ! (%+.2f $)" % (
         b["label"], "positif" if b["bet"] == "positive" else "négatif", "gagné" if right else "perdu, il m'a surpris", float(net))),
         "bet", 0.5, uid=uid, src="testbet", half_h=6)
     mood_nudge(0.02 if right else -0.01, "mon pari sur un test de membre était %s" % ("juste" if right else "faux"))
+
+
+def track_record(uid=None):
+    """Kino's own score, in one line for his prompt: his guesses on test results and his market hunches"""
+    d = _load()
+    L = d.get("test_bet_log") or [dict(v, uid=k) for k, v in (d.get("test_bets") or {}).items() if v.get("done")]
+    L = [x for x in L if uid is None or x.get("uid") == uid]
+    out = []
+    if L:
+        r = sum(1 for x in L if x.get("right"))
+        miss = next((x for x in reversed(L) if not x.get("right")), None)
+        out.append("your guesses on their test results: %d right out of %d%s" % (
+            r, len(L), ("; last miss: you said %s for %s, it came out %+.2f $" % (
+                "positive" if miss.get("bet") == "positive" else "negative", miss.get("label"), float(miss.get("net") or 0))) if miss else ""))
+    try:
+        sc = hunch_score()
+        if sc.get("n"):
+            out.append("your market hunches: %d right out of %d" % (sc["right"], sc["n"]))
+    except Exception:
+        pass
+    return " | ".join(out)
 
 
 # ---------------------------------------------------------------- 9 notes to self (written by the nightly review)
