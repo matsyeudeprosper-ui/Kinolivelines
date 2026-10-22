@@ -15083,6 +15083,11 @@ def chat_undo(user, body):
 def _chat_msg(c, role, **kw):
     m = {"role": role, "t": int(time.time())}
     m.update(kw)
+    # 2026-10-22: a model reply ended in 23 "\n\n\n<br>" blocks - the page showed 23 "<br>" bubbles. Text is plain text here:
+    # an HTML line break is a newline, and runs of blank lines are one paragraph break.
+    if isinstance(m.get("text"), str):
+        import re as _re
+        m["text"] = _re.sub(r"\n{3,}", "\n\n", _re.sub(r"(?i)<br\s*/?>", "\n", m["text"])).strip()
     c.setdefault("msgs", []).append(m)
     return m
 

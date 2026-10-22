@@ -204,7 +204,10 @@ def clock_offset_s(mt5, symbol):
         tk = mt5.symbol_info_tick(symbol)
         if tk is None or not getattr(tk, "time", 0):
             return 0
-        return int(round((int(tk.time) - time.time()) / 3600.0)) * 3600
+        off = int(round((int(tk.time) - time.time()) / 3600.0)) * 3600
+        # 2026-10-22: right after a reboot the terminal still shows its pre-reboot tick, hours old, and Exness
+        # (UTC+0) measured UTC-1 / UTC-5. A broker clock BEHIND UTC is a stale tick, not a real offset.
+        return max(off, 0)
     except Exception:
         return 0
 
@@ -217,4 +220,7 @@ def deals_utc(mt5, frm, to, off_s):
     ds = mt5.history_deals_get(frm + sh, to + sh) or []
     if not off_s:
         return list(ds)
-    return [d._replace(time=int(d.time) - int(off_s), time_msc=int(getattr(d, "time_msc", d.time * 1000)) - int(off_s) * 1000) for d in ds]
+    # MT5's TradeDeal has _asdict() but no _replace() (AttributeError every 30 s on Dad, 2026-10-22)
+    from types import SimpleNamespace as _NS
+    return [_NS(**dict(d._asdict(), time=int(d.time) - int(off_s),
+                       time_msc=int(getattr(d, "time_msc", d.time * 1000)) - int(off_s) * 1000)) for d in ds]
