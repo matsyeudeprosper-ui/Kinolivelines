@@ -5,7 +5,7 @@ So the workshop keeps up to WARM ready processes per system prompt: started in a
 robot_interview.call - no tools, no MCP, no session, empty folder), each one answers ONE message and is thrown
 away, and a fresh one starts behind it. Nobody in the workshop for IDLE seconds = no process kept (each ~175 MB).
 """
-import hashlib, io, json, os, queue, subprocess, threading, time
+import hashlib, io, json, os, queue, re, subprocess, threading, time
 
 import robot_interview as IV
 
@@ -91,8 +91,31 @@ def _reaper():
 threading.Thread(target=_reaper, daemon=True).start()
 
 
+_PARAM = re.compile(r'<parameter name="([A-Za-z_]+)">(.*?)(?:</parameter>|$)', re.S)
+
+
+def param_fields(txt):
+    """2026-10-22: the model sometimes answers in tool-call form - <parameter name="notes">...</parameter><parameter
+    name="say">...</parameter> - instead of JSON; the chat then showed those tags. Read it as the same fields."""
+    if '<parameter name="' not in (txt or ""):
+        return None
+    out = {}
+    for k, v in _PARAM.findall(txt):
+        v = v.strip()
+        try:
+            out[k] = json.loads(v) if v[:1] in "{[" or v in ("null", "true", "false") or re.fullmatch(r"-?\d+(\.\d+)?", v) else v
+        except Exception:
+            out[k] = v
+    return out if str(out.get("say") or "").strip() else None
+
+
 def partial_say(buf, key="say"):
     """the "say" text (or another string field) of a JSON answer still being written (for the typing bubble), or "" """
+    tag = '<parameter name="%s">' % key
+    if tag in buf:                                   # tool-call form (see param_fields)
+        return buf.split(tag, 1)[1].split("</parameter>", 1)[0]
+    if '<parameter name="' in buf:
+        return ""
     i = buf.find('"%s"' % key)
     if i < 0:
         return ""
@@ -189,6 +212,9 @@ def ask_json(system, user, models=("sonnet", "haiku"), timeout=150, log=None, on
     for m in models:
         txt = ask_text(system, user, m, timeout, log, on_text, warm=warm) or ""
         j = IV.first_json(txt)
+        if j is not None:
+            return j
+        j = param_fields(txt)
         if j is not None:
             return j
         t = txt.strip()
