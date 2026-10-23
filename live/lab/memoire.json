@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-23T13:31:30Z",
+ "updated": "2026-10-23T15:00:33Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -101,7 +101,8 @@
     "2026-10-20 17:00 veille: day FLIP-BOS SELL -6.69 (closed 16:33). Day since 08:00 9 tr 1 won ~-29. 16 h 7 tr 1 won -22.69. As predicted (one day, peu).",
     "2026-10-20 18:30 veille: day FLIP-BOS BUY -4.89 (closed 18:25). Day since 08:00 10 tr 1 won ~-34. As predicted (one day, peu).",
     "2026-10-23 12:00 veille: 12 closes since 10-22 13:19, 2 won ~-35; both wins night BOS SELL (+17.24, +7.98). By hour: 01-03 h 32 tr 72% +60.8; 13 h 7 tr 0 won -49.22; 16 h 9 tr 1 won -45.88. As predicted (peu per hour).",
-    "2026-10-23 13:30 veille: day BOS SELL -7.17 (closed 13:24, pace 0.772 calm). Pile cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree), was 36 tr -50.10 on 10-15; inside 1.3-1.85 12 tr -43.82, held 30-60 min 9 tr 2 won -47.86. As predicted."
+    "2026-10-23 13:30 veille: day BOS SELL -7.17 (closed 13:24, pace 0.772 calm). Pile cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree), was 36 tr -50.10 on 10-15; inside 1.3-1.85 12 tr -43.82, held 30-60 min 9 tr 2 won -47.86. As predicted.",
+    "2026-10-23 15:00 veille: two day FLIP-BOS BUY losses 13:32/13:45 (-13.95). 13 h now 8 tr 0 won -53.98. As predicted (peu per hour)."
    ],
    "next": "Re-read by src once real_pool_split is built."
   },
@@ -207,7 +208,8 @@
     "2026-10-20: ask flip_hot (labo, 49 tr 43% vs 54%, -36.41; inside: pace 1.0-1.3 26 tr 35% -31, after a loss 28 tr -29.6). On S: fh 0.5 A +2.3 (hole 52.4), 0.6 C -0.3, 0.75 A +1.4; 69 d fh0.75 A +1.0. Filtered real since 10-10: nervous flips 8 tr 3 won -9.15/0.01, calm 6 tr 5 won +5.09 (trop peu). Neutral-positive, below one trade.",
     "2026-10-20 17:00 veille: FLIP-BOS SELL -6.69 (closed 16:33, pace 1.724 nervous, day) lost as predicted. flip_hot 50 tr 42% vs 53% -43.10 PF 0.65 (h 33/50); flip_day 67 tr 42% -55.31 (h 26/58). Both still losing, second halves softer.",
     "2026-10-20 18:30 veille: FLIP-BOS BUY -4.89 (closed 18:25, pace 1.398 nervous, day) lost as predicted. flip_hot 51 tr 41% vs 53% -47.99 PF 0.62 (h 33/48); after a loss 30 tr 37% -41.19; flip_day 68 tr 41% -60.20 (h 26/56). Second halves still softer.",
-    "2026-10-23 12:00 veille: flip_after_loss 64 tr 42% vs 52% -54.44 PF 0.64 (h 39/45); nervous 1.0-1.3 15 tr 27% -36.46; FLIP-BOS SELL 02:31 -18.30 (night, pace 1.06) a big night flip loss, against 'night flips win'. Answered labo ask."
+    "2026-10-23 12:00 veille: flip_after_loss 64 tr 42% vs 52% -54.44 PF 0.64 (h 39/45); nervous 1.0-1.3 15 tr 27% -36.46; FLIP-BOS SELL 02:31 -18.30 (night, pace 1.06) a big night flip loss, against 'night flips win'. Answered labo ask.",
+    "2026-10-23 15:00 veille: two day FLIP-BOS BUY lost (13:32 -4.76 pace 1.036, 13:45 -9.19 pace 1.239, both nervous). flip_day 76 tr 39% vs 53% -97.36 PF 0.50 (h 31/49); nervous 1.0-1.3 inside 23 tr 30% -63.33; after a loss 51 tr 35% -75.78. As predicted. nervgate/debtnerv twins refused both."
    ],
    "next": "battery verdict pb_choch_ext500_fh05; watch the filtered real split grow."
   },
@@ -2889,6 +2891,11 @@
    "t": "2026-10-23T13:31:30Z",
    "look": "veille: BOS SELL -7.17 (13:24, pace 0.772, day); --by hour, --pile cont_day, --by dur",
    "saw": "cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree): the day breakout leak holds past 30. --by dur: 30-60 min 29 tr 48% -30.77, <15 min 97 tr -44.45. All five twins took the trade: ext700 44 tr -89.91, fit3 38 -77.75, bul4 28 -69.33, debtnerv 21 -44.39, nervgate 7 -33.31. No ask, no run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-23T15:00:33Z",
+   "look": "veille: 2 FLIP-BOS BUY losses (13:32 -4.76 pace 1.036, 13:45 -9.19 pace 1.239, day); --pile flip_day, --by hour",
+   "saw": "flip_day 76 tr 39% vs 53% -97.36 PF 0.5 (h 31/49), was 68 tr -60.20 on 10-20; inside nervous 1.0-1.3 23 tr 30% -63.33, after a loss 51 tr 35% -75.78 (h 28/42). Hour 13 h 8 tr 0 won -53.98; 01-03 h 32 tr ~72% +60.8. Twins: ext700 45 -94.56, fit3 39 -82.33, bul4 29 -73.98 took one each; debtnerv 21 -44.39 and nervgate 7 -33.31 unchanged = refused both (nervous). No ask, no run, no pile, no proposal."
   }
  ],
  "lessons": [
