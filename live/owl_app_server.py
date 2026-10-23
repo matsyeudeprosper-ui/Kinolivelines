@@ -16196,10 +16196,22 @@ def _chat_prewarm_bg(user, c):
     threading.Thread(target=_chat_prewarm, args=(user, c), daemon=True).start()
 
 
+_CTX_T = {}        # cid -> the prefetch thread running now (2026-10-23 speed: ctx=2.3-12 s per reply in kino_timing.log)
+
+
 def _ctx_get(user, cid, c):
+    """the context prepared during the burst wait. 2026-10-23: the prefetch takes 2-5 s on the live box and the burst wait is
+    0.9-1.8 s, so it was almost never ready - and everything was rebuilt here, in the member's wait, while the prefetch
+    finished for nobody. Now this waits for the running prefetch (up to 6 s) before rebuilding."""
     x = _CTX.pop(cid, None)
     if x and time.time() - x[0] < 20:
         return x[1:]
+    th = _CTX_T.get(cid)
+    if th is not None and th.is_alive():
+        th.join(6)
+        x = _CTX.pop(cid, None)
+        if x and time.time() - x[0] < 20:
+            return x[1:]
     return (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
 
 
@@ -16210,7 +16222,8 @@ def _chat_listen(cid, user):
         return
     _CHAT_WAIT.add(cid)
     t0 = time.time()
-    threading.Thread(target=_ctx_prefetch, args=(user, cid), daemon=True).start()
+    _CTX_T[cid] = threading.Thread(target=_ctx_prefetch, args=(user, cid), daemon=True)
+    _CTX_T[cid].start()
     try:
         while time.time() - t0 < 20:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))

@@ -894,7 +894,25 @@ def system(stable=""):
     return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "") + "\n\n" + AGENDA_RULES + (("\n\n" + gb) if gb else "") + (("\n\n" + stable) if stable else "")
 
 
+_STABLE_CACHE = {}     # key -> (t, text): 2026-10-23 (speed) the block costs 1.3-2 s to build and changes at most once a minute
+                       # (the server rebuilds the member facts at most every 60 s); quick() and answer() rebuilt it on every reply
+
+
 def stable_block(member, owl, pieces, markets, current=None, lang="fr", memory=None, key=None):
+    if key is not None:
+        x = _STABLE_CACHE.get((key, lang, current))
+        if x and time.time() - x[0] < 60:
+            return x[1]
+    out = _stable_block(member, owl, pieces, markets, current, lang, memory, key)
+    if key is not None:
+        _STABLE_CACHE[(key, lang, current)] = (time.time(), out)
+        if len(_STABLE_CACHE) > 200:
+            for k in sorted(_STABLE_CACHE, key=lambda k: _STABLE_CACHE[k][0])[:100]:
+                _STABLE_CACHE.pop(k, None)
+    return out
+
+
+def _stable_block(member, owl, pieces, markets, current=None, lang="fr", memory=None, key=None):
     """2026-10-23 (cost): the blocks that do not change from one turn to the next - the member's situation, the lab digest,
     the lessons and habits, the markets, the piece catalog (~30 000 of the 60 000 chars of a turn) - go into the SYSTEM
     prompt, which the API caches: measured in live calls, the same text cached costs a tenth ($0.006 vs $0.06 a turn).
