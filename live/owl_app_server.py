@@ -19668,6 +19668,10 @@ def chat_send(user, body):
         _chat_mut(c["id"], _iok)
     _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **_ex))
     _CHAT_TYPING.pop(c["id"], None)
+    try:                                         # 2026-10-23 (watch): "All ✅" in words while the moments wait for taps
+        _typed_votes(user, c["id"], text)
+    except Exception:
+        pass
     try:                                         # 2026-10-20 (inner v2 item 1): did they answer what Kino sent on its own?
         _rc()
         import kino_inner as _KIs
@@ -20233,6 +20237,39 @@ def _check_state(c, user):
     if any(v is False for v in V.values()):
         return "no"
     return "ok" if len(V) >= int(ck.get("n") or 0) else "open"
+
+
+_ALL_YES = re.compile("^\\s*(?:\\u2705\\s*)*(?:all|all of them|tout|tous|toutes|everything|les\\s*\\d+|yes (?:to|for) all|oui pour tous|ok pour tous|ok for all)(?:\\s*(?:\\u2705|ok|good|bon|oui|yes|c'est bon|valid[ée]s?|validated))?[\\s!.]*(?:\\u2705\\s*)*$|^\\s*(?:\\u2705\\s*){3,}$", re.I)
+
+
+def _typed_votes(user, cid, text):
+    """2026-10-23 (watch): "All ✅" typed in the chat while the moments card waited for taps - 3 of 5 were tapped, the rest
+    said in words, nothing counted, Kino said "launching now" with nothing running and then asked them to tap again.
+    Words are a vote too: every moment still unvoted gets ✅, and the test is queued as the card's button would."""
+    if not _ALL_YES.match(text or ""):
+        return False
+    c = _chat_load(user, cid)
+    if c is None or not c.get("check") or _check_state(c, user) != "open":
+        return False
+    n = int(c["check"].get("n") or 0)
+
+    def put(cc):
+        V = cc["check"].setdefault("votes", {})
+        for j in range(n):
+            V.setdefault(str(j), True)
+    _chat_mut(cid, put)
+    c = _chat_load(user, cid)
+    if _check_state(c, user) != "ok":
+        return False
+    r = chat_test(user, {"id": cid})
+    en = c.get("lang") == "en"
+    if r.get("ok"):
+        msg = ("✅ counted for all %d moments - the test is queued." if en else "✅ noté pour les %d moments - test lancé.") % n
+    else:
+        msg = ("✅ counted for all %d moments, but the test could not start (%s)." if en else
+               "✅ noté pour les %d moments, mais le test n'a pas pu partir (%s).") % (n, str(r.get("err") or "?")[:40])
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=msg))
+    return True
 
 
 def chat_fires(user, body):
