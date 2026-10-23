@@ -1259,6 +1259,12 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
                 U += "\nRIGHT NOW (this minute; these lines change every turn, the facts in your instructions do not):\n%s\n" % _fo
         except Exception:
             pass
+    try:                                   # 2026-10-23 (rhythm): the shape of his last replies, measured
+        _shb = shape_block(chat)
+        if _shb:
+            U += "\n" + _shb + "\n"
+    except Exception:
+        pass
     try:                                   # 2026-10-23 (commitment ledger, engine 1): what he still owes them, and his word this week
         import kino_commit as _KC
         _cb = _KC.block(chat.get("uid"), chat.get("id"), ml)
@@ -1756,28 +1762,80 @@ def tic_check(say, chat, member_here=True):
     return out[:4], clo
 
 
+# ---------------------------------------------------------------- rhythm (2026-10-23 evening, owner: "no interesting speaking style")
+# Measured in one 50-minute chat: 14 replies of one shape - two sentences, a link to their taste, a question - and six "Ha,"
+# openers. The prompt says "vary everything"; this measures it: the shape of his last replies goes into the message, and a
+# reply that repeats the shape of the last three, or the opener of any of the last three, goes back to him once.
+def _shape(t):
+    t = str(t or "").strip()
+    words = len(re.findall(r"\w+", t))
+    size = "xs" if words <= 6 else "s" if words <= 20 else "m" if words <= 45 else "l"
+    opener = (re.findall(r"[a-z\u00e0-\u00ff']+", t.lower()) or [""])[0]
+    return {"size": size, "q": t.endswith("?"), "bubbles": t.count("\n\n") + 1, "opener": opener}
+
+
+def _my_last(chat, n=6):
+    return [str(m.get("text") or "") for m in (chat.get("msgs") or []) if m.get("role") == "ai" and m.get("text")][-n:]
+
+
+def shape_block(chat):
+    """for the message: the shape of his last replies and what to break"""
+    S = [_shape(t) for t in _my_last(chat)]
+    if len(S) < 2:
+        return ""
+    desc = ", ".join("%s%s%s" % (x["size"], "?" if x["q"] else ".", "" if x["bubbles"] == 1 else " x%d" % x["bubbles"]) for x in S)
+    ops = [x["opener"] for x in S if x["opener"]]
+    same = len(S) >= 3 and len(set((x["size"], x["q"]) for x in S[-3:])) == 1
+    L = ["THE SHAPE OF YOUR LAST REPLIES, oldest first (xs/s/m/l = length, ? = ended with a question, x2 = two bubbles): " + desc +
+         "; openers: " + ", ".join(ops) + "."]
+    if same:
+        L.append("Three in a row the same shape - BREAK IT NOW: a different length and a different ending (a one-liner with no question, "
+                 "a three-line story, a question answered with a question, two bubbles).")
+    else:
+        L.append("Never the same shape three times, never an opener you used in the last three.")
+    return "\n".join(L)
+
+
+def shape_issue(say, chat):
+    """-> a short reason when `say` repeats the shape of the last three replies or the opener of one of them, else None"""
+    S = [_shape(t) for t in _my_last(chat, 3)]
+    if len(S) < 3:
+        return None
+    me = _shape(say)
+    if all((x["size"], x["q"]) == (me["size"], me["q"]) for x in S):
+        return "it has the same shape as your last three replies (%s, %s): a fourth one in a row is a machine" % (
+            me["size"], "ending with a question" if me["q"] else "no question")
+    if me["opener"] and len(me["opener"]) >= 2 and any(x["opener"] == me["opener"] for x in S):
+        return 'it opens with "%s" like one of your last three replies' % me["opener"]
+    return None
+
+
 def tic_rewrite(say, chat, sysp, log=None, event=None):
     """the message again without its tics (one extra call, only when a tic was measured); the original when nothing to fix"""
     try:
         here = (time.time() - max([int(m.get("t") or 0) for m in (chat.get("msgs") or []) if m.get("role") == "user"] or [0])) < 900
         rep, clo = tic_check(say, chat, here)
-        if not rep and not clo:
+        shp = shape_issue(say, chat) if not event else None      # his own openings are rarer; the member's turns carry the rhythm
+        if not rep and not clo and not shp:
             return say, None
         why = []
+        if shp:
+            why.append(shp)
         if rep:
             why.append("it repeats phrases you already used in this conversation (a callback lands once; the second time it is a tic): " + "; ".join('"%s"' % g for g in rep))
         if clo:
             why.append("it closes the door (" + ", ".join('"%s"' % c for c in clo) + ") while they are here and talking - never send away someone who stays")
         raw2 = W.ask_json(sysp, "REWRITE YOUR OWN MESSAGE. You were about to send:\n<<<\n%s\n>>>\nProblems: %s.\nSay the same thing again as a person "
-                          "across the table, without those phrases and without any closing line, as short or shorter, same language. Answer "
+                          "across the table, without those phrases and without any closing line, in a DIFFERENT shape when the shape is the "
+                          "problem (another length, another ending, another first word), same language. Answer "
                           "{\"say\": \"...\"} only." % (say, "; ".join(why)), models=("sonnet",), timeout=40, log=log)
         new = str((raw2 or {}).get("say") or "").strip() if isinstance(raw2, dict) else ""
         try:
             open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tics.log"), "a", encoding="utf-8").write(
-                "%s %s rep=%s clo=%s event=%s | %s -> %s\n" % (time.strftime("%m-%d %H:%M:%S"), chat.get("id"), rep, clo, bool(event), say[:160].replace("\n", " "), (new or "(kept)")[:160].replace("\n", " ")))
+                "%s %s rep=%s clo=%s shape=%s event=%s | %s -> %s\n" % (time.strftime("%m-%d %H:%M:%S"), chat.get("id"), rep, clo, shp, bool(event), say[:160].replace("\n", " "), (new or "(kept)")[:160].replace("\n", " ")))
         except Exception:
             pass
-        return (new[:1200] if 3 < len(new) < 1500 else say), (rep + clo)
+        return (new[:1200] if 3 < len(new) < 1500 else say), (rep + clo + ([shp] if shp else []))
     except Exception:
         return say, None
 
