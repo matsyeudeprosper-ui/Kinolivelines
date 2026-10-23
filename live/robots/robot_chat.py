@@ -935,6 +935,13 @@ def _stable_block(member, owl, pieces, markets, current=None, lang="fr", memory=
         pass
     U += "\nMARKETS:\n%s\n" % market_text(markets, current, 260)
     U += "\nEXISTING PIECES (id, * = the Owl's):\n%s\n" % catalog(pieces, owl)
+    if key is not None:                    # 2026-10-23 (speed): his slow blocks (snapshot 20 min) live here, cached
+        try:
+            sb = slow_block(key[0], memory, lang)
+            if sb:
+                U += "\nYOUR SLOWER SELF (a few times a day these change; the fresh things are in the message):\n" + sb + "\n"
+        except Exception:
+            pass
     return U
 
 
@@ -1033,7 +1040,41 @@ def gut_emoji(chat):
 GO_ON = re.compile(r"^(yes|yep|yeah|ok|okay|oui|ouais|vas-?y|go|d'accord|dac|ok vas-?y|parfait|super|cool|top)[ !.]*$", re.I)
 
 
-def own_agenda(chat, memory):
+_SLOW_SNAP = {}        # uid -> (t, text): the slow blocks, held 20 min (2026-10-23 speed: 23.5k chars of message, ~9k of them
+                       # change a few times a day; in the cached system prompt they cost a tenth and no prefill time)
+
+
+def slow_block(uid, memory, lang="fr"):
+    """the blocks that change a few times a day, for the SYSTEM prompt: his inner slow parts (mood, questions, opinions,
+    moments, jokes, bets, journal, prediction record, market view, exam), today's plan, their standing instructions"""
+    x = _SLOW_SNAP.get(uid)
+    if x and time.time() - x[0] < 1200:
+        return x[1]
+    L = []
+    try:
+        import kino_inner as KI
+        ib = KI.prompt_block(uid, "slow")
+        if ib:
+            L.append(ib)
+    except Exception:
+        pass
+    try:
+        import kino_exec as KX
+        pb = KX.plan_block(uid)
+        if pb:
+            L.append(pb)
+    except Exception:
+        pass
+    so = [x for x in (memory or {}).get("standing") or []][-6:]
+    if so:
+        L.append("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
+                 "change it: " + " | ".join(x["text"] for x in so))
+    out = "\n".join(L)
+    _SLOW_SNAP[uid] = (time.time(), out)
+    return out
+
+
+def own_agenda(chat, memory, slow_in_system=False):
     """2026-10-20 (owner: lively, but "without sounding like an interview... like a normal friendly conversation... never
     forgetting the main subject"): the conversation's rhythm - what Kino brought lately, its saved-for-later list, the
     main thread and how far the talk has drifted from it"""
@@ -1130,7 +1171,7 @@ def own_agenda(chat, memory):
     out = ""                     # 2026-10-23 (cost): the fixed paragraphs (rhythm, texting again, honest doubt, experiments) are AGENDA_RULES in system()
     try:                         # 2026-10-23 (engine 4): what he planned for today, for this member or for nobody in particular
         import kino_exec as KX
-        pb = KX.plan_block(chat.get("uid"))
+        pb = KX.plan_block(chat.get("uid")) if not slow_in_system else ""     # 2026-10-23 (speed): in the system prompt
         if pb:
             out += pb + "\n"
     except Exception:
@@ -1145,7 +1186,7 @@ def own_agenda(chat, memory):
         out += "TEXTING AGAIN: you already sent %d messages in a row without an answer - no \"more\" now, let them breathe.\n" % run
     try:
         import kino_inner as KI
-        ib = KI.prompt_block(chat.get("uid"))
+        ib = KI.prompt_block(chat.get("uid"), "fast" if slow_in_system else None)   # 2026-10-23 (speed): the slow half is in the system prompt
         if ib:
             out += ib + "\n"
     except Exception:
@@ -1160,7 +1201,7 @@ def own_agenda(chat, memory):
             time.strftime("%H:%M", time.gmtime(rsx.get("until") or 0)), rsx["goal"],
             " ; ".join("%d.%s %s%s" % (i, {"done": "[x]", "dropped": "[-]", "doing": "[>]"}.get(x.get("state"), "[ ]"), x["text"],
                                          (" (" + x["note"] + ")") if x.get("note") else "") for i, x in enumerate(rsx.get("steps") or []))))
-    so = [x for x in (memory or {}).get("standing") or []][-6:]
+    so = [x for x in (memory or {}).get("standing") or []][-6:] if not slow_in_system else []
     if so:
         out = ("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
                "change it: " + " | ".join(x["text"] for x in so) + "\n") + out
@@ -1328,7 +1369,7 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
         pass
     if not event:
         try:
-            U += "\n" + own_agenda(chat, memory) + "\n"
+            U += "\n" + own_agenda(chat, memory, stable) + "\n"
         except Exception:
             pass
     if event:

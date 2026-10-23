@@ -280,10 +280,22 @@ def reverie(uid, context, W):
 
 
 # ---------------------------------------------------------------- what Kino carries into a conversation
-def prompt_block(uid):
-    F = feelings(uid)
-    T = [t for t in thoughts(uid, 4) if t["kind"] != "wonder"][:3]
+def prompt_block(uid, part=None):
+    """part=None: everything. 2026-10-23 (speed): "fast" = what changes every turn (feelings, thoughts) for the message;
+    "slow" = what changes a few times a day (mood, questions, opinions, moments, jokes, bets, journal, record, views, exam)
+    for the cached system prompt (robot_chat.slow_block, snapshot 20 min)."""
+    F = feelings(uid) if part != "slow" else []
+    T = [t for t in thoughts(uid, 4) if t["kind"] != "wonder"][:3] if part != "slow" else []
     L = []
+    if part == "fast":
+        if F:
+            L.append("HOW YOU FEEL RIGHT NOW (real, from what happened - let it colour your tone a little, say it only if natural): " +
+                     "; ".join("%s %.1f (%s%s)" % (f["kind"], f["v"], f["why"] or "", ", about them" if f["about_them"] else "") for f in F[:4]))
+        if T:
+            L.append("ON YOUR MIND (thoughts that came to you; bring ONE up if it fits the moment naturally - then \"thought_used\": its id; "
+                     "a measured daydream can be shown with a chart): " + " | ".join("[%s, %s, %.1f] %s%s" % (
+                         t["id"], t["kind"], t["now"], t["text"], (" (measured: %s)" % t["measure"]) if t.get("measure") else "") for t in T))
+        return "\n".join(L)
     if F:
         L.append("HOW YOU FEEL RIGHT NOW (real, from what happened - let it colour your tone a little, say it only if natural): " +
                  "; ".join("%s %.1f (%s%s)" % (f["kind"], f["v"], f["why"] or "", ", about them" if f["about_them"] else "") for f in F[:4]))
