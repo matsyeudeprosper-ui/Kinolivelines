@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-23T12:03:00Z",
+ "updated": "2026-10-23T13:31:30Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -100,7 +100,8 @@
     "2026-10-20 14:00 veille: day BOS BUY -6.61 (closed 13:31, pace 1.078). Day since 08:00 8 tr 1 won ~-22.5. As predicted (peu).",
     "2026-10-20 17:00 veille: day FLIP-BOS SELL -6.69 (closed 16:33). Day since 08:00 9 tr 1 won ~-29. 16 h 7 tr 1 won -22.69. As predicted (one day, peu).",
     "2026-10-20 18:30 veille: day FLIP-BOS BUY -4.89 (closed 18:25). Day since 08:00 10 tr 1 won ~-34. As predicted (one day, peu).",
-    "2026-10-23 12:00 veille: 12 closes since 10-22 13:19, 2 won ~-35; both wins night BOS SELL (+17.24, +7.98). By hour: 01-03 h 32 tr 72% +60.8; 13 h 7 tr 0 won -49.22; 16 h 9 tr 1 won -45.88. As predicted (peu per hour)."
+    "2026-10-23 12:00 veille: 12 closes since 10-22 13:19, 2 won ~-35; both wins night BOS SELL (+17.24, +7.98). By hour: 01-03 h 32 tr 72% +60.8; 13 h 7 tr 0 won -49.22; 16 h 9 tr 1 won -45.88. As predicted (peu per hour).",
+    "2026-10-23 13:30 veille: day BOS SELL -7.17 (closed 13:24, pace 0.772 calm). Pile cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree), was 36 tr -50.10 on 10-15; inside 1.3-1.85 12 tr -43.82, held 30-60 min 9 tr 2 won -47.86. As predicted."
    ],
    "next": "Re-read by src once real_pool_split is built."
   },
@@ -2883,6 +2884,11 @@
    "t": "2026-10-23T12:03:00Z",
    "look": "veille (26 closes, 2 labo asks): pile flip_after_loss, --by gap, --by hour",
    "saw": "12 new trades since 10-22 13:19: 2 won (night BOS SELL +17.24, +7.98) ~-35; four day trades lost, FLIP-BOS SELL 02:31 -18.30. flip_after_loss 64 tr 42% vs 52% -54.44 PF 0.64 (h 39/45); nervous 1.0-1.3 15 tr 27% -36.46; 13 h and 16 h 0 won of 10. gap 30-60 42 tr 57% +11.28 PF 1.13 (halves disagree 62/52); gap<15 54 tr 39% -40.61; gap 1-3 h 33 tr 39% -53.23. Hour 01-03 h 32 tr +60.8. Both asks answered; no pile, no run. Twins all negative (ext700 43 tr -82.8, fit3 37 -70.5, bul4 27 -62.1, debtnerv 20 -37.3, nervgate 6 -26.2)."
+  },
+  {
+   "t": "2026-10-23T13:31:30Z",
+   "look": "veille: BOS SELL -7.17 (13:24, pace 0.772, day); --by hour, --pile cont_day, --by dur",
+   "saw": "cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree): the day breakout leak holds past 30. --by dur: 30-60 min 29 tr 48% -30.77, <15 min 97 tr -44.45. All five twins took the trade: ext700 44 tr -89.91, fit3 38 -77.75, bul4 28 -69.33, debtnerv 21 -44.39, nervgate 7 -33.31. No ask, no run, no pile, no proposal."
   }
  ],
  "lessons": [
