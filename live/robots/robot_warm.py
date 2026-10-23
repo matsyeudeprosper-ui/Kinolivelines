@@ -67,10 +67,15 @@ def _sysfile(system):
     return p, h
 
 
+EFFORT = {"sonnet": "low"}   # 2026-10-23 (speed, measured on his real prompt): the model thinks 3-5 s before its first word;
+                             # --effort low on Sonnet (the member's turns, chat) took ~2 s off (7.4-8.8 s vs 9.2-11.7 s a call)
+                             # at the same cost and quality; Opus (his own messages, nightly engines) keeps its default.
+
+
 def _spawn(sp, model):
     cmd = [IV.CLAUDE, "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
            "--system-prompt-file", sp, "--tools", "", "--strict-mcp-config", "--no-session-persistence",
-           "--max-turns", "1", "--include-partial-messages", "--model", model]
+           "--max-turns", "1", "--include-partial-messages", "--model", model] + (["--effort", EFFORT[model]] if model in EFFORT else [])
     return subprocess.Popen(cmd, cwd=IV.JOBS, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                             text=True, encoding="utf-8", errors="replace", creationflags=0x08000000)   # normal priority: at below-normal a busy CPU starved it (api 2 s, total 60-140 s)
 
