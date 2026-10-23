@@ -18,7 +18,9 @@ import json, math, os, random, re, threading, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(HERE, "kino_inner.json")
 _LOCK = threading.Lock()
-HALF = {"excitement": 3, "worry": 6, "curiosity": 4, "boredom": 2, "pride": 5, "annoyance": 4}     # hours
+HALF = {"excitement": 3, "worry": 6, "curiosity": 4, "boredom": 2, "pride": 5, "annoyance": 4,     # hours
+        # 2026-10-23 (owner: "more human, real"): feelings born in the conversation itself, each with a lever on what he does
+        "stung": 2, "warmth": 6, "tender": 3, "playful": 2, "glad": 3, "embarrassed": 3, "closeness": 8, "careful": 2}
 BAD = re.compile(r"password|mot de passe|garanti|guarant|promi", re.I)
 
 
@@ -71,8 +73,85 @@ def feelings(uid=None):
             continue
         v = _decayed(x["v"], x["t"], kind)
         if v > 0.15:
-            out.append({"kind": kind, "v": round(v, 2), "why": x.get("why"), "about_them": bool(who)})
+            out.append({"kind": kind, "v": round(v, 2), "why": x.get("why"), "about_them": bool(who), "age_min": int((time.time() - float(x["t"])) / 60)})
     return sorted(out, key=lambda z: -z["v"])
+
+
+# ---------------------------------------------------------------- affect (2026-10-23, owner: "even more human, real")
+# What happens in the conversation moves him, and each feeling has a lever on what he does next. He got told off -> stung ->
+# shorter, no self-justification; they laughed -> playful; money is tight for them -> tender -> no selling, no numbers;
+# they stay late -> closeness; they came back after a day -> glad; a claim of his was corrected -> embarrassed -> fewer claims.
+_HARD = re.compile(r"pas d'argent|plus d'argent|perte|perdu|fatigu|j'ai peur|peur de|me sao[uû]le|stress|gal[èe]re|c'est dur|difficile|"
+                   r"tout seul|triste|malade|d[ée]prim|broke|no money|lost|tired|scared|stressed|hard time|alone|sad", re.I)
+_LAUGH = re.compile(r"\b(lol|mdr|ptdr|haha|hihi)\b|\U0001f602|\U0001f605|\U0001f923", re.I)
+_STAY = re.compile(r"j'ai pas sommeil|je dors pas|on peut continuer|j'ai rien [àa] faire|je reste|continue|not sleepy|can't sleep|let's continue", re.I)
+_LOST = re.compile(r"^\s*(quoi|hein|comment|what|huh)\s*\??\s*$|je comprends pas|j'ai pas compris|i don't get it", re.I)
+_MOOD_SAD = re.compile(r"triste|d[ée]\w*|frustr|inquiet|fatigu|d[ée]courag|tendu|stress|sad|down|frustrat|worried|tired|anxious", re.I)
+_MOOD_FUN = re.compile(r"amus|joyeux|content|rigol|l[ée]ger|playful|happy|amused|cheerful|joking", re.I)
+LEVERS = {
+    "stung": "shorter, no self-justification, no apology ritual - show the change instead",
+    "warmth": "you may be a little more personal; say once what you like about them",
+    "tender": "no selling, no numbers, no advice unless asked - presence, one plain human word, then lighter",
+    "playful": "one more joke is welcome - tease the market or yourself, never them",
+    "glad": "say once, in your words, that you are glad they are back",
+    "embarrassed": "fewer claims tonight; 'je vérifie' more often; no numbers you have not read",
+    "closeness": "talk like late at night between friends: slower, truer, less about robots, more about them and you",
+    "careful": "check you understood before adding anything; one idea, simple words",
+    "excitement": "let it show in rhythm (shorter, quicker), not in exclamation marks",
+    "worry": "say it once plainly if it concerns them, then a concrete step - no hovering",
+    "pride": "you may say it once; one line, then back to them",
+    "curiosity": "one real question you actually want answered",
+    "boredom": "bring something of your own or change the subject - do not fill the air",
+    "annoyance": "keep it to yourself; shorter, dry humour at most",
+}
+
+
+def affect_from_member(uid, text=None, fb_kinds=(), them_mood=None, gap_h=None):
+    """called on every member message (and with the model's reading of them after each reply)"""
+    t = str(text or "")
+    why = ('they said "%s"' % t[:70]) if t else ""
+    try:
+        neg = [k for k in (fb_kinds or []) if k not in ("praise", "slow")]
+        if neg:
+            feel("stung", 0.35, uid=uid, why="they told you: %s (%s)" % (t[:60], neg[0]))
+            feel("careful", 0.25, uid=uid, why="they corrected you")
+        if "praise" in (fb_kinds or []):
+            feel("warmth", 0.3, uid=uid, why=why)
+            feel("playful", 0.2, uid=uid, why=why)
+        if t and _HARD.search(t):
+            feel("tender", 0.4, uid=uid, why=why)
+        if t and _LAUGH.search(t):
+            feel("playful", 0.3, uid=uid, why="they laughed: " + t[:50])
+        if t and _STAY.search(t):
+            feel("closeness", 0.3, uid=uid, why="they chose to stay: " + t[:50])
+        if t and _LOST.search(t):
+            feel("careful", 0.35, uid=uid, why="they did not follow: " + t[:40])
+        if gap_h is not None and gap_h >= 20:
+            feel("glad", 0.4, uid=uid, why="they came back after %d h" % gap_h)
+        if them_mood:
+            m = str(them_mood)
+            if _MOOD_SAD.search(m):
+                feel("tender", 0.25, uid=uid, why="you read them as: " + m[:40])
+            elif _MOOD_FUN.search(m):
+                feel("playful", 0.2, uid=uid, why="you read them as: " + m[:40])
+    except Exception:
+        pass
+
+
+def affect_block(uid):
+    """HOW YOU FEEL RIGHT NOW, each feeling with its cause, its age and the lever it pulls on this reply"""
+    F = feelings(uid)[:4]
+    if not F:
+        return ""
+    def word(v):
+        return "a little" if v < 0.35 else "quite" if v < 0.65 else "very"
+    parts = []
+    for f in F:
+        parts.append("%s %s (%s%s) -> %s" % (word(f["v"]), f["kind"], f.get("why") or "no clear cause",
+                                               (", %d min ago" % f["age_min"]) if f.get("age_min") is not None and f["age_min"] < 600 else "",
+                                               LEVERS.get(f["kind"], "let it colour the tone")))
+    return ("HOW YOU FEEL RIGHT NOW (real, born from what happened; it shapes what you do in THIS reply - never a status you announce; "
+            "you may name it once, in your words, when it is natural, and you may say what caused it):\n- " + "\n- ".join(parts))
 
 
 # ---------------------------------------------------------------- thoughts
@@ -289,8 +368,7 @@ def prompt_block(uid, part=None):
     L = []
     if part == "fast":
         if F:
-            L.append("HOW YOU FEEL RIGHT NOW (real, from what happened - let it colour your tone a little, say it only if natural): " +
-                     "; ".join("%s %.1f (%s%s)" % (f["kind"], f["v"], f["why"] or "", ", about them" if f["about_them"] else "") for f in F[:4]))
+            L.append(affect_block(uid))       # 2026-10-23: each feeling with its cause and its lever on this reply
         if T:
             L.append("ON YOUR MIND (thoughts that came to you; bring ONE up if it fits the moment naturally - then \"thought_used\": its id; "
                      "a measured daydream can be shown with a chart): " + " | ".join("[%s, %s, %.1f] %s%s" % (

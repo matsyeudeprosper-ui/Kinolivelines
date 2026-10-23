@@ -15539,6 +15539,11 @@ def _partner_apply(user, cid, pa):
             _rc()
             import kino_person as _KP
             _KP.update(uid, cid, pa["them"])
+            try:                                       # 2026-10-23: his reading of their mood moves him too
+                import kino_inner as _KIm
+                _KIm.affect_from_member(uid, None, (), them_mood=(pa["them"] or {}).get("mood"))
+            except Exception:
+                pass
         except Exception:
             pass
     if pa.get("plan_done"):                            # 2026-10-23 (engine 4): this message did an item of today's plan
@@ -16702,6 +16707,10 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
         if not bad or not (10 < len(corr) < 600) or corr.lower() in ("null", "none"):
             return
         _chat_mut(cid, lambda c: _chat_msg(c, "ai", text=corr, quick=True, correction=True))
+        try:                                           # 2026-10-23: a corrected claim of his own embarrasses him - fewer claims tonight
+            _rc(); __import__("kino_inner").feel("embarrassed", 0.4, uid=(json.load(open(_chat_path(cid), encoding="utf-8")).get("uid")), why="you had to correct a claim of yours")
+        except Exception:
+            pass
         try:
             io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s CORRECTION | %s\n" % (
                 time.strftime("%m-%d %H:%M:%S"), cid, corr[:200].replace("\n", " ")))
@@ -19838,7 +19847,14 @@ def chat_send(user, body):
         _rc()
         import kino_feedback as _KFB
         _la = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and m.get("text")), {})
-        _KFB.observe(user.get("id"), c["id"], text, _la.get("text") or "")
+        _fbk = _KFB.observe(user.get("id"), c["id"], text, _la.get("text") or "")
+        try:                                     # 2026-10-23: what they just said moves him (stung, tender, playful, glad, closeness)
+            import kino_inner as _KIa2
+            _pu = [m for m in (c.get("msgs") or []) if m.get("role") == "user"][-2:-1]
+            _gap = (time.time() - float(_pu[0].get("t") or time.time())) / 3600 if _pu else None
+            _KIa2.affect_from_member(user.get("id"), text, _fbk, gap_h=_gap)
+        except Exception:
+            pass
     except Exception:
         pass
     try:                                         # 2026-10-20 (inner v2 item 1): did they answer what Kino sent on its own?
