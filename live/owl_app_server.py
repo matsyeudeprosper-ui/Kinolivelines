@@ -16072,7 +16072,18 @@ def _chat_memory(user, cid=None):
             "watches": _mm.get("watches") or [], "drawing": _mm.get("drawing") if time.time() - float((_mm.get("drawing") or {}).get("t") or 0) < 48 * 3600 else None,
             "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
             "nest_open": nest_open, "nest_answers": nest_answers,
-            "their_goal": _mm.get("their_goal"), "jobs_now": _jobs_text(user, cid), "track": _track_text(me), "research": _research_mem(me)}
+            "their_goal": _mm.get("their_goal"), "jobs_now": _jobs_text(user, cid), "track": _track_text(me), "research": _research_mem(me),
+            "facts": _ke_facts(me)}
+
+
+def _ke_facts(uid):
+    """2026-10-23 (engine 2): the member's consolidated long-term facts (kino_episodes) - read into the cached memory block"""
+    try:
+        _rc()
+        import kino_episodes as _KE
+        return _KE.facts(uid)
+    except Exception:
+        return []
 
 
 def _track_text(uid):
@@ -18007,6 +18018,12 @@ def _kino_night_mind():
         try:              # 2026-10-20 (owner list 8 item 2): the nightly humanity exam on made-up conversations
             import kino_exam as _KX
             _KX.run()
+        except Exception:
+            pass
+        try:              # 2026-10-23 (engine 2): the day's conversations become episodes; weekly, episodes become facts
+            import kino_episodes as _KE
+            _KE.night(users(), lambda u: [x for x in (_chat_load(u, y["id"]) for y in (chat_list(u).get("chats") or [])[:12]) if x],
+                      _rc().W, log=os.path.join(DIR, "robots", "kino_episodes.log"))
         except Exception:
             pass
         try:              # 2026-10-19 (owner next-list item 1): Kino looks after its own robot

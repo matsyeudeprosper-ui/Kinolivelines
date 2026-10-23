@@ -733,6 +733,8 @@ def memory_text(mem):
     if not mem:
         return "nothing yet - this is a new member"
     L = []
+    if mem.get("facts"):            # 2026-10-23 (engine 2): consolidated from weeks of episodes (kino_episodes)
+        L.append("WHAT YOU KNOW FOR SURE ABOUT THEM (your long-term memory, built from weeks of talks): " + " | ".join(str(x)[:200] for x in mem["facts"][:25]))
     if mem.get("notes"):
         L.append("your notes: " + " | ".join(str(x)[:160] for x in mem["notes"][-30:]))
     if mem.get("_new_notes"):       # 2026-10-23: notes taken since the cached snapshot (see _mem_part)
@@ -1164,6 +1166,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
         _cb = _KC.block(chat.get("uid"), chat.get("id"), ml)
         if _cb:
             U += "\n" + _cb + "\n"
+    except Exception:
+        pass
+    try:                                   # 2026-10-23 (engine 2): episodes brought back by what they just said
+        import kino_episodes as _KE
+        _eb = _KE.block(chat.get("uid"), chat, ml)
+        if _eb:
+            U += "\n" + _eb + "\n"
     except Exception:
         pass
     if not stable:

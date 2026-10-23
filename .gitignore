@@ -191,3 +191,6 @@ live/robots/tts_costs.jsonl
 
 live/robots/kino_commitments.json
 live/robots/kino_commitments.json.*.tmp
+live/robots/kino_episodes.json
+live/robots/kino_episodes.json.*.tmp
+live/robots/kino_episodes.log
