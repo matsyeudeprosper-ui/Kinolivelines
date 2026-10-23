@@ -232,7 +232,9 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
                     _bump(x["id"])
                 elif x["kind"] == "show":
                     H["show"](cid, uid)
-                else:                                     # check / tell / other: the promise watcher brings it back at its time
+                elif x["kind"] == "tell":
+                    pass                                  # "je te dis quand le test tombe": the result event does it - never a tray item ("dans 1426 min")
+                else:                                     # check / other: the promise watcher brings it back at its time
                     H["work_add"](cid, x["what"], max(2, int((x["due"] - x["t"]) / 60)))
             except Exception:
                 pass
@@ -277,6 +279,16 @@ def tick(H):
     there was none, then BROKEN and Kino is told to say so. H adds: event(cid, uid, text), building(cid)"""
     now = time.time()
     for x in open_for():
+        if x["kind"] == "tell":                           # kept when a result came after the promise; still waiting = not due
+            try:
+                c = H["chat"](x["cid"]) or {}
+                if any(m.get("role") == "result" and float(m.get("t") or 0) > x["t"] for m in c.get("msgs") or []):
+                    resolve(x["cid"], x["id"], "kept", "the result came")
+                elif now > x["due"] and not (c.get("test") or {}).get("state") in ("queued", "running"):
+                    resolve(x["cid"], x["id"], "broken", "no result, no test running after the due time")
+            except Exception:
+                pass
+            continue
         if x["kind"] not in ("test", "build") or now < x["due"]:
             continue
         try:
