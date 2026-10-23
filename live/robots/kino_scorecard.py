@@ -112,6 +112,11 @@ def score_day(uid, day=None):
         S["feedback"] = KFB.counts(uid, day)
     except Exception:
         S["feedback"] = None
+    try:                                   # own messages let through / held back by the pacing gate (kino_pace)
+        import kino_pace as KPC
+        S["pace"] = KPC.counts(day[5:])
+    except Exception:
+        S["pace"] = None
     # the logs (local time stamps "mm-dd HH:MM:SS")
     loc = day[5:]                      # the logs stamp local time; the same calendar label is close enough (UTC-5 box)
     def lines(name):

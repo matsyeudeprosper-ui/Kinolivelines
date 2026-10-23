@@ -16738,6 +16738,16 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
     en = False
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        if event:                                        # 2026-10-23 (owner: "Ok. And?" after two initiatives in 16 min): the tact of when
+            try:                                         # to speak on his own - member first, a gap, backoff when unanswered, flat member
+                _rc()
+                import kino_pace as _KPC
+                _okp, _whyp = _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")))
+            except Exception:
+                _okp = True
+            if not _okp:
+                _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+                return
         try:
             _lm = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "doc", "image")), {})
             fr_ = c.get("lang") != "en"
