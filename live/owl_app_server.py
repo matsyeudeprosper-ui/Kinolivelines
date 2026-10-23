@@ -16655,6 +16655,42 @@ _CHAT_STEPS = {}        # cid -> [(t, text)] Kino's real steps while it builds (
 def _hook_steps():
     try:
         _rc().ON_STEP = _on_step
+        _rc().ON_CLAIM = _on_claim
+    except Exception:
+        pass
+
+
+def _on_claim(cid, say, sysp, lang="fr"):
+    """2026-10-23 (watch): Kino told the owner the lab had seen 'l'Owl de nuit' finish positive on both halves of a test -
+    no such result existed. After a reply that claims a measured result, ONE call with his own (cached) system prompt as
+    the facts judges every such claim; when one is unsupported it writes the short correction a person sends right after
+    (no excuse, no 'Oups', no 'as an AI') and it is posted. A cheap checker without the full facts false-flagged a true
+    claim in the test, so the judge is the same model with the same facts. Log: robots/claims.log."""
+    try:
+        W = _rc().W if hasattr(_rc(), "W") else __import__("robot_warm")
+        v = W.ask_json(sysp, "FACT CHECK OF YOUR OWN MESSAGE. You just sent this to the member:\n<<<\n%s\n>>>\nList every claim in it about a "
+                       "MEASURED outcome (a test, a luck test, a backtest, a result, a drawdown, 'the lab saw', 'finished positive', "
+                       "'both halves') and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
+                       "your instructions and in this message. An idea, a plan, a guess said as a guess, or a market comment is not a "
+                       "claim. Answer ONE JSON object only: {\"unsupported\": [\"claim as written\", ...], \"say\": null or, when a claim "
+                       "is unsupported, the short correction you send right after - one or two spoken sentences in %s, what you actually "
+                       "know (an idea, not measured yet), no excuse, never 'Oups', no 'as an AI'}."
+                       % (say, "French" if lang != "en" else "English"), models=("sonnet",), timeout=90, warm=False)
+        bad = [str(x)[:200] for x in (v.get("unsupported") or [])] if isinstance(v, dict) else []
+        corr = str((v or {}).get("say") or "").strip() if isinstance(v, dict) else ""
+        try:
+            io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s unsupported=%s | %s\n" % (
+                time.strftime("%m-%d %H:%M:%S"), cid, bad, str(say)[:160].replace("\n", " ")))
+        except Exception:
+            pass
+        if not bad or not (10 < len(corr) < 600) or corr.lower() in ("null", "none"):
+            return
+        _chat_mut(cid, lambda c: _chat_msg(c, "ai", text=corr, quick=True, correction=True))
+        try:
+            io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s CORRECTION | %s\n" % (
+                time.strftime("%m-%d %H:%M:%S"), cid, corr[:200].replace("\n", " ")))
+        except Exception:
+            pass
     except Exception:
         pass
 
@@ -17009,6 +17045,7 @@ def _chat_build(cid, user):
             en = c.get("lang") == "en"
             n0, rev0 = len(c.get("msgs") or []), c.get("rev")
             _rc().ON_STEP = _on_step
+            _rc().ON_CLAIM = _on_claim
             _CHAT_STEPS.pop(cid, None)
             ans, probs = _rc().answer(c, _chat_pieces(user), _ai_owl(), c.get("lang") or "fr", log=os.path.join(CHAT_DIR, cid + ".log"),
                                       markets=_chat_markets(user), memory=_chat_memory(user, cid),

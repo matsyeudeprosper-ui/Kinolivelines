@@ -1777,6 +1777,12 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             pass
     _say, _tics = tic_rewrite(_say, chat, sysp, log=log, event=event)      # 2026-10-23: measured tics -> one rewrite
     raw["say"] = _say
+    if ON_CLAIM and not event and _CLAIM_RX.search(_say or ""):            # 2026-10-23: a claimed result is audited after sending
+        try:
+            import threading as _th
+            _th.Thread(target=ON_CLAIM, args=(chat.get("id"), _say, sysp, lang), daemon=True).start()
+        except Exception:
+            pass
     return {"say": _say, "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK"))), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
@@ -1901,6 +1907,11 @@ def tic_rewrite(say, chat, sysp, log=None, event=None):
 
 
 ON_STEP = None          # 2026-10-20 (owner: visible thinking): the server shows Kino's real steps while it works
+ON_CLAIM = None         # 2026-10-23 (watch): "le labo a vu l'Owl de nuit finir positif sur les deux moitiés" - no such result existed.
+                        # A reply that claims a MEASURED result (lab, test, luck, backtest) is audited after sending against the
+                        # lab facts (owl_app_server._on_claim); an unsupported claim gets a short honest correction from him.
+_CLAIM_RX = re.compile(r"\b(labo|lab|test[ée]?s?|backtest|mesur\w*|moiti[ée]s?|creux|drawdown|prouv\w*|r[ée]sultats?|a (gagn|perdu|fini|termin)\w*|"
+                       r"luck|measured|proven|backtested)\b", re.I)
 TOOL_WORDS = {"idea_stats": ("je mesure l'idée contre le hasard", "measuring the idea against chance"),
               "compare": ("je compare les variantes", "comparing the variants"), "robot_replay": ("je rejoue le robot sur les vrais prix", "replaying the robot on real prices"),
               "trade_explain": ("je regarde ce trade de près", "looking closely at that trade"), "search_chats": ("je relis nos conversations", "rereading our conversations")}
