@@ -262,6 +262,25 @@
    "k_streak": 2,
    "pb_dir_gate": false,
    "_why": "2026-10-22 owner ('code the strategy exactly as described'): a member's robot is tested and traded as THEIR idea - one position at a fixed size (not scaled down after losses: 0.01 cannot be half-closed), no recovery bullets, no debt jar, no debt gate on follow-on trades, no Owl pullback gate. The Owl's money system only when they ask for it."
+  },
+  "mkt-kino-XAUUSD": {
+   "extends": "base",
+   "label": "Robot Owl 1R gold sans Orage",
+   "pb_dir_gate": true,
+   "pb_gate_mode": "trend",
+   "movement": true,
+   "nervosity": false,
+   "debt_gate": true,
+   "storm_ceiling": 0.0,
+   "btc_rest": false,
+   "rr": 1.0,
+   "robot_rules": null,
+   "_why": "2026-10-23 robot 'owl-1r-gold-sans-orage' put on XAUUSD of kino by the owner (market plug: runs beside the account's robot)",
+   "kill_net": -30.0,
+   "base_lot": 0.01,
+   "max_extra": 0,
+   "adds_on": false,
+   "scale_with_balance": false
   }
  },
  "accounts": {
@@ -284,5 +303,15 @@
    "by": "member"
   }
  },
- "robot_pending": {}
+ "robot_pending": {},
+ "market_plugs": {
+  "kino": {
+   "XAUUSD": {
+    "robot": "owl-1r-gold-sans-orage",
+    "package": "mkt-kino-XAUUSD",
+    "at": "2026-10-23T00:59:13Z",
+    "by": "owner"
+   }
+  }
+ }
 }

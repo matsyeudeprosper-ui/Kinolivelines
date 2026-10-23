@@ -22713,6 +22713,60 @@ def robot_plug_apply(user, body):
     return res
 
 
+# ---- 2026-10-22 (owner): "a new bot can only be added to an account if the money it requires (max drawdown must not wipe
+# out the account) allows it. As long as there's room we can add more robots." ----
+ROOM_FLOOR = 20.0           # never planned away: the account's minimum balance
+
+
+def _robot_need(uid, rid, sym, pkg, syms=None):
+    """the most one robot can lose on this account: its safety stop + one last bad trade on top (its worst tested
+    trade, scaled to the size it REALLY trades here - a market's minimum lot can make it bigger than the test)"""
+    import owl_markets as _OMK
+    kill = abs(float(pkg.get("kill_net") or 0)) or 60.0
+    worst, why = 10.0, "pire trade estimé"
+    if sym and sym.rstrip("M") != "BTCUSD":
+        res = _jload(os.path.join(DIR, "robots", "results", "%s@%s.json" % (rid, sym)), {}) or {}
+        w = abs(float((res.get("robot") or {}).get("worst") or 0))
+        meta = _OMK.pack_meta(sym) or {}
+        sy = next((x for x in (syms or []) if _OMK.base(x.get("s", "")).upper() == sym), None)
+        if w and meta.get("k") and sy and sy.get("tick_size"):
+            lf = float(meta["k"]) / (float(sy["tick_value"]) / float(sy["tick_size"]))      # engine lot -> real lot
+            vmin, step = float(sy.get("vol_min") or 0.01), float(sy.get("vol_step") or 0.01)
+            real = lambda el: max(vmin, round(el * lf / step) * step)
+            live = real(float(pkg.get("base_lot") or 0.02))
+            factor = live / (0.02 * lf)                  # the test ran 0.02 engine lots at $200
+            worst, why = w * factor, "pire trade du test x%.2f (taille réelle)" % factor
+        elif w:
+            worst, why = w, "pire trade du test"
+    else:
+        nd = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
+        ps = [float(t.get("p") or 0) for t in nd.get("trades") or [] if isinstance(t, dict)]
+        if ps and min(ps) < 0:
+            worst, why = max(10.0, -min(ps)), "pire trade récent du compte"
+    return round(kill + worst, 2), {"stop": round(kill, 2), "worst": round(worst, 2), "why": why}
+
+
+def account_room(uid, PK=None, skip_sym=None):
+    """balance - floor - what every robot already on the account may lose = the room for one more robot"""
+    import owl_markets as _OMK
+    PK = PK or json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    packs = PK.get("packages") or {}
+    nd = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
+    syms = (_jload(os.path.join(DIR, "nest_data", uid + ".symbols.json"), {}) or {}).get("symbols") or []
+    bal = float(nd.get("balance") or 0)
+    items = []
+    main = (PK.get("accounts") or {}).get(uid) or "base"
+    n, d = _robot_need(uid, _OMK.robot_of(uid), None, PKG._resolve(main, packs))
+    items.append(dict(d, sym="BTCUSD", robot=_OMK.robot_of(uid), need=n))
+    for sy, x in sorted(((PK.get("market_plugs") or {}).get(uid) or {}).items()):
+        if sy == skip_sym:
+            continue
+        n, d = _robot_need(uid, x.get("robot"), sy, PKG._resolve(x.get("package"), packs), syms)
+        items.append(dict(d, sym=sy, robot=x.get("robot"), need=n))
+    used = round(sum(x["need"] for x in items), 2)
+    return {"balance": round(bal, 2), "floor": ROOM_FLOOR, "used": used, "room": round(bal - ROOM_FLOOR - used, 2), "items": items, "syms": syms}
+
+
 def market_plug_apply(user, body):
     """2026-10-22 (owner: "make sure the system can handle 2 or more robots on the same account ... start the newly
     random-test-passed robot on Mike's account"): put a robot on ONE market of an account, next to the account's own
@@ -22747,8 +22801,19 @@ def market_plug_apply(user, body):
         pkg["btc_rest"] = False                      # the account's Bitcoin robot keeps running
         if body.get("kill_net") is not None:         # its own safety stop (owner 2026-10-22: -30 for gold on Mike)
             pkg["kill_net"] = -abs(float(body["kill_net"]))
+        if body.get("fixed_min_lot"):
+            # owner 2026-10-22, exceptionally for gold on Mike: one trade at the broker's minimum lot, always - no
+            # balance scaling and no bullets (each bullet would also be rounded UP to the 0.01 minimum)
+            pkg.update(base_lot=0.01, max_extra=0, adds_on=False, scale_with_balance=False)
+        # the room rule (owner 2026-10-22): its worst case must fit in what the account has left after the others'
+        rm = account_room(uid, PK, skip_sym=sym)
+        need, nd_ = _robot_need(uid, rid, sym, PKG._resolve(name, dict(PK.get("packages") or {}, **{name: pkg})), rm["syms"])
+        rm.pop("syms", None)
         if body.get("dry"):                          # look before plugging: the package it WOULD trade with
-            return {"ok": True, "dry": True, "package": name, "pkg": pkg, "resolved": R}
+            return {"ok": True, "dry": True, "package": name, "pkg": pkg, "resolved": R, "need": need, "need_detail": nd_, "room": rm,
+                    "fits": need <= rm["room"]}
+        if need > rm["room"]:
+            return {"ok": False, "err": "room", "need": need, "need_detail": nd_, "room": rm}
         pkg["_why"] = "%s robot '%s' put on %s of %s by the owner (market plug: runs beside the account's robot)" % (
             datetime.now(timezone.utc).strftime("%Y-%m-%d"), rid, sym, uid)
         PK.setdefault("packages", {})[name] = pkg
@@ -22849,6 +22914,12 @@ def acct_robot_block(user, admin=False):
             out["markets"].append(dict(nm(byid.get(_x.get("robot")) or {"id": _x.get("robot")}), id=_x.get("robot"), sym=_sy,
                                        at=_x.get("at"), ok=_ok, why=_why,
                                        alive=os.path.exists(_sf) and time.time() - os.path.getmtime(_sf) < 600))
+    except Exception:
+        pass
+    try:          # 2026-10-22 (owner): the room for one more robot (the worst case of every robot here must fit)
+        _rm = account_room(uid, PK)
+        _rm.pop("syms", None)
+        out["room"] = _rm
     except Exception:
         pass
     # 2026-10-18 (owner upgrade list): what the robot did on THIS account, and is it running right now
