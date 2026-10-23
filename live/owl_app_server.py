@@ -15854,6 +15854,52 @@ def _jobs_text(user, cid=None):
     return "; ".join(L[:10]) or "NOTHING is running for them right now - if you say you are doing something, start it in this reply"
 
 
+def _material_ctx(uid, lang="fr"):
+    """2026-10-23 (owner: "nothing of his own to tell"): the TRUE facts of the day for kino_material.write - their robot's
+    trades today, what finished in the lab, the lab status, the world, his surprises, his bets, his slips, his word this week"""
+    L = []
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        td = time.strftime("%d/%m", time.gmtime())
+        tt = [x for x in nd.get("trades") or [] if str(x.get("w") or "").startswith(td)]
+        L.append("THEIR ACCOUNT: balance %.2f $, today %+.2f $, this week %+.2f $, this month %+.2f $; today's trades (time, result): %s" % (
+            float(nd.get("balance") or 0), float(nd.get("today") or 0), float(nd.get("week") or 0), float(nd.get("month") or 0),
+            "; ".join("%s %+.2f $%s" % (str(x.get("w"))[6:11], float(x.get("p") or 0), (" " + str(x.get("sym"))) if x.get("sym") else "") for x in tt[-12:]) or "none"))
+    except Exception:
+        pass
+    for name, fn in (("WHAT FINISHED IN THE LAB (last 14 h)", lambda: _overnight_text(uid, 14)), ("LAB STATUS", lambda: _lab_status(uid))):
+        try:
+            x = fn()
+            if x:
+                L.append(name + ": " + str(x)[:1500])
+        except Exception:
+            pass
+    try:
+        _rc()
+        import robot_reality as _RWm
+        _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
+        L.append("THE WORLD TODAY:\n" + _RWm.world_now(_tz)[:2000])
+    except Exception:
+        pass
+    for mod, call in (("kino_surprise", lambda M: M.block(uid, lang)), ("kino_inner", lambda M: M.evidence_block()),
+                      ("kino_commit", lambda M: "YOUR WORD THIS WEEK: %s" % json.dumps(M.stats(uid, 7), ensure_ascii=False))):
+        try:
+            _rc()
+            M = __import__(mod)
+            x = call(M)
+            if x:
+                L.append(str(x)[:1200])
+        except Exception:
+            pass
+    try:
+        tl = [l for l in io.open(os.path.join(DIR, "robots", "tics.log"), encoding="utf-8").read().splitlines() if l.startswith(time.strftime("%m-%d"))][-3:]
+        if tl:
+            L.append("YOUR SLIPS TODAY (messages sent back to you for a rewrite): " + " | ".join(x[:160] for x in tl))
+    except Exception:
+        pass
+    return "\n\n".join(L)
+
+
 def _overnight_text(uid, hours=12):
     """2026-10-21 (behaviour list item 11): what finished for this member while they slept - test results and luck verdicts"""
     now, L = time.time(), []
@@ -16717,6 +16763,13 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _KLt.story_told(user.get("id"))
             except Exception:
                 pass
+        if q and q.get("told"):                         # 2026-10-23: a thing he could tell, told - once
+            try:
+                _rc()
+                import kino_material as _KMTt
+                _KMTt.told(user.get("id"), q["told"])
+            except Exception:
+                pass
         if q and q.get("partner"):
             try:
                 _partner_apply(user, cid, q["partner"])
@@ -17554,6 +17607,14 @@ def _companion_tick():
                             cl.get("seeds"), cl.get("beats"))
                         _CHAT_Q[tgt] = _CHAT_Q.get(tgt, 0) + 1
                         threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
+            try:                                       # 2026-10-23 (owner: "nothing of his own to tell"): true things to tell, every 3 h
+                _rc()
+                import kino_material as _KMT
+                if _KMT.due(uid) and _active_hour(uid, h0):
+                    _lngm = "en" if str((ch[0] if ch else {}).get("lang") or "fr") == "en" else "fr"
+                    threading.Thread(target=lambda: _KMT.write(uid, _material_ctx(uid, _lngm), _lngm), daemon=True).start()
+            except Exception:
+                pass
             try:                                       # 2026-10-23 (owner, upgrade 3): one story a day that is not a number
                 _rc()
                 import kino_life as _KLs, robot_reality as _RWs

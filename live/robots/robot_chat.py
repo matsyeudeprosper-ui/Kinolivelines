@@ -603,6 +603,7 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
  "link": null or "account" | "myrobots" | "place" | "offers",
  "remember": ["short lasting note about the member", ...] (0 to 2),
  "story_told": true when you told YOUR STORY OF THE DAY in this message (else omit),
+ "told": ["m..."] - the ids of THINGS YOU COULD TELL THEM that THIS message tells (else omit),
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
  "project": null or {"op": "add"|"update"|"done", "title": "...", "need": "...", "finding": "..."} (see A PARTNER),
  "learned": null or "what they taught you, general", "ask_nest": null or "a general question for other members",
@@ -1194,6 +1195,13 @@ def own_agenda(chat, memory, slow_in_system=False):
             out += ib + "\n"
     except Exception:
         pass
+    try:                         # 2026-10-23 (owner: "nothing of his own to tell"): true things from today, told once
+        import kino_material as KMT
+        mb = KMT.block(chat.get("uid"), chat.get("lang") or "fr")
+        if mb:
+            out += mb + "\n"
+    except Exception:
+        pass
     xs = [x for x in chat.get("exps") or [] if not x.get("done")]
     if xs:
         out += "EXPERIMENTS RUNNING WITH THEM: " + " | ".join("%s (since %s, ends %s, your bet: %s)" % (
@@ -1773,7 +1781,8 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
-            "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw), "story_told": bool(raw.get("story_told"))}
+            "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw), "story_told": bool(raw.get("story_told")),
+            "told": [str(x) for x in (raw.get("told") or []) if isinstance(x, (str, int))][:3] if isinstance(raw.get("told"), list) else []}
 
 
 # ---------------------------------------------------------------- tics (2026-10-23 evening, owner: "no interesting speaking style")
