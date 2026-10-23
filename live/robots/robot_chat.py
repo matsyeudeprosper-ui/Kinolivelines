@@ -1692,11 +1692,76 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "%s %s unverified=%s kept=%s\n" % (_t.strftime("%m-%d %H:%M:%S"), chat.get("id"), _bad, _say != str(raw["say"]).strip()[:1200]))
         except Exception:
             pass
+    _say, _tics = tic_rewrite(_say, chat, sysp, log=log, event=event)      # 2026-10-23: measured tics -> one rewrite
+    raw["say"] = _say
     return {"say": _say, "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK"))), "remember": remember_of(raw),
             "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
             "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw), "story_told": bool(raw.get("story_told"))}
+
+
+# ---------------------------------------------------------------- tics (2026-10-23 evening, owner: "no interesting speaking style")
+# Measured in one 50-minute chat: one callback six times, "Tu vois ?" x3, "je te laisse ..." x3 while they had said they had
+# nothing to do. A rule in the prompt says "once"; this measures it. A phrase of 4+ words he already used in this conversation
+# (and the member did not), or a door-closing line while the member is here, sends the message back to him ONCE for a rewrite.
+_CLOSERS = ("je te laisse", "bonne soir\u00e9e", "bon vendredi", "bonne nuit", "profite de ta soir\u00e9e", "je te laisse respirer",
+            "i'll leave you", "i will leave you", "enjoy your evening", "good night", "have a good evening")
+
+
+def _grams(t, n=4):
+    w = re.findall(r"[a-z\u00e0-\u00ff']+", str(t or "").lower())
+    return set(" ".join(w[i:i + n]) for i in range(len(w) - n + 1))
+
+
+def tic_check(say, chat, member_here=True):
+    """-> (repeated phrases, door-closing lines) found in `say` - both lists empty when the message is clean"""
+    M = chat.get("msgs") or []
+    uses, theirs = {}, set()
+    for m in [x for x in M if x.get("role") == "ai"][-12:]:
+        for g in _grams(m.get("text")):
+            uses[g] = uses.get(g, 0) + 1
+    for m in [x for x in M if x.get("role") == "user"][-30:]:
+        theirs |= _grams(m.get("text"))
+    # third use of a phrase with at least two real words (names of things - "le robot de l'or", "le test de chance" - have
+    # one and are not tics; replayed on the 23/10 chat: 10 of 29 flagged before this filter, 3 after - the right ones)
+    rep = sorted(g for g in _grams(say) if uses.get(g, 0) >= 2 and g not in theirs and sum(1 for x in g.split() if len(x.replace("'", "")) >= 4) >= 2)
+    # one hit per run of overlapping grams: keep the first of each chain
+    out = []
+    for g in rep:
+        if not any(set(g.split()) & set(o.split()) for o in out):
+            out.append(g)
+    low = str(say or "").lower()
+    last = str(([x for x in M if x.get("role") == "user"] or [{}])[-1].get("text") or "").lower()
+    bye = re.search(r"bonne nuit|bye|je vais dormir|\u00e0 demain|good ?night|je file|j'y vais|je te laisse", last)
+    clo = [c for c in _CLOSERS if c in low] if (member_here and not bye) else []
+    return out[:4], clo
+
+
+def tic_rewrite(say, chat, sysp, log=None, event=None):
+    """the message again without its tics (one extra call, only when a tic was measured); the original when nothing to fix"""
+    try:
+        here = (time.time() - max([int(m.get("t") or 0) for m in (chat.get("msgs") or []) if m.get("role") == "user"] or [0])) < 900
+        rep, clo = tic_check(say, chat, here)
+        if not rep and not clo:
+            return say, None
+        why = []
+        if rep:
+            why.append("it repeats phrases you already used in this conversation (a callback lands once; the second time it is a tic): " + "; ".join('"%s"' % g for g in rep))
+        if clo:
+            why.append("it closes the door (" + ", ".join('"%s"' % c for c in clo) + ") while they are here and talking - never send away someone who stays")
+        raw2 = W.ask_json(sysp, "REWRITE YOUR OWN MESSAGE. You were about to send:\n<<<\n%s\n>>>\nProblems: %s.\nSay the same thing again as a person "
+                          "across the table, without those phrases and without any closing line, as short or shorter, same language. Answer "
+                          "{\"say\": \"...\"} only." % (say, "; ".join(why)), models=("sonnet",), timeout=40, log=log)
+        new = str((raw2 or {}).get("say") or "").strip() if isinstance(raw2, dict) else ""
+        try:
+            open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tics.log"), "a", encoding="utf-8").write(
+                "%s %s rep=%s clo=%s event=%s | %s -> %s\n" % (time.strftime("%m-%d %H:%M:%S"), chat.get("id"), rep, clo, bool(event), say[:160].replace("\n", " "), (new or "(kept)")[:160].replace("\n", " ")))
+        except Exception:
+            pass
+        return (new[:1200] if 3 < len(new) < 1500 else say), (rep + clo)
+    except Exception:
+        return say, None
 
 
 ON_STEP = None          # 2026-10-20 (owner: visible thinking): the server shows Kino's real steps while it works
