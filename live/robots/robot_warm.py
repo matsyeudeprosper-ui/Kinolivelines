@@ -242,8 +242,10 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                 p = q
                 break
             _kill(q)
+    cold = p is None
     if p is None:
         p = _spawn(sp, model)             # cold: ~12 s more
+    tm = {"t0": time.time(), "first": None}   # 2026-10-23 (owner: "check response time"): where the seconds go, per call
     try:                                  # the one answering now goes back to normal priority
         import ctypes
         ctypes.windll.kernel32.SetPriorityClass(int(p._handle), 0x00000020)
@@ -260,6 +262,8 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                     j = json.loads(line)
                 except Exception:
                     continue
+                if j.get("type") == "stream_event" and tm["first"] is None:
+                    tm["first"] = time.time()
                 if on_text is not None and j.get("type") == "stream_event":
                     dl = (j.get("event") or {}).get("delta") or {}
                     if dl.get("type") == "text_delta":
@@ -272,7 +276,9 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                     try:                          # 2026-10-21 (owner item 12): what each answer costs
                         io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
                             {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else "",
-                             "err": (str(j.get("result") or "")[:200] if j.get("is_error") else None)}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
+                             "err": (str(j.get("result") or "")[:200] if j.get("is_error") else None),
+                             "cold": cold, "ttft_ms": int(((tm["first"] or time.time()) - tm["t0"]) * 1000), "ms": int((time.time() - tm["t0"]) * 1000),
+                             "out": len(str(j.get("result") or ""))}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
                     except Exception:
                         pass
                     out.put(j.get("result") if not j.get("is_error") else None)
