@@ -105,6 +105,35 @@ def proven(rid, sym="BTCUSD"):
     return int(c.get("seeds") or 0) >= 100 and beats <= 5
 
 
+def best_result(rid):
+    """2026-10-22 (owner: "our new robot winner is not public"): the robot's best test on a market where it PASSED the
+    100-draw luck test - Bitcoin, or the market it was built for (a gold robot has no Bitcoin test). Proven markets only;
+    the most money per 30 days wins. The result dict carries "sym". None when no market is proven."""
+    best = None
+    btc = result_of(rid)
+    if btc and btc.get("net") is not None and proven(rid, "BTCUSD"):
+        best = dict(btc, sym="BTCUSD")
+    for f in os.listdir(RESULTS) if os.path.isdir(RESULTS) else []:
+        if not (f.startswith(rid + "@") and f.endswith(".json")):
+            continue
+        sym = f[len(rid) + 1:-5]
+        if not proven(rid, sym):
+            continue
+        r = _load(os.path.join(RESULTS, f), None) or {}
+        R = r.get("robot") or {}
+        if R.get("net") is None:
+            continue
+        cand = {"net": R.get("net"), "trades": R.get("trades"), "wins": R.get("wins"), "win_rate": R.get("win_rate"), "mtm_dd": R.get("mtm_dd"),
+                "cc_dd": R.get("cc_dd"), "profit_factor": R.get("profit_factor"), "first_half": R.get("first_half"), "later_half": R.get("later_half"),
+                "best": R.get("best"), "worst": R.get("worst"), "max_loss_streak": R.get("max_loss_streak"), "hold_median_min": R.get("hold_median_min"),
+                "balance": r.get("balance"), "days": r.get("days"), "tested_at": r.get("generated_at"), "window_utc": r.get("window_utc"),
+                "curve": (R.get("curve") or [])[-120:], "sym": sym}
+        p30 = lambda x: float(x.get("net") or 0) * 30.0 / float(x.get("days") or 42)
+        if best is None or p30(cand) > p30(best):
+            best = cand
+    return best
+
+
 def can_publish(rid, uid, is_admin=False):
     """(ok, why) - the creator (or the owner) may list a tested, positive robot"""
     R = robots().get(rid)
@@ -112,15 +141,11 @@ def can_publish(rid, uid, is_admin=False):
         return False, "robot inconnu"
     if not (is_admin or R.get("by_uid") == uid):
         return False, "pas votre robot"
-    if R.get("stage") not in ("tested", "real", "demo"):
-        return False, "pas encore testé"
-    res = result_of(rid)
-    if not res or res.get("net") is None:
-        return False, "pas de test Bitcoin"
+    res = best_result(rid)                 # 2026-10-22: Bitcoin OR the market it passed its luck test on
+    if not res:
+        return False, "le test de chance (100 tirages) n'est réussi sur aucun marché"
     if float(res["net"]) <= 0:
-        return False, "le test Bitcoin est négatif (%.2f $)" % float(res["net"])
-    if not proven(rid):
-        return False, "le test de chance (100 tirages) n'est pas encore réussi"
+        return False, "le test est négatif (%.2f $)" % float(res["net"])
     return True, ""
 
 
@@ -166,8 +191,8 @@ def refresh_pauses():
     with _LOCK:
         d = data(); changed = False
         for rid, L in d["listings"].items():
-            res = result_of(rid)
-            bad = not res or res.get("net") is None or float(res["net"]) <= 0 or not proven(rid)
+            res = best_result(rid)
+            bad = not res or res.get("net") is None or float(res["net"]) <= 0
             if bool(L.get("paused")) != bad:
                 L["paused"] = bad; L["updated"] = int(time.time()); changed = True
                 d["log"].append({"t": int(time.time()), "ev": "pause" if bad else "unpause", "rid": rid})
@@ -245,7 +270,7 @@ def catalogue(me_uid=None, my_server="", include_hidden=False):
         if L.get("hidden") and not include_hidden:
             continue
         rb = R.get(rid) or {}
-        res = result_of(rid) or {}
+        res = best_result(rid) or result_of(rid) or {}
         out.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "alias": L.get("alias"), "blurb": L.get("blurb"),
                     "price_usd": 0, "free": True, "open_recipe": bool(L.get("open_recipe")),
                     "paused": bool(L.get("paused")), "hidden": bool(L.get("hidden")), "by_uid": L.get("by_uid"), "mine": L.get("by_uid") == me_uid,

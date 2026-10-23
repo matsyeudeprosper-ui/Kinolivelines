@@ -18535,7 +18535,7 @@ def _path_now(user):
             got.add("first_test")
             if (t.get("net") or 0) > 0:
                 got.add("first_positive")
-        if _proven(r["id"]):
+        if _proven(r["id"]) or any(_proven(r["id"], _s) for _s in ("XAUUSD", "USTEC", "US30", "USOIL", "XAGUSD", "US500")):
             got.add("proven")
     for x in ch[:10]:
         c = _chat_load(user, x["id"]) or {}
@@ -23469,7 +23469,8 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
         if not (admin or has(uid, "strategy")):
             return {"ok": False, "err": "Strat\u00e9gie n\u00e9cessaire pour publier"}
         # 2026-10-19 (owner): the public marketplace needs the 100-draw luck test - for everyone, the owner included
-        if not _proven(str(body.get("id") or "")):
+        # 2026-10-22: proven on ANY market (a gold robot passed its luck test on gold, it has no Bitcoin test)
+        if not _OMKT.best_result(str(body.get("id") or "")):
             _q = robot_control(user, {"id": str(body.get("id") or ""), "sym": "BTCUSD"})
             return {"ok": False, "err": "Il faut d\u2019abord r\u00e9ussir le test de chance (100 tirages)." +
                     (" Il est lanc\u00e9." if _q.get("ok") else " Il est d\u00e9j\u00e0 en cours ou en attente." if _q.get("err") in ("busy", "done") else
