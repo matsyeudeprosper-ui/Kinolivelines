@@ -231,7 +231,10 @@ function insights(r){const t=testOf(r);if(!t)return [];const a=t.a,p=t.p,par=r.p
  return O.slice(0,5);}
 const best=L=>L.filter(r=>netOf(r)!=null).sort((x,y)=>netOf(y)-netOf(x))[0]||null;
 // 2026-10-18 (owner upgrade list)
-const stOf=r=>(['real','demo'].includes(r.stage)&&(r.running===false||r.running===0))?[T('Au repos','Resting'),'off']:(ST[r.stage]||ST.tested);
+// 2026-10-22 (owner: "why does it say not yet tested?"): a robot built for gold is tested on gold - its stage stays 'draft'
+// (only a Bitcoin test moves it), so a test on ANY market counts as tested here
+const stOf=r=>(['real','demo'].includes(r.stage)&&(r.running===false||r.running===0))?[T('Au repos','Resting'),'off']:
+ (r.stage==='draft'&&markets(r).some(m=>m.a))?ST.tested:(ST[r.stage]||ST.tested);
 const EAT=()=>BL().engine_at||'';
 const staleBtc=r=>r.id!=='owl'&&!!testOf(r)&&!!r.tested_at&&r.tested_at<EAT();
 const staleMk=m=>!!m.at&&m.at<EAT();

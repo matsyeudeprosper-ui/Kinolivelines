@@ -13443,6 +13443,9 @@ def builder_payload(user, detail):
                 continue
             _rb = _pk[6:] if _pk.startswith("robot-") and _pk[6:] in byid else "owl"
             _cnt[_rb] = _cnt.get(_rb, 0) + 1
+            for _mx in ((PK.get("market_plugs") or {}).get(_u.get("id")) or {}).values():     # 2026-10-22: robots on other markets
+                if _mx.get("robot") in byid:
+                    _cnt[_mx["robot"]] = _cnt.get(_mx["robot"], 0) + 1
         _rp = PK.get("robot_plugs") or {}
         for _x in out:
             _x["running"] = _cnt.get(_x["id"], 0) if detail else bool(_cnt.get(_x["id"]))
@@ -22710,6 +22713,57 @@ def robot_plug_apply(user, body):
     return res
 
 
+def market_plug_apply(user, body):
+    """2026-10-22 (owner: "make sure the system can handle 2 or more robots on the same account ... start the newly
+    random-test-passed robot on Mike's account"): put a robot on ONE market of an account, next to the account's own
+    robot on Bitcoin. Owner only. The market bot <variant>@<SYM> then runs THAT robot's package (owl_package
+    .market_package) - started by boot_all within 5 min once owl_markets.check allows it. body: uid, sym, robot | undo.
+    Money = the robot's own tested money ('base' when it names none) - the money its test and luck test ran with."""
+    if not is_admin(user):
+        return {"ok": False, "err": "owner"}
+    uid, sym, rid = str(body.get("uid") or ""), str(body.get("sym") or "").upper(), str(body.get("robot") or "")
+    pp = os.path.join(DIR, "owl_packages.json")
+    PK = json.load(open(pp, encoding="utf-8"))
+    if uid not in (PK.get("accounts") or {}) or not sym or sym.rstrip("M") == "BTCUSD":
+        return {"ok": False, "err": "where"}
+    name = "mkt-%s-%s" % (uid, sym)
+    mp = PK.setdefault("market_plugs", {})
+    if body.get("undo"):
+        (mp.get(uid) or {}).pop(sym, None)
+        if not mp.get(uid):
+            mp.pop(uid, None)
+        (PK.get("packages") or {}).pop(name, None)
+    else:
+        reg = robot_reg()
+        byid = {x["id"]: x for x in reg.get("robots") or []}
+        r0 = byid.get(rid)
+        if r0 is None or rid == "owl":
+            return {"ok": False, "err": "robot"}
+        R = robot_resolve(rid, byid)
+        try:
+            pkg = robot_package(dict(r0, resolved=R), reg.get("pieces") or [], "base", R.get("money") or "base")
+        except ValueError as e:
+            return {"ok": False, "err": "not_live:" + str(e)}
+        pkg["btc_rest"] = False                      # the account's Bitcoin robot keeps running
+        if body.get("kill_net") is not None:         # its own safety stop (owner 2026-10-22: -30 for gold on Mike)
+            pkg["kill_net"] = -abs(float(body["kill_net"]))
+        if body.get("dry"):                          # look before plugging: the package it WOULD trade with
+            return {"ok": True, "dry": True, "package": name, "pkg": pkg, "resolved": R}
+        pkg["_why"] = "%s robot '%s' put on %s of %s by the owner (market plug: runs beside the account's robot)" % (
+            datetime.now(timezone.utc).strftime("%Y-%m-%d"), rid, sym, uid)
+        PK.setdefault("packages", {})[name] = pkg
+        mp.setdefault(uid, {})[sym] = {"robot": rid, "package": name, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "by": "owner"}
+    tmp = pp + ".tmp"
+    json.dump(PK, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, pp)
+    try:
+        import owl_markets as _OMK
+        ok, why = _OMK.check(uid, sym)
+    except Exception as e:
+        ok, why = False, str(e)
+    return {"ok": True, "package": None if body.get("undo") else name, "allowed": ok, "why": why}
+
+
 def robot_plug_undo(user, body):
     if not is_admin(user):
         return {"ok": False, "err": "owner"}
@@ -22786,6 +22840,17 @@ def acct_robot_block(user, admin=False):
     out = {"can": bool((uid in BOT_VARIANT or _generic_bot(user)) and not user.get("public") and (admin or has(uid, "family"))), "current": dict(nm(byid.get(cur) or {"id": cur}), id=cur),
            "pending": dict(nm(byid.get(pend["robot"]) or {"id": pend["robot"]}), id=pend["robot"], at=pend.get("at")) if pend else None,
            "choices": []}
+    try:          # 2026-10-22 (owner: "2 or more robots on the same account"): the robots plugged on other markets
+        import owl_markets as _OMK
+        out["markets"] = []
+        for _sy, _x in sorted(((PK.get("market_plugs") or {}).get(uid) or {}).items()):
+            _ok, _why = _OMK.check(uid, _sy)
+            _sf = os.path.join(DIR, "bos_state_%s_%s.json" % (_OMK.VARIANT.get(uid, uid), _sy))
+            out["markets"].append(dict(nm(byid.get(_x.get("robot")) or {"id": _x.get("robot")}), id=_x.get("robot"), sym=_sy,
+                                       at=_x.get("at"), ok=_ok, why=_why,
+                                       alive=os.path.exists(_sf) and time.time() - os.path.getmtime(_sf) < 600))
+    except Exception:
+        pass
     # 2026-10-18 (owner upgrade list): what the robot did on THIS account, and is it running right now
     try:
         _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
@@ -27688,7 +27753,7 @@ class H(BaseHTTPRequestHandler):
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
-                                              "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
+                                              "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo", "market_plug_apply",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
@@ -27706,7 +27771,7 @@ class H(BaseHTTPRequestHandler):
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
-                       "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo,
+                       "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,

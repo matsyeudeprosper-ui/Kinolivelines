@@ -345,7 +345,9 @@ def fvg_pts(d):
     if d == 1:
         return max(0.0, float(c3["low"]) - float(c1["high"]))
     return max(0.0, float(c1["low"]) - float(c3["high"]))
-_P = _PKG.for_account(PAUSE_UID)
+# 2026-10-22 (owner: "2 or more robots on the same account"): a market bot runs the robot plugged on ITS market when
+# there is one (owl_packages.json market_plugs) - the Bitcoin bot (no MKT) is unchanged
+_P = _PKG.for_account(PAUSE_UID, MKT or None)
 _SHADOW_ID = PAUSE_UID + ("@" + MKT if MKT else "")
 PACKAGE = _P["package"]
 BASE_LOT = _P["base_lot"]

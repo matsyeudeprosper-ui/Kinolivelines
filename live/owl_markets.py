@@ -51,7 +51,18 @@ def base(sym):
     return s[:-1] if s.endswith("m") and s[:-1].isupper() else s
 
 
-def robot_of(uid):
+def market_plug(uid, sym):
+    """2026-10-22 (owner: "2 or more robots on the same account"): the robot plugged on ONE market of an account
+    (owl_packages.json market_plugs[uid][SYM]), or None"""
+    mp = ((_load(os.path.join(DIR, "owl_packages.json"), {}) or {}).get("market_plugs") or {}).get(uid) or {}
+    return (mp.get(base(sym).upper()) or {}).get("robot") if sym else None
+
+
+def robot_of(uid, sym=None):
+    """the robot this account runs - on `sym` when a robot is plugged on that market, else the account's robot"""
+    mp = market_plug(uid, sym) if sym else None
+    if mp:
+        return mp
     plugs = (_load(os.path.join(DIR, "owl_packages.json"), {}) or {}).get("robot_plugs") or {}
     return (plugs.get(uid) or {}).get("robot") or "owl"
 
@@ -75,8 +86,8 @@ def own_market(uid, rid):
 
 def check(uid, sym):
     """(allowed, reason) for one account and one market (common name)"""
-    rid = robot_of(uid)
     B = base(sym).upper()
+    rid = robot_of(uid, B)
     if uid in EXCLUDED:
         return False, "compte de reference: Bitcoin seulement"
     om = own_market(uid, rid)
@@ -136,7 +147,7 @@ def allowed(uid):
         if not f.endswith(".json") or "@" not in f:
             continue
         rid, sym = f[:-5].split("@", 1)
-        if rid != robot_of(uid):
+        if rid != robot_of(uid, sym):
             continue
         ok, why = check(uid, sym)
         out.append({"sym": sym, "ok": ok, "why": why})
@@ -148,7 +159,9 @@ def launch_list():
     L = []
     for u in users:
         uid = u.get("id")
-        if not (u.get("trade") and u.get("mt5_login")) or uid in EXCLUDED:
+        # 2026-10-22: an account whose bot runs on its own ('dedicated', e.g. Mike's master account, trade: None on
+        # purpose - trade: true could start a copier on the master) may run market bots too
+        if not ((u.get("trade") or u.get("dedicated")) and u.get("mt5_login")) or uid in EXCLUDED:
             continue
         v = VARIANT.get(uid, uid)
         for a in allowed(uid):
@@ -292,7 +305,7 @@ if __name__ == "__main__":
             print(x)
         sys.exit(0)
     for u in _load(os.path.join(DIR, "owl_nest_users.json"), []) or []:
-        if not (u.get("trade") and u.get("mt5_login")):
+        if not ((u.get("trade") or u.get("dedicated")) and u.get("mt5_login")):
             continue
         A = allowed(u["id"])
         print("%-12s robot %-12s %s" % (u["id"], robot_of(u["id"]),

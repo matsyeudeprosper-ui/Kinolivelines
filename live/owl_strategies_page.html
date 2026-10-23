@@ -98,6 +98,7 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .lh .lh-top{display:flex;gap:14px;align-items:flex-start}.lh .lh-tx{flex:1;min-width:0}
 .lh .lh-t{font-size:1.55rem;font-weight:900;letter-spacing:-.025em;line-height:1.15;color:#fff;margin:8px 0 0}
 .lh .lh-s{font-size:.88rem;line-height:1.45;color:rgba(214,230,243,.82);margin:8px 0 0;max-width:420px}
+.lh-mk{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:10px 0 0;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.05);font-size:.86rem}.lh-mk span{color:rgba(214,230,243,.7);font-weight:700}.lh-mk b{flex:1;min-width:0}.lh-mk em{font-style:normal;font-size:.78rem;color:rgba(214,230,243,.7)}.lh-mk em.pos{color:var(--up-soft,#5fe3a1)}
 .lh .lh-ico{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(96,165,250,.35),rgba(141,240,187,.18));border:1px solid rgba(255,255,255,.16);color:#e6f1ff}.lh .lh-ico svg{width:28px;height:28px}
 .lh .lh-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(0,0,0,.16)}
 .lh .lh-st div{padding:11px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.08)}.lh .lh-st div:first-child{border-left:0}
@@ -1047,6 +1048,9 @@ const c=A.current||{},pd=A.pending,owl=c.id==='owl',t=(A.choices||[]).find(x=>x.
    :T('Choisi pour ce compte. Retour à L’Owl possible à tout moment.','Chosen for this account. You can go back to the Owl at any time.'));
  return '<div class="card arb lh"><div class="lh-top"><span class="lh-ico" title="'+(pd?T('Changement prévu','Change planned'):T('En marche','Running'))+'">'+BOT+'<i class="'+(pd?'wt':'')+'"></i></span>'+
   '<div class="lh-tx" style="flex:1;min-width:0"><div class="eyebrow">'+T('Le robot de ce compte','This account’s robot')+'</div><h3 class="lh-t">'+esc(T(c.name_fr,c.name_en))+'</h3><p class="lh-s">'+sub+'</p></div></div>'+
+  // 2026-10-22 (owner: "2 or more robots on the same account"): the robots plugged on other markets of this account
+  (A.markets||[]).map(m=>'<div class="lh-mk"><span>+ '+esc(MKNM[m.sym]?T(MKNM[m.sym][0],MKNM[m.sym][1]):m.sym)+'</span><b>'+esc(T(m.name_fr,m.name_en))+'</b><em class="'+(m.ok&&m.alive?'pos':'')+'">'+
+    (!m.ok?T('en attente','waiting')+' · '+esc(m.why||''):m.alive?T('en service','running'):T('démarre…','starting…'))+'</em></div>').join('')+
   acctLive(A)+
   (t.net!=null?'<div class="lh-test"><span>'+T('Test sur le passé : ','Past-data test: ')+'<b class="'+(t.net>=0?'pos':'neg')+'">'+(t.net>=0?'+':'−')+'$'+Math.round(Math.abs(t.net))+'</b>'+T(' en ',' in ')+Math.round(t.days||42)+T(' j · ',' d · ')+(t.trades!=null?t.trades:'—')+' trades · '+(t.win_rate!=null?Math.round(t.win_rate*100)+' %':'—')+'</span>'+
    '<button class="lh-chip '+(proven?'ok':'')+'" onclick="proofSh('+(proven?1:0)+')">'+(proven?'<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'+(strong?T('Prouvé contre le hasard ★','Proven against chance ★'):T('Solide contre le hasard','Solid against chance')):T('Pas encore prouvé','Not proven yet'))+'</button></div>'+

@@ -111,7 +111,9 @@ def compute():
         peak = max(peak, cum)
         dd = max(dd, peak - cum)
         curve.append(round(cum, 2))
-    open_pos = mt5.positions_get(symbol=SYMBOL) or []
+    # 2026-10-22 (owner: "2 or more robots on the same account"): every market's open trades - a gold robot's trade
+    # was missing from the app while open (only Bitcoin was read); each row carries its "sym" already
+    open_pos = mt5.positions_get() or []
     if BOT_ONLY:
         # 2026-09-08: KL- covers the new bot family (KL-BOS,
         # KL-FRESH) - their trades were invisible with OWL- only

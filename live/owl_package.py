@@ -148,12 +148,22 @@ def package_name(uid):
     return (raw.get("accounts") or {}).get(uid, "base")
 
 
-def for_account(uid):
-    """The money-management dials for ONE account. Always a full dict."""
+def market_package(uid, mkt):
+    """2026-10-22 (owner: "2 or more robots on the same account"): the package of the robot plugged on ONE market of an
+    account (owl_packages.json market_plugs[uid][MKT].package), or None - then the market bot runs the account's robot"""
+    raw = _load() or {}
+    x = ((raw.get("market_plugs") or {}).get(uid) or {}).get(str(mkt or "").upper()) or {}
+    name = x.get("package")
+    return name if name and name in (raw.get("packages") or {}) else None
+
+
+def for_account(uid, mkt=None):
+    """The money-management dials for ONE account (or for one of its market bots, when a robot is plugged on that
+    market). Always a full dict."""
     raw = _load()
     if not raw:
         return dict(BASE, package="base")
-    name = (raw.get("accounts") or {}).get(uid, "base")
+    name = (market_package(uid, mkt) if mkt else None) or (raw.get("accounts") or {}).get(uid, "base")
     out = _resolve(name, raw.get("packages") or {})
     out["package"] = name
     return out
