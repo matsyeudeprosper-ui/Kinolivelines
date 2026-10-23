@@ -14643,6 +14643,8 @@ def _rc():
     m = importlib.import_module("robot_chat")
     if not m.PLANS:
         m.PLANS = {k: {"usd": v.get("usd")} for k, v in PACKAGES.items()}
+    if hasattr(m, "FRESH_OF") and m.FRESH_OF is None:
+        m.FRESH_OF = lambda chat: _chat_member_fresh(chat.get("uid"), chat)
     return m
 
 
@@ -14925,23 +14927,6 @@ def _chat_member(user, c):
         L.append(line_ + ("; tests are PAUSED by the owner" if os.path.exists(TESTS_PAUSED) else ""))
     except Exception:
         pass
-    try:          # 2026-10-19 (owner item 3): discipline signals for the coach
-        _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
-        _td = time.strftime("%d/%m", time.gmtime())
-        _tt = [x for x in _nd.get("trades") or [] if str(x.get("w") or "").startswith(_td)]
-        _ls = 0
-        for x in _nd.get("trades") or []:
-            if (x.get("p") or 0) < 0:
-                _ls += 1
-            else:
-                break
-        _mh = sum(1 for m in (c.get("msgs") or []) if m.get("role") == "user" and time.time() - int(m.get("t") or 0) < 3600)
-        _ed = sum(1 for m in (c.get("msgs") or []) if m.get("role") in ("edit",) and time.time() - int(m.get("t") or 0) < 86400) + \
-            sum(1 for m in (c.get("msgs") or []) if m.get("role") == "ai" and m.get("made") and time.time() - int(m.get("t") or 0) < 86400)
-        L.append("DISCIPLINE SIGNALS: today %d trades, %d lost, %+.2f $; current losing streak %d; they wrote %d messages in the last hour; "
-                 "%d robot changes in the last 24 h" % (len(_tt), sum(1 for x in _tt if (x.get("p") or 0) < 0), _nd.get("today") or 0, _ls, _mh, _ed))
-    except Exception:
-        pass
     try:
         if c.get("ghosts"):
             _rc()
@@ -14953,15 +14938,6 @@ def _chat_member(user, c):
     except Exception:
         pass
     try:          # 2026-10-19 (owner humanity items 2, 7, 8)
-        M_ = [m for m in (c.get("msgs") or []) if m.get("t")]
-        um = [m for m in M_ if m.get("role") == "user"][-6:]
-        cues = []
-        for m in um:
-            prev_ai = next((x for x in reversed(M_) if x.get("role") == "ai" and int(x["t"]) < int(m["t"])), None)
-            tx = str(m.get("text") or "")
-            cues.append("%d chars%s%s%s" % (len(tx), (", answered after %ds" % (int(m["t"]) - int(prev_ai["t"]))) if prev_ai else "",
-                                             ", !" if "!" in tx else "", ", CAPS" if sum(1 for ch_ in tx if ch_.isupper()) > max(6, len(tx) * 0.5) else ""))
-        L.append("EMOTION CUES (their last messages, oldest first): " + " | ".join(cues) + "; their local hour now %d" % _local_hour(uid))
         allc = chat_list(user).get("chats") or []
         nmsg = sum(int(x.get("n") or 0) for x in allc)
         first = time.strftime("%Y-%m-%d", time.gmtime(min([int(str(x.get("id")).split("_")[-1]) // 1000 for x in allc if str(x.get("id")).split("_")[-1].isdigit()] or [time.time()])))
@@ -15013,13 +14989,52 @@ def _chat_member(user, c):
     except Exception:
         pass
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
+    return out
+
+
+def _chat_member_fresh(uid, c):
+    """2026-10-23 (speed): the lines of the member block that change every turn - discipline numbers (messages in the
+    last hour), emotion cues (answered after Ns, local hour), the world right now (time to the minute, prices). They
+    used to sit in the SYSTEM prompt, so every message was a new prompt: a cold claude start (~12 s) and ~80k tokens
+    read uncached ($0.24) each time - median 23 s to the first word. Now they go in the message (robot_chat.FRESH_OF);
+    the system prompt stays identical between turns."""
+    L = []
+    try:          # 2026-10-19 (owner item 3): discipline signals for the coach
+        _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        _td = time.strftime("%d/%m", time.gmtime())
+        _tt = [x for x in _nd.get("trades") or [] if str(x.get("w") or "").startswith(_td)]
+        _ls = 0
+        for x in _nd.get("trades") or []:
+            if (x.get("p") or 0) < 0:
+                _ls += 1
+            else:
+                break
+        _mh = sum(1 for m in (c.get("msgs") or []) if m.get("role") == "user" and time.time() - int(m.get("t") or 0) < 3600)
+        _ed = sum(1 for m in (c.get("msgs") or []) if m.get("role") in ("edit",) and time.time() - int(m.get("t") or 0) < 86400) + \
+            sum(1 for m in (c.get("msgs") or []) if m.get("role") == "ai" and m.get("made") and time.time() - int(m.get("t") or 0) < 86400)
+        L.append("DISCIPLINE SIGNALS: today %d trades, %d lost, %+.2f $; current losing streak %d; they wrote %d messages in the last hour; "
+                 "%d robot changes in the last 24 h" % (len(_tt), sum(1 for x in _tt if (x.get("p") or 0) < 0), _nd.get("today") or 0, _ls, _mh, _ed))
+    except Exception:
+        pass
+    try:
+        M_ = [m for m in (c.get("msgs") or []) if m.get("t")]
+        um = [m for m in M_ if m.get("role") == "user"][-6:]
+        cues = []
+        for m in um:
+            prev_ai = next((x for x in reversed(M_) if x.get("role") == "ai" and int(x["t"]) < int(m["t"])), None)
+            tx = str(m.get("text") or "")
+            cues.append("%d chars%s%s%s" % (len(tx), (", answered after %ds" % (int(m["t"]) - int(prev_ai["t"]))) if prev_ai else "",
+                                             ", !" if "!" in tx else "", ", CAPS" if sum(1 for ch_ in tx if ch_.isupper()) > max(6, len(tx) * 0.5) else ""))
+        L.append("EMOTION CUES (their last messages, oldest first): " + " | ".join(cues) + "; their local hour now %d" % _local_hour(uid))
+    except Exception:
+        pass
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
         import robot_reality as _RW
         _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
-        out += "\n\nTHE WORLD RIGHT NOW:\n" + _RW.world_now(_tz)
+        L.append("THE WORLD RIGHT NOW:\n" + _RW.world_now(_tz))
     except Exception:
         pass
-    return out
+    return "\n".join(L)
 
 
 def _chat_path(cid):

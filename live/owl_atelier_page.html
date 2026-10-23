@@ -401,9 +401,9 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 let C=null,CID=null,PIECES=null,POLL=null,LASTN=0,LASTREV=0,SENDING=false,THINK_T=0;
 const SL=[['entry',T('Entrée','Entry')],['filters',T('Filtres','Filters')],['stop',T('Stop','Stop')],['exit',T('Sortie','Exit')],['recovery',T('Rattrapage','Recovery')],['money',T('Argent','Money')]];
 const TYPE={entry:'entry',filters:'filter',stop:'stop',exit:'exit',recovery:'recovery',money:'money'};
-const BUILD=[T('je monte ton robot…','building your robot…'),T('je vérifie les pièces…','checking the pieces…'),T('j’écris les formules…','writing the formulas…'),T('je relis tout…','reading it all over…')];
+
 let MK=null;
-const THINK=[T('je réfléchis…','thinking…'),T('je relis ton idée…','reading your idea again…'),T('j’assemble les pièces…','putting the pieces together…'),T('je vérifie les formules…','checking the formulas…'),T('presque fini…','almost done…')];
+
 
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200);}
 async function getJ(u){const r=await fetch(B+u+(u.includes('?')?'&':'?')+'t='+Date.now(),{cache:'no-store'});return r.json();}
@@ -597,8 +597,8 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  if(dr&&C.status!=='ready'){LIVE_T=dr;if(!$('livebub')){tb.dataset.mode='live';tb.innerHTML='<div class="m ai live tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub" id="livebub"></div></div>';}liveTick();}
  else{LIVE_T='';const mode=C&&C.status==='building'?'b':(C&&C.status==='thinking'?'t':'');
   if(tb.dataset.mode!==mode||(mode&&!tb.innerHTML)){tb.dataset.mode=mode;
-   tb.innerHTML=mode==='b'?'<div class="bld"><span class="spin"></span><span id="bldt">'+BUILD[THINK_T%BUILD.length]+'</span></div>':
-    mode==='t'?'<div class="m ai typing tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?THINK[THINK_T%THINK.length]:T('Kino arrive…','Kino is on his way…'))+'</span></div></div>':'';}}
+   tb.innerHTML=mode==='b'?'<div class="bld"><span class="spin"></span><span id="bldt">'+waitText(true)+'</span></div>':
+    mode==='t'?'<div class="m ai typing tail"><div class="av"><svg><use href="#owl"/></svg></div><div class="bub"><span class="dots"><i></i><i></i><i></i></span><span id="thk">'+(M.length?waitText(false):T('Kino arrive…','Kino is on his way…'))+'</span></div></div>':'';}}
  if(fresh2.length)drawAll();hdr();
  const _mine=M.length&&M[M.length-1].role==='user';
  if(wel&&!dr&&C.status==='ready')el.scrollTop=0;else if(force||atBottom||(M.length!==LASTN&&_mine)){el.scrollTop=el.scrollHeight;if(force||M.length!==LASTN)pinBottom(force?2500:900);NEWUP=0;}
@@ -876,7 +876,7 @@ async function runTest(force){if(!CID)return;shClose();const j=await post('chat_
    else runTest(1);return;}
   toast(j.state==='no'?T('Un moment ne va pas : dis à Kino ce qui cloche (ou « Tester quand même »).','A moment is off: tell Kino what is wrong (or "Test anyway").'):T('Réponds ✅ ou ❌ sur chaque moment au-dessus (ou « Tester quand même »).','Answer ✅ or ❌ on each moment above (or "Test anyway").'));goDown();return;}
  if(!j.ok){toast(ERR[j.err]||(String(j.err||'').startsWith('piece:')?T('Une pièce n’a pas pu être enregistrée.','A piece could not be saved.'):j.err));return;}load(CID,true);}
-setInterval(()=>{THINK_T++;const e=$('thk');if(e&&C&&(C.msgs||[]).length)e.textContent=THINK[THINK_T%THINK.length];const b=$('bldt');if(b)b.textContent=BUILD[THINK_T%BUILD.length];},2600);
+/* 2026-10-23 (owner: the same 'je réfléchis, je relis, j'assemble' carousel every time looks fake): the bubble shows Kino's REAL step when the server reports one (C.act, from robot_chat._step), else a plain 'typing' with the seconds elapsed - never an invented sequence */ let WAIT_T0=0; function waitText(build){const real=(C&&C.act)||'';if(real)return real;if(!WAIT_T0)WAIT_T0=Date.now();const sec=Math.round((Date.now()-WAIT_T0)/1000);const base=build?T('je monte ton robot…','building your robot…'):T('Kino écrit…','Kino is typing…');return sec>=8?base+' '+sec+' s':base;} setInterval(()=>{const e=$('thk'),b=$('bldt');if(!e&&!b){WAIT_T0=0;return;}if(e&&C&&(C.msgs||[]).length)e.textContent=waitText(false);if(b)b.textContent=waitText(true);},1000);
 /* ---------- the market (2026-10-19 evening: any market of the member's broker) */
 async function mkSh(){if(!C||!C.view)return;shOpen('<h4>'+T('Sur quel marché ?','Which market?')+'</h4><div class="fld"><input id="mkq" placeholder="'+T('Chercher : or, nasdaq, EURUSD…','Search: gold, nasdaq, EURUSD…')+'" oninput="mkList()"></div><div class="mkl" id="mkl"><div class="sys"><span>'+T('Je charge les marchés de ton courtier…','Loading your broker’s markets…')+'</span></div></div>');
  if(!MK){try{const j=await post('robot_markets',{});MK=[{s:'BTCUSD',d:'Bitcoin',ready:true}].concat(j.symbols||[]);}catch(e){MK=[{s:'BTCUSD',d:'Bitcoin',ready:true}];}}mkList();}

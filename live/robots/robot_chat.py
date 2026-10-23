@@ -1192,6 +1192,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
     else:
         U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
         U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
+    if FRESH_OF:                           # 2026-10-23 (speed): the per-minute facts, out of the system prompt
+        try:
+            _fo = FRESH_OF(chat)
+            if _fo:
+                U += "\nRIGHT NOW (this minute; these lines change every turn, the facts in your instructions do not):\n%s\n" % _fo
+        except Exception:
+            pass
     try:                                   # 2026-10-23 (commitment ledger, engine 1): what he still owes them, and his word this week
         import kino_commit as _KC
         _cb = _KC.block(chat.get("uid"), chat.get("id"), ml)
@@ -1587,6 +1594,9 @@ def prewarm(stable=""):
     W.prewarm(system(stable))
 
 
+FRESH_OF = None             # 2026-10-23 (speed): set by the app - chat -> the lines that change every turn (time, prices,
+                            # emotion cues, discipline numbers); they go in the MESSAGE so the system prompt stays identical
+                            # between turns (warm process reused, API cache hit) instead of a new key every minute
 QUICK_LAT = [4.0]           # 2026-10-19 (owner item 4): Kino's recent quick-reply times (s)
 
 
