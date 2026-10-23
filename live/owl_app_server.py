@@ -16491,6 +16491,22 @@ def _commit_loop():
         time.sleep(60)
 
 
+def _moments_again(cid):
+    """the moments card (votes pending) is older than 10 min: a copy of it comes back at the bottom - same moments, same
+    check signature, the votes already given are kept (chat_fires would reset them) -> True when re-posted"""
+    def f(c):
+        now = time.time()
+        last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "demo" and m.get("check")), None)
+        if not last or now - float(last.get("t") or 0) < 600:
+            return False
+        c.setdefault("msgs", []).append(dict(last, t=int(now), again=True))
+        return True
+    try:
+        return bool(_chat_mut(cid, f))
+    except Exception:
+        return False
+
+
 def _kino_act(cid, user, act, en=False):
     """2026-10-19 (owner): Kino acts on tests directly - its own member's test, and (the nest's owner only) the nest's
     test switch. A short system line tells what really happened."""
@@ -16536,7 +16552,9 @@ def _kino_act(cid, user, act, en=False):
                                                        "Ton robot ne se déclenche jamais sur les 42 derniers jours - regardons l'entrée ensemble.")
                                 if ck_.get("err") == "nofire" else None)
                     else:
-                        line = ("The test waits for your ✅ / ❌ on the moments above." if en else "Le test attend tes ✅ / ❌ sur les moments au-dessus.")
+                        _rep = _moments_again(cid)        # 2026-10-23 (watch): the card was 2 h and 30 messages up - bring it back down
+                        line = (("Here are the moments again: ✅ or ❌ on each and the test starts." if en else "Revoici les moments : ✅ ou ❌ sur chacun et le test part.") if _rep else
+                                ("The test waits for your ✅ / ❌ on the moments above." if en else "Le test attend tes ✅ / ❌ sur les moments au-dessus."))
                 elif not tr.get("ok"):
                     line = ("Nothing changed from the Owl, so there is nothing new to test." if en else "Rien ne change par rapport à l'Owl : rien de nouveau à tester.") \
                         if tr.get("err") == "same" else (("A small technical hiccup starting the test - I'm trying again in a minute." if en else

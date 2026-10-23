@@ -115,7 +115,13 @@ def resolve(cid, what_or_id, status, how=""):
 
 
 def resolve_ids(cid, ids, how="said kept"):
+    """the reply said "kept": [ids] - taken at his word for check / tell / other; a test or a build is kept by EVIDENCE only
+    (2026-10-23 watch: he said kept twice while the test waited for the member's votes)"""
+    O = {x["id"]: x for x in open_for(None, cid)}
     for i in ids or []:
+        x = O.get(str(i))
+        if x and x["kind"] in ("test", "build"):
+            continue
         resolve(cid, str(i), "kept", how)
 
 
