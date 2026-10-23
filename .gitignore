@@ -188,3 +188,6 @@ live/robots/brain_costs.jsonl
 live/robots/kino_life.json
 live/robots/chat_audio/
 live/robots/tts_costs.jsonl
+
+live/robots/kino_commitments.json
+live/robots/kino_commitments.json.*.tmp

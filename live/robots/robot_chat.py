@@ -449,6 +449,7 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   "work": null or {"in": seconds (120 to 1200), "what": "exactly what you will look into"} - when you are NOT SURE and say
   so honestly ("pas sûr, laisse-moi 10 min"), you really work on it in the background and come back with the answer
   even if the conversation moved on,
+  "kept": null or ["c12"] - the ids of YOUR OPEN COMMITMENTS that THIS message keeps (you did the thing and you say so),
   "moment": null or "one line: how you will remember THIS moment between you" - only for a real shared moment (a first,
   a joy, a frustration, a laugh, a confidence), rarely,
   "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
@@ -1158,6 +1159,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
     else:
         U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
         U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
+    try:                                   # 2026-10-23 (commitment ledger, engine 1): what he still owes them, and his word this week
+        import kino_commit as _KC
+        _cb = _KC.block(chat.get("uid"), chat.get("id"), ml)
+        if _cb:
+            U += "\n" + _cb + "\n"
+    except Exception:
+        pass
     if not stable:
         U += "\n%s\n" % WD.lab_digest(owl)
         try:                                   # 2026-10-23: what Kino learned himself, and the habits his own review found
@@ -1365,6 +1373,9 @@ def partner_of(raw):
         v = str(raw.get(k) or "").strip()
         if v:
             out[k] = v[:300]
+    kp = raw.get("kept")                                  # 2026-10-23 (commitment ledger): "this message keeps [c12]"
+    if kp and isinstance(kp, (list, str)):
+        out["kept"] = [str(x)[:12] for x in (kp if isinstance(kp, list) else [kp])][:6]
     try:                      # 2026-10-19 (owner list-4 items 1, 2, 9): drawings, watches, missing abilities
         w = raw.get("watch")
         if isinstance(w, dict) and w.get("kind") in ("price", "losses", "wins", "trade") and str(w.get("asked") or "").strip():

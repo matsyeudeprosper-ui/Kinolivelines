@@ -16377,6 +16377,72 @@ def _test_retry(cid, user, en):
         pass
 
 
+def _user_by_id(uid):
+    return next((u for u in users() if u.get("id") == uid), {"id": uid})
+
+
+def _commit_H():
+    """2026-10-23 (Kino architecture review, engine 1): what the commitment ledger (robots/kino_commit.py) may do in the app"""
+    def _work_add(cid, what, minutes):
+        def f(cc):
+            _rc()
+            import kino_commit as _KC
+            if any(_KC._same(x.get("what"), what) for x in cc.get("work") or []):
+                return                                    # the regex promise catcher already keeps this one
+            cc["work"] = ((cc.get("work") or []) + [{"due": time.time() + 60 * minutes, "what": str(what)[:200], "t": time.time()}])[-3:]
+        _chat_mut(cid, f)
+
+    def _build(cid, uid):
+        if cid in _CHAT_B:
+            return
+        _chat_mut(cid, lambda cc: cc.__setitem__("b_want", len(cc.get("msgs") or [])))
+        _CHAT_B.add(cid)
+        threading.Thread(target=_chat_build, args=(cid, _user_by_id(uid)), daemon=True).start()
+
+    def _event(cid, uid, text):
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        threading.Thread(target=_chat_quick, args=(cid, _user_by_id(uid), text), kwargs={"notify": True}, daemon=True).start()
+
+    def _act_test(cid, uid):
+        try:
+            en = json.load(open(_chat_path(cid), encoding="utf-8")).get("lang") == "en"
+        except Exception:
+            en = False
+        _kino_act(cid, _user_by_id(uid), "test", en)
+
+    return {"chat": lambda cid: json.load(open(_chat_path(cid), encoding="utf-8")), "act_test": _act_test, "build": _build,
+            "work_add": _work_add, "show": lambda cid, uid: None, "event": _event, "building": lambda cid: cid in _CHAT_B}
+
+
+def _commit_harvest_bg(cid, user, q, pa, event=None):
+    """a message Kino sent -> the ledger, 20 s later (the reply's own act / build / show have run by then, so a test he
+    launched himself is seen as evidence and not launched twice)"""
+    if not (q or {}).get("say"):
+        return
+
+    def run():
+        time.sleep(20)
+        try:
+            _rc()
+            import kino_commit as _KC
+            _KC.harvest(user.get("id"), cid, q.get("say"), q, pa, _rc().W, _commit_H(), log=os.path.join(CHAT_DIR, cid + ".log"))
+        except Exception:
+            pass
+    threading.Thread(target=run, daemon=True).start()
+
+
+def _commit_loop():
+    time.sleep(150)
+    while True:
+        try:
+            _rc()
+            import kino_commit as _KC
+            _KC.tick(_commit_H())
+        except Exception:
+            pass
+        time.sleep(60)
+
+
 def _kino_act(cid, user, act, en=False):
     """2026-10-19 (owner): Kino acts on tests directly - its own member's test, and (the nest's owner only) the nest's
     test switch. A short system line tells what really happened."""
@@ -16502,6 +16568,15 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         markets=_mk, memory=_me, event=event, on_say=_say_, member=_mb, images=_chat_images(c))
         _CHAT_DRAFT.pop(cid, None)
         _CHAT_ACT.pop(cid, None)
+        if event and event.startswith("YOUR PROMISE"):   # 2026-10-23: the ledger learns whether the promise was kept
+            try:
+                _rc()
+                import kino_commit as _KC
+                _pm = re.search(r'look into: "(.+?)"', event)
+                if _pm:
+                    _KC.resolve_work(cid, _pm.group(1), bool(q and q.get("say")))
+            except Exception:
+                pass
         if event and _openq and q and q.get("say"):
             _sx = re.split(r"(?<=[.!?])\s+", str(q["say"]).strip())
             _nq = lambda x: re.sub(r"\W+", " ", x.lower()).strip()
@@ -16734,6 +16809,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         except Exception:
             _CHAT_B.discard(cid)
             raise
+        _commit_harvest_bg(cid, user, q, _pa, event)      # 2026-10-23: what he just committed to goes in the ledger
         if not q.get("act") and not q["build"] and q.get("say") and c.get("robot") and re.search(r"\bje (te )?(lance|relance|démarre|lancerai)\b[^.!?]{0,30}\b(le|un|ton|son|ce) test\b(?! de chance)", str(q["say"]), re.I):
             q["act"] = "test"
         if q.get("act"):
@@ -16834,6 +16910,11 @@ def _chat_build(cid, user):
                                        for x in (ans.get("kino_chose") or []) if isinstance(x, dict) and x.get("what")][:10]
             _chat_mut(cid, put)
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            try:                                         # 2026-10-23: the build reply's commitments too
+                _lai = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai"), {})
+                _commit_harvest_bg(cid, user, {"say": _lai.get("text"), "act": (ans or {}).get("act"), "build": False}, ans or {})
+            except Exception:
+                pass
 
             if ans and not ans.get("act") and c.get("robot") and re.search(r"\bje (te )?(lance|relance|démarre|lancerai)\b[^.!?]{0,30}\b(le|un|ton|son|ce) test\b(?! de chance)", str(ans.get("say") or ""), re.I):
                 ans["act"] = "test"
@@ -18485,6 +18566,12 @@ def _chat_watch_once():
             def _ws(cc, w=w, old=now - float(w.get("t") or now) > 8 * 3600):
                 if old:
                     cc["work"] = [x for x in cc.get("work") or [] if x.get("t") != w.get("t")]
+                    try:                                 # 2026-10-23: dropped unkept = broken in the ledger
+                        _rc()
+                        import kino_commit as _KC
+                        _KC.resolve_work(cid, w.get("what"), False, "waited 8 h on a job that never ended")
+                    except Exception:
+                        pass
                 else:
                     for x in cc.get("work") or []:
                         if x.get("t") == w.get("t"):
@@ -18506,6 +18593,13 @@ def _chat_watch_once():
                                  "numbers / chart come with it. They are %s." % ((now - float(w["t"])) / 60, w["what"],
                                                                                  "looking at the conversation" if here else "away from the app")),
                                  kwargs={"notify": not here}, daemon=True).start()
+            else:
+                try:                                     # 2026-10-23: a promise found 6 h late is a broken one
+                    _rc()
+                    import kino_commit as _KC
+                    _KC.resolve_work(cid, w.get("what"), False, "promise found %d h late" % ((now - float(w["due"])) / 3600))
+                except Exception:
+                    pass
             continue
         # (1, 2) a research session moves on by itself: one step every few minutes while the talk is quiet
         R_ = c.get("research") or {}
@@ -31040,5 +31134,6 @@ if __name__ == "__main__":
             pass
     threading.Thread(target=_tts_warm, daemon=True).start()
     threading.Thread(target=_luck_hold_loop, daemon=True).start()      # 2026-10-21 item 1: Kino gets the machine first
+    threading.Thread(target=_commit_loop, daemon=True).start()         # 2026-10-23 engine 1: commitments verified, broken ones said
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 
