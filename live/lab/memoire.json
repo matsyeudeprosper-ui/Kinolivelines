@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-23T18:02:00Z",
+ "updated": "2026-10-23T19:35:00Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -102,7 +102,8 @@
     "2026-10-20 18:30 veille: day FLIP-BOS BUY -4.89 (closed 18:25). Day since 08:00 10 tr 1 won ~-34. As predicted (one day, peu).",
     "2026-10-23 12:00 veille: 12 closes since 10-22 13:19, 2 won ~-35; both wins night BOS SELL (+17.24, +7.98). By hour: 01-03 h 32 tr 72% +60.8; 13 h 7 tr 0 won -49.22; 16 h 9 tr 1 won -45.88. As predicted (peu per hour).",
     "2026-10-23 13:30 veille: day BOS SELL -7.17 (closed 13:24, pace 0.772 calm). Pile cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree), was 36 tr -50.10 on 10-15; inside 1.3-1.85 12 tr -43.82, held 30-60 min 9 tr 2 won -47.86. As predicted.",
-    "2026-10-23 15:00 veille: two day FLIP-BOS BUY losses 13:32/13:45 (-13.95). 13 h now 8 tr 0 won -53.98. As predicted (peu per hour)."
+    "2026-10-23 15:00 veille: two day FLIP-BOS BUY losses 13:32/13:45 (-13.95). 13 h now 8 tr 0 won -53.98. As predicted (peu per hour).",
+    "2026-10-23 19:35 veille: evening BOS BUY -4.65 (18:46, pace 1.61), then two calm BOS SELL wins (+1.56, +1.09). 13 h 8 tr 0 won -53.98, 16 h 10 tr 1 won -50.53, 17-18 h 15 tr ~+19 (peu). Day leak intact; evening is mixed."
    ],
    "next": "Re-read by src once real_pool_split is built."
   },
@@ -209,7 +210,8 @@
     "2026-10-20 17:00 veille: FLIP-BOS SELL -6.69 (closed 16:33, pace 1.724 nervous, day) lost as predicted. flip_hot 50 tr 42% vs 53% -43.10 PF 0.65 (h 33/50); flip_day 67 tr 42% -55.31 (h 26/58). Both still losing, second halves softer.",
     "2026-10-20 18:30 veille: FLIP-BOS BUY -4.89 (closed 18:25, pace 1.398 nervous, day) lost as predicted. flip_hot 51 tr 41% vs 53% -47.99 PF 0.62 (h 33/48); after a loss 30 tr 37% -41.19; flip_day 68 tr 41% -60.20 (h 26/56). Second halves still softer.",
     "2026-10-23 12:00 veille: flip_after_loss 64 tr 42% vs 52% -54.44 PF 0.64 (h 39/45); nervous 1.0-1.3 15 tr 27% -36.46; FLIP-BOS SELL 02:31 -18.30 (night, pace 1.06) a big night flip loss, against 'night flips win'. Answered labo ask.",
-    "2026-10-23 15:00 veille: two day FLIP-BOS BUY lost (13:32 -4.76 pace 1.036, 13:45 -9.19 pace 1.239, both nervous). flip_day 76 tr 39% vs 53% -97.36 PF 0.50 (h 31/49); nervous 1.0-1.3 inside 23 tr 30% -63.33; after a loss 51 tr 35% -75.78. As predicted. nervgate/debtnerv twins refused both."
+    "2026-10-23 15:00 veille: two day FLIP-BOS BUY lost (13:32 -4.76 pace 1.036, 13:45 -9.19 pace 1.239, both nervous). flip_day 76 tr 39% vs 53% -97.36 PF 0.50 (h 31/49); nervous 1.0-1.3 inside 23 tr 30% -63.33; after a loss 51 tr 35% -75.78. As predicted. nervgate/debtnerv twins refused both.",
+    "2026-10-23 19:35 veille: FLIP-BOS 109 tr 44% -89.71 (h 43/45 agree) vs BOS 91 tr 53% -18.21 (h 56/50). Kind split keeps its sign; no new flip since 13:45."
    ],
    "next": "battery verdict pb_choch_ext500_fh05; watch the filtered real split grow."
   },
@@ -2906,6 +2908,11 @@
    "t": "2026-10-23T18:02:00Z",
    "look": "veille (1 close flagged): wake_context, asks, --streaks",
    "saw": "Flagged close is again the 13:45 FLIP-BOS BUY -9.19 (third wake on it; the wake trigger seems to re-flag it). Twins unchanged. No open ask. Streaks: after 2 losses 22 tr 23% -45.08 (peu), after 1 loss 43 tr 49% -9.69. No run, no pile, no proposal. Wrote rien."
+  },
+  {
+   "t": "2026-10-23T19:35:00Z",
+   "look": "veille (4 closes): wake_context, --by hour, --by kind",
+   "saw": "Since 18:02: BOS BUY -4.65 (18:46, pace 1.612, after a loss), then two BOS SELL wins +1.56 (19:10, pace 0.76) and +1.09 (19:23, pace 0.776), both calm, small. 17-18 h 15 tr ~+19 (peu); 16 h 10 tr 1 won -50.53, 13 h 8 tr 0 won -53.98 unchanged. Kind: BOS 91 tr 53% -18.21 (halves 56/50), FLIP-BOS 109 tr 44% -89.71 (43/45 agree). Twins all still red (ext700 47 tr -97.78, fit3 41 -85.51, bul4 31 -77.20, debtnerv 22 -42.32, nervgate 8 -31.24), too few to rank. No run, pile or proposal."
   }
  ],
  "lessons": [

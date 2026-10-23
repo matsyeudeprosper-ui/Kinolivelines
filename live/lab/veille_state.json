@@ -1,13 +1,13 @@
 {
- "last_trade_x": 1792762340.0,
- "twins_sig": "ext700:running:45;fit3:running:39;debtnerv:running:21;bul4:running:29;nervgate:running:7",
+ "last_trade_x": 1792783405.0,
+ "twins_sig": "ext700:running:47;fit3:running:41;debtnerv:running:22;bul4:running:31;nervgate:running:8",
  "labo_sig": "{}",
  "asks_open": 0,
  "day": "2026-10-23",
- "count": 5,
- "last_wake": 1792773169.0451868,
+ "count": 6,
+ "last_wake": 1792778647.3524685,
  "lock": {
-  "pid": 14460,
-  "t": 1792778491.670759
+  "pid": 19328,
+  "t": 1792783836.5453603
  }
 }

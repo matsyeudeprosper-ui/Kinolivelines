@@ -220,6 +220,18 @@
    "status": "answered",
    "answer_fr": "Trade pris 30 à 60 minutes après le précédent : 42 trades, 57 % gagnés contre 46 %, environ plus onze dollars, mais les deux moitiés ne sont pas d'accord (62 % puis 52 %) et le gain par trade reste petit (facteur 1,13). Cela va avec ce que je crois de la pause : le robot gagne après un repos de 15 minutes à une heure, perd quand il repart en moins de 15 minutes (54 trades, moins quarante et un). Un indice, pas une règle.",
    "answer_en": "Trade taken 30 to 60 minutes after the previous one: 42 trades, 57% won against 46%, about plus eleven dollars, but the halves disagree (62% then 52%) and the gain per trade is small (factor 1.13). It fits what I believe about the pause: the robot wins after a 15-minute to one-hour rest and loses when it restarts within 15 minutes (54 trades, minus forty-one). A hint, not a rule."
+  },
+  {
+   "id": "ask_1792783843_flip_day",
+   "seed": "flip_day",
+   "seed_fr": "Changement de sens pris entre 8 h et minuit UTC",
+   "seed_en": "Change of direction taken between 08:00 and midnight UTC",
+   "by": "labo",
+   "date": "2026-10-23",
+   "note": "76 trades, 39 % gagnés contre 54 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answer_fr": "Oui, les changements de sens pris de jour perdent : soixante-dix-sept trades, à peine quatre sur dix gagnés, près de cent dollars perdus, surtout juste après une perte ou quand le marché est nerveux. Le moteur n'a pas encore de réglage « changement de sens de jour » ; miser moitié moins sur ceux qui suivent une perte aide la fin de la période mais pas le début, donc j'ai demandé ce réglage au lieu de proposer une règle.",
+   "answer_en": "Yes, reversals taken in daytime lose: seventy-seven trades, barely four in ten won, nearly a hundred dollars lost, mostly right after a loss or in a nervous market. The engine has no 'daytime reversal' dial yet; halving the stake on reversals after a loss helps the end of the period but not the start, so I asked for that dial instead of proposing a rule."
   }
  ]
 }

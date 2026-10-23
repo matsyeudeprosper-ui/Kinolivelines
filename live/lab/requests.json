@@ -513,6 +513,17 @@
    "why_fr": "Le trade pris après exactement deux pertes de suite gagne 4 fois sur 19 (-45 $) ; après une seule perte, 1 sur 2 (+8 $) ; après trois, 10 sur 15 (+13 $). Trop peu de trades pour une règle, mais une pile permettrait de suivre si « la deuxième perte » annonce une mauvaise passe. Je m'attends à ce que l'écart tienne au-delà de 30 trades.",
    "why_en": "The trade taken after exactly two losses in a row wins 4 times in 19 (-$45); after one loss, 1 in 2 (+$8); after three, 10 of 15 (+$13). Too few trades for a rule, but a pile would let us follow whether \"the second loss\" signals a bad patch. I expect the gap to hold past 30 trades.",
    "status": "open"
+  },
+  {
+   "id": "flip_hours_size",
+   "date": "2026-10-23",
+   "title_fr": "Miser moins sur les changements de sens pris à certaines heures",
+   "title_en": "Stake less on reversals taken at chosen hours",
+   "what_fr": "Un réglage flip_hours (liste d'heures UTC 0-23) + flip_hours_size (0,25-1,0) : un changement de sens dont l'heure d'entrée est dans la liste est pris avec la mise multipliée par X, ses rattrapages aussi ; le trade est toujours pris ; liste vide ou 1,0 = arrêt. Comme size_hours, mais seulement pour les changements de sens.",
+   "what_en": "A dial flip_hours (list of UTC hours 0-23) + flip_hours_size (0.25-1.0): a reversal whose entry hour is in the list is taken with the stake multiplied by X, its catch-up trades too; the trade is still taken; empty list or 1.0 = off. Like size_hours, but for reversals only.",
+   "why_fr": "La pile flip_day (changements de sens de 8 h à minuit) a 77 trades, 39 % gagnés contre 54 %, -98 $, les deux moitiés d'accord, et le labo me l'a demandée. size_hours touche aussi les cassures et a toujours échoué sur la première moitié ; flip_loss_size 0,5 ce soir : +15 $ au total mais -0,9 $ sur la première moitié. Je m'attends à ce que 8-23 h à 0,5 gagne sur les deux moitiés.",
+   "why_en": "The flip_day pile (reversals 08:00-midnight) has 77 trades, 39% won vs 54%, -$98, both halves agree, and the lab asked me about it. size_hours also hits breakouts and always failed the first half; flip_loss_size 0.5 tonight: +$15 overall but -$0.9 on the first half. I expect 8-23 h at 0.5 to win on both halves.",
+   "status": "open"
   }
  ]
 }
