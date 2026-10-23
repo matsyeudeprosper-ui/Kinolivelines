@@ -18,7 +18,7 @@ import numpy as np
 import robot_demo as RD
 import robot_expr as X
 
-TOOLS = ("idea_stats", "compare", "robot_replay", "event_impact", "portfolio", "trade_explain", "search_chats")
+TOOLS = ("idea_stats", "compare", "robot_replay", "event_impact", "portfolio", "trade_explain", "search_chats", "breakdown")
 CHARTS = {}               # chart_key -> a demo trade (candles) - shown in the chat, never sent to the model
 
 
@@ -108,6 +108,48 @@ def robot_replay(market, rules, rr=0.8):
     return {"market": market, "trades": ex["count"], "won": ex["won"],
             "won_pct": round(100.0 * ex["won"] / ex["count"], 1) if ex["count"] else None,
             "note": "quick replay on candles: no costs, no brakes - the real test decides"}
+
+
+def breakdown(market, rules, by="hour", rr=0.8):
+    """2026-10-23 (owner's night: Kino promised 'les heures de l'or, les deux moitiés' six times and had no tool for it):
+    the chat robot's quick replay grouped by hour (UTC) / weekday / session / half, each bucket with its count, net R,
+    won %, and whether it holds on BOTH chronological halves. R units, no costs, no brakes - the real test decides."""
+    import datetime as _dt
+    ex = RD.examples(market, rules, 0, [], rr, "all")
+    if ex is None:
+        RD.fetch(market)
+        return {"error": "no candles for %s yet - being fetched" % market}
+    T = sorted(ex.get("all") or [], key=lambda t: t["t_in"])
+    if not T:
+        return {"market": market, "by": by, "buckets": [], "note": "no trade in the replay"}
+    half = len(T) // 2
+    def key(t, i):
+        d = _dt.datetime.utcfromtimestamp(t["t_in"])
+        if by == "weekday":
+            return ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"][d.weekday()]
+        if by == "session":
+            h = d.hour
+            return "asia 00-08" if h < 8 else "london 08-13" if h < 13 else "new york 13-21" if h < 21 else "late 21-24"
+        if by == "half":
+            return "first half" if i < half else "second half"
+        return "%02dh" % d.hour
+    B = {}
+    for i, t in enumerate(T):
+        b = B.setdefault(key(t, i), {"n": 0, "r": 0.0, "won": 0, "r1": 0.0, "r2": 0.0, "n1": 0, "n2": 0})
+        b["n"] += 1; b["r"] += t["r"]; b["won"] += 1 if t["r"] > 0 else 0
+        if i < half:
+            b["r1"] += t["r"]; b["n1"] += 1
+        else:
+            b["r2"] += t["r"]; b["n2"] += 1
+    out = []
+    for k, b in B.items():
+        out.append({"bucket": k, "trades": b["n"], "net_r": round(b["r"], 1), "won_pct": round(100.0 * b["won"] / b["n"]),
+                    "first_half_r": round(b["r1"], 1), "second_half_r": round(b["r2"], 1),
+                    "holds_both_halves": bool(b["n1"] >= 5 and b["n2"] >= 5 and b["r1"] > 0 and b["r2"] > 0)})
+    out.sort(key=lambda x: -x["net_r"])
+    return {"market": market, "by": by, "trades": len(T), "days": round((T[-1]["t_in"] - T[0]["t_in"]) / 86400.0, 1), "buckets": out[:24],
+            "holds": [x["bucket"] for x in out if x["holds_both_halves"]],
+            "note": "quick replay on candles, R units, no costs, no brakes - a bucket that wins only after the fact is luck; the real test decides"}
 
 
 # ---------------------------------------------------------------- 2026-10-19 (owner items 6 and 5)
@@ -333,6 +375,8 @@ def run(calls, ctx):
                 r = trade_explain(ctx.get("uid"), str(a.get("which") or "last")[:20]) if ctx.get("uid") else {"error": "no member"}
             elif c["name"] == "search_chats":
                 r = search_chats(ctx.get("uid"), str(a.get("query") or "")[:200]) if ctx.get("uid") else {"error": "no member"}
+            elif c["name"] == "breakdown":
+                r = breakdown(mk, ctx.get("rules") or {}, str(a.get("by") or "hour")[:10], ctx.get("rr") or 0.8)
             else:
                 r = robot_replay(mk, ctx.get("rules") or {}, ctx.get("rr") or 0.8)
         except Exception as e:

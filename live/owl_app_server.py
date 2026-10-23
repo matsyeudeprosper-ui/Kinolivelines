@@ -16517,6 +16517,15 @@ def _commit_H():
             import kino_commit as _KC
             if any(_KC._same(x.get("what"), what) for x in cc.get("work") or []):
                 return                                    # the regex promise catcher already keeps this one
+            # 2026-10-23: the same promise re-made after a reminder is counted; after three the loop ends honestly (see YOUR PROMISE)
+            _pk = re.sub(r"\W+", " ", str(what).lower()).strip()[:50]
+            _pn = cc.setdefault("promise_n", {})
+            _pn[_pk] = int(_pn.get(_pk, 0)) + 1
+            if len(_pn) > 20:
+                for k_ in list(_pn)[:-20]:
+                    _pn.pop(k_, None)
+            if _pn[_pk] > 3:
+                return                                    # promised three times already: no fourth work item
             cc["work"] = ((cc.get("work") or []) + [{"due": time.time() + 60 * minutes, "what": str(what)[:200], "t": time.time()}])[-3:]
         _chat_mut(cid, f)
 
@@ -19091,10 +19100,21 @@ def _chat_watch_once():
                 sn = _CHAT_SEEN.get(u.get("id"))
                 here = bool(sn and now - sn[0] < 60 and sn[1] == cid)
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                try:                                      # 2026-10-23: how many times this promise was made already
+                    _pk = re.sub(r"\W+", " ", str(w.get("what")).lower()).strip()[:50]
+                    _pn = int((json.load(open(_chat_path(cid), encoding="utf-8")).get("promise_n") or {}).get(_pk, 1))
+                except Exception:
+                    _pn = 1
+                _patt = ("" if _pn <= 1 else
+                         " SECOND TIME you are reminded of this promise: the numbers come NOW with a tool (breakdown / idea_stats / compare / "
+                         "robot_replay), or you say in ONE plain line that you cannot compute it here and you drop it - no 'je m'y mets' again."
+                         if _pn == 2 else
+                         " THIRD TIME: you promised this three times and delivered nothing. Say so in one plain line, no excuse, no new promise, "
+                         "build = false, and let it go.")
                 threading.Thread(target=_chat_quick, args=(cid, u, "YOUR PROMISE - %d minutes ago you told them you would look into: \"%s\". "
                                  "Keep it now: say it like a friend coming back (\"bon, j'ai regardé...\") and set build = true so the real "
-                                 "numbers / chart come with it. They are %s." % ((now - float(w["t"])) / 60, w["what"],
-                                                                                 "looking at the conversation" if here else "away from the app")),
+                                 "numbers / chart come with it. They are %s.%s" % ((now - float(w["t"])) / 60, w["what"],
+                                                                                   "looking at the conversation" if here else "away from the app", _patt)),
                                  kwargs={"notify": not here}, daemon=True).start()
             else:
                 try:                                     # 2026-10-23: a promise found 6 h late is a broken one

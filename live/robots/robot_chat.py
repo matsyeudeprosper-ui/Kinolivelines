@@ -307,8 +307,11 @@ EVENTS: the message may start with an EVENT instead of a member message:
   love doing, one small true thing about you - your robot, your curiosity), ask ONE light thing about them, and offer
   to make a first little robot together right now. Warm, short, no form, no list of features.
   YOUR PROMISE - you told them you would look into something ("work"): keep it NOW - a short line like "bon, j'ai
-  regardé..." and build = true so the numbers / chart come with it. If it depends on a test or result that has NOT landed yet,
-  "send": false - it is announced the moment it lands; never text "toujours pas / rien de neuf".
+  regardé..." and build = true so the numbers / chart come with it (breakdown for hours / days / sessions, idea_stats,
+  compare, robot_replay). If it depends on a test or result that has NOT landed yet, "send": false - it is announced the
+  moment it lands; never text "toujours pas / rien de neuf". NEVER promise the same thing twice (2026-10-23: "je m'y mets",
+  "je reviens dans dix minutes", "je lance le calcul pour de bon" six times in 23 minutes and nothing came): the second time
+  the numbers come with the message or you say in one plain line that you cannot compute it here, and you drop it.
   SHARED EXPERIMENT - a small experiment you agreed on together has ended: measure it now (build = true), show the result
   honestly - and say plainly whether your bet was right or wrong and what you both learn from it.
   LAB NEWS - a big result in the lab (a luck test finished): share it like news with a friend if it concerns them.
@@ -570,6 +573,9 @@ the server runs them on ~42-60 days of real candles of that market and gives you
       draws it beats (beats_random_pct), best / worst hours UTC
   compare {"market", "formulas": [up to 4], "side", "horizon"}             several versions side by side
   robot_replay {"market"}                                                 the chat robot's quick replay (trades, won %)
+  breakdown {"market", "by": "hour"|"weekday"|"session"|"half"}           the chat robot's replay grouped by hour UTC / weekday /
+      session / half: per bucket trades, net R, won %, first and second half, and which buckets hold on BOTH halves - the
+      tool for "quelles heures gagnent", "quel jour", "quelle session" (R units, no costs; the real test decides)
   event_impact {"market"}             the chat robot's trades around big US events (jobs report, Fed, calendar) vs its other
       trades - to warn before the next big figure (any pause is THEIR choice: suggest it, never do it)
   trade_explain {"which": "last" | "2" (the 2nd most recent) | "<ticket>"}   one REAL trade of their account: entry, exit,
@@ -1962,7 +1968,8 @@ _CLAIM_RX = re.compile(r"\b(labo|lab|test[ée]?s?|backtest|mesur\w*|moiti[ée]s?
                        r"luck|measured|proven|backtested)\b", re.I)
 TOOL_WORDS = {"idea_stats": ("je mesure l'idée contre le hasard", "measuring the idea against chance"),
               "compare": ("je compare les variantes", "comparing the variants"), "robot_replay": ("je rejoue le robot sur les vrais prix", "replaying the robot on real prices"),
-              "trade_explain": ("je regarde ce trade de près", "looking closely at that trade"), "search_chats": ("je relis nos conversations", "rereading our conversations")}
+              "trade_explain": ("je regarde ce trade de près", "looking closely at that trade"), "search_chats": ("je relis nos conversations", "rereading our conversations"),
+              "breakdown": ("je découpe les trades du robot", "slicing the robot's trades")}
 
 
 def _step(chat, fr, en):
