@@ -604,6 +604,8 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
  "remember": ["short lasting note about the member", ...] (0 to 2),
  "story_told": true when you told YOUR STORY OF THE DAY in this message (else omit),
  "told": ["m..."] - the ids of THINGS YOU COULD TELL THEM that THIS message tells (else omit),
+ "feedback": null, or {"kind": "repeat|forgot|topic|robotic|tone|long|wrong|language|slow|praise|other", "quote": "their words"} when
+   their last message was a remark about YOU (how you talk, what you forgot, your tone) - it is kept for good,
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
  "project": null or {"op": "add"|"update"|"done", "title": "...", "need": "...", "finding": "..."} (see A PARTNER),
  "learned": null or "what they taught you, general", "ask_nest": null or "a general question for other members",
@@ -1073,6 +1075,13 @@ def slow_block(uid, memory, lang="fr"):
     if so:
         L.append("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
                  "change it: " + " | ".join(x["text"] for x in so))
+    try:                                   # 2026-10-23: what they told him about himself - dated, counted
+        import kino_feedback as KFB
+        fb = KFB.block(uid)
+        if fb:
+            L.append(fb)
+    except Exception:
+        pass
     try:                                   # 2026-10-23: yesterday's humanity score on the real conversation, with the move to make
         import kino_scorecard as KSC
         sb = KSC.block(uid)
@@ -1795,7 +1804,8 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
             "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw), "story_told": bool(raw.get("story_told")),
-            "told": [str(x) for x in (raw.get("told") or []) if isinstance(x, (str, int))][:3] if isinstance(raw.get("told"), list) else []}
+            "told": [str(x) for x in (raw.get("told") or []) if isinstance(x, (str, int))][:3] if isinstance(raw.get("told"), list) else [],
+            "feedback": raw.get("feedback") if isinstance(raw.get("feedback"), dict) else None}
 
 
 # ---------------------------------------------------------------- tics (2026-10-23 evening, owner: "no interesting speaking style")

@@ -107,6 +107,11 @@ def score_day(uid, day=None):
         S["material_told"] = sum(1 for x in (KMT.items(uid, untold_only=False, hours=48)) if x.get("told") and t0 <= float(x.get("told_t") or 0) < t1)
     except Exception:
         S["material_told"] = None
+    try:                                   # what they told him about himself that day (kino_feedback)
+        import kino_feedback as KFB
+        S["feedback"] = KFB.counts(uid, day)
+    except Exception:
+        S["feedback"] = None
     # the logs (local time stamps "mm-dd HH:MM:SS")
     loc = day[5:]                      # the logs stamp local time; the same calendar label is close enough (UTC-5 box)
     def lines(name):

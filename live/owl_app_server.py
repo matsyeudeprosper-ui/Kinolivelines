@@ -15035,6 +15035,13 @@ def _chat_member_fresh(uid, c):
                                                        (" - on screen: " + wh["what"]) if wh.get("what") else "", (time.time() - wh["t"]) / 60))
     except Exception:
         pass
+    try:          # 2026-10-23: a remark about him in the last 2 h - change it now
+        import kino_feedback as _KFBf
+        _fb = _KFBf.fresh(uid)
+        if _fb:
+            L.append(_fb)
+    except Exception:
+        pass
     return "\n".join(L)
 
 
@@ -16806,6 +16813,13 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _rc()
                 import kino_life as _KLt
                 _KLt.story_told(user.get("id"))
+            except Exception:
+                pass
+        if q and isinstance(q.get("feedback"), dict) and q["feedback"].get("quote"):   # 2026-10-23: a remark about him the model saw
+            try:
+                _rc()
+                import kino_feedback as _KFBh
+                _KFBh.add(user.get("id"), cid, str(q["feedback"].get("kind") or "other"), q["feedback"]["quote"], "", "model")
             except Exception:
                 pass
         if q and q.get("told"):                         # 2026-10-23: a thing he could tell, told - once
@@ -19812,6 +19826,13 @@ def chat_send(user, body):
     _CHAT_TYPING.pop(c["id"], None)
     try:                                         # 2026-10-23 (watch): "All ✅" in words while the moments wait for taps
         _typed_votes(user, c["id"], text)
+    except Exception:
+        pass
+    try:                                         # 2026-10-23 (owner: four remarks about how he talks in one evening, none kept)
+        _rc()
+        import kino_feedback as _KFB
+        _la = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and m.get("text")), {})
+        _KFB.observe(user.get("id"), c["id"], text, _la.get("text") or "")
     except Exception:
         pass
     try:                                         # 2026-10-20 (inner v2 item 1): did they answer what Kino sent on its own?
