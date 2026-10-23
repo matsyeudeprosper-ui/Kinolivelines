@@ -1447,17 +1447,21 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     import time as _t
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
     busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 16.0     # was 9 s: the switch itself met cold haiku processes (2026-10-20)
-    models = ("haiku", "sonnet") if (busy or fast) else ("sonnet", "haiku")     # fast: a question asked in a live call (2026-10-21)
-    if busy:
+    # 2026-10-23 (owner: faster without losing quality): the faster model only when one of its processes is WARM and ready -
+    # a cold haiku boot (~10 s) is slower than a warm sonnet answer (~4 s); the pool is warmed for the next time
+    if busy or fast:
         try:
             W.prewarm(system(), "haiku")
         except Exception:
             pass
+    models = ("haiku", "sonnet") if ((busy or fast) and W.ready(system(), "haiku")) else ("sonnet", "haiku")
     t0 = _t.time()
+    W.member_turn(not event)          # 2026-10-23: the member's own turn is never refused by the background budget (events are)
     _pt = prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang, memory, event, member)
     raw = W.ask_json(system(), _content(_pt, images), models=models, timeout=90, log=log, on_text=cb, salvage=True)
-    QUICK_LAT.append(_t.time() - t0)
-    del QUICK_LAT[:-6]
+    if not event:                     # 2026-10-23: only the member's own turns say how busy the machine is (events ran every 2 min all night)
+        QUICK_LAT.append(_t.time() - t0)
+        del QUICK_LAT[:-6]
     if isinstance(raw, dict) and raw.get("send") is False:
         return {"say": None, "build": False, "remember": remember_of(raw), "chips": [], "show": None, "seen": "", "send": False,
                 "react": _react_of(raw), "partner": partner_of(raw)}

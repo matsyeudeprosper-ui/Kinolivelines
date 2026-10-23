@@ -9,11 +9,40 @@ import hashlib, io, json, os, queue, re, subprocess, threading, time
 
 import robot_interview as IV
 
-WARM, IDLE, MAX_AGE = 3, 600, 1500     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
+WARM, IDLE, MAX_AGE = 3, 1800, 1500   # IDLE 1800 (2026-10-23): a 10-min pause met a cold process (~12 s) - 3 x 175 MB is nothing on 18 GB     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
 _LOCK = threading.Lock()
 _POOL = {}            # key -> [(proc, started_at)]
 _KEYS = {}            # key -> (system file, model)
 _SEEN = {"t": 0.0}    # last time someone used / opened the workshop
+
+
+_TL = threading.local()          # member_turn: this thread answers the member right now (never budgeted)
+_HIST = []                       # (t, ok) of every model call, last hour
+BG_MAX_PER_HOUR = 150            # 2026-10-23: four night research processes made 360 calls ($19) in ONE hour, the usage
+BG_FAIL_PAUSE = (5, 600)         # limit was hit and 1 266 calls failed for 6 h - the member's chat included. Background
+                                 # work stops at 150 calls/hour, and for 10 min after 5 failures in 10 min (API down or capped).
+
+
+def member_turn(flag):
+    """the caller is answering the member themselves (chat message, live call): exempt from the background budget"""
+    _TL.member = bool(flag)
+
+
+def _budget_ok():
+    now = time.time()
+    with _LOCK:
+        _HIST[:] = [(t, ok) for t, ok in _HIST if now - t <= 3600]
+        n = len(_HIST)
+        fails = sum(1 for t, ok in _HIST if not ok and now - t < BG_FAIL_PAUSE[1])
+    return n < BG_MAX_PER_HOUR and fails < BG_FAIL_PAUSE[0]
+
+
+def budget_state():
+    ok = _budget_ok()                        # takes the lock itself - never inside it (a plain Lock is not re-entrant)
+    now = time.time()
+    with _LOCK:
+        return {"calls_last_hour": len([1 for t, _ in _HIST if now - t <= 3600]),
+                "fails_10min": sum(1 for t, ok_ in _HIST if not ok_ and now - t < 600), "ok": ok}
 
 
 def _sysfile(system):
@@ -57,6 +86,15 @@ def _kill(p):
         p.kill()
     except Exception:
         pass
+
+
+def ready(system, model, min_age=12):
+    """2026-10-23: is a WARM process (booted at least min_age s ago) waiting for this prompt + model? A cold boot (~10 s) is
+    slower than a warm answer from the other model, so the caller only switches models when one is really ready."""
+    sp, h = _sysfile(system)
+    key = h + model
+    with _LOCK:
+        return any(p.poll() is None and min_age <= time.time() - t < MAX_AGE for p, t in _POOL.get(key, []))
 
 
 def prewarm(system, model="sonnet"):
@@ -137,6 +175,13 @@ def partial_say(buf, key="say"):
 
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
+    if not getattr(_TL, "member", False) and not _budget_ok():
+        try:                                      # refused, and said so in the cost log
+            io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
+                {"t": int(time.time()), "m": model, "usd": 0, "tag": os.path.basename(log) if log else "", "skip": "budget"}) + "\n")
+        except Exception:
+            pass
+        return None
     sp, h = _sysfile(system)
     key = h + model
     _KEYS[key] = (sp, model)
@@ -179,7 +224,8 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                 if j.get("type") == "result":
                     try:                          # 2026-10-21 (owner item 12): what each answer costs
                         io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
-                            {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else ""}) + "\n")
+                            {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else "",
+                             "err": (str(j.get("result") or "")[:200] if j.get("is_error") else None)}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
                     except Exception:
                         pass
                     out.put(j.get("result") if not j.get("is_error") else None)
@@ -195,6 +241,8 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
     except Exception:
         txt = None
     _kill(p)
+    with _LOCK:
+        _HIST.append((time.time(), txt is not None))
     if warm:                              # warm=False (2026-10-20): a background call keeps no processes for its prompt
         threading.Thread(target=_fill, args=(key,), daemon=True).start()
     if log:

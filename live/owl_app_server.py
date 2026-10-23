@@ -15349,6 +15349,8 @@ _CHAT_MK = {}
 # their own; the AI's "act": "test" launches the test itself.
 CHAT_MEM = os.path.join(DIR, "robots", "chat_memory")
 _CHAT_DRAFT = {}
+_REANSWER = {}       # cid -> last time chat_get relaunched an unanswered turn (2026-10-23)
+_PREFLIGHT = {}      # (uid, rid) -> (t, say): Kino's pre-flight text, cached (2026-10-23)
 
 
 def _mem_file(uid):
@@ -15820,6 +15822,25 @@ def _research_night_maybe():
     day = time.strftime("%Y-%m-%d", time.gmtime())
     if _RES_NIGHT["day"] == day:
         return
+    # 2026-10-23: the "once a day" lived in this process's memory - every app restart started ANOTHER night run (4 on
+    # 10-22, 3 on 10-21): 360 model calls in an hour, then the usage limit. The marker lives on disk now, with the pid.
+    _mkf = os.path.join(DIR, "robots", "kino_research_night.json")
+    try:
+        _mk = json.load(open(_mkf, encoding="utf-8"))
+    except Exception:
+        _mk = {}
+    if _mk.get("day") == day:
+        _RES_NIGHT["day"] = day
+        return
+    try:
+        import ctypes as _ct
+        _h = _ct.windll.kernel32.OpenProcess(0x1000, False, int(_mk.get("pid") or 0))
+        if _h:
+            _code = _ct.c_ulong(); _ct.windll.kernel32.GetExitCodeProcess(_h, _ct.byref(_code)); _ct.windll.kernel32.CloseHandle(_h)
+            if _code.value == 259:                       # yesterday's run is still going: not another one
+                return
+    except Exception:
+        pass
     _RES_NIGHT["day"] = day
     try:
         import sys as _sy
@@ -15835,8 +15856,9 @@ def _research_night_maybe():
         py = _sy.executable.replace("python.exe", "pythonw.exe")
         log = open(os.path.join(DIR, "robots", "kino_research.log"), "a", encoding="utf-8")
         log.write("\n%s night start\n" % time.strftime("%Y-%m-%d %H:%M:%S")); log.flush()
-        subprocess.Popen([py if os.path.exists(py) else _sy.executable, os.path.join(DIR, "robots", "kino_research.py"), "night"],
-                         cwd=os.path.join(DIR, "robots"), stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000 | 0x00004000, close_fds=True)
+        _pr = subprocess.Popen([py if os.path.exists(py) else _sy.executable, os.path.join(DIR, "robots", "kino_research.py"), "night"],
+                               cwd=os.path.join(DIR, "robots"), stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000 | 0x00004000, close_fds=True)
+        json.dump({"day": day, "pid": _pr.pid, "t": int(time.time())}, open(_mkf, "w", encoding="utf-8"))
     except Exception:
         pass
 
@@ -17238,7 +17260,9 @@ def _companion_tick():
                     pass
             # (2) a luck test of one of their robots finished
             m = _mem_get(uid)
-            seen = m.get("luck_seen") or {}
+            # 2026-10-23: a COPY - `seen` used to be the memory's own dict, changed in place, so `seen != m["luck_seen"]`
+            # was never true after the first entry and the "finished" news fired every 2 min all night (418 model calls)
+            seen = dict(m.get("luck_seen") or {})
             for r in robot_reg().get("robots") or []:
                 if r.get("by_uid") != uid:
                     continue
@@ -19198,7 +19222,11 @@ def chat_get(user, cid, ui=""):
     c["status"] = _chat_status(c["id"])
     # 2026-10-19: a member message left without an answer (its turn died with a server restart) is answered now
     _lm = (c.get("msgs") or [])[-1:] or [{}]
-    if _lm[0].get("role") in ("user", "show", "image", "doc") and not _lm[0].get("answered") and c["status"] == "ready" and c["id"] not in _CHAT_WAIT and not _CHAT_PENDING.get(c["id"]) and time.time() - int(_lm[0].get("t") or 0) > 35:
+    # 2026-10-23: at most once per 10 min per chat - when the model was failing (usage limit, 04:28-10:59 UTC) every page poll
+    # relaunched this turn (sonnet then haiku, both failing): ~1 200 calls in 6 h
+    if _lm[0].get("role") in ("user", "show", "image", "doc") and not _lm[0].get("answered") and c["status"] == "ready" and c["id"] not in _CHAT_WAIT and not _CHAT_PENDING.get(c["id"]) and time.time() - int(_lm[0].get("t") or 0) > 35 \
+            and time.time() - _REANSWER.get(c["id"], 0) > 600:
+        _REANSWER[c["id"]] = time.time()
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         c["status"] = "thinking"
@@ -20296,6 +20324,7 @@ def live_spec(user, body):
     conv = "\n".join(("MEMBER: " if m["role"] == "user" else "YOU: ") + str(m["text"])[:500] for m in M) + "\nMEMBER: " + q
 
     def run():
+        _rc().W.member_turn(True)
         def cb(t):
             try:
                 say = _rc().W.partial_say(t)
@@ -20351,6 +20380,7 @@ def _voice_brain(cid, user):
         conv = "YOUR JOBS RUNNING NOW: %s\n\n" % _jobs_text(user, cid) + conv
     except Exception:
         pass
+    _rc().W.member_turn(True)                        # 2026-10-23: a question in a live call - never budgeted
     _CHAT_DRAFT[cid] = ""
     _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1            # busy while it answers (no other turn starts)
     t0 = time.time()
@@ -21331,6 +21361,12 @@ def kino_preflight(user, body):
     """2026-10-19 (owner item 8): before a member puts a robot on their account, Kino's pre-flight in the confirm sheet:
     what to expect, the worst dip in its test, what would make THEM want to stop it (their decision), one check question"""
     rid = str(body.get("rid") or "")
+    # 2026-10-23: cached 15 min - the confirm sheet asked for it on every poll: 360 model calls ($19) in ONE hour on 10-23 03:00 UTC,
+    # then 470 failing calls the next hour once the usage limit was hit
+    _ck = (user.get("id"), rid); _cv = _PREFLIGHT.get(_ck)
+    if _cv and time.time() - _cv[0] < (900 if _cv[1] else 120):
+        return {"ok": True, "say": _cv[1], "cached": True}
+    _PREFLIGHT[_ck] = (time.time(), "")                       # taken: a second poll meanwhile gets nothing, not another call
     reg = robot_reg()
     r = next((x for x in reg.get("robots") or [] if x.get("id") == rid), None)
     if r is None and rid != "owl":
@@ -21357,6 +21393,7 @@ def kino_preflight(user, body):
                           "In 3-4 short sentences, as their friend: what to expect from it (trades, a normal losing streak), the worst "
                           "dip in its test in dollars, what could make them want to stop it later (their decision, in the app), and ONE "
                           "simple check question. Calm, honest, no pressure either way." % facts, member=_chat_member(user, c))
+    _PREFLIGHT[_ck] = (time.time(), (q or {}).get("say") or "")
     return {"ok": True, "say": (q or {}).get("say") or ""}
 
 
