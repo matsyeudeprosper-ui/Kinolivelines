@@ -123,9 +123,20 @@ def lab_digest(owl_parts=None, public_names=None):
             if nf - of:
                 diff.append("filters added: " + "; ".join(((P.get(x) or {}).get("plain_en") or x)[:90] for x in sorted(nf - of)))
         who = ("public robot '%s'" % ((R.get(rid) or {}).get("name_fr") or rid)) if rid in pub else "a member's robot"
-        rows.append("- %s on %s: %s -> %+.2f $ over %s trades (the Owl there: %+.2f $)" % (
-            who, j.get("market") or "BTCUSD", "; ".join(diff) or "same pieces", r["net"], r.get("trades"), p.get("net") or 0))
-    _DIG["txt"] = "THE LAB'S ROBOT TESTS (all members, anonymous, 42-60 days each):\n" + "\n".join(rows[-40:])
+        mk = j.get("market") or "BTCUSD"
+        # 2026-10-23 (owner: "is Kino getting better with knowledge?"): the luck test is the verdict - a good test
+        # without it may be luck, and Kino must know which ideas really beat chance
+        try:
+            c = json.load(open(os.path.join(os.path.dirname(os.path.dirname(HERE)), "study", "random_control_%s_%s.json" % (rid, mk)), encoding="utf-8"))
+            bt = int(c.get("beats") if c.get("beats") is not None else sum(1 for x in c.get("nets") or [] if x >= float((c.get("real") or {}).get("net") or 0)))
+            luck = ("luck test PASSED (%d of %d random robots as good)" % (bt, int(c.get("seeds") or 0))) if int(c.get("seeds") or 0) >= 100 and bt <= 5 else ("luck test FAILED (%d random robots did as well)" % bt)
+        except Exception:
+            luck = "no luck test yet - may be luck"
+        rows.append("- %s on %s: %s -> %+.2f $ over %s trades (the Owl there: %+.2f $) | %s" % (
+            who, mk, "; ".join(diff) or "same pieces", r["net"], r.get("trades"), p.get("net") or 0, luck))
+    _DIG["txt"] = ("THE LAB'S ROBOT TESTS (all members, anonymous, 42-60 days each). What you have LEARNED is in these lines: an idea "
+                   "that failed its luck test is not worth rebuilding as it was; a test with no luck test proves nothing yet - say so; "
+                   "the only robots that beat chance so far are the ones marked PASSED - start from what they have in common:\n" + "\n".join(rows[-40:]))
     _DIG["t"] = time.time()
     return _DIG["txt"]
 
