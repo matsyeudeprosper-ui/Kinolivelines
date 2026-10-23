@@ -9,6 +9,11 @@ import hashlib, io, json, os, queue, re, subprocess, threading, time
 
 import robot_interview as IV
 
+MAX_TOTAL, SUPERSEDE = 6, 300         # 2026-10-23 (memory): the stable block carries the member's minute and live prices, so
+                                      # EVERY message is a new key; 12 keys x 3 x ~330 MB (measured, not 175) = 11.5 GB of
+                                      # claude.exe in 30 min, commit at 95 %, PowerShell could not even start. Never more than
+                                      # MAX_TOTAL live processes over all keys (least recently used keys go first), and a key
+                                      # nobody used for SUPERSEDE s is let go the moment a new key appears.
 WARM, IDLE, MAX_AGE = 3, 1800, 1500   # IDLE 1800 (2026-10-23): a 10-min pause met a cold process (~12 s) - 3 x 175 MB is nothing on 18 GB     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
 _LOCK = threading.Lock()
 _POOL = {}            # key -> [(proc, started_at)]
@@ -79,6 +84,7 @@ def _fill(key):
             if (p, t) not in L:
                 _kill(p)
         if len(L) < WARM:                    # one at a time: a starting process is CPU-hungry for ~10 s
+            _cap_locked(key)
             try:
                 L.append((_spawn(sp, model), time.time()))
             except Exception:
@@ -96,6 +102,27 @@ def _kill(p):
         pass
 
 
+def _live_total_locked():
+    return sum(1 for L in _POOL.values() for p, _ in L if p.poll() is None)
+
+
+def _cap_locked(keep):
+    """with _LOCK held: let the least recently used OTHER keys go until fewer than MAX_TOTAL processes are alive"""
+    while _live_total_locked() >= MAX_TOTAL:
+        others = sorted((k for k, L in _POOL.items() if k != keep and any(p.poll() is None for p, _ in L)),
+                        key=lambda k: _LAST.get(k, 0))
+        if not others:
+            break
+        for p, _ in _POOL[others[0]]:
+            _kill(p)
+        _POOL[others[0]] = []
+
+
+def live_count():
+    with _LOCK:
+        return _live_total_locked()
+
+
 def ready(system, model, min_age=12):
     """2026-10-23: is a WARM process (booted at least min_age s ago) waiting for this prompt + model? A cold boot (~10 s) is
     slower than a warm answer from the other model, so the caller only switches models when one is really ready."""
@@ -109,18 +136,25 @@ def prewarm(system, model="sonnet"):
     """someone opened the workshop: have processes ready for their first message"""
     sp, h = _sysfile(system)
     key = h + model
+    new = key not in _POOL
     _KEYS[key] = (sp, model)
     _SEEN["t"] = _LAST[key] = time.time()
+    if new:
+        reap(SUPERSEDE)
     threading.Thread(target=_fill, args=(key,), daemon=True).start()
 
 
-def reap():
+def reap(idle=None):
     """nobody used the workshop for IDLE seconds: let the processes go - and (2026-10-23) so does any key nobody used for
-    IDLE seconds while others are busy: a member's facts changed = a new key, the old one must not keep 3 processes"""
+    IDLE seconds while others are busy: a member's facts changed = a new key, the old one must not keep 3 processes.
+    idle=SUPERSEDE (a new key just appeared): any key nobody used for that long goes now, whoever is in the workshop."""
     now = time.time()
     with _LOCK:
         for key, L in _POOL.items():
-            if now - _SEEN["t"] < IDLE and now - _LAST.get(key, 0) < IDLE:
+            if idle is None:
+                if now - _SEEN["t"] < IDLE and now - _LAST.get(key, 0) < IDLE:
+                    continue
+            elif now - _LAST.get(key, 0) < idle:
                 continue
             for p, _ in L:
                 _kill(p)
@@ -194,8 +228,11 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         return None
     sp, h = _sysfile(system)
     key = h + model
+    new = key not in _POOL
     _KEYS[key] = (sp, model)
     _SEEN["t"] = _LAST[key] = time.time()
+    if new:
+        reap(SUPERSEDE)
     p = None
     with _LOCK:
         L = _POOL.get(key, [])

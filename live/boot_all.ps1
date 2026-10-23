@@ -138,7 +138,13 @@ if (-not (BotRunning "labo")) {
 # 2l) 2026-10-09 (ChatGPT brief): the canonical REFERENCE LEDGER runner -
 # virtual trades on Infinity's own feed, attached read-only, no order code
 # path. Research data only (lab/reference_ledger_infinity.jsonl).
-if (-not (ProcRunning "bos_reference_ledger.py infinity")) {
+# 2026-10-23: the runner REFUSES to start while structure_bos_bot.py differs from its frozen snapshot ("ABORT drift"
+# in lab/reference_infinity.log, since 2026-10-16). Relaunching it every 5 min wrote a "starting" line each time, and
+# the notifier pushed "Redémarrage" to the owner ~270 times a day for a week. Re-freeze deliberately
+# (review/freeze_reference_snapshot.py --refreeze); until then it is left alone.
+$refLog = "C:/Projects/KinoliveLines/live/lab/reference_infinity.log"
+$refDrift = (Test-Path $refLog) -and ((Get-Content $refLog -Tail 1) -like "*ABORT drift*")
+if ((-not $refDrift) -and -not (ProcRunning "bos_reference_ledger.py infinity")) {
     Say "starting reference ledger runner (infinity)"
     Start-Process pythonw -ArgumentList "bos_reference_ledger.py", "infinity" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
@@ -219,7 +225,9 @@ try {
 if (-not (Get-ScheduledTask -TaskName "OwlProofRefresh" -ErrorAction SilentlyContinue)) {
     Say "OwlProofRefresh task missing - see lab/proof_refresh.py"
 }
-foreach ($extra in @("owl_mode_switch.py", "harvest_journal.py", "brick_watch.py")) {
+# 2026-10-23: brick_watch.py is owned by the scheduled task "KL Brick Watch" (at logon, restarts it on failure);
+# launching it here too gave TWO copies every day since 2026-10-22 (both write brick_watch.log/status).
+foreach ($extra in @("owl_mode_switch.py", "harvest_journal.py")) {
     if (-not (ProcRunning $extra)) {
         Say ("starting " + $extra)
         Start-Process pythonw -ArgumentList $extra -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
