@@ -128,7 +128,8 @@ def stats(uid=None, days=7):
     X = [x for x in _load()["items"] if (uid is None or x["uid"] == uid) and x["t"] >= t0]
     k = sum(1 for x in X if x["status"] == "kept")
     b = sum(1 for x in X if x["status"] == "broken")
-    return {"kept": k, "broken": b, "open": sum(1 for x in X if x["status"] == "open"), "rate": (b / (k + b)) if (k + b) else None}
+    return {"kept": k, "broken": b, "open": sum(1 for x in X if x["status"] == "open"), "blocked": sum(1 for x in X if x["status"] == "blocked"),
+            "rate": (b / (k + b)) if (k + b) else None}
 
 
 def _ago(sec, lang):
@@ -216,8 +217,10 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
             try:
                 if x["kind"] == "test":
                     if not _test_evidence(c, x["t"]):
-                        H["act_test"](cid, uid)
-                        _bump(x["id"])
+                        if H["act_test"](cid, uid) == "blocked":      # waits for THEIR votes on the moments: closed, not retried
+                            resolve(cid, x["id"], "blocked", "waits for their votes on the moments")
+                        else:
+                            _bump(x["id"])
                 elif x["kind"] == "build":
                     H["build"](cid, uid)
                     _bump(x["id"])
@@ -279,7 +282,10 @@ def tick(H):
             if x["kind"] == "build" and H["building"](x["cid"]):
                 continue                                  # still at it
             if int(x.get("tries") or 0) < 2:
-                (H["act_test"] if x["kind"] == "test" else H["build"])(x["cid"], x["uid"])
+                r = (H["act_test"] if x["kind"] == "test" else H["build"])(x["cid"], x["uid"])
+                if r == "blocked":
+                    resolve(x["cid"], x["id"], "blocked", "waits for their votes on the moments")
+                    continue
                 _bump(x["id"])
                 def _later(d, x=x):
                     for y in d["items"]:

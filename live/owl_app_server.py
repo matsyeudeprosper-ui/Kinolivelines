@@ -15795,6 +15795,19 @@ def _jobs_text(user, cid=None):
         c = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
     except Exception:
         c = {}
+    try:                                             # 2026-10-23 (watch): he said "je lance le test" 4 times while the test waited for their votes
+        if c.get("robot"):
+            _cs = _check_state(c, user)
+            if _cs == "open":
+                L.append("THE TEST OF THIS ROBOT IS BLOCKED ON THEM: it waits for their ✅ / ❌ on the moments shown above (nothing runs until "
+                         "they vote) - say exactly that, never 'je lance'")
+            elif _cs == "none":
+                L.append("THE TEST OF THIS ROBOT NEEDS THEIR CHECK FIRST: act 'test' shows them the last 5 moments to vote ✅ / ❌; the test "
+                         "runs after their votes - say that, never 'c'est lancé'")
+            elif _cs == "no":
+                L.append("THE TEST OF THIS ROBOT IS STOPPED: they refused one of the moments - the entry must change before any test")
+    except Exception:
+        pass
     for w in c.get("work") or []:
         L.append("your promise: %s (due in %d min)" % (w.get("what"), max(0, (float(w.get("due") or now) - now) / 60)))
     rs = c.get("research") or {}
@@ -16429,11 +16442,21 @@ def _commit_H():
         threading.Thread(target=_chat_quick, args=(cid, _user_by_id(uid), text), kwargs={"notify": True}, daemon=True).start()
 
     def _act_test(cid, uid):
+        u = _user_by_id(uid)
         try:
-            en = json.load(open(_chat_path(cid), encoding="utf-8")).get("lang") == "en"
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
         except Exception:
-            en = False
-        _kino_act(cid, _user_by_id(uid), "test", en)
+            c = {}
+        if c.get("robot") and _check_state(c, u) != "ok":
+            return "blocked"                          # the test waits for THEIR votes on the moments - not a broken word, nothing to retry
+        _kino_act(cid, u, "test", c.get("lang") == "en")
+        try:
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            if c.get("robot") and _check_state(c, u) != "ok":
+                return "blocked"
+        except Exception:
+            pass
+        return "tried"
 
     return {"chat": lambda cid: json.load(open(_chat_path(cid), encoding="utf-8")), "act_test": _act_test, "build": _build,
             "work_add": _work_add, "show": lambda cid, uid: None, "event": _event, "building": lambda cid: cid in _CHAT_B}
@@ -16522,7 +16545,12 @@ def _kino_act(cid, user, act, en=False):
                     _alarm_log(cid, "test start failed: %s - retry in 60 s" % tr.get("err"))
                     threading.Thread(target=_test_retry, args=(cid, user, en), daemon=True).start()
         if line:
-            _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=line))
+            def _once(c, line=line):              # 2026-10-23 (watch): the same system line 3 times in 10 min read as a stutter
+                _ls = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "sys"), None)
+                if _ls and _ls.get("text") == line and time.time() - float(_ls.get("t") or 0) < 600:
+                    return
+                _chat_msg(c, "sys", text=line)
+            _chat_mut(cid, _once)
     except Exception:
         pass
 
