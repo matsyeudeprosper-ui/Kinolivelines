@@ -725,7 +725,10 @@ def _mem_part(mem, part, key=None):
     notes = list(mem.get("notes") or [])
     snap = _MEMSNAP.get(key)
     new = [n for n in notes if snap is None or n not in snap[1]]
-    if snap is None or time.time() - snap[0] > 1200 or len(new) >= 4 or any(n not in notes for n in snap[1]):
+    # 2026-10-23 (speed, watch): the notes list is capped, so once it is full EVERY new note rolls the oldest one off, the
+    # "a snapshot note disappeared" test fired on every message, and the system prompt changed every other turn ($0.24 vs
+    # $0.05 cached). A rolled-off note staying in the cached prompt for 20 min is harmless: refresh on time or on 8 new notes.
+    if snap is None or time.time() - snap[0] > 1200 or len(new) >= 8:
         snap = (time.time(), notes)
         _MEMSNAP[key] = snap
         new = []
