@@ -1148,14 +1148,20 @@ def member_lang(chat, default="fr", dominant=False):
             nf = V.count("fr")
             return "fr" if nf * 2 > len(V) else ("en" if nf * 2 < len(V) else V[0])
         return default
-    for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-6:]):
+    # 2026-10-23 (watch): "Test of random" (the luck test's name, 3 words, one English stop word) turned three replies
+    # English in a French chat. One sentence is not a switch: the last TWO real sentences must agree (the screen's own
+    # rule, member_lang2), else the chat's language stays.
+    L = []
+    for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-8:]):
         t = str(m.get("text") or "")
         if len(t.split()) < 3:
             continue
         f, e = len(_LFR.findall(t)), len(_LEN.findall(t))
         if f != e:
-            return "fr" if f > e else "en"
-    return default
+            L.append("fr" if f > e else "en")
+        if len(L) == 2:
+            break
+    return L[0] if len(L) == 2 and L[0] == L[1] else default
 
 
 def member_lang2(chat):
