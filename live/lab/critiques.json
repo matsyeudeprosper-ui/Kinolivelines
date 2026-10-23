@@ -332,6 +332,106 @@
     "overlap: same family as jar (deployed, also recovery money after a loss) - a bigger recovery stake, not a new entry rule",
     "real gap: --drag auto = no charge yet (cfg drag None, identical to no drag); --drag 1 gives -477.87 but charges the variant only (base stays 11.61) - harness asymmetry, unusable; trade count is equal so a fair per-trade charge should be ~neutral"
    ]
+  },
+  {
+   "id": "pb_choch_ext500_cost4_fh075",
+   "date": "2026-10-21",
+   "verdict": "bloque",
+   "fr": "Miser un quart de moins sur un changement de sens nerveux ne change presque rien : +1 $ en 42 jours, trou de 12 au lieu de 11 ; miser moitié moins perd 8 $, et sur 69 jours la mise réduite coûte environ 19 $. Tout le gain vient de l'idée d'hier, refuser les stops très serrés, déjà en doute. Pour changer d'avis : une mise réduite qui gagne seule, sur les deux moitiés.",
+   "en": "Staking a quarter less on a nervous change of direction changes almost nothing: +$1 in 42 days, hole 12 instead of 11; staking half loses $8, and over 69 days the smaller stake costs about $19. The whole gain is yesterday's idea, refusing very tight stops, already doubted. To change my mind: a smaller stake that wins on its own, in both halves.",
+   "checks": [
+    "run ~10:40 2026-10-21; harness levels differ from the context (deployed -79.83 / hole 95.29 / 228 tr vs -37.73 / 83.16 / 230; idea 108.16 vs 70.36) - data moved; read diffs, not levels. 7 engine calls: 1 output truncated, 2 stopped and relaunched, 4 read",
+    "parent = pb_choch_ext500_cost175 (same cfg, flip_hot 1.0), doubted 2026-10-20. The only new dial is the stake cut on nervous changes of direction",
+    "dose vs parent (106.73 / hole 11.17 / 57 tr): fh0.75 108.16 (+1.43, hole 12.37, 57 tr); fh0.5 98.43 (-8.30, hole 14.03, 58 tr). Gain below a dollar-and-a-half at the chosen setting, sign flips one step deeper, hole worse at both",
+    "halves vs parent: fh0.75 h1 +1.47 / h2 -6.16; fh0.5 h1 -8.20 / h2 -7.56 - the second half loses at both settings",
+    "halves vs deployed: idea h1 +108.04 / h2 +99.11 - all of it is the parent's gain",
+    "shapes: context byref base and capped rows identical (+108.09 / -66.69) - no independent capped result",
+    "long window (69 d, context): idea +70.35 vs deployed, h1 -94.06 / h2 +178.78; parent was +89.76 there yesterday -> the stake cut costs ~19 over 69 days (different nights, read as a sign, not a level)",
+    "real trades: idea +77.87 on 21 kept of 96 vs parent +74.35 yesterday - +3.5, within noise, too few trades",
+    "concentration: +1.43 vs parent is smaller than any single trade in the ledger (top 19.91, worst -19.12) - pure noise",
+    "past: proposal's own why says 'a hole limit, not a money idea' and that the pretest second half lost $27 at every neighbouring setting; flip_hot 0.75 appeared as a passenger in ext400_wait25_fh075 (blocked 2026-10-11, flip_hot 1.0 was +3.3 better there); history A x1, no twin, not archived",
+    "mechanism: none shown - nervous changes of direction are net winners here (cutting them by half loses $8); a smaller stake on winners cannot add money",
+    "overlap: ~100% - same 57 trades as the parent, only stake size moves on a few; a twin would duplicate the parent's with a near-inert dial",
+    "real gap: --drag auto = no charge yet (same as raw); --drag 1: idea 31.17 / hole 46.18 / 54 tr (h1 +0.24 / h2 +49.42) but the harness charges the variant only (deployed stays -79.83) - survives, it trades less; same picture as the parent yesterday"
+   ]
+  },
+  {
+   "id": "pb_choch_ext500_rr12_fh075",
+   "date": "2026-10-21",
+   "verdict": "doute",
+   "fr": "Le gain vient surtout de ne prendre que la moitié des trades (121 au lieu de 230), pas de viser 1,2. Les voisins bougent beaucoup : viser 1,1 donne +71 $, 1,3 donne +75 $ mais −18 $ sur la 2e moitié ; réduire la mise à 0,75 fait moins bien que 1,0 (+61 contre +75) mais 0,5 fait mieux (+98). Sur 69 jours : −2 $, la 2e moitié porte tout. Peut démarrer, avec ce doute.",
+   "en": "The gain mostly comes from taking half the trades (121 instead of 230), not from aiming 1.2. Neighbours swing a lot: aiming 1.1 gives +$71, 1.3 gives +$75 but -$18 on the second half; staking 0.75 does worse than 1.0 (+$61 vs +$75) yet 0.5 does better (+$98). Over 69 days: -$2, the second half carries everything. May start, with this doubt.",
+   "checks": [
+    "dose rr: 1.1 = +71.1 (h1 +8.5 / h2 +6.7, A); 1.2 = +61.2 (h1 -2.7 / h2 +63.5, A); 1.3 = +75.2 (h1 +9.0 / h2 -18.0, B) - same sign overall, but halves flip, so not a smooth rule",
+    "dose flip_hot at rr 1.2: 1.0 = +75.0, 0.75 = +61.2, 0.5 = +98.0 - non-monotonic, the 0.75 step is noise, not a rule",
+    "components: rr 1.2 alone (fh 1.0) = +75.0; fh 0.75 alone (rr 1.0) = +53.8 (h1 -7.5 / h2 +36.5); the pair is not additive",
+    "halves: 42d h1 -2.7 vs h2 +63.5 - carried by the second half; the long window repeats it (h1 -167 / h2 +169, net +183, verdict B, diff -2.0 vs deployed)",
+    "shapes/real trades: real accounts +16.9 on 41 trades vs +60 better than deployed, hole 26 - positive but small sample",
+    "concentration: not run in detail; trades halve (230 -> 121) and win rate falls 54 -> 45, so the gain is fewer losing exits more than bigger wins",
+    "past: chercheur's own note says rr 1.2 alone loses 66 on 69 days and rr 1.1 loses 17 in its pretest; earlier critic found fh 0.75 a near-inert dial; no twin or archive hit at these exact settings",
+    "mechanism: fewer trades (ext 500 + choch gate) cut a base that loses money; why 1.2 beats 1.1/1.0 is not explained",
+    "real gap: --drag 1 run was cut off by time; with half the trades the idea should survive a per-trade charge (it trades less, not more)"
+   ]
+  },
+  {
+   "id": "pb_choch_ext500_fh05",
+   "date": "2026-10-21",
+   "verdict": "doute",
+   "fr": "Le +71 $ affiché n'est pas cette idée : c'est le filtre souple avec 500 points, déjà testé. Miser moitié moins sur un changement de sens nerveux n'ajoute que 2 $ en 42 jours et 1 $ en 69 jours, moins qu'un seul trade ; à 0,6 c'est −0,3 $. Une mise au quart fait mieux (+14 $, les deux moitiés). La raison tient, la preuve est minuscule.",
+   "en": "The +$71 shown is not this idea: it is the soft filter with 500 points, already tested. Staking half on a nervous change of direction adds only $2 in 42 days and $1 in 69 days, less than one trade; at 0.6 it is -$0.3. A quarter stake does better (+$14, both halves). The reason holds, but the proof is tiny. May start, with this doubt.",
+   "checks": [
+    "dose vs parent (choch filter + ext 500, fh 1.0): battery 2026-10-20 fh0.75 +1.4, fh0.6 -0.3, fh0.5 +2.3 (h +1.9/+5.0, hole 52.4 vs 57.4); harness this morning (data moved, deployed now -82.78) fh1.0 +61.46 hole 60.67 (h -24.13/+81.62), fh0.25 +75.09 hole 53.54 (h -13.53/+87.52) = +13.6 vs parent, both halves better. Direction holds deeper, but 0.5-0.75 sit inside noise and 0.6 flips sign",
+    "halves vs deployed: tonight h1 -9.19 vs -23.34, h2 +35.22 vs -62.11 - carried by the second half; all of it is the parent's gain",
+    "shapes: byref base and capped rows identical (+71.25 / -45.87) - no independent capped result",
+    "long window: 69 d net 254.87 vs parent 253.76 = +1.1 (h1 -82.83 / h2 +155.03, B vs deployed) - neutral, not a loss",
+    "real trades: +47.45 on 48 kept of 96, +90.8 vs deployed - again the filter; nervous changes of direction since 10-10 won 3 of 8, too few to judge the stake cut",
+    "concentration: dial gain ~$2 vs single trades of $17-31 in the ledger - one trade outcome decides it",
+    "past: sibling pb_choch_ext500_cost4_fh075 blocked today (fh0.5 lost $8 on that parent, 69 d cost ~$19); ext400_wait25_fh075 blocked 2026-10-11 (fh1.0 was better there); no twin, not archived",
+    "mechanism: nervous changes of direction win 43 % vs 54 %; at aim 0.8 a trade needs ~56 % to break even, so halving a net-losing kind can add money - plausible, but the sign of that kind is not stable across windows",
+    "overlap: ~100% the parent's trades (141 vs 150), only stake size moves on a few; a twin would mostly re-measure the parent",
+    "real gap: --drag 1 idea -170.45 (135 tr, h1 -138.07 / h2 -46.34) vs deployed -82.78, but the harness charges only the variant; charged evenly the deployed robot (226 tr) pays more - the idea trades less, so a per-trade cost does not kill it",
+    "runs: 8 launched, 4 stopped early (my print filter dropped the numbers) - 3 usable plus the idea's own run"
+   ]
+  },
+  {
+   "id": "rr12",
+   "date": "2026-10-22",
+   "verdict": "bloque",
+   "fr": "Le gain tient sur un seul réglage : à 1,1 fois le risque la deuxième moitié fait pire que le robot actuel, à 1,3 les deux moitiés font pire. Sur 69 jours il perd 123 $ de plus que le robot actuel. Il était à non 8 nuits sur 12, à oui seulement ces 4 dernières. Pour changer d'avis : 1,1 et 1,3 gagnants, 69 jours sans perte, plusieurs nuits.",
+   "en": "The gain sits on one setting only: at 1.1 times the risk the second half does worse than today's robot, at 1.3 both halves do worse. Over 69 days it loses $123 more than today's robot. It was a no 8 nights out of 12, a yes only these last 4. To change my mind: 1.1 and 1.3 winning too, and 69 days without a loss, several nights running.",
+   "checks": [
+    "dose (harness, deployed ref -33.98 tonight): rr1.1 +29.59 (+63.6; h1 +56.2 / h2 -14.7, B); rr1.2 +73.14 (+107.1; h1 +89.0 / h2 +34.6, A); rr1.3 -24.64 (+9.3; h1 -8.8 / h2 -5.9, C) - a sharp peak at 1.2, not a slope",
+    "halves: at 1.2 both halves gain (+89 / +35) but the first half carries most; the neighbours lose the second half - the h2 gain is dose-fragile",
+    "shapes: byref base and capped rows identical (+69.68 / -33.09) - no independent capped result",
+    "long window: 69 d diff -122.53 (h1 -209.1 / h2 +86.5), verdict C - a loss, not just weaker",
+    "real trades: +7.71 on 77 kept of 98 - small, under one ordinary trade size",
+    "concentration: ~5 winners of $22-31 at aim 1.2 (30.56, 27.32, 25.76, 24.28, 23.61) plus one -39.16 base loss that shrinks to -22.32 by path (sizing order), ~$17 from that single trade; 1.1 keeps the -39.16 - much of the 1.1->1.2 jump is one trade",
+    "past: history C x8 (10-10..10-18, nets -10.9..+24.3) then A,B,B,A as recent days came in; registry: half_tp (aim smaller) B and twin_06 (aims smaller) in forward - the opposite direction is already being tested; e008/sl_candle (stop distance) rejected; not archived, no twin",
+    "mechanism: bigger target pays only if winners run further; win rate falls 54.6% -> 46.1%, break-even at 1.2 is ~45.5% - margin under one point, so it lives on a few long runners",
+    "overlap: same entries, only the exit moves; 191 vs 229 trades (fewer because trades last longer) - a re-cut of the target dial already probed by half_tp/twin_06",
+    "real gap: --drag 1 variant -216.43 (186 tr) vs uncharged deployed -33.98; harness charges only the variant - charged evenly deployed would pay ~229 vs ~186, so the dollar a trade does not kill it by itself",
+    "runs: 4 (rr1.2, rr1.1, rr1.3, rr1.2 drag 1)"
+   ]
+  },
+  {
+   "id": "nervgate",
+   "date": "2026-10-22",
+   "verdict": "doute",
+   "fr": "Refuser tout trade quand le marché est nerveux réduit de moitié le plus gros trou (95 à 50) et gagne 73 $ de plus sur les vrais trades. Mais le +65 $ de ce soir vient surtout d'une seule série perdante évitée (24 septembre), et miser moitié moins perd 6 $ : les trades nerveux ne perdent pas en soi. Mon inquiétude : sur 69 jours il perd 67 $.",
+   "en": "Refusing every trade when the market is nervous halves the biggest hole (95 to 50) and earned $73 more on the real trades. But most of tonight's +$65 is one bad chain of 24 September avoided, and staking half instead of nothing loses $6 - so nervous trades are not losers by themselves. What worries me most: over 69 days it loses $67.",
+   "checks": [
+    "dose: the gate is on/off, so neighbours are the softer cuts. Harness 2026-10-22 ~10:30 (deployed ref -33.98, then -38.03 as a new bar came in): nerv_gate +30.92 / 26.87 (+64.9, A, hole 95.29 -> 50.47, 131 vs 229 trades); debt_nerv_gate +45.38 (+83.4, A, same hole 50.47); size_hot 0.5 -44.17 (-6.1, C, hole 90.82). Refusing gains, halving the stake loses - a sign flip between the half dose and the full dose",
+    "halves: both gain tonight, h1 +67.4 (3.77 -> 71.22) / h2 +20.9 (-70.93 -> -50.04); the first half carries ~3/4 of it. Context file (earlier run): h1 +27.4 / h2 +9.1",
+    "shapes: byref base and capped (valere) rows identical (+33.96 / -34.25) - no independent capped result",
+    "long window: 69 d diff -66.69 (h1 -126.31 / h2 +51.2), verdict C - a loss, not just weaker",
+    "real trades: 40 kept of 98, net +25.55 vs deployed, diff +72.97, hole 28.14 (-52.95) - the strongest point for the idea",
+    "concentration: the deployed run's biggest loss -39.16 (the 2026-09-24 chain that already carried fit3, ext600, debtnerv) is gone in the variant; equity curves 09-22 -> 10-01 swing ~+50 of the ~+65 gain. After 10-01 the gate's curve falls 67.2 -> 31.5 (-35.7) vs deployed -2.8 -> -29.6 (-26.8) - no better since",
+    "past: registry 'nerv' (refuse when nervous) listed deployed B but the harness base runs with it off; 'storm' deployed; 'sizehot' still an idea and now loses at 0.5. History C x8 (10-09..10-17), then A, B, A, A with nets 56.9 / 17.1 / -21.3 / 26.0 - the variant's own net swings sign night to night. Twin already running since 2026-10-22 09:48",
+    "mechanism: 'nervous market = stops hit more' is plausible, but if nervous trades simply lost, halving them would earn half the gain; it loses instead, so the money comes from a path effect (skipping a trade changes which later trades and stakes follow), mostly one chain",
+    "overlap: same worst hole (50.47) and same h2 trades as debtnerv (doubted 2026-10-19); debtnerv keeps more money (+83 vs +65) - nervgate is the blunter version of an idea already under doubt",
+    "real gap: --drag auto came back uncharged (no measured gap on 30 trades yet); --drag 1 variant -210.32 on 128 trades vs uncharged deployed -38.03; harness charges only the variant (~1.9 $/trade at its stakes) - charged evenly the deployed run would pay ~430 on 229 trades, so trading fewer helps it here, it does not die on a dollar a trade",
+    "runs: 6 (nerv_gate, size_hot 0.5, debt_nerv_gate, nerv_gate drag 1, nerv_gate pnls/curve, nerv_gate drag auto)"
+   ]
   }
  ]
 }

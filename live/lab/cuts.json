@@ -378,6 +378,26 @@
      ]
     }
    ]
+  },
+  {
+   "id": "gap_30_60",
+   "title_fr": "Trade pris 30 à 60 minutes après le précédent",
+   "title_en": "Trade taken 30 to 60 minutes after the previous one",
+   "by": "chercheur",
+   "date": "2026-10-22",
+   "status": "open",
+   "why_fr": "Repartir moins de 15 minutes après le trade d'avant perd : 47 trades, 38 % gagnés, -56 $. Après une pause de 30 à 60 minutes, le robot gagne : 38 trades, 63 % gagnés, +37 $, les deux moitiés d'accord. Et cela vaut aussi pour les changements de sens (20 trades, 13 gagnés), pas seulement pour les trades dans le même sens. Cette pile dira si la pause elle-même est la vraie cause.",
+   "why_en": "Starting again less than 15 minutes after the previous trade loses: 47 trades, 38 % won, -$56. After a pause of 30 to 60 minutes the robot wins: 38 trades, 63 % won, +$37, both halves agree. And it holds for changes of direction too (20 trades, 13 won), not only for trades the same way. This pile will tell whether the pause itself is the real cause.",
+   "where": [
+    {
+     "field": "gap_min",
+     "op": "between",
+     "value": [
+      30,
+      60
+     ]
+    }
+   ]
   }
  ]
 }

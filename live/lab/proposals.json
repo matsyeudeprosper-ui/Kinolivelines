@@ -3687,8 +3687,10 @@
    },
    "by": "chercheur",
    "date": "2026-10-20",
-   "status": "pending",
-   "ask": "ask_1792493031_flip_hot"
+   "status": "done",
+   "ask": "ask_1792493031_flip_hot",
+   "verdict": "A",
+   "done": "2026-10-21"
   },
   {
    "id": "pb_choch_ext500_rr12_fh075",
@@ -3721,7 +3723,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-20",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-10-21"
   },
   {
    "id": "pb_choch_ext500_cost4_fh075",
@@ -3755,7 +3759,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-20",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-10-21"
   }
  ]
 }

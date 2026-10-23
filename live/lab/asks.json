@@ -196,6 +196,26 @@
    "note": "49 trades, 43 % gagnés contre 54 % pour les autres ; les deux moitiés sont d’accord.",
    "status": "proposed",
    "proposal": "pb_choch_ext500_fh05"
+  },
+  {
+   "id": "ask_1792749605_flip_after_loss",
+   "seed": "flip_after_loss",
+   "seed_fr": "Changement de sens juste après une perte",
+   "seed_en": "Change of direction right after a loss",
+   "by": "labo",
+   "date": "2026-10-23",
+   "note": "64 trades, 42 % gagnés contre 52 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
+  },
+  {
+   "id": "ask_1792749605_gap_30_60",
+   "seed": "gap_30_60",
+   "seed_fr": "Trade pris 30 à 60 minutes après le précédent",
+   "seed_en": "Trade taken 30 to 60 minutes after the previous one",
+   "by": "labo",
+   "date": "2026-10-23",
+   "note": "42 trades, 57 % gagnés contre 46 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }

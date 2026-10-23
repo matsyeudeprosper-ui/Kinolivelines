@@ -30,7 +30,8 @@
   "veille_wake_marker",
   "time_exit",
   "tight_stop_size",
-  "night_lock_release"
+  "night_lock_release",
+  "pile_field_streak"
  ],
  "asks_answered": [
   "ask_1790670647",
