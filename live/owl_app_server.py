@@ -14943,7 +14943,8 @@ def _chat_member(user, c):
         first = time.strftime("%Y-%m-%d", time.gmtime(min([int(str(x.get("id")).split("_")[-1]) // 1000 for x in allc if str(x.get("id")).split("_")[-1].isdigit()] or [time.time()])))
         stage = "new (be warm but a little careful)" if nmsg < 15 else "getting to know each other" if nmsg < 80 else \
             "familiar (more direct, some teasing ok)" if nmsg < 300 else "close (a real friend's tone)"
-        L.append("RELATIONSHIP: %s - %d messages from them so far, talking since about %s" % (stage, nmsg, first))
+        L.append("RELATIONSHIP: %s - %s messages from them so far, talking since about %s" % (     # 2026-10-23 (speed): rounded,
+            stage, (str(nmsg) if nmsg < 100 else "about %d" % (nmsg // 50 * 50)), first))              # or every message is a new prompt
         work = []
         for nn in (c.get("night") or [])[-2:]:
             work.append("night shift %s: you measured %d versions of their entry%s" % (time.strftime("%d/%m", time.gmtime(nn["t"])), len(nn.get("rows") or []),
@@ -14956,18 +14957,6 @@ def _chat_member(user, c):
             work.append("you ran %d calculations for them this week" % len(tl))
         if work:
             L.append("YOUR REAL RECENT WORK FOR THEM (true - you may talk about it): " + "; ".join(work))
-    except Exception:
-        pass
-    try:          # 2026-10-19 (owner next-list item 6): where they are in the app
-        wh = _WHERE.get(uid) or {}
-        if wh and time.time() - wh["t"] < 900:
-            PAGES = {"home": "the home page (their account, today's result, the robot's state)", "robots": "Robots (choose / plug the robot of their account)",
-                     "mesrobots": "Mes robots (their own robots and tests)", "wealth": "Patrimoine (their money: balance, deposits, pockets, history)",
-                     "proof": "la Preuve (the proof page: real results of the Owl)", "chart": "the chart (live prices, the structure, the robot's trades)",
-                     "place": "la place des robots (the marketplace)", "rentabilite": "Rentabilité (profitability proof)"}
-            L.append("WHERE THEY ARE IN THE APP: %s - %s%s (%d min ago). If they came from there, they probably ask about what is on that page; "
-                     "help right there, concretely." % (wh["page"], PAGES.get(wh["page"].split("/")[0], wh.get("title") or wh["page"]),
-                                                       (" - on screen: " + wh["what"]) if wh.get("what") else "", (time.time() - wh["t"]) / 60))
     except Exception:
         pass
     out = "\n".join("- " + x for x in L)
@@ -15032,6 +15021,18 @@ def _chat_member_fresh(uid, c):
         import robot_reality as _RW
         _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
         L.append("THE WORLD RIGHT NOW:\n" + _RW.world_now(_tz))
+    except Exception:
+        pass
+    try:          # 2026-10-19 (owner next-list item 6): where they are in the app
+        wh = _WHERE.get(uid) or {}
+        if wh and time.time() - wh["t"] < 900:
+            PAGES = {"home": "the home page (their account, today's result, the robot's state)", "robots": "Robots (choose / plug the robot of their account)",
+                     "mesrobots": "Mes robots (their own robots and tests)", "wealth": "Patrimoine (their money: balance, deposits, pockets, history)",
+                     "proof": "la Preuve (the proof page: real results of the Owl)", "chart": "the chart (live prices, the structure, the robot's trades)",
+                     "place": "la place des robots (the marketplace)", "rentabilite": "Rentabilité (profitability proof)"}
+            L.append("WHERE THEY ARE IN THE APP: %s - %s%s (%d min ago). If they came from there, they probably ask about what is on that page; "
+                     "help right there, concretely." % (wh["page"], PAGES.get(wh["page"].split("/")[0], wh.get("title") or wh["page"]),
+                                                       (" - on screen: " + wh["what"]) if wh.get("what") else "", (time.time() - wh["t"]) / 60))
     except Exception:
         pass
     return "\n".join(L)

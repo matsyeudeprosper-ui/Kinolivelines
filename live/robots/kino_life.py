@@ -141,10 +141,11 @@ def daily_market_fact(data_fn, live_bars, names=None):
 
 # ---------------------------------------------------------------- 2 curiosity about human life
 def human_question(uid):
-    """the question he is curious about for this member right now (one a day at most), or None"""
+    """the question he is curious about for this member right now (not two within 3 h - owner 2026-10-23: a short close
+    hands Kino the floor, and a real question about them is one of the things he brings), or None"""
     d = _load()
     H = (d.get("human") or {}).get(uid) or {}
-    if time.time() - float(H.get("last_ask") or 0) < 86400:
+    if time.time() - float(H.get("last_ask") or 0) < 3 * 3600:
         return None
     asked = set(str(x) for x in H.get("asked") or [])
     left = [i for i in range(len(HUMAN_Q)) if str(i) not in asked]
@@ -362,6 +363,7 @@ def block(uid, lang="fr"):
     q = human_question(uid)
     if q:
         L.append("A QUESTION YOU ARE GENUINELY CURIOUS ABOUT (human life - theirs): \"%s\". Ask it ONLY if the moment is relaxed and it "
-                 "fits naturally (never during a problem, never as an interview, at most once today) - then set \"human_asked\": \"%s\"."
+                 "fits naturally (never during a problem, never as an interview, never two in a row; a short close by them is a good "
+                 "moment) - then set \"human_asked\": \"%s\"."
                  % (q["en"] if lang == "en" else q["fr"], q["id"]))
     return "\n".join(L)
