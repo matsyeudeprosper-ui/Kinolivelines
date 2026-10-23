@@ -124,3 +124,13 @@ except Exception:
 if "--all" not in sys.argv and "--peek" not in sys.argv:
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     json.dump({"t": now, "ran": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))}, open(STATE, "w", encoding="utf-8"))
+
+# 2026-10-23: today's humanity scorecard on the real conversation (robots/kino_scorecard.py)
+try:
+    import sys as _sys, os as _os
+    _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "robots"))
+    import kino_scorecard as _KSC
+    _S = _KSC.score_day("kino")
+    print("\n== scorecard today: " + ", ".join("%s=%s" % (k, v) for k, v in _S.items() if k not in ("day", "uid")))
+except Exception as _e:
+    print("\n== scorecard: " + str(_e)[:80])

@@ -1073,6 +1073,13 @@ def slow_block(uid, memory, lang="fr"):
     if so:
         L.append("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
                  "change it: " + " | ".join(x["text"] for x in so))
+    try:                                   # 2026-10-23: yesterday's humanity score on the real conversation, with the move to make
+        import kino_scorecard as KSC
+        sb = KSC.block(uid)
+        if sb:
+            L.append(sb)
+    except Exception:
+        pass
     out = "\n".join(L)
     _SLOW_SNAP[uid] = (time.time(), out)
     return out

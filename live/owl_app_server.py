@@ -17665,6 +17665,15 @@ def _companion_tick():
                             cl.get("seeds"), cl.get("beats"))
                         _CHAT_Q[tgt] = _CHAT_Q.get(tgt, 0) + 1
                         threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
+            try:                                       # 2026-10-23 (owner: "does it feel human yet?"): yesterday's conversation, measured
+                _dys = time.strftime("%Y-%m-%d", time.gmtime(now - 86400))
+                if time.gmtime(now).tm_hour in (0, 1, 2) and m.get("scorecard") != _dys:
+                    _mem_note_safe(uid, lambda mm: mm.__setitem__("scorecard", _dys))
+                    _rc()
+                    import kino_scorecard as _KSC
+                    threading.Thread(target=_KSC.save, args=(uid, _dys), daemon=True).start()
+            except Exception:
+                pass
             try:                                       # 2026-10-23 (owner: "nothing of his own to tell"): true things to tell, every 3 h
                 _rc()
                 import kino_material as _KMT
