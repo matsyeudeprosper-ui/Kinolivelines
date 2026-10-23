@@ -17306,17 +17306,17 @@ def _companion_tick():
                             cl.get("seeds"), cl.get("beats"))
                         _CHAT_Q[tgt] = _CHAT_Q.get(tgt, 0) + 1
                         threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
+            try:                                       # 2026-10-23 (owner, upgrade 3): one story a day that is not a number
+                _rc()
+                import kino_life as _KLs, robot_reality as _RWs
+                if _KLs.story_due(uid):
+                    _lft = "; ".join(str(x.get("fact")) for x in (m.get("life") or [])[-6:])
+                    _lng = "en" if str((ch[0] if ch else {}).get("lang") or "fr") == "en" else "fr"
+                    threading.Thread(target=_KLs.story_write, args=(uid, _RWs.world_now(0), _lft, _lng), daemon=True).start()
+            except Exception:
+                pass
             if seen != (m.get("luck_seen") or {}):
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("luck_seen", seen))
-                try:                                       # 2026-10-23 (owner, upgrade 3): one story a day that is not a number
-                    _rc()
-                    import kino_life as _KLs, robot_reality as _RWs
-                    if _KLs.story_due(uid):
-                        _lft = "; ".join(str(x.get("fact")) for x in (m.get("life") or [])[-6:])
-                        _lng = "en" if str((ch[0] if ch else {}).get("lang") or "fr") == "en" else "fr"
-                        threading.Thread(target=_KLs.story_write, args=(uid, _RWs.world_now(0), _lft, _lng), daemon=True).start()
-                except Exception:
-                    pass
                 def _les():                                # 2026-10-23: Kino writes his own lesson for the new verdict
                     try:
                         _rc()
