@@ -12494,6 +12494,13 @@ def _test_pocket(rs):
     return {"value": round(v, 2), "n": len(rs), "curve": curve}
 
 
+def _chart_sym_is(trade_sym, chart_sym):
+    """2026-10-22: is this trade on the chart's market? Broker names compare by their common name (BTCUSDm = BTCUSD);
+    a trade with no market recorded (rows written before 10-22) was a Bitcoin trade"""
+    b = lambda s: (str(s)[:-1] if str(s).endswith("m") and str(s)[:-1].isupper() else str(s)).upper()
+    return b(trade_sym or "BTCUSD") == b(chart_sym or "BTCUSD")
+
+
 def chart_symbols():
     """2026-10-12 (owner): the markets the chart can switch to - BTC (the robot's market) first, then the
     multi-market feed's (live/chart_multi/meta.json)."""
@@ -13399,6 +13406,12 @@ def builder_payload(user, detail):
                              "parent_result": None, "days": _ot.get("days"), "window_utc": _ot.get("window_utc")}
         x["mtests"] = _robot_mtests(r["id"])
         x["mhist"] = _robot_mhist(r["id"])
+        # 2026-10-22 (owner: "still says pas encore testé in some places"): a robot built for gold is tested on gold - its
+        # stage stays 'draft' (only a Bitcoin test moves it), so every page showed "Pas encore testé". Pages get "tested"
+        # once a market test is done; the registry's own stage is untouched (stage_raw)
+        if x.get("stage") == "draft" and any(m.get("state") == "done" and (m.get("robot") or {}).get("trades") for m in x["mtests"] or []):
+            x["stage_raw"] = "draft"
+            x["stage"] = "tested"
         if x.get("test"):
             for k in ("robot", "parent_result"):
                 if x["test"].get(k):
@@ -30610,6 +30623,10 @@ class H(BaseHTTPRequestHandler):
                     nd = json.load(open(os.path.join(
                         DIR, "nest_data", f"{uid}.json")))
                     for p in (nd.get("open_list") or []):
+                        # 2026-10-22 (owner: "with 2 markets at once the chart is broken"): a gold trade (~4 000) on
+                        # the Bitcoin chart (~81 000) squashed the price scale - each chart draws its own market only
+                        if not _chart_sym_is(p.get("sym"), d["sym"]):
+                            continue
                         tr.append([1 if p.get("d") == "A" else -1,
                                    float(p.get("lot") or 0),
                                    round(float(p.get("e") or 0), 2),
@@ -30651,6 +30668,8 @@ class H(BaseHTTPRequestHandler):
                     _mw = re.match(r"^(\d\d)/(\d\d) (\d\d):(\d\d)$", p.get("w") or "")
                     if not _mw or p.get("ep") is None or p.get("xp") is None:
                         continue
+                    if not _chart_sym_is(p.get("sym"), d.get("sym") or "BTCUSD"):    # 2026-10-22: its own market only
+                        continue
                     _y = _now.year - (1 if int(_mw.group(2)) > _now.month else 0)
                     _xt = int(datetime(_y, int(_mw.group(2)), int(_mw.group(1)),
                                        int(_mw.group(3)), int(_mw.group(4)),
@@ -30663,8 +30682,15 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 d["closed"] = []
             if _msym:
-                tr = []
-                d["trades"] = []; d["closed"] = []; d.pop("pending", None)
+                # 2026-10-22 (two robots on one account): a market chart now shows THAT market's real trades (they were
+                # cleared when only Bitcoin traded for real), at the chart's scale (the feed draws gold x10); the
+                # Bitcoin desk's own trades ("m") stay on the Bitcoin chart
+                _k = float(_sm.get("scale") or 1)
+                _sc = lambda v: round(float(v) * _k, 2) if v else 0
+                tr = [[t[0], t[1], _sc(t[2]), _sc(t[3]), _sc(t[4]), t[5], t[6]] for t in (d.get("trades") or []) if t[6] == "b"]
+                d["trades"] = tr
+                d["closed"] = [[c[0], c[1], _sc(c[2]), _sc(c[3])] + list(c[4:]) for c in (d.get("closed") or [])]
+                d.pop("pending", None)
             d["acct"] = user.get("login")
             d["uid"] = user.get("id")     # which account this chart shows
             d["auto"] = acct_auto(user)

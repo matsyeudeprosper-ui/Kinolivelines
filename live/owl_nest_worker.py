@@ -178,6 +178,8 @@ def compute():
                 # it here lets the app attach the multi-timeframe
                 # snapshot by an exact match, not a guess on time.
                 "pid": d.position_id,
+                # 2026-10-22 (two robots, two markets): the chart of one market draws only its own trades
+                "sym": d.symbol or "",
                 "dur": (round((d.time - _in.time) / 60)
                         if _in is not None else None)}
     trades = [_trow(d) for d in d7[-30:]][::-1]
