@@ -17438,7 +17438,7 @@ def _companion_tick():
                 pass
             try:          # 2026-10-21 (owner list item 9): Kino's research diary - three lines, evenings, only on days he tried something
                 _dkd = time.strftime("%Y-%m-%d", time.gmtime(now))
-                if 21 <= h0 < 22 and m.get("diary") != _dkd and not busy(ch[0]["id"]):
+                if 21 <= h0 < 23 and m.get("diary") != _dkd and not busy(ch[0]["id"]) and not _member_recent(ch[0]["id"]):
                     _dfx = _overnight_text(uid, 14)
                     if _dfx:
                         _mem_note_safe(uid, lambda mm: mm.__setitem__("diary", _dkd))
@@ -17451,7 +17451,7 @@ def _companion_tick():
             # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
             try:
                 _dk = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
-                if 20 <= h0 < 22 and m.get("eod") != _dk and not busy(ch[0]["id"]):
+                if 20 <= h0 < 23 and m.get("eod") != _dk and not busy(ch[0]["id"]) and not _member_recent(ch[0]["id"]):
                     nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
                     _td = time.strftime("%d/%m", time.gmtime())
                     tt = [x for x in nd.get("trades") or [] if str(x.get("w") or "").startswith(_td)]
@@ -19686,6 +19686,18 @@ def chat_send(user, body):
         return {"ok": True}
     threading.Thread(target=_chat_listen, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
+
+
+def _member_recent(cid, secs=600):
+    """2026-10-23 (watch): the RESEARCH DIARY landed 27 s after Kino had asked them a question, in the middle of a live
+    exchange, as a three-paragraph report. A scheduled message of his own (diary, end-of-day debrief) waits while the
+    member wrote in this chat in the last `secs` seconds; the next companion tick retries inside the same window."""
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        t = max([int(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "user"] or [0])
+        return time.time() - t < secs
+    except Exception:
+        return False
 
 
 def _chat_result(c):
