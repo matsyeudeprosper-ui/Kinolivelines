@@ -15511,6 +15511,13 @@ def _partner_apply(user, cid, pa):
             _KLh.human_asked(uid, pa["human_asked"], cid)
         except Exception:
             pass
+    if pa.get("them") and cid:                         # 2026-10-23 (engine 3): his reading of them, kept and checked
+        try:
+            _rc()
+            import kino_person as _KP
+            _KP.update(uid, cid, pa["them"])
+        except Exception:
+            pass
     if pa.get("plan_done"):                            # 2026-10-23 (engine 4): this message did an item of today's plan
         try:
             _rc()
@@ -16563,6 +16570,16 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             pass
         en = c.get("lang") == "en"
         c["decisions_v"] = _decisions_for(user, c)
+        if not event:                                    # 2026-10-23 (engine 3): the member's message, measured (delay, length, hour)
+            try:
+                _rc()
+                import kino_person as _KP
+                _lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+                _la = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and m.get("text")), None)
+                if _lu:
+                    _KP.observe(user.get("id"), cid, _lu.get("text"), float(_lu.get("t") or time.time()), float(_la.get("t")) if _la else None)
+            except Exception:
+                pass
         _CHAT_DRAFT[cid] = ""
         _t0q, _tfw = time.time(), []
 
@@ -18679,6 +18696,12 @@ def _chat_watch_once():
             continue
         if _CHAT_Q.get(cid) or cid in _CHAT_B or cid in _CHAT_WAIT:
             continue
+        try:                                             # 2026-10-23 (engine 3): 30 min without an answer = "silent" came true
+            _rc()
+            import kino_person as _KP
+            _KP.silent_check(u.get("id"), cid, now)
+        except Exception:
+            pass
         # (3) a promise due
         W_ = [w for w in c.get("work") or [] if now >= float(w.get("due") or 0)]
         if W_ and _waiting_promise(W_[0].get("what")) and _jobs_running(u.get("id"), cid):

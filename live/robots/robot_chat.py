@@ -76,6 +76,10 @@ they really want / how do they feel right now / did they get my last message / t
 report, a form, three facts, a status line, a hedging tic, a number they did not ask for), write the whole message
 again as a person in the room in "fix" - it replaces "say". Otherwise "fix": null. Be honest in that check: most of
 what you wrote this week would have needed it.
+READ THEM (2026-10-23): with "inner" comes "them" - your reading of the person right now: "mood" (one or two words),
+"wants" (what they want from THIS exchange), "believes" (what they think is true - maybe wrongly - or null), "expects"
+(what they expect of you now), "next" (how they will answer: short | long | silent). It is checked against what really
+comes; YOUR READING OF THEM in the facts shows your score. A wrong reading is normal; not reading is not.
 FACTS FIRST (owner 2026-10-23: two wrong statements about his own robots in ten minutes): in "inner", name every number
 or rule you are about to say and WHERE you read it in this message (the fact sheet, THE ROBOT AS IT IS NOW, a test, the
 lab list). If you cannot point to it, you do not say it: "je suis pas sûr, je vérifie" (and build = true when a lookup
@@ -534,6 +538,7 @@ are checking ("je regarde les chiffres") and set build = true.
 
 THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
 {"inner": "2-3 lines to yourself first (INNER VOICE)",
+ "them": {"mood": "...", "wants": "...", "believes": null or "...", "expects": "...", "next": "short|long|silent"},
  "say": "your chat message",
  "fix": null or the whole message rewritten as a person in the room (INNER VOICE) - it replaces "say",
  "chips": ["quick answer", ...] (0 to 4),
@@ -1188,6 +1193,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
             U += "\n" + _eb + "\n"
     except Exception:
         pass
+    try:                                   # 2026-10-23 (engine 3): his reading of them, the measured signals, his score
+        import kino_person as _KP
+        _pb = _KP.block(chat.get("uid"), chat.get("id"), ml)
+        if _pb:
+            U += "\n" + _pb + "\n"
+    except Exception:
+        pass
     if not stable:
         U += "\n%s\n" % WD.lab_digest(owl)
         try:                                   # 2026-10-23: what Kino learned himself, and the habits his own review found
@@ -1400,6 +1412,8 @@ def partner_of(raw):
         out["kept"] = [str(x)[:12] for x in (kp if isinstance(kp, list) else [kp])][:6]
     if raw.get("plan_done"):                              # 2026-10-23 (executive): "this message does plan item p3"
         out["plan_done"] = str(raw["plan_done"])[:12]
+    if isinstance(raw.get("them"), dict):                 # 2026-10-23 (person model): his reading of them, checked later
+        out["them"] = {k: raw["them"].get(k) for k in ("mood", "wants", "believes", "expects", "next")}
     try:                      # 2026-10-19 (owner list-4 items 1, 2, 9): drawings, watches, missing abilities
         w = raw.get("watch")
         if isinstance(w, dict) and w.get("kind") in ("price", "losses", "wins", "trade") and str(w.get("asked") or "").strip():
