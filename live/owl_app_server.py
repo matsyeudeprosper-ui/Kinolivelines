@@ -14824,6 +14824,10 @@ def _chat_member(user, c):
                     _nd.get("balance") or 0, _nd.get("today") or 0, _nd.get("week") or 0, _nd.get("month") or 0, ", ".join(_tr) or "none"))
             except Exception:
                 pass
+            for _mx in A.get("markets") or []:   # 2026-10-23: robots on OTHER markets of this account - Kino called the gold one "pretend money"
+                L.append("ALSO ON THIS ACCOUNT, on %s: robot '%s' - %s. REAL money, same account, not a ghost." % (
+                    _mx.get("sym"), _mx.get("name_fr") or _mx.get("id"),
+                    "running now" if _mx.get("alive") else ("starting" if _mx.get("ok") else "waiting: " + str(_mx.get("why") or ""))))
             L.append("may switch robot themselves: %s" % ("yes (Robots > Le robot de ce compte, trading password)" if A.get("can") else
                                                           "no (this account's robot is set by the nest)"))
             ch = [x.get("name_fr") or x.get("id") for x in A.get("choices") or []]
