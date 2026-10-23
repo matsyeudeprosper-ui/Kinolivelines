@@ -98,6 +98,10 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .lh .lh-top{display:flex;gap:14px;align-items:flex-start}.lh .lh-tx{flex:1;min-width:0}
 .lh .lh-t{font-size:1.55rem;font-weight:900;letter-spacing:-.025em;line-height:1.15;color:#fff;margin:8px 0 0}
 .lh .lh-s{font-size:.88rem;line-height:1.45;color:rgba(214,230,243,.82);margin:8px 0 0;max-width:420px}
+.mpk-off{border:0;background:transparent;color:rgba(214,230,243,.6);font:600 .74rem Inter,system-ui,sans-serif;text-decoration:underline;cursor:pointer;padding:0}
+.mpk-add{display:block;width:100%;margin:10px 0 0;padding:10px 12px;border-radius:12px;border:1px dashed rgba(255,255,255,.25);background:transparent;color:inherit;font:600 .86rem Inter,system-ui,sans-serif;cursor:pointer;text-align:left}
+.mpk{margin:12px 0;padding:10px 12px;border:1px solid var(--border2,rgba(255,255,255,.12));border-radius:12px}.mpk>b{display:block;margin-bottom:6px}.mpk-rm{font-size:.86rem}
+.mpk-m input{width:18px!important;height:18px;margin:0!important;padding:0!important;flex:none;accent-color:var(--accent,#3b82f6)}.mpk-m{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid rgba(255,255,255,.06);cursor:pointer}.mpk-m span{font-weight:700}.mpk-m small{flex-basis:100%;margin-left:26px;color:var(--muted,#8a9bb0);font-size:.74rem}.mpk-m.off{opacity:.55;cursor:default}
 .lh-rm{margin:10px 0 0;font-size:.86rem}.lh-rm small{display:block;color:rgba(214,230,243,.6);font-size:.74rem;margin-top:2px}
 .lh-mk{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:10px 0 0;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.05);font-size:.86rem}.lh-mk span{color:rgba(214,230,243,.7);font-weight:700}.lh-mk b{flex:1;min-width:0}.lh-mk em{font-style:normal;font-size:.78rem;color:rgba(214,230,243,.7)}.lh-mk em.pos{color:var(--up-soft,#5fe3a1)}
 .lh .lh-ico{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(96,165,250,.35),rgba(141,240,187,.18));border:1px solid rgba(255,255,255,.16);color:#e6f1ff}.lh .lh-ico svg{width:28px;height:28px}
@@ -1036,7 +1040,7 @@ function newsSh(){const E=newsItems();shOpen(T('Nouvelles des robots','Robot new
 async function refreshNow(){const p=$('livep');if(!p||p.classList.contains('spin'))return;p.classList.add('spin');try{await load();}finally{setTimeout(()=>p.classList.remove('spin'),400);}}
 function relLast(w){const m=/^(\d{2})\/(\d{2}) (\d{2}):(\d{2})/.exec(w||'');if(!m)return w||'';const n=new Date();let d=new Date(n.getFullYear(),+m[2]-1,+m[1],+m[3],+m[4]);if(d>n)d.setFullYear(d.getFullYear()-1);return agoN(d.toISOString());}
 function acctLive(A){const L=A.live;if(!L)return '';const pd=A.pending;
- const st=L.error?['off',T('Le robot ne joint pas votre compte en ce moment','The robot cannot reach your account right now')]:pd?['wt',T('Changement prévu','Change planned')]:(L.alive===false?['off',L.why?T('À l’arrêt : ','Stopped: ')+L.why:T('À l’arrêt','Stopped')]:(L.why?['wt',T('En pause : ','Paused: ')+L.why]:['on',T('En marche','Running')+(L.open?T(' · 1 trade ouvert',' · 1 open trade').replace('1',L.open):(L.last?T(' · dernier trade ',' · last trade ')+esc(relLast(L.last)):''))]));
+ const st=L.error?['off',T('Le robot ne joint pas votre compte en ce moment','The robot cannot reach your account right now')]:pd?['wt',T('Changement prévu','Change planned')]:(L.alive===false?['off',L.why?T('À l’arrêt : ','Stopped: ')+L.why:T('À l’arrêt','Stopped')]:(L.why?['wt',T('En pause : ','Paused: ')+L.why]:['on',T('En marche','Running')+(L.open?(L.open>1?T(' · '+L.open+' trades ouverts',' · '+L.open+' open trades'):T(' · 1 trade ouvert',' · 1 open trade')):(L.last?T(' · dernier trade ',' · last trade ')+esc(relLast(L.last)):''))]));
  const won=L.n?Math.round(100*(L.won||0)/L.n):null,d=s=>s?String(s).slice(8,10)+'/'+String(s).slice(5,7):'';
  return '<div class="lh-stat '+st[0]+'"><i></i><span>'+st[1]+'</span></div>'+
   ((L.curve||[]).length>2?'<div class="lh-cur">'+mini(L.curve,300,46)+'<small>'+T('règles d’aujourd’hui, depuis le ','today’s rules, since ')+(L.curve_from?(()=>{const c=new Date(L.curve_from*1000);return String(c.getDate()).padStart(2,'0')+'/'+String(c.getMonth()+1).padStart(2,'0');})():'')+' · <b class="'+(L.curve[L.curve.length-1]>=0?'pos':'neg')+'">'+money(L.curve[L.curve.length-1],0)+'</b></small></div>':'')+
@@ -1051,7 +1055,9 @@ const c=A.current||{},pd=A.pending,owl=c.id==='owl',t=(A.choices||[]).find(x=>x.
   '<div class="lh-tx" style="flex:1;min-width:0"><div class="eyebrow">'+T('Le robot de ce compte','This account’s robot')+'</div><h3 class="lh-t">'+esc(T(c.name_fr,c.name_en))+'</h3><p class="lh-s">'+sub+'</p></div></div>'+
   // 2026-10-22 (owner: "2 or more robots on the same account"): the robots plugged on other markets of this account
   (A.markets||[]).map(m=>'<div class="lh-mk"><span>+ '+esc(MKNM[m.sym]?T(MKNM[m.sym][0],MKNM[m.sym][1]):m.sym)+'</span><b>'+esc(T(m.name_fr,m.name_en))+'</b><em class="'+(m.ok&&m.alive?'pos':'')+'">'+
-    (!m.ok?T('en attente','waiting')+' · '+esc(m.why||''):m.alive?T('en service','running'):T('démarre…','starting…'))+'</em></div>').join('')+
+    (!m.ok?T('en attente','waiting')+' · '+esc(m.why||''):m.alive?T('en service','running'):T('démarre…','starting…'))+'</em>'+
+    (A.can?'<button class="mpk-off" onclick="mpkOff(\''+m.sym+'\')">'+T('Retirer','Take off')+'</button>':'')+'</div>').join('')+
+  (A.can?'<button class="mpk-add" onclick="mpkSh()">+ '+T('Ajouter un robot sur un autre marché','Add a robot on another market')+'</button>':'')+
   // 2026-10-22 (owner): a robot is added only if its worst case fits - the room left after every robot's worst case
   (A.room&&A.room.balance?'<div class="lh-rm"><span>'+(A.room.room>0?T('Place pour un autre robot : ','Room for one more robot: ')+'<b class="pos">$'+Math.floor(A.room.room)+'</b>':T('Plus de place pour un autre robot','No room for another robot'))+'</span><small>'+
     T('Solde $','Balance $')+Math.round(A.room.balance)+' − '+T('pire cas des robots en place $','worst case of the robots here $')+Math.round(A.room.used)+' − '+T('plancher $','floor $')+Math.round(A.room.floor)+'</small></div>':'')+
@@ -1085,6 +1091,40 @@ function arbAsk(id){const A=RB.acct,x=(A.choices||[]).find(c=>c.id===id)||{},nm=
   '<input id="arbpw" type="password" autocomplete="current-password" style="margin-top:6px"><div class="er" id="arber"></div>'+
   '<button class="cta" id="arbgo" onclick="arbGo(\''+id+'\')">'+T('Confirmer','Confirm')+'</button></div>');
  setTimeout(()=>{const i=$('arbpw');if(i){i.focus();i.onkeydown=e=>{if(e.key==='Enter')arbGo(id);};}},350);}
+/* 2026-10-22 (owner): add a robot on OTHER markets of this account - only markets where it passed the luck test, free on
+   this account (one robot per market) and whose worst case fits the room; a robot on a market can be taken off */
+async function mpkSh(){shOpen(T('Ajouter un robot','Add a robot'),'<div class="arbc"><p>'+T('Je regarde les robots et leurs marchés…','Looking at the robots and their markets…')+'</p></div>');
+ let j=null;try{j=await robotPost('market_choices',{});}catch(e){}
+ if(!j||!j.ok){$('lsh-b').innerHTML='<div class="arbc"><p>'+(j&&j.err==='no_bot'?ARBERR.no_bot:T('Hors ligne.','Offline.'))+'</p></div>';return;}
+ const R=j.robots||[],rm=j.room||{};
+ let h='<div class="arbc"><p>'+T('Un robot par marché sur ce compte. Seuls les marchés où le robot a <b>réussi son test de chance</b> sont proposés.','One robot per market on this account. Only markets where the robot <b>passed its luck test</b> are offered.')+'</p>'+
+  '<p class="mpk-rm">'+T('Place pour un autre robot : ','Room for one more robot: ')+'<b>$'+Math.max(0,Math.floor(rm.room||0))+'</b></p>';
+ if(!R.length)h+='<p>'+T('Aucun robot n’a encore réussi son test de chance sur un autre marché.','No robot has passed its luck test on another market yet.')+'</p>';
+ R.forEach(r=>{h+='<div class="mpk"><b>'+esc(T(r.name_fr,r.name_en))+'</b>'+r.markets.map(m=>{const can=m.ok&&!m.taken_by&&m.fits&&!m.on;
+   const why=m.on?T('déjà en service ici','already running here'):m.taken_by?T('pris par ','taken by ')+esc(m.taken_by):!m.ok?esc(m.why||''):!m.fits?T('pas assez de place : il faut $','not enough room: needs $')+Math.ceil(m.need||0)+T(', il reste $',', $')+Math.max(0,Math.floor(rm.room||0))+T('',' left'):T('pire cas $','worst case $')+Math.ceil(m.need||0);
+   return '<label class="mpk-m'+(can?'':' off')+'"><input type="checkbox" data-r="'+esc(r.id)+'" data-s="'+esc(m.sym)+'"'+(can?'':' disabled')+(m.on?' checked':'')+'><span>'+esc(MKNM[m.sym]?T(MKNM[m.sym][0],MKNM[m.sym][1]):m.sym)+'</span><small>'+why+'</small></label>';}).join('')+'</div>';});
+ if(R.some(r=>r.markets.some(m=>m.ok&&!m.taken_by&&m.fits&&!m.on)))
+  h+='<label style="font-size:.78rem;font-weight:700;color:var(--muted)">'+T('Mot de passe de trading du compte','The account’s trading password')+'</label><input id="mpkpw" type="password" autocomplete="current-password" style="margin-top:6px"><div class="er" id="mpker"></div>'+
+   '<button class="cta" id="mpkgo" onclick="mpkGo()">'+T('Ajouter','Add')+'</button>';
+ $('lsh-b').innerHTML=h+'</div>';}
+async function mpkGo(){const C=[...document.querySelectorAll('.mpk-m input:checked:not([disabled])')],er=$('mpker'),b=$('mpkgo'),pw=($('mpkpw')||{}).value||'';
+ if(!C.length){er.textContent=T('Cochez au moins un marché.','Tick at least one market.');return;}
+ const rids=[...new Set(C.map(x=>x.dataset.r))];if(rids.length>1){er.textContent=T('Un robot à la fois.','One robot at a time.');return;}
+ if(!pw){er.textContent=T('Entrez le mot de passe.','Enter the password.');return;}
+ b.disabled=true;b.textContent=T('Un instant…','One moment…');
+ try{const j=await robotPost('market_plug_set',{robot:rids[0],syms:C.map(x=>x.dataset.s),pwd:pw});
+  if(!j.ok&&!(j.done||[]).length){er.textContent=ARBERR[j.err]||((j.refused||[]).map(x=>x.sym+' : '+(x.why==='room'?T('pas assez de place','not enough room'):x.why)).join(' · '))||j.err;b.disabled=false;b.textContent=T('Ajouter','Add');return;}
+  $('lsh-b').innerHTML='<div class="arbc" style="text-align:center;padding:10px 0 4px"><div style="font-size:2rem">✓</div><p style="margin-top:6px"><b>'+T('C’est fait.','Done.')+'</b><br>'+
+   T('Le robot démarre sur ','The robot starts on ')+(j.done||[]).map(x=>esc(MKNM[x.sym]?T(MKNM[x.sym][0],MKNM[x.sym][1]):x.sym)).join(', ')+T(' dans les 5 minutes.',' within 5 minutes.')+((j.refused||[]).length?'<br><small>'+T('Refusé : ','Refused: ')+j.refused.map(x=>x.sym).join(', ')+'</small>':'')+'</p><button class="cta" onclick="shClose()">OK</button></div>';
+  RB=null;await load();route();}
+ catch(e){er.textContent=T('Hors ligne.','Offline.');b.disabled=false;b.textContent=T('Ajouter','Add');}}
+function mpkOff(sym){const n=esc(MKNM[sym]?T(MKNM[sym][0],MKNM[sym][1]):sym);
+ shOpen(T('Retirer le robot de ','Take the robot off ')+n,'<div class="arbc"><p>'+T('Le robot arrête de prendre de nouveaux trades sur ','The robot stops taking new trades on ')+n+T('. Un trade ouvert est géré jusqu’au bout.','. An open trade is managed to the end.')+'</p>'+
+  '<label style="font-size:.78rem;font-weight:700;color:var(--muted)">'+T('Mot de passe de trading du compte','The account’s trading password')+'</label><input id="mpkpw" type="password" autocomplete="current-password" style="margin-top:6px"><div class="er" id="mpker"></div>'+
+  '<button class="cta" id="mpkgo" onclick="mpkOffGo(\''+sym+'\')">'+T('Retirer','Take off')+'</button></div>');}
+async function mpkOffGo(sym){const er=$('mpker'),b=$('mpkgo'),pw=($('mpkpw')||{}).value||'';if(!pw){er.textContent=T('Entrez le mot de passe.','Enter the password.');return;}
+ b.disabled=true;try{const j=await robotPost('market_plug_set',{undo:sym,pwd:pw});if(!j.ok){er.textContent=ARBERR[j.err]||j.err;b.disabled=false;return;}
+  shClose();RB=null;await load();route();}catch(e){er.textContent=T('Hors ligne.','Offline.');b.disabled=false;}}
 const ARBERR={pwd:T('Mot de passe incorrect.','Wrong password.'),not_allowed:T('Ce robot n’est pas disponible pour ce compte.','This robot is not available for this account.'),already:T('Ce robot est déjà sur ce compte.','This robot is already on this account.'),no_bot:T('Ce compte n’a pas de robot à changer.','This account has no robot to change.')};
 async function arbGo(id){const b=$('arbgo'),er=$('arber'),pw=($('arbpw')||{}).value||'';if(!pw){er.textContent=T('Entrez le mot de passe.','Enter the password.');return;}
  b.disabled=true;b.textContent=T('Un instant…','One moment…');

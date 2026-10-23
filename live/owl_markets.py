@@ -84,10 +84,11 @@ def own_market(uid, rid):
     return m if (r.get("by_uid") == uid and m and m != "BTCUSD") else None
 
 
-def check(uid, sym):
-    """(allowed, reason) for one account and one market (common name)"""
+def check(uid, sym, rid=None):
+    """(allowed, reason) for one account and one market (common name) - for the robot running there, or for `rid`
+    (2026-10-22: the market picker asks "could THIS robot run on that market here?")"""
     B = base(sym).upper()
-    rid = robot_of(uid, B)
+    rid = rid or robot_of(uid, B)
     if uid in EXCLUDED:
         return False, "compte de reference: Bitcoin seulement"
     om = own_market(uid, rid)

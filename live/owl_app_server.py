@@ -22767,14 +22767,100 @@ def account_room(uid, PK=None, skip_sym=None):
     return {"balance": round(bal, 2), "floor": ROOM_FLOOR, "used": used, "room": round(bal - ROOM_FLOOR - used, 2), "items": items, "syms": syms}
 
 
+def _luck_pass(rid, sym):
+    """the robot's 100-draw luck test passed on this market (at most 5 random robots as good = 95th percentile)"""
+    c = _jload(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, sym)), {}) or {}
+    return c.get("percentile") is not None and float(c["percentile"]) >= 95 and int(c.get("seeds") or 0) >= 100
+
+
+def market_choices(user, body):
+    """2026-10-22 (owner: "each robot has its own list of markets (those which passed the random tests); two robots on
+    the same account should not trade the same symbol; the user chooses which allowed market(s) when adding"): for THIS
+    account, every robot it may add, each with its markets - passed / free / fits the room, with the reason when not"""
+    import owl_markets as _OMK
+    uid = user.get("id")
+    B = acct_robot_block(user, is_admin(user))
+    if not B.get("can"):
+        return {"ok": False, "err": "no_bot"}
+    PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    reg = robot_reg()
+    byid = {x["id"]: x for x in reg.get("robots") or []}
+    used = {"BTCUSD": _OMK.robot_of(uid)}
+    used.update({s: x.get("robot") for s, x in ((PK.get("market_plugs") or {}).get(uid) or {}).items()})
+    rm = account_room(uid, PK)
+    syms = rm.pop("syms", [])
+    passed = {}
+    for f in os.listdir(os.path.join(os.path.dirname(DIR), "study")):
+        if f.startswith("random_control_") and f.endswith(".json") and "_part" not in f:
+            rid, _, sym = f[len("random_control_"):-5].rpartition("_")
+            if rid in byid and sym.upper() != "BTCUSD" and _luck_pass(rid, sym):
+                passed.setdefault(rid, []).append(sym.upper())
+    out = []
+    for rid, mk in sorted(passed.items()):
+        r = byid[rid]
+        if not (is_admin(user) or r.get("public") or r.get("by_uid") == uid):
+            continue
+        L = []
+        for sym in sorted(mk):
+            ok, why = _OMK.check(uid, sym, rid)
+            on = used.get(sym) == rid
+            taken = used.get(sym) if used.get(sym) not in (None, rid) else None
+            need = fits = None
+            try:
+                R = robot_resolve(rid, byid)
+                pkg = robot_package(dict(r, resolved=R), reg.get("pieces") or [], "base", R.get("money") or "base")
+                need = _robot_need(uid, rid, sym, PKG._resolve("x", dict(PK.get("packages") or {}, x=pkg)), syms)[0]
+                fits = on or need <= rm["room"]
+            except ValueError as e:
+                ok, why = False, "pas encore possible en réel (%s)" % e
+            L.append({"sym": sym, "ok": ok, "why": why, "on": on, "taken_by": (byid.get(taken) or {}).get("name_fr") or taken,
+                      "need": need, "fits": fits})
+        out.append({"id": rid, "name_fr": r.get("name_fr") or rid, "name_en": r.get("name_en") or r.get("name_fr") or rid, "markets": L})
+    return {"ok": True, "room": rm, "robots": out}
+
+
+def market_plug_set(user, body):
+    """the account's own choice (password, like changing its robot): body {robot, syms: [...], pwd} adds the robot on
+    those markets - each must have passed the luck test, be allowed here, be free on this account and fit the room;
+    body {undo: SYM, pwd} takes the robot off that market"""
+    uid = user.get("id")
+    B = acct_robot_block(user, is_admin(user))
+    if not B.get("can"):
+        return {"ok": False, "err": "no_bot"}
+    pw = str(body.get("pwd") or "")
+    if not (pwd_ok(user, pw) or master_pwd_ok(pw)):
+        return {"ok": False, "err": "pwd"}
+    if body.get("undo"):
+        return _market_plug({"uid": uid, "sym": str(body["undo"]).upper(), "undo": 1})
+    rid = str(body.get("robot") or "")
+    ch = market_choices(user, {})
+    rb = next((x for x in ch.get("robots") or [] if x["id"] == rid), None)
+    if rb is None:
+        return {"ok": False, "err": "not_allowed"}
+    done, refused = [], []
+    for sym in [str(x).upper() for x in body.get("syms") or []][:6]:
+        m = next((x for x in rb["markets"] if x["sym"] == sym), None)
+        if m is None or not m["ok"] or m["taken_by"]:
+            refused.append({"sym": sym, "why": (m or {}).get("why") or ("pris par " + str(m["taken_by"]) if m and m["taken_by"] else "pas de test de chance réussi ici")})
+            continue
+        r = _market_plug({"uid": uid, "sym": sym, "robot": rid})      # re-checks the room after each one
+        (done if r.get("ok") else refused).append({"sym": sym, "why": r.get("err"), "need": r.get("need")})
+    return {"ok": bool(done), "done": done, "refused": refused}
+
+
 def market_plug_apply(user, body):
+    """owner: plug / unplug a robot on one market of any account (see _market_plug)"""
+    if not is_admin(user):
+        return {"ok": False, "err": "owner"}
+    return _market_plug(body)
+
+
+def _market_plug(body):
     """2026-10-22 (owner: "make sure the system can handle 2 or more robots on the same account ... start the newly
     random-test-passed robot on Mike's account"): put a robot on ONE market of an account, next to the account's own
     robot on Bitcoin. Owner only. The market bot <variant>@<SYM> then runs THAT robot's package (owl_package
     .market_package) - started by boot_all within 5 min once owl_markets.check allows it. body: uid, sym, robot | undo.
     Money = the robot's own tested money ('base' when it names none) - the money its test and luck test ran with."""
-    if not is_admin(user):
-        return {"ok": False, "err": "owner"}
     uid, sym, rid = str(body.get("uid") or ""), str(body.get("sym") or "").upper(), str(body.get("robot") or "")
     pp = os.path.join(DIR, "owl_packages.json")
     PK = json.load(open(pp, encoding="utf-8"))
@@ -27824,7 +27910,7 @@ class H(BaseHTTPRequestHandler):
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
-                                              "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo", "market_plug_apply",
+                                              "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
@@ -27842,7 +27928,7 @@ class H(BaseHTTPRequestHandler):
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
-                       "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply,
+                       "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
