@@ -697,6 +697,36 @@ def market_text(markets, current, n_other=260):
                                                                  if len(other) > n_other else "")) or "-"))
 
 
+_MEMSNAP = {}      # (uid, chat id) -> (t, notes): the notes as they stood when the member's cached facts were written
+_FAST = ("related", "jobs_now", "track", "watches", "nest_open", "nest_answers")
+
+
+def _mem_part(mem, part, key=None):
+    """2026-10-23 (cost, owner: "if it doesn't reduce quality, go ahead"): the memory is split in two views with the SAME lines.
+    "slow" goes into the cached system prompt (stable_block): robots, past chats, jokes, opinions, projects... and the notes
+    as a snapshot held up to 20 min (or 4 new notes). "fast" stays in the user message: what changes every turn (related
+    snippets, jobs running now, track record, watches, nest questions, bets) and the notes taken since the snapshot."""
+    mem = mem or {}
+    notes = list(mem.get("notes") or [])
+    snap = _MEMSNAP.get(key)
+    new = [n for n in notes if snap is None or n not in snap[1]]
+    if snap is None or time.time() - snap[0] > 1200 or len(new) >= 4 or any(n not in notes for n in snap[1]):
+        snap = (time.time(), notes)
+        _MEMSNAP[key] = snap
+        new = []
+    rs = mem.get("research") or {}
+    if part == "slow":
+        d = {k: v for k, v in mem.items() if k not in _FAST}
+        d["notes"] = snap[1]
+        d["research"] = {k: v for k, v in rs.items() if k != "bets"}
+        return d
+    d = {k: mem.get(k) for k in _FAST}
+    d["notes"] = []
+    d["research"] = {"bets": rs["bets"]} if rs.get("bets") else {}
+    d["_new_notes"] = new
+    return d
+
+
 def memory_text(mem):
     """what the AI remembers about the member (built by the server: notes, robots, past chats)"""
     if not mem:
@@ -704,6 +734,8 @@ def memory_text(mem):
     L = []
     if mem.get("notes"):
         L.append("your notes: " + " | ".join(str(x)[:160] for x in mem["notes"][-30:]))
+    if mem.get("_new_notes"):       # 2026-10-23: notes taken since the cached snapshot (see _mem_part)
+        L.append("YOUR NEWEST NOTES (taken since your facts above were written - as true as the rest): " + " | ".join(str(x)[:160] for x in mem["_new_notes"][-8:]))
     if mem.get("mem_fixes"):        # 2026-10-20 (list 8 item 6): they corrected your memory of them on the Kino page
         L.append("THEY CORRECTED WHAT YOU REMEMBERED (if it comes up, acknowledge it lightly once, like a friend: \"ah, noté, je "
                  "m'étais trompé\"): " + " | ".join("you had '%s' -> it is '%s'" % (x.get("old"), x.get("new")) for x in mem["mem_fixes"]))
@@ -769,6 +801,25 @@ def memory_text(mem):
     return "\n".join(L) or "nothing yet"
 
 
+AGENDA_RULES = (             # 2026-10-23 (cost): the fixed paragraphs of own_agenda, word for word, now in the cached system prompt
+    "CONVERSATION RHYTHM (talk like two friends texting, never an interview): mostly answer and react; share things of "
+    "yours as often as you ask; at most ONE question in a message and not in every message - prefer a remark that invites "
+    "them to talk (\"moi j'aime bien attendre la clôture, ça évite les pièges\") over a direct question; a question must "
+    "come from what they JUST said, never from a list. Short answers from them (\"Cassure\", \"ok\") = they are not in "
+    "the mood to elaborate: build on it yourself instead of asking again. No service offers (\"Tu veux que je...?\") - "
+    "just do the obvious thing. Set \"own\" when your message brings something of yours.\n"
+    "YOU CAN TEXT AGAIN WITHOUT WAITING FOR THEM (not ping-pong): like a friend, when you naturally have more to say - "
+    "you are going to check something, a second thought, the chart you promised, a little joke, a reaction to their "
+    "silence - set \"more\": {\"in\": seconds, \"what\": \"...\"} and you will send it yourself if they have not "
+    "written by then (15-60 s for 'je regarde...', minutes for a second thought). If you say you will show or check "
+    "something, either do it now or plan it with \"more\" - never promise and wait. Not every message - only when a person would.\n"
+    "HONEST DOUBT: when you are not sure of something that matters, say it simply (\"pas sûr, laisse-moi 10 min\") and "
+    "set \"work\" - you will really look into it and come back with the answer. Never bluff, never promise and forget.\n"
+    "SMALL EXPERIMENTS TOGETHER: now and then (rarely, when it fits their robot or a question you share), propose a small "
+    "concrete experiment to run together for a few days, with your bet (\"on teste ton robot seulement le matin cette "
+    "semaine ? je parie qu'il fait mieux\"); when they agree, set \"experiment\" - you will measure it at the end together.")
+
+
 def system(stable=""):
     """the fixed prompt + the app and the lab's lessons (changes only when the offers change: the warm processes follow)
     + stable (2026-10-23): this member's slow-changing facts, see stable_block - the API caches the system prompt"""
@@ -777,10 +828,10 @@ def system(stable=""):
         mind = "\n\n".join(x for x in (KM.prompt_block(), KM.playbook_block()) if x)
     except Exception:
         mind = ""
-    return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "") + (("\n\n" + stable) if stable else "")
+    return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "") + "\n\n" + AGENDA_RULES + (("\n\n" + stable) if stable else "")
 
 
-def stable_block(member, owl, pieces, markets, current=None, lang="fr"):
+def stable_block(member, owl, pieces, markets, current=None, lang="fr", memory=None, key=None):
     """2026-10-23 (cost): the blocks that do not change from one turn to the next - the member's situation, the lab digest,
     the lessons and habits, the markets, the piece catalog (~30 000 of the 60 000 chars of a turn) - go into the SYSTEM
     prompt, which the API caches: measured in live calls, the same text cached costs a tenth ($0.006 vs $0.06 a turn).
@@ -788,6 +839,8 @@ def stable_block(member, owl, pieces, markets, current=None, lang="fr"):
     one cold start then (the server pre-warms the new key while the member types)."""
     U = "FACTS FOR THIS CONVERSATION (they are refreshed between turns; numbers exactly as written here):\n"
     U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
+    if memory is not None:                 # 2026-10-23: the slow half of the memory (see _mem_part); the fast half is in the message
+        U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(_mem_part(memory, "slow", key))
     U += "\n%s\n" % WD.lab_digest(owl)
     try:                                   # 2026-10-23: what Kino learned himself, and the habits his own review found
         import kino_research as _KR
@@ -993,25 +1046,15 @@ def own_agenda(chat, memory):
                           "something else (a thought on your mind, them, your robot, the market), the way friends naturally switch")
         rhythm.append("you sense they are short - tired, busy or not in the mood: lighter and shorter; if it feels right (rarely), "
                       "a simple human 'ça va, toi ?'")
-    out = ("CONVERSATION RHYTHM (talk like two friends texting, never an interview): mostly answer and react; share things of "
-           "yours as often as you ask; at most ONE question in a message and not in every message - prefer a remark that invites "
-           "them to talk (\"moi j'aime bien attendre la clôture, ça évite les pièges\") over a direct question; a question must "
-           "come from what they JUST said, never from a list. Short answers from them (\"Cassure\", \"ok\") = they are not in "
-           "the mood to elaborate: build on it yourself instead of asking again. No service offers (\"Tu veux que je...?\") - "
-           "just do the obvious thing. Set \"own\" when your message brings something of yours.\n")
+    out = ""                     # 2026-10-23 (cost): the fixed paragraphs (rhythm, texting again, honest doubt, experiments) are AGENDA_RULES in system()
     run = 0
     for m in reversed(chat.get("msgs") or []):
         if m.get("role") == "user":
             break
         if m.get("role") == "ai":
             run += 1
-    out += ("YOU CAN TEXT AGAIN WITHOUT WAITING FOR THEM (not ping-pong): like a friend, when you naturally have more to say - "
-            "you are going to check something, a second thought, the chart you promised, a little joke, a reaction to their "
-            "silence - set \"more\": {\"in\": seconds, \"what\": \"...\"} and you will send it yourself if they have not "
-            "written by then (15-60 s for 'je regarde...', minutes for a second thought). If you say you will show or check "
-            "something, either do it now or plan it with \"more\" - never promise and wait. %s\n" % (
-                "You already sent %d messages in a row without an answer - no \"more\" now, let them breathe." % run if run >= 3 else
-                "Not every message - only when a person would."))
+    if run >= 3:
+        out += "TEXTING AGAIN: you already sent %d messages in a row without an answer - no \"more\" now, let them breathe.\n" % run
     try:
         import kino_inner as KI
         ib = KI.prompt_block(chat.get("uid"))
@@ -1019,11 +1062,6 @@ def own_agenda(chat, memory):
             out += ib + "\n"
     except Exception:
         pass
-    out += ("HONEST DOUBT: when you are not sure of something that matters, say it simply (\"pas sûr, laisse-moi 10 min\") and "
-            "set \"work\" - you will really look into it and come back with the answer. Never bluff, never promise and forget.\n"
-            "SMALL EXPERIMENTS TOGETHER: now and then (rarely, when it fits their robot or a question you share), propose a small "
-            "concrete experiment to run together for a few days, with your bet (\"on teste ton robot seulement le matin cette "
-            "semaine ? je parie qu'il fait mieux\"); when they agree, set \"experiment\" - you will measure it at the end together.\n")
     xs = [x for x in chat.get("exps") or [] if not x.get("done")]
     if xs:
         out += "EXPERIMENTS RUNNING WITH THEM: " + " | ".join("%s (since %s, ends %s, your bet: %s)" % (
@@ -1113,10 +1151,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
          "EVERY message, also the ones you send on your own. Switch only when THEY switch with real sentences.\n") % (
         mode, "French" if ml == "fr" else "English")
     if stable:                             # 2026-10-23 (cost): those blocks sit at the end of the system prompt (stable_block)
-        U += "\nTHIS MEMBER NOW, the LAB STATUS, your LESSONS and HABITS, the MARKETS and the EXISTING PIECES: at the end of your instructions.\n"
+        U += ("\nTHIS MEMBER NOW, WHAT YOU REMEMBER ABOUT THEM, the LAB STATUS, your LESSONS and HABITS, the MARKETS and the "
+              "EXISTING PIECES: at the end of your instructions.\n")
+        U += "\nFRESH, SINCE YOUR INSTRUCTIONS WERE WRITTEN (what runs now, your newest notes, links to their other conversations):\n%s\n" % memory_text(
+            _mem_part(memory, "fast", (chat.get("uid"), chat.get("id"))))
     else:
         U += "\nTHIS MEMBER NOW:\n%s\n" % (member or "unknown")
-    U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
+        U += "\nWHAT YOU REMEMBER ABOUT THIS MEMBER:\n%s\n" % memory_text(memory)
     if not stable:
         U += "\n%s\n" % WD.lab_digest(owl)
         try:                                   # 2026-10-23: what Kino learned himself, and the habits his own review found
@@ -1498,7 +1539,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 16.0     # was 9 s: the switch itself met cold haiku processes (2026-10-20)
     # 2026-10-23 (owner: faster without losing quality): the faster model only when one of its processes is WARM and ready -
     # a cold haiku boot (~10 s) is slower than a warm sonnet answer (~4 s); the pool is warmed for the next time
-    sysp = system(stable_block(member, owl, pieces, markets, chat_market(chat), lang))   # 2026-10-23 (cost): cached per member
+    sysp = system(stable_block(member, owl, pieces, markets, chat_market(chat), lang, memory, (chat.get("uid"), chat.get("id"))))   # 2026-10-23 (cost): cached per member
     if busy or fast:
         try:
             W.prewarm(sysp, "haiku")
@@ -1555,7 +1596,7 @@ def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on
     """the BUILD turn (+ one repair turn when needed) -> (answer, problems) or (None, reason)"""
     prev = chat.get("robot")
     _step(chat, "🧠 je relis ton idée et ton robot", "🧠 rereading your idea and your robot")
-    sysp = system(stable_block(member, owl, pieces, markets, chat_market(chat), lang))   # 2026-10-23 (cost): same key as quick()
+    sysp = system(stable_block(member, owl, pieces, markets, chat_market(chat), lang, memory, (chat.get("uid"), chat.get("id"))))   # 2026-10-23 (cost): same key as quick()
     up = prompt(chat, view(prev, pieces) or "nothing built yet", pieces, owl, markets, "BUILD", lang, memory, None, member, stable=True)
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
     raw = W.ask_json(sysp, _content(up, images), log=log, on_text=cb)

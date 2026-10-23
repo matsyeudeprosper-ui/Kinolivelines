@@ -16126,10 +16126,11 @@ def _chat_prewarm(user, c, ctx=None):
                 st = x[1]
             else:
                 _STABLE[uid] = (time.time(), "")             # taken: a second caller meanwhile warms nothing
-                ctx = (_chat_pieces(user), _ai_owl(), _chat_markets(user), None, _chat_member(user, c or {}))
+                ctx = (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, (c or {}).get("id")), _chat_member(user, c or {}))
         if ctx is not None:
-            pieces, owl, markets, _, member = ctx
-            st = _rc().stable_block(member, owl, pieces, markets, _rc().chat_market(c or {}), (c or {}).get("lang") or "fr")
+            pieces, owl, markets, memory, member = ctx
+            st = _rc().stable_block(member, owl, pieces, markets, _rc().chat_market(c or {}), (c or {}).get("lang") or "fr",
+                                    memory, (user.get("id"), (c or {}).get("id")))
             _STABLE[uid] = (time.time(), st)
         if st:
             _rc().prewarm(st)
