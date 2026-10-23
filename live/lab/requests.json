@@ -121,7 +121,7 @@
    },
    "built_date": "2026-10-05",
    "built_commit": "96dbe40",
-   "c_nights": 2
+   "c_nights": 0
   },
   {
    "id": "cap_rr",
@@ -345,7 +345,9 @@
    "what_en": "Since 10 October the real accounts refuse entries against the pullback direction. Add to the nightly check: how many entries a day the real accounts took since the 10th, and how many the test takes with this filter on the same days; and, if possible, rebuild the test's filter with the same memory as the robot. Nothing changes when the filter is off.",
    "why_fr": "Ce soir, avec ce filtre, le test ne garde qu'un trade sur quatre (65 au lieu de 276 en 42 jours), alors que les vrais comptes sont passés d'environ 6 à 4 entrées par jour. Tant que les deux ne filtrent pas pareil, aucune idée testée « avec le filtre » ne décrit les vrais comptes.",
    "why_en": "Tonight, with this filter, the test keeps only one trade in four (65 instead of 276 in 42 days), while the real accounts went from about 6 to 4 entries a day. Until both filter alike, no idea tested 'with the filter' describes the real accounts.",
-   "status": "open"
+   "status": "open",
+   "build_attempts": 1,
+   "build_error": "périmètre : live/chart_multi/GBPUSD_htf.json.tmp, study/luck/or-faux-depart-vente-2_XAUUSD.claims/7"
   },
   {
    "id": "loss_wait_day",
@@ -499,6 +501,17 @@
    "what_en": "The day watch has not woken since 18 October 08:10 UTC: every pass logs 'the night is working', because the file that says 'the night session is running' (lab/night.lock) is not removed. It should be removed at the end of each night session, and treated as stale when it is more than 4 hours old. Nothing else changes.",
    "why_fr": "Deux jours de vrais trades, dont deux pertes lundi sur tous les comptes filtrés, n'ont été vus par personne pendant la journée. La veille est mes yeux de jour ; sans elle, je ne lis les trades que la nuit.",
    "why_en": "Two days of real trades, including two losses on Monday on every filtered account, were seen by no one during the day. The watch is my daytime eyes; without it, I only read the trades at night.",
+   "status": "open"
+  },
+  {
+   "id": "pile_field_streak",
+   "date": "2026-10-22",
+   "title_fr": "Permettre une pile sur « combien de pertes de suite avant ce trade »",
+   "title_en": "Allow a pile on \"how many losses in a row before this trade\"",
+   "what_fr": "Un nouveau fait de trade pour les piles, losses_before (0 à 10) : le nombre de trades perdus de suite juste avant celui-ci, sur le journal dédoublonné (comme prev_win, mais compté). Mêmes opérateurs que gap_min. Rien d'autre ne change ; une pile qui ne s'en sert pas donne le même résultat.",
+   "what_en": "A new trade fact for piles, losses_before (0 to 10): how many trades in a row were lost just before this one, on the deduplicated journal (like prev_win, but counted). Same operators as gap_min. Nothing else changes; a pile that does not use it gives the same result.",
+   "why_fr": "Le trade pris après exactement deux pertes de suite gagne 4 fois sur 19 (-45 $) ; après une seule perte, 1 sur 2 (+8 $) ; après trois, 10 sur 15 (+13 $). Trop peu de trades pour une règle, mais une pile permettrait de suivre si « la deuxième perte » annonce une mauvaise passe. Je m'attends à ce que l'écart tienne au-delà de 30 trades.",
+   "why_en": "The trade taken after exactly two losses in a row wins 4 times in 19 (-$45); after one loss, 1 in 2 (+$8); after three, 10 of 15 (+$13). Too few trades for a rule, but a pile would let us follow whether \"the second loss\" signals a bad patch. I expect the gap to hold past 30 trades.",
    "status": "open"
   }
  ]
