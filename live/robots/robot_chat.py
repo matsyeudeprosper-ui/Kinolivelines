@@ -1780,7 +1780,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     if ON_CLAIM and not event and _CLAIM_RX.search(_say or ""):            # 2026-10-23: a claimed result is audited after sending
         try:
             import threading as _th
-            _th.Thread(target=ON_CLAIM, args=(chat.get("id"), _say, sysp, lang), daemon=True).start()
+            _th.Thread(target=ON_CLAIM, args=(chat.get("id"), _say, sysp, lang, _pt), daemon=True).start()   # _pt: the fresh facts he answered from
         except Exception:
             pass
     return {"say": _say, "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK"))), "remember": remember_of(raw),

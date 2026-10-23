@@ -16660,7 +16660,7 @@ def _hook_steps():
         pass
 
 
-def _on_claim(cid, say, sysp, lang="fr"):
+def _on_claim(cid, say, sysp, lang="fr", up=""):
     """2026-10-23 (watch): Kino told the owner the lab had seen 'l'Owl de nuit' finish positive on both halves of a test -
     no such result existed. After a reply that claims a measured result, ONE call with his own (cached) system prompt as
     the facts judges every such claim; when one is unsupported it writes the short correction a person sends right after
@@ -16668,11 +16668,17 @@ def _on_claim(cid, say, sysp, lang="fr"):
     claim in the test, so the judge is the same model with the same facts. Log: robots/claims.log."""
     try:
         W = _rc().W if hasattr(_rc(), "W") else __import__("robot_warm")
-        v = W.ask_json(sysp, "FACT CHECK OF YOUR OWN MESSAGE. You just sent this to the member:\n<<<\n%s\n>>>\nList every claim in it about a "
+        # 2026-10-23 21:39: the judge flagged "creux deux fois plus petit" / "les deux moitiés" as unsupported although the TEST RESULT
+        # card he had just read carried dip, first_half and later_half - it only saw the system prompt. It now gets the message he
+        # answered from (the conversation with its TEST RESULT cards, RIGHT NOW, the lab lines) as fresh facts too.
+        v = W.ask_json(sysp, ("THE MESSAGE YOU ANSWERED FROM (your fresh facts - TEST RESULT cards with net, trades, dip, first_half, "
+                              "later_half, the lab lines, RIGHT NOW):\n%s\n\n" % str(up or "")[-16000:]) +
+                       "FACT CHECK OF YOUR OWN MESSAGE. You just sent this to the member:\n<<<\n%s\n>>>\nList every claim in it about a "
                        "MEASURED outcome (a test, a luck test, a backtest, a result, a drawdown, 'the lab saw', 'finished positive', "
                        "'both halves') and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
                        "your instructions and in this message. An idea, a plan, a guess said as a guess, or a market comment is not a "
-                       "claim. Answer ONE JSON object only: {\"unsupported\": [\"claim as written\", ...], \"say\": null or, when a claim "
+                       "claim. A figure that can be read or computed from a TEST RESULT card above (a dip half as deep, a half of the test "
+                       "flat) IS supported. Answer ONE JSON object only: {\"unsupported\": [\"claim as written\", ...], \"say\": null or, when a claim "
                        "is unsupported, the short correction you send right after - one or two spoken sentences in %s, what you actually "
                        "know (an idea, not measured yet), no excuse, never 'Oups', no 'as an AI'}."
                        % (say, "French" if lang != "en" else "English"), models=("sonnet",), timeout=90, warm=False)
