@@ -104,6 +104,7 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .mpk-m input{width:18px!important;height:18px;margin:0!important;padding:0!important;flex:none;accent-color:var(--accent,#3b82f6)}.mpk-m{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:6px 0;border-top:1px solid rgba(255,255,255,.06);cursor:pointer}.mpk-m span{font-weight:700}.mpk-m small{flex-basis:100%;margin-left:26px;color:var(--muted,#8a9bb0);font-size:.74rem}.mpk-m.off{opacity:.55;cursor:default}
 .lh-rm{margin:10px 0 0;font-size:.86rem}.lh-rm small{display:block;color:rgba(214,230,243,.6);font-size:.74rem;margin-top:2px}
 .lh-mk{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:10px 0 0;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.05);font-size:.86rem}.lh-mk span{color:rgba(214,230,243,.7);font-weight:700}.lh-mk b{flex:1;min-width:0}.lh-mk em{font-style:normal;font-size:.78rem;color:rgba(214,230,243,.7)}.lh-mk em.pos{color:var(--up-soft,#5fe3a1)}
+.lh-pf{flex-basis:100%;margin-top:4px;color:rgba(214,230,243,.7);font-size:.76rem;line-height:1.4}.lh-pf b.pos{color:var(--up-soft,#5fe3a1)}.lh-pf b.neg{color:var(--down-soft,#ff9a9a)}
 .lh .lh-ico{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(96,165,250,.35),rgba(141,240,187,.18));border:1px solid rgba(255,255,255,.16);color:#e6f1ff}.lh .lh-ico svg{width:28px;height:28px}
 .lh .lh-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(0,0,0,.16)}
 .lh .lh-st div{padding:11px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.08)}.lh .lh-st div:first-child{border-left:0}
@@ -1056,7 +1057,10 @@ const c=A.current||{},pd=A.pending,owl=c.id==='owl',t=(A.choices||[]).find(x=>x.
   // 2026-10-22 (owner: "2 or more robots on the same account"): the robots plugged on other markets of this account
   (A.markets||[]).map(m=>'<div class="lh-mk"><span>+ '+esc(MKNM[m.sym]?T(MKNM[m.sym][0],MKNM[m.sym][1]):m.sym)+'</span><b>'+esc(T(m.name_fr,m.name_en))+'</b><em class="'+(m.ok&&m.alive?'pos':'')+'">'+
     (!m.ok?T('en attente','waiting')+' · '+esc(m.why||''):m.alive?T('en service','running'):T('démarre…','starting…'))+'</em>'+
-    (A.can?'<button class="mpk-off" onclick="mpkOff(\''+m.sym+'\')">'+T('Retirer','Take off')+'</button>':'')+'</div>').join('')+
+    (A.can?'<button class="mpk-off" onclick="mpkOff(\''+m.sym+'\')">'+T('Retirer','Take off')+'</button>':'')+
+    // 2026-10-23 (owner, upgrade 7): the proof line - real money since the robot went on, next to what its test promised per 30 days
+    (m.proof&&m.proof.since?'<small class="lh-pf">'+T('Réel depuis le ','Real since ')+String(m.proof.since).slice(8,10)+'/'+String(m.proof.since).slice(5,7)+' : <b class="'+((m.proof.real_net||0)>=0?'pos':'neg')+'">'+money(m.proof.real_net||0)+'</b> · '+(m.proof.real_n||0)+' trade'+((m.proof.real_n||0)>1?'s':'')+
+      (m.proof.test_per30!=null?' · '+T('le test disait ','the test said ')+'<b>'+money(m.proof.test_per30,0)+'</b>'+T(' par 30 j',' per 30 d')+(m.proof.test_dip!=null?T(', pire creux −$',', worst dip −$')+Math.round(m.proof.test_dip):''):'')+'</small>':'')+'</div>').join('')+
   (A.can?'<button class="mpk-add" onclick="mpkSh()">+ '+T('Ajouter un robot sur un autre marché','Add a robot on another market')+'</button>':'')+
   // 2026-10-22 (owner): a robot is added only if its worst case fits - the room left after every robot's worst case
   (A.room&&A.room.balance?'<div class="lh-rm"><span>'+(A.room.room>0?T('Place pour un autre robot : ','Room for one more robot: ')+'<b class="pos">$'+Math.floor(A.room.room)+'</b>':T('Plus de place pour un autre robot','No room for another robot'))+'</span><small>'+
@@ -1294,6 +1298,13 @@ function cumOf(c){return [0].concat((c||[]).map(q=>+q[1]));}
 // (robot-...) are not pieces a member picks, so they are left out of the Money list.
 const PORD={live:0,tested:1,new:2,pending:3,to_build:4};
 function pList(t){return pOf(t).filter(p=>String(p.id).indexOf('robot-')!==0).slice().sort((a,b)=>(PORD[a.status]??9)-(PORD[b.status]??9)||((b.used_by||[]).length-(a.used_by||[]).length)||String(T(a.name_fr,a.name_en)).localeCompare(T(b.name_fr,b.name_en)));}
+function betsCard(KB){const pct=KB.n?Math.round(100*KB.right/KB.n):0,ok=KB.n>=20&&pct>=55;
+ let h='<div class="card" style="padding:16px"><div class="eyebrow">'+T('Les paris de Kino','Kino’s calls')+'</div><h3 style="margin:6px 0 2px">'+KB.right+' '+T('justes sur ','right out of ')+KB.n+' <small style="color:var(--muted)">('+pct+' %)</small></h3>'+
+  '<p class="sub">'+(ok?T('Au-dessus du hasard : Kino peut dire ses intuitions à voix haute.','Above chance: Kino may say his hunches out loud.'):T('Pas encore au-dessus du hasard (il faut 55 % sur 20 paris) : Kino garde ses intuitions pour lui et continue de compter.','Not above chance yet (55 % over 20 bets): Kino keeps his hunches to himself and keeps score.'))+'</p>'+
+  (KB.by&&Object.keys(KB.by).length?'<p class="sub">'+Object.entries(KB.by).map(([k,v])=>esc(k)+' '+esc(v)).join(' · ')+'</p>':'')+'</div>';
+ h+='<div class="card" style="padding:4px 16px;margin-top:12px">'+(KB.last||[]).map(b=>'<div class="row"><span class="rl"><b>'+esc(b.nm||b.sym||'')+'</b><small>'+esc(b.text||'')+'</small></span><span class="rs '+(b.right?'on':'pause')+'">'+(b.right?T('juste','right'):T('raté','wrong'))+'</span></div>').join('')+'</div>';
+ if((KB.tests||[]).length)h+='<div class="grp">'+T('Ses paris sur vos tests','His guesses on your tests')+'</div><div class="card" style="padding:4px 16px">'+KB.tests.map(x=>'<div class="row"><span class="rl"><b>'+esc(x.label||'')+'</b><small>'+(x.bet==='positive'?T('il pariait positif','bet positive'):T('il pariait négatif','bet negative'))+(x.net!=null?' · '+money(x.net,0):'')+'</small></span><span class="rs '+(x.right?'on':'pause')+'">'+(x.right?T('juste','right'):T('raté','wrong'))+'</span></div>').join('')+'</div>';
+ return h;}
 function piecesCat(){const types=SLOTS.map(s=>[SLOTT[s[0]],s[1],s[2],s[0]]);
  return '<div class="pg6">'+types.map(t=>{const L=pList(t[0]);if(!L.length)return '';const live=L.filter(p=>p.status==='live').length;
    return '<button class="pt6" onclick="pType(\''+t[0]+'\')"><span class="i">'+pic(t[2])+'</span><b>'+t[1]+'</b><span class="n">'+L.length+'</span><small>'+(live?live+' '+T('en service','in service'):T('aucune en service','none in service'))+'</small></button>';}).join('')+'</div>'+
@@ -1353,6 +1364,8 @@ function builderTop(){const B=BLD();
  FDS.pieces=[T('Les pièces','The pieces'),()=>piecesCat()];
  let wk='<div class="grp">'+T('L\'atelier','The workshop')+'</div><div class="fds two">'+fd('pieces',ICO('#8fc6ff',pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')),T('Les pièces','The pieces'),T('Entrées, filtres, stops, sorties, rattrapage, argent','Entries, filters, stops, exits, catch-up, money'),NP);
  if(PL.length){FDS.plugs=[T('Où ils tournent','Where they run'),()=>plugsCard(PL)];wk+=fd('plugs',ICO('#2ecc71',pic('M12 2v6M8 4v4M16 4v4M6 8h12v4a6 6 0 0 1-12 0zM12 18v4')),T('Où ils tournent','Where they run'),T('Un robot, son argent et un marché par compte','One robot, its money and a market per account'),PL.length);}
+ // 2026-10-23 (owner, upgrade 5): Kino's calls - his market hunches and test guesses, checked, visible, honest
+ const KB=B.kino_bets||{};if(KB.n){FDS.bets=[T('Les paris de Kino','Kino’s calls'),()=>betsCard(KB)];wk+=fd('bets',ICO('#e8c55a',pic('M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z')),T('Les paris de Kino','Kino’s calls'),T('Ses intuitions, vérifiées 2 h après','His hunches, checked 2 h later'),KB.right+'/'+KB.n);}
  wk+='</div>';if(B.can_create||MY.length)h+=wk;
  return h;}
 // a robot as a fund card: who it is, what it made on past data (curve), four figures, and the pieces that are its own

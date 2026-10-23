@@ -30,6 +30,7 @@ sys.path.insert(0, HERE)
 FACTORY = os.path.join(HERE, "kino_factory.json")
 SCOUT = os.path.join(HERE, "kino_scout.json")
 REVIEW = os.path.join(HERE, "kino_selfreview.json")
+LESSONS = os.path.join(HERE, "kino_lessons.json")      # 2026-10-23: one line per (robot, market) verdict, written by Kino
 RESULTS = os.path.join(HERE, "results")
 CHATS = os.path.join(HERE, "chats")
 DRAWS = 100
@@ -265,7 +266,7 @@ def self_review(hours=24):
     """Kino's own slips in the last day of conversations (owner's and members', hidden test copies excluded)"""
     import robot_chat as RCx
     now = time.time()
-    items = {"numbers": [], "late_promises": [], "twice": [], "permission": [], "menu": []}
+    items = {"numbers": [], "late_promises": [], "twice": [], "permission": [], "menu": [], "corrections": []}
     try:
         for ln in open(os.path.join(HERE, "numcheck.log"), encoding="utf-8").read().splitlines()[-200:]:
             items["numbers"].append(ln[:160])
@@ -287,6 +288,8 @@ def self_review(hours=24):
                     seen[k] = seen.get(k, 0) + 1
                     if seen[k] == 2:
                         items["twice"].append(sn[:140])
+            if CORR.search(str(m["text"])):          # 2026-10-23 (owner): a correction = a fact said without checking
+                items["corrections"].append(str(m["text"])[:140])
             last = re.split(r"(?<=[.!?])\s+", str(m["text"]).strip())[-1]
             if last.endswith("?") and RCx.PERMISSION.search(last):
                 items["permission"].append(last[:140])
@@ -308,6 +311,8 @@ def self_review(hours=24):
         habits.append("%d promise(s) were late by more than 30 min - keep the time you give" % len(items["late_promises"]))
     if items["numbers"]:
         habits.append("%d figure(s) you could not point to were cut from quick replies - check before you say" % len(items["numbers"]))
+    if items["corrections"]:
+        habits.append("you corrected yourself %d time(s) - name the fact and where you read it in your inner voice BEFORE you say it" % len(items["corrections"]))
     fr = []
     if items["twice"]:
         fr.append("il a dit la même phrase deux fois (%d fois) - dire une chose une seule fois" % len(items["twice"]))
@@ -319,12 +324,109 @@ def self_review(hours=24):
         fr.append("%d promesse(s) en retard de plus de 30 min - tenir l'heure donnée" % len(items["late_promises"]))
     if items["numbers"]:
         fr.append("%d chiffre(s) impossibles à justifier retirés de ses réponses rapides - vérifier avant de dire" % len(items["numbers"]))
+    if items["corrections"]:
+        fr.append("il s'est corrigé %d fois - nommer le fait et où il l'a lu dans sa voix intérieure AVANT de le dire" % len(items["corrections"]))
     R = {"t": int(now), "items": items, "habits": habits, "habits_fr": fr}
     H = _load(REVIEW, {"days": []})
     H["days"] = (H.get("days") or [])[-29:] + [R]
     H["last"] = R
     _save(REVIEW, H)
     return R
+
+
+CORR = re.compile(r"(\*\s*petite correction|\*\s*small correction|one more fix|quick fix:|that was my slip|my slip|je me suis (planté|trompé)|"
+                  r"I mixed (them|it) up|j'ai mélangé|correction\s*:)", re.I)
+
+
+def habits_block(lang="fr"):
+    """2026-10-23 (owner, upgrade 4): last night's self-review, read back by Kino the next day - the loop was open"""
+    R = (_load(REVIEW, {}) or {}).get("last") or {}
+    H = R.get("habits_fr" if lang != "en" else "habits") or []
+    if not H or time.time() - float(R.get("t") or 0) > 3 * 86400:
+        return ""
+    return ("YOUR HABITS TO FIX TODAY (found by YOUR OWN review of yesterday's messages - fix them without mentioning the review): "
+            + " | ".join(H[:4]))
+
+
+def _lesson_key(f):
+    return f[:-5]
+
+
+def own_lessons(max_new=8):
+    """2026-10-23 (owner, upgrade 2: "let him write his own lessons"): one line per (robot, market) that reached a verdict - luck
+    test passed or failed, or a test that lost on both halves - written by Kino himself from the numbers (one small model call,
+    under the background budget; a plain mechanical line when the budget refuses). Never rewritten once written."""
+    import robot_warm as W
+    R = _reg()
+    P = {p["id"]: p for p in R.get("pieces") or []}
+    RB = {r["id"]: r for r in R.get("robots") or []}
+    owl = (RB.get("owl") or {}).get("parts") or {}
+    Lz = _load(LESSONS, {})
+    new = 0
+    for f in sorted(os.listdir(RESULTS)) if os.path.isdir(RESULTS) else []:
+        if not f.endswith(".json") or new >= max_new:
+            continue
+        rid = f[:-5].split("@")[0]
+        sym = f[:-5].split("@")[1] if "@" in f else "BTCUSD"
+        key = _lesson_key(f)
+        if rid == "owl" or key in Lz:
+            continue
+        j = _load(os.path.join(RESULTS, f), {}) or {}
+        r = j.get("robot") or {}
+        if r.get("net") is None:
+            continue
+        c = _load(os.path.join(STUDY, "random_control_%s_%s.json" % (rid, sym)), None)
+        verdict = None
+        if c and c.get("percentile") is not None:
+            bt = c.get("beats") if c.get("beats") is not None else sum(1 for x in c.get("nets") or [] if x >= float((c.get("real") or {}).get("net") or 0))
+            verdict = ("PASSED the luck test (%s of %s random robots as good)" % (bt, c.get("seeds"))) if (c.get("seeds") or 0) >= 100 and bt <= 5 else \
+                      ("FAILED the luck test (%s random robots did as well)" % bt)
+        elif (r.get("first_half") or 0) < 0 and (r.get("later_half") or 0) < 0:
+            verdict = "lost on BOTH halves of its test"
+        elif float(r["net"]) <= 0:
+            verdict = "lost over the whole test"
+        if not verdict:
+            continue
+        parts = j.get("parts") or {}
+        diff = []
+        for kk in ("entry", "stop", "exit", "recovery", "money"):
+            if parts.get(kk) and parts.get(kk) != owl.get(kk):
+                diff.append("%s: %s" % (kk, ((P.get(parts[kk]) or {}).get("plain_en") or parts[kk])[:100]))
+        of, nf = set(owl.get("filters") or []), set(parts.get("filters") or [])
+        if of - nf:
+            diff.append("without the Owl's " + ", ".join(sorted((P.get(x) or {}).get("name_en") or x for x in of - nf)))
+        if nf - of:
+            diff.append("filters added: " + "; ".join(((P.get(x) or {}).get("plain_en") or x)[:80] for x in sorted(nf - of)))
+        facts = ("robot '%s' on %s: %s. Result %+.2f $ over %s trades (win rate %s, worst dip %s $, halves %+.2f / %+.2f; the Owl there %+.2f $). "
+                 "Verdict: %s." % ((RB.get(rid) or {}).get("name_fr") or rid, sym, "; ".join(diff) or "the Owl's pieces", float(r["net"]), r.get("trades"),
+                                   r.get("win_rate"), r.get("cc_dd"), float(r.get("first_half") or 0), float(r.get("later_half") or 0),
+                                   float((j.get("parent_result") or {}).get("net") or 0), verdict))
+        line = None
+        try:
+            raw = W.ask_json("You are Kino, a trading-robot builder, writing ONE lesson for yourself after a verdict. Plain words, one sentence of at "
+                             "most 28 words, in English: what this verdict teaches about the IDEA (not the number), honest, no hype, no promise. "
+                             "Reply with JSON only: {\"lesson\": \"...\"}", facts, models=("haiku",), timeout=60, warm=False)
+            if isinstance(raw, dict) and str(raw.get("lesson") or "").strip():
+                line = str(raw["lesson"]).strip()[:220]
+        except Exception:
+            line = None
+        if not line:
+            line = "%s on %s (%s): %s - %+.2f $ over %s trades." % ((RB.get(rid) or {}).get("name_fr") or rid, sym, "; ".join(diff) or "the Owl's pieces",
+                                                                  verdict, float(r["net"]), r.get("trades"))
+        Lz[key] = {"t": int(time.time()), "rid": rid, "sym": sym, "verdict": verdict, "line": line, "by": "kino" if line and raw else "facts"}
+        new += 1
+    if new:
+        _save(LESSONS, Lz)
+    return {"new": new, "total": len(Lz)}
+
+
+def lessons_block():
+    Lz = _load(LESSONS, {}) or {}
+    if not Lz:
+        return ""
+    rows = sorted(Lz.values(), key=lambda x: -x.get("t", 0))[:30]
+    return ("YOUR OWN LESSONS (written by you, one per verdict - these are what you know for real; an idea marked FAILED is not "
+            "rebuilt as it was, a PASSED one is the model to start from):\n" + "\n".join("- [%s] %s" % (x.get("sym"), x.get("line")) for x in rows))
 
 
 def board(uid):
@@ -379,4 +481,6 @@ if __name__ == "__main__":
         out["scout"] = scout()
     if a[0] in ("night", "review"):
         out["review"] = self_review()
+    if a[0] in ("night", "lessons"):
+        out["lessons"] = own_lessons()
     print(json.dumps(out, ensure_ascii=False)[:3000])

@@ -13505,7 +13505,19 @@ def builder_payload(user, detail):
         for x in out:
             x["can_edit"] = False
         plugs = []                     # which accounts run which robot names members: never shown to readers
-    return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": _can,
+    _kb = {}
+    try:                                   # 2026-10-23 (owner, upgrade 5): Kino's calls, visible and honest
+        _rc()
+        import kino_inner as _KIb
+        _dd = _KIb._load()
+        _B = [b for b in _dd.get("bets") or [] if b.get("done")]
+        _kb = {"n": len(_B), "right": sum(1 for b in _B if b.get("right")), "by": _KIb.hunch_score().get("by") or {},
+               "last": [{"t": int(b.get("t") or 0), "sym": b.get("sym"), "nm": b.get("nm"), "text": str(b.get("text") or "")[:160], "right": bool(b.get("right"))}
+                        for b in sorted(_B, key=lambda x: -float(x.get("t") or 0))[:12]],
+               "tests": [{"label": x.get("label"), "bet": x.get("bet"), "right": bool(x.get("right")), "net": x.get("net")} for x in (_dd.get("test_bet_log") or [])[-8:]]}
+    except Exception:
+        _kb = {}
+    return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": _can, "kino_bets": _kb,
             "admin": bool(is_admin(user)), "targets": robot_targets(user, detail), "test_min": ROBOT_TEST_MIN,
             "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}
 
@@ -16456,6 +16468,13 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             q = {"say": None, "chips": [], "build": False}
         if q and q.get("remember"):
             _mem_add(user.get("id"), q["remember"])
+        if q and q.get("story_told"):
+            try:
+                _rc()
+                import kino_life as _KLt
+                _KLt.story_told(user.get("id"))
+            except Exception:
+                pass
         if q and q.get("partner"):
             try:
                 _partner_apply(user, cid, q["partner"])
@@ -17289,6 +17308,23 @@ def _companion_tick():
                         threading.Thread(target=_chat_quick, args=(tgt, u, ev), kwargs={"notify": True, "important": True}, daemon=True).start()
             if seen != (m.get("luck_seen") or {}):
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("luck_seen", seen))
+                try:                                       # 2026-10-23 (owner, upgrade 3): one story a day that is not a number
+                    _rc()
+                    import kino_life as _KLs, robot_reality as _RWs
+                    if _KLs.story_due(uid):
+                        _lft = "; ".join(str(x.get("fact")) for x in (m.get("life") or [])[-6:])
+                        _lng = "en" if str((ch[0] if ch else {}).get("lang") or "fr") == "en" else "fr"
+                        threading.Thread(target=_KLs.story_write, args=(uid, _RWs.world_now(0), _lft, _lng), daemon=True).start()
+                except Exception:
+                    pass
+                def _les():                                # 2026-10-23: Kino writes his own lesson for the new verdict
+                    try:
+                        _rc()
+                        import kino_research as _KR
+                        _KR.own_lessons(max_new=3)
+                    except Exception:
+                        pass
+                threading.Thread(target=_les, daemon=True).start()
             if int(now // 600) != int(m.get("guard_tick") or 0):
                 _mem_note_safe(uid, lambda mm: mm.__setitem__("guard_tick", int(now // 600)))
                 try:
@@ -23051,8 +23087,23 @@ def acct_robot_block(user, admin=False):
         for _sy, _x in sorted(((PK.get("market_plugs") or {}).get(uid) or {}).items()):
             _ok, _why = _OMK.check(uid, _sy)
             _sf = os.path.join(DIR, "bos_state_%s_%s.json" % (_OMK.VARIANT.get(uid, uid), _sy))
+            _pf = {}
+            try:                                   # 2026-10-23 (owner, upgrade 7): real money since the plug vs what the test promised
+                _t0 = int(datetime.strptime(str(_x.get("at"))[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+                _nd = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
+                _rows = [t for t in _nd.get("trades") or [] if isinstance(t, dict) and str(t.get("sym") or "BTCUSD").upper().rstrip("M") == _sy
+                         and _trade_epoch(t.get("w")) >= _t0]
+                _res = _jload(os.path.join(DIR, "robots", "results", "%s@%s.json" % (_x.get("robot"), _sy)), {}) or {}
+                _rr = _res.get("robot") or {}
+                _days = max(0.04, (time.time() - _t0) / 86400.0)
+                _pf = {"since": _x.get("at"), "days": round(_days, 1), "real_net": round(sum(float(t.get("p") or 0) for t in _rows), 2), "real_n": len(_rows),
+                       "test_per30": round(float(_rr.get("net") or 0) * 30.0 / float(_res.get("days") or 42), 2) if _rr.get("net") is not None else None,
+                       "test_trades_per30": round(float(_rr.get("trades") or 0) * 30.0 / float(_res.get("days") or 42), 1) if _rr.get("trades") else None,
+                       "test_dip": _rr.get("cc_dd")}
+            except Exception:
+                _pf = {}
             out["markets"].append(dict(nm(byid.get(_x.get("robot")) or {"id": _x.get("robot")}), id=_x.get("robot"), sym=_sy,
-                                       at=_x.get("at"), ok=_ok, why=_why,
+                                       at=_x.get("at"), ok=_ok, why=_why, proof=_pf,
                                        alive=os.path.exists(_sf) and time.time() - os.path.getmtime(_sf) < 600))
     except Exception:
         pass

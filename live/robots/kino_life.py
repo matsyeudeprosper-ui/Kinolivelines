@@ -286,6 +286,49 @@ def admin_view():
 
 
 # ---------------------------------------------------------------- what he knows about his own life (for the prompts)
+def story_due(uid):
+    """2026-10-23 (owner, upgrade 3: "a life that isn't only charts"): one story a day per member, from 07:00 UTC"""
+    d = _load()
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    st = ((d.get("story") or {}).get(uid) or {})
+    return st.get("day") != day and time.gmtime().tm_hour >= 7
+
+
+def story_write(uid, world_text, life_text, lang="fr"):
+    """one small model call (background budget): something Kino found today that is NOT a trading number - a headline that made him
+    think, a calendar quirk, a question he wonders about, something in the member's life worth following up"""
+    import robot_warm as W
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    _mut(lambda d: d.setdefault("story", {}).__setitem__(uid, {"day": day, "text": "", "t": int(time.time())}))    # taken
+    J = journal(uid, 4)
+    ctx = ("THE WORLD TODAY:\n%s\n\nWHAT THE MEMBER TOLD YOU ABOUT THEIR LIFE: %s\n\nYOUR OWN JOURNAL (recent): %s" % (
+        str(world_text or "")[:3500], life_text or "(nothing yet)", " | ".join(x["text"][:120] for x in J) or "(empty)"))
+    try:
+        raw = W.ask_json("You are Kino, an AI who lives in a trading app and talks with members like a friend. Write the ONE thing you want to tell "
+                         "this member today that is NOT a trading number or a result: a headline that made you think (say what you think of it), "
+                         "an odd thing in the calendar, a question you genuinely wonder about, or a follow-up on something in THEIR life. "
+                         "Two or three short spoken sentences in %s, first person, your own view, no bulletin tone, no advice, no numbers. "
+                         "Reply with JSON only: {\"story\": \"...\"}" % ("French" if lang != "en" else "English"), ctx, models=("haiku",), timeout=60, warm=False)
+        txt = str((raw or {}).get("story") or "").strip()[:400] if isinstance(raw, dict) else ""
+    except Exception:
+        txt = ""
+    if txt and not BAD.search(txt):
+        _mut(lambda d: d.setdefault("story", {}).__setitem__(uid, {"day": day, "text": txt, "t": int(time.time()), "told": False}))
+    return txt
+
+
+def story_block(uid):
+    st = ((_load().get("story") or {}).get(uid) or {})
+    if not st.get("text") or st.get("told") or st.get("day") != time.strftime("%Y-%m-%d", time.gmtime()):
+        return ""
+    return ("YOUR STORY OF THE DAY (something YOU found today that is not a number - tell it ONCE when the moment is relaxed and it fits, "
+            "in your own words, then set \"story_told\": true; never as a bulletin, never during a problem): \"%s\"" % st["text"])
+
+
+def story_told(uid):
+    _mut(lambda d: (d.get("story") or {}).get(uid, {}).__setitem__("told", True))
+
+
 def block(uid, lang="fr"):
     L = []
     J = journal(uid, 6)
@@ -298,8 +341,15 @@ def block(uid, lang="fr"):
         lr = (KI._load().get("learned") or {})
         if sc.get("n"):
             L.append("YOUR PREDICTION RECORD (your gut bets on the markets, checked ~2 h later): %d right out of %d (%s)%s. Be honest about "
-                     "it when it fits - it is how you get better." % (sc["right"], sc["n"], ", ".join("%s %s" % (k, v) for k, v in (sc.get("by") or {}).items()),
+                     "it when it fits - it is how you get better. RULE (owner 2026-10-23): you say a market hunch OUT LOUD only when your record on that "
+                     "kind of call is 55 %% or better over 20 bets or more; below that it stays a private bet you keep score of - say you have no view." % (sc["right"], sc["n"], ", ".join("%s %s" % (k, v) for k, v in (sc.get("by") or {}).items()),
                      ("; what your record taught you: " + "; ".join(v.get("lesson", "") for v in lr.values() if v.get("lesson"))) if lr else ""))
+    except Exception:
+        pass
+    try:
+        sb = story_block(uid)
+        if sb:
+            L.append(sb)
     except Exception:
         pass
     q = human_question(uid)
