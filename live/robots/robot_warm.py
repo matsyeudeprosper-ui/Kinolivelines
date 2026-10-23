@@ -14,6 +14,7 @@ _LOCK = threading.Lock()
 _POOL = {}            # key -> [(proc, started_at)]
 _KEYS = {}            # key -> (system file, model)
 _SEEN = {"t": 0.0}    # last time someone used / opened the workshop
+_LAST = {}            # key -> last use (2026-10-23: one key per member now - a key nobody used for IDLE s lets its processes go)
 
 
 _TL = threading.local()          # member_turn: this thread answers the member right now (never budgeted)
@@ -51,6 +52,13 @@ def _sysfile(system):
     p = os.path.join(IV.JOBS, "_sys_%s.txt" % h)
     if not os.path.exists(p):
         io.open(p, "w", encoding="utf-8").write(system)
+        try:                                  # 2026-10-23: one file per member and per change of their facts - the old ones go after 2 days
+            for f in os.listdir(IV.JOBS):
+                fp = os.path.join(IV.JOBS, f)
+                if f.startswith("_sys_") and f.endswith(".txt") and time.time() - os.path.getmtime(fp) > 172800:
+                    os.remove(fp)
+        except Exception:
+            pass
     return p, h
 
 
@@ -102,16 +110,18 @@ def prewarm(system, model="sonnet"):
     sp, h = _sysfile(system)
     key = h + model
     _KEYS[key] = (sp, model)
-    _SEEN["t"] = time.time()
+    _SEEN["t"] = _LAST[key] = time.time()
     threading.Thread(target=_fill, args=(key,), daemon=True).start()
 
 
 def reap():
-    """nobody used the workshop for IDLE seconds: let the processes go"""
-    if time.time() - _SEEN["t"] < IDLE:
-        return
+    """nobody used the workshop for IDLE seconds: let the processes go - and (2026-10-23) so does any key nobody used for
+    IDLE seconds while others are busy: a member's facts changed = a new key, the old one must not keep 3 processes"""
+    now = time.time()
     with _LOCK:
         for key, L in _POOL.items():
+            if now - _SEEN["t"] < IDLE and now - _LAST.get(key, 0) < IDLE:
+                continue
             for p, _ in L:
                 _kill(p)
             _POOL[key] = []
@@ -185,7 +195,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
     sp, h = _sysfile(system)
     key = h + model
     _KEYS[key] = (sp, model)
-    _SEEN["t"] = time.time()
+    _SEEN["t"] = _LAST[key] = time.time()
     p = None
     with _LOCK:
         L = _POOL.get(key, [])

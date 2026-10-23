@@ -15297,7 +15297,7 @@ def chat_start(user, body):
     if robot is not None:
         robot["market"] = "BTCUSD"
     try:
-        _rc().prewarm()
+        _chat_prewarm_bg(user, c)
     except Exception:
         pass
     mem = _chat_memory(user)
@@ -15325,7 +15325,7 @@ def chat_start(user, body):
                                                    "another conversation). YOUR LAST OPENINGS - never reuse their words, start or shape: %s" % (
                                                        _when, " | ".join(_ops[:6]) or "-")), daemon=True).start()
         try:
-            _rc().prewarm()
+            _chat_prewarm_bg(user, c)
         except Exception:
             pass
         return {"ok": True, "id": cid}
@@ -16106,8 +16106,39 @@ def _ctx_prefetch(user, cid):
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
         _CTX[cid] = (time.time(), _chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
+        _chat_prewarm(user, c, _CTX[cid][1:])
     except Exception:
         pass
+
+
+_STABLE = {}       # uid -> (t, stable block) - 2026-10-23: the member's facts in the system prompt (cached by the API)
+
+
+def _chat_prewarm(user, c, ctx=None):
+    """2026-10-23 (cost): the warm pool is keyed by the whole system prompt, which now ends with this member's facts
+    (robot_chat.stable_block). A key is warmed while they open or type, so a changed fact (a closed trade, a test result) is
+    met by a warm process and not a 12 s cold start. The facts are rebuilt at most once a minute per member here."""
+    uid = (user.get("id"), (c or {}).get("id"))          # the MARKETS block names the chat's market: one key per chat
+    try:
+        if ctx is None:
+            x = _STABLE.get(uid)
+            if x and time.time() - x[0] < 60:
+                st = x[1]
+            else:
+                _STABLE[uid] = (time.time(), "")             # taken: a second caller meanwhile warms nothing
+                ctx = (_chat_pieces(user), _ai_owl(), _chat_markets(user), None, _chat_member(user, c or {}))
+        if ctx is not None:
+            pieces, owl, markets, _, member = ctx
+            st = _rc().stable_block(member, owl, pieces, markets, _rc().chat_market(c or {}), (c or {}).get("lang") or "fr")
+            _STABLE[uid] = (time.time(), st)
+        if st:
+            _rc().prewarm(st)
+    except Exception:
+        pass
+
+
+def _chat_prewarm_bg(user, c):
+    threading.Thread(target=_chat_prewarm, args=(user, c), daemon=True).start()
 
 
 def _ctx_get(user, cid, c):
@@ -19122,7 +19153,7 @@ def chat_open(user, body):
     if c is None:
         return {"ok": False, "err": "missing"}
     try:
-        _rc().prewarm()
+        _chat_prewarm_bg(user, c)
     except Exception:
         pass
     try:
@@ -19304,7 +19335,7 @@ def chat_get(user, cid, ui=""):
     if time.time() - _CHAT_MK.get("_warm", 0) > 60:
         _CHAT_MK["_warm"] = time.time()
         try:
-            _rc().prewarm()
+            _chat_prewarm_bg(user, c)
         except Exception:
             pass
     if (c.get("test") or {}).get("sym") and c["test"].get("state") == "queued":
