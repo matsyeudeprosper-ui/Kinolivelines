@@ -312,7 +312,12 @@ def story_write(uid, world_text, life_text, lang="fr"):
         txt = str((raw or {}).get("story") or "").strip()[:400] if isinstance(raw, dict) else ""
     except Exception:
         txt = ""
-    if txt and not BAD.search(txt):
+    try:
+        from kino_inner import BAD as _BAD          # the banned-words filter lives in kino_inner (NameError here dropped the first story)
+        bad = bool(txt) and bool(_BAD.search(txt))
+    except Exception:
+        bad = False
+    if txt and not bad:
         _mut(lambda d: d.setdefault("story", {}).__setitem__(uid, {"day": day, "text": txt, "t": int(time.time()), "told": False}))
     return txt
 
