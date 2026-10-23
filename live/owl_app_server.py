@@ -16820,7 +16820,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         except Exception:
             _CHAT_B.discard(cid)
             raise
-        _commit_harvest_bg(cid, user, q, _pa, event)      # 2026-10-23: what he just committed to goes in the ledger
+        _commit_harvest_bg(cid, user, q, (q or {}).get("partner") or {}, event)   # 2026-10-23: what he just committed to goes in the ledger
         if not q.get("act") and not q["build"] and q.get("say") and c.get("robot") and re.search(r"\bje (te )?(lance|relance|démarre|lancerai)\b[^.!?]{0,30}\b(le|un|ton|son|ce) test\b(?! de chance)", str(q["say"]), re.I):
             q["act"] = "test"
         if q.get("act"):
