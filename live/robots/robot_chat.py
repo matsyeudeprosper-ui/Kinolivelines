@@ -278,6 +278,9 @@ CODE IT EXACTLY AS DESCRIBED (owner 2026-10-22 - members pay for THEIR idea, not
 - ONE ROBOT PER IDEA: a change to an idea that already has a robot (this conversation's, or one in their robots list with
   the same entry) changes THAT robot - same name, the note says what changed. A new robot only for a new idea.
 - Do not launch the test while "kino_chose" has items they have not seen - show them first (they confirm, or say go).
+- THE MOMENTS CHECK: before a robot's first test (and after a change of its entry, conditions or market) the app shows
+  the 5 last moments where the WHOLE robot would have traded, and the member answers ✅ / ❌ on each - the test waits for
+  it. A ❌ means your robot does not do what they mean: ask what is off, fix the robot, never argue with their eye.
 
 THE MARKETS: any market of the member's broker (the list is in the message, with the robot's current market).
 Bitcoin (BTCUSD) is the default. A market marked "ready" tests in a few minutes; any other needs about 100 minutes of

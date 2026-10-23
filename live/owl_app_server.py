@@ -16301,11 +16301,22 @@ def _kino_act(cid, user, act, en=False):
                 line = ("This test is already in the queue." if en else "Ce test est déjà dans la file d'attente.")
             else:
                 tr = chat_test(user, {"id": cid})
-                if not tr.get("ok"):
+                if not tr.get("ok") and tr.get("err") == "check":
+                    # 2026-10-22: Kino wanted to test - the member checks the moments first (they launch it from there)
+                    if tr.get("state") in ("none",):
+                        ck_ = chat_fires(user, {"id": cid})
+                        line = (("Before the test: here are the last 5 moments where your robot would have traded - tell me ✅ or ❌ for each, then we test." if en else
+                                 "Avant le test : voici les 5 derniers moments où ton robot aurait tradé - dis-moi ✅ ou ❌ pour chacun, puis on teste.")
+                                if ck_.get("ok") else ("Your robot never triggers on the last 42 days - let's look at the entry together." if en else
+                                                       "Ton robot ne se déclenche jamais sur les 42 derniers jours - regardons l'entrée ensemble.")
+                                if ck_.get("err") == "nofire" else None)
+                    else:
+                        line = ("The test waits for your ✅ / ❌ on the moments above." if en else "Le test attend tes ✅ / ❌ sur les moments au-dessus.")
+                elif not tr.get("ok"):
                     line = ("Nothing changed from the Owl, so there is nothing new to test." if en else "Rien ne change par rapport à l'Owl : rien de nouveau à tester.") \
                         if tr.get("err") == "same" else (("A small technical hiccup starting the test - I'm trying again in a minute." if en else
                                                           "Petit souci technique au démarrage du test - je réessaie dans une minute."))
-                if not tr.get("ok") and tr.get("err") != "same":
+                if not tr.get("ok") and tr.get("err") not in ("same", "check"):
                     _alarm_log(cid, "test start failed: %s - retry in 60 s" % tr.get("err"))
                     threading.Thread(target=_test_retry, args=(cid, user, en), daemon=True).start()
         if line:
@@ -19440,6 +19451,10 @@ def chat_test(user, body):
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None or not c.get("robot"):
         return {"ok": False, "err": "missing"}
+    if not body.get("force"):                        # 2026-10-22: the moments first (audit item 7)
+        st_ = _check_state(c, user)
+        if st_ != "ok":
+            return {"ok": False, "err": "check", "state": st_}
     rob = c["robot"]
 
     def pid_of(kind, s):
@@ -19605,6 +19620,101 @@ def _demo_msg(c, user, n=3, pick="mix", overlays=None, by="ai", formula=None, si
     if ex is None:
         return {"role": "demo", "nodata": True, "market": _chat_market(c), "by": by}
     return {"role": "demo", "market": ex["market"], "count": ex["count"], "won": ex["won"], "trades": ex["trades"], "by": by, "rev": c.get("rev")}
+
+
+# ---- 2026-10-22 (owner, audit item 7: "does it fire where you expect"): before the test, the member checks the 5 last
+# moments where the WHOLE robot (its entry + the conditions a formula can say) would have traded, on the chart, yes / no.
+# The test waits for it (or "tester quand même"); a change of entry, conditions or market asks again.
+def _check_formulas(rules):
+    en = rules.get("entry") or {}
+    ev = en.get("event")
+    b, s = {"formula": (en.get("buy"), en.get("sell")), "bos": ("bos_up", "bos_down"), "choch": ("choch_up", "choch_down")}.get(
+        ev, ("bos_up or choch_up", "bos_down or choch_down"))
+    for f in rules.get("filters") or []:
+        k = f.get("kind")
+        if k == "formula":
+            fb, fs = f.get("buy"), f.get("sell")
+        elif k == "hours":
+            fb = fs = "hour >= %d and hour < %d" % (int(f["from"]), int(f["to"]))
+        elif k == "weekdays":
+            fb = fs = "(" + " or ".join("weekday == %d" % int(d) for d in f["days"]) + ")"
+        else:
+            continue                                  # pace / big moves: not a candle formula, left out of the pictures
+        if b and fb:
+            b = "(%s) and (%s)" % (b, fb)
+        if s and fs:
+            s = "(%s) and (%s)" % (s, fs)
+    return b, s
+
+
+def _check_sig(c, user):
+    import hashlib
+    _rc()
+    import robot_demo as _RD
+    rules, _ = _RD.rules_of(c.get("robot") or {}, _chat_pieces(user))
+    key = json.dumps([rules.get("entry"), rules.get("filters"), (c.get("robot") or {}).get("market") or "BTCUSD"], sort_keys=True)
+    return hashlib.sha1(key.encode("utf-8")).hexdigest()[:12], rules
+
+
+def _check_state(c, user):
+    """'none' (never checked, or the robot changed since), 'open' (votes missing), 'no' (a moment refused), 'ok'"""
+    ck = c.get("check") or {}
+    try:
+        if not ck or ck.get("sig") != _check_sig(c, user)[0]:
+            return "none"
+    except Exception:
+        return "ok"                                  # cannot compute it: never block a test on our own error
+    V = ck.get("votes") or {}
+    if any(v is False for v in V.values()):
+        return "no"
+    return "ok" if len(V) >= int(ck.get("n") or 0) else "open"
+
+
+def chat_fires(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("robot"):
+        return {"ok": False, "err": "missing"}
+    _rc()
+    import robot_demo as _RD
+    sig, rules = _check_sig(c, user)
+    b, s = _check_formulas(rules)
+    mk = c["robot"].get("market") or "BTCUSD"
+    mo, cnt, per = [], 0, 0.0
+    for side, f in ((1, b), (-1, s)):
+        if not f:
+            continue
+        r = _RD.moments(mk, f, side, n=5)
+        if r is None:
+            return {"ok": False, "err": "nodata"}
+        cnt += int(r.get("count") or 0); per += float(r.get("per_day") or 0)
+        mo += [dict(x, side="buy" if side == 1 else "sell") for x in r.get("moments") or []]
+    mo = sorted(mo, key=lambda x: x["t"])[-5:]
+    if not mo:
+        return {"ok": False, "err": "nofire"}
+    m = {"role": "demo", "kind": "moments", "check": True, "market": mk, "moments": mo, "count": cnt, "per_day": round(per, 1),
+         "side": "buy" if all(x["side"] == "buy" for x in mo) else "sell" if all(x["side"] == "sell" for x in mo) else "mix"}
+
+    def put(c):
+        c["check"] = {"sig": sig, "n": len(mo), "votes": {}, "t": int(time.time())}
+        c.setdefault("msgs", []).append(dict(m, t=int(time.time())))
+    _chat_mut(c["id"], put)
+    return {"ok": True, "n": len(mo)}
+
+
+def chat_fires_vote(user, body):
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or not c.get("check"):
+        return {"ok": False, "err": "missing"}
+    try:
+        j = int(body.get("j"))
+    except Exception:
+        return {"ok": False}
+    yes = bool(body.get("yes"))
+
+    def put(c):
+        c["check"].setdefault("votes", {})[str(j)] = yes
+    _chat_mut(c["id"], put)
+    return {"ok": True, "state": _check_state(_chat_load(user, c["id"]), user)}
 
 
 def chat_demo(user, body):
@@ -27580,7 +27690,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check",
+                                              "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
@@ -27600,7 +27710,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
-                       "chat_check": chat_check, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
+                       "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
