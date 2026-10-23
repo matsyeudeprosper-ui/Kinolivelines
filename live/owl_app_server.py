@@ -27,6 +27,23 @@ import owl_package as PKG
 import owl_share as SHARE   # 2026-10-03 (owner): the profit share
 import re
 
+_OS_REPLACE = os.replace
+
+
+def _replace_retry(src, dst, *a, **kw):
+    """2026-10-23: a member saw "Oups, petit souci ([WinError 5] Access is denied: 'C:\\Projects\\KinoliveLines\\" - a .tmp -> .json
+    swap refused while another thread (the page's poll, the companion tick) had the file open. 37 bare os.replace calls in
+    this file and more in Kino's modules, all in this process: the swap itself now waits up to 4 s instead of failing."""
+    for i in range(80):
+        try:
+            return _OS_REPLACE(src, dst, *a, **kw)
+        except PermissionError:
+            time.sleep(0.05)
+    return _OS_REPLACE(src, dst, *a, **kw)
+
+
+os.replace = _replace_retry
+
 DIR = r"C:\Projects\KinoliveLines\live"
 TERMINAL = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
 LOGIN = 223985697          # 2026-09-07: the Pro master account
@@ -412,7 +429,7 @@ def _atomic_json(path, obj, **kw):
     tmp = "%s.%d.%d.tmp" % (path, os.getpid(), _th.get_ident())
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(obj, f, **kw)
-    for i in range(30):
+    for i in range(3):                   # os.replace itself waits 4 s since 2026-10-23 (_replace_retry)
         try:
             os.replace(tmp, path)
             return
@@ -15028,7 +15045,7 @@ def _chat_save(c):
     tmp = _chat_path(c["id"]) + ".%d.tmp" % threading.get_ident()
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(c, f, ensure_ascii=False, indent=1)
-    for k in range(40):                  # Windows refuses the swap while the page's poll is reading the file
+    for k in range(3):                   # Windows refuses the swap while the page's poll is reading the file (os.replace itself waits 4 s since 2026-10-23)
         try:
             os.replace(tmp, _chat_path(c["id"]))
             return
@@ -16166,9 +16183,17 @@ def _chat_markets(user):
 
 
 def _chat_oops(cid, en, e=None):
+    if e is not None:
+        try:                                 # 2026-10-23: the member saw 60 chars of a path and nobody had the traceback
+            import traceback as _tb
+            open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
+                "%s %s %s: %s\n%s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, type(e).__name__, str(e)[:300], _tb.format_exc()))
+        except Exception:
+            pass
     _chat_mut(cid, lambda c: _chat_msg(c, "ai", chips=[], err=True, text=(
         "Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?")
-        if e is None else ("Oups, petit souci de mon côté (%s). Réessaie dans un instant." % str(e)[:60])))
+        if e is None else (("Oops, a hiccup on my side (%s). Send that again in a moment." if en else
+                            "Oups, petit souci de mon côté (%s). Réessaie dans un instant.") % type(e).__name__)))
 
 
 CHAT_IMG = os.path.join(DIR, "robots", "chats", "img")
