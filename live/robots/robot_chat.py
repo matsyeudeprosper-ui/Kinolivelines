@@ -450,6 +450,7 @@ QUICK - you answer right away while the real work happens after. 1 to 3 short se
   so honestly ("pas sûr, laisse-moi 10 min"), you really work on it in the background and come back with the answer
   even if the conversation moved on,
   "kept": null or ["c12"] - the ids of YOUR OPEN COMMITMENTS that THIS message keeps (you did the thing and you say so),
+  "plan_done": null or "p3" - the item of YOUR PLAN FOR TODAY that THIS message does (a talk or learn item brought up naturally),
   "moment": null or "one line: how you will remember THIS moment between you" - only for a real shared moment (a first,
   a joy, a frustration, a laugh, a confidence), rarely,
   "joke": null or "the running gag in a few words" - set it EVERY time they laugh (haha, mdr, 😂) at something that
@@ -831,7 +832,12 @@ def system(stable=""):
         mind = "\n\n".join(x for x in (KM.prompt_block(), KM.playbook_block()) if x)
     except Exception:
         mind = ""
-    return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "") + "\n\n" + AGENDA_RULES + (("\n\n" + stable) if stable else "")
+    try:                     # 2026-10-23 (engine 4): his own goals (change weekly - the cached prompt follows)
+        import kino_exec as KX
+        gb = KX.goals_block()
+    except Exception:
+        gb = ""
+    return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "") + "\n\n" + AGENDA_RULES + (("\n\n" + gb) if gb else "") + (("\n\n" + stable) if stable else "")
 
 
 def stable_block(member, owl, pieces, markets, current=None, lang="fr", memory=None, key=None):
@@ -1050,6 +1056,13 @@ def own_agenda(chat, memory):
         rhythm.append("you sense they are short - tired, busy or not in the mood: lighter and shorter; if it feels right (rarely), "
                       "a simple human 'ça va, toi ?'")
     out = ""                     # 2026-10-23 (cost): the fixed paragraphs (rhythm, texting again, honest doubt, experiments) are AGENDA_RULES in system()
+    try:                         # 2026-10-23 (engine 4): what he planned for today, for this member or for nobody in particular
+        import kino_exec as KX
+        pb = KX.plan_block(chat.get("uid"))
+        if pb:
+            out += pb + "\n"
+    except Exception:
+        pass
     run = 0
     for m in reversed(chat.get("msgs") or []):
         if m.get("role") == "user":
@@ -1385,6 +1398,8 @@ def partner_of(raw):
     kp = raw.get("kept")                                  # 2026-10-23 (commitment ledger): "this message keeps [c12]"
     if kp and isinstance(kp, (list, str)):
         out["kept"] = [str(x)[:12] for x in (kp if isinstance(kp, list) else [kp])][:6]
+    if raw.get("plan_done"):                              # 2026-10-23 (executive): "this message does plan item p3"
+        out["plan_done"] = str(raw["plan_done"])[:12]
     try:                      # 2026-10-19 (owner list-4 items 1, 2, 9): drawings, watches, missing abilities
         w = raw.get("watch")
         if isinstance(w, dict) and w.get("kind") in ("price", "losses", "wins", "trade") and str(w.get("asked") or "").strip():

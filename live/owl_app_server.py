@@ -15511,6 +15511,13 @@ def _partner_apply(user, cid, pa):
             _KLh.human_asked(uid, pa["human_asked"], cid)
         except Exception:
             pass
+    if pa.get("plan_done"):                            # 2026-10-23 (engine 4): this message did an item of today's plan
+        try:
+            _rc()
+            import kino_exec as _KX
+            _KX.mark_done(str(pa["plan_done"])[:12], "said in chat")
+        except Exception:
+            pass
     if pa.get("thought_used"):
         try:
             _rc()
@@ -18006,6 +18013,96 @@ def _night_shift_variants(u):
         return
 
 
+_EXEC_BUSY = {}
+
+
+def _exec_ctx(kind="plan"):
+    """2026-10-23 (engine 4): the facts Kino's executive reads - the lab, the members and their goals, his word, his open
+    questions and bets, his self-model and wishes; for the review, the day's episodes and test results too"""
+    _rc()
+    L = []
+    try:
+        L.append(_rc().WD.lab_digest(_ai_owl())[:4000])
+    except Exception:
+        pass
+    try:
+        import kino_commit as _KC
+        s = _KC.stats(None, 7)
+        L.append("YOUR WORD (7 days): %d commitments kept, %d broken, %d open" % (s["kept"], s["broken"], s["open"]))
+        O = _KC.open_for()
+        if O:
+            L.append("OPEN COMMITMENTS: " + " | ".join(x["what"] for x in O[-8:]))
+    except Exception:
+        pass
+    now = time.time()
+    for u in users()[:40]:
+        uid = u.get("id")
+        try:
+            if not (chat_list(u).get("chats") or []):
+                continue                                  # a technical account (bots, demo) is not a person to plan for
+            m = _mem_get(uid)
+            sn = _CHAT_SEEN.get(uid)
+            L.append("MEMBER %s: their goal: %s | last seen: %s | %s" % (
+                uid, ((m.get("their_goal") or {}).get("text") or "-"), ("%.0f h ago" % ((now - sn[0]) / 3600)) if sn else "never",
+                _jobs_text(u)[:300]))
+        except Exception:
+            pass
+    try:
+        import kino_inner as _KI
+        L.append("YOUR OPEN QUESTIONS: " + json.dumps([q["q"] for q in _KI.open_questions(None, 6)], ensure_ascii=False)[:800])
+        L.append("YOUR TRACK RECORD: " + str(_KI.track_record())[:400])
+    except Exception:
+        pass
+    try:
+        import kino_mind as _KM
+        d = _KM.load()
+        L.append("YOUR SELF-MODEL: " + json.dumps(d.get("self"), ensure_ascii=False)[:800])
+        L.append("YOUR WISHES: " + json.dumps(_KM.wishes()[-5:], ensure_ascii=False)[:500])
+    except Exception:
+        pass
+    if kind == "review":
+        try:
+            import kino_episodes as _KE
+            days = (time.strftime("%Y-%m-%d", time.gmtime()), time.strftime("%Y-%m-%d", time.gmtime(now - 86400)))
+            E = [(uid, x) for uid, uu in (_KE._load() or {}).items() for x in (uu.get("episodes") or []) if x.get("day") in days]
+            if E:
+                L.append("EPISODES OF THE DAY: " + " | ".join("(%s) %s" % (uid, x["what"][:200]) for uid, x in E[-12:]))
+        except Exception:
+            pass
+        try:
+            R = []
+            for f in os.listdir(os.path.join(DIR, "robots", "results")):
+                fp = os.path.join(DIR, "robots", "results", f)
+                if f.endswith(".json") and now - os.path.getmtime(fp) < 86400:
+                    r = json.load(open(fp, encoding="utf-8"))
+                    R.append("%s: net %s over %s trades" % (f[:-5], (r.get("robot") or {}).get("net"), (r.get("robot") or {}).get("trades")))
+            if R:
+                L.append("TEST RESULTS OF THE DAY: " + " | ".join(R[-10:]))
+        except Exception:
+            pass
+    return "\n".join(L)
+
+
+def _exec_morning():
+    """07:00-09:00 UTC once a day: goals when there are none, then the plan of the day"""
+    if _EXEC_BUSY.get("m"):
+        return
+    _EXEC_BUSY["m"] = True
+    try:
+        _rc()
+        import kino_exec as _KX, kino_inner as _KI
+        if _KX.plan_today():
+            return
+        lg = os.path.join(DIR, "robots", "kino_exec.log")
+        if not _KX.goals():
+            _KX.set_goals(_rc().W, _exec_ctx("goals"), log=lg)
+        _KX.plan_morning(_rc().W, _exec_ctx("plan"), log=lg, add_question=_KI.add_question)
+    except Exception:
+        pass
+    finally:
+        _EXEC_BUSY["m"] = False
+
+
 def _kino_night_mind():
     """self-review (level 4), the lab's playbook (level 7), a goal with each active member (level 8)"""
     global _NIGHT_BUSY
@@ -18024,6 +18121,13 @@ def _kino_night_mind():
             import kino_episodes as _KE
             _KE.night(users(), lambda u: [x for x in (_chat_load(u, y["id"]) for y in (chat_list(u).get("chats") or [])[:12]) if x],
                       _rc().W, log=os.path.join(DIR, "robots", "kino_episodes.log"))
+        except Exception:
+            pass
+        try:              # 2026-10-23 (engine 4): the day's review against his plan, then the weekly revision of his goals
+            import kino_exec as _KX
+            _lg = os.path.join(DIR, "robots", "kino_exec.log")
+            _KX.review_night(_rc().W, _exec_ctx("review"), log=_lg)
+            _KX.set_goals(_rc().W, _exec_ctx("goals"), log=_lg)
         except Exception:
             pass
         try:              # 2026-10-19 (owner next-list item 1): Kino looks after its own robot
@@ -18733,6 +18837,11 @@ def _companion_loop():
         try:                 # 2026-10-21 (owner list): the research desk, 02:00-06:00 UTC, once a day, only with room
             if 2 <= time.gmtime().tm_hour < 6:
                 threading.Thread(target=_research_night_maybe, daemon=True).start()
+        except Exception:
+            pass
+        try:                 # 2026-10-23 (engine 4): the morning plan, 07:00-09:00 UTC, once a day (plan_morning is idempotent)
+            if 7 <= time.gmtime().tm_hour < 9 and not _EXEC_BUSY.get("m"):
+                threading.Thread(target=_exec_morning, daemon=True).start()
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap levels 4, 7, 8): Kino's night mind, 03:00-05:00 UTC, once a day
@@ -30573,6 +30682,11 @@ class H(BaseHTTPRequestHandler):
             _rc()
             import kino_mind as _KM
             self._send(json.dumps(_KM.load(), ensure_ascii=False), "application/json")
+        elif sub == "kino_exec" and is_admin(user):
+            # 2026-10-23 (engine 4): his goals, today's plan, the last reviews - and (engine 1) his word
+            _rc()
+            import kino_exec as _KX, kino_commit as _KC
+            self._send(json.dumps(dict(_KX.admin_view(), word=_KC.stats(None, 7), open=_KC.open_for()), ensure_ascii=False), "application/json")
         elif sub in ("kinoday", "kino_day"):
             if not ((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public")):
                 self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers()

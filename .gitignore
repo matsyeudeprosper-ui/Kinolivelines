@@ -194,3 +194,6 @@ live/robots/kino_commitments.json.*.tmp
 live/robots/kino_episodes.json
 live/robots/kino_episodes.json.*.tmp
 live/robots/kino_episodes.log
+live/robots/kino_exec.json
+live/robots/kino_exec.json.*.tmp
+live/robots/kino_exec.log
