@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-23T16:30:19Z",
+ "updated": "2026-10-23T18:02:00Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -2901,6 +2901,11 @@
    "t": "2026-10-23T16:30:19Z",
    "look": "veille (1 close flagged): wake_context, asks, heartbeat",
    "saw": "The flagged close is the 13:45 FLIP-BOS BUY -9.19 already logged at 15:00 - no new trade. Twins unchanged (ext700 45 -94.56, fit3 39 -82.33, bul4 29 -73.98, debtnerv 21 -44.39, nervgate 7 -33.31). Heartbeat 16:31 alive, open=3. No ask, no run, no pile, no proposal. Wrote rien; waiting for the 3 open trades (night_carries)."
+  },
+  {
+   "t": "2026-10-23T18:02:00Z",
+   "look": "veille (1 close flagged): wake_context, asks, --streaks",
+   "saw": "Flagged close is again the 13:45 FLIP-BOS BUY -9.19 (third wake on it; the wake trigger seems to re-flag it). Twins unchanged. No open ask. Streaks: after 2 losses 22 tr 23% -45.08 (peu), after 1 loss 43 tr 49% -9.69. No run, no pile, no proposal. Wrote rien."
   }
  ],
  "lessons": [
