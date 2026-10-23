@@ -1691,10 +1691,17 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
         except Exception:
             pass
     models = ("haiku", "sonnet") if ((busy or fast) and W.ready(sysp, "haiku")) else ("sonnet", "haiku")
+    # 2026-10-23 (owner: "Sonnet or Opus? your call"), measured on his real prompt, cached: Sonnet 5.1-5.7 s to the first word,
+    # $0.013; Opus 10.9-12.3 s, $0.037, and a little more alive. The member waits for their own turn -> Sonnet; nobody waits
+    # for what he says on his own (initiatives, diary, stories, evening lines) -> Opus, cold (no warm pool for it: memory).
+    own_turn = bool(event) and not fast and not str(event).startswith(("YOUR FOLLOW-ON", "YOUR PROMISE", "RESEARCH"))
+    if own_turn:
+        models = ("opus", "sonnet")
     t0 = _t.time()
     W.member_turn(not event)          # 2026-10-23: the member's own turn is never refused by the background budget (events are)
     _pt = prompt(chat, view(chat.get("robot"), pieces) or "nothing built yet", pieces, owl, markets, "QUICK", lang, memory, event, member, stable=True)
-    raw = W.ask_json(sysp, _content(_pt, images), models=models, timeout=90, log=log, on_text=cb, salvage=True)
+    raw = W.ask_json(sysp, _content(_pt, images), models=models, timeout=120 if own_turn else 90, log=log, on_text=cb, salvage=True,
+                     warm=not own_turn)
     if not event:                     # 2026-10-23: only the member's own turns say how busy the machine is (events ran every 2 min all night)
         QUICK_LAT.append(_t.time() - t0)
         del QUICK_LAT[:-6]

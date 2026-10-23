@@ -115,7 +115,7 @@ def write_day(uid, chats, since, until, W, log=None):
         _mut(lambda d: _u(d, uid).__setitem__("last_t", until))
         return []
     j = W.ask_json(EP_SYSTEM, "DAY %s\n\n%s\n\nJSON only." % (time.strftime("%Y-%m-%d", time.gmtime(since)), txt[:24000]),
-                   models=("sonnet", "haiku"), timeout=150, log=log, warm=False)
+                   models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     E = (j or {}).get("episodes") if isinstance(j, dict) else None
     if not isinstance(E, list):
         return []
@@ -222,7 +222,7 @@ def consolidate(uid, W, force=False, log=None):
     if old:
         ep_txt = "\n".join("[%s, %s, imp %d, %s] %s%s" % (x["id"], x["day"], x["imp"], x["kind"], x["what"], (" -> " + x["outcome"]) if x.get("outcome") else "") for x in old[-60:])
         kf = "\n".join("- " + f["text"] for f in (u.get("facts") or [])[-40:]) or "(none yet)"
-        j = W.ask_json(CONSOL_SYSTEM, "KNOWN FACTS:\n%s\n\nEPISODES:\n%s\n\nJSON only." % (kf, ep_txt), models=("sonnet", "haiku"), timeout=150, log=log, warm=False)
+        j = W.ask_json(CONSOL_SYSTEM, "KNOWN FACTS:\n%s\n\nEPISODES:\n%s\n\nJSON only." % (kf, ep_txt), models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     else:
         j = {}
     F = (j or {}).get("facts") if isinstance(j, dict) else None

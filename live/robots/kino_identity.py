@@ -68,7 +68,7 @@ def write_constitution(W, rules_text, self_text, lessons_text, force=False, log=
     if c and not force and time.time() - float(c.get("t") or 0) < 30 * 86400:
         return None
     j = W.ask_json(CONST_SYSTEM, "YOUR FIXED RULES (excerpt):\n%s\n\nYOUR SELF-MODEL:\n%s\n\nYOUR LESSONS:\n%s\n\nJSON only." % (
-        rules_text[:9000], self_text[:2500], lessons_text[:2500]), models=("sonnet", "haiku"), timeout=150, log=log, warm=False)
+        rules_text[:9000], self_text[:2500], lessons_text[:2500]), models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     if not isinstance(j, dict) or not isinstance(j.get("values"), list):
         return None
     cl = lambda L, n: [str(x).strip()[:200] for x in (L or []) if str(x).strip() and not BAD.search(str(x))][:n]
@@ -107,7 +107,7 @@ def write_timeline(W, evidence, force=False, log=None):
     j = W.ask_json(TL_SYSTEM, "MONTH %s\nEVIDENCE:\n%s\n\nPREVIOUS ENTRIES:\n%s\n\nJSON only." % (
         month, json.dumps(evidence, ensure_ascii=False, indent=1)[:6000],
         "\n".join("%s: %s" % (x.get("month"), x.get("text")) for x in (d.get("timeline") or [])[-3:]) or "(none - this is the first)"),
-        models=("sonnet", "haiku"), timeout=150, log=log, warm=False)
+        models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     if not isinstance(j, dict) or not str(j.get("text") or "").strip():
         return None
     e = {"month": month, "t": time.time(), "text": str(j["text"]).strip()[:900], "changed": [str(x)[:160] for x in (j.get("changed") or [])][:3],

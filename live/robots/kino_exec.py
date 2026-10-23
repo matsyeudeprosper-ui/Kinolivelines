@@ -98,7 +98,7 @@ def set_goals(W, ctx, force=False, log=None):
         return None
     cur = "\n".join("[%s] %s (why: %s; measure: %s; progress: %s)" % (g["id"], g["text"], g.get("why"), g.get("measure"),
                                                                       (g.get("progress") or [{}])[-1].get("note") or "-") for g in goals()) or "(none yet)"
-    j = W.ask_json(GOALS_SYSTEM, "YOUR CURRENT GOALS:\n%s\n\nYOUR SITUATION:\n%s\n\nJSON only." % (cur, ctx[:12000]), models=("sonnet", "haiku"),
+    j = W.ask_json(GOALS_SYSTEM, "YOUR CURRENT GOALS:\n%s\n\nYOUR SITUATION:\n%s\n\nJSON only." % (cur, ctx[:12000]), models=("opus", "sonnet"),
                    timeout=150, log=log, warm=False)
     if not isinstance(j, dict) or not isinstance(j.get("goals"), list):
         return None
@@ -153,7 +153,7 @@ def plan_morning(W, ctx, log=None, add_question=None):
     gtxt = "\n".join("[%s] %s (measure: %s)" % (g["id"], g["text"], g.get("measure")) for g in G)
     rtxt = ("%s\nLESSON: %s\nFOCUS FOR TODAY: %s" % (rv.get("text"), rv.get("lesson"), rv.get("focus"))) if rv.get("day") else "(no review yet - first day)"
     j = W.ask_json(PLAN_SYSTEM, "YOUR GOALS:\n%s\n\nYESTERDAY'S REVIEW:\n%s\n\nTODAY'S FACTS:\n%s\n\nJSON only." % (gtxt, rtxt, ctx[:12000]),
-                   models=("sonnet", "haiku"), timeout=150, log=log, warm=False)
+                   models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     if not isinstance(j, dict) or not isinstance(j.get("items"), list):
         return None
     gid = set(g["id"] for g in G)
@@ -209,7 +209,7 @@ def review_night(W, ctx, log=None):
     ptxt = "\n".join("[%s] %s (%s, %s)%s" % (i["id"], i["what"], i["kind"], i["when"], " - DONE: " + (i.get("note") or "yes") if i.get("done") else "") for i in p["items"])
     gtxt = "\n".join("[%s] %s (measure: %s)" % (g["id"], g["text"], g.get("measure")) for g in goals())
     j = W.ask_json(REVIEW_SYSTEM, "YOUR GOALS:\n%s\n\nYOUR PLAN (%s):\n%s\n\nWHAT REALLY HAPPENED:\n%s\n\nJSON only." % (gtxt, p["day"], ptxt, ctx[:14000]),
-                   models=("sonnet", "haiku"), timeout=150, log=log, warm=False)
+                   models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     if not isinstance(j, dict) or not str(j.get("text") or "").strip():
         return None
 
