@@ -291,6 +291,8 @@ def story_due(uid):
     d = _load()
     day = time.strftime("%Y-%m-%d", time.gmtime())
     st = ((d.get("story") or {}).get(uid) or {})
+    if st.get("day") == day and not st.get("text") and time.time() - float(st.get("t") or 0) > 600:
+        return True                                  # an empty one (a failed call) is retried after 10 min
     return st.get("day") != day and time.gmtime().tm_hour >= 7
 
 
