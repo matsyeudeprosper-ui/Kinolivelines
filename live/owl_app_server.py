@@ -18100,6 +18100,119 @@ def _exec_ctx(kind="plan"):
     return "\n".join(L)
 
 
+def _humans():
+    """the ids of real members = accounts with at least one conversation (bots and demo accounts are not people)"""
+    out = set()
+    for u in users()[:60]:
+        try:
+            if chat_list(u).get("chats"):
+                out.add(u.get("id"))
+        except Exception:
+            pass
+    return out
+
+
+def _surprise_tick():
+    """2026-10-23 (engine 5): every 10 min, what did not go as he expected becomes a feeling and a thought"""
+    try:
+        _rc()
+        import kino_surprise as _KS
+        _KS.tick(_humans())
+    except Exception:
+        pass
+
+
+def _identity_evidence():
+    """2026-10-23 (engine 6): the numbers his monthly 'who I have become' is written from"""
+    _rc()
+    ev = {}
+    try:
+        import kino_commit as _KC
+        ev["word_30d"] = _KC.stats(None, 30)
+    except Exception:
+        pass
+    try:
+        H = json.load(open(os.path.join(DIR, "robots", "kino_exam_history.json"), encoding="utf-8"))
+        ev["exam"] = [{"passed": x.get("passed"), "n": x.get("n")} for x in H[-5:]]
+    except Exception:
+        pass
+    try:
+        import kino_inner as _KI
+        ev["hunch_score"] = _KI.hunch_score()
+        ev["track_record"] = str(_KI.track_record())[:300]
+    except Exception:
+        pass
+    try:
+        import kino_mind as _KM
+        d = _KM.load()
+        ev["lessons"] = len(d.get("lessons") or [])
+        ev["self"] = d.get("self")
+        ev["opinions"] = len(d.get("opinions") or [])
+    except Exception:
+        pass
+    try:
+        import kino_episodes as _KE
+        E = _KE._load() or {}
+        ev["episodes"] = sum(len(u.get("episodes") or []) for u in E.values())
+        ev["facts"] = sum(len(u.get("facts") or []) for u in E.values())
+    except Exception:
+        pass
+    try:
+        import kino_exec as _KX
+        G = _KX.goals(active=False)
+        ev["goals"] = {"open": sum(1 for g in G if g.get("status") == "open"), "done": sum(1 for g in G if g.get("status") == "done"),
+                       "dropped": sum(1 for g in G if g.get("status") == "dropped")}
+        ev["reviews"] = len(_KX._load().get("reviews") or [])
+    except Exception:
+        pass
+    try:
+        import kino_person as _KP
+        ev["readings"] = {uid: _KP.score(uid) for uid in _humans()}
+    except Exception:
+        pass
+    ev["members"] = len(_humans())
+    return ev
+
+
+def _identity_night(force=False):
+    """monthly: the constitution (re-read) and the timeline entry"""
+    try:
+        _rc()
+        import kino_identity as _KID, kino_mind as _KM
+        lg = os.path.join(DIR, "robots", "kino_identity.log")
+        d = _KM.load()
+        _KID.write_constitution(_rc().W, _rc().SYSTEM, json.dumps(d.get("self"), ensure_ascii=False) + "\n" + json.dumps(d.get("personality"), ensure_ascii=False),
+                                "\n".join(str(x) for x in (d.get("lessons") or [])[-20:]), force=force, log=lg)
+        _KID.write_timeline(_rc().W, _identity_evidence(), force=force, log=lg)
+    except Exception:
+        pass
+
+
+def kino_wish(user, body):
+    """2026-10-23 (engine 7): the creator answers one of Kino's wishes (accepted | built | declined, with a note) - and Kino is told"""
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    _rc()
+    import kino_identity as _KID, kino_mind as _KM
+    key, status, note = str(body.get("key") or ""), str(body.get("status") or ""), str(body.get("note") or "")[:300]
+    w = next((x for x in _KID.wishes_view(_KM) if x["key"] == key), None)
+    if not w:
+        return {"ok": False, "err": "unknown"}
+    changed = _KID.wish_set(key, status, note)
+    if changed and status in ("built", "declined"):
+        try:
+            ch = chat_list(user).get("chats") or []
+            if ch:
+                _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
+                threading.Thread(target=_chat_quick, args=(ch[0]["id"], user, "THE CREATOR ANSWERED ONE OF YOUR WISHES: you had asked for \"%s\" - it is now %s%s. "
+                                 "Say in one or two lines, to them, what it changes for you (and if it was built, use it from now on); no thanks-speech." % (
+                                     w["text"], "BUILT" if status == "built" else "DECLINED", (" (%s)" % note) if note else "")),
+                                 kwargs={"notify": True}, daemon=True).start()
+        except Exception:
+            pass
+    return {"ok": True, "changed": changed}
+
+
 def _exec_morning():
     """07:00-09:00 UTC once a day: goals when there are none, then the plan of the day"""
     if _EXEC_BUSY.get("m"):
@@ -18147,6 +18260,7 @@ def _kino_night_mind():
             _KX.set_goals(_rc().W, _exec_ctx("goals"), log=_lg)
         except Exception:
             pass
+        _identity_night()        # 2026-10-23 (engine 6): monthly constitution + "who I have become" (idempotent inside)
         try:              # 2026-10-19 (owner next-list item 1): Kino looks after its own robot
             import robot_world as _WDn, robot_tools as _RTn, robot_demo as _RDn
             _KM.my_robot_night(_WDn.lab_digest() + "\n" + _KM.playbook_block(),
@@ -18865,6 +18979,12 @@ def _companion_loop():
         try:                 # 2026-10-23 (engine 4): the morning plan, 07:00-09:00 UTC, once a day (plan_morning is idempotent)
             if 7 <= time.gmtime().tm_hour < 9 and not _EXEC_BUSY.get("m"):
                 threading.Thread(target=_exec_morning, daemon=True).start()
+        except Exception:
+            pass
+        try:                 # 2026-10-23 (engine 5): surprises, every 10 min
+            if time.time() - float(_EXEC_BUSY.get("s") or 0) > 600:
+                _EXEC_BUSY["s"] = time.time()
+                threading.Thread(target=_surprise_tick, daemon=True).start()
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap levels 4, 7, 8): Kino's night mind, 03:00-05:00 UTC, once a day
@@ -28321,7 +28441,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel",
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
@@ -28343,7 +28463,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel,
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
@@ -30708,8 +30828,10 @@ class H(BaseHTTPRequestHandler):
         elif sub == "kino_exec" and is_admin(user):
             # 2026-10-23 (engine 4): his goals, today's plan, the last reviews - and (engine 1) his word
             _rc()
-            import kino_exec as _KX, kino_commit as _KC
-            self._send(json.dumps(dict(_KX.admin_view(), word=_KC.stats(None, 7), open=_KC.open_for()), ensure_ascii=False), "application/json")
+            import kino_exec as _KX, kino_commit as _KC, kino_identity as _KID, kino_mind as _KM
+            _idn = _KID._load()
+            self._send(json.dumps(dict(_KX.admin_view(), word=_KC.stats(None, 7), open=_KC.open_for(), wishes=_KID.wishes_view(_KM),
+                                       constitution=_idn.get("constitution"), timeline=(_idn.get("timeline") or [])[-3:]), ensure_ascii=False), "application/json")
         elif sub in ("kinoday", "kino_day"):
             if not ((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public")):
                 self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers()

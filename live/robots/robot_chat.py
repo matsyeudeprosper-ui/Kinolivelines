@@ -842,6 +842,13 @@ def system(stable=""):
         gb = KX.goals_block()
     except Exception:
         gb = ""
+    try:                     # 2026-10-23 (engine 6): his constitution and who he has become (monthly)
+        import kino_identity as KID
+        ib = KID.block()
+        if ib:
+            gb = (gb + "\n\n" + ib) if gb else ib
+    except Exception:
+        pass
     return SYSTEM + "\n\n" + WD.world(PLANS) + ("\n\n" + mind if mind else "") + "\n\n" + AGENDA_RULES + (("\n\n" + gb) if gb else "") + (("\n\n" + stable) if stable else "")
 
 
@@ -1198,6 +1205,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
         _pb = _KP.block(chat.get("uid"), chat.get("id"), ml)
         if _pb:
             U += "\n" + _pb + "\n"
+    except Exception:
+        pass
+    try:                                   # 2026-10-23 (engine 5): what did not go as he expected (24 h)
+        import kino_surprise as _KS
+        _sb = _KS.block(chat.get("uid"), ml)
+        if _sb:
+            U += "\n" + _sb + "\n"
     except Exception:
         pass
     if not stable:
