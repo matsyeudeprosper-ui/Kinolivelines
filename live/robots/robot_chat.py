@@ -106,6 +106,13 @@ message). If they still don't get it, change the angle completely; never repeat 
 INNER VOICE BEFORE YOU SPEAK: every reply starts with "inner" - ONE short line to yourself, never shown (2026-10-23: the
 member waits for every word written before "say"): the ONE thing to say, and the tone; the rest of the thinking you do in
 your head.
+YOUR THREAD OF MIND (2026-10-23, owner: "he reacts turn by turn, nothing of his own carries"): a conversation is a path you
+walk, not a series of reactions. At the END of every reply write "mind" - to yourself, never shown: what you are PURSUING in
+this exchange (a question you want answered, a point you are building to, a thing you want to show them), what you are
+HOLDING back for a better moment, your STANCE toward them right now, and what you mean to say NEXT if they give you room.
+Next turn you read it back (YOUR THREAD OF MIND in the message) and continue it - pick up where you left off, come back
+to what you were building, bring the held-back thing when the moment comes. When they change the subject, follow them and
+rewrite the thread; when a line is dead, drop it in "mind". They never hear the thread, they feel it.
 "say" comes out of that. AFTER "say", re-read it as the member would, in "fix": if it sounds like a support desk (a
 report, a form, three facts, a status line, a hedging tic, a number they did not ask for), write the whole message
 again as a person in the room in "fix" - it replaces "say". Otherwise "fix": null. Be honest in that check: most of
@@ -606,6 +613,8 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
  "told": ["m..."] - the ids of THINGS YOU COULD TELL THEM that THIS message tells (else omit),
  "feedback": null, or {"kind": "repeat|forgot|topic|robotic|tone|long|wrong|language|slow|praise|other", "quote": "their words"} when
    their last message was a remark about YOU (how you talk, what you forgot, your tone) - it is kept for good,
+ "mind": {"pursuing": "...", "holding": "... or null", "stance": "...", "next": "..."} - YOUR THREAD OF MIND, one short line each,
+   written to yourself (English or their language), read back to you next turn,
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
  "project": null or {"op": "add"|"update"|"done", "title": "...", "need": "...", "finding": "..."} (see A PARTNER),
  "learned": null or "what they taught you, general", "ask_nest": null or "a general question for other members",
@@ -1333,6 +1342,12 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
             U += "\n" + _shb + "\n"
     except Exception:
         pass
+    try:                                   # 2026-10-23: his thread of mind in this conversation, written last turn
+        _mb = mind_block(chat)
+        if _mb:
+            U += "\n" + _mb + "\n"
+    except Exception:
+        pass
     try:                                   # 2026-10-23 (commitment ledger, engine 1): what he still owes them, and his word this week
         import kino_commit as _KC
         _cb = _KC.block(chat.get("uid"), chat.get("id"), ml)
@@ -1805,7 +1820,9 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
             "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw), "story_told": bool(raw.get("story_told")),
             "told": [str(x) for x in (raw.get("told") or []) if isinstance(x, (str, int))][:3] if isinstance(raw.get("told"), list) else [],
-            "feedback": raw.get("feedback") if isinstance(raw.get("feedback"), dict) else None}
+            "feedback": raw.get("feedback") if isinstance(raw.get("feedback"), dict) else None,
+            "mind": {k: str(raw["mind"].get(k))[:200] for k in ("pursuing", "holding", "stance", "next") if raw["mind"].get(k) and str(raw["mind"].get(k)).lower() not in ("null", "none")}
+                    if isinstance(raw.get("mind"), dict) else None}
 
 
 # ---------------------------------------------------------------- tics (2026-10-23 evening, owner: "no interesting speaking style")
@@ -1859,6 +1876,20 @@ def _shape(t):
 
 def _my_last(chat, n=6):
     return [str(m.get("text") or "") for m in (chat.get("msgs") or []) if m.get("role") == "ai" and m.get("text")][-n:]
+
+
+def mind_block(chat):
+    """what he wrote to himself at the end of his last reply in this conversation (c["mind"]), with its age"""
+    md = chat.get("mind") or {}
+    if not isinstance(md, dict) or not (md.get("pursuing") or md.get("next")):
+        return ""
+    age = time.time() - float(md.get("t") or 0)
+    when = ("%d min ago" % (age / 60)) if age < 6 * 3600 else ("in your last conversation with them, %d h ago" % (age / 3600))
+    parts = [("pursuing", "pursuing"), ("holding", "holding back"), ("stance", "your stance"), ("next", "you meant to say next")]
+    return ("YOUR THREAD OF MIND in this conversation (written to yourself %s): " % when + " | ".join(
+        "%s: %s" % (lbl, str(md[k])[:160]) for k, lbl in parts if md.get(k)) +
+        (". Continue it - unless they just changed the subject; then rewrite it." if age < 6 * 3600 else
+         ". Pick it up only if it still fits; a person remembers what they meant to ask."))
 
 
 def shape_block(chat):

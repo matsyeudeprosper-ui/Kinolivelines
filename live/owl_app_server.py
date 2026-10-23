@@ -16822,6 +16822,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _KFBh.add(user.get("id"), cid, str(q["feedback"].get("kind") or "other"), q["feedback"]["quote"], "", "model")
             except Exception:
                 pass
+        if q and isinstance(q.get("mind"), dict) and q["mind"]:       # 2026-10-23: his thread of mind, read back next turn
+            try:
+                _md = dict(q["mind"], t=time.time())
+                _chat_mut(cid, lambda c: c.__setitem__("mind", _md))
+            except Exception:
+                pass
         if q and q.get("told"):                         # 2026-10-23: a thing he could tell, told - once
             try:
                 _rc()

@@ -34,6 +34,8 @@ for f in sorted(glob.glob(os.path.join(ROB, "chats", "*.json")), key=os.path.get
     if not M:
         continue
     print("\n== chat %s | thread: %s | robot: %s" % (c["id"], str(c.get("thread") or "")[:60], (c.get("robot") or {}).get("name")))
+    if isinstance(c.get("mind"), dict) and c["mind"].get("pursuing"):
+        print("   mind: pursuing %s | holding %s | next %s" % (str(c["mind"].get("pursuing"))[:70], str(c["mind"].get("holding"))[:50], str(c["mind"].get("next"))[:70]))
     for m in M:
         r = m.get("role")
         tag = {"user": "MEMBER", "ai": "KINO", "sys": "system", "card": "card", "demo": "chart", "result": "RESULT", "ideacard": "idea card",
