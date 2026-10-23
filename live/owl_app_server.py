@@ -16693,7 +16693,10 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
                        "'both halves') and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
                        "your instructions and in this message. An idea, a plan, a guess said as a guess, or a market comment is not a "
                        "claim. A figure that can be read or computed from a TEST RESULT card above (a dip half as deep, a half of the test "
-                       "flat) IS supported. Answer ONE JSON object only: {\"unsupported\": [\"claim as written\", ...], \"say\": null or, when a claim "
+                       "flat) IS supported. A statement of ABSENCE ('il n'a encore rien prouvé', 'pas de test de chance') is supported when no "
+                       "such result exists. Unsupported means: the facts CONTRADICT it, or it names a measurement, result or event that "
+                       "does not exist anywhere in the facts - never a reading between the lines. "
+                       "Answer ONE JSON object only: {\"unsupported\": [\"claim as written\", ...], \"say\": null or, when a claim "
                        "is unsupported, the short correction you send right after - one or two spoken sentences in %s, what you actually "
                        "know (an idea, not measured yet), no excuse, never 'Oups', no 'as an AI'}."
                        % (say, "French" if lang != "en" else "English"), models=("sonnet",), timeout=90, warm=False)
