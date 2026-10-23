@@ -205,7 +205,9 @@
    "by": "labo",
    "date": "2026-10-23",
    "note": "64 trades, 42 % gagnés contre 52 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answer_fr": "Changement de sens juste après une perte : 64 trades, 42 % gagnés contre 52 % pour les autres, environ moins cinquante-quatre dollars, et les deux moitiés sont d'accord (39 % puis 45 %). Le trou vient des marchés nerveux (1,0-1,3 : 4 gagnés sur 15, moins trente-six). Mais l'heure compte aussi : 13 h et 16 h perdent presque tout, la nuit gagne. Un essai de mise réduite a déjà coûté sur le robot filtré. Je le garde en piste, sans règle.",
+   "answer_en": "Reversal right after a loss: 64 trades, 42% won against 52% for the rest, about minus fifty-four dollars, and both halves agree (39% then 45%). The hole sits in nervous markets (1.0-1.3: 4 won of 15, minus thirty-six). But the hour matters too: 1 pm and 4 pm lose almost everything, the night wins. A smaller-stake test already cost money on the filtered robot. I keep it as a lead, no rule."
   },
   {
    "id": "ask_1792749605_gap_30_60",
@@ -215,7 +217,9 @@
    "by": "labo",
    "date": "2026-10-23",
    "note": "42 trades, 57 % gagnés contre 46 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answer_fr": "Trade pris 30 à 60 minutes après le précédent : 42 trades, 57 % gagnés contre 46 %, environ plus onze dollars, mais les deux moitiés ne sont pas d'accord (62 % puis 52 %) et le gain par trade reste petit (facteur 1,13). Cela va avec ce que je crois de la pause : le robot gagne après un repos de 15 minutes à une heure, perd quand il repart en moins de 15 minutes (54 trades, moins quarante et un). Un indice, pas une règle.",
+   "answer_en": "Trade taken 30 to 60 minutes after the previous one: 42 trades, 57% won against 46%, about plus eleven dollars, but the halves disagree (62% then 52%) and the gain per trade is small (factor 1.13). It fits what I believe about the pause: the robot wins after a 15-minute to one-hour rest and loses when it restarts within 15 minutes (54 trades, minus forty-one). A hint, not a rule."
   }
  ]
 }
