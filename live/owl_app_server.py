@@ -23366,12 +23366,12 @@ def place_payload(user, admin=False):
     for rid, rb in R.items():
         if rb.get("by_uid") == uid and rid not in {m["id"] for m in mine}:
             ok, why = _OMKT.can_publish(rid, uid, me["admin"])
-            my_robots.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "can": ok, "why": why, "test": _OMKT.result_of(rid)})
+            my_robots.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "can": ok, "why": why, "test": _OMKT.any_result(rid)})
     if me["admin"]:
         for rid, rb in R.items():
             if rid not in {m["id"] for m in mine} and rid not in {m["id"] for m in my_robots} and rb.get("public"):
                 ok, why = _OMKT.can_publish(rid, uid, True)
-                my_robots.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "can": ok, "why": why, "test": _OMKT.result_of(rid)})
+                my_robots.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "can": ok, "why": why, "test": _OMKT.any_result(rid)})
     sub = _OMKT.sub_of(uid)
     if sub:
         sub = dict(sub, name=(R.get(sub.get("rid")) or {}).get("name_fr") or sub.get("rid"))

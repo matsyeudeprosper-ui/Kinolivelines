@@ -131,7 +131,25 @@ def best_result(rid):
         p30 = lambda x: float(x.get("net") or 0) * 30.0 / float(x.get("days") or 42)
         if best is None or p30(cand) > p30(best):
             best = cand
+    if best:                               # the proof the place shows: the luck test of that market
+        c = _load(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, best["sym"])), {}) or {}
+        best.update(luck_pct=c.get("percentile"), luck_seeds=c.get("seeds"), luck_beats=c.get("beats"))
     return best
+
+
+def any_result(rid):
+    """the result to SHOW for a robot (proven or not): its best proven market, else its Bitcoin test, else the test on
+    the market it was built for - a gold robot not yet proven still has a result (it said "pas encore testé")"""
+    b = best_result(rid) or result_of(rid)
+    if b:
+        return b
+    mk = str((robots().get(rid) or {}).get("market") or "").upper()
+    r = _load(os.path.join(RESULTS, "%s@%s.json" % (rid, mk)), None) if mk else None
+    R = (r or {}).get("robot") or {}
+    if R.get("net") is None:
+        return None
+    return {"net": R.get("net"), "trades": R.get("trades"), "win_rate": R.get("win_rate"), "cc_dd": R.get("cc_dd"), "days": r.get("days"),
+            "window_utc": r.get("window_utc"), "curve": (R.get("curve") or [])[-120:], "sym": mk}
 
 
 def can_publish(rid, uid, is_admin=False):
@@ -143,9 +161,9 @@ def can_publish(rid, uid, is_admin=False):
         return False, "pas votre robot"
     res = best_result(rid)                 # 2026-10-22: Bitcoin OR the market it passed its luck test on
     if not res:
-        return False, "le test de chance (100 tirages) n'est réussi sur aucun marché"
+        return False, "test de chance à réussir"
     if float(res["net"]) <= 0:
-        return False, "le test est négatif (%.2f $)" % float(res["net"])
+        return False, "test négatif (%.2f $)" % float(res["net"])
     return True, ""
 
 
