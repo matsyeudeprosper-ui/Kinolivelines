@@ -16429,8 +16429,11 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
         if _CHAT_PENDING.pop(cid, None):
             try:
                 c = json.load(open(_chat_path(cid), encoding="utf-8"))
-                lm = (c.get("msgs") or [])[-1:]
-                if lm and lm[0].get("role") in ("user", "show", "image", "doc") and not lm[0].get("answered"):
+                M = c.get("msgs") or []
+                iu = max([i for i, m in enumerate(M) if m.get("role") in ("user", "show", "image", "doc")] or [-1])
+                # 2026-10-23: after an event reply the LAST message is Kino's own, and the member's question stayed unanswered
+                answered = iu < 0 or M[iu].get("answered") or any(m.get("role") == "ai" and not m.get("event") for m in M[iu + 1:])
+                if not answered:
                     threading.Thread(target=_chat_listen, args=(cid, user), daemon=True).start()
             except Exception:
                 pass
@@ -16933,6 +16936,18 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         q["say"] = None
             except Exception:
                 pass
+            if q["say"] and event and not str(event).startswith(("YOUR PROMISE", "YOUR FOLLOW-ON")):
+                # 2026-10-23 22:23 (watch): the member asked "j'ai un trade en cours ?" while an initiative (Opus, ~18 s) was being
+                # written; the initiative landed instead of the answer and they wrote "Quoi ?". Member first: a message of his
+                # own is dropped when they wrote in the meantime - the pending re-run answers them.
+                try:
+                    if any(m.get("role") in ("user", "show", "image", "doc") and float(m.get("t") or 0) >= _t0q - 1 for m in c.get("msgs") or []):
+                        io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s EVENT DROPPED (member wrote meanwhile) %s | %s\n" % (
+                            time.strftime("%m-%d %H:%M:%S"), cid, str(event)[:30], str(q["say"])[:120].replace("\n", " ")))
+                        q["say"] = None
+                        _CHAT_PENDING[cid] = True
+                except Exception:
+                    pass
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), **_vn,
                           followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
