@@ -61,6 +61,16 @@ let D=null;
 async function load(){try{D=await (await fetch(B+'kino_data',{cache:'no-store'})).json();}catch(e){$('main').innerHTML='<div class="empty">'+T('Hors ligne.','Offline.')+'</div>';return;}paint();}
 function paint(){let h='';const g=D.goal||{};
  h+='<div class="card goal"><h2><i>◎</i>'+T('Ce qu’on vise ensemble','What we are aiming at')+'</h2>'+(g.goal?'<b>'+esc(g.goal)+'</b>'+(g.why?'<small>'+esc(g.why)+'</small>':'')+(g.next?'<div class="nx">'+T('Prochaine étape : ','Next step: ')+esc(g.next)+'</div>':''):'<div class="empty">'+T('Kino se fixe un objectif avec toi après vos premières conversations.','Kino sets a goal with you after your first conversations.')+'</div>')+'</div>';
+ const RC=D.record||null;
+ if(RC){const pr=RC.promises||{},bl=RC.beliefs||{},ex=(RC.exam||[]).slice(-1)[0],tb=RC.their_bets||{};const rows=[];
+  if((pr.kept||0)+(pr.broken||0))rows.push(T('Promesses tenues cette semaine : ','Promises kept this week: ')+'<b>'+pr.kept+' sur '+((pr.kept||0)+(pr.broken||0))+'</b>'+(pr.broken?T(' ? il a dit lui-même celles qu’il n’a pas tenues',' ? he said himself which ones he did not keep'):''));
+  if(RC.corrections)rows.push(T('Il s’est corrigé de lui-même : ','He corrected himself: ')+'<b>'+RC.corrections+'</b>'+T(' fois',' times'));
+  if(bl.resolved)rows.push(T('Ses paris vérifiés : ','His checked bets: ')+'<b>'+bl.resolved+'</b>'+(bl.brier!=null?T(' ? justesse ','  ? accuracy ')+Math.round((1-bl.brier)*100)+'/100':''));
+  else rows.push(T('Ses paris : il note maintenant chaque chose qu’il affirme, avec sa confiance. Les premiers se vérifient dans quelques jours.','His bets: he now writes down every claim with his confidence. The first ones get checked in a few days.'));
+  (bl.wrong||[]).slice(0,2).forEach(w=>rows.push(T('Il s’était trompé ','He was wrong ')+esc(w.date)+' : « '+esc(w.text)+' »'+T(' (il était sûr à ',' (he was ')+w.p+' %)'));
+  if(tb.n)rows.push(T('Tes propres prévisions : ','Your own calls: ')+'<b>'+tb.right+' sur '+tb.n+'</b>'+T(' justes',' right'));
+  if(ex&&ex.n)rows.push(T('Son examen de la nuit : ','His night exam: ')+'<b>'+ex.passed+'/'+ex.n+'</b>'+T(' situations réussies',' situations passed'));
+  h+='<div class="card"><h2><i>📓</i>'+T('Le carnet de Kino','Kino’s record')+'</h2><div class="list">'+rows.map(r=>'<div class="it" style="display:block"><span>'+r+'</span></div>').join('')+'</div><p class="sub">'+T('Tout est compté par la machine, pas par lui.','All counted by the machine, not by him.')+'</p></div>';}
  const PT=D.path||[];
  if(PT.length){const done=PT.filter(x=>x.date).length,nx=PT.find(x=>!x.date);
   h+='<div class="card"><h2><i>➶</i>'+T('Ton parcours','Your path')+' · '+done+'/'+PT.length+'</h2><div class="list">'+PT.map(x=>'<div class="it"'+(x.date?'':' style="opacity:.55"')+'><span>'+(x.date?'✅ ':(nx&&nx.k===x.k?'👉 ':'◻️ '))+esc(x.label)+(x.date?' <small style="color:var(--muted)">· '+esc(x.date)+'</small>':'')+'</span></div>').join('')+'</div></div>';}

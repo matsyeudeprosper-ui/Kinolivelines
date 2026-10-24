@@ -19548,7 +19548,68 @@ def kino_data(user):
             out["reports"] = (json.load(open(_KM.REPORTS, encoding="utf-8")).get("reports") or [])[-3:][::-1]
         except Exception:
             out["reports"] = []
+    try:                                              # 2026-10-24 (owner review, item 5): Kino's track record, visible to the member
+        out["record"] = _kino_record(user)
+    except Exception:
+        out["record"] = None
     return out
+
+
+def _kino_record(user, days=7):
+    """what Kino's honesty looks like in numbers, for the member: promises kept / broken, corrections he posted, his bets and
+    calibration, his nightly exam, and the day's measured conversation (kino_scorecard)"""
+    uid = user.get("id")
+    R = {"days": days}
+    _rc()
+    try:
+        import kino_commit as _KC
+        R["promises"] = _KC.stats(uid, days)
+    except Exception:
+        pass
+    try:
+        import kino_belief as _KB
+        cal = _KB.calibration(uid, 30)
+        wrong = sorted([b for b in _KB._load().get("b") or [] if b["uid"] == uid and b.get("who", "me") == "me" and b["status"] == "false"],
+                       key=lambda b: -float(b.get("resolved_t") or 0))[:3]
+        R["beliefs"] = {"resolved": cal.get("n", 0), "brier": cal.get("brier"), "buckets": cal.get("buckets") or {}, "open": cal.get("open", 0),
+                        "wrong": [{"text": b["text"][:140], "p": round(b["p"] * 100), "why": (b.get("evidence") or "")[:100],
+                                   "date": time.strftime("%d/%m", time.gmtime(float(b.get("resolved_t") or b["t"])))} for b in wrong]}
+        theirs = [b for b in _KB._load().get("b") or [] if b["uid"] == uid and b.get("who") == "them" and b["status"] in ("true", "false")]
+        R["their_bets"] = {"n": len(theirs), "right": sum(1 for b in theirs if b["status"] == "true")}
+    except Exception:
+        pass
+    try:
+        cids = set(x.get("id") for x in (chat_list(user).get("chats") or []))
+        t0 = time.time() - days * 86400
+        n = 0
+        for l in io.open(os.path.join(DIR, "robots", "claims.log"), encoding="utf-8").read().splitlines():
+            if " CORRECTION " in l and any(c and c in l for c in cids):
+                try:
+                    ts = time.mktime(time.strptime(time.strftime("%Y-") + l[:14], "%Y-%m-%d %H:%M:%S"))
+                except Exception:
+                    ts = time.time()
+                if ts >= t0:
+                    n += 1
+        R["corrections"] = n
+    except Exception:
+        pass
+    try:
+        H = json.load(open(os.path.join(DIR, "robots", "kino_exam_history.json"), encoding="utf-8"))
+        R["exam"] = [{"date": time.strftime("%d/%m", time.gmtime(float(h.get("t") or 0))), "passed": h.get("passed"), "n": h.get("n")} for h in H[-7:]]
+    except Exception:
+        pass
+    try:
+        SC = json.load(open(os.path.join(DIR, "lab", "kino_scorecard.json"), encoding="utf-8"))
+        rows = []
+        for day in sorted(SC)[-3:]:
+            S = (SC.get(day) or {}).get(uid)
+            if S and S.get("replies"):
+                rows.append({"day": day[5:], "replies": S.get("replies"), "question_pct": S.get("question_pct"), "closers": S.get("closers"),
+                             "disagree": S.get("disagree"), "first_words_s": S.get("first_words_med_s"), "tics": len(S.get("tics") or [])})
+        R["days_measured"] = rows
+    except Exception:
+        pass
+    return R
 
 
 def kino_directive(user, body):
