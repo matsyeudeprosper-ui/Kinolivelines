@@ -14647,6 +14647,11 @@ def _rc():
         m.FRESH_OF = lambda chat: _chat_member_fresh(chat.get("uid"), chat)
     if hasattr(m, "RECENT_OF") and m.RECENT_OF is None:
         m.RECENT_OF = _recent_ai_texts
+        try:                                   # 2026-10-24 (Kino v2 engine 1): the Voice engine sees his texts in the member's other chats
+            import kino_voice as _KVr
+            _KVr.RECENT = lambda uid, cid: [(t_, tx) for t_, tx in _recent_ai_texts(uid, 1) if True]
+        except Exception:
+            pass
     return m
 
 
@@ -15221,6 +15226,18 @@ def _chat_msg(c, role, **kw):
         if role == "ai" and not m["text"].strip() and not any(m.get(k) for k in ("made", "link", "ready", "vn", "show", "card", "audio")):
             return m                                     # tool-call markup only ('<invoke name="noop"/>'): nothing to show
         m["text"] = _re.sub(r"\n{3,}", "\n\n", _re.sub(r"(?i)<br\s*/?>", "\n", m["text"])).strip()
+    if role == "ai" and c.get("uid"):          # 2026-10-24 (Kino v2 engine 1): one voice, one bubble - robots/kino_voice.py
+        try:
+            _rc()
+            import kino_voice as _KV
+            _dec = _KV.post(c, m)
+            if _dec[0] == "edit":
+                return _dec[2]
+            if _dec[0] == "drop":
+                return m
+            m = _dec[1]
+        except Exception:
+            pass
     c.setdefault("msgs", []).append(m)
     return m
 
@@ -16805,7 +16822,7 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
             pass
         if not bad or not (10 < len(corr) < 600) or corr.lower() in ("null", "none"):
             return
-        _chat_mut(cid, lambda c: _chat_msg(c, "ai", text=corr, quick=True, correction=True))
+        _chat_mut(cid, lambda c: _chat_msg(c, "ai", text=corr, quick=True, correction=True, claims=bad))   # Voice rewrites the bubble in place
         try:                                           # 2026-10-23: a corrected claim of his own embarrasses him - fewer claims tonight
             _rc(); __import__("kino_inner").feel("embarrassed", 0.4, uid=(json.load(open(_chat_path(cid), encoding="utf-8")).get("uid")), why="you had to correct a claim of yours")
         except Exception:

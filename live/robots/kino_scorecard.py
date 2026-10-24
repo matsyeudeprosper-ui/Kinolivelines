@@ -135,6 +135,12 @@ def score_day(uid, day=None):
         except Exception:
             return []
     S["rewrites"] = len(lines("tics.log"))
+    try:                                   # 2026-10-24 (Kino v2 engine 1)
+        import kino_voice as KV
+        S["voice"] = KV.counts(loc)
+        S["bubbles_per_turn"] = KV.bubbles_per_turn(msgs)
+    except Exception:
+        S["voice"] = None
     cl = lines("claims.log")
     S["corrections"] = sum(1 for l in cl if " CORRECTION " in l)
     S["initiatives_dropped"] = sum(1 for l in cl if "EVENT DROPPED" in l)

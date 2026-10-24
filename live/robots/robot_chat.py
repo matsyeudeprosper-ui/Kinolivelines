@@ -994,6 +994,13 @@ def slow_block(uid, memory, lang="fr"):
             L.append(pb)
     except Exception:
         pass
+    try:                                   # 2026-10-24 (Kino v2 engine 1): the sermon lines they heard twice this week
+        import kino_voice as KV
+        tb = KV.told_block(uid, lang)
+        if tb:
+            L.append(tb)
+    except Exception:
+        pass
     so = [x for x in (memory or {}).get("standing") or []][-6:]
     if so:
         L.append("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "

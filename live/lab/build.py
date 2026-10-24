@@ -164,11 +164,24 @@ def gates(req, mod, new):
 
 
 def revert(mod, new, before_new):
-    if mod:
-        sh(["git", "checkout", "--"] + sorted(mod), 120)
+    """2026-10-24 (second incident, see memory feedback_constructeur_revert_deletes_files): a failed build reverted and DELETED
+    five files another session was writing at the same time (they were "new since the build started"). A revert only
+    touches the build's own perimeter (ALLOW); anything else is named in the log and left alone, and a new file is moved
+    to lab/revert_trash/<stamp>/ instead of being removed, so nothing is ever lost."""
+    outside = sorted(p for p in (set(mod) | (set(new) - set(before_new))) if p not in ALLOW)
+    if outside:
+        say("not reverting files outside the build perimeter (someone else's work): " + ", ".join(outside))
+    mine_mod = sorted(p for p in mod if p in ALLOW)
+    if mine_mod:
+        sh(["git", "checkout", "--"] + mine_mod, 120)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     for p in sorted(new - before_new):
+        if p not in ALLOW:
+            continue
         try:
-            os.remove(os.path.join(ROOT, p))
+            dst = os.path.join(LAB, "revert_trash", stamp, p.replace("/", os.sep))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            os.replace(os.path.join(ROOT, p), dst)
         except Exception:
             pass
 
