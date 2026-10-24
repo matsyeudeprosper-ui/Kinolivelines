@@ -15028,7 +15028,14 @@ def _state_data(uid, c=None):
     mine = [r for r in (reg.get("robots") or []) if r.get("by_uid") == uid]
     if c and c.get("robot_id") and c["robot_id"] in byid and byid[c["robot_id"]] not in mine:
         mine.append(byid[c["robot_id"]])
-    mine = sorted(mine, key=lambda r: str(r.get("tested_at") or r.get("created") or ""), reverse=True)[:12]
+    mine = sorted(mine, key=lambda r: str(r.get("tested_at") or r.get("created") or ""), reverse=True)
+    try:                                           # 2026-10-24 16:41: the robot under discussion was beyond the judge's cut - the chat's robot
+        _recent = " ".join(str(m.get("text") or "") for m in (c or {}).get("msgs", [])[-8:]).lower()   # and robots named lately come first
+        _rank = lambda r: (0 if r["id"] == (c or {}).get("robot_id") else 1 if str(r.get("name_fr") or "").lower()[:14] in _recent else 2)
+        mine = sorted(mine, key=_rank)
+    except Exception:
+        pass
+    mine = mine[:12]
     out = []
     for r in mine:
         rid, mk = r["id"], r.get("market") or "BTCUSD"
