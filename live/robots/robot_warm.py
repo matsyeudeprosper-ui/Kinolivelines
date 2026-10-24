@@ -34,6 +34,16 @@ def member_turn(flag):
     _TL.member = bool(flag)
 
 
+def set_brain(brain):
+    """2026-10-24 (Kino-O prototype): the conversation's brain for this thread - "openai" routes every call of the turn
+    (quick, build, judge, auditor, call brain) to robot_openai; None = Claude through claude.exe as usual"""
+    _TL.brain = brain if brain in ("openai",) else None
+
+
+def brain():
+    return getattr(_TL, "brain", None)
+
+
 def _budget_ok():
     now = time.time()
     with _LOCK:
@@ -233,6 +243,12 @@ def partial_say(buf, key="say"):
 
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
+    if getattr(_TL, "brain", None) == "openai":            # 2026-10-24 (Kino-O): the same text in and out, through OpenAI
+        try:
+            import robot_openai as _RO
+            return _RO.ask_text(system, user, model, timeout, log, on_text)
+        except Exception:
+            return None
     if not getattr(_TL, "member", False) and not _budget_ok():
         try:                                      # refused, and said so in the cost log
             io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(

@@ -795,7 +795,7 @@ async function load(id,force){try{if(!C){const cc=cacheGet(id);if(cc){C=cc;CID=c
  const flash=[];if(C&&C.view&&j.view){SL.forEach(([k])=>{if(JSON.stringify(C.view[k])!==JSON.stringify(j.view[k]))flash.push(k);});}
  if(langFlip(j))return;C=j;CID=j.id;cacheSet(j);paintChat(force);setTimeout(tourMaybe,1800);if(force||(j.rev||0)!==LASTREV||!$('bp').innerHTML)paintBP(flash);LASTREV=j.rev||0;
  const t=j.test||{};const wait=(j.draft||j.status==='thinking')?600:(j.status==='listening'?700:j.status==='building'?1500:(t.state==='queued'?8000:0));clearTimeout(POLL);if(wait)POLL=setTimeout(()=>load(CID),wait);}catch(e){clearTimeout(POLL);POLL=setTimeout(()=>load(CID),6000);}}
-async function start(robot){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
+async function start(robot,brain){const j=await post('chat_start',{lang:EN?'en':'fr',robot:robot||undefined,brain:brain||undefined});if(!j.ok){toast(ERR[j.err]||j.err||T('Impossible pour le moment.','Not possible right now.'));return;}
  history.replaceState(null,'','?c='+j.id);LASTN=0;LASTREV=-1;TYPED=new Set();FIRSTPAINT=false;PAINTCID=j.id;CID=j.id;const _ch=$('chat');if(_ch)_ch.innerHTML='';await load(j.id,true);}
 async function send(){const t=$('tx').value.trim();freqAdd(t);if(t&&!CID&&!SENDING){toast(T('Je reconnecte la conversation…','Reconnecting the conversation…'));const q=new URLSearchParams(location.search);if(q.get('c'))openChat(q.get('c'));else location.reload();return;}if(!t||SENDING||!CID)return;VOICE=!!LAST_SPOKEN&&t===LAST_SPOKEN.trim();LAST_SPOKEN='';SENDING=true;const SB={id:CID,text:t};if(IDEAOK){SB.idea_ok=1;IDEAOK=false;}if(VOICE)SB.voice=1;if(REPLY)SB.reply=REPLY;const RP=REPLY;replyClear();   // 2026-10-19: messages can follow each other, Kino reads the burst
  C.msgs.push({role:'user',text:t,t:Math.floor(Date.now()/1000),reply:RP||undefined});if(C.status!=='thinking')C.status='listening';$('tx').value='';autosize();paintChat(true);
@@ -952,6 +952,7 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
 (async()=>{const q=new URLSearchParams(location.search);
  if(q.get('c'))openChat(q.get('c'));
  else if(q.get('robot'))start(q.get('robot'));
+ else if(q.get('brain'))start(undefined,q.get('brain'));
  else{let L=[];try{L=(await getJ('chat_list')).chats||[];}catch(e){}if(L.length)openChat(L[0].id);else start();}
  // 2026-10-19 (owner item 1): arrived from a long-press "Demande à Kino" somewhere in the app
  if(q.get('ask')){const ask=q.get('ask');history.replaceState(null,'',location.pathname+(CID?'?c='+CID:''));let n=0;const w=setInterval(()=>{n++;if(CID&&C&&C.status!=='thinking'){clearInterval(w);$('tx').value=ask;send();}else if(n>40)clearInterval(w);},300);}

@@ -1716,6 +1716,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
     When the machine is busy (recent quick replies over ~9 s), the quick reply uses the faster model; building keeps the
     stronger one."""
     import time as _t
+    W.set_brain(chat.get("brain"))                               # 2026-10-24 (Kino-O): this conversation's brain
     cb = (lambda buf: on_say(W.partial_say(buf))) if on_say else None
     busy = sum(QUICK_LAT[-3:]) / len(QUICK_LAT[-3:]) > 16.0     # was 9 s: the switch itself met cold haiku processes (2026-10-20)
     # 2026-10-23 (owner: faster without losing quality): the faster model only when one of its processes is WARM and ready -
@@ -1980,6 +1981,7 @@ def _step(chat, fr, en):
 def answer(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, on_say=None, member=None, images=None):
     """the BUILD turn (+ one repair turn when needed) -> (answer, problems) or (None, reason)"""
     prev = chat.get("robot")
+    W.set_brain(chat.get("brain"))                               # 2026-10-24 (Kino-O): this conversation's brain
     _step(chat, "🧠 je relis ton idée et ton robot", "🧠 rereading your idea and your robot")
     sysp = system(stable_block(member, owl, pieces, markets, chat_market(chat), lang, memory, (chat.get("uid"), chat.get("id"))))   # 2026-10-23 (cost): same key as quick()
     up = prompt(chat, view(prev, pieces) or "nothing built yet", pieces, owl, markets, "BUILD", lang, memory, None, member, stable=True)

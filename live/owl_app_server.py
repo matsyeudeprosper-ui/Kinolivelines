@@ -15734,6 +15734,9 @@ def chat_start(user, body):
     cid = "%s_%d" % (re.sub(r"[^A-Za-z0-9]", "", me) or "u", int(time.time() * 1000))
     c = {"id": cid, "uid": me, "lang": "en" if en else "fr", "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
          "status": "ready", "robot": robot, "robot_id": rid, "rev": 1 if robot else 0, "msgs": []}
+    if str(body.get("brain") or "") == "openai" and is_admin(user):   # 2026-10-24: the Kino-O prototype (OpenAI brain), owner only
+        c["brain"] = "openai"
+        c["thread"] = "Kino-O · cerveau OpenAI (prototype)"
     if robot is not None:
         robot["market"] = "BTCUSD"
     try:
@@ -21870,6 +21873,7 @@ def live_spec(user, body):
 
     def run():
         _rc().W.member_turn(True)
+        _rc().W.set_brain(c.get("brain"))                      # 2026-10-24 (Kino-O)
         def cb(t):
             try:
                 say = _rc().W.partial_say(t)
@@ -21916,6 +21920,7 @@ def _vb_prime(sysp):
 def _voice_brain(cid, user):
     """one question from a live call, answered by the call brain (falls back to the full brain)"""
     c = json.load(open(_chat_path(cid), encoding="utf-8"))
+    _rc().W.set_brain(c.get("brain"))                          # 2026-10-24 (Kino-O): the call brain follows the conversation's brain
     en = c.get("lang") == "en"
     x = _VB_SYS.get(cid)
     sysp = x[1] if x and time.time() - x[0] < 1500 else (VOICE_BRAIN + "\n\n" + _live_facts(user, c))   # never wait for a warm-up here
