@@ -14650,6 +14650,7 @@ def _rc():
         try:                                   # 2026-10-24 (Kino v2 engine 1): the Voice engine sees his texts in the member's other chats
             import kino_voice as _KVr
             _KVr.RECENT = lambda uid, cid: [(t_, tx) for t_, tx in _recent_ai_texts(uid, 1) if True]
+            _KVr.PRESENT = lambda uid: time.time() - _LAST_SEEN.get(uid, 0) < 120       # engine 5: livelier while they are here
         except Exception:
             pass
     return m
@@ -16941,7 +16942,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             try:                                         # to speak on his own - member first, a gap, backoff when unanswered, flat member
                 _rc()
                 import kino_pace as _KPC
-                _okp, _whyp = _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")))
+                _pres = (time.time() - _LAST_SEEN.get(user.get("id"), 0) < 120) or any(
+                    m_.get("role") == "user" and time.time() - float(m_.get("t") or 0) < 600 for m_ in (c.get("msgs") or [])[-6:])
+                _okp, _whyp = _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")), present=_pres)
             except Exception:
                 _okp = True
             if not _okp:
@@ -21833,7 +21836,7 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
     if streak >= 3 and now - float(log[-1]["t"]) < 3 * 3600:
         return
     quiet = (6 * 60 if in_app else 50 * 60) * (1 + streak)
-    if now - last_any < quiet or len(log) >= (14 if in_app else 6):
+    if now - last_any < quiet or len(log) >= (22 if in_app else 6):
         return
     if (m.get("prefs") or {}).get("quiet"):
         q_ = m["prefs"]["quiet"]
@@ -21889,7 +21892,32 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
     mats.append(("market", "the market right now (see THE WORLD RIGHT NOW: a price that moved, a session opening, a news item) and what it means for their robot"))
     mats.append(("followup", "something THEY said or asked earlier in this conversation or the last days that is still open - come back to it naturally (\"tu m'avais dit...\")"))
     mats.append(("own", "what YOU have been doing or thinking (a bet, a lesson, a question you are digging into, an idea for their robot) - and if a useful step is obvious, DO it (act/build) and say so"))
-    pick = next((x for x in mats if x[0] not in used), mats[0])
+    # 2026-10-24 (owner: "same notice, he lacks things to say"): fresh fact packs built from real data (kino_spark), and the pick
+    # is the KIND least recently used over the whole week, not just absent from the last four
+    _spark_angle = None
+    try:
+        _rc()
+        import kino_spark as _KSp
+        for _k, _a, _ins in _KSp.pick(uid, c, DIR, CHAT_DIR, c.get("lang") or "fr", (c.get("robot") or {}).get("name") or "", (c.get("robot") or {}).get("market") or "BTCUSD",
+                                      price_line="see THE WORLD RIGHT NOW for the price"):
+            mats.append((_k, _ins + "||" + _a))
+    except Exception:
+        pass
+    _wk = [x for x in (m.get("initiative") or []) if now - float(x.get("t") or 0) < 7 * 86400]
+    _last_use = {}
+    for x in _wk:
+        _last_use[x.get("kind")] = max(_last_use.get(x.get("kind"), 0), float(x.get("t") or 0))
+    if mats and mats[0][0] == "tidy":
+        pick = mats[0]
+    else:
+        pick = min(mats, key=lambda x: (_last_use.get(x[0], 0), mats.index(x)))
+    if "||" in pick[1]:
+        _ins, _spark_angle = pick[1].split("||", 1)
+        pick = (pick[0], _ins)
+        try:
+            _KSp.used(uid, _spark_angle)
+        except Exception:
+            pass
     _mem_note_safe(uid, lambda mm2: mm2.__setitem__("initiative", ([x for x in (mm2.get("initiative") or []) if now - float(x.get("t") or 0) < 86400]
                                                                   + [{"t": now, "kind": pick[0], "cid": cid}])[-30:]))
     if pick[0] == "tidy":

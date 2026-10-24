@@ -92,6 +92,24 @@ started the action for real. Scorecard: `deed` = {claims, launched, rewritten, c
 - **Audio cut-offs:** "ta phrase s'est coupée" allowed once per hour per chat; otherwise answer the most likely reading
   and say which one was taken.
 
+## Engine 5 — Spark (new things to say, no same notice, fewer voids) — LIVE 2026-10-24
+
+Owner, 24 October afternoon: "he kept coming back to the same things, same notice; at some point he lacks things to say.
+Make him creative; the voids are still much." `robots/kino_spark.py`:
+
+- **Topic memory.** Every own message gets a subject key (named things + rarest content words) in `kino_spark.json`; a
+  subject raised twice in 24 h is not raised again (Voice drops it, `spark.log` TOPIC_REPEAT). A second rule: an own
+  message whose content words overlap an own message of the last 24 h by half or more is a repeat too.
+- **Fact packs built by code** join the initiative rotation, one angle at a time, never the same angle twice a week:
+  `numbers` (their own trading: best/worst of the week, weekday, hour band, buys vs sells, short vs long, longest run,
+  tiny trades), `nugget` (~36 trading ideas in plain words, each told once), `bet` (a playful 4-hour call, resolved by the
+  belief engine), `memory` (a thing they said days ago in another conversation), `whatif` (one knob of their robot,
+  measured now with the tools), `tale` (a market that moved outside their robots).
+- **The pick** is the kind least recently used over the whole week (was: not in the last four), tidy first when due.
+- **Presence.** In the app (seen < 2 min) or answered < 10 min: pace gap 5 min, no "flat member" doubling, 4 unanswered
+  before waiting, own-bubble budget 5 an hour, 22 initiatives a day instead of 14. Away: unchanged.
+- Scorecard: `spark` = {sparks, topic_repeats}, `own_kinds` (distinct subjects of his own messages that day).
+
 ## What is retired when each engine lands
 
 - Voice: the hedge regex in the quick put (kept for now: it avoids posting the hedge at all), `_LAST_PROMISE_FIRE`

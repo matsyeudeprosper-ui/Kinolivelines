@@ -31,7 +31,8 @@ def _real_answer(m):
     return m.get("role") == "user" and (_words(m.get("text")) >= 4 or str(m.get("text") or "").strip().endswith("?"))
 
 
-def gate(event, msgs, local_hour=None, now=None):
+def gate(event, msgs, local_hour=None, now=None, present=False):
+    """present (2026-10-24, owner: "the voids are still much"): in the app or answered < 10 min -> gap 5 min, no flat doubling"""
     ev = str(event or "").upper()
     kind = "own" if ev.startswith(DISCRETIONARY) else "news" if ev.startswith(NEWS) else None
     if kind is None:
@@ -60,7 +61,7 @@ def gate(event, msgs, local_hour=None, now=None):
             return False, "news held: %d of your own already unanswered - wait for them" % un
         return True, "news ok"
     night = local_hour is not None and (local_hour >= 22 or local_hour < 7)
-    gap = GAP_NIGHT if night else GAP_DAY
+    gap = 300 if present else (GAP_NIGHT if night else GAP_DAY)
     # backoff: own messages since the last real answer from them
     unanswered = 0
     for m in reversed(M):
@@ -68,12 +69,12 @@ def gate(event, msgs, local_hour=None, now=None):
             break
         if m["role"] == "ai" and m.get("event"):
             unanswered += 1
-    if unanswered >= 3:
-        return False, "three of your own unanswered - wait for them"
+    if unanswered >= (4 if present else 3):
+        return False, "%d of your own unanswered - wait for them" % unanswered
     gap *= 2 ** unanswered
-    # flat member
+    # flat member (not while they are here: "Ok" from someone in the app is a nod, not a wall)
     last3 = users[-3:]
-    if len(last3) >= 2 and sum(1 for m in last3 if _words(m.get("text")) <= 2) >= 2 and not any(str(m.get("text") or "").strip().endswith("?") for m in last3):
+    if not present and len(last3) >= 2 and sum(1 for m in last3 if _words(m.get("text")) <= 2) >= 2 and not any(str(m.get("text") or "").strip().endswith("?") for m in last3):
         gap *= 2
     gap = min(gap, 3 * 3600)
     if last_own and now - float(last_own["t"]) < gap:
@@ -82,8 +83,10 @@ def gate(event, msgs, local_hour=None, now=None):
     return True, "ok (gap %d min%s)" % (gap // 60, ", night" if night else "")
 
 
-def decide(uid, cid, event, msgs, local_hour=None):
-    ok, why = gate(event, msgs, local_hour)
+def decide(uid, cid, event, msgs, local_hour=None, present=False):
+    ok, why = gate(event, msgs, local_hour, present=present)
+    if present:
+        why += " [present]"
     try:
         io.open(LOG, "a", encoding="utf-8").write("%s %s %s %s %s | %s\n" % (
             time.strftime("%m-%d %H:%M:%S"), uid, cid, "OK" if ok else "BLOCKED", str(event or "")[:22].replace(" ", "_"), why))

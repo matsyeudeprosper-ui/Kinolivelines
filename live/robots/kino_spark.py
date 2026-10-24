@@ -183,16 +183,33 @@ def note_topic(uid, text, kind="", cid=""):
     now = time.time()
     def f(d):
         u = _u(d, uid)
-        u["topics"] = [x for x in u["topics"] if now - float(x.get("t") or 0) < 3 * 86400][-120:] + [{"t": now, "key": key, "kind": kind, "cid": cid}]
+        u["topics"] = [x for x in u["topics"] if now - float(x.get("t") or 0) < 3 * 86400][-120:] + [
+            {"t": now, "key": key, "kind": kind, "cid": cid, "text": str(text)[:400]}]
     _mut(f)
 
 
+def _cwords(t):
+    return set(w for w in re.findall(r"[a-zà-ÿ']{4,}", str(t or "").lower()) if w not in STOP)
+
+
 def repeat_block(uid, text, cid=""):
-    """for Voice: an own message on a subject already raised twice today is not sent"""
+    """for Voice: an own message on a subject already raised twice today, or saying half the same words as an own
+    message of the last 24 h (measured on the 22-24 Oct chats: 0.5 catches "le tampon officiel est tombé à nouveau" x4
+    and lets a new result through), is not sent"""
     n, key = repeat_count(uid, text)
     if n >= 2:
         _log(uid, "TOPIC_REPEAT", "%d today: %s" % (n, key))
         return True
+    now = time.time()
+    W = _cwords(text)
+    if len(W) >= 6:
+        for x in _u(_load(), uid)["topics"]:
+            if now - float(x.get("t") or 0) > 86400 or not x.get("text"):
+                continue
+            V = _cwords(x["text"])
+            if V and len(W & V) / max(1, min(len(W), len(V))) >= 0.5:
+                _log(uid, "TOPIC_REPEAT", "half the words of: %s" % x["text"][:80])
+                return True
     return False
 
 

@@ -37,6 +37,7 @@ DUP_WIN = 1800
 FIX_WIN = 1800
 BUDGET = 3
 RECENT = None            # set by the server: RECENT(uid, cid) -> [(t, text)] Kino's texts in the member's OTHER chats (last 30 min)
+PRESENT = None           # set by the server: PRESENT(uid) -> bool, they are in the app (engine 5: budget 5/h instead of 3)
 
 HEDGE = re.compile(r"(à vue de nez|je (regarde|vérifie|jette un [oœ]e?il|te sors|me renseigne|vais (regarder|vérifier|voir)|m'y mets|m'en occupe)|"
                    r"deux secondes|un instant|je te (le )?dis (juste après|dans|tout de suite)|je reviens|i['’]?m (checking|looking|pulling|on it)|"
@@ -225,9 +226,21 @@ def post(c, m):
                 break
             if x.get("role") == "ai" and x.get("event") and now - float(x.get("t") or 0) < 3600:
                 own += 1
-        if own >= BUDGET:
+        _bud = BUDGET
+        try:
+            if PRESENT is not None and PRESENT(uid):
+                _bud = 5
+        except Exception:
+            pass
+        if own >= _bud:
             _log(cid, "DROP_BUDGET", "%d own bubbles in the hour, no reply" % own)
             return ("drop", "budget")
+        try:                                   # engine 5 (kino_spark): the same subject twice today is enough
+            import kino_spark as _KSv
+            if _KSv.repeat_block(uid, text, cid):
+                return ("drop", "topic repeat")
+        except Exception:
+            pass
     # -- cross-chat duplicate ---------------------------------------------------------------------------------------
     if RECENT is not None and len(text) >= 60:
         try:
@@ -263,6 +276,12 @@ def post(c, m):
             q["t"] = int(now)
             _log(cid, "MERGE", how)
             return ("edit", qi, q)
+    if m.get("event") and text:
+        try:
+            import kino_spark as _KSn
+            _KSn.note_topic(uid, text, "own", cid)
+        except Exception:
+            pass
     return ("append", m)
 
 

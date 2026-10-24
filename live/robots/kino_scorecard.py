@@ -141,6 +141,12 @@ def score_day(uid, day=None):
         S["bubbles_per_turn"] = KV.bubbles_per_turn(msgs)
     except Exception:
         S["voice"] = None
+    try:                                   # 2026-10-24 (engine 5: fresh material, no repeated subject)
+        import kino_spark as KS
+        S["spark"] = KS.counts(loc)
+        S["own_kinds"] = len(set(x.get("kind") for x in (json.load(open(os.path.join(HERE, "kino_spark.json"), encoding="utf-8")).get(str(uid)) or {}).get("topics") or [] if t0 <= float(x.get("t") or 0) < t1))
+    except Exception:
+        S["spark"] = None
     try:                                   # 2026-10-24 (Kino v2 engine 2)
         import kino_deed as KD
         S["deed"] = KD.counts(loc)
