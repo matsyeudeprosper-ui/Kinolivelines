@@ -15036,6 +15036,10 @@ def _chat_member_fresh(uid, c):
                      len(_tt), sum(1 for x in _tt if (x.get("p") or 0) < 0), _nd.get("today") or 0, _ls, _lr, _mh, _ed))
     except Exception:
         pass
+    try:                                           # 2026-10-24 (Kino v2 engine 2): the jobs really running for this chat
+        _rc(); L.append(__import__("kino_deed").jobs_block(c))
+    except Exception:
+        pass
     try:
         M_ = [m for m in (c.get("msgs") or []) if m.get("t")]
         um = [m for m in M_ if m.get("role") == "user"][-6:]
@@ -15238,8 +15242,34 @@ def _chat_msg(c, role, **kw):
             m = _dec[1]
         except Exception:
             pass
+        try:                                   # 2026-10-24 (Kino v2 engine 2): a word for an action is a job - robots/kino_deed.py
+            import kino_deed as _KD
+            _it = m.pop("intent", None)
+            m = _KD.bind(c, m, _it, "en" if c.get("lang") == "en" else "fr",
+                         {"check": lambda cc: _check_state(cc, _user_by_id(cc.get("uid"))), "building": lambda cid: cid in _CHAT_B})
+            _td = m.pop("deed_todo", None)
+            if _td:
+                threading.Timer(1.5, _deed_do, args=(c.get("id"), c.get("uid"), _td)).start()
+        except Exception:
+            pass
     c.setdefault("msgs", []).append(m)
     return m
+
+
+def _deed_do(cid, uid, todo):
+    """2026-10-24 (engine 2): the actions a bubble claimed without a job behind them - started once the bubble is saved"""
+    try:
+        H = _commit_H()
+        c = H["chat"](cid) or {}
+        for k in todo:
+            if k == "test":
+                if (c.get("test") or {}).get("state") in ("queued", "running"):
+                    continue                      # the reply's own act / the regex already queued it
+                H["act_test"](cid, uid)
+            elif k == "build":
+                H["build"](cid, uid)
+    except Exception:
+        pass
 
 
 def _chat_pieces(user):
@@ -16413,7 +16443,29 @@ def _chat_markets(user):
     return M
 
 
-def _chat_oops(cid, en, e=None):
+_OOPS_RETRIED = {}      # (cid, last member message t) -> True once a silent retry ran (2026-10-24, engine 2)
+
+
+def _chat_oops(cid, en, e=None, retry=None):
+    """2026-10-24 (Kino v2 engine 2): the member saw "Oups (NameError)" twice. Now: log the traceback, retry the turn ONCE in
+    silence 20 s later; only a second failure of the same turn reaches the member, in plain words (kino_deed.plain)."""
+    if e is not None and retry is not None:
+        try:
+            _c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            _lu = next((int(mm.get("t") or 0) for mm in reversed(_c.get("msgs") or []) if mm.get("role") == "user"), 0)
+        except Exception:
+            _lu = 0
+        _key = (cid, _lu)
+        if not _OOPS_RETRIED.get(_key):
+            _OOPS_RETRIED[_key] = True
+            try:
+                import traceback as _tb
+                open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
+                    "%s %s %s: %s (silent retry in 20 s)\n%s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, type(e).__name__, str(e)[:300], _tb.format_exc()))
+            except Exception:
+                pass
+            threading.Timer(20, retry).start()
+            return
     if e is not None:
         try:                                 # 2026-10-23: the member saw 60 chars of a path and nobody had the traceback
             import traceback as _tb
@@ -16421,10 +16473,13 @@ def _chat_oops(cid, en, e=None):
                 "%s %s %s: %s\n%s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, type(e).__name__, str(e)[:300], _tb.format_exc()))
         except Exception:
             pass
+    try:
+        _rc(); _plain = __import__("kino_deed").plain(e, "en" if en else "fr", twice=(retry is not None))
+    except Exception:
+        _plain = "Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?"
     _chat_mut(cid, lambda c: _chat_msg(c, "ai", chips=[], err=True, text=(
         "Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?")
-        if e is None else (("Oops, a hiccup on my side (%s). Send that again in a moment." if en else
-                            "Oups, petit souci de mon côté (%s). Réessaie dans un instant.") % type(e).__name__)))
+        if e is None else _plain))
 
 
 CHAT_IMG = os.path.join(DIR, "robots", "chats", "img")
@@ -16748,6 +16803,10 @@ def _kino_act(cid, user, act, en=False):
                         if tr.get("err") == "same" else (("A small technical hiccup starting the test - I'm trying again in a minute." if en else
                                                           "Petit souci technique au démarrage du test - je réessaie dans une minute."))
                 if not tr.get("ok") and tr.get("err") not in ("same", "check"):
+                    try:
+                        _rc(); __import__("kino_deed").start(user.get("id"), cid, "test", "", state="failed", err=str(tr.get("err") or "")[:60])
+                    except Exception:
+                        pass
                     _alarm_log(cid, "test start failed: %s - retry in 60 s" % tr.get("err"))
                     threading.Thread(target=_test_retry, args=(cid, user, en), daemon=True).start()
         if line:
@@ -17144,7 +17203,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     r"i['’]?m (checking|looking|pulling)|let me (check|look|pull)|one sec)", str(q["say"]), re.I):
                 q["say"] = None
             if q["say"]:
-                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), **_vn,
+                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), intent={"act": q.get("act"), "build": bool(q["build"])}, **_vn,
                           followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
@@ -17240,7 +17299,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
         _CHAT_DRAFT.pop(cid, None)
         try:
-            _chat_oops(cid, en, e)
+            _chat_oops(cid, en, e, retry=lambda: _chat_quick(cid, user, event, notify, important))
         except Exception:
             pass
 
@@ -17255,6 +17314,10 @@ def _chat_build(cid, user):
             return
         _CHAT_BUILDING.add(cid)
     en = False
+    try:
+        _rc(); __import__("kino_deed").start(user.get("id"), cid, "build", "")
+    except Exception:
+        pass
     try:
         for _ in range(4):
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
@@ -17281,9 +17344,17 @@ def _chat_build(cid, user):
                     c["b_want"] = len(c.get("msgs") or [])      # the member edited by hand meanwhile: build again on that
                     return
                 if ans is None:
+                    try:
+                        _rc(); __import__("kino_deed").finish(cid, "build", "failed", "model")
+                    except Exception:
+                        pass
                     _chat_msg(c, "ai", chips=[], err=True, text="Hmm, I couldn't put it together this time - say it again in other words?" if en
                               else "Hmm, je n'ai pas réussi à l'assembler cette fois - tu me le redis autrement ?")
                     return
+                try:
+                    _rc(); __import__("kino_deed").finish(cid, "build", "done")
+                except Exception:
+                    pass
                 if ans.get("robot"):
                     _robot_set(c, ans["robot"], "kino")
                 txt = ans.get("say") or ""
@@ -17295,7 +17366,8 @@ def _chat_build(cid, user):
                 if txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Done, your robot is up to date." if _rc().member_lang(c, "en" if en else "fr") == "en" else "C'est fait, ton robot est à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
-                              follow=True, link=ans.get("link"), tools=ans.get("tools_used"), **({"own": ans["own"]} if ans.get("own") else {}))
+                              follow=True, link=ans.get("link"), tools=ans.get("tools_used"), intent={"act": ans.get("act"), "build": True},
+                              **({"own": ans["own"]} if ans.get("own") else {}))
                 for _cht in ans.get("charts") or []:       # 2026-10-19 (owner list-4 item 3): the real trade, replayed
                     c.setdefault("msgs", []).append({"role": "demo", "market": "BTCUSD", "count": 1, "won": 1 if (_cht.get("usd") or 0) > 0 else 0,
                                                      "trades": [_cht], "by": "ai", "real": True, "t": int(time.time())})
@@ -17356,7 +17428,7 @@ def _chat_build(cid, user):
                 break
     except Exception as e:
         try:
-            _chat_oops(cid, en, e)
+            _chat_oops(cid, en, e, retry=lambda: _chat_build(cid, user))
         except Exception:
             pass
     finally:
@@ -17565,6 +17637,10 @@ def _companion_tick():
                         return True
                 _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
                 if _chat_mut(c["id"], put):
+                    try:
+                        _rc(); __import__("kino_deed").finish(c["id"], "test", "done")
+                    except Exception:
+                        pass
                     _inner_feel_result(uid, res)             # 2026-10-20: the away path feels it too (was only chat_get)
                     threading.Thread(target=_chat_quick, args=(c["id"], u), kwargs={"notify": True, "important": True}, daemon=True).start()
                 else:
@@ -20247,6 +20323,10 @@ def chat_get(user, cid, ui=""):
                 return True
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         if _chat_mut(c["id"], put):
+            try:
+                _rc(); __import__("kino_deed").finish(c["id"], "test", "done")
+            except Exception:
+                pass
             _inner_feel_result(user.get("id"), res)
             threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         else:
@@ -20612,6 +20692,10 @@ def chat_test(user, body):
                   ("Test lancé%s : environ %d minutes. Je te dis ce que ça donne." % (mt, mins))
         _chat_msg(c, "test", text=txt)
     _chat_mut(c["id"], put)
+    try:                                           # 2026-10-24 (engine 2): the job the words can point to
+        _rc(); __import__("kino_deed").start(user.get("id"), c["id"], "test", mk)
+    except Exception:
+        pass
     return {"ok": True, "rid": rid, "minutes": mins}
 
 

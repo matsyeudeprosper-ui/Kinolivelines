@@ -141,6 +141,12 @@ def score_day(uid, day=None):
         S["bubbles_per_turn"] = KV.bubbles_per_turn(msgs)
     except Exception:
         S["voice"] = None
+    try:                                   # 2026-10-24 (Kino v2 engine 2)
+        import kino_deed as KD
+        S["deed"] = KD.counts(loc)
+        S["oops_bubbles"] = sum(1 for m in ai if m.get("err"))
+    except Exception:
+        S["deed"] = None
     cl = lines("claims.log")
     S["corrections"] = sum(1 for l in cl if " CORRECTION " in l)
     S["initiatives_dropped"] = sum(1 for l in cl if "EVENT DROPPED" in l)

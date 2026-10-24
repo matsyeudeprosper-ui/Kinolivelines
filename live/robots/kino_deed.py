@@ -7,12 +7,12 @@ code that runs actions were two systems. Here:
   ledger    robots/kino_deeds.json - every action the code starts is a JOB: {id, uid, cid, kind test|build|luck|ghost|measure,
             what, state queued|running|done|failed, t, t_end, err}. Code creates it (chat_test, _chat_build, the tool runner),
             never text.
-  bind      bind(c, m, intent, lang, H) runs on every bubble before it is sent: a sentence that claims an action of Kino's own
-            ("je lance le test", "c'est parti", "je le construis", "launching it") must be backed by the turn's intent (the
-            reply's act / build fields), a job started in the last 120 s, or a test already queued. Otherwise the action is
-            STARTED NOW through the server hooks when that is possible (H["act_test"], H["build"]) and the sentence stands;
-            when it is not possible, the sentence is replaced by the plain truth ("Le test attend tes ✅ / ❌ sur les moments",
-            "Je n'ai pas pu lancer le test : ...").
+  bind      bind(c, m, intent, lang, H) runs on every bubble before it is sent (inside the chat lock, so it never calls the
+            app): a sentence that claims an action of Kino's own ("je lance le test", "c'est parti", "je le construis",
+            "launching it") must be backed by the turn's intent (the reply's act / build fields), a job started in the last
+            120 s, or a test already queued. Otherwise the action is put in m["deed_todo"] and the server starts it right
+            after the bubble is saved (test when the moments are checked, build when there is a robot); when it cannot be
+            started, the sentence is replaced by the plain truth ("Le test attend tes ✅ / ❌ sur les moments").
   cannot    the capability registry (CAN below, robots/kino_can.json when present): a sentence promising something the tools
             cannot do ("the 24h test", "trier les trades de l'Owl par heure", "je mets ton robot en pause") is replaced by the
             reason, on the first attempt, not the fourth. can_block(lang) goes to the slow prompt.
@@ -55,7 +55,8 @@ CAN = {
          "fr": "Le test officiel rejoue 42 jours de vrais prix, pas 24 heures ; pour une fenêtre de 24 h en direct, c'est le mode fantôme.",
          "en": "The official test replays 42 days of real prices, not 24 hours; for a live 24-hour window, that is ghost mode."},
         {"rx": r"\b(trades? (de l'owl|du robot|réels?|de ton compte)|ses trades|its trades|the owl'?s trades)\b[^.!?]{0,40}\b(par heure|heure par heure|par jour de semaine|by hour|per hour|by weekday)\b|"
-               r"\b(trier|découper|classer|slice|sort|split)\b[^.!?]{0,30}\b(trades? (de l'owl|du robot|réels?)|its trades|the owl'?s trades)\b",
+               r"\b(trier|découper|classer|tri|slice|sort|split)\b[^.!?]{0,30}\b(trades? (de l'owl|du robot|réels?)|its trades|the owl'?s trades)\b|"
+               r"\b(par heure|heure par heure|by hour)\b[^.!?]{0,20}\b(trades? (de l'owl|du robot|réels?)|its trades|the owl'?s trades)\b",
          "fr": "Mon outil découpe une idée par heure ou par jour, pas les trades réels de l'Owl un par un ; je n'ai pas ce chiffre ici.",
          "en": "My tool slices an idea by hour or weekday, not the Owl's real trades one by one; I don't have that number here."},
         {"rx": r"\bje (mets|coupe|arrête|stoppe|relance) (ton|le) robot\b|\bje (le |la )?(mets|remets) en pause\b|\bi('ll| will)? (pause|stop|restart) (your|the) robot\b",
@@ -126,7 +127,7 @@ def _mut(fn):
         return out
 
 
-def start(uid, cid, kind, what="", state=None):
+def start(uid, cid, kind, what="", state=None, err=""):
     """code starts an action -> a job (the open job of the same kind for this chat is superseded)"""
     kind = kind if kind in KINDS else "measure"
     state = state or ("running" if kind in ("build", "measure") else "queued")
@@ -136,11 +137,12 @@ def start(uid, cid, kind, what="", state=None):
             if x["cid"] == cid and x["kind"] == kind and x["state"] in ("queued", "running"):
                 x["state"], x["t_end"], x["err"] = "superseded", int(time.time()), ""
         d["n"] = int(d.get("n") or 0) + 1
-        j = {"id": "j%d" % d["n"], "uid": uid, "cid": cid, "kind": kind, "what": str(what or "")[:80], "state": state, "t": int(time.time()), "t_end": None, "err": ""}
+        j = {"id": "j%d" % d["n"], "uid": uid, "cid": cid, "kind": kind, "what": str(what or "")[:80], "state": state, "t": int(time.time()),
+             "t_end": int(time.time()) if state in ("done", "failed") else None, "err": str(err or "")[:120]}
         d["items"].append(j)
         return j["id"]
     jid = _mut(f)
-    _log(cid, "JOB_" + state.upper(), "%s %s %s" % (jid, kind, what))
+    _log(cid, "JOB_" + state.upper(), "%s %s %s %s" % (jid, kind, what, err))
     return jid
 
 
@@ -218,15 +220,30 @@ def _T(lang, fr, en):
     return en if lang == "en" else fr
 
 
+_EN_W = re.compile(r"\b(the|and|you|your|it|is|are|i'?m|i'?ll|now|test|with|that|this|here|again|right|when|what)\b", re.I)
+_FR_W = re.compile(r"\b(le|la|les|et|tu|ton|ta|tes|est|sont|je|on|maintenant|avec|que|ce|cette|ici|encore|quand|quoi|pas|une|un|des)\b", re.I)
+
+
+def lang_of(text, default="fr"):
+    """the language the bubble is written in (its replacements must match it)"""
+    e, f = len(_EN_W.findall(text or "")), len(_FR_W.findall(text or ""))
+    if e == f:
+        return default
+    return "en" if e > f else "fr"
+
+
 def bind(c, m, intent=None, lang="fr", H=None):
-    """the gate at send time (see module doc). Returns m, possibly with its text rewritten; m["deed"] lists what happened."""
+    """the gate at send time (see module doc). Never touches the app: H = {"check": fn(c) -> 'ok'|'open'|'no'|'none',
+    "building": fn(cid) -> bool}. Returns m with its text possibly rewritten, m["deed"] = what happened, m["deed_todo"] = the
+    actions the server must start once the bubble is saved."""
     text = str(m.get("text") or "")
     if not text.strip() or m.get("err"):
         return m
-    intent = intent or {}
-    cid, uid = c.get("id"), c.get("uid")
+    intent, H = intent or {}, H or {}
+    cid = c.get("id")
+    lang = lang_of(text, lang)
     S = _SENT.split(text.strip())
-    out, did = [], []
+    out, did, todo = [], [], []      # out = (sentence, replacement) pairs
     t = c.get("test") or {}
     for s in S:
         s2 = s
@@ -238,44 +255,37 @@ def bind(c, m, intent=None, lang="fr", H=None):
         elif not _NOT_NOW.search(s) and not _PAST.search(s):
             kind = next((k for k in ("luck", "ghost", "build", "test") if CLAIM[k].search(s)), None)
             if kind == "test":
-                backed = intent.get("act") == "test" or t.get("state") in ("queued", "running") or recent(cid, "test")
-                if not backed:
-                    r = None
+                if intent.get("act") == "test" or t.get("state") in ("queued", "running") or recent(cid, "test"):
+                    did.append("test_ok")
+                else:
                     try:
-                        r = H["act_test"](cid, uid) if H and H.get("act_test") else None
-                    except Exception as e:
-                        r = "error:" + type(e).__name__
-                    if r == "blocked":
+                        st = H["check"](c) if H.get("check") else "ok"
+                    except Exception:
+                        st = "ok"
+                    if not c.get("robot"):
+                        s2 = _T(lang, "Je ne peux pas lancer de test ici : il n'y a pas encore de robot dans cette conversation.",
+                                "I can't start a test here: there is no robot in this conversation yet.")
+                        did.append("test_norobot")
+                    elif st != "ok":
                         s2 = _T(lang, "Le test attend tes ✅ / ❌ sur les moments au-dessus : dès que c'est fait, il part.",
                                 "The test waits for your ✅ / ❌ on the moments above: as soon as that's done, it goes.")
                         did.append("test_blocked")
-                    elif r == "tried" and (recent(cid, "test") or _test_queued(H, cid)):
-                        did.append("test_launched")
-                    elif r is None:
-                        did.append("test_unbound")
                     else:
-                        s2 = _T(lang, "Je n'ai pas réussi à lancer le test cette fois ; je réessaie dans une minute et je te dis.",
-                                "I couldn't get the test started this time; I'm trying again in a minute and I'll tell you.")
-                        did.append("test_failed")
+                        todo.append("test")
+                        did.append("test_launch")
                     _log(cid, "TEST_CLAIM", "%s -> %s" % (s[:80], did[-1]))
-                else:
-                    did.append("test_ok")
             elif kind == "build":
-                backed = intent.get("build") or recent(cid, "build") or (H and H.get("building") and H["building"](cid))
-                if not backed:
-                    try:
-                        if H and H.get("build") and c.get("robot") is not None:
-                            H["build"](cid, uid)
-                            did.append("build_launched")
-                        else:
-                            s2 = _T(lang, "Je le monte dès que l'idée est posée : dis-moi le marché et quand il entre.",
-                                    "I'll build it as soon as the idea is set: tell me the market and when it gets in.")
-                            did.append("build_norobot")
-                    except Exception:
-                        did.append("build_error")
-                    _log(cid, "BUILD_CLAIM", "%s -> %s" % (s[:80], did[-1]))
-                else:
+                if intent.get("build") or recent(cid, "build") or (H.get("building") and H["building"](cid)):
                     did.append("build_ok")
+                else:
+                    if c.get("robot") is not None or c.get("idea_pending") or c.get("idea"):
+                        todo.append("build")
+                        did.append("build_launch")
+                    else:
+                        s2 = _T(lang, "Je le monte dès que l'idée est posée : dis-moi le marché et quand il entre.",
+                                "I'll build it as soon as the idea is set: tell me the market and when it gets in.")
+                        did.append("build_noidea")
+                    _log(cid, "BUILD_CLAIM", "%s -> %s" % (s[:80], did[-1]))
             elif kind == "luck":
                 if intent.get("act") == "luck" or recent(cid, "luck"):
                     did.append("luck_ok")
@@ -288,33 +298,23 @@ def bind(c, m, intent=None, lang="fr", H=None):
                 if intent.get("act") in ("ghost", "duel") or recent(cid, "ghost"):
                     did.append("ghost_ok")
                 else:
-                    try:
-                        ok = bool(H and H.get("act") and H["act"](cid, uid, "ghost"))
-                    except Exception:
-                        ok = False
-                    if ok:
-                        did.append("ghost_launched")
-                    else:
-                        s2 = _T(lang, "Pour le mode fantôme, il me faut un robot testé dans cette conversation ; je te le propose dès que c'est le cas.",
-                                "For ghost mode I need a tested robot in this conversation; I'll offer it as soon as that's the case.")
-                        did.append("ghost_rewrite")
-                    _log(cid, "GHOST_CLAIM", "%s -> %s" % (s[:80], did[-1]))
-        out.append(s2)
+                    s2 = _T(lang, "Pour le mode fantôme, c'est une carte que tu confirmes ; je te la mets dès que le robot a son test.",
+                            "Ghost mode is a card you confirm; I'll put it up as soon as the robot has its test.")
+                    did.append("ghost_rewrite")
+                    _log(cid, "GHOST_CLAIM", s[:80])
+        if s2 != s:
+            out.append((s, s2))
     if did:
         m["deed"] = did
-    new = " ".join(out).strip()
-    if new != text.strip():
+    if todo:
+        m["deed_todo"] = todo
+    if out:
+        new = text
+        for s, s2 in out:
+            new = new.replace(s, s2, 1)
         m["text"] = new
         _log(cid, "REWRITE", ",".join(did))
     return m
-
-
-def _test_queued(H, cid):
-    try:
-        c = H["chat"](cid) if H and H.get("chat") else {}
-        return (c.get("test") or {}).get("state") in ("queued", "running")
-    except Exception:
-        return False
 
 
 # ---------------------------------------------------------------- failures ----------------------------------------------
@@ -332,14 +332,14 @@ def plain(e, lang="fr", twice=False):
 
 
 def counts(day_label):
-    out = {"test_claims": 0, "launched": 0, "rewritten": 0, "cannot": 0, "jobs_failed": 0}
+    out = {"claims": 0, "launched": 0, "rewritten": 0, "cannot": 0, "jobs_failed": 0}
     try:
         for l in io.open(LOG, encoding="utf-8").read().splitlines():
             if not l.startswith(day_label):
                 continue
-            if " TEST_CLAIM " in l or " BUILD_CLAIM " in l:
-                out["test_claims"] += 1
-            if "_launched" in l:
+            if "_CLAIM " in l:
+                out["claims"] += 1
+            if "_launch" in l:
                 out["launched"] += 1
             if " REWRITE " in l:
                 out["rewritten"] += 1

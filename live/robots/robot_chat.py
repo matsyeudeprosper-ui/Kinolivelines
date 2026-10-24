@@ -994,6 +994,11 @@ def slow_block(uid, memory, lang="fr"):
             L.append(pb)
     except Exception:
         pass
+    try:                                   # 2026-10-24 (Kino v2 engine 2): the truth about his reach
+        import kino_deed as KD
+        L.append(KD.can_block(lang))
+    except Exception:
+        pass
     try:                                   # 2026-10-24 (Kino v2 engine 1): the sermon lines they heard twice this week
         import kino_voice as KV
         tb = KV.told_block(uid, lang)
