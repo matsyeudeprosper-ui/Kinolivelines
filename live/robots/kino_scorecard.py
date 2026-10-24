@@ -101,6 +101,9 @@ def score_day(uid, day=None):
     S["member_reply_delay_med_s"] = int(statistics.median(delays)) if delays else None
     S["member_one_word_pct"] = round(100.0 * sum(1 for m in users if len(_words(m.get("text"))) <= 1) / len(users)) if users else None
     S["member_quoi"] = sum(1 for m in users if re.search(r"^\s*(quoi|hein|\?)\s*\??\s*$", str(m.get("text") or ""), re.I))
+    laughs = sum(1 for m in users if re.search(r"\b(lol|mdr|ptdr|haha|hihi|xd)\b|\U0001f602|\U0001f923|\U0001f605", str(m.get("text") or ""), re.I))
+    S["laughs"] = laughs
+    S["laughs_per_100_replies"] = round(100.0 * laughs / len(replies)) if replies else None
     # his own material
     try:
         import kino_material as KMT

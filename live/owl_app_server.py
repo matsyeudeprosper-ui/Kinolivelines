@@ -20076,6 +20076,15 @@ def chat_send(user, body):
         import kino_feedback as _KFB
         _la = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and m.get("text")), {})
         _fbk = _KFB.observe(user.get("id"), c["id"], text, _la.get("text") or "")
+        try:                                     # 2026-10-24 (item 6, humour measured): what made them laugh is kept - HIS line before their laugh
+            import kino_inner as _KIj
+            if re.search(r"\b(lol|mdr|ptdr|haha|hihi|xd)\b|\U0001f602|\U0001f923|\U0001f605", text, re.I) and _la.get("text"):
+                _jl = str(_la["text"]).strip().replace(chr(10), " ")[:160]
+                _have = [str(x.get("text") or "")[:60] for x in _KIj.moments(user.get("id"), "joke")]
+                if _jl[:60] not in _have:
+                    _KIj.add_moment(user.get("id"), _jl, "joke")
+        except Exception:
+            pass
         try:                                     # 2026-10-23: what they just said moves him (stung, tender, playful, glad, closeness)
             import kino_inner as _KIa2
             _pu = [m for m in (c.get("msgs") or []) if m.get("role") == "user"][-2:-1]
