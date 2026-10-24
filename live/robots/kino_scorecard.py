@@ -25,6 +25,11 @@ _OPEN = re.compile(r"^\s*(ah|ha|haha|voilà|exactement|c'est ça|tu as raison|t'
 _DIS = re.compile(r"\b(mouais|pas d'accord|je (ne )?(crois|pense) pas|je parie le contraire|au contraire|franchement non|je dirais plutôt|"
                   r"pas sûr|je ne suis pas sûr|je te suis pas|moi je (préfère|ferais)|i disagree|not sure|i'd rather|i don't think)\b", re.I)
 _CLOSERS = ("je te laisse", "bonne soirée", "bon vendredi", "bonne nuit", "profite de ta soirée", "i'll leave you", "good night")
+# 2026-10-24 (owner): "tu veux qu'on parle de quoi ?", "si tu veux, on peut parler de X, ou juste...", "on peut repartir sur..." -
+# a menu of topics or a permission to switch subject; a friend just changes the subject
+_MENU = re.compile(r"tu veux (qu['’]on )?parle(r)? de quoi|si tu veux,? (on|ce soir on|on peut|je peux aussi)\b|on peut (aussi|tout aussi bien) (repartir|parler|rester|continuer)|"
+                   r"\bou juste [^.?!]{3,60}[.?!]?\s*$|tu pr[ée]f[èe]res (qu['’]on|parler|qu[e’'] ?l['’]on)|what do you want to talk about|if you want,? we can",
+                   re.I | re.M)
 
 
 def _words(t):
@@ -82,6 +87,8 @@ def score_day(uid, day=None):
     S["mirror_pct"] = round(100.0 * mir / len(replies))
     S["opener_pct"] = round(100.0 * sum(1 for m in replies if _OPEN.search(m["text"])) / len(replies))
     S["question_pct"] = round(100.0 * sum(1 for m in ai if str(m["text"]).strip().endswith("?")) / len(ai))
+    # 2026-10-24 (owner: "he always asks permission for what to talk about"): menus of topics / permission to switch, measured
+    S["menu_pct"] = round(100.0 * sum(1 for m in ai if _MENU.search(str(m["text"]))) / len(ai))
     S["disagree"] = sum(1 for m in ai if _DIS.search(m["text"]))
     S["closers"] = sum(1 for m in ai if any(c in str(m["text"]).lower() for c in _CLOSERS))
     grams = {}
@@ -206,10 +213,14 @@ def block(uid):
         return ""
     L = ["YOUR SCORE YESTERDAY WITH THEM (measured on the real conversation, %d replies): restate-and-approve openers %s %%, "
          "\"Ah/Ha/Voilà\" openers %s %%, replies ending with a question %s %%, times you took a different view %s, door-closing lines %s, "
-         "phrases you repeated 3+ times %s, distinct reply shapes %s, things of your own you brought %s, their one-word replies %s %%."
+         "phrases you repeated 3+ times %s, distinct reply shapes %s, things of your own you brought %s, their one-word replies %s %%, "
+         "menus of topics / permission to switch subject %s %%."
          % (S["replies"], S.get("mirror_pct"), S.get("opener_pct"), S.get("question_pct"), S.get("disagree"), S.get("closers"),
-            len(S.get("tics") or []), S.get("shapes"), (S.get("own_msgs") or 0) + (S.get("material_told") or 0), S.get("member_one_word_pct"))]
+            len(S.get("tics") or []), S.get("shapes"), (S.get("own_msgs") or 0) + (S.get("material_told") or 0), S.get("member_one_word_pct"),
+            S.get("menu_pct"))]
     moves = []
+    if (S.get("menu_pct") or 0) > 2:
+        moves.append("stop asking what to talk about or whether you may switch - pick the subject and start it")
     if (S.get("mirror_pct") or 0) > 25:
         moves.append("stop opening by repeating their words")
     if (S.get("question_pct") or 0) > 50:
