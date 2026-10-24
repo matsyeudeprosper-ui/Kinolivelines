@@ -23646,6 +23646,51 @@ def live_side(user, body):
 
 
 _LIVE_SPARK_T = {}
+_LIVE_AHEAD_T = {}
+
+
+def live_ahead(user, body):
+    """2026-10-24 (owner: "seamless - always ahead, preparing the next idea while speaking"): during a Kino-O call the brain reads
+    the call so far every ~10 s and prepares, from the real data, the 2-3 questions likely to come next with their answers, plus
+    one thing worth bringing up. The page pushes them into the voice's sheet, so the voice answers at once instead of delegating."""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or _LIVE_CID.get(user.get("id")) != c["id"] or c.get("brain") != "openai":
+        return {"ok": False}
+    if time.time() - _LIVE_AHEAD_T.get(c["id"], 0) < 9:
+        return {"ok": False, "err": "recent"}
+    _LIVE_AHEAD_T[c["id"]] = time.time()
+    tr = str(body.get("tr") or "")[-2500:]
+    if len(tr.split()) < 6:
+        return {"ok": False, "err": "short"}
+    try:
+        _rc().W.set_brain("openai")
+        _rc().W.member_turn(True)
+        lang = _rc().member_lang(c, c.get("lang") or "fr")
+        facts = _live_facts(user, c, dyn_only=True)
+        sysp = ("You are the back of Kino's head during a live voice call. Kino is an AI friend inside a trading app, talking with a member. "
+                "From THE CALL SO FAR and THE FACTS, prepare what a thoughtful person prepares while they speak: the 2 or 3 questions the "
+                "member is most likely to ask next, each with the complete spoken answer (one to three sentences, every number exactly as in "
+                "the facts, in %s); and ONE thing worth bringing up when the talk goes flat (true, from the facts or the call, with Kino's "
+                "opinion) - or null when nothing is worth it. Never invent a figure; when the facts do not hold the answer, the answer says so "
+                "honestly in Kino's voice. Answer ONE JSON object only: {\"prepared\": [{\"q\": \"...\", \"a\": \"...\"}], \"bring\": null | \"...\"}"
+                % ("English" if lang == "en" else "French"))
+        up = "THE CALL SO FAR (latest last):\n%s\n\nTHE FACTS:\n%s" % (tr, facts[:9000])
+        j = _rc().W.ask_json(sysp, up, models=("sonnet",), timeout=25, warm=False)
+        if not isinstance(j, dict):
+            return {"ok": False, "err": "model"}
+        P = [{"q": str(x.get("q") or "")[:160], "a": str(x.get("a") or "")[:500]} for x in (j.get("prepared") or []) if isinstance(x, dict) and x.get("a")][:3]
+        b = str(j.get("bring") or "").strip()
+        if b.lower() in ("null", "none"):
+            b = ""
+        return {"ok": True, "prepared": P, "bring": b[:400]}
+    except Exception as e:
+        return {"ok": False, "err": type(e).__name__}
+    finally:
+        try:
+            _rc().W.set_brain(None)
+        except Exception:
+            pass
+
 
 
 def live_spark(user, body):
@@ -23753,6 +23798,14 @@ def live_session(user, body):
     except Exception:
         cf = {}
     _ins = _live_instructions(user, c)
+    if c.get("brain") == "openai":                   # 2026-10-24 (seamless prototype): the back of the head works while you speak
+        _ins += ("\n\nKINO-O SEAMLESS MODE. During this call, PREPARED ANSWERS arrive in your instructions every few seconds: the questions "
+                 "likely to come next, already answered from the real data. When the member asks one of them (or close to it), answer AT "
+                 "ONCE from the prepared answer, in your own spoken words, no delegation. Never say 'je vérifie', 'je regarde', 'un instant', "
+                 "'je te dis ça': if an answer is still arriving, bridge with a natural half-sentence that carries meaning ('alors, sur ton "
+                 "compte...', 'ouais, ton Nasdaq...') and continue the moment it lands. A SOMETHING WORTH BRINGING UP line is yours to use "
+                 "once, when the talk goes flat, as a thought that crossed your mind. The real delegations that remain are for work "
+                 "(build, test, measure): say what you start, once, honestly.")
     try:                                             # 2026-10-21 (Jarvis list items 2-7, 10)
         _nd = json.load(open(os.path.join(DIR, "nest_data", str(uid) + ".json"), encoding="utf-8"))
         _ins += ("\nYOUR DAY TOGETHER (let it set your mood): their account today %+.2f $; the last days: %s. A good day -> brighter, a "
@@ -29738,7 +29791,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "research_board", "robot_risk", "test_guess"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -29762,7 +29815,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

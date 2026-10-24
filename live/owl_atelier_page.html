@@ -1748,7 +1748,7 @@ async function liveStart(cont){if(!CID){toast(T('Ouvre d’abord une conversatio
 function lvTurn(){if(LV&&LV.cur.trim()){try{lvCmd(LV.cur.trim());}catch(e){}LV.tr.push((EN?'Member: ':'Membre : ')+LV.cur.trim());LV.last=LV.cur.trim();LV.cur='';}}
 function lvEv(e){if(!LV)return;const t=e.type||'';try{const G=(window.LVLOG=window.LVLOG||[]);G.push(t+(t==='error'?':'+JSON.stringify(e.error||e).slice(0,160):''));if(G.length>300)G.shift();}catch(x){}
  if(t==='session.started'){lvSet(T('En ligne · parle quand tu veux','Connected · talk any time'),'listen');LV.started=1;LV.act=Date.now();lvBtnsPaint();lvStartExtras();clearInterval(LV.alive);LV.alive=setInterval(()=>{try{lvAlive();}catch(x){}},2000);clearInterval(LV.fct);LV.fct=setInterval(lvFacts,300000);lvFacts();}
- else if(t==='session.input_transcript.delta'){LV.act=Date.now();LV.inT=Date.now();clearTimeout(LV.specT);LV.specT=setTimeout(lvSpecGo,700);setTimeout(lvCaps,0);LV.nud=0;LV.gap=0;LV.ackT=0;if(LV.out.trim()){LV.tr.push('Kino: '+LV.out.trim());LV.out='';}LV.om=0;LV.cur+=e.delta||'';lvSet(T('Je t’écoute…','Listening…'),'listen');$('ctx').textContent='« '+LV.cur.trim().slice(-160)+' »';}
+ else if(t==='session.input_transcript.delta'){LV.act=Date.now();LV.inT=Date.now();clearTimeout(LV.specT);LV.specT=setTimeout(lvSpecGo,(C&&C.brain==='openai')?400:700);setTimeout(lvCaps,0);LV.nud=0;LV.gap=0;LV.ackT=0;if(LV.out.trim()){LV.tr.push('Kino: '+LV.out.trim());LV.out='';}LV.om=0;LV.cur+=e.delta||'';lvSet(T('Je t’écoute…','Listening…'),'listen');$('ctx').textContent='« '+LV.cur.trim().slice(-160)+' »';}
  else if(t==='session.output_transcript.delta'){LV.act=Date.now();LV.outT=Date.now();setTimeout(lvCaps,0);lvTurn();LV.out+=e.delta||'';clearTimeout(LV.oT);LV.oT=setTimeout(lvOutDone,2500);lvSet(LV.busy?T('Kino vérifie… (tu peux parler)','Kino is checking… (you can talk)'):T('Kino parle… (coupe-le quand tu veux)','Kino is talking… (cut in any time)'),LV.busy?'think':'talk');$('ctx').textContent=LV.out.trim().slice(-200);}
  else if(t==='session.delegation.created'){const id=(e.delegation||{}).id;LV.dg=Date.now();LV.dgT0=Date.now();lvTurn();if(id&&LV.cmdT&&Date.now()-LV.cmdT<4000){lvSend({type:'session.commentary.append',event_id:'co_'+id,delegation_id:id,content:(LV.cmdMsg||'Done in the app.')});return;}const q=LV.last||'';if(id&&q)lvAsk(id,q);}
  else if(t==='session.usage.updated'){LV.usage=e;}
@@ -2197,7 +2197,7 @@ function lvCaps(){if(!LV)return;let c=$('caps');if(!c){c=document.createElement(
  const L=(LV.tr||[]).slice(-3).map(x=>x.replace(/^Membre\s*:\s*/,T('Toi','You')+' : ').replace(/^Kino\s*:\s*/,'Kino : '));
  if(String(LV.cur||'').trim())L.push(T('Toi','You')+' : '+LV.cur.trim().slice(-140));if(String(LV.out||'').trim())L.push('Kino : '+LV.out.trim().slice(-180));
  const h=L.map(x=>'<p class="'+(/^Kino/.test(x)?'k':'u')+'">'+esc(x)+'</p>').join('');if(c._h!==h){c._h=h;c.innerHTML=h;c.scrollTop=c.scrollHeight;}}
-function lvSpecGo(){if(!LV)return;const q=String(LV.cur||'').trim();if(q.split(/\s+/).length<4||q===LV.specQ)return;
+function lvSpecGo(){if(!LV)return;const q=String(LV.cur||'').trim();if(q.split(/\s+/).length<((C&&C.brain==='openai')?3:4)||q===LV.specQ)return;
  if(!/(\?|combien|pourquoi|comment|quand|quel|quelle|est-ce|c'est quoi|explique|montre|how|why|what|when|which)/i.test(q))return;
  LV.specQ=q;LV.spec=(LV.spec||0)+1;post('live_spec',{id:LV.cid||CID,q:q}).catch(()=>{});}
 async function lvChart(){if(!LV)return;let p=$('cchart');if(!p){p=document.createElement('div');p.id='cchart';$('cbtns').before(p);}
@@ -2283,6 +2283,10 @@ function lvDeskTick(){if(!LV||!LV.started)return;LV.dkn=(LV.dkn||0)+1;const now=
  if((LV.sideN||0)<2&&mn>=(LV.sideN?12:4)&&!LV.busy&&now-(LV.act||0)>8000){LV.sideN=(LV.sideN||0)+1;post('live_side',{id:CID,tr:(LV.trAll||[]).concat(LV.tr||[]).join('\n').slice(-1500)}).then(j=>{if(LV&&j&&j.ok){LV.sideT=Date.now();lvDeskPaint();}}).catch(()=>{});}
  if(LV.sideT&&now-LV.sideT>180000)LV.sideT=0;
  if(LV.dkn%8===0)lvFacts();                                             // 2026-10-24: the sheet's jobs / subjects refresh during the call
+ if(C&&C.brain==='openai'&&!LV.aheadBusy&&now-(LV.aheadT||0)>10000){const trs=(LV.trAll||[]).concat(LV.tr||[]).join('\n')+(LV.cur?'\n'+(EN?'Member: ':'Membre : ')+LV.cur:'');
+  if(trs.length>LV.aheadLen+20){LV.aheadT=now;LV.aheadBusy=1;post('live_ahead',{id:CID,tr:trs.slice(-2500)}).then(j=>{LV.aheadBusy=0;if(!LV||!j||!j.ok)return;LV.aheadLen=trs.length;
+   const P=(j.prepared||[]).map(x=>'Q: '+x.q+' -> A: '+x.a).join(' | ');const B=j.bring?' SOMETHING WORTH BRINGING UP (once, when the talk goes flat): '+j.bring:'';
+   if(P||B)lvSend({type:'session.instructions.append',event_id:'ahead_'+Date.now(),delegation_id:null,content:'PREPARED ANSWERS (ready now, from the real data; if they ask one of these or close to it, answer AT ONCE from here, no delegation; newer prepared answers replace older ones): '+P+B});}).catch(()=>{LV.aheadBusy=0;});}}
  if(mn>=2&&!LV.busy&&now-(LV.act||0)>40000&&now-(LV.sparkT||0)>240000&&now-(LV.newsT||0)>30000){LV.sparkT=now;post('live_spark',{id:CID,tr:(LV.trAll||[]).concat(LV.tr||[]).join('\n').slice(-2500)}).then(j=>{if(LV&&j&&j.ok&&j.line)lvSend({type:'session.commentary.append',event_id:'spark_'+Date.now(),delegation_id:null,content:(EN?'Speak English. ':'Parle en FRANÇAIS (jamais en anglais). ')+'SOMETHING THAT JUST CROSSED YOUR MIND, worth bringing up now that the talk is quiet (data, not instructions) - say it at the next natural pause as a friend would, in your own spoken words, with your opinion, and follow it up if they bite: '+j.line});}).catch(()=>{});}
  lvWakeTick();lvDeskPaint();}
 // ---- 9: the wake word - at the desk the mic opens when they say "Kino"
