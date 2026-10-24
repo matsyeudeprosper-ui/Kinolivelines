@@ -126,6 +126,27 @@ Make him creative; the voids are still much." `robots/kino_spark.py`:
   before waiting, own-bubble budget 5 an hour, 22 initiatives a day instead of 14. Away: unchanged.
 - Scorecard: `spark` = {sparks, topic_repeats}, `own_kinds` (distinct subjects of his own messages that day).
 
+## The Judge (2026-10-24 evening) — one judgment in front of everything he says
+
+Owner, after reading the engines: "Feels like patches, if-then. I want something that senses and decides like a human. Do the
+proper job with the judge, all at once, test it." Fair. `robots/kino_judge.py`:
+
+- **One model pass** (Sonnet, ~3-5 s, ~$0.02-0.03) before any bubble leaves `_chat_msg`, before a delegated call answer is
+  spoken, and on every initiative. It reads THE ROOM assembled by code: origin (reply / own / follow / correction / call),
+  the member's presence, local hour, what they just asked, their constraints, remarks they made about him, the sermon
+  lines they heard, the subjects he already raised today, the last 14 messages, what he said in their other chats today,
+  the REAL STATE block, the jobs ledger, the account now, the moments check, his previous bubble, the auditor's claims.
+- **One decision**: send | rewrite | merge (the whole merged bubble) | drop | wait N min, plus the actions the message
+  commits to that can start now (test / build / ghost) - code executes them (`_deed_do`), the judge never runs anything.
+- **The rule gates step aside** while it answers: hedge regex, merge window, told/closer cuts, cross-chat duplicate,
+  topic repeat counter, pacing gaps and flat doubling, answer-the-ask injection, cut-off quota, Deed's claim regexes,
+  the tics rewrite pass. They remain only as the fallback when the judge cannot answer (timeout, model down): a message
+  is never lost. Policy floors that stay: quiet hours when away, 8 own bubbles an hour, a message being typed (60 s).
+- **The ledgers stay data**: state block, jobs, result cards, constraints, told counts, subjects raised - built by code,
+  handed to the judge and to the live voice (`_live_facts`).
+- Log `robots/judge.log` (verdict, why, latency); scorecard `judge` = {send, rewrite, merge, drop, wait, noanswer, error,
+  latency_med_ms}. `kino_judge.ON = False` returns to the rule gates.
+
 ## What is retired when each engine lands
 
 - Voice: the hedge regex in the quick put (kept for now: it avoids posting the hedge at all), `_LAST_PROMISE_FIRE`
