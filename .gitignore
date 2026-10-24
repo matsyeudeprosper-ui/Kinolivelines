@@ -204,3 +204,8 @@ live/robots/kino_surprise.json.*.tmp
 live/robots/kino_identity.json
 live/robots/kino_identity.json.*.tmp
 live/robots/kino_identity.log
+
+robots/kino_said.json
+robots/kino_said.log
+live/robots/kino_said.json
+live/robots/kino_said.log

@@ -15451,6 +15451,7 @@ def _judge_providers(c, m):
         P["recent_other"] = lambda: [tx for t_, tx in _recent_ai_texts(uid, 18) if not any(mm.get("text") == tx for mm in (c.get("msgs") or [])[-40:])]
         P["local_hour"] = _local_hour(uid)
         P["hours"] = _their_hours_text(uid)          # 2026-10-24: the judge closed a lively chat at "23 h" = this member's busiest hour
+        P["self_said"] = lambda: __import__("kino_said").block(16)      # 2026-10-25: what he has said about himself stays true
         _seen = time.time() - _LAST_SEEN.get(uid, 0)
         P["presence"] = ("in the app right now" if _seen < 120 else "seen %d min ago" % (_seen // 60) if _seen < 86400 else "away")
         if c.get("robot"):
@@ -17080,6 +17081,11 @@ def _commit_harvest_bg(cid, user, q, pa, event=None):
                         return                            # nothing went out: nothing was promised
                     say = final
             _KC.harvest(user.get("id"), cid, say, q, pa, _rc().W, _commit_H(), log=os.path.join(CHAT_DIR, cid + ".log"))
+            try:                                      # 2026-10-25 (owner): what he said about himself stays true - robots/kino_said.py
+                import kino_said as _KSd
+                _KSd.harvest(user.get("id"), cid, say, _rc().W, log=os.path.join(CHAT_DIR, cid + ".log"))
+            except Exception:
+                pass
         except Exception:
             pass
     threading.Thread(target=run, daemon=True).start()

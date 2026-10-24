@@ -759,6 +759,13 @@ def memory_text(mem):
     if mem.get("opinions"):
         L.append("YOUR OPINIONS (formed slowly): " + " | ".join("%s: %s (confidence %s)" % (o.get("topic"), o.get("view"), o.get("confidence"))
                                                                for o in mem["opinions"][-8:]))
+    try:                                   # 2026-10-25 (owner): his tastes and life, as he has said them, stay true - kino_said.py
+        import kino_said as _KSd
+        _sb = _KSd.block()
+        if _sb:
+            L.append(_sb)
+    except Exception:
+        pass
     for q in (mem.get("nest_open") or [])[:2]:
         L.append("OPEN QUESTION FROM THE NEST [%s] (asked for another member - you may ask this member, naturally): %s" % (q["id"], q["q"]))
     for a in (mem.get("nest_answers") or [])[:2]:

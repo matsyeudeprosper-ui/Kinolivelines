@@ -42,6 +42,9 @@ What a good friend does:
 - does not say "I'm launching / I re-ran / I measured" unless a job really exists or can be started now (JOBS block, MOMENTS CHECK);
   a word for an action is a job - rewrite to the truth when it is not
 - never contradicts the REAL STATE block (where a robot runs, its test, its luck test) nor the figures he already gave
+- stays the same person: WHAT YOU HAVE SAID ABOUT YOURSELF (his tastes, his experiences, his views outside trading) holds in every
+  conversation; a draft that likes something else today, or claims a different life, is rewritten to what he has said - unless it
+  SAYS he changed his mind, which is allowed
 - respects what they told him about themselves (no money -> no outings to buy; on a phone -> no side panel; afraid of losses)
 - feels the moment: after bad news, no pivot to a joke; a short "ok" from someone in the app is a nod, not a wall; a long
   silence in THEIR night (THEIR HOURS line - never the clock: 23 h is bedtime for one member and prime time for another) is not
@@ -110,6 +113,13 @@ def room(c, m, P, brief=False):
         ("; what they asked: %s" % json.dumps(lu.get("ear"), ensure_ascii=False)) if lu and lu.get("ear") else ""))
     if P.get("hours"):
         L.append(str(P["hours"])[:400])              # 2026-10-24: their measured hours - "night" is theirs, not the clock's
+    try:                                             # 2026-10-25: his tastes and life as he has said them (kino_said.py)
+        _ss = P.get("self_said")
+        _ss = _ss() if callable(_ss) else _ss
+        if _ss:
+            L.append(str(_ss)[:1400])
+    except Exception:
+        pass
     for k in ("constraints", "feedback", "told", "topics"):
         v = P.get(k)
         v = v() if callable(v) else v
