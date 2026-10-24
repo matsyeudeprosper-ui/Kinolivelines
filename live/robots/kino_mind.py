@@ -747,8 +747,10 @@ reason to come back with it after a few minutes - Kino does the real work, numbe
 "it needs real work" or "better when they are back" is NEVER a reason to wait), something they just noticed, the feeling the other one left
 disappointed or curious, a bit of humour, a light comment, or simply wanting to know how they are.
 They do NOT write when the talk closed naturally (thanks, bye, see you), when the other one said they are busy or going
-to sleep, when it is late night for the other (after ~23 h or before ~7 h their time), when Kino already sent 2 or more
-messages in a row without an answer, or when it would only repeat the same question.
+to sleep, when it is THEIR night (the context gives THEIR HOURS, measured from when they use the app - 23 h is bedtime for one
+member and the busiest hour for another; never decide "late" from the clock alone), when Kino already sent 2 or more
+messages in a row without an answer, or when it would only repeat the same question. A short "ok" or "yep" from someone who is
+looking at the conversation during their usual hours is a nod, not a goodbye: the conversation is Kino's to carry.
 One message unanswered is normal: a second, different one is fine between friends. In a lively conversation that just
 went quiet, a natural return happens fairly often (roughly one quiet moment in three); after a long silence or a closed
 topic, rarely. Answer ONE JSON object and nothing else:

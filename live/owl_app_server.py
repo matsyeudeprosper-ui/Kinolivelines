@@ -15447,6 +15447,7 @@ def _judge_providers(c, m):
         P["feedback"] = lambda: __import__("kino_feedback").block(uid)
         P["recent_other"] = lambda: [tx for t_, tx in _recent_ai_texts(uid, 18) if not any(mm.get("text") == tx for mm in (c.get("msgs") or [])[-40:])]
         P["local_hour"] = _local_hour(uid)
+        P["hours"] = _their_hours_text(uid)          # 2026-10-24: the judge closed a lively chat at "23 h" = this member's busiest hour
         _seen = time.time() - _LAST_SEEN.get(uid, 0)
         P["presence"] = ("in the app right now" if _seen < 120 else "seen %d min ago" % (_seen // 60) if _seen < 86400 else "away")
         if c.get("robot"):
@@ -17943,6 +17944,32 @@ def _active_hour(uid, h=None):
     return int(act.get(str(h), 0)) >= 0.2 * mx
 
 
+def _their_hours_text(uid, h=None):
+    """2026-10-24 (owner 23:31 his time: "why has he stopped talking?"): the judge and the inner voice read "23 h" as bedtime
+    while 22h-23h is this member's busiest hour. One line, measured, for every prompt that must feel the hour: their usual hours
+    from app use (per local hour) and whether NOW is one of them; the clock alone says nothing about a person's night."""
+    try:
+        h = _local_hour(uid) if h is None else h
+        act = (_mem_get(uid).get("act") or {})
+        tot = sum(int(v) for v in act.values())
+        if tot < 40:
+            return "THEIR HOURS: not measured yet (assume 9h-21h their time); now %02dh their time." % h
+        mx = max(int(v) for v in act.values()) or 1
+        on = [k for k in range(24) if int(act.get(str(k), 0)) >= 0.2 * mx]
+        peak = sorted(range(24), key=lambda k: -int(act.get(str(k), 0)))[:3]
+        rng, st = [], (on[0] if on else None)
+        for a, b in zip(on, on[1:] + [None]):
+            if b != a + 1:
+                rng.append("%dh-%dh" % (st, a + 1))
+                st = b
+        return ("THEIR HOURS (measured from when they use the app, their local time): %s; busiest %s. Now %02dh their time = %s. "
+                "Their night is when THEY are not around, not what the clock says." % (
+                    ", ".join(rng) or "-", ", ".join("%dh" % k for k in sorted(peak)), h,
+                    "one of their usual hours" if int(act.get(str(h), 0)) >= 0.2 * mx else "NOT one of their hours"))
+    except Exception:
+        return ""
+
+
 def _companion_can_push(uid, n):
     h = _local_hour(uid)
     _q = ((_mem_get(uid).get("prefs") or {}).get("quiet"))
@@ -19313,9 +19340,10 @@ def _inner_clock_once():
                 tr = _rc().transcript(dict(c, msgs=(c.get("msgs") or [])[-14:]))
                 ctx = ("THE CONVERSATION (the end):\n%s\n\nSILENCE: %d minutes since the last message (%s). This member usually answers "
                        "Kino in about %d s. Kino has sent %d message(s) in a row without an answer. They are %s. Their local time: %02d h. "
-                       "Main thread: %s. Kino saved for later: %s. Kino's mood: %s.\n%s" % (
+                       "%s Main thread: %s. Kino saved for later: %s. Kino's mood: %s.\n%s" % (
                            tr[-5000:], quiet / 60, "Kino wrote last" if M[-1].get("role") != "user" else "THEY wrote last and got no answer",
                            _reply_rhythm(M), run, "looking at the conversation right now" if here else "away from the app", h0,
+                           _their_hours_text(uid, h0),      # 2026-10-24: "23 h" was read as bedtime; it is this member's busiest hour
                            c.get("thread") or "-", json.dumps(c.get("later") or [], ensure_ascii=False)[:400],
                            json.dumps((_KM.load().get("mood") or {}), ensure_ascii=False)[:160], _inner_block(uid)))
                 d = _KM.inner_decide(ctx)

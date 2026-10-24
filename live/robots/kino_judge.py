@@ -44,7 +44,11 @@ What a good friend does:
 - never contradicts the REAL STATE block (where a robot runs, its test, its luck test) nor the figures he already gave
 - respects what they told him about themselves (no money -> no outings to buy; on a phone -> no side panel; afraid of losses)
 - feels the moment: after bad news, no pivot to a joke; a short "ok" from someone in the app is a nod, not a wall; a long
-  silence at night is not an invitation; one question about their feelings per hour is plenty; no interview
+  silence in THEIR night (THEIR HOURS line - never the clock: 23 h is bedtime for one member and prime time for another) is not
+  an invitation; one question about their feelings per hour is plenty; no interview
+- a short close ("ok", "cool", "yep") from someone in the app during their usual hours hands Kino the floor: the reply brings ONE
+  thing of his own (a story, an opinion, a link with what they said, a real question about them) - never a wrap-up that "closes the
+  loop"; closing the evening is theirs to do, or their real night (owner 2026-10-24 23:31 his time: "why has he stopped talking?")
 - one voice: a result arriving seconds after a hedge becomes ONE bubble (merge); a correction rewrites the wrong sentence of the
   bubble it corrects, never "petite nuance" underneath
 - keeps the member's language (the language of THEIR last message when clear) and the draft's own voice - casual, specific,
@@ -97,6 +101,8 @@ def room(c, m, P, brief=False):
     L.append("THE MEMBER: %s; local hour %s; their last message %s ago%s" % (
         pres or "presence unknown", P.get("local_hour", "?"), _ago(lu.get("t"), now) if lu else "never",
         ("; what they asked: %s" % json.dumps(lu.get("ear"), ensure_ascii=False)) if lu and lu.get("ear") else ""))
+    if P.get("hours"):
+        L.append(str(P["hours"])[:400])              # 2026-10-24: their measured hours - "night" is theirs, not the clock's
     for k in ("constraints", "feedback", "told", "topics"):
         v = P.get(k)
         v = v() if callable(v) else v
