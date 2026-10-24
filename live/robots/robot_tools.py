@@ -147,8 +147,31 @@ def breakdown(market, rules, by="hour", rr=0.8):
                     "first_half_r": round(b["r1"], 1), "second_half_r": round(b["r2"], 1),
                     "holds_both_halves": bool(b["n1"] >= 5 and b["n2"] >= 5 and b["r1"] > 0 and b["r2"] > 0)})
     out.sort(key=lambda x: -x["net_r"])
+    # 2026-10-24 (belief engine, layer 3): the control before any "la nuit gagne" - shuffle the bucket labels among the trades 300
+    # times and see how often the BEST bucket of a shuffle is as good as the real best bucket. p_best ~ 0.3 = one draw in three
+    # finds a "best hour" as good by chance = noise.
+    p_best = None
+    try:
+        import random as _rnd
+        labels = [key(t, i) for i, t in enumerate(T)]
+        rs = [t["r"] for t in T]
+        best_real = out[0]["net_r"] if out else 0
+        hits = 0
+        rng = _rnd.Random(7)
+        for _ in range(300):
+            rng.shuffle(labels)
+            acc = {}
+            for lb, r in zip(labels, rs):
+                acc[lb] = acc.get(lb, 0.0) + r
+            if max(acc.values()) >= best_real - 1e-9:
+                hits += 1
+        p_best = round(hits / 300.0, 2)
+    except Exception:
+        pass
+    verdict = ("the best bucket is NOT rare under a shuffle (p %.2f): noise until a real test says otherwise" % p_best if p_best is not None and p_best > 0.1
+               else "the best bucket is rare under a shuffle (p %.2f): worth a real test" % p_best if p_best is not None else "no control")
     return {"market": market, "by": by, "trades": len(T), "days": round((T[-1]["t_in"] - T[0]["t_in"]) / 86400.0, 1), "buckets": out[:24],
-            "holds": [x["bucket"] for x in out if x["holds_both_halves"]],
+            "holds": [x["bucket"] for x in out if x["holds_both_halves"]], "shuffle_p_best": p_best, "control": verdict,
             "note": "quick replay on candles, R units, no costs, no brakes - a bucket that wins only after the fact is luck; the real test decides"}
 
 

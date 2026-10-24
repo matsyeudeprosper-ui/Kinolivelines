@@ -16891,6 +16891,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _chat_mut(cid, lambda c: c.__setitem__("mind", _md))
             except Exception:
                 pass
+        if q and (q.get("beliefs") or q.get("resolved") or q.get("predict")):   # 2026-10-24: the belief ledger
+            try:
+                _rc()
+                import kino_belief as _KBL
+                if q.get("beliefs"):
+                    _KBL.add(user.get("id"), cid, q["beliefs"])
+                if q.get("resolved"):
+                    _KBL.resolve(user.get("id"), q["resolved"])
+                if q.get("predict"):
+                    _cq = json.load(open(_chat_path(cid), encoding="utf-8"))
+                    _pre = _KBL.preregister(user.get("id"), cid, q["predict"], ((_cq.get("robot") or {}).get("name") or ""))
+                    if _pre:
+                        _chat_mut(cid, lambda c: c.__setitem__("pre", _pre))
+            except Exception:
+                pass
         if q and q.get("say"):                          # 2026-10-24: a story he told without marking it is marked anyway
             try:
                 _rc()
@@ -17446,7 +17461,7 @@ def _companion_tick():
                 def put(c):
                     if (c.get("test") or {}).get("state") != "done":
                         c["test"]["state"] = "done"
-                        _chat_msg(c, "result", result=res)
+                        _chat_msg(c, "result", result=_with_verdict(c, res))
                         return True
                 _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
                 if _chat_mut(c["id"], put):
@@ -19962,6 +19977,21 @@ def _member_recent(cid, secs=600):
         return False
 
 
+def _with_verdict(c, res):
+    """2026-10-24: the pre-registered prediction (c["pre"]) scored against the result, carried in the result card"""
+    try:
+        pre = c.get("pre")
+        if not pre or not isinstance(res, dict):
+            return res
+        _rc()
+        import kino_belief as _KBL
+        v = _KBL.resolve_test(c.get("uid"), c.get("id"), res, pre)
+        c["pre"] = None
+        return dict(res, pre={k: pre.get(k) for k in ("net_from", "net_to", "better_than_parent", "dip_vs_parent", "half", "drop_if")}, verdict=v) if v else res
+    except Exception:
+        return res
+
+
 def _chat_result(c):
     """the bench result of the chat's robot, once it is newer than the test request"""
     t = c.get("test") or {}
@@ -20010,7 +20040,7 @@ def chat_get(user, cid, ui=""):
         def put(c):
             if (c.get("test") or {}).get("state") != "done":
                 c["test"]["state"] = "done"
-                _chat_msg(c, "result", result=res)
+                _chat_msg(c, "result", result=_with_verdict(c, res))
                 return True
         _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
         if _chat_mut(c["id"], put):

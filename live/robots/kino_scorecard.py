@@ -117,6 +117,13 @@ def score_day(uid, day=None):
         S["pace"] = KPC.counts(day[5:])
     except Exception:
         S["pace"] = None
+    try:                                   # 2026-10-24: his beliefs on the record (added / resolved / wrong) and calibration
+        import kino_belief as KBL
+        S["beliefs"] = KBL.stats(uid, day)
+        cal = KBL.calibration(uid)
+        S["brier"] = cal.get("brier")
+    except Exception:
+        S["beliefs"] = None
     # the logs (local time stamps "mm-dd HH:MM:SS")
     loc = day[5:]                      # the logs stamp local time; the same calendar label is close enough (UTC-5 box)
     def lines(name):

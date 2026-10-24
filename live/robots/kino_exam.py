@@ -139,7 +139,9 @@ def check(kind, q, c, mem):
     if kind == "simpler":
         if len(say) > 320:                      # one idea with an image fits in 320 chars; 292 passed by eye
             return "longer instead of simpler (%d chars)" % len(say)
-        return None if not re.search(r"\d", say) else "added numbers to a 'Quoi ?'"
+        prev = " ".join(str(m.get("text") or "") for m in (c.get("msgs") or []) if m.get("role") == "ai")
+        new_nums = [n for n in re.findall(r"\d+", say) if n not in prev]      # a number from his own previous explanation is not new
+        return None if not new_nums else "added new numbers to a 'Quoi ?' (%s)" % ", ".join(new_nums[:3])
     return None
 
 

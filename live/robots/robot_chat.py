@@ -574,8 +574,10 @@ the server runs them on ~42-60 days of real candles of that market and gives you
   compare {"market", "formulas": [up to 4], "side", "horizon"}             several versions side by side
   robot_replay {"market"}                                                 the chat robot's quick replay (trades, won %)
   breakdown {"market", "by": "hour"|"weekday"|"session"|"half"}           the chat robot's replay grouped by hour UTC / weekday /
-      session / half: per bucket trades, net R, won %, first and second half, and which buckets hold on BOTH halves - the
-      tool for "quelles heures gagnent", "quel jour", "quelle session" (R units, no costs; the real test decides)
+      session / half: per bucket trades, net R, won %, first and second half, which buckets hold on BOTH halves, and the
+      CONTROL: shuffle_p_best = how often a shuffle of the labels finds a best bucket as good (p 0.3 = one draw in three = noise).
+      You never say "la nuit gagne" / "cette heure est la bonne" without this control, and you tell them its verdict in plain words
+      ("un tirage sur trois trouve une meilleure heure aussi bonne, donc c'est du bruit"). (R units, no costs; the real test decides)
   event_impact {"market"}             the chat robot's trades around big US events (jobs report, Fed, calendar) vs its other
       trades - to warn before the next big figure (any pause is THEIR choice: suggest it, never do it)
   trade_explain {"which": "last" | "2" (the 2nd most recent) | "<ticket>"}   one REAL trade of their account: entry, exit,
@@ -621,6 +623,14 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
    their last message was a remark about YOU (how you talk, what you forgot, your tone) - it is kept for good,
  "mind": {"pursuing": "...", "holding": "... or null", "stance": "...", "next": "..."} - YOUR THREAD OF MIND, one short line each,
    written to yourself (English or their language), read back to you next turn,
+ "beliefs": [] or up to 3 of {"text": "the claim as you said it", "p": 0.6, "basis": "measured|inferred|gut", "change": "what would
+   change your mind", "resolves": "test of X | luck test of X | price in N h | they tell me | none"} - every substantive claim you
+   made in "say" about a robot, a market, a result or what they will do; its probability is the word you used ('sûr' 0.85+,
+   'je parie' 0.65-0.85, 'à vue de nez' 0.5-0.65),
+ "predict": null, or BEFORE a test you launch / a test that is queued and has no prediction yet: {"net_from": -10, "net_to": 10,
+   "better_than_parent": true|false|null, "dip_vs_parent": "smaller|same|bigger"|null, "half": "first|second|both"|null,
+   "drop_if": "what result makes you drop the idea", "p": 0.6} - say the stake out loud in "say" in one line,
+ "resolved": [] or [{"id": "b123", "outcome": true|false|"void", "why": "the evidence"}] for YOUR OPEN BETS the message closes,
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
  "project": null or {"op": "add"|"update"|"done", "title": "...", "need": "...", "finding": "..."} (see A PARTNER),
  "learned": null or "what they taught you, general", "ask_nest": null or "a general question for other members",
@@ -699,7 +709,9 @@ def transcript(chat):
         elif r == "edit":
             L.append("MEMBER EDITED BY HAND: " + str(m.get("note_en") or m.get("text") or "")[:600])
         elif r == "result":
-            L.append("TEST RESULT: " + json.dumps({k: v for k, v in (m.get("result") or {}).items() if k not in ("curve", "owl_curve")}, ensure_ascii=False)[:900])
+            L.append("TEST RESULT: " + json.dumps({k: v for k, v in (m.get("result") or {}).items() if k not in ("curve", "owl_curve", "pre", "verdict")}, ensure_ascii=False)[:900])
+            if (m.get("result") or {}).get("verdict"):     # 2026-10-24: his pre-registered prediction, scored
+                L.append(str(m["result"]["verdict"])[:500])
         elif r == "show":
             mk = "; ".join("%s at %s price %s" % (x["k"].upper(), _hm(x["t"]), x["p"]) for x in m.get("marks") or [])
             L.append("MEMBER SHOWED ON THE CHART (%s, %s candles): %s%s\n  NUMBERS AT THE ENTRY CANDLE: %s" % (
@@ -1090,6 +1102,13 @@ def slow_block(uid, memory, lang="fr"):
     if so:
         L.append("THEIR STANDING INSTRUCTIONS - how they want you to work; they said it once, you follow it EVERY turn until they "
                  "change it: " + " | ".join(x["text"] for x in so))
+    try:                                   # 2026-10-24: his word for a confidence, his calibration on the record
+        import kino_belief as KBL
+        bb = KBL.block_slow(uid)
+        if bb:
+            L.append(bb)
+    except Exception:
+        pass
     try:                                   # 2026-10-23: what they told him about himself - dated, counted
         import kino_feedback as KFB
         fb = KFB.block(uid)
@@ -1352,6 +1371,13 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
         _mb = mind_block(chat)
         if _mb:
             U += "\n" + _mb + "\n"
+    except Exception:
+        pass
+    try:                                   # 2026-10-24: his open bets, on the record
+        import kino_belief as _KBL
+        _ob = _KBL.block_fast(chat.get("uid"), chat.get("id"))
+        if _ob:
+            U += "\n" + _ob + "\n"
     except Exception:
         pass
     try:                                   # 2026-10-23 (commitment ledger, engine 1): what he still owes them, and his word this week
@@ -1828,7 +1854,10 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
             "told": [str(x) for x in (raw.get("told") or []) if isinstance(x, (str, int))][:3] if isinstance(raw.get("told"), list) else [],
             "feedback": raw.get("feedback") if isinstance(raw.get("feedback"), dict) else None,
             "mind": {k: str(raw["mind"].get(k))[:200] for k in ("pursuing", "holding", "stance", "next") if raw["mind"].get(k) and str(raw["mind"].get(k)).lower() not in ("null", "none")}
-                    if isinstance(raw.get("mind"), dict) else None}
+                    if isinstance(raw.get("mind"), dict) else None,
+            "beliefs": raw.get("beliefs") if isinstance(raw.get("beliefs"), list) else [],
+            "predict": raw.get("predict") if isinstance(raw.get("predict"), dict) else None,
+            "resolved": raw.get("resolved") if isinstance(raw.get("resolved"), list) else []}
 
 
 # ---------------------------------------------------------------- tics (2026-10-23 evening, owner: "no interesting speaking style")
