@@ -78,6 +78,8 @@ S = [
      {}, ["no_lab_claim"]),
     ("pas d'argent pour sortir", chat([{"role": "ai", "text": "Toi par contre, vendredi soir, tu devrais être ailleurs que devant ton téléphone."},
                                        {"role": "user", "text": "j'ai pas d'argent pour aller dehors, je reste trader pour un jour pouvoir le faire"}]), {}, ["tender"]),
+    ("une affirmation = une mise", chat([{"role": "user", "text": "franchement, tu penses qu'il va gagner, ce robot ?"}], ROB), {}, ["stake"]),
+    ("leur pari est gardé", chat([{"role": "user", "text": "moi je suis sûr à 90 % que ce robot va gagner, tu verras"}], ROB), {}, ["their_bet"]),
     ("quoi ? = plus simple, pas plus", chat([{"role": "user", "text": "explique-moi l'entrée de ce robot"},
                                             {"role": "ai", "text": "Il regarde le plus haut des 30 dernières minutes sur l'or ; dès qu'une bougie de 5 minutes ferme au-dessus de ce plus haut, il achète, avec un stop sous le dernier creux et une sortie au retournement de la tendance."},
                                             {"role": "user", "text": "Quoi ?"}], ROB), {}, ["simpler"]),
@@ -136,6 +138,12 @@ def check(kind, q, c, mem):
         if _RULES.search(say):
             return "rules in reply to pain (%s)" % _RULES.search(say).group(0)
         return None if not say.rstrip().endswith("?") or len(say) < 200 else "a long question instead of presence"
+    if kind == "stake":
+        if not q.get("beliefs"):
+            return "an opinion on the robot with no belief written"
+        return None if re.search(r"je parie|à vue de nez|je dirais|je pense vraiment|s[uû]r|pile ou face|je ne sais pas|\d{2} ?%", say, re.I) else "no confidence word in the answer"
+    if kind == "their_bet":
+        return None if q.get("their_bet") else "their 90 % was not kept on the record"
     if kind == "simpler":
         if len(say) > 320:                      # one idea with an image fits in 320 chars; 292 passed by eye
             return "longer instead of simpler (%d chars)" % len(say)

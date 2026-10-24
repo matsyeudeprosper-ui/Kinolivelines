@@ -16935,10 +16935,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _chat_mut(cid, lambda c: c.__setitem__("mind", _md))
             except Exception:
                 pass
-        if q and (q.get("beliefs") or q.get("resolved") or q.get("predict")):   # 2026-10-24: the belief ledger
+        if q and (q.get("beliefs") or q.get("resolved") or q.get("predict") or q.get("their_bet")):   # 2026-10-24: the belief ledger
             try:
                 _rc()
                 import kino_belief as _KBL
+                if q.get("their_bet"):
+                    _KBL.add_theirs(user.get("id"), cid, q["their_bet"])
                 if q.get("beliefs"):
                     _KBL.add(user.get("id"), cid, q["beliefs"])
                 if q.get("resolved"):
@@ -20029,14 +20031,19 @@ def _member_recent(cid, secs=600):
 def _with_verdict(c, res):
     """2026-10-24: the pre-registered prediction (c["pre"]) scored against the result, carried in the result card"""
     try:
-        pre = c.get("pre")
-        if not pre or not isinstance(res, dict):
-            return res
         _rc()
         import kino_belief as _KBL
-        v = _KBL.resolve_test(c.get("uid"), c.get("id"), res, pre)
-        c["pre"] = None
-        return dict(res, pre={k: pre.get(k) for k in ("net_from", "net_to", "better_than_parent", "dip_vs_parent", "half", "drop_if")}, verdict=v) if v else res
+        theirs = _KBL.resolve_theirs_on_result(c.get("uid"), c.get("id"), res)      # layer 5: their bets on this test
+        pre = c.get("pre")
+        v = None
+        if pre and isinstance(res, dict):
+            v = _KBL.resolve_test(c.get("uid"), c.get("id"), res, pre)
+            c["pre"] = None
+        if theirs:
+            v = (v or "") + " THEIR BET ON THIS TEST: " + " | ".join(theirs) + " - say it back once, gently, after your own verdict."
+        if not v:
+            return res
+        return dict(res, pre=({k: pre.get(k) for k in ("net_from", "net_to", "better_than_parent", "dip_vs_parent", "half", "drop_if")} if pre else None), verdict=v)
     except Exception:
         return res
 

@@ -159,7 +159,7 @@ def resolve_test(uid, cid, res, pre):
 
 def calibration(uid, days=30):
     now = time.time()
-    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b["status"] in ("true", "false") and now - b["t"] < days * 86400]
+    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b.get("who", "me") == "me" and b["status"] in ("true", "false") and now - b["t"] < days * 86400]
     if not B:
         return {"n": 0}
     buckets = {}
@@ -191,13 +191,80 @@ def block_slow(uid):
 
 
 def block_fast(uid, cid, n=4):
-    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b["status"] == "open"]
+    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b["status"] == "open" and b.get("who", "me") == "me"]
     B = sorted(B, key=lambda b: (b["cid"] != cid, -b["t"]))[:n]
     if not B:
         return ""
     return ("YOUR OPEN BETS (on the record; close one with \"resolved\" when the evidence is in, and say if you were wrong): " +
             " | ".join("[%s, %d %%, %s] %s%s" % (b["id"], round(b["p"] * 100), b["basis"], b["text"][:110],
                                                 (" - changes if: " + b["change"][:60]) if b.get("change") else "") for b in B))
+
+
+# ---------------------------------------------------------------- layer 4: what he was wrong about, on the record
+def changes_block(uid, days=14, n=4):
+    now = time.time()
+    W = [b for b in _load().get("b") or [] if b["uid"] == uid and b.get("who", "me") == "me" and b["status"] == "false" and now - float(b.get("resolved_t") or 0) < days * 86400]
+    if not W:
+        return ""
+    W = sorted(W, key=lambda b: -float(b.get("resolved_t") or 0))[:n]
+    return ("WHAT YOU WERE WRONG ABOUT LATELY (on the record - a person who changed their mind says so when it fits, once, without drama; "
+            "never hide it when the subject comes back): " + " | ".join("%s: you said '%s' at %d %%, it was wrong (%s)" % (
+                time.strftime("%d/%m", time.gmtime(float(b.get("resolved_t") or b["t"]))), b["text"][:90], round(b["p"] * 100), (b.get("evidence") or "")[:80]) for b in W))
+
+
+# ---------------------------------------------------------------- layer 5: their own bets, kept and said back gently
+def add_theirs(uid, cid, tb):
+    """reply field "their_bet": {"text": what they expect, "p": their confidence, "expect_positive": true|false, "resolves": "test of X"}"""
+    if not isinstance(tb, dict) or len(str(tb.get("text") or "")) < 6:
+        return None
+    b = {"id": "t%d" % (int(time.time() * 10) % 10000000), "uid": uid, "cid": cid, "t": time.time(), "who": "them", "text": str(tb["text"])[:200],
+         "p": _p(tb.get("p"), 0.7), "expect_positive": None if tb.get("expect_positive") is None else bool(tb.get("expect_positive")),
+         "resolves": str(tb.get("resolves") or "")[:80], "status": "open", "basis": "their word"}
+
+    def f(d):
+        B = d.setdefault("b", [])
+        if any(x.get("who") == "them" and x["uid"] == uid and x["status"] == "open" and x["text"][:50].lower() == b["text"][:50].lower() for x in B):
+            return
+        B.append(b)
+        _log("THEIRS %s %s p=%.2f | %s" % (uid, b["id"], b["p"], b["text"][:100]))
+    _mut(f)
+    return b["id"]
+
+
+def resolve_theirs_on_result(uid, cid, res):
+    """when a test result lands in the chat: their open bets with an expected sign resolve on the net sign -> the lines to say"""
+    try:
+        net = float((res or {}).get("net"))
+    except Exception:
+        return []
+    out = []
+
+    def f(d):
+        for b in d.get("b") or []:
+            if b["uid"] == uid and b.get("cid") == cid and b.get("who") == "them" and b["status"] == "open" and b.get("expect_positive") is not None:
+                ok = (net > 0) == bool(b["expect_positive"])
+                b["status"] = "true" if ok else "false"
+                b["resolved_t"] = time.time()
+                b["evidence"] = "test net %+.2f $" % net
+                out.append("they said '%s' at %d %% - %s (%+.2f $)" % (b["text"][:80], round(b["p"] * 100), "they were right" if ok else "they were wrong", net))
+                _log("THEIRS RESOLVE %s %s -> %s" % (uid, b["id"], b["status"]))
+    _mut(f)
+    return out
+
+
+def theirs_block(uid, cid, n=3):
+    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b.get("who") == "them"]
+    op = sorted([b for b in B if b["status"] == "open"], key=lambda b: (b["cid"] != cid, -b["t"]))[:n]
+    done = [b for b in B if b["status"] in ("true", "false")]
+    L = []
+    if op:
+        L.append("THEIR OWN BETS (what they said they expect, kept on the record; when a result lands, say it back ONCE and gently - "
+                 "'tu étais sûr à 90 %, il a fait -60' - never to score a point, to help them see their own calibration): " +
+                 " | ".join("[%s, %d %%] %s" % (b["id"], round(b["p"] * 100), b["text"][:90]) for b in op))
+    if len(done) >= 5:
+        hit = sum(1 for b in done if b["status"] == "true")
+        L.append("THEIR CALIBRATION so far: right %d times out of %d when they said they expected something." % (hit, len(done)))
+    return "\n".join(L)
 
 
 def stats(uid, day):

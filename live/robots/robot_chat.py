@@ -86,6 +86,9 @@ the opposite, which is you:
   equivalent (what YOU are building for), then a lighter turn. Read the weight of a message before its words.
 - Never invent a reason for a delay ("désolé, j'étais dans un test", "j'étais occupé"): you were not. A slow answer needs no
   excuse and no mention at all (2026-10-24: "j'ai mis du temps" became an opener in three replies) - you just answer.
+A CLAIM WITHOUT A STAKE IS NOT FINISHED (2026-10-24: a whole evening of "je pense que", zero beliefs written): when "say" says
+  what you think will happen, what a robot is worth, what a market will do - the word carries the probability AND "beliefs" carries
+  the entry. "Je pense qu'il va gagner" without a stake is noise; "je parie, 70 %, et je me trompe si le creux dépasse 20 $" is you.
 YOUR SELF-CHECK in "inner", every time: "what is MINE in this message?" - a thing I saw, think, bet, remember, disagree
 with, laugh at. Nothing mine, and nothing they asked for? Add it, or cut the message to one line.
 
@@ -634,6 +637,9 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
    "better_than_parent": true|false|null, "dip_vs_parent": "smaller|same|bigger"|null, "half": "first|second|both"|null,
    "drop_if": "what result makes you drop the idea", "p": 0.6} - say the stake out loud in "say" in one line,
  "resolved": [] or [{"id": "b123", "outcome": true|false|"void", "why": "the evidence"}] for YOUR OPEN BETS the message closes,
+ "their_bet": null, or when THEY state an expectation about a robot, a test or a market ("ça va marcher", "je suis sûr que",
+   "il va gagner"): {"text": "their expectation in their words", "p": their confidence (0.9 for 'sûr', 0.7 for 'je pense', 0.55 for 'peut-être'),
+   "expect_positive": true|false|null, "resolves": "test of X"} - kept on the record, said back gently when it resolves,
  "tools": [] (see YOUR ANALYSIS TOOLS - when present, your say can be empty: you will answer again with the results),
  "project": null or {"op": "add"|"update"|"done", "title": "...", "need": "...", "finding": "..."} (see A PARTNER),
  "learned": null or "what they taught you, general", "ask_nest": null or "a general question for other members",
@@ -1112,6 +1118,9 @@ def slow_block(uid, memory, lang="fr"):
         bb = KBL.block_slow(uid)
         if bb:
             L.append(bb)
+        cb = KBL.changes_block(uid)       # layer 4: what he was wrong about lately
+        if cb:
+            L.append(cb)
     except Exception:
         pass
     try:                                   # 2026-10-23: what they told him about himself - dated, counted
@@ -1378,11 +1387,14 @@ def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, even
             U += "\n" + _mb + "\n"
     except Exception:
         pass
-    try:                                   # 2026-10-24: his open bets, on the record
+    try:                                   # 2026-10-24: his open bets, and theirs, on the record
         import kino_belief as _KBL
         _ob = _KBL.block_fast(chat.get("uid"), chat.get("id"))
         if _ob:
             U += "\n" + _ob + "\n"
+        _tb = _KBL.theirs_block(chat.get("uid"), chat.get("id"))
+        if _tb:
+            U += "\n" + _tb + "\n"
     except Exception:
         pass
     try:                                   # 2026-10-23 (commitment ledger, engine 1): what he still owes them, and his word this week
@@ -1862,7 +1874,8 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                     if isinstance(raw.get("mind"), dict) else None,
             "beliefs": raw.get("beliefs") if isinstance(raw.get("beliefs"), list) else [],
             "predict": raw.get("predict") if isinstance(raw.get("predict"), dict) else None,
-            "resolved": raw.get("resolved") if isinstance(raw.get("resolved"), list) else []}
+            "resolved": raw.get("resolved") if isinstance(raw.get("resolved"), list) else [],
+            "their_bet": raw.get("their_bet") if isinstance(raw.get("their_bet"), dict) else None}
 
 
 # ---------------------------------------------------------------- tics (2026-10-23 evening, owner: "no interesting speaking style")
