@@ -15062,7 +15062,15 @@ def _state_text(uid, c=None):
     try:
         _rc()
         import kino_facts as _KF
-        return _KF.state_block(_state_data(uid, c), "en" if (c or {}).get("lang") == "en" else "fr")
+        _st = _KF.state_block(_state_data(uid, c), "en" if (c or {}).get("lang") == "en" else "fr")
+        try:                                           # 2026-10-24 14:48: the judge called Kino's OWN robot's true numbers (64 trades, -8 R) invented
+            import kino_mind as _KMo                   # because the state block only knew the registry; his own pretend-money robot is state too
+            _mr = _KMo.my_robot_block()
+            if _mr:
+                _st += "\nKINO'S OWN ROBOT (his, pretend money, not the member's): " + _mr[:700]
+        except Exception:
+            pass
+        return _st
     except Exception as e:
         try:                                           # a silent "" would hide the block for good: say so in the errors log
             open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
@@ -15462,6 +15470,34 @@ def _deed_do(cid, uid, todo):
                 except Exception:
                     pass
                 H["act_test"](cid, uid)
+            elif isinstance(k, str) and k.startswith("test:"):   # 2026-10-24: the test of a NAMED robot (theirs or Kino's own), not the chat's
+                _nm = k[5:].strip().lower()
+                _u = _user_by_id(uid)
+                _rid = None
+                for r_ in (_state_data(uid, c).get("robots") or []):
+                    if _nm and (_nm == str(r_.get("name") or "").lower() or _nm in str(r_.get("name") or "").lower()):
+                        _rid = r_["id"]
+                        break
+                if not _rid:
+                    __import__("kino_deed")._log(cid, "TEST_NAME_UNKNOWN", k)
+                    continue
+                if _rid == c.get("robot_id"):
+                    H["act_test"](cid, uid)
+                    continue
+                try:
+                    _en = c.get("lang") == "en"
+                    _nmf = next((r_.get("name") for r_ in _state_data(uid, c).get("robots") or [] if r_["id"] == _rid), _rid)
+                    _tr = robot_test(_u, {"id": _rid, "again": True})
+                    if _tr.get("ok"):
+                        __import__("kino_deed").start(uid, cid, "test", _nmf)
+                        _chat_mut(cid, lambda cc: _chat_msg(cc, "test", text=(("Test started for %s: about %d minutes. I'll tell you what it gives." % (_nmf, int(_tr.get("minutes") or 5))) if _en
+                                                                             else ("Test lancé pour %s : environ %d minutes. Je te dis ce que ça donne." % (_nmf, int(_tr.get("minutes") or 5))))))
+                    else:
+                        __import__("kino_deed").start(uid, cid, "test", _nmf, state="failed", err=str(_tr.get("err") or "")[:60])
+                        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=(("The test of %s could not start (%s)." % (_nmf, _tr.get("err"))) if _en
+                                                                            else ("Le test de %s n'a pas pu partir (%s)." % (_nmf, _tr.get("err"))))))
+                except Exception as e:
+                    __import__("kino_deed")._log(cid, "TEST_NAME_ERROR", "%s %s" % (k, type(e).__name__))
             elif k == "luck":                     # the judge: the luck test of this chat's robot (same path as the build turn's act)
                 if c.get("robot_id"):
                     _u = _user_by_id(uid)
@@ -17223,7 +17259,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         def _say_(t):
             if t and not _tfw:
                 _tfw.append(time.time() - _t0q)
-            _CHAT_DRAFT[cid] = t
+            _CHAT_DRAFT[cid] = ("…" if _judge_on() else t)    # 2026-10-24: with the judge on, the page shows "Kino écrit…", not the unjudged draft
         _pc, _ow, _mk, _me, _mb = _ctx_get(user, cid, c) if not event else (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
         _tctx = time.time() - _t0q
         # 2026-10-21 (humanity watch): two unprompted messages in a row ended with the SAME unanswered question

@@ -22,7 +22,7 @@ import io, json, os, re, threading, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "judge.log")
 ON = True
-MODELS = ("sonnet", "haiku")
+MODELS = ("haiku", "sonnet")     # 2026-10-24: Haiku judged the 10 test rooms as well as Sonnet, in half the time
 TIMEOUT = 45
 CALL_TIMEOUT = 10
 HARD_CAP_OWN = 8
@@ -55,8 +55,10 @@ Answer ONE JSON object only:
  "text": "" for send (the draft goes as it is), else the message to send (for rewrite: the better message; for merge: the WHOLE merged bubble, his
          previous bubble and this one as one natural message; for a CORRECTION: the WHOLE corrected bubble; for drop/wait: ""),
  "wait_min": minutes for wait (else 0),
- "actions": [] or the actions the message commits to that can and should start now: "test" (the robot's 42-day test - never when
-            the state shows it done today) | "luck" (its luck test, 100 random robots, only after a positive test) | "build" | "ghost",
+ "actions": [] or the actions the message commits to that can and should start now: "test" (this conversation's robot's 42-day test -
+            never when the state shows it done today) | "test:<robot name exactly as in the REAL STATE block>" (the test of ANOTHER robot of
+            theirs or of Kino's own, e.g. "test:Nasdaq faux départ ven · Kino") | "luck" (its luck test, 100 random robots, only after a
+            positive test) | "build" | "ghost",
  "why": one short line, for the log}
 """
 
@@ -139,7 +141,8 @@ def judge(room_text, lang="fr", W=None, cid="", timeout=None):
             _log(cid, "NOANSWER", str(v)[:120], int((time.time() - t0) * 1000))
             return None
         dec = {"verdict": v["verdict"], "text": str(v.get("text") or "").strip(), "wait_min": int(v.get("wait_min") or 0),
-               "actions": [a for a in (v.get("actions") or []) if a in ("test", "luck", "build", "ghost")], "why": str(v.get("why") or "")[:200]}
+               "actions": [str(a)[:80] for a in (v.get("actions") or []) if isinstance(a, str) and (a in ("test", "luck", "build", "ghost") or a.startswith("test:"))],
+               "why": str(v.get("why") or "")[:200]}
         _log(cid, dec["verdict"].upper(), dec["why"], int((time.time() - t0) * 1000))
         return dec
     except Exception as e:
