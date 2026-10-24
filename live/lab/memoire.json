@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-23T19:35:00Z",
+ "updated": "2026-10-24T05:00:09Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -103,9 +103,10 @@
     "2026-10-23 12:00 veille: 12 closes since 10-22 13:19, 2 won ~-35; both wins night BOS SELL (+17.24, +7.98). By hour: 01-03 h 32 tr 72% +60.8; 13 h 7 tr 0 won -49.22; 16 h 9 tr 1 won -45.88. As predicted (peu per hour).",
     "2026-10-23 13:30 veille: day BOS SELL -7.17 (closed 13:24, pace 0.772 calm). Pile cont_day 47 tr 38% vs 52% -71.99 PF 0.56 (h 38/38 agree), was 36 tr -50.10 on 10-15; inside 1.3-1.85 12 tr -43.82, held 30-60 min 9 tr 2 won -47.86. As predicted.",
     "2026-10-23 15:00 veille: two day FLIP-BOS BUY losses 13:32/13:45 (-13.95). 13 h now 8 tr 0 won -53.98. As predicted (peu per hour).",
-    "2026-10-23 19:35 veille: evening BOS BUY -4.65 (18:46, pace 1.61), then two calm BOS SELL wins (+1.56, +1.09). 13 h 8 tr 0 won -53.98, 16 h 10 tr 1 won -50.53, 17-18 h 15 tr ~+19 (peu). Day leak intact; evening is mixed."
+    "2026-10-23 19:35 veille: evening BOS BUY -4.65 (18:46, pace 1.61), then two calm BOS SELL wins (+1.56, +1.09). 13 h 8 tr 0 won -53.98, 16 h 10 tr 1 won -50.53, 17-18 h 15 tr ~+19 (peu). Day leak intact; evening is mixed.",
+    "2026-10-24 05:00 veille: night closes 01:50-04:21 4 tr 0 won ~-15.0 (2 FLIP, 2 BOS BUY). Pile asia (00-08 h) 78 tr 59% vs 40% +37.31 PF 1.26, halves 67%/50% (42/36) - second half fading; 04 h 8 tr 25% -10.55, 00 h 14 tr -18.23, 01-03 h 34 tr +56.2 (was 32 +60.8). Against, one night (peu); still positive overall."
    ],
-   "next": "Re-read by src once real_pool_split is built."
+   "next": "Watch the asia pile second half; if its rate falls to the others', downgrade. Re-read by src once real_pool_split is built."
   },
   {
    "id": "slow_trade",
@@ -2913,6 +2914,11 @@
    "t": "2026-10-23T19:35:00Z",
    "look": "veille (4 closes): wake_context, --by hour, --by kind",
    "saw": "Since 18:02: BOS BUY -4.65 (18:46, pace 1.612, after a loss), then two BOS SELL wins +1.56 (19:10, pace 0.76) and +1.09 (19:23, pace 0.776), both calm, small. 17-18 h 15 tr ~+19 (peu); 16 h 10 tr 1 won -50.53, 13 h 8 tr 0 won -53.98 unchanged. Kind: BOS 91 tr 53% -18.21 (halves 56/50), FLIP-BOS 109 tr 44% -89.71 (43/45 agree). Twins all still red (ext700 47 tr -97.78, fit3 41 -85.51, bul4 31 -77.20, debtnerv 22 -42.32, nervgate 8 -31.24), too few to rank. No run, pile or proposal."
+  },
+  {
+   "t": "2026-10-24T05:00:09Z",
+   "look": "veille (11 closes 10-23 19:31 -> 10-24 04:21): wake_context, --by hour, --pile asia",
+   "saw": "11 tr 3 won ~-20.91 (BOS 6 tr 2 won, FLIP 5 tr 1 won; biggest -7.80 BOS SELL 23:21 pace 1.35, -5.90 FLIP SELL 01:50 pace 1.12). Night 01:50-04:21 4 tr 0 won ~-15.0. Pile asia 78 tr 59% vs 40% +37.31 PF 1.26, halves 67%/50%. Total 212 tr 47% -137.44 PF 0.73. Twins since 19:35: fit3 +9 tr -9.81 (50 -95.32), bul4 +9 -9.81 (40 -87.01), debtnerv +7 -8.02 (29 -50.34), nervgate +7 -7.95 (15 -39.19): each lost less than real (-20.9) but all red, too few to rank; ext700 no longer in wake_context. No ask, no run, no pile, no proposal."
   }
  ],
  "lessons": [
