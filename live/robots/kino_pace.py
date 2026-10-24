@@ -16,7 +16,10 @@ import io, os, re, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "pace.log")
 DISCRETIONARY = ("YOUR INITIATIV", "A THOUGHT CAME", "INNER VOICE", "PROACTIVE CHECK", "GOAL STEP", "RESEARCH DIARY", "YOUR STORY")
-NEWS = ("LIVE TRADE",)
+NEWS = ("LIVE TRADE", "GUARDIAN", "LUCK TEST FINISHED", "LAB NEWS", "END OF DAY", "GHOST TRADE")
+# 2026-10-24 06:00: seven messages of his own in six hours against three of the member's - trade comments, luck news and the
+# guardian were "news" and never counted as unanswered. News still comes when it happens, but not to a wall: after three own
+# messages with no real answer, news waits for the member too (a test THEY launched is posted as a result card regardless).
 GAP_DAY, GAP_NIGHT, NEWS_GAP = 600, 1200, 300
 
 
@@ -47,6 +50,14 @@ def gate(event, msgs, local_hour=None, now=None):
     if kind == "news":
         if last_own and now - float(last_own["t"]) < NEWS_GAP:
             return False, "news: last own message %d s ago" % (now - float(last_own["t"]))
+        un = 0
+        for m in reversed(M):
+            if _real_answer(m):
+                break
+            if m["role"] == "ai" and m.get("event"):
+                un += 1
+        if un >= 3:
+            return False, "news held: %d of your own already unanswered - wait for them" % un
         return True, "news ok"
     night = local_hour is not None and (local_hour >= 22 or local_hour < 7)
     gap = GAP_NIGHT if night else GAP_DAY
