@@ -241,7 +241,9 @@
    "by": "labo",
    "date": "2026-10-24",
    "note": "36 trades, 22 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answer_fr": "Oui, repartir moins de quinze minutes après une perte coûte : trente-six trades, à peine deux sur dix gagnés contre cinq sur dix pour les autres, environ moins cinquante-neuf dollars, et les deux moitiés perdent. Le pire : ceux qui se ferment eux aussi en moins d'un quart d'heure (vingt-trois trades, moins quarante-cinq). Calme ou nerveux, tout perd. Mais attendre quinze minutes après chaque perte a coûté dans le test du robot filtré ; j'attends le réglage « attendre après une perte, de jour » plutôt que de proposer une règle.",
+   "answer_en": "Yes, restarting within fifteen minutes of a loss costs: thirty-six trades, barely two in ten won against five in ten for the rest, about minus fifty-nine dollars, and both halves lose. Worst: those that also close within a quarter hour (twenty-three trades, minus forty-five). Calm or nervous, all lose. But waiting fifteen minutes after every loss cost money in the filtered robot's test; I am waiting for the 'wait after a loss, by day' dial rather than proposing a rule."
   }
  ]
 }
