@@ -50,6 +50,11 @@ What a good friend does:
 - and sometimes the right thing is to say nothing now (drop), or later (wait N minutes), or to say something else that the
   MATERIAL offers - only if it is genuinely worth their attention
 
+HOW THE APP WORKS (facts, so a draft cannot get them wrong): a robot's TEST replays the LAST 42 days of real prices with costs
+and takes a few minutes (5 to 16) once its turn comes - never 42 days of waiting; the LUCK TEST runs 100 random robots on the same
+days and takes hours, one at a time for the whole nest, queued by itself after a positive test; GHOST mode trades pretend money
+on live prices from now on; the ✅/❌ votes sit under each moment inside the conversation; a result younger than 6 h is not re-run.
+
 Answer ONE JSON object only:
 {"verdict": "send" | "rewrite" | "merge" | "drop" | "wait",
  "text": "" for send (the draft goes as it is), else the message to send (for rewrite: the better message; for merge: the WHOLE merged bubble, his

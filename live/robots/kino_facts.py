@@ -59,6 +59,8 @@ def _where(r, lang):
 def _test(t, lang):
     if not t:
         return "pas de test" if lang != "en" else "no test"
+    if t.get("queued"):
+        return ("test EN FILE depuis %s UTC (quelques minutes une fois son tour venu)" % t["queued"]) if lang != "en" else ("test QUEUED since %s UTC (a few minutes once its turn comes)" % t["queued"])
     s = "%+.2f $ sur %d trades, %d %% gagnés, pire creux %.0f $" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0)) \
         if lang != "en" else "%+.2f $ on %d trades, %d%% won, worst dip %.0f $" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0))
     if t.get("when"):

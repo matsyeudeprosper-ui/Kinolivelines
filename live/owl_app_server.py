@@ -15045,6 +15045,12 @@ def _state_data(uid, c=None):
             luck = _luck_of(rid, mk)
         except Exception:
             pass
+        try:                                           # 2026-10-24 15:05: a test queued 2 min ago is state, not "pas de test"
+            _qa, _ta = str(r.get("queued_at") or ""), str(r.get("tested_at") or "")
+            if _qa and _qa > _ta and (test is None or _qa > str(test.get("when") or "")):
+                test = {"net": None, "trades": None, "win_rate": None, "cc_dd": None, "when": "", "queued": _qa[11:16]}
+        except Exception:
+            pass
         parts = r.get("parts") or {}
         steps = {k: P.get(parts.get(k), parts.get(k)) for k in ("entry", "stop", "exit") if parts.get(k)}
         if parts.get("filters"):
