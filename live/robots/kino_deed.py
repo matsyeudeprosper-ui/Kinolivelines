@@ -307,9 +307,13 @@ def bind(c, m, intent=None, lang="fr", H=None):
             elif kind == "ghost":
                 if intent.get("act") in ("ghost", "duel") or recent(cid, "ghost"):
                     did.append("ghost_ok")
+                elif c.get("robot"):
+                    todo.append("ghost")
+                    did.append("ghost_launch")
+                    _log(cid, "GHOST_CLAIM", "%s -> launch" % s[:80])
                 else:
-                    s2 = _T(lang, "Pour le mode fantôme, c'est une carte que tu confirmes ; je te la mets dès que le robot a son test.",
-                            "Ghost mode is a card you confirm; I'll put it up as soon as the robot has its test.")
+                    s2 = _T(lang, "Le mode fantôme se lance depuis la conversation du robot lui-même ; ouvre-la et je le mets en route là-bas.",
+                            "Ghost mode starts from the robot's own conversation; open it and I'll start it there.")
                     did.append("ghost_rewrite")
                     _log(cid, "GHOST_CLAIM", s[:80])
         if s2 != s:

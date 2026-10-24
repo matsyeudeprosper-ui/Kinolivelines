@@ -1254,6 +1254,13 @@ def member_lang2(chat):
 
 def prompt(chat, robot_view, pieces, owl, markets, mode, lang, memory=None, event=None, member=None, stable=False):
     ml = member_lang(chat, "en" if lang == "en" else "fr", dominant=bool(event))
+    if not event:                          # 2026-10-24 (Kino v2 engine 4): the language of the message being answered, when clear
+        try:
+            import kino_ear as _KEl
+            _lu = next((m for m in reversed(chat.get("msgs") or []) if m.get("role") == "user"), None)
+            ml = _KEl.reply_lang((_lu or {}).get("text"), ml)
+        except Exception:
+            pass
     U = ("MODE: %s\nLANGUAGE: write in %s - the language of the member's last real sentences (measured). This holds for "
          "EVERY message, also the ones you send on your own. Switch only when THEY switch with real sentences.\n") % (
         mode, "French" if ml == "fr" else "English")
@@ -1761,7 +1768,7 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
         except Exception:
             pass
     return {"say": _say, "build": bool(raw.get("build")) and (not event or str(event).startswith(("YOUR FOLLOW-ON", "INNER VOICE", "YOUR PROMISE", "SHARED EXPERIMENT", "RESEARCH", "GOAL STEP", "IN THE LIVE CALL", "SIDE WORK"))), "remember": remember_of(raw),
-            "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel") else None,
+            "act": raw.get("act") if raw.get("act") in ("test", "tests_resume", "tests_pause", "luck_cancel", "ghost") else None,
             "chips": [c.strip()[:60] for c in (raw.get("chips") or [])[:4] if isinstance(c, str) and c.strip()],
             "show": _show_of(raw), "seen": str(raw.get("seen") or "").strip()[:400], "send": raw.get("send") is not False,
             "react": _react_of(raw), "partner": partner_of(raw), "own": _own_of(raw), "story_told": bool(raw.get("story_told")),

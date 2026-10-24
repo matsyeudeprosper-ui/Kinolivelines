@@ -29,7 +29,7 @@ ASKED = {
     "week": r"(cette semaine|this week|la semaine|semaine passée|last week)",
     "balance": r"(solde|balance|le compte (est|fait)|combien j'ai|how much (do )?i have|what'?s my balance)",
     "robot_state": r"(il tourne|is it running|quel robot|which (bot|robot)|in (random|luck) test|test de chance (en cours|actuel)|what'?s (running|in the queue)|qu'est[- ]ce qui (tourne|est en cours))",
-    "why_loss": r"(pourquoi.{0,30}(perdu|perte|pertes|loss|losses)|why.{0,30}(lost|loss|losses|losing)|c'est quoi ce trade)",
+    "why_loss": r"(pourquoi.{0,30}(perdu|perte|pertes|loss|losses)|why.{0,30}(lost|loss|losses|losing)|(losses?|pertes?|perdu)\s+(why|pourquoi)|c'est quoi ce trade)",
     "where_vote": r"(où.{0,20}voter|where.{0,20}vote|je vois pas (de|le) (panel|panneau)|pas de tick|no tick|comment (je )?vote)",
     "when": r"(quand|when|combien de temps|how long|à quelle heure|what time|dans combien)",
     "explain": r"(explique|explain|c'est quoi|what is|what does|ça veut dire|comment ça marche|how does)",

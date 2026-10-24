@@ -14995,6 +14995,83 @@ def _chat_member(user, c):
     return out
 
 
+def _state_data(uid, c=None):
+    """2026-10-24 (Kino v2 engine 3): the real state of THEIR robots, from the registry, the results files, the luck status, the
+    chats' ghosts and the account - assembled by code, formatted by kino_facts.state_block"""
+    u = _user_by_id(uid) or {"id": uid}
+    reg = robot_reg()
+    byid = {x["id"]: x for x in reg.get("robots") or []}
+    P = {x["id"]: (x.get("name_fr") or x["id"]) for x in reg.get("pieces") or []}
+    ghosts = {}
+    try:
+        import glob as _g
+        for p in _g.glob(os.path.join(CHAT_DIR, "*.json")):
+            try:
+                cc = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                continue
+            if cc.get("uid") != uid:
+                continue
+            for g in cc.get("ghosts") or []:
+                if g.get("rid"):
+                    ghosts[g["rid"]] = time.strftime("%d/%m", time.gmtime(float(g.get("t0") or g.get("since") or 0))) if (g.get("t0") or g.get("since")) else ""
+    except Exception:
+        pass
+    acc = {}
+    try:
+        A = acct_robot_block(u, is_admin(u))
+        cur = A.get("current") or {}
+        if cur.get("id"):
+            acc = {"id": cur["id"], "robot": cur.get("name_fr") or cur["id"], "since": cur.get("since") or "", "n": (A.get("live") or {}).get("n")}
+    except Exception:
+        pass
+    mine = [r for r in (reg.get("robots") or []) if r.get("by_uid") == uid]
+    if c and c.get("robot_id") and c["robot_id"] in byid and byid[c["robot_id"]] not in mine:
+        mine.append(byid[c["robot_id"]])
+    mine = sorted(mine, key=lambda r: str(r.get("tested_at") or r.get("created") or ""), reverse=True)[:12]
+    out = []
+    for r in mine:
+        rid, mk = r["id"], r.get("market") or "BTCUSD"
+        test = None
+        try:
+            j = json.load(open(os.path.join(DIR, "robots", "results", rid + ".json"), encoding="utf-8"))
+            rb = j.get("robot") or {}
+            if rb.get("net") is not None:
+                test = {"net": rb.get("net"), "trades": rb.get("trades"), "win_rate": rb.get("win_rate"), "cc_dd": rb.get("cc_dd"), "when": str(j.get("generated_at") or "")[:10]}
+        except Exception:
+            pass
+        luck = None
+        try:
+            luck = _luck_of(rid, mk)
+        except Exception:
+            pass
+        parts = r.get("parts") or {}
+        steps = {k: P.get(parts.get(k), parts.get(k)) for k in ("entry", "stop", "exit") if parts.get(k)}
+        if parts.get("filters"):
+            steps["filters"] = ", ".join(P.get(f, f) for f in parts["filters"])
+        where, since = "none", ""
+        if acc.get("id") == rid:
+            where, since = "real", acc.get("since") or ""
+        elif rid in ghosts:
+            where, since = "ghost", ghosts[rid]
+        out.append({"id": rid, "name": r.get("name_fr") or rid, "market": mk, "where": where, "since": since, "steps": steps, "test": test, "luck": luck})
+    return {"robots": out, "account": acc}
+
+
+def _state_text(uid, c=None):
+    try:
+        _rc()
+        import kino_facts as _KF
+        return _KF.state_block(_state_data(uid, c), "en" if (c or {}).get("lang") == "en" else "fr")
+    except Exception as e:
+        try:                                           # a silent "" would hide the block for good: say so in the errors log
+            open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
+                "%s state_block %s: %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), type(e).__name__, str(e)[:200]))
+        except Exception:
+            pass
+        return ""
+
+
 def _chat_member_fresh(uid, c):
     """2026-10-23 (speed): the lines of the member block that change every turn - discipline numbers (messages in the
     last hour), emotion cues (answered after Ns, local hour), the world right now (time to the minute, prices). They
@@ -15013,6 +15090,24 @@ def _chat_member_fresh(uid, c):
                 for x in ol[:4]) + " - this IS the figure when they ask how the trade is doing; say it, it moves every minute")
         else:
             L.append("OPEN TRADES RIGHT NOW on their account: none")
+    except Exception:
+        pass
+    try:          # 2026-10-24 (Kino v2 engine 3): the real state of their robots - one block, built by code
+        _st = _state_text(uid, c)
+        if _st:
+            L.append(_st)
+    except Exception:
+        pass
+    try:          # 2026-10-24 (Kino v2 engine 4): what they just asked, and what they told you about themselves
+        _rc()
+        import kino_ear as _KEa
+        _lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+        _ab = _KEa.ask_block(((_lu or {}).get("ear") or _KEa.read((_lu or {}).get("text"))) if _lu else None, c.get("lang") or "fr")
+        if _ab:
+            L.append(_ab)
+        _cb = _KEa.constraints_block(uid, c.get("lang") or "fr")
+        if _cb:
+            L.append(_cb)
     except Exception:
         pass
     try:          # 2026-10-19 (owner item 3): discipline signals for the coach
@@ -15278,6 +15373,9 @@ def _deed_do(cid, uid, todo):
                             if _en else "Avant le test : les 5 derniers moments où ton robot aurait tradé sont juste en dessous - ✅ ou ❌ sous chacun, puis il part.")))
             elif k == "build":
                 H["build"](cid, uid)
+            elif k == "ghost":
+                if c.get("robot"):
+                    _kino_act(cid, _user_by_id(uid), "ghost", c.get("lang") == "en")
     except Exception:
         pass
 
@@ -16702,7 +16800,7 @@ def _commit_H():
             c = {}
         if c.get("robot") and _check_state(c, u) != "ok":
             return "blocked"                          # the test waits for THEIR votes on the moments - not a broken word, nothing to retry
-        _kino_act(cid, u, "test", c.get("lang") == "en")
+        _kino_act(cid, u, "test", _rc().member_lang(c, c.get("lang") or "fr") == "en")
         try:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
             if c.get("robot") and _check_state(c, u) != "ok":
@@ -16874,11 +16972,21 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
                         " | ".join(_others) or "nothing", " | ".join(_own) or "nothing", json.dumps(_asks, ensure_ascii=False)[:1500], json.dumps(_fd, ensure_ascii=False)[:1500]))
         except Exception:
             nest = ""
+        try:                                           # 2026-10-24 (engine 3): the real state + the figures he already gave
+            import kino_facts as _KF3
+            _c3 = json.load(open(_chat_path(cid), encoding="utf-8"))
+            _st3 = _state_text(_c3.get("uid"), _c3)
+            _names = [r.get("name") for r in (_state_data(_c3.get("uid"), _c3).get("robots") or [])] + [(_c3.get("robot") or {}).get("name")]
+            _KF3.pin(cid, say, [n for n in _names if n])
+            nest += "\n\n" + _st3 + "\n" + _KF3.pinned_block(cid, lang) + "\n" + _KF3.audit_rules(lang)
+        except Exception:
+            pass
         v = W.ask_json(sysp, ("THE MESSAGE YOU ANSWERED FROM (your fresh facts - TEST RESULT cards with net, trades, dip, first_half, "
                               "later_half, the lab lines, RIGHT NOW):\n%s\n\n%s\n\n" % (str(up or "")[-16000:], nest)) +
                        "FACT CHECK OF YOUR OWN MESSAGE. You just sent this to the member:\n<<<\n%s\n>>>\nList every claim in it about a "
                        "MEASURED outcome (a test, a luck test, a backtest, a result, a drawdown, 'the lab saw', 'finished positive', "
-                       "'both halves') AND every claim about ANOTHER PERSON ('un autre membre / trader du nid m'a dit', 'quelqu'un ici', "
+                       "'both halves'), every claim about WHERE A ROBOT RUNS or its PARAMETERS (see the REAL STATE block and its rules), "
+                       "AND every claim about ANOTHER PERSON ('un autre membre / trader du nid m'a dit', 'quelqu'un ici', "
                        "'d'autres membres', 'on m'a appris') - a person claim is supported ONLY by the nest lists above; a lesson this "
                        "member taught you themselves, retold as another trader's, is unsupported - and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
                        "your instructions and in this message. An idea, a plan, a guess said as a guess, or a market comment is not a "
@@ -17228,6 +17336,17 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     pass
             # 2026-10-24 (owner's tester list, item 5): "Pas vraiment fini, a vue de nez" then 26 s later the measured answer - two
             # messages in a minute, the first a guess. When a lookup follows, a short hedge is not said: the build turn answers.
+            if q.get("say") and not event:
+                try:                                   # 2026-10-24 (engine 4): they asked a figure -> it comes first; "ta phrase s'est coupée" once an hour
+                    _rc()
+                    import kino_ear as _KEq
+                    _lu_ = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+                    _ear = (_lu_ or {}).get("ear") or (_KEq.read(_lu_.get("text")) if _lu_ else None)
+                    _nd_ = json.load(open(os.path.join(DIR, "nest_data", user.get("id") + ".json"), encoding="utf-8"))
+                    q["say"] = _KEq.answer_check(_ear, q["say"], _nd_, _rc().member_lang(c, c.get("lang") or "fr"))
+                    q["say"] = _KEq.cutoff_once(q["say"], c.get("msgs") or [])
+                except Exception:
+                    pass
             if q.get("say") and event and str(event).startswith("A THOUGHT CAME TO YOU") and "already the message" in str(event):
                 try:                                   # 2026-10-24: the refined thought is the message; a say that lost it is the thought itself
                     _qt = re.search(r': "(.*)"(?: - measured: .*?)?\. This is already the message', str(event), re.S)
@@ -20241,6 +20360,13 @@ def chat_send(user, body):
             cc.pop("idea_pending", None)
             cc["idea"] = {"t": int(time.time()), "text": [str(card.get("summary") or "")], "robot": (cc.get("robot") or {}).get("name")}
         _chat_mut(c["id"], _iok)
+    try:                                             # 2026-10-24 (Kino v2 engine 4): read before answering
+        _rc()
+        import kino_ear as _KEu
+        _ex["ear"] = _KEu.read(text)
+        _KEu.learn_constraints(user.get("id"), text)
+    except Exception:
+        pass
     _chat_mut(c["id"], lambda c: _chat_msg(c, "user", text=text[:1500], **_ex))
     _CHAT_TYPING.pop(c["id"], None)
     try:                                         # 2026-10-23 (watch): "All ✅" in words while the moments wait for taps
