@@ -16201,6 +16201,7 @@ def _chat_lock(cid):
 
 
 _CHAT_WAIT, _CHAT_TYPING, _CHAT_PENDING = set(), {}, {}
+_LAST_PROMISE_FIRE = {}      # cid -> when a promise reminder last fired (2026-10-23 23:33: four in 12 min, nine messages)
 
 
 def _chat_status(cid):
@@ -16702,7 +16703,8 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
                        "'both halves') and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
                        "your instructions and in this message. An idea, a plan, a guess said as a guess, or a market comment is not a "
                        "claim. A figure that can be read or computed from a TEST RESULT card above (a dip half as deep, a half of the test "
-                       "flat) IS supported. A statement of ABSENCE ('il n'a encore rien prouvé', 'pas de test de chance') is supported when no "
+                       "flat) IS supported, and so is a claim that follows arithmetically from the facts (two wins out of three and a net loss -> "
+                       "each loss outweighs several wins). A statement of ABSENCE ('il n'a encore rien prouvé', 'pas de test de chance') is supported when no "
                        "such result exists. Unsupported means: the facts CONTRADICT it, or it names a measurement, result or event that "
                        "does not exist anywhere in the facts - never a reading between the lines. "
                        "Answer ONE JSON object only: {\"unsupported\": [\"claim as written\", ...], \"say\": null or, when a claim "
@@ -16987,6 +16989,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         q["say"] = None
             except Exception:
                 pass
+            if q["say"] and event and str(event).startswith("YOUR PROMISE") and q.get("build"):
+                q["say"] = None                          # 2026-10-23: the build turn brings the numbers; a "je m'y mets" before it is noise
             if q["say"] and event and not str(event).startswith(("YOUR PROMISE", "YOUR FOLLOW-ON")):
                 # 2026-10-23 22:23 (watch): the member asked "j'ai un trade en cours ?" while an initiative (Opus, ~18 s) was being
                 # written; the initiative landed instead of the answer and they wrote "Quoi ?". Member first: a message of his
@@ -19072,6 +19076,10 @@ def _chat_watch_once():
             pass
         # (3) a promise due
         W_ = [w for w in c.get("work") or [] if now >= float(w.get("due") or 0)]
+        if W_:                                           # 2026-10-23 23:33 (watch): member first, and one reminder per 10 min per chat
+            _lu = max([float(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "user"] or [0])
+            if now - _lu < 240 or now - _LAST_PROMISE_FIRE.get(cid, 0) < 600:
+                W_ = []
         if W_ and _waiting_promise(W_[0].get("what")) and _jobs_running(u.get("id"), cid):
             w = W_[0]
 
@@ -19100,6 +19108,7 @@ def _chat_watch_once():
                 sn = _CHAT_SEEN.get(u.get("id"))
                 here = bool(sn and now - sn[0] < 60 and sn[1] == cid)
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                _LAST_PROMISE_FIRE[cid] = now
                 try:                                      # 2026-10-23: how many times this promise was made already
                     _pk = re.sub(r"\W+", " ", str(w.get("what")).lower()).strip()[:50]
                     _pn = int((json.load(open(_chat_path(cid), encoding="utf-8")).get("promise_n") or {}).get(_pk, 1))
