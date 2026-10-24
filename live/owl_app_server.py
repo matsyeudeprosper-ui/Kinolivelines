@@ -17120,6 +17120,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         _CHAT_PENDING[cid] = True
                 except Exception:
                     pass
+            # 2026-10-24 (owner's tester list, item 5): "Pas vraiment fini, a vue de nez" then 26 s later the measured answer - two
+            # messages in a minute, the first a guess. When a lookup follows, a short hedge is not said: the build turn answers.
+            if q["say"] and q["build"] and not event and len(str(q["say"])) <= 240 and re.search(
+                    r"(à vue de nez|je (regarde|vérifie|jette un [oœ]e?il|te sors|me renseigne|vais (regarder|vérifier|voir))|deux secondes|un instant|"
+                    r"i['’]?m (checking|looking|pulling)|let me (check|look|pull)|one sec)", str(q["say"]), re.I):
+                q["say"] = None
             if q["say"]:
                 _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), **_vn,
                           followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
