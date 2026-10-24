@@ -55,7 +55,8 @@ Answer ONE JSON object only:
  "text": the message to send (for send: the draft as is; for rewrite: the better message; for merge: the WHOLE merged bubble, his
          previous bubble and this one as one natural message; for a CORRECTION: the WHOLE corrected bubble; for drop/wait: ""),
  "wait_min": minutes for wait (else 0),
- "actions": [] or the actions the message commits to that can and should start now: "test" | "build" | "ghost",
+ "actions": [] or the actions the message commits to that can and should start now: "test" (the robot's 42-day test - never when
+            the state shows it done today) | "luck" (its luck test, 100 random robots, only after a positive test) | "build" | "ghost",
  "why": one short line, for the log}
 """
 
@@ -131,12 +132,12 @@ def judge(room_text, lang="fr", W=None, cid="", timeout=None):
     try:
         W = W or __import__("robot_warm")
         u = room_text + "\n\nLanguage of the member: %s. Decide now. JSON only." % ("English" if lang == "en" else "French")
-        v = W.ask_json(SYSTEM, u, models=MODELS, timeout=timeout or TIMEOUT, warm=False)
+        v = W.ask_json(SYSTEM, u, models=MODELS, timeout=timeout or TIMEOUT, warm=True)
         if not isinstance(v, dict) or v.get("verdict") not in ("send", "rewrite", "merge", "drop", "wait"):
             _log(cid, "NOANSWER", str(v)[:120], int((time.time() - t0) * 1000))
             return None
         dec = {"verdict": v["verdict"], "text": str(v.get("text") or "").strip(), "wait_min": int(v.get("wait_min") or 0),
-               "actions": [a for a in (v.get("actions") or []) if a in ("test", "build", "ghost")], "why": str(v.get("why") or "")[:200]}
+               "actions": [a for a in (v.get("actions") or []) if a in ("test", "luck", "build", "ghost")], "why": str(v.get("why") or "")[:200]}
         _log(cid, dec["verdict"].upper(), dec["why"], int((time.time() - t0) * 1000))
         return dec
     except Exception as e:

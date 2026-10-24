@@ -15451,9 +15451,34 @@ def _deed_do(cid, uid, todo):
         c = H["chat"](cid) or {}
         for k in todo:
             if k == "test":
-                if (c.get("test") or {}).get("state") in ("queued", "running"):
+                _t = c.get("test") or {}
+                if _t.get("state") in ("queued", "running"):
                     continue                      # the reply's own act / the regex already queued it
+                try:                              # 2026-10-24: a test done in the last 6 h on the same robot is not re-run (13:17 re-ran a 12:48 test)
+                    import calendar as _cal
+                    _at = _cal.timegm(time.strptime(str(_t.get("at") or "")[:19], "%Y-%m-%dT%H:%M:%S"))
+                    if _t.get("state") == "done" and time.time() - _at < 6 * 3600 and _t.get("rev") == c.get("rev"):
+                        continue
+                except Exception:
+                    pass
                 H["act_test"](cid, uid)
+            elif k == "luck":                     # the judge: the luck test of this chat's robot (same path as the build turn's act)
+                if c.get("robot_id"):
+                    _u = _user_by_id(uid)
+                    try:
+                        lr = robot_control(_u, {"id": c["robot_id"], "sym": _chat_market(c)})
+                        _en = c.get("lang") == "en"
+                        if lr.get("ok"):
+                            _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Luck test queued: 100 random robots on the same days." if _en else
+                                                                                  "Test de chance en file : 100 robots au hasard sur les mêmes jours.")))
+                        else:
+                            _why = {"not_winning": ("its test there is not positive with 20+ trades", "son test là-bas n'est pas positif avec 20 trades ou plus"),
+                                    "busy": ("another luck test is running in the nest", "un autre test de chance tourne dans le nid"),
+                                    "done": ("it already has one", "il en a déjà un"), "market": ("that market is not prepared", "ce marché n'est pas préparé")}.get(
+                                lr.get("err"), (str(lr.get("err") or "?"), str(lr.get("err") or "?")))
+                            _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("No luck test: %s." % _why[0]) if _en else ("Pas de test de chance : %s." % _why[1])))
+                    except Exception:
+                        pass
             elif k == "fires":                    # 2026-10-24: the robot changed, no moments card yet -> post it
                 _u = _user_by_id(uid)
                 if _check_state(c, _u) == "none":
