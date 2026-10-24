@@ -17030,12 +17030,52 @@ def _commit_harvest_bg(cid, user, q, pa, event=None):
     if not (q or {}).get("say"):
         return
 
+    t_call = time.time()
+
     def run():
         time.sleep(20)
         try:
             _rc()
             import kino_commit as _KC
-            _KC.harvest(user.get("id"), cid, q.get("say"), q, pa, _rc().W, _commit_H(), log=os.path.join(CHAT_DIR, cid + ".log"))
+            say = str(q.get("say") or "")
+            # 2026-10-24 (watch, 20:41 UTC): the draft said "je regarde un peu ce qui se passe dans le monde"; the judge rewrote it
+            # before it went out, yet the regex catcher and the ledger had read the DRAFT -> a promise nobody made came back 15 min
+            # later as YOUR PROMISE, 44 s after his own inner-voice message. The ledger reads what the member actually received.
+            st = q.get("_sent")
+            if st is not None:
+                final = None
+                try:
+                    cc0 = json.load(open(_chat_path(cid), encoding="utf-8"))
+                    sent = None if st == -1 else next((m for m in reversed(cc0.get("msgs") or [])
+                                                       if m.get("role") == "ai" and int(m.get("t") or 0) == int(st)), None)
+                    final = str(sent.get("text") or "") if sent else ""
+                except Exception:
+                    final = None
+                if final is not None and final.strip() != say.strip():
+                    dropped = []
+
+                    def _prune(cc, final=final):
+                        keep = []
+                        for w in cc.get("work") or []:
+                            if t_call - 45 <= float(w.get("t") or 0) <= t_call + 1 and not (final and _KC._same(w.get("what"), final)):
+                                dropped.append(str(w.get("what") or ""))
+                                continue
+                            keep.append(w)
+                        cc["work"] = keep
+                    _chat_mut(cid, _prune)
+                    if dropped:
+                        try:
+                            io.open(os.path.join(CHAT_DIR, cid + ".log"), "a", encoding="utf-8").write(
+                                "\n--- ledger %s: promise(s) found only in the draft, not in what went out - dropped: %s ---\n" % (
+                                    time.strftime("%H:%M:%S"), json.dumps(dropped, ensure_ascii=False)[:300]))
+                            io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s DRAFT-PROMISE dropped | %s\n" % (
+                                time.strftime("%m-%d %H:%M:%S"), cid, " | ".join(dropped)[:200].replace("\n", " ")))
+                        except Exception:
+                            pass
+                    if not final.strip():
+                        return                            # nothing went out: nothing was promised
+                    say = final
+            _KC.harvest(user.get("id"), cid, say, q, pa, _rc().W, _commit_H(), log=os.path.join(CHAT_DIR, cid + ".log"))
         except Exception:
             pass
     threading.Thread(target=run, daemon=True).start()
@@ -17579,9 +17619,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     r"i['’]?m (checking|looking|pulling)|let me (check|look|pull)|one sec)", str(q["say"]), re.I):
                 q["say"] = None
             if q["say"]:
-                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), intent={"act": q.get("act"), "build": bool(q["build"])},
-                          ekind=str(event or "")[:90], **_vn,
-                          followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
+                _mq = _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), intent={"act": q.get("act"), "build": bool(q["build"])},
+                                ekind=str(event or "")[:90], **_vn,
+                                followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
+                # 2026-10-24 (watch): the ledger must read the bubble that WENT OUT - the judge rewrites or drops, the auditor corrects in
+                # place. -1 = nothing was posted (dropped). A promise living only in the draft came back 15 min later as YOUR PROMISE.
+                q["_sent"] = int(_mq.get("t") or 0) if any(_x is _mq for _x in (c.get("msgs") or [])) else -1
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
                 _tg_demo(user.get("id"), _qdm)
@@ -19711,10 +19754,13 @@ def _chat_watch_once():
         W_ = [w for w in c.get("work") or [] if now >= float(w.get("due") or 0)]
         if W_:                                           # 2026-10-23 23:33 (watch): member first, and one reminder per 10 min per chat
             _lu = max([float(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "user"] or [0])
-            if now - _lu < 240 or now - _LAST_PROMISE_FIRE.get(cid, 0) < 600:
+            # 2026-10-24 20:41 UTC (watch): the reminder fired 28 s after his own inner-voice message - two bubbles of his in a
+            # minute. His own last bubble holds it exactly like the member's: a friend finishes one thought before the next.
+            _la = max([float(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "ai"] or [0])
+            if now - _lu < 240 or now - _la < 240 or now - _LAST_PROMISE_FIRE.get(cid, 0) < 600:
                 try:                                     # 2026-10-24: two reminders 2 min apart slipped through - log every hold
-                    io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD promise | member %ds ago, last fire %ds ago\n" % (
-                        time.strftime("%m-%d %H:%M:%S"), u.get("id"), cid, now - _lu, now - _LAST_PROMISE_FIRE.get(cid, 0)))
+                    io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD promise | member %ds ago, own %ds ago, last fire %ds ago\n" % (
+                        time.strftime("%m-%d %H:%M:%S"), u.get("id"), cid, now - _lu, now - _la, now - _LAST_PROMISE_FIRE.get(cid, 0)))
                 except Exception:
                     pass
                 W_ = []
