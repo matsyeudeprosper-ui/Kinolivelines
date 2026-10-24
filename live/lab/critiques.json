@@ -432,6 +432,27 @@
     "real gap: --drag auto came back uncharged (no measured gap on 30 trades yet); --drag 1 variant -210.32 on 128 trades vs uncharged deployed -38.03; harness charges only the variant (~1.9 $/trade at its stakes) - charged evenly the deployed run would pay ~430 on 229 trades, so trading fewer helps it here, it does not die on a dollar a trade",
     "runs: 6 (nerv_gate, size_hot 0.5, debt_nerv_gate, nerv_gate drag 1, nerv_gate pnls/curve, nerv_gate drag auto)"
    ]
+  },
+  {
+   "id": "hothalf",
+   "date": "2026-10-24",
+   "verdict": "doute",
+   "fr": "Ce matin l'idée gagne 25 $ de plus sur 42 jours, et plus la mise est petite, plus elle gagne. Mais miser moitié moins sur TOUS les trades gagne 86 $ : le robot perd en ce moment, donc miser moins aide partout. Sur 69 jours l'idée perd 11 $, déjà écartée après trois nuits à non. Mon inquiétude : rien ne prouve que le marché nerveux compte.",
+   "en": "This morning the idea earns $25 more over 42 days, and smaller stakes earn more. But betting half on EVERY trade earns $86 more: the robot is losing right now, so betting less helps everywhere. Over 69 days the idea loses $11, and it was already set aside after three nights of no. What worries me most: nothing shows the nervous market itself matters.",
+   "checks": [
+    "data moved since the context file: harness 2026-10-24 ~09:30 deployed -172.26 (hole 179.58, 255 trades), idea -147.49 (hole 157.48, 256 trades), +24.77, verdict A",
+    "dose: size_hot 0.75 +9.92 (hole 170.73) / 0.5 +24.77 (157.48) / 0.25 +40.78 (144.22) - smooth and monotone, no sign flip tonight. But on 2026-10-22 the same 0.5 lost 6.1 vs deployed (nervgate critique) - the sign flips between nights",
+    "halves: h1 +13.21 (-3.50 -> 9.71), h2 +20.97 (-192.94 -> -171.97); both gain, h2 carries ~60%. Shapes: byref base and capped (valere) rows identical (+1.02 / -7.56) - no independent capped result",
+    "control: --hour-size 0-24:0.5 (half stake on every trade) -86.13 vs -172.26 = +86.13, hole 89.79 - three times the idea's gain. In h2 halving all +96.5 vs idea +21. Only in h1 (deployed flat) does the idea beat plain halving (+13.2 vs +1.75) - the one sign the nervous filter itself carries something",
+    "long window: 69 d diff -10.96, hole 22.1 worse, verdict C (h1 -37.82 / h2 +37.06) - a loss, so a doubt",
+    "real trades: diff +40.86, hole 30.05 smaller - the strongest point for it, but the deployed real net is negative too (-47 for the idea), same 'bet less while losing' effect is possible",
+    "concentration: the 2026-09-24 -39.16 loss becomes -28.00 (+11.2 of the +24.8); the rest is spread over the 10-23/10-24 losing run",
+    "past: archive 'hothalf' already set aside (three nights of C in a row, -34 $ the last); nightly history C 9 of 12 nights, net fell 81 -> -61; registry 'sizehot' still unchecked, 'nerv' (refuse when nervous) deployed; no twin yet",
+    "mechanism: 'nervous market = more stops hit, so stake less' is plausible, but the control says most of the money comes from staking less during a losing stretch, not from the nervous market",
+    "overlap: softer version of nervgate/debtnerv (both doubted) - same trades, cut by stake instead of refusal",
+    "real gap: --drag auto uncharged (no measured gap on 30 trades yet); --drag 1 variant -513.43 vs uncharged deployed -172.26 - harness charges the variant only, uneven; trade count unchanged (256 vs 255), so it does not win by trading more",
+    "runs: 6 (size_hot 0.5, 0.25, 0.75, 0.5 drag auto, 0.5 drag 1, hour-size 0-24:0.5 control)"
+   ]
   }
  ]
 }

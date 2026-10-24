@@ -3762,6 +3762,169 @@
    "status": "done",
    "verdict": "A",
    "done": "2026-10-21"
+  },
+  {
+   "id": "pb_ext450_flipl05",
+   "family": "structure",
+   "title_fr": "Pas d'entrée après 450 points, moitié moins après une perte",
+   "title_en": "No entry after 450 points, half stake after a loss",
+   "why_fr": "Avec le filtre des comptes, ne pas entrer quand l'heure a déjà bougé de 450 points, et miser moitié moins sur un changement de sens juste après une perte. Testé sur 42 jours : +61 $ par rapport au robot filtré, mieux sur les deux moitiés, trou de 37 au lieu de 61. Sur 69 jours : +41 $. Sur les vrais trades : +24 $.",
+   "why_en": "With the accounts' filter, no entry when the hour already moved 450 points, and half stake on a change of direction right after a loss. Tested on the last 42 days: +$61 against the filtered robot, better on both halves, hole of 37 instead of 61. On 69 days: +$41. On the real trades: +$24.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "flip_loss_size": 0.5
+   },
+   "pretest": {
+    "net": -5.82,
+    "worst": 36.91,
+    "h1": 39.36,
+    "h2": 13.52,
+    "base_net": -67.21,
+    "base_worst": 60.65,
+    "verdict": "A",
+    "trades": 55,
+    "at": "2026-10-24",
+    "vs": "filtre officiel / official filter",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 41.14
+    },
+    "real": {
+     "n_real": 113,
+     "diff_net": 23.78
+    }
+   },
+   "by": "chercheur",
+   "date": "2026-10-24",
+   "status": "pending"
+  },
+  {
+   "id": "pb_day025_flipl05",
+   "family": "argent",
+   "title_fr": "Le jour, miser quatre fois moins ; après une perte, moitié moins",
+   "title_en": "By day, stake a quarter; after a loss, half",
+   "why_fr": "Au lieu de ne plus trader le jour, garder les trades de jour mais miser quatre fois moins de 8 h à minuit, et moitié moins sur un changement de sens après une perte. 42 jours : +43 $, mieux sur les deux moitiés, trou de 24 au lieu de 61. Prudence : sur 69 jours, -41 $ au réglage moitié.",
+   "why_en": "Instead of stopping daytime trading, keep the day trades but stake a quarter from 08:00 to midnight, and half on a change of direction after a loss. 42 days: +$43, better on both halves, hole of 24 instead of 61. Caution: on 69 days, -$41 at the half setting.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23
+    ],
+    "hour_size": 0.25,
+    "flip_loss_size": 0.5
+   },
+   "pretest": {
+    "net": -23.91,
+    "worst": 24.3,
+    "h1": 37.75,
+    "h2": 7.53,
+    "base_net": -67.21,
+    "base_worst": 60.65,
+    "verdict": "A",
+    "at": "2026-10-24",
+    "vs": "filtre officiel / official filter",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -40.61,
+     "note": "measured at day 0.5"
+    },
+    "real": {
+     "n_real": 113,
+     "diff_net": 15.42,
+     "note": "day 0.5"
+    }
+   },
+   "by": "chercheur",
+   "date": "2026-10-24",
+   "status": "pending"
+  },
+  {
+   "id": "pb_day05_flipl05",
+   "family": "argent",
+   "title_fr": "Le jour, miser moitié moins ; après une perte aussi",
+   "title_en": "By day, stake half; after a loss too",
+   "why_fr": "Le réglage du milieu de l'idée précédente : de 8 h à minuit, miser moitié moins, et moitié moins sur un changement de sens après une perte. 42 jours : +41 $, mieux sur les deux moitiés (+25 et +12), trou de 33 au lieu de 61. Les trois réglages (trois quarts, moitié, quart) gagnent tous. Prudence : 69 jours, -41 $.",
+   "why_en": "The middle setting of the previous idea: from 08:00 to midnight stake half, and half on a change of direction after a loss. 42 days: +$41, better on both halves (+25 and +12), hole of 33 instead of 61. All three settings (three quarters, half, quarter) win. Caution: 69 days, -$41.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23
+    ],
+    "hour_size": 0.5,
+    "flip_loss_size": 0.5
+   },
+   "pretest": {
+    "net": -26.59,
+    "worst": 32.94,
+    "h1": 25.09,
+    "h2": 12.4,
+    "base_net": -67.21,
+    "base_worst": 60.65,
+    "verdict": "A",
+    "trades": 56,
+    "at": "2026-10-24",
+    "vs": "filtre officiel / official filter",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -40.61
+    },
+    "real": {
+     "n_real": 113,
+     "diff_net": 15.42
+    }
+   },
+   "by": "chercheur",
+   "date": "2026-10-24",
+   "status": "pending"
   }
  ]
 }

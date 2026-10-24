@@ -1,3 +1,28 @@
 {
- "decisions": {}
+ "decisions": {
+  "ext700": {
+   "d": "no",
+   "date": "2026-10-24",
+   "by": "lab",
+   "note": "le jumeau a perdu le duel (-98 $ contre -41 $, trou 103 contre 45)"
+  },
+  "fit3": {
+   "d": "no",
+   "date": "2026-10-24",
+   "by": "lab",
+   "note": "le jumeau a perdu le duel (-95 $ contre -42 $, trou 98 contre 42)"
+  },
+  "debtnerv": {
+   "d": "no",
+   "date": "2026-10-24",
+   "by": "lab",
+   "note": "le jumeau a perdu le duel (-53 $ contre -34 $, trou 53 contre 39)"
+  },
+  "bul4": {
+   "d": "no",
+   "date": "2026-10-24",
+   "by": "lab",
+   "note": "le jumeau a perdu le duel (-91 $ contre -34 $, trou 91 contre 39)"
+  }
+ }
 }

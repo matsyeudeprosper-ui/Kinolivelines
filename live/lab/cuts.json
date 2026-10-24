@@ -398,6 +398,28 @@
      ]
     }
    ]
+  },
+  {
+   "id": "loss_quick15",
+   "title_fr": "Trade repris moins de 15 minutes après une perte",
+   "title_en": "Trade taken less than 15 minutes after a loss",
+   "by": "chercheur",
+   "date": "2026-10-24",
+   "status": "open",
+   "why_fr": "Après une perte, le robot repart souvent tout de suite. Repris en moins de 15 minutes : 35 trades, 8 gagnés seulement, -56 $, les deux moitiés perdent. Repris plus tard après une perte : 82 trades, presque un sur deux gagné. Après un gain, repartir vite coûte peu. Le pire : un changement de sens repris vite après une perte, 21 trades, 3 gagnés. Cette pile dira si la hâte après une perte est la vraie cause.",
+   "why_en": "After a loss the robot often starts again at once. Restarted within 15 minutes: 35 trades, only 8 won, -$56, both halves lose. Restarted later after a loss: 82 trades, almost one in two won. After a win, starting fast costs little. Worst of all: a change of direction taken fast after a loss, 21 trades, 3 won. This pile will tell whether the hurry after a loss is the real cause.",
+   "where": [
+    {
+     "field": "prev_win",
+     "op": "==",
+     "value": false
+    },
+    {
+     "field": "gap_min",
+     "op": "<",
+     "value": 15
+    }
+   ]
   }
  ]
 }

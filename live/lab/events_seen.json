@@ -31,7 +31,10 @@
   "time_exit",
   "tight_stop_size",
   "night_lock_release",
-  "pile_field_streak"
+  "pile_field_streak",
+  "flip_hours_size",
+  "builder_unblock",
+  "trail_in_menu"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -47,6 +50,9 @@
   "ask_1791725405_europe",
   "ask_1791806415_day_after_loss",
   "ask_1791887322_cont_day",
-  "ask_1792407475_cont_rested"
+  "ask_1792407475_cont_rested",
+  "ask_1792749605_flip_after_loss",
+  "ask_1792749605_gap_30_60",
+  "ask_1792783843_flip_day"
  ]
 }
