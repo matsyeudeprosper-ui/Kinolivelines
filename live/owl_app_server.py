@@ -21678,6 +21678,33 @@ def _day_recap(u, uid, m, ch, now, h0, busy):
 _LUCK_HOLD = {"on": False, "since": 0.0, "last_busy": 0.0, "cool": 0.0, "pids": []}
 _LIVE_ON = {}            # uid -> start time of a live call in progress
 _LIVE_CID = {}           # uid -> the conversation the call is in (2026-10-21: voice typing in another chat went to the call brain)
+_LIVE_TR = {}            # cid -> the call transcript as the server saw it grow (2026-10-24: a 6-min call reached the chat as 5 lines)
+
+
+def _live_tr_merge(cid, piece):
+    """2026-10-24 (owner: "are text and call in sync?"): the phone posts tails of the transcript during the call (ahead / side /
+    spark) and the whole of it at the end - except when it does not: the 16:45 call ran 6 min with 6 delegations and its card
+    held the first 90 s. The server keeps its own copy, grown from the tails by line overlap, and the card takes the longer one."""
+    try:
+        new = [l for l in str(piece or "").splitlines() if l.strip()]
+        if not new:
+            return
+        old = _LIVE_TR.get(cid) or []
+        if not old:
+            _LIVE_TR[cid] = new[-400:]
+            return
+        k = None
+        for i in range(len(old) - 1, max(-1, len(old) - 60), -1):   # the last line of ours that the piece still carries
+            if old[i] in new:
+                k = (i, new.index(old[i]))
+                break
+        if k is None:
+            old = old + new
+        else:
+            old = old[:k[0] + 1] + new[k[1] + 1:]
+        _LIVE_TR[cid] = old[-400:]
+    except Exception:
+        pass
 _CHAT_SENT_T = [0.0]     # last member message, any member
 
 
@@ -23717,6 +23744,7 @@ def live_side(user, body):
         return {"ok": False, "err": "recent"}
     _LIVE_SIDE_T[c["id"]] = _LIVE_ACT_T[c["id"]] = time.time()
     tr = str(body.get("tr") or "")[-1500:]
+    _live_tr_merge(c["id"], tr)
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     threading.Thread(target=_chat_quick, args=(c["id"], user, "SIDE WORK DURING THE LIVE CALL (nobody asked you). The call so far (data): \"%s\". "
                      "Pick ONE useful check they did not ask for but will be glad about, that you can really do now with your tools (a "
@@ -23742,6 +23770,7 @@ def live_ahead(user, body):
         return {"ok": False, "err": "recent"}
     _LIVE_AHEAD_T[c["id"]] = time.time()
     tr = str(body.get("tr") or "")[-2500:]
+    _live_tr_merge(c["id"], tr)
     if len(tr.split()) < 6:
         return {"ok": False, "err": "short"}
     try:
@@ -23786,6 +23815,7 @@ def live_spark(user, body):
         return {"ok": False, "err": "recent"}
     _LIVE_SPARK_T[c["id"]] = time.time()
     tr = str(body.get("tr") or "")[-2500:]
+    _live_tr_merge(c["id"], tr)
     uid = user.get("id")
     lang = _rc().member_lang(c, c.get("lang") or "fr")
     try:
@@ -24254,6 +24284,16 @@ def live_end(user, body):
     _atomic_json(LIVE_CALLS, CL[-2000:])
     _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
     tr = str(body.get("transcript") or "")[-12000:]      # 2026-10-22: the whole call ("lire l'appel" showed the last 3 min of 17)
+    try:                                                 # 2026-10-24: the server's own copy, grown from the tails posted during the call
+        _srv = "\n".join(_LIVE_TR.get((c or {}).get("id")) or [])[-12000:]
+        _log_live("TRANSCRIPT %s phone %d chars / %d lines, server %d chars / %d lines, deleg %s" % (
+            uid, len(tr), len([l for l in tr.splitlines() if l.strip()]), len(_srv), len([l for l in _srv.splitlines() if l.strip()]), _dg))
+        if len(_srv) > len(tr) * 1.2 and not body.get("cont"):
+            tr = _srv
+        if not body.get("cont"):
+            _LIVE_TR.pop((c or {}).get("id"), None)
+    except Exception:
+        pass
     if c is not None and mins >= 0.5 and not body.get("cont"):     # 2026-10-24 13:00: two 15-s reconnects showed as two "1 min" calls
         fr = c.get("lang") != "en"
         _ct = (" · %.2f $" % cost).replace(".", "," if fr else ".") if is_admin(user) else ""      # the price: owner only
