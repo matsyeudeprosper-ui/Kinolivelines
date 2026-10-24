@@ -77,11 +77,20 @@ def write(uid, ctx, lang="fr"):
     if not L:
         return []
 
+    def _ws(t):
+        return set(w for w in re.findall(r"[a-z\u00e0-\u00ff']{5,}", str(t or "").lower()))
+
     def put(d):
         u = d.setdefault("u", {}).setdefault(uid, {})
-        old = [x for x in u.get("items") or [] if x.get("told") or time.time() - x["t"] < REFRESH_S]   # told ones stay (dedupe)
-        told_texts = [x["text"][:60] for x in old if x.get("told")]
-        new = [x for x in L if x["text"][:60] not in told_texts]
+        old = [x for x in u.get("items") or [] if x.get("told") or time.time() - x["t"] < 24 * 3600]  # 24 h of items stay (dedupe)
+        # 2026-10-24: the oil story was written again at every refresh and told five times - a new item that overlaps an item
+        # of the last 24 h (word sets) is the same story and is skipped
+        new = []
+        for x in L:
+            wx = _ws(x["text"])
+            if any(wx and len(wx & _ws(o["text"])) >= 0.4 * min(len(wx), len(_ws(o["text"]))) for o in old):
+                continue
+            new.append(x)
         u["items"] = (old + new)[-30:]
         u["t"] = time.time()
     _mut(put)
@@ -121,6 +130,23 @@ def _verified(ctx, L):
     except Exception:
         pass
     return [x for i, x in enumerate(L) if i in keep]
+
+
+def auto_told(uid, say):
+    """2026-10-24: a sent message that overlaps an untold item marks it told even when the model forgot the "told" field"""
+    try:
+        ws = set(re.findall(r"[a-z\u00e0-\u00ff']{5,}", str(say or "").lower()))
+        if len(ws) < 4:
+            return
+        hit = []
+        for x in items(uid):
+            wx = set(re.findall(r"[a-z\u00e0-\u00ff']{5,}", x["text"].lower()))
+            if wx and len(ws & wx) >= 0.4 * len(wx):
+                hit.append(x["id"])
+        if hit:
+            told(uid, hit)
+    except Exception:
+        pass
 
 
 def block(uid, lang="fr"):

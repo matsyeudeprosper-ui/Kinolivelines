@@ -14645,6 +14645,8 @@ def _rc():
         m.PLANS = {k: {"usd": v.get("usd")} for k, v in PACKAGES.items()}
     if hasattr(m, "FRESH_OF") and m.FRESH_OF is None:
         m.FRESH_OF = lambda chat: _chat_member_fresh(chat.get("uid"), chat)
+    if hasattr(m, "RECENT_OF") and m.RECENT_OF is None:
+        m.RECENT_OF = _recent_ai_texts
     return m
 
 
@@ -15043,6 +15045,34 @@ def _chat_member_fresh(uid, c):
     except Exception:
         pass
     return "\n".join(L)
+
+
+_RECENT_CACHE = {}
+
+
+def _recent_ai_texts(uid, hours=18):
+    """2026-10-24: his messages to this member today across ALL their chats (cached 60 s) - for robot_chat.topic_check"""
+    x = _RECENT_CACHE.get(uid)
+    if x and time.time() - x[0] < 60:
+        return x[1]
+    out = []
+    try:
+        import glob as _g
+        for p in _g.glob(os.path.join(CHAT_DIR, "*.json")):
+            try:
+                c = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                continue
+            if c.get("uid") != uid:
+                continue
+            for mm in c.get("msgs") or []:
+                if mm.get("role") == "ai" and mm.get("text") and time.time() - float(mm.get("t") or 0) < hours * 3600:
+                    out.append((float(mm["t"]), str(mm["text"])))
+    except Exception:
+        pass
+    out.sort()
+    _RECENT_CACHE[uid] = (time.time(), out[-60:])
+    return out[-60:]
 
 
 def _chat_path(cid):
@@ -16859,6 +16889,12 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             try:
                 _md = dict(q["mind"], t=time.time())
                 _chat_mut(cid, lambda c: c.__setitem__("mind", _md))
+            except Exception:
+                pass
+        if q and q.get("say"):                          # 2026-10-24: a story he told without marking it is marked anyway
+            try:
+                _rc()
+                __import__("kino_material").auto_told(user.get("id"), q["say"])
             except Exception:
                 pass
         if q and q.get("told"):                         # 2026-10-23: a thing he could tell, told - once

@@ -1930,17 +1930,57 @@ def shape_issue(say, chat):
     return None
 
 
+RECENT_OF = None     # 2026-10-24: set by the app - uid -> [(t, text)] of his messages today across ALL their chats (the oil story
+                     # was told five times in one evening in two chats; a per-chat check never saw it)
+_TOPIC_STOP = set("""avec dans pour cette celui celle comme alors aussi encore toujours jamais entre après avant depuis pendant parce autre
+autres chose choses robot robots test tests trade trades marché marché bitcoin heure heures minutes soir matin nuit journée demain
+petit petite régulier régulier moitié moitié moitiés franchement vraiment plutôt plutôt quand même même about their there would could
+should these those which while because trading robot market night today""".split())
+
+
+def _topics(t):
+    w = [x for x in re.findall(r"[a-zà-ÿ']{6,}|\d+ ?%", str(t or "").lower()) if x not in _TOPIC_STOP]
+    return set(w)
+
+
+def topic_check(say, chat):
+    """-> a reason when `say` re-tells a topic he already brought up 2+ times today across the member's chats, else None"""
+    if not RECENT_OF:
+        return None
+    try:
+        R = RECENT_OF(chat.get("uid")) or []
+    except Exception:
+        return None
+    mine = _topics(say)
+    if len(mine) < 2:
+        return None
+    theirs = set()
+    for m in [x for x in (chat.get("msgs") or []) if x.get("role") == "user"][-30:]:
+        theirs |= _topics(m.get("text"))
+    cnt = {}
+    for t, txt in R:
+        for w in _topics(txt) & mine:
+            cnt[w] = cnt.get(w, 0) + 1
+    hot = sorted([w for w, n in cnt.items() if n >= 2 and w not in theirs], key=lambda w: -cnt[w])
+    if len(hot) >= 2:
+        return "it re-tells a thing you already brought up %d times today (%s) - they heard it, drop that part" % (max(cnt[w] for w in hot), ", ".join(hot[:3]))
+    return None
+
+
 def tic_rewrite(say, chat, sysp, log=None, event=None):
     """the message again without its tics (one extra call, only when a tic was measured); the original when nothing to fix"""
     try:
         here = (time.time() - max([int(m.get("t") or 0) for m in (chat.get("msgs") or []) if m.get("role") == "user"] or [0])) < 900
         rep, clo = tic_check(say, chat, here)
         shp = shape_issue(say, chat) if not event else None      # his own openings are rarer; the member's turns carry the rhythm
-        if not rep and not clo and not shp:
+        top = topic_check(say, chat)                             # 2026-10-24: the same story across chats
+        if not rep and not clo and not shp and not top:
             return say, None
         why = []
         if shp:
             why.append(shp)
+        if top:
+            why.append(top)
         if rep:
             why.append("it repeats phrases you already used in this conversation (a callback lands once; the second time it is a tic): " + "; ".join('"%s"' % g for g in rep))
         if clo:
@@ -1955,7 +1995,7 @@ def tic_rewrite(say, chat, sysp, log=None, event=None):
                 "%s %s rep=%s clo=%s shape=%s event=%s | %s -> %s\n" % (time.strftime("%m-%d %H:%M:%S"), chat.get("id"), rep, clo, shp, bool(event), say[:160].replace("\n", " "), (new or "(kept)")[:160].replace("\n", " ")))
         except Exception:
             pass
-        return (new[:1200] if 3 < len(new) < 1500 else say), (rep + clo + ([shp] if shp else []))
+        return (new[:1200] if 3 < len(new) < 1500 else say), (rep + clo + ([shp] if shp else []) + ([top] if top else []))
     except Exception:
         return say, None
 
