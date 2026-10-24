@@ -24,7 +24,7 @@ LOG = os.path.join(HERE, "judge.log")
 ON = True
 MODELS = ("sonnet", "haiku")
 TIMEOUT = 45
-CALL_TIMEOUT = 14
+CALL_TIMEOUT = 10
 HARD_CAP_OWN = 8
 _SENT = re.compile(r"(?<=[.!?])\s+")
 
@@ -52,7 +52,7 @@ What a good friend does:
 
 Answer ONE JSON object only:
 {"verdict": "send" | "rewrite" | "merge" | "drop" | "wait",
- "text": the message to send (for send: the draft as is; for rewrite: the better message; for merge: the WHOLE merged bubble, his
+ "text": "" for send (the draft goes as it is), else the message to send (for rewrite: the better message; for merge: the WHOLE merged bubble, his
          previous bubble and this one as one natural message; for a CORRECTION: the WHOLE corrected bubble; for drop/wait: ""),
  "wait_min": minutes for wait (else 0),
  "actions": [] or the actions the message commits to that can and should start now: "test" (the robot's 42-day test - never when
@@ -73,10 +73,12 @@ def _ago(t, now):
     return ("%ds" % s) if s < 60 else ("%dmin" % (s // 60)) if s < 3600 else ("%.1fh" % (s / 3600))
 
 
-def room(c, m, P):
-    """the text the judge reads; P = providers (strings or callables returning strings, all optional)"""
+def room(c, m, P, brief=False):
+    """the text the judge reads; P = providers (strings or callables returning strings, all optional); brief = a call turn
+    (fewer lines: the answer is spoken, every second counts)"""
     now = float(m.get("t") or time.time())
     msgs = c.get("msgs") or []
+    NM, NC = (8, 260) if brief else (12, 360)
     origin = ("correction" if (m.get("correction") or m.get("fix")) else "call" if m.get("call_turn") else "follow" if m.get("follow")
               else "own" if m.get("event") else "reply")
     L = ["ORIGIN: %s%s" % (origin, (" (event: %s)" % str(m.get("ekind") or "")[:90]) if m.get("ekind") else "")]
@@ -91,21 +93,21 @@ def room(c, m, P):
         if v:
             L.append(str(v)[:900])
     L.append("THE CONVERSATION (latest last):")
-    for x in msgs[-14:]:
+    for x in msgs[-NM:]:
         r = x.get("role")
         if r in ("user", "ai"):
-            L.append("  [%s ago] %s: %s" % (_ago(x.get("t"), now), "MEMBER" if r == "user" else ("KINO (own)" if x.get("event") else "KINO"), str(x.get("text") or "")[:420].replace("\n", " / ")))
+            L.append("  [%s ago] %s: %s" % (_ago(x.get("t"), now), "MEMBER" if r == "user" else ("KINO (own)" if x.get("event") else "KINO"), str(x.get("text") or "")[:NC].replace("\n", " / ")))
         elif r in ("result", "test", "sys", "card", "demo"):
             L.append("  [%s ago] (%s%s)" % (_ago(x.get("t"), now), r, (": " + str(x.get("text") or "")[:120]) if x.get("text") else (" net %s" % (x.get("result") or {}).get("net")) if r == "result" else ""))
     ro = P.get("recent_other")
     ro = ro() if callable(ro) else ro
-    if ro:
-        L.append("WHAT KINO SAID TODAY IN THEIR OTHER CONVERSATIONS: " + " | ".join(str(t)[:160].replace("\n", " ") for t in ro[-10:]))
+    if ro and not brief:
+        L.append("WHAT KINO SAID TODAY IN THEIR OTHER CONVERSATIONS: " + " | ".join(str(t)[:140].replace("\n", " ") for t in ro[-8:]))
     for k in ("state", "jobs", "fresh"):
         v = P.get(k)
         v = v() if callable(v) else v
         if v:
-            L.append(str(v)[:2200])
+            L.append(str(v)[:1400 if brief else 2000])
     if P.get("check_state"):
         L.append("MOMENTS CHECK (needed before a test can start): %s" % P["check_state"])
     if origin == "correction":
@@ -188,7 +190,7 @@ def apply(c, m, dec):
                 return ("edit", i, x)
         m["text"] = dec["text"]
         return ("append", m)
-    if v == "rewrite" and dec["text"]:
+    if v == "rewrite" and dec["text"] and dec["text"] != str(m.get("text") or "").strip():
         m["text"] = dec["text"]
         m["judged"] = 1
     return ("append", m)

@@ -17034,9 +17034,12 @@ def _kino_act(cid, user, act, en=False):
                                 ("The test waits for your ✅ / ❌ on the moments above." if en else "Le test attend tes ✅ / ❌ sur les moments au-dessus."))
                 elif not tr.get("ok"):
                     line = ("Nothing changed from the Owl, so there is nothing new to test." if en else "Rien ne change par rapport à l'Owl : rien de nouveau à tester.") \
-                        if tr.get("err") == "same" else (("A small technical hiccup starting the test - I'm trying again in a minute." if en else
-                                                          "Petit souci technique au démarrage du test - je réessaie dans une minute."))
-                if not tr.get("ok") and tr.get("err") not in ("same", "check"):
+                        if tr.get("err") == "same" else \
+                        (("Its test was done %d min ago and nothing changed since: the result above is the answer." if en else
+                          "Son test a été fait il y a %d min et rien n'a changé depuis : le résultat au-dessus est la réponse.") % int(tr.get("minutes_ago") or 0)) \
+                        if tr.get("err") == "fresh" else (("A small technical hiccup starting the test - I'm trying again in a minute." if en else
+                                                           "Petit souci technique au démarrage du test - je réessaie dans une minute."))
+                if not tr.get("ok") and tr.get("err") not in ("same", "check", "fresh"):
                     try:
                         _rc(); __import__("kino_deed").start(user.get("id"), cid, "test", "", state="failed", err=str(tr.get("err") or "")[:60])
                     except Exception:
@@ -20905,6 +20908,14 @@ def chat_test(user, body):
         st_ = _check_state(c, user)
         if st_ != "ok":
             return {"ok": False, "err": "check", "state": st_}
+        try:                                         # 2026-10-24: a result of THIS robot younger than 6 h is the answer, not another run
+            _t0 = c.get("test") or {}
+            import calendar as _cal
+            _at = _cal.timegm(time.strptime(str(_t0.get("at") or "")[:19], "%Y-%m-%dT%H:%M:%S"))
+            if _t0.get("state") == "done" and _t0.get("rev") == c.get("rev") and time.time() - _at < 6 * 3600:
+                return {"ok": False, "err": "fresh", "minutes_ago": int((time.time() - _at) // 60)}
+        except Exception:
+            pass
     rob = c["robot"]
 
     def pid_of(kind, s):
@@ -21877,7 +21888,7 @@ def _voice_brain(cid, user):
         import kino_judge as _KJc
         if _KJc.ON:
             _mc = {"text": say, "t": time.time(), "call_turn": True}
-            _dc = _KJc.judge(_KJc.room(c, _mc, _judge_providers(c, _mc)), _rc().member_lang(c, c.get("lang") or "fr"), _rc().W, cid, timeout=_KJc.CALL_TIMEOUT)
+            _dc = _KJc.judge(_KJc.room(c, _mc, _judge_providers(c, _mc), brief=True), _rc().member_lang(c, c.get("lang") or "fr"), _rc().W, cid, timeout=_KJc.CALL_TIMEOUT)
             if _dc and _dc.get("text") and _dc["verdict"] in ("rewrite", "merge"):
                 say = _dc["text"].strip()[:700]
                 raw["say"] = say
