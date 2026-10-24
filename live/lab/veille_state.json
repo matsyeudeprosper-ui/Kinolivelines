@@ -1,13 +1,13 @@
 {
- "last_trade_x": 1792815700.0,
- "twins_sig": "fit3:running:50;debtnerv:running:29;bul4:running:40;nervgate:running:15",
+ "last_trade_x": 1792822719.0,
+ "twins_sig": "debtnerv:running:33;bul4:running:45;nervgate:running:20",
  "labo_sig": "{}",
  "asks_open": 0,
  "day": "2026-10-24",
- "count": 1,
- "last_wake": 1792784464.8349273,
+ "count": 2,
+ "last_wake": 1792818126.516687,
  "lock": {
-  "pid": 3320,
-  "t": 1792818008.3432937
+  "pid": 17416,
+  "t": 1792823412.5022833
  }
 }
