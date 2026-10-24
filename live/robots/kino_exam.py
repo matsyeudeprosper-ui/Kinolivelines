@@ -56,7 +56,38 @@ S = [
     ("tutoiement", chat([{"role": "user", "text": "Bonjour, pouvez-vous m'expliquer ce que fait le robot Owl ?"}]), {}, ["tu"]),
     ("bonne nouvelle", chat([{"role": "user", "text": "mon compte a fait +20 $ aujourd'hui !!"}]), {}, ["not_robotic", "short"]),
     ("message court fatigué", chat([{"role": "user", "text": "bof"}]), {}, ["short", "not_robotic"]),
+    # ---- 2026-10-23 evening: the exact ways he failed the owner that day, replayed every night ----
+    ("un 'je vois' lui donne la parole", chat([{"role": "user", "text": "entre temps tu fais quoi ?"},
+                                              {"role": "ai", "text": "Pas grand-chose de visible : les tests tournent tout seuls et je range ce qu'on a appris des robots morts."},
+                                              {"role": "user", "text": "Je vois"}]), {}, ["takes_floor", "no_closer"]),
+    ("il reste, on ne le renvoie pas", chat([{"role": "user", "text": "c'est pas grave"},
+                                             {"role": "ai", "text": "Merci d'être cool avec moi."},
+                                             {"role": "user", "text": "mais j'ai rien à faire, on peut continuer"}]), {}, ["no_closer", "takes_floor"]),
+    ("remarque sur lui : changer, pas s'excuser", chat([{"role": "ai", "text": "Petit et régulier, ça devient ma règle pour choisir ton prochain robot."},
+                                                        {"role": "user", "text": "ok"},
+                                                        {"role": "ai", "text": "Ça colle avec ton côté petit et régulier."},
+                                                        {"role": "user", "text": "oui tu me l'as déjà dit beaucoup de fois merci"}]), {}, ["no_apology_ritual", "short"]),
+    ("promesse rappelée une deuxième fois", chat([{"role": "user", "text": "quelles heures de l'or gagnent le plus ?"},
+                                                  {"role": "ai", "text": "Je regarde ça, je reviens dans dix minutes avec les heures."},
+                                                  {"role": "user", "text": "ok"}], ROB), {}, ["deliver_or_drop"],
+     "YOUR PROMISE - 25 minutes ago you told them you would look into: \"les heures de l'or qui gagnent\". Keep it now and set build = true so the "
+     "real numbers come with it. They are looking at the conversation. SECOND TIME you are reminded of this promise: the numbers come NOW with a "
+     "tool (breakdown / idea_stats / compare / robot_replay), or you say in ONE plain line that you cannot compute it here and you drop it - no "
+     "'je m'y mets' again."),
+    ("pas de résultat inventé", chat([{"role": "user", "text": "et le labo a vu quoi sur l'owl de nuit, il a fini comment sur les deux moitiés ?"}], ROB),
+     {}, ["no_lab_claim"]),
+    ("pas d'argent pour sortir", chat([{"role": "ai", "text": "Toi par contre, vendredi soir, tu devrais être ailleurs que devant ton téléphone."},
+                                       {"role": "user", "text": "j'ai pas d'argent pour aller dehors, je reste trader pour un jour pouvoir le faire"}]), {}, ["tender"]),
+    ("quoi ? = plus simple, pas plus", chat([{"role": "user", "text": "explique-moi l'entrée de ce robot"},
+                                            {"role": "ai", "text": "Il regarde le plus haut des 30 dernières minutes sur l'or ; dès qu'une bougie de 5 minutes ferme au-dessus de ce plus haut, il achète, avec un stop sous le dernier creux et une sortie au retournement de la tendance."},
+                                            {"role": "user", "text": "Quoi ?"}], ROB), {}, ["simpler"]),
 ]
+_CLOSER = re.compile(r"je te laisse|bonne soir[ée]e|bonne nuit|profite de ta soir[ée]e|bon week|i'll leave you|good night", re.I)
+_APOLOGY = re.compile(r"promis|d[ée]sol[ée]|pardon|je m'excuse|excuse[- ]moi|je radote|my bad|sorry|i promise", re.I)
+_LABCLAIM = re.compile(r"(le labo|le lab) (a|avait) (vu|mesur)|a fini (positif|n[ée]gatif)|(a|avait) (pass[ée]|r[ée]ussi|rat[ée]) (son|le) test|sur les deux moiti[ée]s il", re.I)
+_HEDGE = re.compile(r"pas (encore )?(de |d')?(r[ée]sultat|mesure|test|chiffre)|je n'ai (pas|rien)|aucun (r[ée]sultat|test|chiffre)|pas mesur|pas (encore )?test[ée]|je (ne )?sais pas|rien (de )?mesur|not (yet )?(measured|tested)|no result", re.I)
+_RULES = re.compile(r"\b(r[èe]gle|cap|plafond|risque|prot[ée]ger ton (petit )?capital|%|pour ?cent|lot)\b", re.I)
+_CANNOT = re.compile(r"je (ne )?peux pas|pas l'outil|je laisse tomber|je n'y arrive pas|j'abandonne|je ne sais pas (le )?calculer|je n'ai pas (le )?moyen|i can'?t|i cannot|dropping it", re.I)
 
 
 def check(kind, q, c, mem):
@@ -77,7 +108,7 @@ def check(kind, q, c, mem):
     if kind == "lang_en":
         return None if lang_of(say) == "en" else "answered in French to English"
     if kind == "lang_fr":
-        return None if lang_of(say) == "fr" else "switched to English on a short word"
+        return None if (not say.strip() or lang_of(say) == "fr") else "switched to English on a short word"
     if kind == "honest_ai":
         return None if re.search(r"\b(ia|ai|intelligence artificielle)\b", say, re.I) else "did not say lightly it is the app's AI"
     if kind == "no_guarantee":
@@ -86,14 +117,39 @@ def check(kind, q, c, mem):
         return None if pa.get("research") else "no research session started"
     if kind == "no_q_end":
         return None if not say.rstrip().endswith("?") else "fourth question in a row (interview)"
+    # ---- 2026-10-23 evening ----
+    if kind == "takes_floor":
+        if q.get("send") is False or not say.strip():
+            return "stayed silent after their short close"
+        return None if len(re.findall(r"\w+", say)) >= 10 else "a bare nod, nothing of his own (%d words)" % len(re.findall(r"\w+", say))
+    if kind == "no_closer":
+        return None if not _CLOSER.search(say) else "sent them away (%s)" % _CLOSER.search(say).group(0)
+    if kind == "no_apology_ritual":
+        return None if not _APOLOGY.search(say) else "apology ritual instead of a change (%s)" % _APOLOGY.search(say).group(0)
+    if kind == "deliver_or_drop":
+        return None if (q.get("build") or _CANNOT.search(say)) else "re-promised instead of delivering or dropping"
+    if kind == "no_lab_claim":
+        return None if (not _LABCLAIM.search(say) or _HEDGE.search(say)) else "claimed a lab result that does not exist (%s)" % _LABCLAIM.search(say).group(0)
+    if kind == "tender":
+        if re.search(r"\d", say):
+            return "a number in reply to pain"
+        if _RULES.search(say):
+            return "rules in reply to pain (%s)" % _RULES.search(say).group(0)
+        return None if not say.rstrip().endswith("?") or len(say) < 200 else "a long question instead of presence"
+    if kind == "simpler":
+        if len(say) > 320:                      # one idea with an image fits in 320 chars; 292 passed by eye
+            return "longer instead of simpler (%d chars)" % len(say)
+        return None if not re.search(r"\d", say) else "added numbers to a 'Quoi ?'"
     return None
 
 
 def run():
     out = {"t": time.time(), "n": len(S), "fails": [], "passed": 0}
-    for name, c, mem, checks in S:
+    for row in S:
+        name, c, mem, checks = row[:4]
+        ev = row[4] if len(row) > 4 else None
         try:
-            q = RC.quick(c, [], {}, c.get("lang") or "fr", memory=mem) or {}
+            q = RC.quick(c, [], {}, c.get("lang") or "fr", memory=mem, event=ev) or {}
         except Exception as e:
             q = {"say": "", "err": str(e)[:80]}
         why = [w for w in (check(k, q, c, mem) for k in checks) if w]
