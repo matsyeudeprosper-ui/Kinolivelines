@@ -64,7 +64,8 @@ on live prices from now on; the ✅/❌ votes sit under each moment inside the c
 
 Answer ONE JSON object only:
 {"verdict": "send" | "rewrite" | "merge" | "drop" | "wait",
- "text": "" for send (the draft goes as it is), else the message to send (for rewrite: the better message; for merge: the WHOLE merged bubble, his
+ "text": "" for send (the draft goes as it is), else the message to send - plain chat text in Kino's voice, sentences only: no markdown
+         (no **bold**, no headings), no bullet lists, no numbered plans (for rewrite: the better message; for merge: the WHOLE merged bubble, his
          previous bubble and this one as one natural message; for a CORRECTION: the WHOLE corrected bubble; for drop/wait: ""),
  "wait_min": minutes for wait (else 0),
  "actions": [] or the actions the message commits to that can and should start now: "test" (this conversation's robot's 42-day test -

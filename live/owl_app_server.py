@@ -15348,6 +15348,9 @@ def _chat_msg(c, role, **kw):
         if role == "ai" and not m["text"].strip() and not any(m.get(k) for k in ("made", "link", "ready", "vn", "show", "card", "audio")):
             return m                                     # tool-call markup only ('<invoke name="noop"/>'): nothing to show
         m["text"] = _re.sub(r"\n{3,}", "\n\n", _re.sub(r"(?i)<br\s*/?>", "\n", m["text"])).strip()
+        if role == "ai":                                 # 2026-10-24 21:59 UTC (watch): a judge rewrite came as "**3 petites scènes**" + bullets;
+            m["text"] = _re.sub(r"\*\*(.+?)\*\*", r"\1", m["text"])          # the bubble is plain text - a friend texts in sentences
+            m["text"] = _re.sub(r"(?m)^\s*[-*•]\s+", "", m["text"])
     if role == "ai" and c.get("uid"):
         _judged = False
         try:                                   # 2026-10-24 (owner: "do the proper job with the judge"): ONE judgment in front of everything he says
