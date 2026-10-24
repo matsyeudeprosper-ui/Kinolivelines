@@ -86,8 +86,7 @@ def _word(d, KI, KC):
     now = time.time()
     for x in KC._load().get("items") or []:
         if x.get("status") == "broken" and now - float(x.get("done_t") or 0) < 86400:
-            _emit(d, "broken:" + x["id"], x.get("uid"), "J'ai cassé ma parole avec %s : « %s ». Ça ne devait pas arriver - je le dis, sans excuse." % (
-                x.get("uid"), x.get("what")), ("worry", 0.3), 0.7, KI, "word")
+            _emit(d, "broken:" + x["id"], x.get("uid"), "J'ai cassé ma parole%s : « %s ». Ça ne devait pas arriver - je le dis, sans excuse." % ( "", x.get("what")), ("worry", 0.3), 0.7, KI, "word")
 
 
 def _lab(d, KI):

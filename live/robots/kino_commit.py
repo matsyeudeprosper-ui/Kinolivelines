@@ -217,6 +217,17 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
                 add(uid, cid, [x], "field", say)
         T = extract_text(say, W, log)
         T = [t for t in T if not any(_same(t["what"], f["what"]) or (t["kind"] == f["kind"] and t["kind"] in ("test", "build")) for f in F)]
+        try:                                              # 2026-10-24 13:16: a promise about the GOLD rebound launched the chat's BITCOIN test
+            _c0 = H["chat"](cid) or {}
+            _mk = str(((_c0.get("robot") or {}).get("market") or "BTCUSD")).upper()
+            _other = {"XAUUSD": r"\b(or|gold|xau)\b", "BTCUSD": r"\b(bitcoin|btc)\b", "USTEC": r"\b(nasdaq|ustec)\b", "EURUSD": r"\b(euro|eurusd|eur)\b", "USOIL": r"\b(pétrole|oil)\b"}
+            for t in T:
+                if t["kind"] in ("test", "tell"):
+                    names = [k for k, rx in _other.items() if re.search(rx, str(t["what"]), re.I)]
+                    if names and _mk not in names:
+                        t["kind"] = "check"               # work on another market: the tray, not this robot's test
+        except Exception:
+            pass
         new = add(uid, cid, T, "text", say)
         c = H["chat"](cid) or {}
         for x in [x for x in open_for(uid, cid) if x["id"] in new]:
