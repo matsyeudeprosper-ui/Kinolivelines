@@ -147,6 +147,18 @@ proper job with the judge, all at once, test it." Fair. `robots/kino_judge.py`:
 - Log `robots/judge.log` (verdict, why, latency); scorecard `judge` = {send, rewrite, merge, drop, wait, noanswer, error,
   latency_med_ms}. `kino_judge.ON = False` returns to the rule gates.
 
+## The voice gets the room (2026-10-24, 16:30)
+
+Owner, after five calls in ninety minutes circling the parcel, the music, the baby, "laisse tourner" and the −60 line: "on voice he
+turns around the same things. Can't he initiate and follow up, tell something and keep up?" The judge only saw the delegated brain
+turns; the voice model spoke the rest from a fact sheet frozen at the start of each call, with no memory of the previous call and
+no material. Now the fact sheet carries: today's calls digest (what they told him, the subjects he raised - refreshed mid-call
+with the jobs ledger through `live_facts`), THINGS WORTH BRINGING UP (his open bets, his market view, a numbers angle, a nugget, a
+memory from an older chat, a market tale - from `kino_spark`, each once), and a rule f2 "go further, don't circle". During a flat
+moment the page asks `live_spark` every 4 min: one piece of material, vetted by the judge against the call so far, pushed as
+commentary to say at the next pause. At the end of a call his lines feed the subject memory. Tested on the real transcript of the
+14:09 call: the judge dropped the spark because he was eating and had just been told to breathe - the right call.
+
 ## What is retired when each engine lands
 
 - Voice: the hedge regex in the quick put (kept for now: it avoids posting the hedge at all), `_LAST_PROMISE_FIRE`
