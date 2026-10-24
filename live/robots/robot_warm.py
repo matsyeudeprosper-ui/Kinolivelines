@@ -14,7 +14,7 @@ MAX_TOTAL, SUPERSEDE = 8, 900       # 2026-10-24 (speed): stable keys now, so mo
                                       # claude.exe in 30 min, commit at 95 %, PowerShell could not even start. Never more than
                                       # MAX_TOTAL live processes over all keys (least recently used keys go first), and a key
                                       # nobody used for SUPERSEDE s is let go the moment a new key appears.
-WARM, IDLE, MAX_AGE = 2, 1800, 1500   # IDLE 1800 (2026-10-23): a 10-min pause met a cold process (~12 s) - 3 x 175 MB is nothing on 18 GB     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
+WARM, IDLE, MAX_AGE = 2, 1800, 5400   # IDLE 1800 (2026-10-23): a 10-min pause met a cold process (~12 s) - 3 x 175 MB is nothing on 18 GB     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
 _LOCK = threading.Lock()
 _POOL = {}            # key -> [(proc, started_at)]
 _KEYS = {}            # key -> (system file, model)
@@ -171,6 +171,15 @@ def _reaper():
         time.sleep(60)
         try:
             reap()
+        except Exception:
+            pass
+        try:                                  # 2026-10-24 (speed): keep the keys in use warm - a ready process older than MAX_AGE was
+            now = time.time()                 # dropped at the next call and nothing replaced it, so the judge met a cold boot after
+            with _LOCK:                       # every quiet spell. A refill for each key used in the last 30 min, two boots a minute at most.
+                keys = [k for k in _KEYS if now - _LAST.get(k, 0) < 1800
+                        and sum(1 for p, t in _POOL.get(k, []) if p.poll() is None and now - t < MAX_AGE) < WARM]
+            for k in keys[:2]:
+                _fill(k)
         except Exception:
             pass
 
