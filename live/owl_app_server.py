@@ -15749,7 +15749,7 @@ def _partner_apply(user, cid, pa):
             _mem_note_safe(uid, putp)
         if pa.get("learned"):
             T_ = _jload(KINO_TAUGHT, {"items": []})
-            T_["items"].append({"t": int(time.time()), "text": pa["learned"]})
+            T_["items"].append({"t": int(time.time()), "text": pa["learned"], "uid": uid})   # 2026-10-24: the author - "un autre trader" was the member himself
             T_["items"] = T_["items"][-60:]
             _jsave(KINO_TAUGHT, T_)
         A = _jload(NEST_ASKS, {"asks": []})
@@ -16214,7 +16214,9 @@ def _chat_memory(user, cid=None):
             "mem_fixes": [x for x in _mm.get("mem_fixes") or [] if time.time() - x["t"] < 3 * 86400][-4:],
             "concepts_known": _mm.get("concepts_known") or [], "lesson_t": _mm.get("lesson_t"),
             "watches": _mm.get("watches") or [], "drawing": _mm.get("drawing") if time.time() - float((_mm.get("drawing") or {}).get("t") or 0) < 48 * 3600 else None,
-            "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"][-8:]], "opinions": opinions,
+            "taught": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"] if x.get("uid") not in (None, user.get("id"))][-8:],
+            "taught_by_them": [x["text"] for x in _jload(KINO_TAUGHT, {"items": []})["items"] if x.get("uid") in (None, user.get("id"))][-6:],
+            "opinions": opinions,
             "nest_open": nest_open, "nest_answers": nest_answers,
             "their_goal": _mm.get("their_goal"), "jobs_now": _jobs_text(user, cid), "track": _track_text(me), "research": _research_mem(me),
             "facts": _ke_facts(me)}
@@ -16754,11 +16756,25 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
         # 2026-10-23 21:39: the judge flagged "creux deux fois plus petit" / "les deux moitiés" as unsupported although the TEST RESULT
         # card he had just read carried dip, first_half and later_half - it only saw the system prompt. It now gets the message he
         # answered from (the conversation with its TEST RESULT cards, RIGHT NOW, the lab lines) as fresh facts too.
+        try:                                           # 2026-10-24: the ONLY true sources for "un autre membre / trader m'a dit"
+            _tg = _jload(KINO_TAUGHT, {"items": []})["items"]
+            _uidc = json.load(open(_chat_path(cid), encoding="utf-8")).get("uid")
+            _others = [x["text"] for x in _tg if x.get("uid") not in (None, _uidc)][-10:]
+            _own = [x["text"] for x in _tg if x.get("uid") in (None, _uidc)][-10:]
+            _asks = [(a.get("q"), [r.get("text") for r in (a.get("answers") or [])]) for a in _jload(NEST_ASKS, {"asks": []}).get("asks", [])][-8:]
+            _fd = [(i.get("title"), i.get("detail")) for i in (json.load(open(os.path.join(DIR, "robots", "kino_feed.json"), encoding="utf-8")).get("items") or [])][:6]
+            nest = ("WHAT OTHER MEMBERS REALLY TAUGHT YOU (anonymous): %s\nWHAT THIS MEMBER THEMSELVES TAUGHT YOU (never 'un autre trader' - it was them): %s\n"
+                    "QUESTIONS ASKED TO THE NEST AND THEIR ANSWERS: %s\nTHE NEST'S WEEK (anonymous, measured): %s" % (
+                        " | ".join(_others) or "nothing", " | ".join(_own) or "nothing", json.dumps(_asks, ensure_ascii=False)[:1500], json.dumps(_fd, ensure_ascii=False)[:1500]))
+        except Exception:
+            nest = ""
         v = W.ask_json(sysp, ("THE MESSAGE YOU ANSWERED FROM (your fresh facts - TEST RESULT cards with net, trades, dip, first_half, "
-                              "later_half, the lab lines, RIGHT NOW):\n%s\n\n" % str(up or "")[-16000:]) +
+                              "later_half, the lab lines, RIGHT NOW):\n%s\n\n%s\n\n" % (str(up or "")[-16000:], nest)) +
                        "FACT CHECK OF YOUR OWN MESSAGE. You just sent this to the member:\n<<<\n%s\n>>>\nList every claim in it about a "
                        "MEASURED outcome (a test, a luck test, a backtest, a result, a drawdown, 'the lab saw', 'finished positive', "
-                       "'both halves') and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
+                       "'both halves') AND every claim about ANOTHER PERSON ('un autre membre / trader du nid m'a dit', 'quelqu'un ici', "
+                       "'d'autres membres', 'on m'a appris') - a person claim is supported ONLY by the nest lists above; a lesson this "
+                       "member taught you themselves, retold as another trader's, is unsupported - and check each one against YOUR FACTS - the LAB STATUS, the tests, the robots and the results in "
                        "your instructions and in this message. An idea, a plan, a guess said as a guess, or a market comment is not a "
                        "claim. A figure that can be read or computed from a TEST RESULT card above (a dip half as deep, a half of the test "
                        "flat) IS supported, and so is a claim that follows arithmetically from the facts (two wins out of three and a net loss -> "

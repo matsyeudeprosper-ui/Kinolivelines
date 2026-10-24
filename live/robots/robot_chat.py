@@ -247,6 +247,9 @@ A PARTNER, NOT A SERVICE (owner 2026-10-19: "user and Kino complete each other")
 - LEARN FROM THEM: they know things you do not (their market, their experience, their tricks). Be curious ("comment tu
   fais, toi ?"), and when they teach you something real about trading, keep it: "learned": "the lesson, general, no names".
   What other members taught you (anonymous) is in the message - use it ("un autre trader du nid m'a appris que...").
+  NEVER INVENT A PERSON (2026-10-24: a lesson the member had taught you himself came back to him as "un autre trader du nid
+  m'a dit"): "un autre membre", "quelqu'un ici", "on m'a dit" exist only for what is in WHAT OTHER MEMBERS TAUGHT YOU or the
+  nest answers; what this member taught you is "tu m'avais dit"; the rest is your own thought, said as yours.
 - ASK THE NEST: if another member could help this one, post a GENERAL question for the nest ("ask_nest": "question" - never
   a name, an account, a robot or anyone's project in it). OPEN QUESTIONS FROM THE NEST (in the message) were asked for
   other members: when it fits naturally, ask THIS member one ("au fait, petite question pour un autre trader du nid...") -
@@ -853,7 +856,9 @@ def memory_text(mem):
             L.append("YOUR PROJECT for them [%s]: %s%s%s" % (pj.get("id"), pj.get("title"), (" - still need: " + pj["need"]) if pj.get("need") else "",
                                                            (" - found so far: " + pj["finding"]) if pj.get("finding") else ""))
     if mem.get("taught"):
-        L.append("WHAT MEMBERS TAUGHT YOU (anonymous): " + " | ".join(mem["taught"][-8:]))
+        L.append("WHAT OTHER MEMBERS TAUGHT YOU (anonymous - the ONLY things you may call 'un autre trader du nid m'a dit'): " + " | ".join(mem["taught"][-8:]))
+    if mem.get("taught_by_them"):
+        L.append("WHAT THIS MEMBER THEMSELVES TAUGHT YOU (say 'tu m'avais dit', never 'un autre trader'): " + " | ".join(mem["taught_by_them"][-6:]))
     if mem.get("opinions"):
         L.append("YOUR OPINIONS (formed slowly): " + " | ".join("%s: %s (confidence %s)" % (o.get("topic"), o.get("view"), o.get("confidence"))
                                                                for o in mem["opinions"][-8:]))
@@ -2034,7 +2039,8 @@ ON_CLAIM = None         # 2026-10-23 (watch): "le labo a vu l'Owl de nuit finir 
                         # A reply that claims a MEASURED result (lab, test, luck, backtest) is audited after sending against the
                         # lab facts (owl_app_server._on_claim); an unsupported claim gets a short honest correction from him.
 _CLAIM_RX = re.compile(r"\b(labo|lab|test[ée]?s?|backtest|mesur\w*|moiti[ée]s?|creux|drawdown|prouv\w*|r[ée]sultats?|a (gagn|perdu|fini|termin)\w*|"
-                       r"luck|measured|proven|backtested)\b", re.I)
+                       r"luck|measured|proven|backtested|un autre (membre|trader)|d'autres (membres|traders)|quelqu'un (du nid|ici)|on m'a (dit|appris)|"
+                       r"another (member|trader)|someone (here|in the nest)|other members)\b", re.I)
 TOOL_WORDS = {"idea_stats": ("je mesure l'idée contre le hasard", "measuring the idea against chance"),
               "compare": ("je compare les variantes", "comparing the variants"), "robot_replay": ("je rejoue le robot sur les vrais prix", "replaying the robot on real prices"),
               "trade_explain": ("je regarde ce trade de près", "looking closely at that trade"), "search_chats": ("je relis nos conversations", "rereading our conversations"),
