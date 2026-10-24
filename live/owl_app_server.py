@@ -17351,6 +17351,17 @@ def _chat_kick(cid, user):
 # not while a trade of theirs is open and they are in the app (unless important), at most 2 unprompted ones a day.
 _CHAT_SEEN = {}
 _NIGHT_BUSY = False
+_NIGHT_DONE = {}     # job -> UTC day it ran (2026-10-24: the night mind restarted every 2 min for two hours - the busy flag was the
+                     # only guard - 8 full exams, $14 in an hour)
+
+
+def _night_once(job):
+    """True once per UTC day per job; marks it at the START so a crash cannot loop it"""
+    d = time.strftime("%Y-%m-%d", time.gmtime())
+    if _NIGHT_DONE.get(job) == d:
+        return False
+    _NIGHT_DONE[job] = d
+    return True
 
 
 def _mem_get(uid):
@@ -19350,7 +19361,7 @@ def _companion_loop():
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap level 5): the night shift, 01:00-03:00 UTC, one member at a time
-            if 1 <= time.gmtime().tm_hour < 3 and not _NIGHT_BUSY:
+            if 1 <= time.gmtime().tm_hour < 3 and not _NIGHT_BUSY and _night_once("shift"):
                 def _ns():
                     global _NIGHT_BUSY
                     _NIGHT_BUSY = True
@@ -19367,7 +19378,7 @@ def _companion_loop():
         except Exception:
             pass
         try:                 # 2026-10-19 (owner item 7): Kino's weekly report for the creator, Monday 06:00-09:00 UTC
-            if time.gmtime().tm_wday == 0 and 6 <= time.gmtime().tm_hour < 9 and not _NIGHT_BUSY:
+            if time.gmtime().tm_wday == 0 and 6 <= time.gmtime().tm_hour < 9 and not _NIGHT_BUSY and _night_once("report"):
                 def _rep():
                     _rc()
                     import kino_mind as _KM
@@ -19396,7 +19407,7 @@ def _companion_loop():
         except Exception:
             pass
         try:                 # 2026-10-19 (roadmap levels 4, 7, 8): Kino's night mind, 03:00-05:00 UTC, once a day
-            if 3 <= time.gmtime().tm_hour < 5 and not _NIGHT_BUSY:
+            if 3 <= time.gmtime().tm_hour < 5 and not _NIGHT_BUSY and _night_once("mind"):
                 threading.Thread(target=_kino_night_mind, daemon=True).start()
         except Exception:
             pass
