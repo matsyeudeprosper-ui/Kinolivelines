@@ -17310,6 +17310,11 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 if _judge_on():
                     _lu_t = max([float(m_.get("t") or 0) for m_ in (c.get("msgs") or []) if m_.get("role") == "user"] or [0])
                     _okp = time.time() - _lu_t > 60          # 2026-10-24: the judge decides when to speak; this only avoids talking over a message being typed
+                    # 2026-10-24 20:48 UTC (watch): a THIRD bubble of his own in 8 min to a member who had gone quiet (the owner's
+                    # "Ok. And?" of 10-23 again). Pace's backoff is a policy floor like the 8/hour cap, not a judgment: three of his
+                    # own unanswered in a row -> he waits for them to write, whatever the judge feels like saying.
+                    if "unanswered - wait" in str(_whyp or ""):
+                        _okp = False
             except Exception:
                 _okp = True
             if not _okp:
