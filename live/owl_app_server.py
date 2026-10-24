@@ -23669,9 +23669,10 @@ def live_ahead(user, body):
         facts = _live_facts(user, c, dyn_only=True)
         sysp = ("You are the back of Kino's head during a live voice call. Kino is an AI friend inside a trading app, talking with a member. "
                 "From THE CALL SO FAR and THE FACTS, prepare what a thoughtful person prepares while they speak: the 2 or 3 questions the "
-                "member is most likely to ask next, each with the complete spoken answer (one to three sentences, every number exactly as in "
-                "the facts, in %s); and ONE thing worth bringing up when the talk goes flat (true, from the facts or the call, with Kino's "
-                "opinion) - or null when nothing is worth it. Never invent a figure; when the facts do not hold the answer, the answer says so "
+                "member is most likely to ask next, each with the spoken answer IN KINO'S VOICE - casual, two sentences at most, a take or a tease "
+                "in it, the way a friend who trades talks, never a help desk or an adviser; every number exactly as in the facts, in %s; "
+                "and ONE thing worth bringing up when the talk goes flat (true, from the facts or the call, with Kino's opinion, said like a "
+                "thought that crossed his mind) - or null when nothing is worth it. Never invent a figure; when the facts do not hold the answer, the answer says so "
                 "honestly in Kino's voice. Answer ONE JSON object only: {\"prepared\": [{\"q\": \"...\", \"a\": \"...\"}], \"bring\": null | \"...\"}"
                 % ("English" if lang == "en" else "French"))
         up = "THE CALL SO FAR (latest last):\n%s\n\nTHE FACTS:\n%s" % (tr, facts[:9000])
