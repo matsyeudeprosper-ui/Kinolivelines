@@ -14990,6 +14990,19 @@ def _chat_member_fresh(uid, c):
     read uncached ($0.24) each time - median 23 s to the first word. Now they go in the message (robot_chat.FRESH_OF);
     the system prompt stays identical between turns."""
     L = []
+    try:          # 2026-10-24 (watch): asked twice "combien il gagne ?" on an open trade, he had no figure - now he has
+        nd_ = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        ol = nd_.get("open_list") or []
+        if ol:
+            L.append("OPEN TRADES RIGHT NOW on their account (live, this minute): " + "; ".join(
+                "%s %s %s lot, in at %s, now %s, result so far %+.2f $, since %s UTC%s" % (
+                    "SELL" if str(x.get("d")) == "V" else "BUY", str(x.get("sym") or "BTCUSD"), x.get("lot"), x.get("e"), x.get("cur"), float(x.get("pl") or 0),
+                    time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), (" (stop %s, target %s)" % (x.get("sl"), x.get("tp"))) if x.get("sl") else "")
+                for x in ol[:4]) + " - this IS the figure when they ask how the trade is doing; say it, it moves every minute")
+        else:
+            L.append("OPEN TRADES RIGHT NOW on their account: none")
+    except Exception:
+        pass
     try:          # 2026-10-19 (owner item 3): discipline signals for the coach
         _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
         _td = time.strftime("%d/%m", time.gmtime())
@@ -16540,6 +16553,21 @@ def _user_by_id(uid):
     return next((u for u in users() if u.get("id") == uid), {"id": uid})
 
 
+def _promise_key(pn, what):
+    """2026-10-24: 'creuser la paire euro-dollar pendant la nuit asiatique' and 'creuser la paire EUR/USD sur la nuit asiatique'
+    are the same promise - the key is the existing one whose content words overlap half or more, else a new one"""
+    words = set(w for w in re.findall(r"[a-z\u00e0-\u00ff]{4,}", str(what or "").lower()) if w not in ("pour", "dans", "avec", "pendant", "cette", "leur"))
+    best, score = None, 0.0
+    for k in (pn or {}):
+        kw = set(k.split())
+        if not kw or not words:
+            continue
+        sc = len(kw & words) / float(min(len(kw), len(words)))
+        if sc > score:
+            best, score = k, sc
+    return best if (best and score >= 0.5) else " ".join(sorted(words))[:80]
+
+
 def _commit_H():
     """2026-10-23 (Kino architecture review, engine 1): what the commitment ledger (robots/kino_commit.py) may do in the app"""
     def _work_add(cid, what, minutes):
@@ -16549,8 +16577,8 @@ def _commit_H():
             if any(_KC._same(x.get("what"), what) for x in cc.get("work") or []):
                 return                                    # the regex promise catcher already keeps this one
             # 2026-10-23: the same promise re-made after a reminder is counted; after three the loop ends honestly (see YOUR PROMISE)
-            _pk = re.sub(r"\W+", " ", str(what).lower()).strip()[:50]
             _pn = cc.setdefault("promise_n", {})
+            _pk = _promise_key(_pn, what)
             _pn[_pk] = int(_pn.get(_pk, 0)) + 1
             if len(_pn) > 20:
                 for k_ in list(_pn)[:-20]:
@@ -19161,8 +19189,8 @@ def _chat_watch_once():
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
                 _LAST_PROMISE_FIRE[cid] = now
                 try:                                      # 2026-10-23: how many times this promise was made already
-                    _pk = re.sub(r"\W+", " ", str(w.get("what")).lower()).strip()[:50]
-                    _pn = int((json.load(open(_chat_path(cid), encoding="utf-8")).get("promise_n") or {}).get(_pk, 1))
+                    _pnd = json.load(open(_chat_path(cid), encoding="utf-8")).get("promise_n") or {}
+                    _pn = int(_pnd.get(_promise_key(_pnd, w.get("what")), 1))
                 except Exception:
                     _pn = 1
                 _patt = ("" if _pn <= 1 else

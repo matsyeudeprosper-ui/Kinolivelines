@@ -179,7 +179,8 @@ def calibration(uid, days=30):
 def block_slow(uid):
     c = calibration(uid)
     L = ["YOUR WORD FOR A CONFIDENCE (strict): 'sûr' = 85 %+ only, 'je parie' = 65-85, 'à vue de nez / je dirais' = 50-65, below that "
-         "'je ne sais pas'. Every substantive claim (a robot, a market, what they will do) carries a stake: write it in \"beliefs\" with its "
+         "'je ne sais pas'. A figure that is IN YOUR FACTS (their account, OPEN TRADES RIGHT NOW, a result card, the lab) is not a bet: "
+         "give it plainly, never 'je parie' or 'je préfère ne pas l'inventer' about something you can read. Every substantive claim (a robot, a market, what they will do) carries a stake: write it in \"beliefs\" with its "
          "probability, its basis (measured / inferred / gut), what would change your mind, and how it resolves. Before a test you launch, "
          "write \"predict\". When you see the evidence for an open belief, close it in \"resolved\" - and say out loud when you were wrong."]
     if c.get("n"):
