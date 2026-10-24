@@ -11,7 +11,7 @@ module, so the quick turn, the build turn, the judge, the auditor and the call b
 import io, json, os, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-MAP = {"sonnet": "gpt-5.1", "opus": "gpt-5.1", "haiku": "gpt-5-mini"}
+MAP = {"sonnet": "gpt-5.1", "opus": "gpt-5.1", "haiku": "gpt-5.1"}     # measured 2026-10-24: gpt-5.1 0.9 s, gpt-5-mini 2-3.5 s (reasoning) - 5.1 everywhere
 EFFORT = {"gpt-5.1": "low", "gpt-5-mini": "low"}
 PRICE = {"gpt-5.1": (1.25, 10.0), "gpt-5-mini": (0.25, 2.0)}    # $/MTok in, out (OpenAI list 2026-10; cached input is cheaper)
 
