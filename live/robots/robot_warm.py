@@ -9,12 +9,12 @@ import hashlib, io, json, os, queue, re, subprocess, threading, time
 
 import robot_interview as IV
 
-MAX_TOTAL, SUPERSEDE = 6, 300         # 2026-10-23 (memory): the stable block carries the member's minute and live prices, so
+MAX_TOTAL, SUPERSEDE = 10, 900       # 2026-10-24 (speed): stable keys now, so more of them stay warm, longer         # 2026-10-23 (memory): the stable block carries the member's minute and live prices, so
                                       # EVERY message is a new key; 12 keys x 3 x ~330 MB (measured, not 175) = 11.5 GB of
                                       # claude.exe in 30 min, commit at 95 %, PowerShell could not even start. Never more than
                                       # MAX_TOTAL live processes over all keys (least recently used keys go first), and a key
                                       # nobody used for SUPERSEDE s is let go the moment a new key appears.
-WARM, IDLE, MAX_AGE = 3, 1800, 1500   # IDLE 1800 (2026-10-23): a 10-min pause met a cold process (~12 s) - 3 x 175 MB is nothing on 18 GB     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
+WARM, IDLE, MAX_AGE = 2, 1800, 1500   # IDLE 1800 (2026-10-23): a 10-min pause met a cold process (~12 s) - 3 x 175 MB is nothing on 18 GB     # 3 (2026-10-20 speed): two quick turns in a row no longer meet a cold process
 _LOCK = threading.Lock()
 _POOL = {}            # key -> [(proc, started_at)]
 _KEYS = {}            # key -> (system file, model)

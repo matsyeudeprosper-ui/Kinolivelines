@@ -14958,7 +14958,7 @@ def _chat_member(user, c):
         stage = "new (be warm but a little careful)" if nmsg < 15 else "getting to know each other" if nmsg < 80 else \
             "familiar (more direct, some teasing ok)" if nmsg < 300 else "close (a real friend's tone)"
         L.append("RELATIONSHIP: %s - %s messages from them so far, talking since about %s" % (     # 2026-10-23 (speed): rounded,
-            stage, (str(nmsg) if nmsg < 100 else "about %d" % (nmsg // 50 * 50)), first))              # or every message is a new prompt
+            stage, (str(nmsg // 10 * 10) if nmsg < 100 else "about %d" % (nmsg // 100 * 100)), first))   # or every message is a new prompt
         work = []
         for nn in (c.get("night") or [])[-2:]:
             work.append("night shift %s: you measured %d versions of their entry%s" % (time.strftime("%d/%m", time.gmtime(nn["t"])), len(nn.get("rows") or []),

@@ -350,7 +350,7 @@ def block(uid, lang="fr"):
         if sc.get("n"):
             L.append("YOUR PREDICTION RECORD (your gut bets on the markets, checked ~2 h later): %d right out of %d (%s)%s. Be honest about "
                      "it when it fits - it is how you get better. RULE (owner 2026-10-23): you say a market hunch OUT LOUD only when your record on that "
-                     "kind of call is 55 %% or better over 20 bets or more; below that it stays a private bet you keep score of - say you have no view." % (sc["right"], sc["n"], ", ".join("%s %s" % (k, v) for k, v in (sc.get("by") or {}).items()),
+                     "kind of call is 55 %% or better over 20 bets or more; below that it stays a private bet you keep score of - say you have no view." % (sc["right"], sc["n"], ", ".join(sorted("%s %s" % (k, v) for k, v in (sc.get("by") or {}).items())),
                      ("; what your record taught you: " + "; ".join(v.get("lesson", "") for v in lr.values() if v.get("lesson"))) if lr else ""))
     except Exception:
         pass

@@ -686,7 +686,7 @@ def _mem_part(mem, part, key=None):
     # 2026-10-23 (speed, watch): the notes list is capped, so once it is full EVERY new note rolls the oldest one off, the
     # "a snapshot note disappeared" test fired on every message, and the system prompt changed every other turn ($0.24 vs
     # $0.05 cached). A rolled-off note staying in the cached prompt for 20 min is harmless: refresh on time or on 8 new notes.
-    if snap is None or time.time() - snap[0] > 1200 or len(new) >= 8:
+    if snap is None or time.time() - snap[0] > 3600 or len(new) >= 12:      # 2026-10-24 (speed): an hour, not 20 min
         snap = (time.time(), notes)
         _MEMSNAP[key] = snap
         new = []
@@ -721,7 +721,7 @@ def memory_text(mem):
         L.append("FROM YOUR OTHER CONVERSATIONS WITH THEM, on the same subject (link them naturally when it helps - \"tu disais "
                  "la même chose il y a 3 jours sur l'autre robot\" - never as a report): " + " | ".join(mem["related"]))
     for r in (mem.get("robots") or [])[:8]:
-        L.append("their robot '%s' (%s, %s)%s" % (r.get("name"), r.get("market") or "BTCUSD", r.get("stage"),
+        L.append("their robot '%s' (%s)%s" % (r.get("name"), r.get("market") or "BTCUSD",
                                                   (", last test %+.2f $ over %s trades (the Owl %+.2f $)" % (r["net"], r.get("trades"), r.get("owl") or 0))
                                                   if r.get("net") is not None else ""))
     for c in (mem.get("chats") or [])[:5]:
@@ -830,7 +830,7 @@ _STABLE_CACHE = {}     # key -> (t, text): 2026-10-23 (speed) the block costs 1.
 def stable_block(member, owl, pieces, markets, current=None, lang="fr", memory=None, key=None):
     if key is not None:
         x = _STABLE_CACHE.get((key, lang, current))
-        if x and time.time() - x[0] < 60:
+        if x and time.time() - x[0] < 600:                                  # 2026-10-24 (speed): 10 min, not 1
             return x[1]
     out = _stable_block(member, owl, pieces, markets, current, lang, memory, key)
     if key is not None:
