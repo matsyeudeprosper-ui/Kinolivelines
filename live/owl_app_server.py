@@ -14679,9 +14679,15 @@ def _lab_status(uid):
             elif st == "done":
                 cl = _random_ctl(j["rid"], j["sym"]) or {}
                 if cl:
-                    L.append("luck test of %s on %s: FINISHED - %s (%s random draws; only %s of them did as well as the robot; the rule allows 5)" % (
-                        nm(j["rid"]), j["sym"], "PASSED" if (cl.get("seeds") or 0) >= 100 and (cl.get("beats") or 0) <= 5 else "failed / within luck",
-                        cl.get("seeds"), cl.get("beats")))
+                    _sd, _bt = int(cl.get("seeds") or 0), int(cl.get("beats") or 0)
+                    if _sd >= 100 and _bt <= 5:
+                        _vd = "PASSED (100 random draws; only %d of them did as well as the robot; the rule allows 5)" % _bt
+                    elif _bt > 5:
+                        _vd = "failed / within luck (%d random draws; %d of them did as well as the robot; the rule allows 5)" % (_sd, _bt)
+                    else:                                  # 2026-10-24: stopped early on projection - say so, "3 of 13, allows 5" read as a pass
+                        _vd = ("failed - STOPPED EARLY after %d random draws: %d already did as well, which at that pace means about %d out of 100; "
+                               "the rule allows 5" % (_sd, _bt, round(100.0 * _bt / max(1, _sd))))
+                    L.append("luck test of %s on %s: FINISHED - %s" % (nm(j["rid"]), j["sym"], _vd))
     except Exception:
         pass
     L.append("robot and market tests: %s" % ("PAUSED by the nest's owner (luck tests continue); new tests wait in line"
