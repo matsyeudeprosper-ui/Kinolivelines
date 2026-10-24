@@ -15266,6 +15266,15 @@ def _deed_do(cid, uid, todo):
                 if (c.get("test") or {}).get("state") in ("queued", "running"):
                     continue                      # the reply's own act / the regex already queued it
                 H["act_test"](cid, uid)
+            elif k == "fires":                    # 2026-10-24: the robot changed, no moments card yet -> post it
+                _u = _user_by_id(uid)
+                if _check_state(c, _u) == "none":
+                    _r = chat_fires(_u, {"id": cid}) or {}
+                    if _r.get("ok"):
+                        _en = c.get("lang") == "en"
+                        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=(
+                            "Before the test: the last 5 moments where your robot would have traded are below - ✅ or ❌ under each one, then it runs."
+                            if _en else "Avant le test : les 5 derniers moments où ton robot aurait tradé sont juste en dessous - ✅ ou ❌ sous chacun, puis il part.")))
             elif k == "build":
                 H["build"](cid, uid)
     except Exception:
@@ -16745,6 +16754,15 @@ def _moments_again(cid):
         c.setdefault("msgs", []).append(dict(last, t=int(now), again=True))
         return True
     try:
+        # 2026-10-24 11:18 (owner on his phone): the robot had changed at 11:15, the old card (old signature, old votes) came
+        # back as a copy and showed no buttons to vote - a changed robot gets a NEW moments card
+        _c0 = json.load(open(_chat_path(cid), encoding="utf-8"))
+        _u0 = _user_by_id(_c0.get("uid"))
+        if _c0.get("robot") and _check_state(_c0, _u0) == "none":
+            return bool((chat_fires(_u0, {"id": cid}) or {}).get("ok"))
+    except Exception:
+        pass
+    try:
         return bool(_chat_mut(cid, f))
     except Exception:
         return False
@@ -16874,6 +16892,15 @@ def _on_claim(cid, say, sysp, lang="fr", up=""):
                        % (say, "French" if lang != "en" else "English"), models=("sonnet",), timeout=90, warm=False)
         bad = [str(x)[:200] for x in (v.get("unsupported") or [])] if isinstance(v, dict) else []
         corr = str((v or {}).get("say") or "").strip() if isinstance(v, dict) else ""
+        try:                                           # 2026-10-24 11:15: a French correction folded into an English bubble
+            import kino_deed as _KDl
+            if corr and _KDl.lang_of(say, lang) != _KDl.lang_of(corr, lang):
+                v2 = W.ask_json(sysp, "Rewrite this sentence in %s, same meaning, nothing else: <<<%s>>>\nAnswer {\"say\": \"...\"}" % (
+                    "English" if _KDl.lang_of(say, lang) == "en" else "French", corr), models=("haiku", "sonnet"), timeout=40, warm=False)
+                if isinstance(v2, dict) and 10 < len(str(v2.get("say") or "")) < 600:
+                    corr = str(v2["say"]).strip()
+        except Exception:
+            pass
         try:
             io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s unsupported=%s | %s\n" % (
                 time.strftime("%m-%d %H:%M:%S"), cid, bad, str(say)[:160].replace("\n", " ")))

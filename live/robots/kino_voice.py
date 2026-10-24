@@ -207,7 +207,9 @@ def post(c, m):
                     sc = 2.0
                 if sc > best:
                     best, bi = sc, j
-            S[bi] = text.strip()
+            _ct = re.sub(r"^(petite (correction|nuance|précision)|correction|précision|je me (corrige|reprends)|small (correction|fix)|quick fix)\s*[:,\-–]\s*",
+                         "", text.strip(), flags=re.I)
+            S[bi] = (_ct[:1].upper() + _ct[1:]) if _ct else text.strip()
             x["text"] = " ".join(S)
             x["fixed"] = 1
             x["fixed_t"] = int(now)

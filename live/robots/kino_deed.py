@@ -69,6 +69,10 @@ CAN = {
          "fr": "Je ne peux rien garantir sur l'argent : un test, même bon, n'est pas une promesse.",
          "en": "I can't guarantee anything about money: a test, even a good one, is not a promise."},
     ],
+    "ui": {
+        "fr": "Les votes ✅ / ❌ sont SOUS CHAQUE MOMENT, dans la conversation elle-même, sur téléphone comme sur ordinateur ; il n'y a pas de panneau de vote à côté. Quand le robot change, l'ancienne carte ne compte plus : une nouvelle carte de moments arrive (act test la pose).",
+        "en": "The ✅ / ❌ votes sit UNDER EACH MOMENT, inside the conversation itself, on phone and computer alike; there is no vote panel on the side. When the robot changes the old card no longer counts: a new moments card comes (act test posts it).",
+    },
     "can": {
         "fr": ["mesurer une idée sur ~42 jours de vrais prix (combien de fois elle se déclenche, le sens N minutes après, contre des moments au hasard)",
                "comparer jusqu'à quatre versions d'une idée", "rejouer le robot de la conversation (trades, % gagnés, par heure / jour / session / moitié, avec le contrôle)",
@@ -201,8 +205,9 @@ def can_block(lang="fr"):
     d = _can()
     L = d.get("can", {}).get("en" if lang == "en" else "fr") or []
     N = [x.get("en" if lang == "en" else "fr") for x in d.get("cannot", [])]
-    return ("WHAT YOU CAN DO HERE (your tools, the truth about your reach): %s.\nWHAT YOU CANNOT DO - never promise these, say so on the first ask: %s" % (
-        "; ".join(L), " | ".join(N)))
+    ui = (d.get("ui") or CAN.get("ui") or {}).get("en" if lang == "en" else "fr") or ""
+    return ("WHAT YOU CAN DO HERE (your tools, the truth about your reach): %s.\nWHAT YOU CANNOT DO - never promise these, say so on the first ask: %s\n"
+            "WHERE THINGS ARE IN THE APP: %s" % ("; ".join(L), " | ".join(N), ui))
 
 
 def cannot_hit(sentence, lang="fr"):
@@ -266,9 +271,14 @@ def bind(c, m, intent=None, lang="fr", H=None):
                         s2 = _T(lang, "Je ne peux pas lancer de test ici : il n'y a pas encore de robot dans cette conversation.",
                                 "I can't start a test here: there is no robot in this conversation yet.")
                         did.append("test_norobot")
+                    elif st == "none":
+                        s2 = _T(lang, "Avant le test, je te mets les 5 derniers moments où il aurait tradé juste en dessous : ✅ ou ❌ sous chacun, puis il part.",
+                                "Before the test, I'm putting the last 5 moments where it would have traded right below: ✅ or ❌ under each one, then it runs.")
+                        todo.append("fires")
+                        did.append("test_fires")
                     elif st != "ok":
-                        s2 = _T(lang, "Le test attend tes ✅ / ❌ sur les moments au-dessus : dès que c'est fait, il part.",
-                                "The test waits for your ✅ / ❌ on the moments above: as soon as that's done, it goes.")
+                        s2 = _T(lang, "Le test attend tes ✅ / ❌ sous chaque moment, dans la conversation : dès que c'est fait, il part.",
+                                "The test waits for your ✅ / ❌ under each moment, in the conversation: as soon as that's done, it goes.")
                         did.append("test_blocked")
                     else:
                         todo.append("test")
