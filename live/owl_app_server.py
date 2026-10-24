@@ -19350,12 +19350,25 @@ def _inner_clock_once():
                 _rc()
                 import kino_mind as _KM
                 tr = _rc().transcript(dict(c, msgs=(c.get("msgs") or [])[-14:]))
+                try:                                     # 2026-10-25 01:13 (owner: "why doesn't he continue?"): the inner voice kept
+                    _eng = []                            # deciding "1 h, a baby, exhausted" while he had answered 4 times in 7 min
+                    for _i in range(len(M) - 1, 0, -1):
+                        if M[_i].get("role") == "user" and M[_i - 1].get("role") == "ai":
+                            _eng.append(int(float(M[_i].get("t") or 0) - float(M[_i - 1].get("t") or 0)))
+                        if len(_eng) >= 4:
+                            break
+                    _eng_t = ("THEIR ENGAGEMENT RIGHT NOW (measured, beats any assumption about tiredness or the hour): their last %d replies "
+                              "came after %s; %s." % (len(_eng), ", ".join("%d s" % x for x in _eng),
+                                                       "they are looking at the conversation" if here else "they left the app")) if _eng else ""
+                except Exception:
+                    _eng_t = ""
                 ctx = ("THE CONVERSATION (the end):\n%s\n\nSILENCE: %d minutes since the last message (%s). This member usually answers "
                        "Kino in about %d s. Kino has sent %d message(s) in a row without an answer. They are %s. Their local time: %02d h. "
-                       "%s Main thread: %s. Kino saved for later: %s. Kino's mood: %s.\n%s" % (
+                       "%s %s Main thread: %s. Kino saved for later: %s. Kino's mood: %s.\n%s" % (
                            tr[-5000:], quiet / 60, "Kino wrote last" if M[-1].get("role") != "user" else "THEY wrote last and got no answer",
                            _reply_rhythm(M), run, "looking at the conversation right now" if here else "away from the app", h0,
                            _their_hours_text(uid, h0),      # 2026-10-24: "23 h" was read as bedtime; it is this member's busiest hour
+                           _eng_t,
                            c.get("thread") or "-", json.dumps(c.get("later") or [], ensure_ascii=False)[:400],
                            json.dumps((_KM.load().get("mood") or {}), ensure_ascii=False)[:160], _inner_block(uid)))
                 d = _KM.inner_decide(ctx)
@@ -20481,8 +20494,8 @@ def _kino_presence(user, c):
     h = _local_hour(uid)
     if st in ("thinking", "listening", "building"):
         km = "focus"
-    elif 0 <= h < 6:
-        km = "sleepy"
+    elif 0 <= h < 6 and not _active_hour(uid, h) and time.time() - _LAST_SEEN.get(uid, 0) > 600:
+        km = "sleepy"                                    # 2026-10-25: "somnole" at 01:13 while he was chatting - his night, not the clock's
     elif max(F.get("worry", 0), F.get("annoyance", 0)) > 0.55:
         km = "worried"
     elif F.get("pride", 0) > 0.45:
