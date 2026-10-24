@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-24T10:30:00Z",
+ "updated": "2026-10-24T12:00:10Z",
  "hypotheses": [
   {
    "id": "ext_with_filter",
@@ -48,7 +48,8 @@
     "2026-10-16 17:32 veille: FLIP-BOS SELL +12.83 by day (entry ~15 h, pace 1.705) after the -8.39 loss closed 10:01 - restarted hours later, not quick, and won; fits 'the hurry, not the loss'. After 1 loss all day/night 31 tr 48% -0.47.",
     "2026-10-17: choch+ext500 + flip-after-loss 0.5 C -4.9 (h -4.8/-11.9): on the filtered robot the after-loss stake cut costs.",
     "2026-10-19: soft+ext500 + debt_nerv_gate C -71.5 (h +10.0/-63.4) hole 57->37; soft + debt vs soft B +5.1 (h +46.3/-46.2). On the filtered robot refusing in the red costs money.",
-    "2026-10-24: real: after a loss restart <15 min 35 tr 23% -56.49 (h 15/27 agree), >=15 min 82 tr 45% -64.43; after a win <15 min 30 tr -12.46. Inside: flips 21 tr 14% -51.74, day 25 tr -58.23, night 10 tr +1.74. Filtered account 4 since 10-10: after loss <15 12 tr 2 won -5.75/0.01 vs >60 12 tr 8 won +3.17. Engine official: flip_loss 0.5 B +14.3 (h1 -0.2); wait15 C -15.8. Pile loss_quick15 opened."
+    "2026-10-24: real: after a loss restart <15 min 35 tr 23% -56.49 (h 15/27 agree), >=15 min 82 tr 45% -64.43; after a win <15 min 30 tr -12.46. Inside: flips 21 tr 14% -51.74, day 25 tr -58.23, night 10 tr +1.74. Filtered account 4 since 10-10: after loss <15 12 tr 2 won -5.75/0.01 vs >60 12 tr 8 won +3.17. Engine official: flip_loss 0.5 B +14.3 (h1 -0.2); wait15 C -15.8. Pile loss_quick15 opened.",
+    "2026-10-24 12:00 veille: BOS SELL -2.36 (closed 10:01, pace 0.89) restarted quick after the 09:29 loss, as predicted. Pile loss_quick15 36 tr 22% vs 51% -58.85 PF 0.39 (h 13/29 agree); inside <15 min held 23 tr 17% -44.76."
    ]
   },
   {
@@ -100,7 +101,8 @@
     "2026-10-23 19:35 veille: evening BOS BUY -4.65 (18:46, pace 1.61), then two calm BOS SELL wins (+1.56, +1.09). 13 h 8 tr 0 won -53.98, 16 h 10 tr 1 won -50.53, 17-18 h 15 tr ~+19 (peu). Day leak intact; evening is mixed.",
     "2026-10-24 05:00 veille: night closes 01:50-04:21 4 tr 0 won ~-15.0 (2 FLIP, 2 BOS BUY). Pile asia (00-08 h) 78 tr 59% vs 40% +37.31 PF 1.26, halves 67%/50% (42/36) - second half fading; 04 h 8 tr 25% -10.55, 00 h 14 tr -18.23, 01-03 h 34 tr +56.2 (was 32 +60.8). Against, one night (peu); still positive overall.",
     "2026-10-24 06:30 veille: 5 calm closes 05:23-06:18, 1 won ~-5.08; since 01:50 9 tr 1 won. asia 83 tr 57% +32.23 PF 1.21, halves 67%/46%. Inside asia by pace: <0.8 22 tr 45% -18.79 (h 64/27 agree), 0.8-1.0 27 tr -3.51, 1.0-1.85 34 tr ~+54.5. The night's money sits at pace >=1.0, not in the calm night (peu).",
-    "2026-10-24: asia pile 84 tr 56% +29.31 (h 67/45, fading); europe 79 tr 39% -110.19, us 57 tr -62.33. Engine official noday A +48.5 but 24 tr only; day stake 0.25 long 69 d C -66.5: the day used to earn."
+    "2026-10-24: asia pile 84 tr 56% +29.31 (h 67/45, fading); europe 79 tr 39% -110.19, us 57 tr -62.33. Engine official noday A +48.5 but 24 tr only; day stake 0.25 long 69 d C -66.5: the day used to earn.",
+    "2026-10-24 12:00 veille: morning 07:57-10:01 4 tr 1 won ~-3.05 (3 BOS lost small, FLIP SELL +3.78). cont_day 56 tr 39% vs 48% -83.83 PF 0.54 (h 39/39 agree); 1.3-1.85 14 tr -56.27, after a loss 27 tr -66.47. Day leak intact, small today."
    ],
    "next": "Watch asia second half; nervous vs calm night split."
   },
@@ -3023,6 +3025,11 @@
     "chercheur.log / constructeur.log"
    ],
    "saw": "Real 220 tr 46% -143.21 PF 0.73; day after a loss 80 tr -135; after loss <15 min 35 tr 23% -56.49 (agree) -> pile. Top 25 wins: wide stops (308 vs 168), 16 nervous, 14 night. Battery h2 all about -60 = kill line. Night sessions 10-21..23 failed, constructor reverted by other processes files. No open ask."
+  },
+  {
+   "t": "2026-10-24T12:00:10Z",
+   "look": "veille (4 closes 07:57-10:01): wake_context, --pile loss_quick15, --pile cont_day",
+   "saw": "BOS BUY -2.92 (07:57, pace 0.70), FLIP-BOS SELL +3.78 (09:26, 0.77), BOS SELL -1.55 (09:29, 0.74, after the win), BOS SELL -2.36 (10:01, 0.89, quick after the 09:29 loss) ~-3.05. Pile loss_quick15 36 tr 22% vs 51% -58.85 PF 0.39 (h 13/29 agree), was 35 -56.49: the 10:01 loss joined it, as predicted. cont_day 56 tr 39% -83.83 PF 0.54 (h 39/39), was 47 -71.99 on 10-23. Total 221 tr. Twin nervgate 23 tr -46.28 (+3 tr -2.66 since 06:30, real -3.05): no separation. No ask, no run, no pile, no proposal."
   }
  ],
  "lessons": [
