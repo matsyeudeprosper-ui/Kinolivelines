@@ -928,7 +928,9 @@ function renameSh(){if(!C||!C.view)return;shOpen('<h4>'+T('Le nom du robot','The
 let HL=[];
 async function histSh(){let L=[];try{L=(await getJ('chat_list')).chats||[];}catch(e){}HL=L;
  shOpen('<h4>'+T('Mes conversations','My conversations')+'</h4><input id="hq" class="hq" placeholder="'+T('Chercher une conversation…','Search a conversation…')+'" oninput="histPaint()" enterkeyhint="search">'+
-  '<button class="btn pri" style="margin:10px 0 12px" onclick="shClose();start()">+ '+T('Nouvelle conversation','New conversation')+'</button><div id="hlist"></div>');histPaint();}
+  '<button class="btn pri" style="margin:10px 0 12px" onclick="shClose();start()">+ '+T('Nouvelle conversation','New conversation')+'</button>'+
+  (C&&C.admin?'<button class="btn" style="margin:0 0 12px" onclick="shClose();start(undefined,\'openai\')">\u2697\ufe0f Kino-O \u00b7 '+T('cerveau OpenAI (prototype)','OpenAI brain (prototype)')+'</button>':'')+   // 2026-10-24: the owner tests Kino-O from his phone
+  '<div id="hlist"></div>');histPaint();}
 let HLD={};
 function histRow(c){const dup=(HLD[c.title||c.name||'']||0)>1;const un=(c.unread||0)>0&&c.id!==CID,mk=c.market?MKN(c.market):null,sub=un?(c.unread+' '+(c.unread>1?T('nouveaux messages','new messages'):T('nouveau message','new message'))+(c.news?' · '+c.news:'')):(c.status||((c.last_role==='user'?T('Toi : ','You: '):'')+(c.last||c.understood||'')));
  return '<button class="hl2'+(un?' un':'')+'" onclick="openChat(\''+esc(c.id)+'\')"><span class="ha'+(c.market?'':' talk')+'">'+(mk?'<span class="hae">'+mk[0]+'</span>':(c.market?mkIcon(c.market):'💬'))+'</span><span class="hm"><b>'+esc(c.title||c.name||T('Nouvelle idée','New idea'))+(dup&&c.last_t?' <small style="display:inline;color:var(--muted)">· '+new Date(c.last_t*1000).toLocaleDateString(EN?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'})+'</small>':'')+'</b><small'+(c.status?' class="hst"':'')+'>'+esc(sub)+(mk?' · '+esc(mk[1]):'')+'</small></span><span class="hr">'+whenL(c.last_t)+(un?'<i>'+c.unread+'</i>':'')+'</span></button>';}
