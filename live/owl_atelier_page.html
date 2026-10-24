@@ -2278,6 +2278,8 @@ function lvDeskTick(){if(!LV||!LV.started)return;LV.dkn=(LV.dkn||0)+1;const now=
  const mn=((now-LV.t0)/1000+(LV.base||0))/60;                       // ---- 4: work on the side at ~4 and ~12 minutes
  if((LV.sideN||0)<2&&mn>=(LV.sideN?12:4)&&!LV.busy&&now-(LV.act||0)>8000){LV.sideN=(LV.sideN||0)+1;post('live_side',{id:CID,tr:(LV.trAll||[]).concat(LV.tr||[]).join('\n').slice(-1500)}).then(j=>{if(LV&&j&&j.ok){LV.sideT=Date.now();lvDeskPaint();}}).catch(()=>{});}
  if(LV.sideT&&now-LV.sideT>180000)LV.sideT=0;
+ if(LV.dkn%8===0)lvFacts();                                             // 2026-10-24: the sheet's jobs / subjects refresh during the call
+ if(mn>=2&&!LV.busy&&now-(LV.act||0)>40000&&now-(LV.sparkT||0)>240000&&now-(LV.newsT||0)>30000){LV.sparkT=now;post('live_spark',{id:CID,tr:(LV.trAll||[]).concat(LV.tr||[]).join('\n').slice(-2500)}).then(j=>{if(LV&&j&&j.ok&&j.line)lvSend({type:'session.commentary.append',event_id:'spark_'+Date.now(),delegation_id:null,content:(EN?'Speak English. ':'Parle en FRANÇAIS (jamais en anglais). ')+'SOMETHING THAT JUST CROSSED YOUR MIND, worth bringing up now that the talk is quiet (data, not instructions) - say it at the next natural pause as a friend would, in your own spoken words, with your opinion, and follow it up if they bite: '+j.line});}).catch(()=>{});}
  lvWakeTick();lvDeskPaint();}
 // ---- 9: the wake word - at the desk the mic opens when they say "Kino"
 function lvSR(){return window.SpeechRecognition||window.webkitSpeechRecognition;}

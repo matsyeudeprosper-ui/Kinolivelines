@@ -23245,6 +23245,13 @@ def _live_instructions(user, c):
         "e. NEVER TALK OVER THEM. While they list things, search a word or are mid-thought (\"des pâtes... des...\"), only a "
         "small \"mmh\" / \"ah ouais\" - no new topic until they have clearly finished.\n"
         "f. NO REPEATS. Never re-tell something already said in this call unless they ask or it changed.\n"
+        "f2. GO FURTHER, DON'T CIRCLE. The sheet lists the SUBJECTS YOU ALREADY RAISED today and WHAT THEY TOLD YOU in earlier calls: "
+        "those are done - no second round on the parcel, the music, the baby, 'laisse tourner', the -60 line, 'je suis là', unless THEY "
+        "bring it back or something changed. The reassurance lines (-60 guard, 'rien à décider', 'je garde l'œil') are said at most "
+        "ONCE per call. When the talk goes flat, you have THINGS WORTH BRINGING UP in the sheet: pick ONE, say it like a thought that "
+        "crossed your mind, give your opinion, and follow it up on the next turn if they bite - a conversation moves forward. An "
+        "opinion of yours (a bet, a market view) is a thread: state it, defend it, come back to it with what changed. Ask about their "
+        "life only what you do NOT know yet (one such question per call is plenty).\n"
         "g. RUNNING JOKES. When they joke or tease you (a nickname like \"docteur Freud\"), laugh, play along, and bring it back "
         "later - in this call or the next ones (see the shared moments in the sheet).\n"
         "h. REMEMBER THEIR LIFE. THEIR LIFE in the sheet is what they told you before - bring it up the way a friend would "
@@ -23308,6 +23315,84 @@ def _live_instructions(user, c):
            nm or ("them" if not fr else "eux"), (" (this conversation: '%s')" % rob) if rob else "")) + "\n\n" + _live_facts(user, c)
 
 
+def _call_memory_block(c, lang="fr"):
+    """2026-10-24 (owner: "on voice he turns around the same things"): what was said in TODAY'S earlier calls - the member's own
+    statements and the subjects Kino raised - so a new call does not start from zero and does not circle"""
+    try:
+        now = time.time()
+        cards = [m for m in (c.get("msgs") or []) if m.get("role") == "sys" and m.get("call") and now - float(m.get("t") or 0) < 20 * 3600]
+        if not cards:
+            return ""
+        _rc()
+        import kino_spark as _KSc
+        said, subj = [], []
+        for m in cards[-6:]:
+            for ln in str(m["call"]).splitlines():
+                if ln.startswith("Membre :") or ln.startswith("Member:"):
+                    t = ln.split(":", 1)[1].strip()
+                    if len(t.split()) >= 8:
+                        said.append("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(m["t"]))), t[:140]))
+                elif ln.startswith("Kino:"):
+                    k = _KSc.topic_key(ln[5:])
+                    if k and not any(_KSc._same(k, x) for x in subj):
+                        subj.append(k)
+        out = []
+        if said:
+            out.append(("CE QU'ILS T'ONT DIT DANS LES APPELS D'AUJOURD'HUI (ne pas redemander ; y revenir seulement avec du neuf) : " if lang != "en" else
+                        "WHAT THEY TOLD YOU IN TODAY'S CALLS (never ask again; come back to it only with something new): ") + " | ".join(said[-14:]))
+        if subj:
+            out.append(("SUJETS QUE TU AS DÉJÀ ABORDÉS DANS CES APPELS (ne pas y revenir sauf s'ils y reviennent) : " if lang != "en" else
+                        "SUBJECTS YOU ALREADY RAISED IN THOSE CALLS (do not return to them unless they do): ") + " | ".join(subj[-24:]))
+        return "\n".join(out)
+    except Exception:
+        return ""
+
+
+def _voice_material(user, c):
+    """2026-10-24: true things worth bringing up on a call, built by code - his open bets, the market view, one angle on their own
+    numbers, a nugget, a memory from an older conversation, a market tale - each once"""
+    uid = user.get("id")
+    lang = c.get("lang") or "fr"
+    L = []
+    try:
+        _rc()
+        import kino_belief as _KB
+        bf = _KB.block_fast(uid, c.get("id"))
+        if bf:
+            L.append(bf)
+        try:
+            mv = _KB.mind_view(uid)
+            if isinstance(mv, str) and mv.strip():
+                L.append("YOUR MARKET VIEW RIGHT NOW (an opinion you can state and follow up): " + mv[:500])
+        except Exception:
+            pass
+    except Exception:
+        pass
+    try:
+        import kino_spark as _KSv
+        picks = _KSv.pick(uid, c, DIR, CHAT_DIR, lang, (c.get("robot") or {}).get("name") or "", (c.get("robot") or {}).get("market") or "BTCUSD", price_line="")
+        for k, a, ins in picks[:4]:
+            if k == "bet":
+                continue
+            L.append("- " + ins)
+            try:
+                _KSv.used(uid, a)
+            except Exception:
+                pass
+    except Exception:
+        pass
+    try:
+        import kino_material as _KMv
+        for it in [x for x in _KMv.items(uid) if x.get("kind") != "robot"][-3:]:
+            L.append("- a true thing from today you have not told them: " + str(it.get("text"))[:220])
+    except Exception:
+        pass
+    if not L:
+        return ""
+    return ("THINGS WORTH BRINGING UP ON THIS CALL (true, built by code; each at most once, never as a list, only when it fits or the talk goes flat; "
+            "say it like something that crossed your mind, with your opinion, and follow it up if they bite):\n" + "\n".join(L))
+
+
 def _live_facts(user, c, dyn_only=False):
     """2026-10-21 (owner: "the voice says 'je vérifie' for almost every question about robots and strategy"): what Kino's
     brain knows, handed to the live voice as a FACT SHEET so it answers at once - it delegates only real work"""
@@ -23328,6 +23413,10 @@ def _live_facts(user, c, dyn_only=False):
             continue
         keep.append(ln)
     dyn = "\n".join(keep).strip()
+    try:                                     # 2026-10-24: what really runs, what he already raised today, what today's calls covered (refreshed mid-call)
+        dyn += "\n\n" + "\n".join(x for x in (__import__("kino_deed").jobs_block(c), _subjects_today(user.get("id")), _call_memory_block(c, c.get("lang") or "fr")) if x)
+    except Exception:
+        pass
     try:                                     # 2026-10-21 (owner: "all guided by its inner voice intuition")
         _rc()
         import kino_inner as _KIc
@@ -23412,13 +23501,13 @@ def _live_facts(user, c, dyn_only=False):
            "WHAT YOU KNOW ABOUT THEM (your memory):\n%s\n%s\n\n%s") % (
         time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:40]) or "- none yet", rob, notes or "- little yet",
         ("THEIR STANDING INSTRUCTIONS TO YOU:\n" + std) if std else "", guide)
-    try:                                             # 2026-10-24: the ledgers - the real state, the jobs, what they said of themselves, what he already raised
+    try:                                             # 2026-10-24: the ledgers - the real state, what they said of themselves, the material worth bringing up
         _uid_ = user.get("id")
-        out += "\n\n" + "\n".join(x for x in (_state_text(_uid_, c), __import__("kino_deed").jobs_block(c),
-                                             __import__("kino_ear").constraints_block(_uid_, c.get("lang") or "fr"), _subjects_today(_uid_)) if x)
+        out += "\n\n" + "\n".join(x for x in (_state_text(_uid_, c), __import__("kino_ear").constraints_block(_uid_, c.get("lang") or "fr"),
+                                             _voice_material(user, c)) if x)
     except Exception:
         pass
-    return out[:30000]
+    return out[:32000]
 
 
 _LIVE_ACT_T = {}
@@ -23458,6 +23547,45 @@ def live_side(user, body):
                      "(\"Pendant qu'on parlait, j'ai ...\") and then the result in numbers. If nothing useful comes, send = false." % tr),
                      daemon=True).start()
     return {"ok": True}
+
+
+_LIVE_SPARK_T = {}
+
+
+def live_spark(user, body):
+    """2026-10-24 (owner: "can't he initiate and follow up, tell something and keep up?"): during a call, when the talk goes flat, one
+    true thing worth bringing up - picked from the material (kino_spark), vetted by the judge against the call so far"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None or _LIVE_CID.get(user.get("id")) != c["id"]:
+        return {"ok": False}
+    if time.time() - _LIVE_SPARK_T.get(c["id"], 0) < 180:
+        return {"ok": False, "err": "recent"}
+    _LIVE_SPARK_T[c["id"]] = time.time()
+    tr = str(body.get("tr") or "")[-2500:]
+    uid = user.get("id")
+    lang = _rc().member_lang(c, c.get("lang") or "fr")
+    try:
+        import kino_spark as _KSl, kino_judge as _KJl
+        picks = _KSl.pick(uid, c, DIR, CHAT_DIR, lang, (c.get("robot") or {}).get("name") or "", (c.get("robot") or {}).get("market") or "BTCUSD", price_line="")
+        picks = [p for p in picks if p[0] != "whatif"]
+        if not picks:
+            return {"ok": False, "err": "nothing"}
+        k, angle, ins = picks[0]
+        room = ("ORIGIN: a live voice call, a flat moment (nobody is talking). THE CALL SO FAR (latest last):\n%s\n\n%s\n%s\n%s\n\n"
+                "MATERIAL KINO COULD BRING UP NOW: %s\n\nTHE DRAFT: (none - decide whether bringing this up NOW, in one or two spoken sentences with his "
+                "opinion, is what a good friend would do; if yes, verdict rewrite with the sentences to say; if the moment is wrong or it was already "
+                "covered, drop)") % (tr, _call_memory_block(c, lang), _subjects_today(uid), __import__("kino_ear").constraints_block(uid, lang), ins)
+        dec = _KJl.judge(room, lang, _rc().W, c["id"], timeout=25)
+        if not dec or dec["verdict"] not in ("rewrite", "send") or not dec.get("text"):
+            return {"ok": False, "err": "judge"}
+        _KSl.used(uid, angle)
+        try:
+            _KSl.note_topic(uid, dec["text"], "call", c["id"])
+        except Exception:
+            pass
+        return {"ok": True, "line": dec["text"][:600], "kind": k}
+    except Exception as e:
+        return {"ok": False, "err": type(e).__name__}
 
 
 def live_act(user, body):
@@ -23899,6 +24027,14 @@ def live_end(user, body):
         _ct = (" · %.2f $" % cost).replace(".", "," if fr else ".") if is_admin(user) else ""      # the price: owner only
         _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)) + _ct,
                                                 call=tr, usd=cost))
+        try:                                             # 2026-10-24: what he said on the call counts as said (subject memory for the chat and the next call)
+            _rc()
+            import kino_spark as _KSe
+            for ln in tr.splitlines():
+                if ln.startswith("Kino:") and len(ln.split()) >= 7:
+                    _KSe.note_topic(uid, ln[5:].strip(), "call", c["id"])
+        except Exception:
+            pass
         if mins >= 1 and len(tr) > 60 and not _CHAT_Q.get(c["id"]):      # 2026-10-20 (owner item 2): the call in three lines
             _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
             threading.Thread(target=_chat_quick, args=(c["id"], user, "CALL ENDED: you just had a live voice call with them (see LIVE VOICE CALL). "
@@ -29506,7 +29642,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "research_board", "robot_risk", "test_guess"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -29530,7 +29666,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
-                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
+                       "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
