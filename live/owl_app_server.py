@@ -17532,11 +17532,24 @@ def _companion_tick():
                                 y["done"] = True
                         _chat_msg(cc, "result", result=dict(res, kino_variant=True, formula=nt.get("formula")))
                     _chat_mut(c["id"], put)
+                    _bet = ""
+                    try:                               # 2026-10-24: the pre-registered stake, scored on the parent's net
+                        if nt.get("pre_id"):
+                            _rc()
+                            import kino_belief as _KBr
+                            _vn = float(res.get("net"))
+                            _pn = res.get("owl_net") if res.get("owl_net") is not None else res.get("parent_net")    # the parent's net is "owl_net" in _chat_result
+                            _ok = (_vn > float(_pn)) if _pn is not None else (_vn > 0)
+                            _KBr.resolve(u.get("id"), [{"id": nt["pre_id"], "outcome": _ok, "why": "variant %+.2f vs parent %s" % (_vn, _pn)}], src="night test")
+                            _bet = (" YOUR PRE-REGISTERED BET: 'beats the parent' at 55 %% -> %s (variant %+.2f $ vs parent %s). Say it in your words, "
+                                    "first, before the news." % ("you were right" if _ok else "you were wrong", _vn, _pn))
+                    except Exception:
+                        pass
                     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
                     threading.Thread(target=_chat_quick, args=(c["id"], u, "NIGHT TEST RESULT - the real test of YOUR variant (a copy of "
                                      "their robot with your entry '%s'; their own robot untouched) just finished: see the TEST RESULT. Tell "
-                                     "them like news, honestly, and propose what to do (adopt it in their robot, keep testing, drop it)."
-                                     % nt.get("formula")), kwargs={"notify": True, "important": True}, daemon=True).start()
+                                     "them like news, honestly, and propose what to do (adopt it in their robot, keep testing, drop it).%s"
+                                     % (nt.get("formula"), _bet)), kwargs={"notify": True, "important": True}, daemon=True).start()
             # (1h) 2026-10-19 (owner item 7): milestones of their path - Kino celebrates the new one and points to the next
             try:
                 if int(now // 900) != int(m.get("path_tick") or 0):
@@ -18251,8 +18264,18 @@ def _kino_variant_test(u, c, formula, side):
     _chat_save(sub)
     r = chat_test(u, {"id": sid})
     if r.get("ok"):
+        pre_id = None
+        try:                                           # 2026-10-24 (belief engine, item 7): his night research is pre-registered too
+            _rc()
+            import kino_belief as _KBn
+            ids = _KBn.add(u.get("id"), c["id"], [{"text": "night variant '%s' beats their robot '%s' (net above the parent's, same test)" % (
+                str(formula)[:60], str(c["robot"].get("name") or "")[:30]), "p": 0.55, "basis": "inferred",
+                "change": "a net below the parent's, or a dip clearly bigger", "resolves": "night test"}])
+            pre_id = ids[0] if ids else None
+        except Exception:
+            pass
         _chat_mut(c["id"], lambda cc: cc.setdefault("night_tests", []).append({"sub": sid, "formula": formula, "t": int(time.time()),
-                                                                                  "rid": r.get("rid")}))
+                                                                                  "rid": r.get("rid"), "pre_id": pre_id}))
     return r
 
 

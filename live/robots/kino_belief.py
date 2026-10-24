@@ -131,7 +131,7 @@ def resolve_test(uid, cid, res, pre):
         parts.append("net: said %+.0f..%+.0f, got %+.2f -> %s" % (lo, hi, net, "right" if hit_net else ("too pessimistic" if net > hi else "too optimistic")))
     hit_dip = None
     try:
-        d, pd = float(res.get("dip")), float((res.get("parent") or {}).get("dip") or res.get("parent_dip"))
+        d, pd = float(res.get("dip")), float(res.get("owl_dip") if res.get("owl_dip") is not None else (res.get("parent") or {}).get("dip") or res.get("parent_dip"))
         want = pre.get("dip_vs_parent")
         if want and pd:
             got = "smaller" if d < 0.8 * pd else "bigger" if d > 1.2 * pd else "same"
