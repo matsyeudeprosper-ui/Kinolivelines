@@ -15019,11 +15019,16 @@ def _chat_member_fresh(uid, c):
                 _ls += 1
             else:
                 break
+        _lr = _r = 0          # 2026-10-24: longest run today - the auditor quoted a stale "4 in a row" from an older guardian line when it was 5
+        for x in reversed(_tt):
+            _r = _r + 1 if (x.get("p") or 0) < 0 else 0
+            _lr = max(_lr, _r)
         _mh = sum(1 for m in (c.get("msgs") or []) if m.get("role") == "user" and time.time() - int(m.get("t") or 0) < 3600)
         _ed = sum(1 for m in (c.get("msgs") or []) if m.get("role") in ("edit",) and time.time() - int(m.get("t") or 0) < 86400) + \
             sum(1 for m in (c.get("msgs") or []) if m.get("role") == "ai" and m.get("made") and time.time() - int(m.get("t") or 0) < 86400)
-        L.append("DISCIPLINE SIGNALS: today %d trades, %d lost, %+.2f $; current losing streak %d; they wrote %d messages in the last hour; "
-                 "%d robot changes in the last 24 h" % (len(_tt), sum(1 for x in _tt if (x.get("p") or 0) < 0), _nd.get("today") or 0, _ls, _mh, _ed))
+        L.append("DISCIPLINE SIGNALS: today %d trades, %d lost, %+.2f $; current losing streak %d, longest losing run today %d; they wrote %d "
+                 "messages in the last hour; %d robot changes in the last 24 h" % (
+                     len(_tt), sum(1 for x in _tt if (x.get("p") or 0) < 0), _nd.get("today") or 0, _ls, _lr, _mh, _ed))
     except Exception:
         pass
     try:
