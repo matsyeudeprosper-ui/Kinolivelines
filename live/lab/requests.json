@@ -345,9 +345,15 @@
    "what_en": "Since 10 October the real accounts refuse entries against the pullback direction. Add to the nightly check: how many entries a day the real accounts took since the 10th, and how many the test takes with this filter on the same days; and, if possible, rebuild the test's filter with the same memory as the robot. Nothing changes when the filter is off.",
    "why_fr": "Ce soir, avec ce filtre, le test ne garde qu'un trade sur quatre (65 au lieu de 276 en 42 jours), alors que les vrais comptes sont passés d'environ 6 à 4 entrées par jour. Tant que les deux ne filtrent pas pareil, aucune idée testée « avec le filtre » ne décrit les vrais comptes.",
    "why_en": "Tonight, with this filter, the test keeps only one trade in four (65 instead of 276 in 42 days), while the real accounts went from about 6 to 4 entries a day. Until both filter alike, no idea tested 'with the filter' describes the real accounts.",
-   "status": "open",
-   "build_attempts": 1,
-   "build_error": "périmètre : live/chart_multi/GBPUSD_htf.json.tmp, study/luck/or-faux-depart-vente-2_XAUUSD.claims/7"
+   "status": "built",
+   "build_attempts": 2,
+   "build_error": "périmètre : live/review/hh_stop_order_test.py, live/robots/kino_voice.py, live/review/hh_entry_at_level_test.py, live/review/hh_only_test.py, live/robots/KINO_V2_ENGINES.md",
+   "key": "pb_gate_parity",
+   "built_note_fr": "Le chercheur peut maintenant mettre côte à côte, jour par jour depuis le 10 octobre, les entrées de chaque vrai compte et celles du test avec le filtre du repli coupé, allumé, et allumé avec la même mémoire que le robot. C'est un outil de lecture seulement : rien ne change dans le test ni dans les robots.",
+   "built_note_en": "The researcher can now put side by side, day by day since 10 October, the entries of each real account and those of the test with the pullback filter off, on, and on with the same memory as the robot. It is a read-only tool: nothing changes in the test or in the robots.",
+   "test": {
+    "cmd": "python lab/pb_gate_parity.py"
+   }
   },
   {
    "id": "loss_wait_day",
@@ -523,6 +529,28 @@
    "what_en": "A dial flip_hours (list of UTC hours 0-23) + flip_hours_size (0.25-1.0): a reversal whose entry hour is in the list is taken with the stake multiplied by X, its catch-up trades too; the trade is still taken; empty list or 1.0 = off. Like size_hours, but for reversals only.",
    "why_fr": "La pile flip_day (changements de sens de 8 h à minuit) a 77 trades, 39 % gagnés contre 54 %, -98 $, les deux moitiés d'accord, et le labo me l'a demandée. size_hours touche aussi les cassures et a toujours échoué sur la première moitié ; flip_loss_size 0,5 ce soir : +15 $ au total mais -0,9 $ sur la première moitié. Je m'attends à ce que 8-23 h à 0,5 gagne sur les deux moitiés.",
    "why_en": "The flip_day pile (reversals 08:00-midnight) has 77 trades, 39% won vs 54%, -$98, both halves agree, and the lab asked me about it. size_hours also hits breakouts and always failed the first half; flip_loss_size 0.5 tonight: +$15 overall but -$0.9 on the first half. I expect 8-23 h at 0.5 to win on both halves.",
+   "status": "open"
+  },
+  {
+   "id": "builder_unblock",
+   "date": "2026-10-24",
+   "title_fr": "Laisser le constructeur finir son travail",
+   "title_en": "Let the builder finish its work",
+   "what_fr": "Le constructeur n'a rien fini depuis le 14 octobre. Le 23, il a été annulé parce que d'autres programmes écrivaient leurs propres fichiers pendant qu'il travaillait (un fichier temporaire de graphique, un fichier du test de chance) ; le 12 et le 13, même chose. Sa vérification devrait ignorer les fichiers que d'autres programmes écrivent seuls (fichiers temporaires, dossiers du test de chance, fichiers de verrou) et ne regarder que ceux qu'il a lui-même changés. Les nuits du 21 au 23, ma propre séance s'est aussi arrêtée sans rien écrire. Rien d'autre ne change.",
+   "what_en": "The builder has finished nothing since 14 October. On the 23rd it was undone because other programs were writing their own files while it worked (a temporary chart file, a luck-test file); on the 12th and 13th, the same. Its check should ignore files that other programs write on their own (temporary files, the luck-test folders, lock files) and look only at the files it changed itself. On the nights of the 21st to the 23rd my own session also stopped without writing anything. Nothing else changes.",
+   "why_fr": "Dix-huit demandes attendent, dont celles qui testeraient les deux pistes les plus solides du journal : attendre après une perte le jour (35 trades repris vite après une perte, 8 gagnés, -56 $) et fermer un trade qui traîne. Sans constructeur, je ne peux que les compter.",
+   "why_en": "Eighteen requests are waiting, including the ones that would test the two strongest leads in the journal: waiting after a loss by day (35 trades restarted fast after a loss, 8 won, -$56) and closing a trade that drags on. Without the builder I can only count them.",
+   "status": "open"
+  },
+  {
+   "id": "trail_in_menu",
+   "date": "2026-10-24",
+   "title_fr": "Me laisser proposer le stop qui suit la structure",
+   "title_en": "Let me propose the stop that follows the structure",
+   "what_fr": "Le test sait déjà déplacer le stop vers chaque nouveau niveau protégé, une fois ce niveau au-delà du prix d'entrée (réglage du 1er octobre, valeurs 0, 1 ou 2). Il n'est pas dans la liste des réglages que je peux proposer. L'ajouter à la liste, avec 0 par défaut, qui ne change rien.",
+   "what_en": "The test can already move the stop to each new protected level once that level is past the entry price (a 1 October setting, values 0, 1 or 2). It is not in the list of settings I may propose. Add it to the list, default 0, which changes nothing.",
+   "why_fr": "Ce soir, avec le filtre des comptes, ce stop qui suit fait +41 $ sur 42 jours (la seconde moitié pareille), +14 $ sur 69 jours et +43 $ sur les vrais trades (34 trades, trop peu). C'est la seule idée de sortie que j'ai, et les trades qui traînent perdent.",
+   "why_en": "Tonight, with the accounts' filter, this following stop makes +$41 over 42 days (second half the same), +$14 over 69 days and +$43 on the real trades (34 trades, too few). It is the only exit idea I have, and trades that drag on lose.",
    "status": "open"
   }
  ]
