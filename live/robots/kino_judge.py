@@ -114,7 +114,7 @@ def room(c, m, P, brief=False):
         v = P.get(k)
         v = v() if callable(v) else v
         if v:
-            L.append(str(v)[:1400 if brief else 2000])
+            L.append(str(v)[:1800 if brief else 3200])
     if P.get("check_state"):
         L.append("MOMENTS CHECK (needed before a test can start): %s" % P["check_state"])
     if origin == "correction":

@@ -15072,8 +15072,9 @@ def _state_text(uid, c=None):
         try:                                           # 2026-10-24 14:48: the judge called Kino's OWN robot's true numbers (64 trades, -8 R) invented
             import kino_mind as _KMo                   # because the state block only knew the registry; his own pretend-money robot is state too
             _mr = _KMo.my_robot_block()
-            if _mr:
-                _st += "\nKINO'S OWN ROBOT (his, pretend money, not the member's): " + _mr[:700]
+            if _mr:                                    # 16:18: at the end of a long block it was cut off - it goes right after the first line
+                _hd, _rest = _st.split("\n", 1) if "\n" in _st else (_st, "")
+                _st = _hd + "\nKINO'S OWN ROBOT (his, pretend money, not the member's): " + _mr[:600] + "\n" + _rest
         except Exception:
             pass
         return _st

@@ -9,7 +9,7 @@ import hashlib, io, json, os, queue, re, subprocess, threading, time
 
 import robot_interview as IV
 
-MAX_TOTAL, SUPERSEDE = 10, 900       # 2026-10-24 (speed): stable keys now, so more of them stay warm, longer         # 2026-10-23 (memory): the stable block carries the member's minute and live prices, so
+MAX_TOTAL, SUPERSEDE = 8, 900       # 2026-10-24 (speed): stable keys now, so more of them stay warm, longer         # 2026-10-23 (memory): the stable block carries the member's minute and live prices, so
                                       # EVERY message is a new key; 12 keys x 3 x ~330 MB (measured, not 175) = 11.5 GB of
                                       # claude.exe in 30 min, commit at 95 %, PowerShell could not even start. Never more than
                                       # MAX_TOTAL live processes over all keys (least recently used keys go first), and a key
