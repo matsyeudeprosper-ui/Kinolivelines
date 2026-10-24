@@ -19278,6 +19278,9 @@ def _reply_rhythm(M):
     return gaps[len(gaps) // 2] if gaps else 120
 
 
+_INNER_LAST = {}         # cid -> the inner voice's last decision on the current silence (2026-10-25)
+
+
 def _inner_clock_once():
     """every 30 s: for each conversation that went quiet in the last hours, when its moment comes (an irregular interval
     that grows with the silence and follows the member's own rhythm), Kino's inner voice decides - by intuition, with
@@ -19358,6 +19361,10 @@ def _inner_clock_once():
                 d = _KM.inner_decide(ctx)
             except Exception:
                 d = None
+            try:                                         # 2026-10-25: the timer initiative defers to this decision (one decider)
+                _INNER_LAST[cid] = {"t": time.time(), "now": bool(d and d.get("now")), "why": str((d or {}).get("why") or "")[:160]}
+            except Exception:
+                pass
             try:
                 import io as _io
                 _io.open(os.path.join(CHAT_DIR, cid + ".log"), "a", encoding="utf-8").write(
@@ -22308,6 +22315,18 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
         return                                        # 2026-10-24: the judge asked to wait
     M = c.get("msgs") or []
     last_any = max([float(x.get("t") or 0) for x in M if x.get("role") in ("user", "ai")] or [0])
+    # 2026-10-25 00:35-00:46 (watch): the inner voice looked at this silence three times and said no ("il est minuit, un bébé,
+    # fatigué, je le laisse respirer") - and this timer fired twice anyway, with trading drafts the judge had to rewrite into
+    # echoes of his last reply. One decider for unprompted talk: when the inner voice has judged THIS silence and said no, the
+    # timer holds. (It still fires when the inner voice has not looked yet.)
+    _il = _INNER_LAST.get(cid)
+    if _il and float(_il.get("t") or 0) > last_any and not _il.get("now"):
+        try:
+            io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD initiative | inner voice said no %d s ago: %s\n" % (
+                time.strftime("%m-%d %H:%M:%S"), uid, cid, now - float(_il["t"]), _il.get("why")))
+        except Exception:
+            pass
+        return
     log = [x for x in (m.get("initiative") or []) if now - float(x.get("t") or 0) < 86400]
     def answered(e):
         cc = _chat_load(u, e.get("cid")) or {}
