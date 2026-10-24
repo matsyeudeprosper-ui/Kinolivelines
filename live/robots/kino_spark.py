@@ -347,7 +347,7 @@ def pick(uid, c, live_dir, chats_dir, lang="fr", robot_name="", market="BTCUSD",
                 break
     except Exception:
         pass
-    if now - float(ang.get("nugget") or 0) > 20 * 3600:
+    if now - float(ang.get("nugget") or 0) > 6 * 3600:        # 2026-10-24: calls drain the pool faster - a nugget every 6 h
         try:
             out.append(("nugget", "nugget", "a trading idea in plain words you have not told them: \"%s\" - tie it to THEIR robot or their week in one line, "
                                             "no lecture, like something you noticed" % _nugget(uid, lang)))
@@ -356,7 +356,7 @@ def pick(uid, c, live_dir, chats_dir, lang="fr", robot_name="", market="BTCUSD",
     if now - float(ang.get("bet") or 0) > 6 * 3600 and price_line:
         out.append(("bet", "bet", "a small playful call on the next few hours on %s (%s): say your side and your reason in one line and ask theirs; "
                                   "put it in beliefs with resolves 'price in 4 h' - a game, not advice" % (market, price_line)))
-    if now - float(ang.get("memory") or 0) > 2 * 86400:
+    if now - float(ang.get("memory") or 0) > 86400:
         try:
             ml = _memory_lane(uid, chats_dir, c.get("id"), lang)
             if ml:
@@ -366,7 +366,7 @@ def pick(uid, c, live_dir, chats_dir, lang="fr", robot_name="", market="BTCUSD",
     if robot_name and now - float(ang.get("whatif") or 0) > 2 * 86400:
         out.append(("whatif", "whatif", "ONE knob of their robot '%s' you are curious about (hours, stop width, target, one filter) - say which and why in one line, "
                                         "and measure it NOW with your tools (build = true, tools: breakdown / compare) instead of promising" % robot_name))
-    if now - float(ang.get("tale") or 0) > 20 * 3600:
+    if now - float(ang.get("tale") or 0) > 8 * 3600:
         out.append(("tale", "tale", "one market that moved today OUTSIDE their robots (see THE WORLD RIGHT NOW: oil, indices, a currency, gold) - the move and "
                                     "the one-line why, told like a story, nothing to do for them"))
     return out
