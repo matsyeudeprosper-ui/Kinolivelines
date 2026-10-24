@@ -141,6 +141,11 @@ def score_day(uid, day=None):
         S["bubbles_per_turn"] = KV.bubbles_per_turn(msgs)
     except Exception:
         S["voice"] = None
+    try:                                   # 2026-10-24: the judge's day
+        import kino_judge as KJ
+        S["judge"] = KJ.counts(loc)
+    except Exception:
+        S["judge"] = None
     try:                                   # 2026-10-24 (engine 4): what they asked, answered first?
         S["asked"] = sum(1 for m in users if (m.get("ear") or {}).get("asked"))
         S["cutoff_lines"] = sum(1 for m in ai if re.search(r"phrase s'est coupée|sentence (got )?cut", str(m.get("text") or ""), re.I))

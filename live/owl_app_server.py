@@ -15326,7 +15326,43 @@ def _chat_msg(c, role, **kw):
         if role == "ai" and not m["text"].strip() and not any(m.get(k) for k in ("made", "link", "ready", "vn", "show", "card", "audio")):
             return m                                     # tool-call markup only ('<invoke name="noop"/>'): nothing to show
         m["text"] = _re.sub(r"\n{3,}", "\n\n", _re.sub(r"(?i)<br\s*/?>", "\n", m["text"])).strip()
-    if role == "ai" and c.get("uid"):          # 2026-10-24 (Kino v2 engine 1): one voice, one bubble - robots/kino_voice.py
+    if role == "ai" and c.get("uid"):
+        _judged = False
+        try:                                   # 2026-10-24 (owner: "do the proper job with the judge"): ONE judgment in front of everything he says
+            _rc()
+            import kino_judge as _KJ
+            if _KJ.ON and str(m.get("text") or "").strip():
+                _it = m.get("intent") or {}
+                if m.get("event") and not m.get("err") and _KJ.own_cap_hit(c.get("msgs") or []):
+                    _KJ._log(c.get("id"), "CAP", "8 own bubbles in the hour")
+                    return m
+                _P = _judge_providers(c, m)
+                _lang = _rc().member_lang(c, c.get("lang") or "fr")
+                _dec = _KJ.judge(_KJ.room(c, m, _P), _lang, _rc().W, c.get("id"))
+                if _dec is not None:
+                    _judged = True
+                    m.pop("intent", None)
+                    _acts = [a for a in (_dec.get("actions") or []) if not (a == "test" and _it.get("act") == "test") and not (a == "build" and _it.get("build"))]
+                    if _acts and _dec["verdict"] in ("send", "rewrite", "merge"):
+                        threading.Timer(1.5, _deed_do, args=(c.get("id"), c.get("uid"), _acts)).start()
+                    _r = _KJ.apply(c, m, _dec)
+                    try:                           # data for the next judgments: subjects raised, lines told
+                        _mm = _r[2] if _r[0] == "edit" else (m if _r[0] == "append" else None)
+                        if _mm is not None:
+                            import kino_spark as _KSj, kino_voice as _KVj
+                            if m.get("event"):
+                                _KSj.note_topic(c.get("uid"), _mm.get("text"), "own", c.get("id"))
+                            _KVj.note_told(c.get("uid"), _mm.get("text"))
+                    except Exception:
+                        pass
+                    if _r[0] == "edit":
+                        return _r[2]
+                    if _r[0] == "drop":
+                        return m
+                    m = _r[1]
+        except Exception:
+            pass
+    if role == "ai" and c.get("uid") and not _judged:          # 2026-10-24 (Kino v2 engine 1): the old gates, only when the judge did not answer
         try:
             _rc()
             import kino_voice as _KV
@@ -15338,6 +15374,7 @@ def _chat_msg(c, role, **kw):
             m = _dec[1]
         except Exception:
             pass
+    if role == "ai" and c.get("uid") and not _judged:
         try:                                   # 2026-10-24 (Kino v2 engine 2): a word for an action is a job - robots/kino_deed.py
             import kino_deed as _KD
             _it = m.pop("intent", None)
@@ -15350,6 +15387,61 @@ def _chat_msg(c, role, **kw):
             pass
     c.setdefault("msgs", []).append(m)
     return m
+
+
+def _judge_on():
+    try:
+        _rc()
+        import kino_judge as _KJo
+        return bool(_KJo.ON)
+    except Exception:
+        return False
+
+
+def _subjects_today(uid):
+    try:
+        _rc()
+        import kino_spark as _KSs
+        now = time.time()
+        T = [x for x in (_KSs._u(_KSs._load(), uid).get("topics") or []) if now - float(x.get("t") or 0) < 86400]
+        if not T:
+            return ""
+        return "SUBJECTS HE ALREADY RAISED ON HIS OWN TODAY (with the time): " + " | ".join(
+            "%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x["t"]))), str(x.get("text") or x.get("key") or "")[:90].replace("\n", " ")) for x in T[-14:])
+    except Exception:
+        return ""
+
+
+def _judge_providers(c, m):
+    """2026-10-24: the room the judge reads - the ledgers and the member's own words, assembled by code"""
+    uid = c.get("uid")
+    P = {}
+    try:
+        P["state"] = lambda: _state_text(uid, c)
+        P["jobs"] = lambda: __import__("kino_deed").jobs_block(c)
+        P["constraints"] = lambda: __import__("kino_ear").constraints_block(uid, c.get("lang") or "fr")
+        P["told"] = lambda: __import__("kino_voice").told_block(uid, c.get("lang") or "fr")
+        P["topics"] = lambda: _subjects_today(uid)
+        P["feedback"] = lambda: __import__("kino_feedback").block(uid)
+        P["recent_other"] = lambda: [tx for t_, tx in _recent_ai_texts(uid, 18) if not any(mm.get("text") == tx for mm in (c.get("msgs") or [])[-40:])]
+        P["local_hour"] = _local_hour(uid)
+        _seen = time.time() - _LAST_SEEN.get(uid, 0)
+        P["presence"] = ("in the app right now" if _seen < 120 else "seen %d min ago" % (_seen // 60) if _seen < 86400 else "away")
+        if c.get("robot"):
+            P["check_state"] = _check_state(c, _user_by_id(uid))
+        try:
+            _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+            _ol = _nd.get("open_list") or []
+            P["fresh"] = "THEIR ACCOUNT NOW: balance %.2f $, today %+.2f $, week %+.2f $; open trades: %s" % (
+                float(_nd.get("balance") or 0), float(_nd.get("today") or 0), float(_nd.get("week") or 0),
+                "; ".join("%s %s at %s now %+.2f $" % ("SELL" if str(x.get("d")) == "V" else "BUY", x.get("sym") or "BTCUSD", x.get("e"), float(x.get("pl") or 0)) for x in _ol[:3]) or "none")
+        except Exception:
+            pass
+        if m.get("correction") or m.get("fix"):
+            P["target"] = next((x for x in reversed(c.get("msgs") or []) if x.get("role") == "ai" and x.get("text") and not x.get("correction") and not x.get("fix")), None)
+    except Exception:
+        pass
+    return P
 
 
 def _deed_do(cid, uid, todo):
@@ -17053,6 +17145,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _pres = (time.time() - _LAST_SEEN.get(user.get("id"), 0) < 120) or any(
                     m_.get("role") == "user" and time.time() - float(m_.get("t") or 0) < 600 for m_ in (c.get("msgs") or [])[-6:])
                 _okp, _whyp = _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")), present=_pres)
+                if _judge_on():
+                    _lu_t = max([float(m_.get("t") or 0) for m_ in (c.get("msgs") or []) if m_.get("role") == "user"] or [0])
+                    _okp = time.time() - _lu_t > 60          # 2026-10-24: the judge decides when to speak; this only avoids talking over a message being typed
             except Exception:
                 _okp = True
             if not _okp:
@@ -17336,7 +17431,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     pass
             # 2026-10-24 (owner's tester list, item 5): "Pas vraiment fini, a vue de nez" then 26 s later the measured answer - two
             # messages in a minute, the first a guess. When a lookup follows, a short hedge is not said: the build turn answers.
-            if q.get("say") and not event:
+            if q.get("say") and not event and not _judge_on():
                 try:                                   # 2026-10-24 (engine 4): they asked a figure -> it comes first; "ta phrase s'est coupée" once an hour
                     _rc()
                     import kino_ear as _KEq
@@ -17357,12 +17452,13 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         q["say"] = _qt
                 except Exception:
                     pass
-            if q["say"] and q["build"] and not event and len(str(q["say"])) <= 240 and re.search(
+            if q["say"] and q["build"] and not event and not _judge_on() and len(str(q["say"])) <= 240 and re.search(
                     r"(à vue de nez|je (regarde|vérifie|jette un [oœ]e?il|te sors|me renseigne|vais (regarder|vérifier|voir))|deux secondes|un instant|"
                     r"i['’]?m (checking|looking|pulling)|let me (check|look|pull)|one sec)", str(q["say"]), re.I):
                 q["say"] = None
             if q["say"]:
-                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), intent={"act": q.get("act"), "build": bool(q["build"])}, **_vn,
+                _chat_msg(c, "ai", text=q["say"], chips=q["chips"], quick=True, event=bool(event), intent={"act": q.get("act"), "build": bool(q["build"])},
+                          ekind=str(event or "")[:90], **_vn,
                           followup=bool(event and event.startswith("FOLLOW-UP")), **({"own": q["own"]} if q.get("own") else {}))
             if _qdm and not _qdm.get("nodata"):
                 c.setdefault("msgs", []).append(dict(_qdm, t=int(time.time())))
@@ -21751,6 +21847,19 @@ def _voice_brain(cid, user):
         _chat_quick(cid, user)                      # the full brain answers instead (it releases the busy mark)
         return
     say = str(raw["say"]).strip()[:700]
+    try:                                             # 2026-10-24: the judge on a delegated call answer too (held a few seconds, never lost)
+        _rc()
+        import kino_judge as _KJc
+        if _KJc.ON:
+            _mc = {"text": say, "t": time.time(), "call_turn": True}
+            _dc = _KJc.judge(_KJc.room(c, _mc, _judge_providers(c, _mc)), _rc().member_lang(c, c.get("lang") or "fr"), _rc().W, cid, timeout=_KJc.CALL_TIMEOUT)
+            if _dc and _dc.get("text") and _dc["verdict"] in ("rewrite", "merge"):
+                say = _dc["text"].strip()[:700]
+                raw["say"] = say
+            if _dc and _dc.get("actions"):
+                threading.Timer(1.5, _deed_do, args=(cid, user.get("id"), [a for a in _dc["actions"] if a != "ghost"])).start()
+    except Exception:
+        pass
     if not raw.get("full") and not raw.get("act") and not raw.get("show") and re.search(
             r"\bje (mesure|lance|relance|calcule|compare|m'y mets|regarde|vérifie|cherche|analyse|te sors|prépare)\b", say, re.I):
         raw["full"] = True                           # behaviour list item 1: said in the call -> really done
@@ -21948,6 +22057,8 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
     if not in_app and not _active_hour(uid, h0):
         return
     c = _chat_load(u, cid) or {}
+    if float(c.get("judge_wait") or 0) > now:
+        return                                        # 2026-10-24: the judge asked to wait
     M = c.get("msgs") or []
     last_any = max([float(x.get("t") or 0) for x in M if x.get("role") in ("user", "ai")] or [0])
     log = [x for x in (m.get("initiative") or []) if now - float(x.get("t") or 0) < 86400]
@@ -23265,7 +23376,13 @@ def _live_facts(user, c, dyn_only=False):
            "WHAT YOU KNOW ABOUT THEM (your memory):\n%s\n%s\n\n%s") % (
         time.strftime("%H:%M", time.gmtime()), dyn, "\n".join(rows[:40]) or "- none yet", rob, notes or "- little yet",
         ("THEIR STANDING INSTRUCTIONS TO YOU:\n" + std) if std else "", guide)
-    return out[:26000]
+    try:                                             # 2026-10-24: the ledgers - the real state, the jobs, what they said of themselves, what he already raised
+        _uid_ = user.get("id")
+        out += "\n\n" + "\n".join(x for x in (_state_text(_uid_, c), __import__("kino_deed").jobs_block(c),
+                                             __import__("kino_ear").constraints_block(_uid_, c.get("lang") or "fr"), _subjects_today(_uid_)) if x)
+    except Exception:
+        pass
+    return out[:30000]
 
 
 _LIVE_ACT_T = {}

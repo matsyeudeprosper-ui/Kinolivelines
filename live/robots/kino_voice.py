@@ -157,6 +157,29 @@ def _cut_told(uid, text, last_user, cid):
     return text
 
 
+def note_told(uid, text):
+    """count the sermon lines in a sent text without cutting anything (the judge decides; this is its data)"""
+    if not text or not uid:
+        return
+    try:
+        d = _told_load()
+        u = d.setdefault(str(uid), {})
+        now = time.time()
+        hit = False
+        for s in _sentences(text):
+            for key, rx in SERMON.items():
+                if rx.search(s):
+                    v = u.setdefault(key, {"n": 0, "last": 0})
+                    fresh = now - float(v.get("last") or 0) < 7 * 86400
+                    v["n"], v["last"] = (int(v.get("n") or 0) if fresh else 0) + 1, now
+                    hit = True
+                    break
+        if hit:
+            _told_save(d)
+    except Exception:
+        pass
+
+
 def _cut_closer(text, prev_ai_texts, cid):
     """the same opener word closing three messages in a row: keep the sentence, drop the formula"""
     S = _sentences(text)

@@ -1759,7 +1759,12 @@ def quick(chat, pieces, owl, lang="fr", log=None, markets=None, memory=None, eve
                 "%s %s unverified=%s kept=%s\n" % (_t.strftime("%m-%d %H:%M:%S"), chat.get("id"), _bad, _say != str(raw["say"]).strip()[:1200]))
         except Exception:
             pass
-    _say, _tics = tic_rewrite(_say, chat, sysp, log=log, event=event)      # 2026-10-23: measured tics -> one rewrite
+    try:                                                                   # 2026-10-24: the judge covers the tics; no second rewrite pass
+        import kino_judge as _KJq
+        _jon = bool(_KJq.ON)
+    except Exception:
+        _jon = False
+    _say, _tics = (_say, []) if _jon else tic_rewrite(_say, chat, sysp, log=log, event=event)      # 2026-10-23: measured tics -> one rewrite
     raw["say"] = _say
     if ON_CLAIM and not event and _CLAIM_RX.search(_say or ""):            # 2026-10-23: a claimed result is audited after sending
         try:

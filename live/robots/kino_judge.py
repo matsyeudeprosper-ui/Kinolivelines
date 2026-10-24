@@ -78,7 +78,7 @@ def room(c, m, P):
     msgs = c.get("msgs") or []
     origin = ("correction" if (m.get("correction") or m.get("fix")) else "call" if m.get("call_turn") else "follow" if m.get("follow")
               else "own" if m.get("event") else "reply")
-    L = ["ORIGIN: %s%s" % (origin, (" (event: %s)" % str(m.get("event_kind") or "")[:90]) if m.get("event_kind") else "")]
+    L = ["ORIGIN: %s%s" % (origin, (" (event: %s)" % str(m.get("ekind") or "")[:90]) if m.get("ekind") else "")]
     lu = next((x for x in reversed(msgs) if x.get("role") == "user"), None)
     pres = P.get("presence") or ""
     L.append("THE MEMBER: %s; local hour %s; their last message %s ago%s" % (
