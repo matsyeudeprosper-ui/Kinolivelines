@@ -16833,6 +16833,15 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             if not _okp:
                 _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
                 return
+            try:                                         # 2026-10-24 (watch): his own messages at 02:30 and 03:17 UTC rang the phone at
+                _uq = user.get("id")                     # 04:30 their time - outside their usual hours and away from the app, the
+                _hq = _local_hour(_uq)                   # message is written but nothing is pushed; they read it in the morning
+                if notify and time.time() - _LAST_SEEN.get(_uq, 0) > 120 and not _active_hour(_uq, _hq):
+                    notify = False
+                    io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s QUIET-HOURS no push %s | local hour %s\n" % (
+                        time.strftime("%m-%d %H:%M:%S"), _uq, cid, str(event)[:22].replace(" ", "_"), _hq))
+            except Exception:
+                pass
         try:
             _lm = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "doc", "image")), {})
             fr_ = c.get("lang") != "en"
