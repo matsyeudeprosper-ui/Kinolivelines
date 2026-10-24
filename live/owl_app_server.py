@@ -17225,6 +17225,16 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     pass
             # 2026-10-24 (owner's tester list, item 5): "Pas vraiment fini, a vue de nez" then 26 s later the measured answer - two
             # messages in a minute, the first a guess. When a lookup follows, a short hedge is not said: the build turn answers.
+            if q.get("say") and event and str(event).startswith("A THOUGHT CAME TO YOU") and "already the message" in str(event):
+                try:                                   # 2026-10-24: the refined thought is the message; a say that lost it is the thought itself
+                    _qt = re.search(r': "(.*)"(?: - measured: .*?)?\. This is already the message', str(event), re.S)
+                    _qt = _qt.group(1).strip() if _qt else ""
+                    _rc(); import kino_voice as _KVt
+                    if len(_qt) >= 40 and _KVt._overlap(q["say"], _qt) < 0.45:
+                        _KVt._log(cid, "THOUGHT_KEPT", "say '%s' -> thought" % str(q["say"])[:60])
+                        q["say"] = _qt
+                except Exception:
+                    pass
             if q["say"] and q["build"] and not event and len(str(q["say"])) <= 240 and re.search(
                     r"(à vue de nez|je (regarde|vérifie|jette un [oœ]e?il|te sors|me renseigne|vais (regarder|vérifier|voir))|deux secondes|un instant|"
                     r"i['’]?m (checking|looking|pulling)|let me (check|look|pull)|one sec)", str(q["say"]), re.I):
@@ -19272,9 +19282,15 @@ def _inner_engine_once():
             _KI.record_sent(uid, th["kind"], c["id"], h0, "spont")
             _mem_note_safe(uid, lambda mm2: mm2.__setitem__("spont_log", [t for t in (mm2.get("spont_log") or []) if time.time() - t < 86400] + [time.time()]))
             _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
-            threading.Thread(target=_chat_quick, args=(c["id"], u, "A THOUGHT CAME TO YOU (%s): \"%s\"%s. Say it the way a friend texts something that "
-                             "just crossed their mind - spontaneous, short, in your own words%s; or \"send\": false if, re-reading, it is not worth it." % (
+            # 2026-10-24 13:56 (owner's phone): the second thought had written "Une précision avant que tu votes : ce filtre se déclenche
+            # 32 fois par jour..." and the quick turn shrank it to "Trente fois par jour, la formule s'allume" - a riddle without its
+            # subject. A refined thought IS the message: it goes as written, or nearly.
+            _refined = bool(rf_ and str(rf_.get("text") or "").strip())
+            threading.Thread(target=_chat_quick, args=(c["id"], u, "A THOUGHT CAME TO YOU (%s): \"%s\"%s. %s%s; or \"send\": false if, re-reading, it is not worth it." % (
                                  th["kind"], th["text"], (" - measured: %s" % th["measure"]) if th.get("measure") else "",
+                                 ("This is already the message, true and checked: send it as it is or nearly - keep its subject (what it is about) "
+                                  "and every fact, never shrink it into a hint" if _refined else
+                                  "Say it the way a friend texts something that just crossed their mind - spontaneous, short, in your own words"),
                                  " (you may set build = true to show it on a chart)" if th.get("formula") else "")),
                              kwargs={"notify": not here}, daemon=True).start()
         except Exception:
