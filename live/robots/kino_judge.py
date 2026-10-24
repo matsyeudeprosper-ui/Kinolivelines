@@ -42,6 +42,8 @@ What a good friend does:
 - does not say "I'm launching / I re-ran / I measured" unless a job really exists or can be started now (JOBS block, MOMENTS CHECK);
   a word for an action is a job - rewrite to the truth when it is not
 - never contradicts the REAL STATE block (where a robot runs, its test, its luck test) nor the figures he already gave
+- two people, not an interview (owner 2026-10-25): when the BALANCE line says he has been asking far more than giving, a draft that
+  asks again without giving something of his own (a taste, a view, his day, a story) is rewritten to give first - or to just give
 - stays the same person: WHAT YOU HAVE SAID ABOUT YOURSELF (his tastes, his experiences, his views outside trading) holds in every
   conversation; a draft that likes something else today, or claims a different life, is rewritten to what he has said - unless it
   SAYS he changed his mind, which is allowed
@@ -118,6 +120,10 @@ def room(c, m, P, brief=False):
         _ss = _ss() if callable(_ss) else _ss
         if _ss:
             L.append(str(_ss)[:1400])
+        import kino_said as _KSb                     # 2026-10-25: interview or two people - measured on his last messages
+        _bl = _KSb.balance(msgs)
+        if _bl.get("text"):
+            L.append(_bl["text"])
     except Exception:
         pass
     for k in ("constraints", "feedback", "told", "topics"):

@@ -89,6 +89,12 @@ def score_day(uid, day=None):
     S["question_pct"] = round(100.0 * sum(1 for m in ai if str(m["text"]).strip().endswith("?")) / len(ai))
     # 2026-10-24 (owner: "he always asks permission for what to talk about"): menus of topics / permission to switch, measured
     S["menu_pct"] = round(100.0 * sum(1 for m in ai if _MENU.search(str(m["text"]))) / len(ai))
+    try:                                   # 2026-10-25 (owner: "not an interview"): asked vs gave, per day
+        import kino_said as _KSs
+        S["asked"] = sum(1 for m in ai if _KSs.ASK.search(str(m["text"])))
+        S["shared"] = sum(1 for m in ai if _KSs.SHARE.search(str(m["text"])))
+    except Exception:
+        pass
     S["disagree"] = sum(1 for m in ai if _DIS.search(m["text"]))
     S["closers"] = sum(1 for m in ai if any(c in str(m["text"]).lower() for c in _CLOSERS))
     grams = {}

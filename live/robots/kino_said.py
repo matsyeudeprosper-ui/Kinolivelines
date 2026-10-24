@@ -152,6 +152,33 @@ def block(limit=24):
         return ""
 
 
+SHARE = re.compile(r"\b(perso\b|moi,? (je|j['’])|moi[- ]même|de mon côté|j['’]aime|j['’]adore|je préfère|je trouve que|ça me (touche|fait|reste|marque)|"
+                   r"je me (fais|souviens|suis dit)|j['’]ai (vu|lu|remarqué|appris|passé|bossé|regardé|parié|testé)|mon (robot|pari|avis)|cette nuit j|"
+                   r"aujourd['’]hui j|ce que j['’]en pense|à mon avis|personally|i (like|love|prefer|think|remember|noticed|spent|bet)\b)", re.I)
+ASK = re.compile(r"\?\s*(\n|$)|\b(et toi|toi,? t|tu (es|fais|penses|préfères|vois|trouves|as)|you\b.*\?)", re.I)
+
+
+def balance(msgs, n=12):
+    """2026-10-25 (owner: "don't let the conversation be about me only - he should share a lot about himself, otherwise it is an
+    interview"). Measured on his last n bubbles: how many asked them something, how many gave something of his own. A line for
+    the prompt and the judge; empty when balanced or too early."""
+    try:
+        ai = [m for m in (msgs or []) if m.get("role") == "ai" and m.get("text")][-n:]
+        if len(ai) < 4:
+            return {"asked": 0, "shared": 0, "text": ""}
+        asked = sum(1 for m in ai if ASK.search(str(m["text"])))
+        shared = sum(1 for m in ai if SHARE.search(str(m["text"])))
+        txt = ""
+        if asked >= shared + 2:
+            txt = ("BALANCE OF THIS CONVERSATION (measured on your last %d messages): you asked them %d times and gave something of "
+                   "yours %d times - it is turning into an interview. THIS message gives before it asks: a taste of yours, what you did "
+                   "today (the lab, your robot, a bet), what you think of what they named, a memory of a call or a test - from WHAT YOU "
+                   "HAVE SAID ABOUT YOURSELF and your material; no question at all is fine." % (len(ai), asked, shared))
+        return {"asked": asked, "shared": shared, "text": txt}
+    except Exception:
+        return {"asked": 0, "shared": 0, "text": ""}
+
+
 def resolve(sid, keep=True):
     """the owner or Kino settles a contested statement: keep the old one (drop the contest) or retire it for the new one"""
     def f(d):
