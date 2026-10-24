@@ -19158,6 +19158,11 @@ def _chat_watch_once():
         if W_:                                           # 2026-10-23 23:33 (watch): member first, and one reminder per 10 min per chat
             _lu = max([float(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "user"] or [0])
             if now - _lu < 240 or now - _LAST_PROMISE_FIRE.get(cid, 0) < 600:
+                try:                                     # 2026-10-24: two reminders 2 min apart slipped through - log every hold
+                    io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD promise | member %ds ago, last fire %ds ago\n" % (
+                        time.strftime("%m-%d %H:%M:%S"), u.get("id"), cid, now - _lu, now - _LAST_PROMISE_FIRE.get(cid, 0)))
+                except Exception:
+                    pass
                 W_ = []
         if W_ and _waiting_promise(W_[0].get("what")) and _jobs_running(u.get("id"), cid):
             w = W_[0]
