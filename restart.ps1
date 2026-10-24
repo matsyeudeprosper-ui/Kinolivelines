@@ -52,6 +52,25 @@ if (-not $SkipCheck) {
     Say "pre-flight SKIPPED by request"
 }
 
+# ---- 1b. a live call? (2026-10-24: a restart at 12:00 UTC cut the owner's call started at 11:59) -------------
+# robots/live.log: a START line with no END after it, younger than 30 min = somebody is on the phone with Kino.
+if (($What -eq "all" -or $What -eq "app") -and -not $SkipCheck) {
+    $lv = Join-Path $LIVE "robots\live.log"
+    if (Test-Path $lv) {
+        $last = Get-Content $lv -Tail 40 | Where-Object { $_ -match " (START|END) " } | Select-Object -Last 1
+        if ($last -and $last -match "^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) START ") {
+            $t0 = [datetime]::ParseExact($matches[1], "yyyy-MM-dd HH:mm:ss", $null)
+            $age = ((Get-Date) - $t0).TotalMinutes
+            if ($age -lt 30) {
+                Say ""
+                Say ("REFUSING TO RESTART THE APP: a call with Kino started " + [int]$age + " min ago and has not ended (robots\live.log).")
+                Say "Wait for the END line, or re-run with -SkipCheck if you are sure the call is over."
+                exit 1
+            }
+        }
+    }
+}
+
 # ---- 2. what is running now -------------------------------------------
 function Running($pattern) {
     Get-CimInstance Win32_Process -Filter "Name like 'python%'" |
