@@ -257,9 +257,9 @@ def post(c, m):
         text = _cut_closer(text, prev_ai, cid)
         m["text"] = text
     # -- merge: build/follow reply onto the quick reply of the same member message ----------------------------------
-    if m.get("follow") and lu is not None and ai_after:
+    if m.get("follow") and ai_after:
         qi, q = ai_after[-1]
-        if q.get("quick") and not q.get("event") and now - float(q.get("t") or 0) < WINDOW and not q.get("fixed"):
+        if (q.get("quick") or q.get("event")) and now - float(q.get("t") or 0) < WINDOW and not q.get("fixed") and not q.get("err"):
             qt = str(q.get("text") or "")
             if not text.strip():
                 return ("append", m)

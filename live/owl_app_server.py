@@ -23741,7 +23741,7 @@ def live_end(user, body):
     _atomic_json(LIVE_CALLS, CL[-2000:])
     _log_live("END %s %.2f min billed %.0f s = %.4f $" % (uid, mins, billed, cost))
     tr = str(body.get("transcript") or "")[-12000:]      # 2026-10-22: the whole call ("lire l'appel" showed the last 3 min of 17)
-    if c is not None and mins >= 0.2 and not body.get("cont"):
+    if c is not None and mins >= 0.5 and not body.get("cont"):     # 2026-10-24 13:00: two 15-s reconnects showed as two "1 min" calls
         fr = c.get("lang") != "en"
         _ct = (" · %.2f $" % cost).replace(".", "," if fr else ".") if is_admin(user) else ""      # the price: owner only
         _chat_mut(c["id"], lambda c: _chat_msg(c, "sys", text=("📞 Appel avec Kino · %d min" if fr else "📞 Call with Kino · %d min") % max(1, round(mins)) + _ct,
