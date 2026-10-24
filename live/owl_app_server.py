@@ -21570,6 +21570,30 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
     t_ = c.get("test") or {}
     if t_.get("state") == "queued":
         mats.append(("test", "their robot's test is waiting / running - where it stands and what you expect, honestly"))
+    try:                                             # 2026-10-24 (owner review, item 4): an initiative is a step in something he is building
+        _rc()
+        import kino_exec as _KXi
+        _pt = _KXi.plan_today() or {}
+        _pi = [i for i in (_pt.get("items") or []) if not i.get("done") and (not i.get("member") or i.get("member") == uid)]
+        if _pi:
+            mats.append(("goal", "today's step of YOUR OWN PLAN: [%s] %s (%s) - do it now if it is a doing (act/build) or bring it as the "
+                                 "thing you are working on for them; say what it serves; set plan_done: \"%s\" when this message does it" % (
+                                     _pi[0]["id"], _pi[0]["what"], _pi[0].get("when") or "today", _pi[0]["id"])))
+        else:
+            _gs = _KXi.goals() or []
+            if _gs:
+                mats.append(("goal", "one of YOUR GOALS and where it stands today: \"%s\" (why: %s) - what you did or learned for it, and the next "
+                                     "step you take yourself" % (str(_gs[0].get("text"))[:200], str(_gs[0].get("why") or "")[:120])))
+    except Exception:
+        pass
+    try:                                             # 2026-10-24: a true thing from today he has not told them yet (kino_material)
+        import kino_material as _KMi
+        _mi = [x for x in _KMi.items(uid) if x.get("kind") != "robot"][-3:]
+        if _mi:
+            mats.append(("material", "a TRUE thing from today you have not told them: \"%s\" - in your words, with your opinion, then set "
+                                     "told: [\"%s\"]" % (_mi[-1]["text"][:240], _mi[-1]["id"])))
+    except Exception:
+        pass
     try:
         _rc()
         import kino_life as _KLi
