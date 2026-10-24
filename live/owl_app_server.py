@@ -15459,6 +15459,43 @@ def _judge_providers(c, m):
     return P
 
 
+def _named_test_watch(cid, uid, rid, name, t0):
+    """a named robot's test (not the chat's): poll the registry up to 60 min; when tested_at moves past the launch, close the job,
+    post the figures as a system line and let Kino tell it (event)"""
+    import calendar as _cal
+    for _ in range(120):
+        time.sleep(30)
+        try:
+            r = next((x for x in robot_reg().get("robots") or [] if x.get("id") == rid), None)
+            ta = str((r or {}).get("tested_at") or "")
+            if ta and _cal.timegm(time.strptime(ta[:19], "%Y-%m-%dT%H:%M:%S")) >= t0 - 60:
+                try:
+                    j = json.load(open(os.path.join(DIR, "robots", "results", rid + ".json"), encoding="utf-8")).get("robot") or {}
+                except Exception:
+                    j = {}
+                __import__("kino_deed").finish(cid, "test", "done", "")
+                en = False
+                try:
+                    en = (json.load(open(_chat_path(cid), encoding="utf-8")).get("lang") == "en")
+                except Exception:
+                    pass
+                line = ("Result for %s: %+.2f $ over %s trades, %d%% won, worst dip %.0f $." if en else "Résultat pour %s : %+.2f $ sur %s trades, %d %% gagnés, pire creux %.0f $.") % (
+                    name, float(j.get("net") or 0), j.get("trades"), round(100 * float(j.get("win_rate") or 0)), float(j.get("cc_dd") or 0))
+                _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=line))
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                threading.Thread(target=_chat_quick, args=(cid, _user_by_id(uid), "TEST RESULT ARRIVED for the robot '%s' (%s): %s It is %s. Tell them in one or two lines with your "
+                                                                              "take, the figures exactly as given; close your bet on it if you made one (resolved)." % (
+                                                                                  name, rid, line, "YOUR OWN robot" if "Kino" in name else "their robot")),
+                                 kwargs={"notify": True}, daemon=True).start()
+                return
+        except Exception:
+            pass
+    try:
+        __import__("kino_deed").finish(cid, "test", "failed", "no result after 60 min")
+    except Exception:
+        pass
+
+
 def _deed_do(cid, uid, todo):
     """2026-10-24 (engine 2): the actions a bubble claimed without a job behind them - started once the bubble is saved"""
     try:
@@ -15499,6 +15536,10 @@ def _deed_do(cid, uid, todo):
                         __import__("kino_deed").start(uid, cid, "test", _nmf)
                         _chat_mut(cid, lambda cc: _chat_msg(cc, "test", text=(("Test started for %s: about %d minutes. I'll tell you what it gives." % (_nmf, int(_tr.get("minutes") or 5))) if _en
                                                                              else ("Test lancé pour %s : environ %d minutes. Je te dis ce que ça donne." % (_nmf, int(_tr.get("minutes") or 5))))))
+                        # 2026-10-24 16:10: the Nasdaq test finished at 15:11 and the ledger still said "queued since 67 min" at 16:18 - a
+                        # named robot's result never reaches the chat (result cards are only for the chat's robot). A watcher closes the job
+                        # and brings the figures in as an event Kino announces.
+                        threading.Thread(target=_named_test_watch, args=(cid, uid, _rid, _nmf, time.time()), daemon=True).start()
                     else:
                         __import__("kino_deed").start(uid, cid, "test", _nmf, state="failed", err=str(_tr.get("err") or "")[:60])
                         _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=(("The test of %s could not start (%s)." % (_nmf, _tr.get("err"))) if _en
