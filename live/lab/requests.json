@@ -228,7 +228,7 @@
    },
    "built_date": "2026-10-10",
    "built_commit": "7c3b783",
-   "c_nights": 1
+   "c_nights": 0
   },
   {
    "id": "hour_size",
@@ -250,7 +250,7 @@
    },
    "built_date": "2026-10-11",
    "built_commit": "0bb1d2a",
-   "c_nights": 2
+   "c_nights": 0
   },
   {
    "id": "pb_dir_gate_test",
@@ -364,7 +364,17 @@
    "what_en": "New setting: after a LOSING trade closed between 08:00 and midnight UTC, no new trade (catch-up included) for X minutes, 0 to 120; after a win, or at night (00-08), nothing changes. 0 = off, which changes nothing.",
    "why_fr": "Le jour, juste après une perte, le robot gagne un trade sur trois (39 trades, -51 $, les deux moitiés d'accord) ; la nuit, après une perte, deux sur trois. Une pause pour tous a déjà aidé les comptes avec plafond ; celle-ci viserait la seule fuite, sans retarder la nuit qui gagne.",
    "why_en": "By day, right after a loss, the robot wins one trade in three (39 trades, -$51, both halves agree); at night, after a loss, two in three. A pause for everyone already helped capped accounts; this one would aim at the one leak, without delaying the winning night.",
-   "status": "open"
+   "status": "built",
+   "key": "loss_wait_day",
+   "built_note_fr": "Le test peut maintenant demander au robot d'attendre quelques minutes, rattrapage compris, après un trade perdant fermé entre 8 h et minuit UTC, sans rien changer après un gain ni la nuit. Rien ne change pour les comptes tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The test can now ask the robot to wait a few minutes, catch-up included, after a losing trade closed between 08:00 and midnight UTC, with nothing changed after a win or at night. Nothing changes for the accounts until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--loss-wait-day",
+    "a": 0,
+    "b": 60
+   },
+   "build_attempts": 1,
+   "build_error": "périmètre : live/chart_multi/XAGUSD_htf.json.tmp"
   },
   {
    "id": "hour_brake_rebuild",
@@ -551,6 +561,17 @@
    "what_en": "The test can already move the stop to each new protected level once that level is past the entry price (a 1 October setting, values 0, 1 or 2). It is not in the list of settings I may propose. Add it to the list, default 0, which changes nothing.",
    "why_fr": "Ce soir, avec le filtre des comptes, ce stop qui suit fait +41 $ sur 42 jours (la seconde moitié pareille), +14 $ sur 69 jours et +43 $ sur les vrais trades (34 trades, trop peu). C'est la seule idée de sortie que j'ai, et les trades qui traînent perdent.",
    "why_en": "Tonight, with the accounts' filter, this following stop makes +$41 over 42 days (second half the same), +$14 over 69 days and +$43 on the real trades (34 trades, too few). It is the only exit idea I have, and trades that drag on lose.",
+   "status": "open"
+  },
+  {
+   "id": "h1_int_size",
+   "date": "2026-10-25",
+   "title_fr": "Savoir si la petite tendance de l'heure va déjà dans notre sens",
+   "title_en": "Know whether the hour's small trend already points our way",
+   "what_fr": "Deux choses. 1) Un réglage h1_int_size (0 à 1,0 ; défaut 1,0 = rien ne change) : quand, à l'entrée, la petite tendance interne du graphique d'une heure va déjà dans le sens du trade, la mise est multipliée par X ; 0 = le trade n'est pas pris. Le test doit reconstruire cette tendance à partir des bougies d'une minute, comme le fait le flux des grandes unités de temps du robot. 2) Pour les piles, un fait h1_int (1 = même sens, 0 = aucune, -1 = sens contraire), lu dans la colonne htf_entry du journal.",
+   "what_en": "Two things. 1) A setting h1_int_size (0 to 1.0; default 1.0 = nothing changes): when, at entry, the internal small trend of the one-hour chart already points the trade's way, the stake is multiplied by X; 0 = the trade is not taken. The test must rebuild that trend from one-minute candles, as the robot's higher-timeframe feed does. 2) For the piles, a fact h1_int (1 = same way, 0 = none, -1 = opposite), read from the journal's htf_entry column.",
+   "why_fr": "Sur 210 vrais trades, quand cette tendance va déjà dans notre sens : 87 trades, un sur trois gagnés, -73 $ pour 0,01 lot, et les deux moitiés disent pareil (33 % et 33 %). Les autres : 123 trades, 53 % gagnés, +11 $. Seulement 3 des 25 meilleurs gains en faisaient partie. J'attends qu'une demi-mise ou un refus fasse mieux sur les deux moitiés.",
+   "why_en": "Over 210 real trades, when that trend already points our way: 87 trades, one in three won, -$73 per 0.01 lot, and both halves agree (33 % and 33 %). The rest: 123 trades, 53 % won, +$11. Only 3 of the 25 best wins were among them. I expect a half stake or a refusal to do better on both halves.",
    "status": "open"
   }
  ]
