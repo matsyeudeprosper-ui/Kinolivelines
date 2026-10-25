@@ -52,7 +52,10 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     for _k, _v in json.loads(os.environ.get("OVER", "{}")).items():     # diagnostic overrides, e.g. OVER='{"pb_dir_gate": false}'
         cfg[_k] = _v
     t0, t1 = ts(start), ts(end)
-    R = np.concatenate([np.load(os.path.join(M1, "2026-09.npz"))["R"], np.load(os.path.join(M1, "2026-10.npz"))["R"]])
+    if os.environ.get("BARS", "broker") == "broker":   # the broker's OWN M1 (same server as the account), not the archive
+        R = np.load(os.path.join(HERE, "bars_u224016179.npz"))["R"]
+    else:
+        R = np.concatenate([np.load(os.path.join(M1, "2026-09.npz"))["R"], np.load(os.path.join(M1, "2026-10.npz"))["R"]])
     WARM = int(os.environ.get("WARM_DAYS", "3"))
     R = R[(R["time"] >= t0 - WARM * 86400) & (R["time"] < t1)]
     # the real recovery state at the replay start (warm-up start): last "debt $X (peak ..), chest $Y" line before it
@@ -103,7 +106,25 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
         H.PB_STICKY = os.path.join(HERE, "live_vs_engine", "pbchain_replay.json")
         if os.path.exists(H.PB_STICKY):
             os.remove(H.PB_STICKY)
-    H.simulate(R, 7.0, cfg)
+    if os.environ.get("RESTART", "1") == "1":         # the live bot's starts: its structure is re-seeded there
+        import re as _re2
+        _rs = []
+        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+            _m = _re2.match(r"(\S+) BOS-BOT starting", _ln)
+            if _m:
+                try:
+                    _tr = ts(_m.group(1))
+                except Exception:
+                    continue
+                if int(R["time"][0]) < _tr < t1:
+                    _rs.append(_tr)
+        H.RESTARTS = sorted(_rs)
+        print("live restarts replayed:", len(_rs))
+    if os.environ.get("TICKS", "1") == "1":
+        _T = np.load(os.path.join(HERE, "live_vs_engine", "ticks", "2026-10_ticks.npz"))
+        H.BULLET_TICKS = (_T["t"], _T["bid"], _T["ask"])
+        H.BULLET_LAG_S = float(os.environ.get("LAG", "3"))
+    H.simulate(R, float(os.environ.get("SPREAD", "7")), cfg)
     E = [x for x in H.TRACE if t0 <= int(x["t"]) < t1]
     eng = [{"t": int(x["t"]), "d": "BUY" if x["d"] == 1 else "SELL", "kind": "FLIP-BOS" if x.get("flip") else "BOS",
             "win": x.get("win"), "pnl": float(x.get("pnl") or 0.0), "pnl_main": float(x.get("pnl_main") or 0.0),

@@ -17,6 +17,7 @@ Verdict rules (fixed, never tuned):
   =  the change touched fewer than 3 trades / less than $1
 """
 import argparse
+import numpy as np
 import bisect
 import json
 import math
@@ -340,7 +341,13 @@ def _feed():
 # pb_dir_gate: the pullback chart's state, memoised by (window start, last
 # closed bar) so run_cfg's full and half runs share the work (~55 ms each)
 _PB_MEMO = {}
-PB_STICKY = None         # path of a chain file for this run (None = the old memoised, non-sticky state)
+PB_STICKY = None
+# 2026-10-25 (fidelity): recovery bullets filled from TICKS like the live bot - it sees the midpoint touched on the bid,
+# then sends a market order a few seconds later (log: 1.2-4.3 s, once 50 s). BULLET_TICKS = (t_ms, bid, ask) numpy arrays;
+# None = the old exact-midpoint fill.
+BULLET_TICKS = None
+BULLET_LAG_S = 3.0
+RESTARTS = None          # sorted epoch seconds of live bot starts (fidelity): the structure is re-seeded there         # path of a chain file for this run (None = the old memoised, non-sticky state)
 
 
 def _pb_state(R, i):
@@ -553,6 +560,8 @@ def simulate(R, spread, cfg):
     pk = 0.0 if c.get("seed_at") else float(c.get("debt0") or 0.0)        # debt under hwm = pk - run
     streak = 0
     _seeded = False
+    pos_t_in, bullet_fill = 0, None
+    _rs_k = 0
     curve = []
     day_key = None
     last_flip_t = None
@@ -661,6 +670,7 @@ def simulate(R, spread, cfg):
                     _fill = _pmid if _pd * (o - _pmid) > 0 else o          # gap: the open is the quote
                     _lot = pend["lot"]
                     pos = (_pd, _fill, _psl, _ptp, pend["dist"], _pmid, True, _lot)
+                    pos_t_in = t; bullet_fill = None
                     pos_geo = {"e0": pend["e0"], "fill": _fill, "amb": _amb, "skip_eval": (_amb == "mid_tp" and not _fav)}
                     pos_trailed = False; last_hour = t // 3600
                     n_trades += 1; day_n += 1; n_pend_fill += 1
@@ -692,7 +702,19 @@ def simulate(R, spread, cfg):
                     if not pos_trailed:
                         pos_trailed = True
                         n_trail += 1
-            if not hit_mid and ((l <= mid) if d == 1 else (h >= mid)):
+            if BULLET_TICKS is not None and not hit_mid:
+                _tt, _bd, _ak = BULLET_TICKS
+                _a = int(np.searchsorted(_tt, max(t, pos_t_in) * 1000)); _b = int(np.searchsorted(_tt, (t + 60) * 1000))
+                if _b > _a:
+                    _seg = _bd[_a:_b]
+                    _w = np.nonzero((_seg <= mid) if d == 1 else (_seg >= mid))[0]
+                    if len(_w):
+                        _j = int(np.searchsorted(_tt, int(_tt[_a + _w[0]] + BULLET_LAG_S * 1000)))
+                        _j = min(_j, len(_tt) - 1)
+                        bullet_fill = float(_ak[_j] if d == 1 else _bd[_j])
+                        hit_mid = True
+                        pos = (d, e, sl, tp, dist, mid, hit_mid, lot)
+            elif not hit_mid and ((l <= mid) if d == 1 else (h >= mid)):
                 hit_mid = True
                 pos = (d, e, sl, tp, dist, mid, hit_mid, lot)
             hit_sl = (l <= sl) if d == 1 else (h >= sl)
@@ -804,6 +826,8 @@ def simulate(R, spread, cfg):
                             else ((d * (sl - mid) - spread)
                                   if c["trail_prot"]
                                   else -(dist / 2.0 + spread)))
+                    if BULLET_TICKS is not None and bullet_fill is not None:
+                        bpts = d * ((tp if win else sl) - bullet_fill)     # fill at the ask (buy) / bid (sell), exit at the level
                     run += bpts * BLOT * nb * pos_hs
                     # 2026-10-09: bullets pay the same execution drag per lot as
                     # the main trade (0 by default, so nothing changes unless set)
@@ -879,6 +903,21 @@ def simulate(R, spread, cfg):
                     prev_lo_v, lo_touch, lo_since = p_lo_v, 0, t
                 elif p_lo_v is not None and p_lo_v < l <= p_lo_v + 0.10 * _med:
                     lo_touch += 1
+        if RESTARTS and _rs_k < len(RESTARTS) and t >= RESTARTS[_rs_k]:
+            # 2026-10-25 (fidelity): the live bot RE-SEEDS its structure from the last SEED_BARS closed bars at every
+            # start (18 restarts on 10-10..10-24); a replay that runs straight through keeps a different trend after them
+            while _rs_k < len(RESTARTS) and t >= RESTARTS[_rs_k]:
+                _rs_k += 1
+            eng = B.Struct()
+            eng.quiet = True
+            _fl, _pt = [], 0
+            for _r in R[max(0, i - int(getattr(B, "SEED_BARS", 3000))):i]:
+                _p0 = eng.trend
+                eng.step(int(_r["time"]), float(_r["open"]), float(_r["high"]), float(_r["low"]), float(_r["close"]))
+                if eng.trend != _p0 and eng.trend != 0 and _p0 != 0:
+                    _fl.append(int(_r["time"]))
+            flips = _fl[-20:]
+            prev = eng.trend
         sig = eng.step(t, o, h, l, cl)
         if eng.trend != prev and eng.trend != 0:
             flips.append(t)
@@ -1269,6 +1308,7 @@ def simulate(R, spread, cfg):
         if lp_virt:
             lp_snap = (run, pk, chest, debt_led, streak, wins)
         pos = (d, e_px, float(slp), tp, dist, e_px - d * dist / 2.0, False, lot)
+        pos_t_in = t + 60; bullet_fill = None
         pos_geo = None
         if TLMODE:
             tl_stats["entries"] += 1
