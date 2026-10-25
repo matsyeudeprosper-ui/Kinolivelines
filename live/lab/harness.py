@@ -237,7 +237,7 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # 2026-10-25 (fidelity): start the replay with the REAL account's recovery state (debt under the
             # high-water mark, recovery pot) instead of a clean slate - the live bot entered the 10-10 window
             # $41.42 in debt, so its "FLIP + 1 continuation during recovery" rule refused trades the clean engine took.
-            "debt0": 0.0, "chest0": 0.0,
+            "debt0": 0.0, "chest0": 0.0, "streak0": 0, "seed_at": 0,   # seed_at = epoch s: apply debt0/chest0/streak0 there (else at the start)
             "nv_live": False,   # True = the live feed's speed formula (see the storm line)
             "down": [],         # [[t0, t1], ...] minutes the live terminal was down (no new entry), fidelity only
             # 2026-10-09 (review 10): per-entry money limits the LIVE way.
@@ -550,8 +550,9 @@ def simulate(R, spread, cfg):
     tl_sig = None
     tl_times = [int(r["time"]) for r in R] if TLMODE else None
     run = 0.0
-    pk = float(c.get("debt0") or 0.0)        # debt under hwm = pk - run
+    pk = 0.0 if c.get("seed_at") else float(c.get("debt0") or 0.0)        # debt under hwm = pk - run
     streak = 0
+    _seeded = False
     curve = []
     day_key = None
     last_flip_t = None
@@ -562,7 +563,7 @@ def simulate(R, spread, cfg):
     blocked = 0
     last_hour = None
     pnls = []
-    chest = float(c.get("chest0") or 0.0)
+    chest = 0.0 if c.get("seed_at") else float(c.get("chest0") or 0.0)
     debt_led = 0.0   # the 'half' ledger; unused under hwm
     day_profit = 0.0
     day_n = 0
@@ -614,6 +615,13 @@ def simulate(R, spread, cfg):
         lp_virt = False
     for i, bar in enumerate(R):
         t = int(bar["time"])
+        if c.get("seed_at") and not _seeded and t >= int(c["seed_at"]):
+            # 2026-10-25 (fidelity): at this minute the replay takes the REAL account's recovery state (debt under the
+            # high-water mark, jar, losing streak) - the warm-up only builds structure; it ran other rules live
+            _seeded = True
+            pk = run + float(c.get("debt0") or 0.0)
+            chest = float(c.get("chest0") or 0.0)
+            streak = int(c.get("streak0") or 0)
         o, h, l, cl = (float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"]))
         g = datetime.fromtimestamp(t, tz=timezone.utc)
         dk = g.strftime("%Y-%m-%d")
@@ -782,6 +790,10 @@ def simulate(R, spread, cfg):
                     nb = min(nb, int(int(NB) * eq_req))
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["add_n"] = nb; cur_tr["add_risk"] = round(nb * 0.5 * dist * BLOT * pos_hs, 2)
+                    # 2026-10-25 (fidelity, trace only): the state the bullet decision read, to diff against the live
+                    # "COMBAT: n balles ... dette $D, bocal $C" line
+                    cur_tr["add_state"] = {"debt": round(debt, 2), "chest": round(chest, 2), "nv": round(nv, 2), "streak": streak,
+                                           "hit_mid": bool(hit_mid)}
                 bpts = 0.0
                 if nb:
                     # the bullet enters at the midpoint, so it walks (0.5 + rr)

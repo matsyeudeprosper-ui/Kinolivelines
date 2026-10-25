@@ -58,7 +58,7 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     # the real recovery state at the replay start (warm-up start): last "debt $X (peak ..), chest $Y" line before it
     if os.environ.get("SEED_DEBT", "1") == "1":
         import re as _re0
-        _ws = int(R["time"][0])
+        _ws = t0                      # the real state AT the window start (the warm-up only builds structure)
         _d0 = _c0 = 0.0
         for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
             _m = _re0.match(r"(\S+) .*debt \$([0-9.]+) \(peak [^)]*\), chest \$([0-9.]+)", _ln)
@@ -69,8 +69,19 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
                 except Exception:
                     continue
                 _d0, _c0 = float(_m.group(2)), float(_m.group(3))
-        cfg["debt0"], cfg["chest0"] = _d0, _c0
-        print("seeded real state at %s: debt %.2f, chest %.2f" % (hm(_ws), _d0, _c0))
+        cfg["debt0"], cfg["chest0"], cfg["seed_at"] = _d0, _c0, t0
+        _stk = 0                      # losing streak: consecutive main LOSS lines before t0 since the last WIN
+        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+            _m = _re0.match(r"(\S+) (WIN|LOSS) [+-]", _ln)
+            if _m:
+                try:
+                    if ts(_m.group(1)) > t0:
+                        break
+                except Exception:
+                    continue
+                _stk = _stk + 1 if _m.group(2) == "LOSS" else 0
+        cfg["streak0"] = _stk
+        print("seeded real state at %s: debt %.2f, chest %.2f, streak %d" % (hm(_ws), _d0, _c0, cfg["streak0"]))
     cfg["nv_live"] = os.environ.get("NV_LIVE", "1") == "1"
     # downtime: "bougies figees depuis N min - reconnexion" -> no entry possible during those N minutes
     if os.environ.get("DOWN", "1") == "1":
@@ -95,7 +106,8 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     H.simulate(R, 7.0, cfg)
     E = [x for x in H.TRACE if t0 <= int(x["t"]) < t1]
     eng = [{"t": int(x["t"]), "d": "BUY" if x["d"] == 1 else "SELL", "kind": "FLIP-BOS" if x.get("flip") else "BOS",
-            "win": x.get("win")} for x in E]
+            "win": x.get("win"), "pnl": float(x.get("pnl") or 0.0), "pnl_main": float(x.get("pnl_main") or 0.0),
+            "pnl_add": float(x.get("pnl_add") or 0.0), "add_n": int(x.get("add_n") or 0), "add_state": x.get("add_state")} for x in E]
     # 2026-10-25: REALITY = the bot's own log (bos_bot_kino.log), not the journal - the journal lacks trades (10-19 08:39
     # BUY FLIP-BOS is in the log, not in bos_journal_kino.csv). Entry = "<KIND> ENTRY: BUY|SELL", result = the next
     # "WIN +x" / "LOSS -x" main line (ADD lines are the bullets).
