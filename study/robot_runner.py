@@ -263,6 +263,8 @@ def run_markets(fast=False):
                 mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), pid=os.getpid())
                 MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL, log=mlog)
             mq_set(qid, state="testing", pid=os.getpid())
+            global BAL
+            BAL = float(job.get("cap") or 200.0)    # 2026-10-25: the member's chosen starting capital (lots scale with it)
             d = TP.tdir(sym) if tick else MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
             D = MP.use(meta, d, E, K, TMX, H)
             TM, BID, ASK, n_bad, END = TP.real_ticks(meta, d) if tick else MP.synthetic_ticks(D, meta)
@@ -425,6 +427,8 @@ if __name__ == "__main__":
             _rj = list(r.get("range_jobs") or [])
             if _rj and not (r.get("stage") == "queued" or r.get("retest")):
                 for job in _rj:
+                    BAL = float(job.get("cap") or 200.0)    # 2026-10-25: the member's chosen starting capital
+                    _cs = "" if BAL == 200.0 else "~%g" % BAL
                     try:
                         a_ms = int(__import__("calendar").timegm(time.strptime(job["from"], "%Y-%m-%d"))) * 1000
                         b_ms = int(__import__("calendar").timegm(time.strptime(job["to"], "%Y-%m-%d"))) * 1000 + 86400000
@@ -440,13 +444,13 @@ if __name__ == "__main__":
                                "balance": BAL, "drag": DRAG, "days": round((int(_T[-1]) - int(_T[0])) / 86400000, 1), "range": [job["from"], job["to"]],
                                "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(_T[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(_T[-1]) / 1000))],
                                "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}
-                        _still = any(j.get("from") == job["from"] and j.get("to") == job["to"]
+                        _still = any(j.get("from") == job["from"] and j.get("to") == job["to"] and float(j.get("cap") or 200.0) == BAL
                                      for x in json.load(open(REG, encoding="utf-8")).get("robots") or [] if x["id"] == rid for j in (x.get("range_jobs") or []))
                         if not _still:
                             print(rid, "range", job["from"], job["to"], "cancelled by the member - result dropped", flush=True)
                             continue
                         os.makedirs(os.path.join(RES, "ranges"), exist_ok=True)
-                        json.dump(res, open(os.path.join(RES, "ranges", "%s__%s_%s.json" % (rid, job["from"], job["to"])), "w", encoding="utf-8"), indent=1)
+                        json.dump(res, open(os.path.join(RES, "ranges", "%s__%s_%s%s.json" % (rid, job["from"], job["to"], _cs)), "w", encoding="utf-8"), indent=1)
                         print(rid, "range", job["from"], job["to"], "net %.2f" % out["robot"]["net"], flush=True)
                     except Exception as e:
                         print(rid, "range job failed", job, e, flush=True)
@@ -454,7 +458,7 @@ if __name__ == "__main__":
                             os.makedirs(os.path.join(RES, "ranges"), exist_ok=True)
                             json.dump({"id": rid, "range": [job.get("from"), job.get("to")], "error": str(e)[:200],
                                        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())},
-                                      open(os.path.join(RES, "ranges", "%s__%s_%s.json" % (rid, job.get("from"), job.get("to"))), "w", encoding="utf-8"))
+                                      open(os.path.join(RES, "ranges", "%s__%s_%s%s.json" % (rid, job.get("from"), job.get("to"), _cs)), "w", encoding="utf-8"))
                         except Exception:
                             pass
                 reg = json.load(open(REG, encoding="utf-8"))
@@ -462,7 +466,9 @@ if __name__ == "__main__":
                     if x["id"] == rid:
                         x["range_jobs"] = [j for j in (x.get("range_jobs") or []) if j not in _rj]
                 json.dump(reg, open(REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                BAL = 200.0
                 continue
+            BAL = 200.0
             out = run_robot_and_parent(parts, resolve(parent, robots), PCS, TM, BID, ASK, END, opps, bars, S)
             res = {"id": rid, "parent": parent, "parts": parts, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                    "balance": BAL, "drag": DRAG, "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),

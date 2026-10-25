@@ -13742,7 +13742,23 @@ def _test_summary(res):
             "best": rb.get("best"), "worst": rb.get("worst"), "streak": rb.get("max_loss_streak"),
             "curve": (rb.get("curve") or [])[-120:], "days": res.get("days"), "window": res.get("window_utc"),
             "when": str(res.get("generated_at") or "")[:16].replace("T", " "), "range": res.get("range"),
-            "parent_net": ((res.get("parent_result") or {}).get("net"))}
+            "parent_net": ((res.get("parent_result") or {}).get("net")), "cap": float(res.get("balance") or 200)}
+
+
+def _test_cap(body):
+    """2026-10-25 (owner): the member picks the starting capital (200 $ by default, the account balance, or any amount)"""
+    try:
+        c = round(float(body.get("cap") or 200), 2)
+    except Exception:
+        c = 200.0
+    return min(1000000.0, max(10.0, c))
+
+
+def _member_balance(user):
+    try:
+        return round(float(json.load(open(os.path.join(DIR, "nest_data", user.get("id") + ".json"), encoding="utf-8")).get("balance") or 0), 2) or None
+    except Exception:
+        return None
 
 
 def tests_overview(user, body):
@@ -13790,7 +13806,7 @@ def tests_overview(user, body):
                     rng.append({"range": j.get("range"), "error": j.get("error"), "test": _test_summary(j)})
         except Exception:
             pass
-        pend = [{"from": j.get("from"), "to": j.get("to"), "at": j.get("at")} for j in (r.get("range_jobs") or [])]
+        pend = [{"from": j.get("from"), "to": j.get("to"), "at": j.get("at"), "cap": float(j.get("cap") or 200)} for j in (r.get("range_jobs") or [])]
         # 2026-10-25 (owner: merge the Zone de test here): the same robot on other markets of the member's broker
         mk = []
         try:
@@ -13821,7 +13837,7 @@ def tests_overview(user, body):
             mk.append({"sym": "BTCUSD", "name": "Bitcoin", "test": _tb, "luck": lkb,
                        "per30": round(float(_tb["net"]) * 30.0 / max(1.0, float(_tb.get("days") or 30)), 2)})
         mk.sort(key=lambda x: -x["per30"])
-        mjobs = [{"sym": q.get("sym"), "state": q.get("state"), "at": q.get("at"), "first_build": q.get("first_build")}
+        mjobs = [{"sym": q.get("sym"), "state": q.get("state"), "at": q.get("at"), "first_build": q.get("first_build"), "cap": float(q.get("cap") or 200)}
                  for q in _mq_load() if q.get("rid") == rid and q.get("state") in ("queued", "building", "testing")]
         state = ("queued" if (r.get("stage") == "queued" or r.get("retest") or pend) else r.get("stage") or "draft")
         if state != "queued" and any(q.get("rid") == rid and q.get("state") in ("queued", "building", "testing") for q in _mq_load()):
@@ -13832,7 +13848,8 @@ def tests_overview(user, body):
                     "eta_min": (ROBOT_TEST_MIN * ((pos or 0) + 1)) if pos is not None else None,
                     "test": _test_summary(res), "ranges": rng[-8:], "pending": pend, "markets": mk, "market_jobs": mjobs})
     a, b = _tests_data_window()
-    return {"ok": True, "robots": out, "data_from": a, "data_to": b, "running": bool(running), "test_min": ROBOT_TEST_MIN}
+    return {"ok": True, "robots": out, "data_from": a, "data_to": b, "running": bool(running), "test_min": ROBOT_TEST_MIN,
+            "balance": _member_balance(user)}
 
 
 def test_range(user, body):
@@ -13848,10 +13865,11 @@ def test_range(user, body):
         return {"ok": False, "err": "dates"}
     if lo and (a < lo or b > hi):
         return {"ok": False, "err": "outside", "data_from": lo, "data_to": hi}
-    jobs = [j for j in (r.get("range_jobs") or []) if not (j.get("from") == a and j.get("to") == b)]
+    cap = _test_cap(body)
+    jobs = [j for j in (r.get("range_jobs") or []) if not (j.get("from") == a and j.get("to") == b and float(j.get("cap") or 200) == cap)]
     if len(jobs) >= 4:
         return {"ok": False, "err": "too_many"}
-    jobs.append({"from": a, "to": b, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
+    jobs.append({"from": a, "to": b, "cap": cap, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
     r["range_jobs"] = jobs
     r.setdefault("queued_at", jobs[-1]["at"])
     _robot_save(reg)
@@ -13870,7 +13888,8 @@ def test_cancel(user, body):
     a, b = str(body.get("from") or "")[:10], str(body.get("to") or "")[:10]
     if a and b:
         before = len(r.get("range_jobs") or [])
-        r["range_jobs"] = [j for j in (r.get("range_jobs") or []) if not (j.get("from") == a and j.get("to") == b)]
+        cap = _test_cap(body)
+        r["range_jobs"] = [j for j in (r.get("range_jobs") or []) if not (j.get("from") == a and j.get("to") == b and float(j.get("cap") or 200) == cap)]
         if len(r["range_jobs"]) == before:
             return {"ok": False, "err": "gone"}
     else:
@@ -13969,7 +13988,7 @@ def robot_test_markets(user, body):
     syms = [str(x) for x in (body.get("syms") or [])][:4]
     if not syms:
         return {"ok": False, "err": "market"}
-    out = [dict(robot_test_market(user, {"id": body.get("id"), "sym": sy}), sym=sy) for sy in syms]
+    out = [dict(robot_test_market(user, {"id": body.get("id"), "sym": sy, "cap": body.get("cap")}), sym=sy) for sy in syms]
     return {"ok": any(o.get("ok") for o in out), "jobs": out, "err": None if any(o.get("ok") for o in out) else out[0].get("err")}
 
 
@@ -13984,7 +14003,8 @@ def robot_test_market(user, body):
         return {"ok": False, "err": "market"}
     q = _mq_load()
     mine_open = [x for x in q if x.get("uid") == user.get("id") and x.get("state") in ("queued", "building", "testing")]
-    same = next((x for x in q if x.get("rid") == r["id"] and x.get("sym") == sym and x.get("state") in ("queued", "building", "testing")), None)
+    cap = _test_cap(body)
+    same = next((x for x in q if x.get("rid") == r["id"] and x.get("sym") == sym and float(x.get("cap") or 200) == cap and x.get("state") in ("queued", "building", "testing")), None)
     if same:
         return {"ok": True, "already": True, "job": same["id"]}
     if len(mine_open) >= 6 and not is_admin(user):
@@ -13998,7 +14018,7 @@ def robot_test_market(user, body):
     ahead = len([x for x in q if x.get("state") in ("queued", "building", "testing")])
     job = {"id": "%s@%s@%d" % (r["id"], sym, int(time.time())), "rid": r["id"], "sym": sym, "uid": user.get("id"),
            "terminal": term, "state": "queued", "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-           "first_build": not ready}
+           "first_build": not ready, "cap": cap}
     q.append(job)
     os.makedirs(os.path.dirname(ROBOT_MQ), exist_ok=True)
     json.dump(q, open(ROBOT_MQ + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
