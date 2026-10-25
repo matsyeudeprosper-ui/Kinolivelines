@@ -66,8 +66,9 @@ def _test(t, lang):
         return ("test EN FILE depuis %s UTC (quelques minutes une fois son tour venu)" % t["queued"]) if lang != "en" else ("test QUEUED since %s UTC (a few minutes once its turn comes)" % t["queued"])
     # 2026-10-25 18:35 (watch): "Owl de nuit ... 28 trades en fictif, +13,35 $" - the TEST figures read as ghost results.
     # The test is a replay of PAST prices; the ghost trades from now on: the label says which is which.
-    s = "TEST SUR LES PRIX PASSÉS (pas le fantôme, pas le réel) : %+.2f $ sur %d trades, %d %% gagnés, pire creux %.0f $" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0)) \
-        if lang != "en" else "TEST ON PAST PRICES (not the ghost, not real): %+.2f $ on %d trades, %d%% won, worst dip %.0f $" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0))
+    # 2026-10-25 19:43 (watch): "je ne peux pas te dire s'il compte les frais" - it always does (real spread); say so.
+    s = "TEST SUR LES PRIX PASSÉS (pas le fantôme, pas le réel) : %+.2f $ sur %d trades, %d %% gagnés, pire creux %.0f $, frais du courtier compris (écart réel de chaque seconde)" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0)) \
+        if lang != "en" else "TEST ON PAST PRICES (not the ghost, not real): %+.2f $ on %d trades, %d%% won, worst dip %.0f $, broker costs included (the real spread of every second)" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0))
     if t.get("h1") is not None and t.get("h2") is not None:
         s += ((", 1re moitié %+.2f $, 2e moitié %+.2f $" if lang != "en" else ", first half %+.2f $, second half %+.2f $")
               % (float(t["h1"]), float(t["h2"])))
