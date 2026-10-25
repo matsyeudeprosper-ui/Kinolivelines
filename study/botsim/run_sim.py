@@ -130,6 +130,7 @@ def main():
     ap.add_argument("--real-compute", action="store_true", help="the bot's own compute time counts as time")
     ap.add_argument("--feed-every", type=float, default=10.0)
     ap.add_argument("--tag", default="")
+    ap.add_argument("--rev", default="", help="git revision of live/structure_bos_bot.py to run (default: the current file)")
     ap.add_argument("--stall", action="append", default=[], help="ISO_TIME,SECONDS: the bot is busy then (replay a live stall)")
     ap.add_argument("--net-lag", type=float, default=0.0, help="s a tick takes to reach the terminal")
     a = ap.parse_args()
@@ -140,6 +141,12 @@ def main():
     st0, bal_log = state_from_log(logf, t0)
     bal = balance_at(logf, t0) or bal_log or 200.0
     build_sandbox(sb, a.acct, st0)
+    if a.rev:                                   # the bot as it was at that revision (what really traded then)
+        import subprocess
+        src = subprocess.run(["git", "-C", ROOT, "show", "%s:live/structure_bos_bot.py" % a.rev], capture_output=True).stdout
+        assert src, "no such revision"
+        open(os.path.join(sb, "structure_bos_bot.py"), "wb").write(src)
+        print("bot from revision", a.rev, flush=True)
     print("sandbox", sb, "| start state", st0, "| balance", bal, flush=True)
 
     bars = np.load(os.path.join(STUDY, A["bars"]))["R"]
