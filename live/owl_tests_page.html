@@ -222,6 +222,15 @@ svg.chart{width:100%;height:180px;margin-top:10px;display:block}
 
 
 
+/* 2026-10-25 (owner: "this is overflowing"): the proof table fits a phone - direction under the time, smaller tags */
+.tw{overflow:hidden}
+.tw table{table-layout:fixed}
+.tw th:nth-child(1){width:auto}.tw th:nth-child(2),.tw th:nth-child(3){width:74px}.tw th:nth-child(4){width:34px}
+.tw td{padding:9px 6px}
+.tw td:first-child,.tw th:first-child{padding-left:12px}
+.tw .wh{display:block;font-weight:700;color:var(--text);font-size:.8rem}
+.tw .dr{display:block;font-size:.7rem;color:var(--muted);margin-top:2px}
+.tw .tag{min-width:0;width:64px;padding:3px 0;font-size:.68rem}
 .hide{display:none!important}
 /* 2026-10-25 v4 (owner: "even more professional and modern ... choose the capital ... without cluttering"):
    one setup card, four rows (robot, market, period, capital), each opens its own sheet. */
@@ -522,14 +531,15 @@ $('go').onclick=async()=>{const [f,t]=period();const c=cap();$('go').disabled=tr
 function renderJobs(){const J=[];(S.data.robots||[]).forEach(r=>{(r.pending||[]).forEach(p=>J.push({r,p}));(r.market_jobs||[]).forEach(m=>J.push({r,p:null,m}));if(r.state==='queued'&&!(r.pending||[]).length&&!(r.market_jobs||[]).length)J.push({r,p:null});});
  $('prog').classList.toggle('hide',!J.length);
  $('jobs').innerHTML=J.map(({r,p,m})=>{if(m){const st={queued:['en file',''],building:['prépare le marché','ac'],testing:['en cours','ac']}[m.state]||['en file',''];
-  return'<div class="job"><div class="top"><b>'+esc(r.name)+' · '+esc(mkName(m.sym))+'</b><span class="chip '+st[1]+'">'+(st[1]?'<span class="spin"></span>':'')+st[0]+'</span></div><small>'+(m.state==='building'?'Première fois sur ce marché : on enregistre ses prix (environ '+hrs()+')':'2 derniers mois de prix · quelques minutes')+' · '+usd(capOf(m))+' · tu peux fermer cette page</small><div class="bar"><i></i></div></div>';}
+  return'<div class="job"><div class="top"><b>'+esc(r.name)+' · '+esc(mkName(m.sym))+'</b><span class="chip '+st[1]+'">'+(st[1]?'<span class="spin"></span>':'')+st[0]+'</span></div><small>'+(m.state==='building'?'Première fois sur ce marché : on enregistre ses prix (environ '+hrs()+')':'2 derniers mois de prix · quelques minutes')+' · '+usd(capOf(m))+' · tu peux fermer cette page</small><div class="bar"><i></i></div>'+
+  ((r.ref&&!S.data.admin)?'':'<div class="foot"><span class="sub" style="font-size:.74rem">Lancé '+(m.at?('à '+m.at.slice(11,16)+' UTC'):'')+'</span><button class="txtbtn cx" data-id="'+esc(r.id)+'" data-sym="'+esc(m.sym)+'" data-c="'+capOf(m)+'" data-run="'+(m.state==='queued'?0:1)+'">'+(m.state==='queued'?'Annuler':'Arrêter')+'</button></div>')+'</div>';}
   const ahead=r.ahead||0,run=S.data.running&&ahead===0;
   return'<div class="job"><div class="top"><b>'+esc(r.name)+'</b><span class="chip '+(run?'ac':'')+'">'+(run?'<span class="spin"></span>en cours':(ahead===0?'le prochain':ahead+' avant lui'))+'</span></div>'+
   '<small>'+(p?(fd(p.from)+' → '+fd(p.to)+' · '+usd(capOf(p))):'Tout l’historique')+' · environ '+(r.eta_min||S.data.test_min)+' min · tu peux fermer cette page</small><div class="bar"><i></i></div>'+
-  (r.ref?'':'<div class="foot"><span class="sub" style="font-size:.74rem">Lancé '+(p&&p.at?('à '+p.at.slice(11,16)+' UTC'):'')+'</span><button class="txtbtn cx" data-id="'+esc(r.id)+'" data-f="'+esc(p?p.from:'')+'" data-t="'+esc(p?p.to:'')+'" data-c="'+(p?capOf(p):200)+'" data-run="'+(run?1:0)+'">'+(run?'Arrêter':'Annuler')+'</button></div>')+'</div>';}).join('');
+  ((r.ref&&!S.data.admin)?'':'<div class="foot"><span class="sub" style="font-size:.74rem">Lancé '+(p&&p.at?('à '+p.at.slice(11,16)+' UTC'):'')+'</span><button class="txtbtn cx" data-id="'+esc(r.id)+'" data-f="'+esc(p?p.from:'')+'" data-t="'+esc(p?p.to:'')+'" data-c="'+(p?capOf(p):200)+'" data-run="'+(run?1:0)+'">'+(run?'Arrêter':'Annuler')+'</button></div>')+'</div>';}).join('');
  $('jobs').querySelectorAll('.cx').forEach(b=>b.onclick=async()=>{if(b.dataset.busy)return;
   if(!confirm(b.dataset.run==='1'?'Arrêter ce test ? Son résultat sera écarté.':'Annuler ce test ?'))return;b.dataset.busy=1;b.textContent='…';
-  const j=await post('test_cancel',{id:b.dataset.id,from:b.dataset.f,to:b.dataset.t,cap:Number(b.dataset.c)});toast(j.ok?'Test annulé':(j.err==='gone'?'Ce test est déjà terminé':'Impossible'));setTimeout(load,300);});}
+  const j=await post('test_cancel',b.dataset.sym?{id:b.dataset.id,sym:b.dataset.sym,cap:Number(b.dataset.c)}:{id:b.dataset.id,from:b.dataset.f,to:b.dataset.t,cap:Number(b.dataset.c)});toast(j.ok?(b.dataset.run==='1'?'Test arrêté · son résultat est écarté':'Test annulé'):(j.err==='gone'?'Ce test est déjà terminé':'Impossible'));setTimeout(load,300);});}
 
 /* ---------- results ---------- */
 function allTests(){const out=[];(S.data.robots||[]).forEach(r=>{if(r.test)out.push({r,t:r.test,label:'Tout l’historique',range:null});
@@ -584,10 +594,10 @@ function renderProof(){const p=S.proof||{},el=$('proofCard');
   '<div class="kpi"><div><small>Vrais trades</small><b>'+p.real_trades+'</b></div><div><small>Identiques</small><b class="'+(p.same_result===p.real_trades?'pos':'')+'">'+p.same_result+'</b></div><div><small>En trop (test)</small><b class="'+(p.test_only?'neg':'pos')+'">'+p.test_only+'</b></div></div>'+
   '<div class="money"><div><small><i style="background:var(--accent)"></i>Argent en vrai</small><b class="'+cls(p.money_real)+'">'+money(p.money_real)+'</b></div><div><small><i style="background:var(--violet)"></i>Argent dans le test</small><b class="'+cls(p.money_test)+'">'+money(p.money_test)+'</b></div></div>'+
   '<div class="sub" style="margin-top:10px;font-size:.8rem">'+(ok?'Les deux chiffres sont les mêmes.':'Le statut passe à « vérifié » seulement quand chaque trade et chaque dollar correspondent. D’ici là, nous corrigeons chaque écart.')+'</div>'+
-  '<div class="tw"><table><thead><tr><th>Quand (UTC)</th><th>Sens</th><th class="c">Vrai</th><th class="c">Test</th><th class="c">=</th></tr></thead><tbody>'+
+  '<div class="tw"><table><thead><tr><th>Quand (UTC)</th><th class="c">Vrai</th><th class="c">Test</th><th class="c"></th></tr></thead><tbody>'+
   shown.map(z=>{const d=new Date(z.t*1000);const w=d.toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'UTC'});
    const tg=v=>v==='W'?'<span class="tag w">gagné</span>':v==='L'?'<span class="tag l">perdu</span>':'<span class="tag x">—</span>';
-   return'<tr><td>'+w+'</td><td>'+(z.dir==='BUY'?'achat':'vente')+'</td><td class="c">'+tg(z.real)+'</td><td class="c">'+tg(z.test)+'</td><td class="c"><span class="mk '+(z.same?'y':'n')+'">'+(z.same?'✓':'✕')+'</span></td></tr>';}).join('')+
+   return'<tr><td><b class="wh">'+w.replace(',','')+'</b><small class="dr">'+(z.dir==='BUY'?'achat':'vente')+'</small></td><td class="c">'+tg(z.real)+'</td><td class="c">'+tg(z.test)+'</td><td class="c"><span class="mk '+(z.same?'y':'n')+'">'+(z.same?'✓':'✕')+'</span></td></tr>';}).join('')+
   '</tbody></table></div>'+(rows.length>10?'<button class="more" id="pmore">'+(S.proofAll?'Voir moins':'Voir les '+rows.length+' lignes')+'</button>':'');
  const m=$('pmore');if(m)m.onclick=()=>{S.proofAll=!S.proofAll;renderProof();};}
 

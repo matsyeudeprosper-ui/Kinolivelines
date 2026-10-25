@@ -13849,7 +13849,7 @@ def tests_overview(user, body):
                     "test": _test_summary(res), "ranges": rng[-8:], "pending": pend, "markets": mk, "market_jobs": mjobs})
     a, b = _tests_data_window()
     return {"ok": True, "robots": out, "data_from": a, "data_to": b, "running": bool(running), "test_min": ROBOT_TEST_MIN,
-            "balance": _member_balance(user)}
+            "balance": _member_balance(user), "admin": bool(is_admin(user))}
 
 
 def test_range(user, body):
@@ -13885,6 +13885,21 @@ def test_cancel(user, body):
     r = next((x for x in rob if x.get("id") == body.get("id")), None)
     if not (r and (r.get("id") == "owl" and is_admin(user) or _robot_mine(user, r))):
         return {"ok": False, "err": "not_yours"}
+    if body.get("sym"):
+        # 2026-10-25 (owner: "once we launch the test no more way to stop it?"): a test on another market.
+        # Queued: it never starts. Preparing or testing: the runner drops it at its next step / before writing.
+        sym, cap = str(body.get("sym")), _test_cap(body)
+        q = _mq_load()
+        hit = [x for x in q if x.get("rid") == r["id"] and x.get("sym") == sym and float(x.get("cap") or 200) == cap
+               and x.get("state") in ("queued", "building", "testing")]
+        if not hit:
+            return {"ok": False, "err": "gone"}
+        for x in hit:
+            x["state"] = "cancelled"
+            x["cancelled_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        json.dump(q, open(ROBOT_MQ + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(ROBOT_MQ + ".tmp", ROBOT_MQ)
+        return {"ok": True}
     a, b = str(body.get("from") or "")[:10], str(body.get("to") or "")[:10]
     if a and b:
         before = len(r.get("range_jobs") or [])

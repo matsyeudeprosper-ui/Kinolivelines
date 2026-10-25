@@ -186,10 +186,16 @@ def mq_load():
         return []
 
 
+def mq_cancelled(qid):
+    return any(x.get("id") == qid and x.get("state") == "cancelled" for x in mq_load())
+
+
 def mq_set(qid, **kw):
     q = mq_load()
     for x in q:
         if x.get("id") == qid:
+            if x.get("state") == "cancelled" and kw.get("state") != "cancelled":
+                continue        # 2026-10-25 (owner: "no more way to stop it?"): a member's stop is final
             x.update(kw)
     json.dump(q, open(MQ + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(MQ + ".tmp", MQ)
@@ -262,6 +268,8 @@ def run_markets(fast=False):
             if not tick and not MP.pack_ready(sym):
                 mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), pid=os.getpid())
                 MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL, log=mlog)
+            if mq_cancelled(qid):
+                mlog("%s @ %s: stopped by the member before the test" % (rid, sym)); continue
             mq_set(qid, state="testing", pid=os.getpid())
             global BAL
             BAL = float(job.get("cap") or 200.0)    # 2026-10-25: the member's chosen starting capital (lots scale with it)
@@ -293,6 +301,8 @@ def run_markets(fast=False):
                    "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
                    "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[-1]) / 1000))],
                    "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}
+            if mq_cancelled(qid):
+                mlog("%s @ %s: stopped by the member - result dropped" % (rid, sym)); continue
             os.makedirs(RES, exist_ok=True)
             json.dump(res, open(os.path.join(RES, "%s@%s.json" % (rid, sym)), "w", encoding="utf-8"), indent=1)
             mq_set(qid, state="done", done_at=res["generated_at"], net=out["robot"]["net"], parent_net=out["parent"]["net"])
