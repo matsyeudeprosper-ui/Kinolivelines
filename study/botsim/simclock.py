@@ -23,6 +23,7 @@ class Clock:
         self.jobs = []            # (next_t, period, fn) - called with the virtual time when due
         self.walkers = []         # fn(t_from, t_to) - the broker walks its ticks
         self.sleeps = 0
+        self.stalls = []          # [t, seconds]: the bot is busy at t and wakes that much later (a live stall replayed)
 
     def t(self):
         if self.real_compute:
@@ -45,14 +46,24 @@ class Clock:
             if due is None:
                 break
             due[0] += due[1]
-            due[2](self.now)
+            rc, self.real_compute = self.real_compute, False     # other processes' work (the chart feed) is not the bot's time
+            try:
+                due[2](self.now)
+            finally:
+                self.real_compute = rc
+                self._sync = _rt.perf_counter()
         if self.now >= self.end:
             raise SimEnd()
 
     def sleep(self, s):
         self.sleeps += 1
         now = self.t()
-        self.advance_to(now + max(0.0, float(s)))
+        target = now + max(0.0, float(s))
+        for st in self.stalls:
+            if st[1] and now < st[0] <= target:
+                target += st[1]
+                st[1] = 0
+        self.advance_to(target)
         self._sync = _rt.perf_counter()
 
 

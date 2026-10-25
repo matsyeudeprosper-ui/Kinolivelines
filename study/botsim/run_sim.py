@@ -130,6 +130,7 @@ def main():
     ap.add_argument("--real-compute", action="store_true", help="the bot's own compute time counts as time")
     ap.add_argument("--feed-every", type=float, default=10.0)
     ap.add_argument("--tag", default="")
+    ap.add_argument("--stall", action="append", default=[], help="ISO_TIME,SECONDS: the bot is busy then (replay a live stall)")
     ap.add_argument("--net-lag", type=float, default=0.0, help="s a tick takes to reach the terminal")
     a = ap.parse_args()
     A = ACCTS[a.acct]
@@ -145,7 +146,7 @@ def main():
     ticks = load_ticks(A["ticks"], t0 - 3 * 86400, t1)
     print("bars", len(bars), "ticks", len(ticks[0]), flush=True)
 
-    clock = SC.Clock(t0, t1, real_compute=a.real_compute)
+    clock = SC.Clock(t0, t1, real_compute=False)        # switched on when the BOT starts (set-up is not the bot's time)
     broker = FM.Broker(clock, bars, ticks, login=A["login"], balance=bal)
     broker.net_lag = a.net_lag
     fake = FM.FakeMT5(broker)
@@ -186,6 +187,12 @@ def main():
 
     sys.argv = ["structure_bos_bot.py", a.acct]
     wall = _real_time.perf_counter()
+    clock.now = t0
+    clock._sync = _real_time.perf_counter()
+    clock.real_compute = a.real_compute
+    for x in a.stall:
+        _t, _d = x.split(",")
+        clock.stalls.append([ts(_t), float(_d)])
     try:
         import structure_bos_bot as BOT
         BOT.main()

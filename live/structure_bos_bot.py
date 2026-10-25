@@ -2097,6 +2097,34 @@ def main():
             bt = int(bar["time"])
             if bt == st.get("last_bar"):
                 continue
+            # 2026-10-25 (owner: "cool do it"): a loop that was busy for more than a minute used to step ONLY the newest
+            # closed candle - the ones in between were never shown to the structure (Valere 10-16 10:00-10:04: three
+            # candles skipped, the CHoCH came one candle late at another level). Missed candles are now stepped in order
+            # first - structure, flips, touch re-arm and the virtual trades - with no entry on them (their moment has
+            # passed); the newest candle then goes through the normal path below.
+            _lb = int(st.get("last_bar") or 0)
+            if _lb and 60 < bt - _lb <= 600 * 60:
+                _mb = rates_utc(mt5.TIMEFRAME_M1, 1, int((bt - _lb) // 60) + 3)
+                _miss = [m for m in (_mb if _mb is not None else []) if _lb < int(m["time"]) < bt]
+                for _m in _miss:
+                    _mt = int(_m["time"])
+                    SHADOW.settle(_SHADOW_ID, float(_m["high"]), float(_m["low"]))
+                    SHADOW.settle(_SHADOW_ID, float(_m["high"]), float(_m["low"]), book="fvg")
+                    _pt0 = eng.trend
+                    _pd0 = (eng.prot_lo if eng.trend == 1 else eng.prot_hi if eng.trend == -1 else None)
+                    if _pd0 is not None:
+                        _ml, _mh, _mc = float(_m["low"]), float(_m["high"]), float(_m["close"])
+                        if ((_ml <= _pd0[1] <= _mc) if eng.trend == 1 else (_mc <= _pd0[1] <= _mh)) \
+                                and st.get("cont_used_since_flip", True):
+                            st["cont_used_since_flip"] = False
+                            say(f"TOUCH du point protege ({_pd0[1]:.2f}) - continuation re-armee pour la reprise")
+                    eng.step(_mt, float(_m["open"]), float(_m["high"]), float(_m["low"]), float(_m["close"]))
+                    if eng.trend != _pt0 and eng.trend != 0 and _pt0 != 0:
+                        flips.append(_mt)
+                        del flips[:-20]
+                        say(f"FLIP: trend now {'up' if eng.trend == 1 else 'down'} (bougie rattrapee)")
+                if _miss:
+                    say(f"rattrapage: {len(_miss)} bougie(s) manquee(s) lue(s) dans l'ordre, sans entree")
             st["last_bar"] = bt
             # settle the virtual trades the nervosity brake refused, on the
             # raw bar - they must be judged on every minute, not only on the
