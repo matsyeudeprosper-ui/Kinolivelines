@@ -13791,12 +13791,46 @@ def tests_overview(user, body):
         except Exception:
             pass
         pend = [{"from": j.get("from"), "to": j.get("to"), "at": j.get("at")} for j in (r.get("range_jobs") or [])]
+        # 2026-10-25 (owner: merge the Zone de test here): the same robot on other markets of the member's broker
+        mk = []
+        try:
+            for f in os.listdir(os.path.join(DIR, "robots", "results")):
+                if f.startswith(rid + "@") and f.endswith(".json"):
+                    j = json.load(open(os.path.join(DIR, "robots", "results", f), encoding="utf-8"))
+                    t = _test_summary(j)
+                    if t:
+                        sy = j.get("market") or f[len(rid) + 1:-5]
+                        lk = None
+                        try:
+                            lk = (_luck_of(rid, sy) or {}).get("state")
+                        except Exception:
+                            pass
+                        mk.append({"sym": sy, "name": j.get("market_name") or sy, "test": t, "luck": lk,
+                                   "per30": round(float(t["net"]) * 30.0 / max(1.0, float(t.get("days") or 30)), 2)})
+            if r.get("test") is not None or res:
+                pass
+        except Exception:
+            pass
+        if res and _test_summary(res):
+            _tb = _test_summary(res)
+            lkb = None
+            try:
+                lkb = (_luck_of(rid, "BTCUSD") or {}).get("state")
+            except Exception:
+                pass
+            mk.append({"sym": "BTCUSD", "name": "Bitcoin", "test": _tb, "luck": lkb,
+                       "per30": round(float(_tb["net"]) * 30.0 / max(1.0, float(_tb.get("days") or 30)), 2)})
+        mk.sort(key=lambda x: -x["per30"])
+        mjobs = [{"sym": q.get("sym"), "state": q.get("state"), "at": q.get("at"), "first_build": q.get("first_build")}
+                 for q in _mq_load() if q.get("rid") == rid and q.get("state") in ("queued", "building", "testing")]
         state = ("queued" if (r.get("stage") == "queued" or r.get("retest") or pend) else r.get("stage") or "draft")
+        if state != "queued" and any(q.get("rid") == rid and q.get("state") in ("queued", "building", "testing") for q in _mq_load()):
+            state = "queued"
         pos = queued.index(rid) if rid in queued else None
         out.append({"id": rid, "name": r.get("name_fr") or r.get("name") or rid, "market": r.get("market") or "BTCUSD",
                     "ref": rid == "owl", "state": state, "queued_at": r.get("queued_at"), "ahead": pos,
                     "eta_min": (ROBOT_TEST_MIN * ((pos or 0) + 1)) if pos is not None else None,
-                    "test": _test_summary(res), "ranges": rng[-8:], "pending": pend})
+                    "test": _test_summary(res), "ranges": rng[-8:], "pending": pend, "markets": mk, "market_jobs": mjobs})
     a, b = _tests_data_window()
     return {"ok": True, "robots": out, "data_from": a, "data_to": b, "running": bool(running), "test_min": ROBOT_TEST_MIN}
 

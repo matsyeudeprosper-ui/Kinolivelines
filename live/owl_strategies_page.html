@@ -1493,7 +1493,7 @@ const MKCC={crypto:'#f7931a',metals:'#f5d27a',energy:'#9fc2de',indices:'#a78bfa'
 function mkBadge(s,cat,sz){sz=sz||36;const b=MKI[mkBase(String(s||''))]||[String(s||'?').replace(/[^A-Za-z]/g,'').slice(0,3),MKCC[cat]||'#8fc6ff'];
  return '<span class="mkb" style="width:'+sz+'px;height:'+sz+'px;border-radius:'+Math.round(sz*.32)+'px;background:color-mix(in srgb,'+b[1]+' 16%,transparent);color:'+b[1]+';font-size:'+(b[0].length>2?.62:(b[0].length>1?.74:.95))*(sz/36)+'rem">'+esc(b[0])+'</span>';}
 const fmtMin=m=>m==null?'':(m>=60?'~'+Math.floor(m/60)+' h '+String(Math.round(m%60)).padStart(2,'0'):'~'+Math.max(1,Math.round(m))+' min');
-function goZt(rid){NAV++;location.hash='zt='+(rid||'');}
+function goZt(rid){location.href='tests#'+(rid?'robot='+encodeURIComponent(rid)+'&':'')+'view=mkt';}   /* 2026-10-25: the Zone de test lives in Tests now */
 function ztRobots(){const B=BLD();return (B.robots||[]).filter(r=>r.can_edit||r.id==='owl'||B.admin);}
 function ztVerdict(a,c){if(!a||a.trades==null)return {c:'var(--muted)',k:'gy',i:'?',t:T('Pas de résultat','No result'),s:''};
  if(a.trades<20)return {c:'var(--muted)',k:'gy',i:'?',sh:T('Trop peu de trades','Too few trades'),t:T('Trop peu de trades pour conclure','Too few trades to conclude'),s:T('Moins de 20 trades : le résultat peut encore être de la chance.','Under 20 trades: the result can still be luck.')};

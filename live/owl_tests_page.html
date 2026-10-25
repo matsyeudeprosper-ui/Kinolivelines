@@ -200,6 +200,33 @@ svg.chart{width:100%;height:180px;margin-top:10px;display:block}
 /* toast */
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:60;padding:11px 16px;border-radius:13px;background:var(--text);color:var(--bg);font-size:.86rem;font-weight:750;box-shadow:var(--sh);transition:all .25s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.mks{display:flex;flex-wrap:wrap;gap:8px}
+.mkc{display:inline-flex;align-items:center;gap:8px;padding:8px 12px 8px 8px;border-radius:99px;border:1px solid var(--border2);background:var(--surface2);font-size:.86rem;font-weight:750;color:var(--text2);transition:all .15s}
+.mkc .ic{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900;background:var(--surface3);color:var(--text2)}
+.mkc.on{border-color:var(--accent);background:var(--accent-bg);color:var(--text)}
+.mkc.on .ic{background:var(--accent);color:#fff}
+.mkc.more{padding:8px 14px;color:var(--accent-soft);border-style:dashed}
+.mknote{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:.78rem;color:var(--muted);line-height:1.45}
+.mknote svg{flex:none;margin-top:1px;color:var(--warn)}
+.perOff{margin-top:2px;margin-bottom:10px;padding:12px 14px;border-radius:14px;background:var(--surface2);border:1px dashed var(--border2);font-size:.82rem;color:var(--muted);line-height:1.5}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:12px}
+.seg2 button{border-radius:10px;padding:9px 4px;font-size:.86rem;font-weight:750;color:var(--muted2)}
+.seg2 button.on{background:var(--surface3);color:var(--text);box-shadow:var(--hl)}
+.rk{display:grid;grid-template-columns:40px minmax(0,1fr) 72px auto;gap:10px;align-items:center;width:100%;text-align:left;padding:12px 4px;border-bottom:1px solid var(--border)}
+.rk:last-of-type{border-bottom:0}
+.rk .mic{width:40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:.82rem;background:var(--surface3);color:var(--text2)}
+.rk b{display:block;font-size:.95rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk small{display:block;font-size:.74rem;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk .bar2{position:relative;height:8px;border-radius:99px;background:var(--surface3)}
+.rk .bar2:before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--border2)}
+.rk .bar2 i{position:absolute;top:0;bottom:0;border-radius:99px}
+.rk .v{text-align:right;min-width:74px}
+.rk .v b{font-size:1rem;font-weight:900}
+.rk .v small{font-size:.7rem}
+.rkhead{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:6px}
+.rkhead .s{font-size:.95rem;font-weight:800;line-height:1.35}
+.rkleg{display:flex;justify-content:center;gap:18px;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px}
+.dot2{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:1px}
 .hide{display:none!important}
 </style></head><body><div id="aur"></div>
 <div class="wrap">
@@ -232,16 +259,25 @@ svg.chart{width:100%;height:180px;margin-top:10px;display:block}
   <div class="lbl"><span class="n">1</span>Le robot</div>
   <button class="field" id="robotField"><span class="av" id="rfAv">·</span><span class="mid"><b id="rfName"><span class="sk" style="display:block;height:14px;width:60%"></span></b><small id="rfSub"></small></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 10l4 4 4-4"/></svg></button>
   <div class="gap"></div>
-  <div class="lbl"><span class="n">2</span>La période</div>
+  <div class="lbl"><span class="n">2</span>Le marché <span style="margin-left:auto;font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)" id="mkCount"></span></div>
+  <div class="mks" id="mks"></div>
+  <div class="mknote hide" id="mkNote"></div>
+  <div class="gap"></div>
+  <div class="lbl"><span class="n">3</span>La période</div>
+  <div class="perOff hide" id="perOff"></div>
+  <div id="perBox">
   <div class="seg" id="seg"><button data-d="7">7 j</button><button data-d="14">14 j</button><button data-d="30">30 j</button><button data-d="all" class="on">Tout</button><button data-d="pick">Dates</button></div>
   <div class="tl"><div class="track"><span class="win" id="win"></span></div><div class="ends"><span id="tlA">–</span><span id="tlMid"></span><span id="tlB">–</span></div></div>
   <div class="dates hide" id="dates"><label>Du<input type="date" id="dFrom"></label><label>Au<input type="date" id="dTo"></label></div>
+  </div>
   <div class="sum"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span id="sumT">Chaque prix réel, seconde par seconde, avec 200 $ de départ. Rien ne touche ton vrai compte.</span></div>
   <div class="note" id="dataNote"></div>
  </section>
 </div>
 
 <div id="p-res" class="hide">
+ <div class="seg2" id="rview"><button class="on" data-v="feed">Derniers tests</button><button data-v="mkt">Par marché</button></div>
+ <div id="mktView" class="hide"></div>
  <div class="filters" id="filters"><button class="on" data-f="all">Tous</button><button data-f="win">Gagnants</button><button data-f="loss">Perdants</button><button data-f="both">Deux moitiés gagnantes</button></div>
  <div id="results"></div>
 </div>
@@ -267,7 +303,14 @@ svg.chart{width:100%;height:180px;margin-top:10px;display:block}
 <script>
 const BASE=location.pathname.replace(/[^/]*$/,'');
 const $=id=>document.getElementById(id);
-const S={data:null,proof:null,sel:null,days:'all',tab:'run',timer:null,proofAll:false,filt:'all',q:''};
+const S={data:null,proof:null,sel:null,days:'all',tab:'run',timer:null,proofAll:false,filt:'all',q:'',mks:['BTCUSD'],syms:null,mq:'',rv:'feed'};
+/* plain names for the markets (grandma words) */
+const MKN={BTCUSD:['Bitcoin','₿'],XAUUSD:['Or','Au'],XAGUSD:['Argent','Ag'],USOIL:['Pétrole','Pé'],UKOIL:['Pétrole Brent','Br'],US30:['Dow Jones','DJ'],USTEC:['Nasdaq','NQ'],US500:['S&P 500','SP'],DE30:['DAX','DA'],DE40:['DAX','DA'],UK100:['Londres 100','UK'],JP225:['Tokyo 225','JP'],EURUSD:['Euro / Dollar','€$'],GBPUSD:['Livre / Dollar','£$'],USDJPY:['Dollar / Yen','$¥'],ETHUSD:['Ethereum','Ξ']};
+const base=s=>{s=String(s||'');return(s.endsWith('m')&&s.length>3)?s.slice(0,-1):s;};
+const mkName=(s,d)=>(MKN[base(s).toUpperCase()]||[d||base(s)])[0];
+const mkIc=s=>(MKN[base(s).toUpperCase()]||[0,base(s).slice(0,2)])[1];
+const hrs=()=>{const m=S.buildMin||100,h=Math.floor(m/60),r=Math.round((m%60)/10)*10;return h+(r?' h '+r:' h').replace(' h ',' h ')+'';};
+const CAT={crypto:'Cryptos',metals:'Métaux',energy:'Énergie',indices:'Indices',forex:'Devises',stocks:'Actions',other:'Autres'};
 const fmt=(v,d=2)=>(v==null||isNaN(v))?'–':Number(v).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
 const money=v=>(v==null?'–':((v>0?'+':v<0?'−':'')+fmt(Math.abs(v))+' $'));
 const cls=v=>v>0?'pos':v<0?'neg':'neu';
@@ -327,12 +370,43 @@ function openPicker(){const R=S.data?S.data.robots:[];
   const opt=r=>'<button class="opt'+(r.id===S.sel?' on':'')+'" data-id="'+esc(r.id)+'"><span class="av'+(r.ref?' ref':'')+'"'+(r.ref?'':avs(r.name))+'>'+esc(ini(r.name))+'</span><span style="min-width:0"><b>'+esc(r.name)+'</b><small>'+esc(sub(r))+'</small></span><span class="ck">'+(r.id===S.sel?'✓':'')+'</span></button>';
   return(ref.length?'<div class="grp">Référence</div>'+ref.map(opt).join(''):'')+'<div class="grp">Mes robots · '+own.length+'</div>'+(own.length?own.map(opt).join(''):'<div class="sub" style="padding:8px">Aucun robot ne correspond.</div>');};
  $('sheetIn').innerHTML='<h3>Choisir un robot</h3><div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="q" placeholder="Rechercher un robot" value="'+esc(S.q)+'" autocomplete="off"></div><div id="opts">'+list()+'</div><a class="btn" href="atelier" style="width:100%;margin-top:12px">+ Créer un nouveau robot avec Kino</a>';
- const bind=()=>$('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{S.sel=b.dataset.id;try{localStorage.setItem('owlTestsRobot',S.sel);}catch(e){}closeSheet();renderField();});
+ const bind=()=>$('opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{S.sel=b.dataset.id;try{localStorage.setItem('owlTestsRobot',S.sel);}catch(e){}closeSheet();renderField();renderMkt();});
  bind();$('q').oninput=e=>{S.q=e.target.value;$('opts').innerHTML=list();bind();};openSheet();}
 function openSheet(){$('sheet').classList.add('on');document.body.style.overflow='hidden';}
 function closeSheet(){$('sheet').classList.remove('on');document.body.style.overflow='';}
 $('sheet').addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.x)closeSheet();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+
+/* ---------- markets ---------- */
+async function loadSyms(){if(S.syms)return;const j=await post('robot_markets');S.syms=j.ok?(j.symbols||[]):[];S.buildMin=j.build_min||100;renderMarkets();}
+function symInfo(s){return(S.syms||[]).find(x=>x.s===s);}
+function renderMarkets(){
+ const pop=(S.syms||[]).filter(x=>x.pop<99).sort((a,b)=>a.pop-b.pop).slice(0,4).map(x=>x.s);
+ const shown=['BTCUSD',...S.mks.filter(x=>x!=='BTCUSD'),...pop.filter(x=>!S.mks.includes(x))].slice(0,Math.max(5,S.mks.length+1));
+ $('mks').innerHTML=shown.map(s=>'<button class="mkc'+(S.mks.includes(s)?' on':'')+'" data-s="'+esc(s)+'"><span class="ic">'+esc(mkIc(s))+'</span>'+esc(mkName(s,(symInfo(s)||{}).d))+'</button>').join('')+
+  '<button class="mkc more" id="mkMore">Plus de marchés</button>';
+ $('mks').querySelectorAll('.mkc[data-s]').forEach(b=>b.onclick=()=>togMk(b.dataset.s));$('mkMore').onclick=openMarkets;
+ $('mkCount').textContent=S.mks.length>1?S.mks.length+' marchés':'';
+ const cold=S.mks.filter(s=>s!=='BTCUSD'&&symInfo(s)&&!symInfo(s).ready);
+ $('mkNote').classList.toggle('hide',!cold.length);
+ if(cold.length)$('mkNote').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Premier test sur '+esc(cold.map(s=>mkName(s)).join(', '))+' : on prépare d’abord ses prix (environ '+hrs()+', une seule fois). Ensuite chaque test prend quelques minutes.</span>';
+ const btc=S.mks.includes('BTCUSD'),other=S.mks.filter(s=>s!=='BTCUSD');
+ $('perBox').classList.toggle('hide',!btc);$('perOff').classList.toggle('hide',!other.length);
+ $('perOff').textContent=btc?('Les dates ci-dessous sont pour Bitcoin. Pour '+other.map(s=>mkName(s)).join(', ')+', le test rejoue ses 2 derniers mois de prix.'):('Pour '+other.map(s=>mkName(s)).join(', ')+', le test rejoue les 2 derniers mois de prix de ton courtier.');
+ renderCta();}
+function togMk(s){const i=S.mks.indexOf(s);if(i>=0){if(S.mks.length===1){toast('Garde au moins un marché');return;}S.mks.splice(i,1);}else{if(S.mks.length>=4){toast('Quatre marchés au plus à la fois');return;}S.mks.push(s);}renderMarkets();}
+function openMarkets(){loadSyms();
+ const list=()=>{if(!S.syms)return'<div class="sub" style="padding:10px">Chargement des marchés de ton courtier…</div>';
+  const q=S.mq.trim().toLowerCase();const all=[{s:'BTCUSD',d:'Bitcoin',cat:'crypto',ready:true}].concat(S.syms.filter(x=>x.s!=='BTCUSD'));
+  const F=all.filter(x=>!q||mkName(x.s,x.d).toLowerCase().includes(q)||x.s.toLowerCase().includes(q)||String(x.d||'').toLowerCase().includes(q));
+  F.sort((a,b)=>(b.s==='BTCUSD')-(a.s==='BTCUSD')||(b.ready-a.ready)||((a.pop||99)-(b.pop||99))||mkName(a.s,a.d).localeCompare(mkName(b.s,b.d)));const lim=(q||S.mall)?40:8;const short=!q&&!S.mall;if(short){const keep=F.filter(x=>x.s==='BTCUSD'||x.ready||(x.pop||99)<99);F.length=0;F.push(...keep);}
+  const g={};F.forEach(x=>{const c=CAT[x.cat]?x.cat:'other';(g[c]=g[c]||[]).push(x);});
+  return Object.keys(CAT).filter(k=>g[k]).map(k=>'<div class="grp">'+CAT[k]+'</div>'+g[k].slice(0,lim).map(x=>'<button class="opt'+(S.mks.includes(x.s)?' on':'')+'" data-s="'+esc(x.s)+'"><span class="av" style="background:var(--surface3);color:var(--text2)">'+esc(mkIc(x.s))+'</span><span style="min-width:0"><b>'+esc(mkName(x.s,x.d))+'</b><small>'+(x.ready?'prêt':'première fois : préparation environ '+hrs()+'')+'</small></span><span class="ck">'+(S.mks.includes(x.s)?'✓':'')+'</span></button>').join('')).join('')||'<div class="sub" style="padding:8px">Aucun marché ne correspond.</div>';};
+ $('sheetIn').innerHTML='<h3>Choisir les marchés</h3><div class="sub" style="margin-top:4px">Jusqu’à 4 à la fois, sur les prix de ton courtier.</div><div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="mq" placeholder="Or, Nasdaq, Euro…" value="'+esc(S.mq)+'" autocomplete="off"></div><div id="mopts">'+list()+'</div><button class="btn" id="mkAll" style="width:100%;margin-top:10px">'+(S.mall?'Voir moins de marchés':'Voir tous les marchés ('+((S.syms||[]).length+1)+')')+'</button><button class="btn pri" id="mkDone" style="width:100%;margin-top:14px">Valider</button>';
+ const bind=()=>$('mopts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{togMk(b.dataset.s);$('mopts').innerHTML=list();bind();});
+ bind();$('mq').oninput=e=>{S.mq=e.target.value;$('mopts').innerHTML=list();bind();};$('mkDone').onclick=closeSheet;$('mkAll').onclick=()=>{S.mall=!S.mall;openMarkets();};
+ if(!S.syms){const w=setInterval(()=>{if(S.syms){clearInterval(w);if($('mopts')){$('mopts').innerHTML=list();bind();}}},300);}
+ openSheet();}
 
 /* ---------- period ---------- */
 function period(){const a=S.data&&S.data.data_from,b=S.data&&S.data.data_to;if(!a)return[null,null];
@@ -350,20 +424,28 @@ $('seg').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.days=b.dataset.d
 ['dFrom','dTo'].forEach(i=>$(i).onchange=renderWin);
 
 /* ---------- CTA ---------- */
-function renderCta(){const r=robot();const [f,t]=period();const ok=r&&f&&t&&f<=t;
+function renderCta(){const r=robot();const [f,t]=period();const btc=S.mks.includes('BTCUSD'),other=S.mks.filter(s=>s!=='BTCUSD');const ok=r&&(!btc||(f&&t&&f<=t));
  $('cta').classList.toggle('hide',S.tab!=='run');
  if(!r){$('ctaA').textContent='Choisis un robot';$('ctaB').innerHTML='&nbsp;';$('go').disabled=true;return;}
- $('ctaA').textContent=r.name;$('ctaB').textContent=ok?(fd(f)+' → '+fd(t)+' · '+dayN(f,t)+' jour'+(dayN(f,t)>1?'s':'')+' · ~'+(S.data.test_min||5)+' min'):'Choisis des dates valides';
- const pend=(r.pending||[]).find(p=>p.from===f&&p.to===t);$('go').disabled=!ok||!!pend;$('goT').textContent=pend?'En file':'Lancer';}
+ $('ctaA').textContent=r.name;
+ const where=S.mks.length>1?(S.mks.length+' marchés'):mkName(S.mks[0]);
+ $('ctaB').textContent=ok?(where+' · '+(btc?(fd(f)+' → '+fd(t)+(other.length?' et 2 derniers mois':'')):'2 derniers mois')):'Choisis des dates valides';
+ const pend=btc&&!other.length&&(r.pending||[]).find(p=>p.from===f&&p.to===t);$('go').disabled=!ok||!!pend;$('goT').textContent=pend?'En file':(S.mks.length>1?'Lancer · '+S.mks.length:'Lancer');}
 const ERR={dates:'Ces dates ne sont pas valides.',outside:'Ces dates ne sont pas enregistrées.',too_many:'Quatre tests au plus en attente pour ce robot.',not_yours:'Ce robot n’est pas à toi.',net:'Connexion perdue, réessaie.',strategy:'Les tests font partie de l’offre Stratégie.'};
 async function launch(id,f,t){const j=await post('test_range',{id,from:f,to:t});
  if(!j.ok){toast(ERR[j.err]||('Impossible pour l’instant ('+j.err+')'));return false;}toast('Test lancé · résultat dans quelques minutes');setTimeout(load,500);return true;}
-$('go').onclick=async()=>{const [f,t]=period();$('go').disabled=true;$('goT').textContent='…';await launch(S.sel,f,t);renderCta();};
+$('go').onclick=async()=>{const [f,t]=period();$('go').disabled=true;$('goT').textContent='…';
+ const btc=S.mks.includes('BTCUSD'),other=S.mks.filter(s=>s!=='BTCUSD');
+ if(btc)await launch(S.sel,f,t);
+ if(other.length){const j=await post('robot_test_markets',{id:S.sel,syms:other});if(!j.ok)toast({market:'Choisis un marché.',not_yours:'Ce robot n’est pas à toi.',net:'Connexion perdue, réessaie.'}[j.err]||'Impossible sur ce marché pour l’instant');else{toast('Test lancé sur '+(S.mks.length>1?S.mks.length+' marchés':mkName(other[0])));setTimeout(load,500);}}
+ renderCta();};
 
 /* ---------- progress ---------- */
-function renderJobs(){const J=[];(S.data.robots||[]).forEach(r=>{(r.pending||[]).forEach(p=>J.push({r,p}));if(r.state==='queued'&&!(r.pending||[]).length)J.push({r,p:null});});
+function renderJobs(){const J=[];(S.data.robots||[]).forEach(r=>{(r.pending||[]).forEach(p=>J.push({r,p}));(r.market_jobs||[]).forEach(m=>J.push({r,p:null,m}));if(r.state==='queued'&&!(r.pending||[]).length&&!(r.market_jobs||[]).length)J.push({r,p:null});});
  $('prog').classList.toggle('hide',!J.length);
- $('jobs').innerHTML=J.map(({r,p})=>{const ahead=r.ahead||0,run=S.data.running&&ahead===0;
+ $('jobs').innerHTML=J.map(({r,p,m})=>{if(m){const st={queued:['en file',''],building:['prépare le marché','ac'],testing:['en cours','ac']}[m.state]||['en file',''];
+  return'<div class="job"><div class="top"><b>'+esc(r.name)+' · '+esc(mkName(m.sym))+'</b><span class="chip '+st[1]+'">'+(st[1]?'<span class="spin"></span>':'')+st[0]+'</span></div><small>'+(m.state==='building'?'Première fois sur ce marché : on enregistre ses prix (environ '+hrs()+')':'2 derniers mois de prix · quelques minutes')+' · tu peux fermer cette page</small><div class="bar"><i></i></div></div>';}
+  const ahead=r.ahead||0,run=S.data.running&&ahead===0;
   return'<div class="job"><div class="top"><b>'+esc(r.name)+'</b><span class="chip '+(run?'ac':'')+'">'+(run?'<span class="spin"></span>en cours':(ahead===0?'le prochain':ahead+' avant lui'))+'</span></div>'+
   '<small>'+(p?(fd(p.from)+' → '+fd(p.to)):'Tout l’historique')+' · environ '+(r.eta_min||S.data.test_min)+' min · tu peux fermer cette page</small><div class="bar"><i></i></div>'+
   (r.ref?'':'<div class="foot"><span class="sub" style="font-size:.74rem">Lancé '+(p&&p.at?('à '+p.at.slice(11,16)+' UTC'):'')+'</span><button class="txtbtn cx" data-id="'+esc(r.id)+'" data-f="'+esc(p?p.from:'')+'" data-t="'+esc(p?p.to:'')+'" data-run="'+(run?1:0)+'">'+(run?'Arrêter':'Annuler')+'</button></div>')+'</div>';}).join('');
@@ -373,26 +455,43 @@ function renderJobs(){const J=[];(S.data.robots||[]).forEach(r=>{(r.pending||[])
 
 /* ---------- results ---------- */
 function allTests(){const out=[];(S.data.robots||[]).forEach(r=>{if(r.test)out.push({r,t:r.test,label:'Tout l’historique',range:null});
- (r.ranges||[]).forEach(x=>{if(x.test)out.push({r,t:x.test,label:fd(x.range[0])+' → '+fd(x.range[1]),range:x.range});});});
+ (r.ranges||[]).forEach(x=>{if(x.test)out.push({r,t:x.test,label:fd(x.range[0])+' → '+fd(x.range[1]),range:x.range});});
+ (r.markets||[]).forEach(x=>{if(x.sym!=='BTCUSD'&&x.test)out.push({r,t:x.test,label:mkName(x.sym,x.name)+' · '+fmt(x.test.days||0,0)+' j',range:null,sym:x.sym});});});
  out.sort((a,b)=>String(b.t.when).localeCompare(String(a.t.when)));return out;}
-function renderResults(){const all=allTests();$('resN').textContent=all.length;$('resN').classList.toggle('hide',!all.length);
+function renderResults(){renderMkt();const all=allTests();$('resN').textContent=all.length;$('resN').classList.toggle('hide',!all.length);
  const F={all:x=>true,win:x=>x.t.net>0,loss:x=>x.t.net<=0,both:x=>x.t.h1>0&&x.t.h2>0}[S.filt];const L=all.filter(F);
  if(!all.length){$('results').innerHTML='<section class="card empty"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/></svg></div><h3>Pas encore de résultat</h3><p>Lance un premier test : en quelques minutes tu vois ce que ton robot aurait fait, trade par trade.</p><button class="btn pri" id="toRun">Tester un robot</button></section>';$('toRun').onclick=()=>tab('run');return;}
  if(!L.length){$('results').innerHTML='<section class="card empty"><h3>Aucun test dans ce filtre</h3><p>Essaie un autre filtre.</p></section>';return;}
  let h='',lastDay='';L.forEach((x,i)=>{const d=String(x.t.when).slice(0,10);if(d!==lastDay){h+='<div class="dayhdr">'+(d===new Date().toISOString().slice(0,10)?'Aujourd’hui':fd(d))+'</div>';lastDay=d;}
   h+='<button class="row" data-i="'+i+'"><span class="av'+(x.r.ref?' ref':'')+'"'+(x.r.ref?'':avs(x.r.name))+'>'+esc(ini(x.r.name))+'</span><span style="min-width:0"><div class="nm">'+esc(x.r.name)+'</div><div class="pr">'+x.label+' · '+x.t.trades+' trades</div></span><span class="rt"><div class="net '+cls(x.t.net)+'">'+money(x.t.net)+'</div>'+spark(x.t.curve)+'</span></button>';});
  $('results').innerHTML=h;$('results').querySelectorAll('.row').forEach(b=>b.onclick=()=>openRes(L[Number(b.dataset.i)]));}
+function setRv(v){S.rv=v;$('rview').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+ $('mktView').classList.toggle('hide',v!=='mkt');$('filters').classList.toggle('hide',v==='mkt');$('results').classList.toggle('hide',v==='mkt');renderMkt();}
+$('rview').querySelectorAll('button').forEach(b=>b.onclick=()=>setRv(b.dataset.v));
+function renderMkt(){if(S.rv!=='mkt'||!S.data)return;const r=robot();const el=$('mktView');
+ const head='<button class="field" id="mkRobot" style="margin-bottom:12px"><span class="av'+(r&&r.ref?' ref':'')+'"'+(r&&!r.ref?avs(r.name):'')+'>'+esc(r?ini(r.name):'+')+'</span><span class="mid"><b>'+esc(r?r.name:'Choisis un robot')+'</b><small>où il marche, du meilleur au moins bon</small></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 10l4 4 4-4"/></svg></button>';
+ const M=((r&&r.markets)||[]).filter(x=>x.test);
+ if(!M.length){el.innerHTML=head+'<section class="card empty"><h3>Pas encore testé sur d’autres marchés</h3><p>Teste ce robot sur l’or, le Nasdaq ou un autre marché pour voir où il marche le mieux.</p><button class="btn pri" id="mkGo">Choisir des marchés</button></section>';
+  $('mkGo').onclick=()=>{tab('run');openMarkets();};}
+ else{const wins=M.filter(x=>x.per30>0).length,mx=Math.max(...M.map(x=>Math.abs(x.per30||0)),1),best=M[0];
+  el.innerHTML=head+'<section class="card"><div class="rkhead"><div class="s">'+(wins?('Gagne sur '+wins+' marché'+(wins>1?'s':'')+' sur '+M.length+(best.per30>0?(' · le meilleur : '+esc(mkName(best.sym,best.name))):'')):(M.length>1?('Perd sur les '+M.length+' marchés testés'):'Perd sur le seul marché testé'))+'</div></div>'+
+  '<div class="rkleg"><span><i class="dot2" style="background:var(--down)"></i>perd</span><span>pour 30 jours</span><span><i class="dot2" style="background:var(--up)"></i>gagne</span></div>'+
+  M.map((x,i)=>{const w=Math.abs(x.per30||0)/mx*50,pos=(x.per30||0)>=0;const lk=x.luck==='pass'?'<small style="color:var(--up);font-weight:800">✓ prouvé</small>':'';
+   return'<button class="rk" data-i="'+i+'"><span class="mic">'+esc(mkIc(x.sym))+'</span><span style="min-width:0"><b>'+esc(mkName(x.sym,x.name))+'</b><small>'+x.test.trades+' trades</small>'+lk+'</span><span class="bar2"><i style="'+(pos?'left:50%':'right:50%')+';width:'+w.toFixed(1)+'%;background:'+(pos?'var(--up)':'var(--down)')+'"></i></span><span class="v"><b class="'+cls(x.per30)+'">'+money(x.per30)+'</b><small>'+money(x.test.net)+' en '+fmt(x.test.days||0,0)+' j</small></span></button>';}).join('')+
+  '<div class="sub" style="font-size:.76rem;margin-top:10px">« prouvé » veut dire qu’il fait mieux que 100 robots tirés au hasard sur les mêmes jours.</div></section>';
+  el.querySelectorAll('.rk').forEach(b=>b.onclick=()=>{const x=M[Number(b.dataset.i)];openRes({r,t:x.test,label:mkName(x.sym,x.name)+' · '+fmt(x.test.days||0,0)+' jours',range:null,sym:x.sym});});}
+ $('mkRobot').onclick=()=>openPicker();}
 $('filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.filt=b.dataset.f;$('filters').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderResults();});
 function openRes(x){const t=x.t,r=x.r;const mx=Math.max(Math.abs(t.net||0),Math.abs(t.parent_net||0),1);
- $('sheetIn').innerHTML='<div class="sub" style="font-size:.78rem">'+(x.range?('Période choisie : '+x.label):('Tout l’historique'+(t.window?(' : '+fd(t.window[0])+' → '+fd(t.window[1])):'')))+'</div><h3>'+esc(r.name)+'</h3><div class="big '+cls(t.net)+'">'+money(t.net)+'</div>'+
+ $('sheetIn').innerHTML='<div class="sub" style="font-size:.78rem">'+(x.sym?('Marché : '+esc(x.label)):x.range?('Période choisie : '+x.label):('Tout l’historique'+(t.window?(' : '+fd(t.window[0])+' → '+fd(t.window[1])):'')))+'</div><h3>'+esc(r.name)+'</h3><div class="big '+cls(t.net)+'">'+money(t.net)+'</div>'+
   '<div class="sub">sur '+(t.days==null?'–':fmt(t.days,t.days%1?1:0))+' jours, avec 200 $ de départ</div>'+spark(t.curve,600,180,true)+
   (t.parent_net!=null&&!r.ref?'<div class="vsp"><div class="r"><span>Ce robot</span><b class="'+cls(t.net)+'">'+money(t.net)+'</b></div><div class="r"><span>Son parent, même période</span><b class="'+cls(t.parent_net)+'">'+money(t.parent_net)+'</b></div><div class="sub" style="font-size:.78rem;margin-top:4px">'+(t.net>t.parent_net?'Ton robot fait mieux que son parent.':'Son parent fait mieux sur cette période.')+'</div></div>':'')+
   '<div class="g4"><div><small>Trades</small><b>'+t.trades+'</b></div><div><small>Gagnés</small><b>'+Math.round(100*(t.win_rate||0))+' %</b></div><div><small>Pire creux</small><b>'+fmt(t.dip,2)+' $</b></div><div><small>Pertes de suite (max)</small><b>'+(t.streak==null?'–':t.streak)+'</b></div>'+
   '<div><small>1re moitié</small><b class="'+cls(t.h1)+'">'+money(t.h1)+'</b></div><div><small>2e moitié</small><b class="'+cls(t.h2)+'">'+money(t.h2)+'</b></div><div><small>Meilleur trade</small><b class="pos">'+money(t.best)+'</b></div><div><small>Pire trade</small><b class="neg">'+money(t.worst)+'</b></div></div>'+
   '<div style="margin-top:12px">'+halves(t)+'</div>'+
-  '<div class="acts">'+(x.range?'<button class="btn" id="reRun">Relancer</button>':'<span></span>')+'<button class="btn pri" id="other">Autre période</button></div>';
- const rr=$('reRun');if(rr)rr.onclick=async()=>{rr.disabled=true;if(await launch(r.id,x.range[0],x.range[1])){closeSheet();tab('run');}else rr.disabled=false;};
- $('other').onclick=()=>{S.sel=r.id;closeSheet();renderField();tab('run');S.days='pick';$('seg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.d==='pick'));$('dates').classList.remove('hide');renderWin();window.scrollTo({top:0,behavior:'smooth'});};
+  '<div class="acts">'+((x.range||x.sym)?'<button class="btn" id="reRun">Relancer</button>':'<span></span>')+'<button class="btn pri" id="other">'+(x.sym?'Autre marché':'Autre période')+'</button></div>';
+ const rr=$('reRun');if(rr)rr.onclick=async()=>{rr.disabled=true;let ok;if(x.sym){const j=await post('robot_test_markets',{id:r.id,syms:[x.sym]});ok=!!j.ok;toast(ok?'Test relancé sur '+mkName(x.sym):'Impossible pour l’instant');if(ok)setTimeout(load,500);}else ok=await launch(r.id,x.range[0],x.range[1]);if(ok){closeSheet();tab('run');}else rr.disabled=false;};
+ $('other').onclick=()=>{S.sel=r.id;closeSheet();renderField();tab('run');if(x.sym){setTimeout(openMarkets,200);return;}S.days='pick';$('seg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.d==='pick'));$('dates').classList.remove('hide');renderWin();window.scrollTo({top:0,behavior:'smooth'});};
  openSheet();}
 
 /* ---------- proof ---------- */
@@ -420,5 +519,7 @@ function tab(t){S.tab=t;const i=TABS.indexOf(t);$('ind').style.transform='transl
  TABS.forEach(k=>$('p-'+k).classList.toggle('hide',k!==t));renderCta();try{localStorage.setItem('owlTestsTab',t);}catch(e){}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 try{const t=localStorage.getItem('owlTestsTab');if(t&&t!=='run')tab(t);}catch(e){}
-load();loadProof();
+renderMarkets();
+try{const h=new URLSearchParams(location.hash.slice(1));if(h.get('robot'))localStorage.setItem('owlTestsRobot',h.get('robot'));if(h.get('view')==='mkt'){tab('res');setRv('mkt');}}catch(e){}
+load();loadProof();loadSyms();
 </script></body></html>
