@@ -15397,6 +15397,13 @@ def _chat_msg(c, role, **kw):
                     if _acts and _dec["verdict"] in ("send", "rewrite", "merge"):
                         threading.Timer(1.5, _deed_do, args=(c.get("id"), c.get("uid"), _acts)).start()
                     _r = _KJ.apply(c, m, _dec)
+                    try:                           # 2026-10-25 13:54 (watch): the strip above ran on the DRAFT; a judge rewrite came back
+                        import re as _re2          # with "•" bullets and went out as is - the bubble that is posted is cleaned too
+                        _mm0 = _r[2] if _r[0] == "edit" else (_r[1] if _r[0] == "append" else None)
+                        if _mm0 is not None and isinstance(_mm0.get("text"), str):
+                            _mm0["text"] = _re2.sub(r"(?m)^\s*[-*•·]\s+", "", _re2.sub(r"\*\*(.+?)\*\*", r"\1", _mm0["text"]))
+                    except Exception:
+                        pass
                     try:                           # data for the next judgments: subjects raised, lines told
                         _mm = _r[2] if _r[0] == "edit" else (m if _r[0] == "append" else None)
                         if _mm is not None:
