@@ -15389,6 +15389,13 @@ def _chat_msg(c, role, **kw):
                     return m
                 _P = _judge_providers(c, m)
                 _lang = _rc().member_lang(c, c.get("lang") or "fr")
+                try:                               # 2026-10-25 14:40 (watch): he wrote in English, the draft answered in English, and the
+                    import kino_ear as _KEj        # judge rewrote it in French "because the member is French" - the language of the
+                    _luj = next((x for x in reversed(c.get("msgs") or []) if x.get("role") == "user"), None)   # message being answered,
+                    if _luj and not m.get("event"):                                                            # when clear, as the prompt does
+                        _lang = _KEj.reply_lang(_luj.get("text"), _lang)
+                except Exception:
+                    pass
                 _dec = _KJ.judge(_KJ.room(c, m, _P), _lang, _rc().W, c.get("id"))
                 if _dec is not None:
                     _judged = True
