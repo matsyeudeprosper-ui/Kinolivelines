@@ -63,6 +63,9 @@ def _test(t, lang):
         return ("test EN FILE depuis %s UTC (quelques minutes une fois son tour venu)" % t["queued"]) if lang != "en" else ("test QUEUED since %s UTC (a few minutes once its turn comes)" % t["queued"])
     s = "%+.2f $ sur %d trades, %d %% gagnés, pire creux %.0f $" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0)) \
         if lang != "en" else "%+.2f $ on %d trades, %d%% won, worst dip %.0f $" % (float(t.get("net") or 0), int(t.get("trades") or 0), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0))
+    if t.get("h1") is not None and t.get("h2") is not None:
+        s += ((", 1re moitié %+.2f $, 2e moitié %+.2f $" if lang != "en" else ", first half %+.2f $, second half %+.2f $")
+              % (float(t["h1"]), float(t["h2"])))
     if t.get("when"):
         s += (" (testé le %s)" if lang != "en" else " (tested %s)") % t["when"]
     return s

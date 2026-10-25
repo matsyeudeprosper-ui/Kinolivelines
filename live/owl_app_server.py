@@ -15013,8 +15013,12 @@ def _state_data(uid, c=None):
             if cc.get("uid") != uid:
                 continue
             for g in cc.get("ghosts") or []:
+                _gt = g.get("t0") or g.get("since") or g.get("started")
+                _gs = time.strftime("%d/%m", time.gmtime(float(_gt))) if _gt else ""
                 if g.get("rid"):
-                    ghosts[g["rid"]] = time.strftime("%d/%m", time.gmtime(float(g.get("t0") or g.get("since") or 0))) if (g.get("t0") or g.get("since")) else ""
+                    ghosts[g["rid"]] = _gs
+                if g.get("name"):              # 2026-10-25 17:28 (watch): a ghost started from the chat carries no rid, only
+                    ghosts["name:" + str(g["name"])] = _gs    # its name - the state said "Owl de nuit: nulle part" while it ran
     except Exception:
         pass
     acc = {}
@@ -15044,7 +15048,8 @@ def _state_data(uid, c=None):
             j = json.load(open(os.path.join(DIR, "robots", "results", rid + ".json"), encoding="utf-8"))
             rb = j.get("robot") or {}
             if rb.get("net") is not None:
-                test = {"net": rb.get("net"), "trades": rb.get("trades"), "win_rate": rb.get("win_rate"), "cc_dd": rb.get("cc_dd"), "when": str(j.get("generated_at") or "")[:10]}
+                test = {"net": rb.get("net"), "trades": rb.get("trades"), "win_rate": rb.get("win_rate"), "cc_dd": rb.get("cc_dd"), "when": str(j.get("generated_at") or "")[:10],
+                        "h1": rb.get("first_half"), "h2": rb.get("later_half")}     # 2026-10-25: "les deux moitiés ?" - he had no halves
         except Exception:
             pass
         luck = None
@@ -15067,6 +15072,8 @@ def _state_data(uid, c=None):
             where, since = "real", acc.get("since") or ""
         elif rid in ghosts:
             where, since = "ghost", ghosts[rid]
+        elif ("name:" + str(r.get("name_fr") or "")) in ghosts:
+            where, since = "ghost", ghosts["name:" + str(r.get("name_fr"))]
         out.append({"id": rid, "name": r.get("name_fr") or rid, "market": mk, "where": where, "since": since, "steps": steps, "test": test, "luck": luck})
     return {"robots": out, "account": acc}
 
