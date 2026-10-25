@@ -440,6 +440,11 @@ if __name__ == "__main__":
                                "balance": BAL, "drag": DRAG, "days": round((int(_T[-1]) - int(_T[0])) / 86400000, 1), "range": [job["from"], job["to"]],
                                "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(_T[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(_T[-1]) / 1000))],
                                "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}
+                        _still = any(j.get("from") == job["from"] and j.get("to") == job["to"]
+                                     for x in json.load(open(REG, encoding="utf-8")).get("robots") or [] if x["id"] == rid for j in (x.get("range_jobs") or []))
+                        if not _still:
+                            print(rid, "range", job["from"], job["to"], "cancelled by the member - result dropped", flush=True)
+                            continue
                         os.makedirs(os.path.join(RES, "ranges"), exist_ok=True)
                         json.dump(res, open(os.path.join(RES, "ranges", "%s__%s_%s.json" % (rid, job["from"], job["to"])), "w", encoding="utf-8"), indent=1)
                         print(rid, "range", job["from"], job["to"], "net %.2f" % out["robot"]["net"], flush=True)

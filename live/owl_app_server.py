@@ -13825,6 +13825,31 @@ def test_range(user, body):
     return {"ok": True, "minutes": ROBOT_TEST_MIN}
 
 
+def test_cancel(user, body):
+    """2026-10-25 (owner: "I can't stop a test from the UI"): withdraw a date-range test (or a queued full test).
+    A test already running finishes its few minutes, but its result is thrown away (the runner checks before writing)."""
+    reg = robot_reg()
+    rob = reg.get("robots") or []
+    r = next((x for x in rob if x.get("id") == body.get("id")), None)
+    if not (r and (r.get("id") == "owl" and is_admin(user) or _robot_mine(user, r))):
+        return {"ok": False, "err": "not_yours"}
+    a, b = str(body.get("from") or "")[:10], str(body.get("to") or "")[:10]
+    if a and b:
+        before = len(r.get("range_jobs") or [])
+        r["range_jobs"] = [j for j in (r.get("range_jobs") or []) if not (j.get("from") == a and j.get("to") == b)]
+        if len(r["range_jobs"]) == before:
+            return {"ok": False, "err": "gone"}
+    else:
+        if r.get("retest"):
+            r.pop("retest", None)
+        elif r.get("stage") == "queued":
+            r["stage"] = "draft"
+        else:
+            return {"ok": False, "err": "gone"}
+    _robot_save(reg)
+    return {"ok": True}
+
+
 def tests_proof(user, body):
     """the latest check of the test against reality (written by study/botsim/publish_proof.py)"""
     try:
@@ -30131,7 +30156,7 @@ class H(BaseHTTPRequestHandler):
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
-                                              "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "tests_proof", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
+                                              "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
@@ -30149,7 +30174,7 @@ class H(BaseHTTPRequestHandler):
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
-                       "tests_overview": tests_overview, "test_range": test_range, "tests_proof": tests_proof,
+                       "tests_overview": tests_overview, "test_range": test_range, "test_cancel": test_cancel, "tests_proof": tests_proof,
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,

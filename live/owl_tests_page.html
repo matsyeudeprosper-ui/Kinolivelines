@@ -100,6 +100,7 @@ header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 10px}
 .job small{font-size:.8rem;color:var(--muted)}
 .bar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;position:relative}
 .bar i{position:absolute;inset:0 auto 0 0;width:40%;border-radius:99px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:slide 1.6s ease-in-out infinite}
+.cx{align-self:flex-start;border:1px solid rgba(255,92,92,.35);background:var(--bad-bg);color:var(--down-soft);border-radius:10px;padding:7px 12px;font-size:.8rem;font-weight:800;margin-top:2px}
 .spin{width:12px;height:12px;border-radius:50%;border:2px solid var(--accent-bg);border-top-color:var(--accent);animation:spin .9s linear infinite;display:inline-block}
 /* results */
 .res{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;padding:16px;border-radius:18px;background:var(--surface2);border:1px solid var(--border);margin-top:10px;text-align:left;width:100%;transition:border-color .15s}
@@ -312,7 +313,12 @@ function renderJobs(){
  $('prog').classList.toggle('hide',!J.length);
  $('jobs').innerHTML=J.map(({r,p})=>{const ahead=r.ahead||0;const run=S.data.running&&ahead===0;
   return'<div class="job"><div class="top"><b>'+esc(r.name)+'</b><span class="chip '+(run?'ac':'')+'">'+(run?'<span class="spin"></span>en cours':(ahead===0?'le prochain':ahead+' avant lui'))+'</span></div>'+
-   '<small>'+(p?('Du '+fd(p.from)+' au '+fd(p.to)):'Tout l’historique')+' · environ '+(r.eta_min||S.data.test_min)+' min · tu peux fermer cette page</small><div class="bar"><i></i></div></div>';}).join('');
+   '<small>'+(p?('Du '+fd(p.from)+' au '+fd(p.to)):'Tout l’historique')+' · environ '+(r.eta_min||S.data.test_min)+' min · tu peux fermer cette page</small><div class="bar"><i></i></div>'+
+   (r.ref?'':'<button class="cx" data-id="'+esc(r.id)+'" data-f="'+esc(p?p.from:'')+'" data-t="'+esc(p?p.to:'')+'">'+(run?'Arrêter ce test':'Annuler')+'</button>')+'</div>';}).join('');
+ $('jobs').querySelectorAll('.cx').forEach(b=>b.onclick=async()=>{
+  if(b.dataset.busy)return;if(!confirm(b.textContent==='Arrêter ce test'?'Arrêter ce test ? Son résultat sera écarté.':'Annuler ce test ?'))return;
+  b.dataset.busy=1;b.textContent='…';const j=await post('test_cancel',{id:b.dataset.id,from:b.dataset.f,to:b.dataset.t});
+  if(!j.ok){b.textContent=j.err==='gone'?'Déjà terminé':'Impossible';}setTimeout(load,300);});
 }
 
 /* ---------- results ---------- */
