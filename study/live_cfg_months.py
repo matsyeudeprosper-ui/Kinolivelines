@@ -55,13 +55,33 @@ def month_m1(y, m):
     import pandas as pd
     zp = os.path.join(CACHE, "_dl.zip")
     log("download %d-%02d" % (y, m))
-    for k in range(4):
+    # 2026-10-25: the archive server drops big months mid-way (162 MB, "got only 38 MB"): resume with a Range request
+    # from where the file stopped instead of starting over, up to 12 tries
+    url, size = URL.format(y=y, m=m), None
+    if os.path.exists(zp):
+        os.remove(zp)
+    for k in range(12):
         try:
-            urllib.request.urlretrieve(URL.format(y=y, m=m), zp)
-            break
+            have = os.path.getsize(zp) if os.path.exists(zp) else 0
+            req = urllib.request.Request(url, headers={"Range": "bytes=%d-" % have} if have else {})
+            with urllib.request.urlopen(req, timeout=120) as r, open(zp, "ab" if have else "wb") as f:
+                if size is None:
+                    cr = r.headers.get("Content-Range")
+                    size = int(cr.split("/")[-1]) if cr else int(r.headers.get("Content-Length") or 0)
+                if have and r.status != 206:
+                    f.seek(0)
+                    f.truncate()
+                while True:
+                    ch = r.read(1 << 20)
+                    if not ch:
+                        break
+                    f.write(ch)
+            if size and os.path.getsize(zp) >= size:
+                break
+            log("  download %d: %d of %s bytes, resuming" % (k + 1, os.path.getsize(zp), size))
         except Exception as e:
-            log("  download try %d failed: %s" % (k + 1, e))
-            time.sleep(30 * (k + 1))
+            log("  download try %d stopped at %d bytes: %s" % (k + 1, os.path.getsize(zp) if os.path.exists(zp) else 0, e))
+            time.sleep(10 * (k + 1))
     else:
         raise RuntimeError("download failed %d-%02d" % (y, m))
     z = zipfile.ZipFile(zp)
