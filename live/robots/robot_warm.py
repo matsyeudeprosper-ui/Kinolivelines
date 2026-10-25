@@ -34,6 +34,9 @@ def member_turn(flag):
     _TL.member = bool(flag)
 
 
+_OA_DOWN = {"until": 0.0, "n": 0}
+
+
 def set_brain(brain):
     """2026-10-24 (Kino-O prototype): the conversation's brain for this thread - "openai" routes every call of the turn
     (quick, build, judge, auditor, call brain) to robot_openai; None = Claude through claude.exe as usual"""
@@ -243,12 +246,21 @@ def partial_say(buf, key="say"):
 
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
-    if getattr(_TL, "brain", None) == "openai":            # 2026-10-24 (Kino-O): the same text in and out, through OpenAI
+    if getattr(_TL, "brain", None) == "openai" and time.time() > _OA_DOWN["until"]:   # 2026-10-24 (Kino-O): through OpenAI
         try:
             import robot_openai as _RO
-            return _RO.ask_text(system, user, model, timeout, log, on_text)
+            _r = _RO.ask_text(system, user, model, timeout, log, on_text)
         except Exception:
-            return None
+            _r = None
+        if _r is not None:
+            _OA_DOWN["n"] = 0
+            return _r
+        # 2026-10-25 18:53 UTC (watch): the OpenAI account ran out of credit ("credit_balance_exhausted") and every Kino-O
+        # reply became "je n'ai pas reussi a l'assembler". A failed OpenAI call now falls through to the Claude brain;
+        # after two failures in a row OpenAI is skipped for 10 minutes, then tried again.
+        _OA_DOWN["n"] += 1
+        if _OA_DOWN["n"] >= 2:
+            _OA_DOWN["until"], _OA_DOWN["n"] = time.time() + 600, 0
     if not getattr(_TL, "member", False) and not _budget_ok():
         try:                                      # refused, and said so in the cost log
             io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(

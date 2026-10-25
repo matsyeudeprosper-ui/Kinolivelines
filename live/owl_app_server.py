@@ -15134,6 +15134,8 @@ def _state_data(uid, c=None):
                     ghosts[g["rid"]] = _gs
                 if g.get("name"):              # 2026-10-25 17:28 (watch): a ghost started from the chat carries no rid, only
                     ghosts["name:" + str(g["name"])] = _gs    # its name - the state said "Owl de nuit: nulle part" while it ran
+                    _gtr = [x for x in (g.get("trades") or []) if isinstance(x, dict)]
+                    ghosts["stats:" + str(g["name"])] = (len(_gtr), round(sum(float(x.get("pnl") or x.get("p") or 0) for x in _gtr), 2))
     except Exception:
         pass
     acc = {}
@@ -15182,14 +15184,16 @@ def _state_data(uid, c=None):
         steps = {k: P.get(parts.get(k), parts.get(k)) for k in ("entry", "stop", "exit") if parts.get(k)}
         if parts.get("filters"):
             steps["filters"] = ", ".join(P.get(f, f) for f in parts["filters"])
-        where, since = "none", ""
+        where, since, _gst = "none", "", None
         if acc.get("id") == rid:
             where, since = "real", acc.get("since") or ""
         elif rid in ghosts:
             where, since = "ghost", ghosts[rid]
         elif ("name:" + str(r.get("name_fr") or "")) in ghosts:
             where, since = "ghost", ghosts["name:" + str(r.get("name_fr"))]
-        out.append({"id": rid, "name": r.get("name_fr") or rid, "market": mk, "where": where, "since": since, "steps": steps, "test": test, "luck": luck})
+        _gst = ghosts.get("stats:" + str(r.get("name_fr") or "")) if where == "ghost" else None
+        out.append({"id": rid, "name": r.get("name_fr") or rid, "market": mk, "where": where, "since": since, "steps": steps, "test": test, "luck": luck,
+                    "ghost_n": (_gst or (None, None))[0] if where == "ghost" else None, "ghost_net": (_gst or (None, None))[1] if where == "ghost" else None})
     return {"robots": out, "account": acc}
 
 
