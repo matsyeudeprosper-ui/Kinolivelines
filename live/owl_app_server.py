@@ -17335,7 +17335,11 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _okp, _whyp = _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")), present=_pres)
                 if _judge_on():
                     _lu_t = max([float(m_.get("t") or 0) for m_ in (c.get("msgs") or []) if m_.get("role") == "user"] or [0])
-                    _okp = time.time() - _lu_t > 60          # 2026-10-24: the judge decides when to speak; this only avoids talking over a message being typed
+                    # 2026-10-24: the judge decided when to speak and pace only avoided talking over a message being typed.
+                    # 2026-10-25 04:16 + 04:26 his time (watch): pace BLOCKED both initiatives ("gap 20 / 40 min not reached, 2-3
+                    # unanswered, night") and they went out anyway - four bubbles of his own in a row at 4 am. Pace's gap and backoff
+                    # are policy floors (like the 8/hour cap): binding; the judge still decides what is said and may drop more.
+                    _okp = bool(_okp) and time.time() - _lu_t > 60
                     # 2026-10-24 20:48 UTC (watch): a THIRD bubble of his own in 8 min to a member who had gone quiet (the owner's
                     # "Ok. And?" of 10-23 again). Pace's backoff is a policy floor like the 8/hour cap, not a judgment: three of his
                     # own unanswered in a row -> he waits for them to write, whatever the judge feels like saying.
