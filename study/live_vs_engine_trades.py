@@ -55,6 +55,38 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     R = np.concatenate([np.load(os.path.join(M1, "2026-09.npz"))["R"], np.load(os.path.join(M1, "2026-10.npz"))["R"]])
     WARM = int(os.environ.get("WARM_DAYS", "3"))
     R = R[(R["time"] >= t0 - WARM * 86400) & (R["time"] < t1)]
+    # the real recovery state at the replay start (warm-up start): last "debt $X (peak ..), chest $Y" line before it
+    if os.environ.get("SEED_DEBT", "1") == "1":
+        import re as _re0
+        _ws = int(R["time"][0])
+        _d0 = _c0 = 0.0
+        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+            _m = _re0.match(r"(\S+) .*debt \$([0-9.]+) \(peak [^)]*\), chest \$([0-9.]+)", _ln)
+            if _m:
+                try:
+                    if ts(_m.group(1)) > _ws:
+                        break
+                except Exception:
+                    continue
+                _d0, _c0 = float(_m.group(2)), float(_m.group(3))
+        cfg["debt0"], cfg["chest0"] = _d0, _c0
+        print("seeded real state at %s: debt %.2f, chest %.2f" % (hm(_ws), _d0, _c0))
+    cfg["nv_live"] = os.environ.get("NV_LIVE", "1") == "1"
+    # downtime: "bougies figees depuis N min - reconnexion" -> no entry possible during those N minutes
+    if os.environ.get("DOWN", "1") == "1":
+        import re as _re1
+        _dn = []
+        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+            _m = _re1.match(r"(\S+) bougies figees depuis (\d+) min", _ln)
+            if _m:
+                try:
+                    _te = ts(_m.group(1))
+                except Exception:
+                    continue
+                if t0 - 86400 <= _te < t1:
+                    _dn.append([_te - 60 * int(_m.group(2)), _te])
+        cfg["down"] = _dn
+        print("downtime windows from the live log:", len(_dn))
     H.TRACE = []
     if os.environ.get("PB_STICKY", "1") == "1":      # the live bot's sticky pullback chain, grown during the replay
         H.PB_STICKY = os.path.join(HERE, "live_vs_engine", "pbchain_replay.json")
@@ -64,15 +96,26 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     E = [x for x in H.TRACE if t0 <= int(x["t"]) < t1]
     eng = [{"t": int(x["t"]), "d": "BUY" if x["d"] == 1 else "SELL", "kind": "FLIP-BOS" if x.get("flip") else "BOS",
             "win": x.get("win")} for x in E]
-    J = list(csv.DictReader(open(os.path.join(LIVE, "bos_journal_kino.csv"), encoding="utf-8")))
+    # 2026-10-25: REALITY = the bot's own log (bos_bot_kino.log), not the journal - the journal lacks trades (10-19 08:39
+    # BUY FLIP-BOS is in the log, not in bos_journal_kino.csv). Entry = "<KIND> ENTRY: BUY|SELL", result = the next
+    # "WIN +x" / "LOSS -x" main line (ADD lines are the bullets).
+    import re as _re
     real = []
-    for r in J:
-        if r.get("is_add") == "True" or not r.get("entry_time_utc"):
+    cur = None
+    for ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+        m = _re.match(r"(\S+) (FLIP-BOS|BOS|INT) ENTRY: (BUY|SELL)", ln)
+        if m:
+            if cur is not None:                       # an entry whose close the log never wrote (10-19 08:39): kept, result unknown
+                cur.update(win=None, outcome="?", pnl=0.0)
+                real.append(cur)
+            t = ts(m.group(1))
+            cur = {"t": t, "d": m.group(3), "kind": m.group(2)} if t0 <= t < t1 else None
             continue
-        t = ts(r["entry_time_utc"])
-        if t0 <= t < t1 and r.get("outcome"):
-            real.append({"t": t, "d": r["direction"], "kind": r["kind"], "win": float(r.get("profit_usd") or 0) > 0,
-                         "outcome": r["outcome"], "pnl": float(r.get("profit_usd") or 0)})
+        m = _re.match(r"(\S+) (WIN|LOSS) ([+-][0-9.]+) \(lot", ln)
+        if m and cur is not None:
+            cur.update(win=m.group(2) == "WIN", outcome=m.group(2), pnl=float(m.group(3)))
+            real.append(cur)
+            cur = None
     used = set()
     rows = []
     for rr in real:
@@ -86,13 +129,13 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
         if best:
             used.add(best[0])
             ee = eng[best[0]]
-            rows.append({"real": rr, "eng": ee, "lag_min": round((ee["t"] - rr["t"]) / 60.0, 1), "same_result": (ee["win"] == rr["win"])})
+            rows.append({"real": rr, "eng": ee, "lag_min": round((ee["t"] - rr["t"]) / 60.0, 1), "same_result": (None if rr["win"] is None else ee["win"] == rr["win"])})
         else:
             rows.append({"real": rr, "eng": None})
     only_eng = [ee for j, ee in enumerate(eng) if j not in used]
     m = [x for x in rows if x["eng"]]
     res = {"window": [start, end], "tol_min": tol, "real_trades": len(real), "engine_trades": len(eng),
-           "matched": len(m), "matched_same_result": sum(1 for x in m if x["same_result"]),
+           "matched": len(m), "matched_same_result": sum(1 for x in m if x["same_result"]), "matched_result_unknown": sum(1 for x in m if x["same_result"] is None),
            "real_only": len(real) - len(m), "engine_only": len(only_eng),
            "real_won": sum(1 for x in real if x["win"]), "engine_won": sum(1 for x in eng if x["win"])}
     os.makedirs(os.path.join(HERE, "live_vs_engine"), exist_ok=True)

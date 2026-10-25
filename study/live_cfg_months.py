@@ -142,6 +142,7 @@ def main(a, b):
         "debt_gate": 1 if L.get("debt_gate", True) else 0,
         "scale_ref": float(L.get("scale_ref_balance") or 200.0),
         "balance": float(L.get("scale_ref_balance") or 200.0) if L.get("scale_with_balance") else 0.0,
+        "nv_live": True,          # 2026-10-25: the live feed's storm-speed formula (trade match 35 -> 37 of 42)
     })
     for k in ("adds_on", "chest_cap", "jar_skim", "jar_stake", "jar_debt_mult", "jar_floor_cap", "min_balance", "debt_mode",
               "max_trades_day", "movement", "recov_bullets_only", "eq_half", "day_cap_waived", "week_target"):
