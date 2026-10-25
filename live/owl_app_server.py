@@ -15096,6 +15096,16 @@ def _state_text(uid, c=None):
                        "unless this line says so." % (
                            _an, "RUNNING right now on their real account (heartbeat fresh)" if _lv else "STOPPED (no heartbeat)",
                            (" but cannot trade: %s" % _bk) if _bk else ""))
+                try:                                   # 2026-10-25 11:58 (watch): asked "on arrête tout ?", he answered "arrêter l'hémorragie"
+                    _ndk = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}     # with no figure - the real size of the loss
+                    _ssk = _ndk.get("since_start") or {}                                         # is state too
+                    if _ssk.get("n"):
+                        _ln += (" Its real record on this account: since %s, %s trades, %s won, net %+.2f $; this week %+.2f $, this month %+.2f $; "
+                                "balance %.2f $. Its safety line stops it at -60 $ net from the start (%.2f $ away)." % (
+                                    _ssk.get("first"), _ssk.get("n"), _ssk.get("won"), float(_ssk.get("net") or 0), float(_ndk.get("week") or 0),
+                                    float(_ndk.get("month") or 0), float(_ndk.get("balance") or 0), 60 + float(_ssk.get("net") or 0)))
+                except Exception:
+                    pass
                 _hd, _rest = _st.split("\n", 1) if "\n" in _st else (_st, "")
                 _st = _hd + "\n" + _ln + "\n" + _rest
         except Exception:
