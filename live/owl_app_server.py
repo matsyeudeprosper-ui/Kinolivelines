@@ -17570,6 +17570,10 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
     en = False
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        # 2026-10-25 23:00 (watch): "Hi" written 3 s after opening the chat got TWO greetings - the CAME BACK reply and the
+        # re-run for "Hi". The drop below compared with the turn's start (_t0q), set after the pace gate and the context,
+        # so a message written in those seconds counted as seen. What this turn has seen = the newest message loaded here.
+        _seen_t = max([float(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image", "doc")] or [0])
         if event:                                        # 2026-10-23 (owner: "Ok. And?" after two initiatives in 16 min): the tact of when
             try:                                         # to speak on his own - member first, a gap, backoff when unanswered, flat member
                 _rc()
@@ -17878,7 +17882,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 # written; the initiative landed instead of the answer and they wrote "Quoi ?". Member first: a message of his
                 # own is dropped when they wrote in the meantime - the pending re-run answers them.
                 try:
-                    if any(m.get("role") in ("user", "show", "image", "doc") and float(m.get("t") or 0) >= _t0q - 1 for m in c.get("msgs") or []):
+                    if any(m.get("role") in ("user", "show", "image", "doc") and (float(m.get("t") or 0) >= _t0q - 1 or float(m.get("t") or 0) > _seen_t) for m in c.get("msgs") or []):
                         io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s EVENT DROPPED (member wrote meanwhile) %s | %s\n" % (
                             time.strftime("%m-%d %H:%M:%S"), cid, str(event)[:30], str(q["say"])[:120].replace("\n", " ")))
                         q["say"] = None
