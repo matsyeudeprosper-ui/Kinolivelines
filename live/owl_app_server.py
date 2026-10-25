@@ -15084,6 +15084,16 @@ def _state_text(uid, c=None):
                 _st = _hd + "\nKINO'S OWN ROBOT (his, pretend money, not the member's): " + _mr[:600] + "\n" + _rest
         except Exception:
             pass
+        try:                                           # 2026-10-25 02:02 (watch): the judge read "aucun robot ne tourne" (the robots THEY build)
+            _lb, _lv, _bk = bot_on(uid)                # and rewrote a true drift fact into "ton Owl est complètement à l'arrêt" - false: the
+            if _lb:                                    # structure bot on their real account was trading all night. The account robot is state too.
+                _ln = ("THE ROBOT ON THEIR ACCOUNT (real money - separate from the robots they build above): '%s' is %s%s. "
+                       "Never call it stopped or paused unless this line says so." % (
+                           _lb, "RUNNING right now (heartbeat fresh)" if _lv else "STOPPED (no heartbeat)", (" but cannot trade: %s" % _bk) if _bk else ""))
+                _hd, _rest = _st.split("\n", 1) if "\n" in _st else (_st, "")
+                _st = _hd + "\n" + _ln + "\n" + _rest
+        except Exception:
+            pass
         return _st
     except Exception as e:
         try:                                           # a silent "" would hide the block for good: say so in the errors log
@@ -17325,6 +17335,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     # own unanswered in a row -> he waits for them to write, whatever the judge feels like saying.
                     if "unanswered - wait" in str(_whyp or ""):
                         _okp = False
+                # 2026-10-25 02:02 (owner's time, watch): GUARDIAN drift news reached him 50 min after he left for the night, on an
+                # evening he had asked "sans chiffres"; the inner voice had said no five times but news never asked it. An
+                # observation (drift, lab news, luck test, end of day) is not a trade opening: when they are away and the inner
+                # voice has judged this silence and said no, it waits for them - urgent live events (a trade, the kill line) do not.
+                try:
+                    if str(event).startswith(("GUARDIAN", "LAB NEWS", "LUCK TEST FINISHED", "END OF DAY", "GHOST TRADE")) and \
+                            time.time() - _LAST_SEEN.get(user.get("id"), 0) > 120:
+                        _la_ = max([float(m_.get("t") or 0) for m_ in (c.get("msgs") or []) if m_.get("role") in ("user", "ai")] or [0])
+                        _ilq = _INNER_LAST.get(cid)
+                        if _ilq and float(_ilq.get("t") or 0) > _la_ and not _ilq.get("now"):
+                            io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD news %s | away, inner voice said no: %s\n" % (
+                                time.strftime("%m-%d %H:%M:%S"), user.get("id"), cid, str(event)[:22].replace(" ", "_"), str(_ilq.get("why"))[:100]))
+                            _okp = False
+                except Exception:
+                    pass
             except Exception:
                 _okp = True
             if not _okp:
