@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-25T13:30:09Z",
+ "updated": "2026-10-25T14:50:13Z",
  "hypotheses": [
   {
    "id": "ext_with_filter",
@@ -594,7 +594,8 @@
    "en": "When the one-hour chart's internal small trend already points the trade's way, the robot arrives too late and loses.",
    "evidence": [
     "2026-10-25: real htf_entry (captured at entry), 210 tr: h1 int same 87 tr 33% per0.01 -73.25 avgW 1.28 (halves 33/33); 0 25 tr 52% +11.2; opposite 98 tr 54% +0.05. Holds by day (28% vs 49%) and night (41% vs 60%), before 10-10 (31 vs 58) and after (34 vs 51), flips (34 vs 52) and BOS (31 vs 55), after a loss (26 vs 48). Top 25 wins: 3 same, 14 opp, 8 zero. m15 internal the OTHER way (same 57% vs opp 31%). Not in engine nor piles: requested h1_int_size.",
-    "2026-10-25 12:00 veille: 06:52 BOS SELL rested 66 min after a win, h1 same way: lost -3.97 as predicted. Inside rested BOS (15-180 min): same 21 tr 33% -21.82 vs opp 25 tr 68% +21.43 - it may explain rested_cont's misses (peu)."
+    "2026-10-25 12:00 veille: 06:52 BOS SELL rested 66 min after a win, h1 same way: lost -3.97 as predicted. Inside rested BOS (15-180 min): same 21 tr 33% -21.82 vs opp 25 tr 68% +21.43 - it may explain rested_cont's misses (peu).",
+    "2026-10-25 14:50 veille: 13:28 FLIP-BOS SELL, h1 same way, lost -4.48 as predicted (today's three losses all h1 same). Same 88 tr 33% -74.74 per 0.01 vs opp 99 tr 54% -1.39. Request h1_int_size remains the test."
    ]
   }
  ],
@@ -3132,6 +3133,11 @@
    "t": "2026-10-25T13:30:09Z",
    "look": "veille (1 close 12:25): wake_context, --pile flip_day (new data since 10-24 19:00), --streaks",
    "saw": "FLIP-BOS BUY -2.87 (12:25, pace 0.931, day, after the 07:40 loss, not quick). flip_day 84 tr 42% -90.26 PF 0.55 (h 36/49); after a loss 56 tr 38% -71.39; 0.8-1.0 22 tr -19.80; 12 h 7 tr 29% -20.74, 13 h 7 tr 14% -27.78. Total 233 tr, -151.82 PF 0.72. Streaks: trade after 2 losses 28 tr 29% -41.70 (peu). Twins empty, no ask. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-25T14:50:13Z",
+   "look": "veille (1 close 14:50): wake_context, last 4 trades by hand (htf_entry), --streaks, h1 internal same/opp recount, flip at 13 h",
+   "saw": "FLIP-BOS SELL -4.48 (13:28-14:50, pace 0.944, gap 63 min, after 2 losses, h1 i=-1 = same way): h1_internal_late predicted the loss; today's three losses were all h1 same. h1 same 88 tr 33% -74.74 per 0.01 vs opp 99 tr 54% -1.39; flips same way 50 tr 34% -36.89. Flip at 13 h UTC 8 tr 1 won (peu). Trade after 2 losses 29 tr 28% -46.18 (one short of 30). Twins empty, no ask. No run, no pile, no proposal."
   }
  ],
  "lessons": [
