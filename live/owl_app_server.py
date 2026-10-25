@@ -15087,9 +15087,15 @@ def _state_text(uid, c=None):
         try:                                           # 2026-10-25 02:02 (watch): the judge read "aucun robot ne tourne" (the robots THEY build)
             _lb, _lv, _bk = bot_on(uid)                # and rewrote a true drift fact into "ton Owl est complètement à l'arrêt" - false: the
             if _lb:                                    # structure bot on their real account was trading all night. The account robot is state too.
-                _ln = ("THE ROBOT ON THEIR ACCOUNT (real money - separate from the robots they build above): '%s' is %s%s. "
-                       "Never call it stopped or paused unless this line says so." % (
-                           _lb, "RUNNING right now (heartbeat fresh)" if _lv else "STOPPED (no heartbeat)", (" but cannot trade: %s" % _bk) if _bk else ""))
+                # 2026-10-25 00:30 (owner: "is it true the Owl is down?"): it was not - but the block listed "Owl de nuit ... NULLE PART"
+                # and the judge/brain read "ton Owl" as that variant. Name it the way the member does, and say which one is which.
+                _an = (_state_data(uid, c).get("account") or {}).get("robot") or "L'Owl"
+                _ln = ("THE ROBOT ON THEIR ACCOUNT (real money): %s is %s%s. When they say 'mon Owl' / 'le robot', THIS is the one. "
+                       "The robots listed below - even those with 'Owl' in the name (Owl de nuit...) - are variants they built and tested, "
+                       "NOT the one on their account; 'NULLE PART' there says nothing about this one. Never call it stopped, off or paused "
+                       "unless this line says so." % (
+                           _an, "RUNNING right now on their real account (heartbeat fresh)" if _lv else "STOPPED (no heartbeat)",
+                           (" but cannot trade: %s" % _bk) if _bk else ""))
                 _hd, _rest = _st.split("\n", 1) if "\n" in _st else (_st, "")
                 _st = _hd + "\n" + _ln + "\n" + _rest
         except Exception:
