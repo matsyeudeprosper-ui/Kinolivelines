@@ -334,6 +334,7 @@ def _feed():
 # pb_dir_gate: the pullback chart's state, memoised by (window start, last
 # closed bar) so run_cfg's full and half runs share the work (~55 ms each)
 _PB_MEMO = {}
+PB_STICKY = None         # path of a chain file for this run (None = the old memoised, non-sticky state)
 
 
 def _pb_state(R, i):
@@ -342,7 +343,7 @@ def _pb_state(R, i):
     arithmetic of structure_bos_bot.pb_state_now(), minus the sticky chain."""
     g0 = max(0, i - 7999)
     key = (int(R[g0]["time"]), int(R[i]["time"]))
-    if key in _PB_MEMO:
+    if PB_STICKY is None and key in _PB_MEMO:
         return _PB_MEMO[key]
     F = _feed()
     v = (0, 0, None, None)
@@ -352,7 +353,11 @@ def _pb_state(R, i):
             dots, marks, trend, *_ = F.engine(kept, brk_out=bk)
             if trend:
                 dots = [x for x in dots if x[2] == trend]
-            pb = F.pullback_view(kept, dots, marks, bk, write=False) or {}
+            # 2026-10-25 (owner: "is the backtest trustworthy?"): without the sticky chain the replay's pullback trend
+            # disagreed with the live bot's on 9 of the 14 real trades it missed (10-10..10-24, 10 of them winners).
+            # PB_STICKY = a chain file of its own for the run: the replay keeps and grows it bar by bar like the feed.
+            pb = (F.pullback_view(kept, dots, marks, bk, sticky=PB_STICKY, write=True) if PB_STICKY is not None
+                  else F.pullback_view(kept, dots, marks, bk, write=False)) or {}
             t_ = int(pb.get("trend") or 0); c_ = int(pb.get("choch") or 0)
             c_ = c_ if (c_ and c_ != t_) else 0
             lvl = None

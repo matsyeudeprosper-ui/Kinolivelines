@@ -56,6 +56,10 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     WARM = int(os.environ.get("WARM_DAYS", "3"))
     R = R[(R["time"] >= t0 - WARM * 86400) & (R["time"] < t1)]
     H.TRACE = []
+    if os.environ.get("PB_STICKY", "1") == "1":      # the live bot's sticky pullback chain, grown during the replay
+        H.PB_STICKY = os.path.join(HERE, "live_vs_engine", "pbchain_replay.json")
+        if os.path.exists(H.PB_STICKY):
+            os.remove(H.PB_STICKY)
     H.simulate(R, 7.0, cfg)
     E = [x for x in H.TRACE if t0 <= int(x["t"]) < t1]
     eng = [{"t": int(x["t"]), "d": "BUY" if x["d"] == 1 else "SELL", "kind": "FLIP-BOS" if x.get("flip") else "BOS",

@@ -170,7 +170,15 @@ def main(a, b):
             res = {"month": key, "package": pkg, "lot": cfg["lot"], "spread_median": round(spr, 2), "ticks": nt, "bars": int(len(R)),
                    "engine": "lab/harness.simulate (deployed rules), M1 from bid ticks, constant spread; drag %.2f $/trade charged after" % DRAG}
             for tag, sp in (("real", spr), ("today", TODAY_SPREAD)):
+                # 2026-10-25: the live bot's STICKY pullback chain (without it the replay missed 9 of 14 real trades on
+                # 10-10..10-24); a fresh chain file per replay, grown bar by bar. Same fresh chain for the warm-up alone.
+                H.PB_STICKY = os.path.join(OUT, "_pbchain.json")
+                for _f in (H.PB_STICKY,):
+                    if os.path.exists(_f):
+                        os.remove(_f)
                 sf = H.simulate(full, sp, cfg)
+                if os.path.exists(H.PB_STICKY):
+                    os.remove(H.PB_STICKY)
                 sw = H.simulate(W, sp, cfg) if len(W) else {"net": 0.0, "pnls": []}
                 pn = (sf.get("pnls") or [])[len(sw.get("pnls") or []):]
                 net = sf["net"] - sw["net"]
