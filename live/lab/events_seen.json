@@ -34,7 +34,8 @@
   "pile_field_streak",
   "flip_hours_size",
   "builder_unblock",
-  "trail_in_menu"
+  "trail_in_menu",
+  "h1_int_size"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -53,6 +54,8 @@
   "ask_1792407475_cont_rested",
   "ask_1792749605_flip_after_loss",
   "ask_1792749605_gap_30_60",
-  "ask_1792783843_flip_day"
+  "ask_1792783843_flip_day",
+  "ask_1792843213_loss_quick15",
+  "ask_1792904411_europe"
  ]
 }

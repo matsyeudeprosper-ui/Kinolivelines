@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-25T06:30:06Z",
+ "updated": "2026-10-25T10:30:00Z",
  "hypotheses": [
   {
    "id": "ext_with_filter",
@@ -26,7 +26,8 @@
     "2026-10-17: plateau: trend filter ext450 A +57.9 (h +36.0/+11.4), ext500 A +73.5, ext550 B +50.8 (h2 0); choch filter ext400 A +55.2 (h +32.6/+30.4), ext500 A +74.3 (h +36.3/+37.5), ext600 A +46.1 (h +40.3/+10.3). 69 d choch+ext500 A +84.2 (h +9.9/+73.2) hole 93.7->57.4. Trace choch: removes -39.16 and 12 more losses (sum -116.5) + 6 wins (+22.1), adds 22 trades (-20.1); without the -39.16 gain ~+35 = answers critic concentration. Real view choch+ext500 +34.52 on 43 vs choch +29.21 on 48 (+5.3, small). Battery (vs raw base) pb_ext500 B, pb_choch_ext500 B, both h1 negative only because the raw base is the reference.",
     "2026-10-19: answers critic pb_ext450 doute: 69 d vs OFFICIAL FILTER ALONE (not raw): trend +166.84 hole 51.81 -> trend+ext450 +220.54 hole 20.31, B (h -4.26/+39.68). The -115 h1 the critic saw is filter-vs-raw. 42 d trend+ext450 A +57.9 (h +40.3/+16.3). Battery pb_ext450 A vs raw.",
     "2026-10-20: S = choch+ext500 base tonight 150 tr +128.92 hole 57.4 (h -0.24/+114.46); 69 d +253.76 on 252 tr. Used as base for every run.",
-    "2026-10-24: vs OFFICIAL filter (trend, raw, 41.7 d, base -67.21 hole 60.65 55 tr): ext450 A +61.3 (h +40.3/+11.4), long 69 d B +53.7, real +14.4. ext450+flip_loss 0.5 A +61.4 hole 36.9 (vs ext450 alone B, same money, hole 50->37), long B +41.1, real +23.8."
+    "2026-10-24: vs OFFICIAL filter (trend, raw, 41.7 d, base -67.21 hole 60.65 55 tr): ext450 A +61.3 (h +40.3/+11.4), long 69 d B +53.7, real +14.4. ext450+flip_loss 0.5 A +61.4 hole 36.9 (vs ext450 alone B, same money, hole 50->37), long B +41.1, real +23.8.",
+    "2026-10-25: vs official filter (CLI view, base -61.30 hole 56.52 55 tr, h1 12 tr): ext450 A +39.7 (h +40.3/+11.4); 69 d B +32.5 (h1 -25.5); real +14.4 (25 tr). Third night A on the filter."
    ]
   },
   {
@@ -57,10 +58,11 @@
   {
    "id": "day_size_rule",
    "fr": "Garder les trades de jour mais miser moins de 8 h a minuit vaut mieux que ne plus trader le jour.",
-   "status": "nouveau",
+   "status": "affaibli",
    "next": "Battery + critic on pb_day025_flipl05 / pb_day05_flipl05; control = the same stake cut on ALL trades (critic hothalf objection).",
    "evidence": [
-    "2026-10-24: vs official filter: day 0.25 A +36.5, 0.5 A +31.2; with flip_loss 0.5: 0.75 A +25.4, 0.5 A +40.6 (h +25.1/+12.4) hole 32.9, 0.25 A +43.3 (h +37.8/+7.5) hole 24.3. Monotone ladder. Long 69 d C (0.5 -40.6, 0.25 alone -66.5). Real +15.4 (31 tr). With ext450 it subtracts (-13.2 vs ext450). Caution: the robot loses in this window, so any stake cut looks good."
+    "2026-10-24: vs official filter: day 0.25 A +36.5, 0.5 A +31.2; with flip_loss 0.5: 0.75 A +25.4, 0.5 A +40.6 (h +25.1/+12.4) hole 32.9, 0.25 A +43.3 (h +37.8/+7.5) hole 24.3. Monotone ladder. Long 69 d C (0.5 -40.6, 0.25 alone -66.5). Real +15.4 (31 tr). With ext450 it subtracts (-13.2 vs ext450). Caution: the robot loses in this window, so any stake cut looks good.",
+    "2026-10-25: CONTROL: all trades 0.5 A +30.65 hole 28.3 (h +22.6/+19.0) beats day 0.5 A +23.8 hole 41.4 (h +21.3/+3.5). The day cut is just betting less while the robot loses (critic hothalf right). Not a cause."
    ]
   },
   {
@@ -335,10 +337,11 @@
   {
    "id": "flip_loss_stake",
    "fr": "Miser moins sur un changement de sens pris juste après une perte aide les comptes avec plafond.",
-   "status": "affaibli",
+   "status": "en test",
    "evidence": [
     "2026-10-11: flip_loss_size built 10-10. 0.75: capped A +16.5 (h +7.1/+9.4), uncapped B -3.2 (h -5.1/-6.2) hole 57->55; 0.5: capped A +11.8, uncapped C -20.4. With ext400+cw25 it adds nothing on capped (+87.7 vs +87.3).",
-    "2026-10-16: capped shape gone; filter + ext500 + flip-after-loss 0.75 A +70.9 vs ext500 alone +73.5: adds nothing."
+    "2026-10-16: capped shape gone; filter + ext500 + flip-after-loss 0.75 A +70.9 vs ext500 alone +73.5: adds nothing.",
+    "2026-10-25: on filter+ext450: flip_loss 0.5 same money (+38.5 vs +39.7), hole 56.5->43.3; with chase350 A +63.5 hole 43.3; 69 d (with chase300) +30.7; real +21.3 (23 tr). Hole part holds on the filter."
    ],
    "next": "Parked."
   },
@@ -500,9 +503,10 @@
   {
    "id": "no_chase",
    "fr": "Ne pas entrer quand le prix a déjà beaucoup couru dans le sens du trade.",
-   "status": "rejete",
+   "status": "en test",
    "evidence": [
-    "2026-10-05: chase_pts built 10-04. 42 d uncapped / capped: 400 C -9.8 / C -61.3; 500 A +8.5 (hole 50->36) / C -6.4; 700 C -1.2 / B +5.2; 1000 C -11.5 / C -1.6. Jagged between neighbours, never A on both. In company: rr1.0+bul4+chase500 A +20.3 / C -30.9; rr1.0+nosun+chase500 B / C -19.4; rr0.9+bul4+chase500 C / C. Noise, not a cause."
+    "2026-10-05: chase_pts built 10-04. 42 d uncapped / capped: 400 C -9.8 / C -61.3; 500 A +8.5 (hole 50->36) / C -6.4; 700 C -1.2 / B +5.2; 1000 C -11.5 / C -1.6. Jagged between neighbours, never A on both. In company: rr1.0+bul4+chase500 A +20.3 / C -30.9; rr1.0+nosun+chase500 B / C -19.4; rr0.9+bul4+chase500 C / C. Noise, not a cause.",
+    "2026-10-25: REOPENED with new evidence (filter base, not raw): filter+ext450+chase 250/300/350 A +58.8/+52.0/+54.3 (h1 +41.5/+41.5/+51.6, h2 +10.3/+2.4/+21.6), 400 inert (+40.1 = ext450). Smooth plateau. 69 d chase300 B +27.1 (h1 -24.9); real +12.6 (23 tr). Proxy for h1_internal_late."
    ],
    "next": "Closed as a profit idea. Kept only inside a belt (hot075_chase500)."
   },
@@ -579,6 +583,15 @@
    "next": "battery verdict pb_choch_ext500_rr12_fh075; check rr1.15/1.25 neighbours and 69 d of the combo.",
    "evidence": [
     "2026-10-20: on S rr1.2+fh0.75 A +9.2 (h +12.2/+13.0) hole 57.4->47.7, 127 tr 47% won. Alone rr1.2 A +0.3, rr1.1 C -17.3, 69 d rr1.2 C -65.9. Jagged neighbours: a lead, not a cause."
+   ]
+  },
+  {
+   "id": "h1_internal_late",
+   "status": "nouveau",
+   "fr": "Quand la petite tendance interne du graphique d'une heure va déjà dans le sens du trade, le robot arrive trop tard et perd.",
+   "en": "When the one-hour chart's internal small trend already points the trade's way, the robot arrives too late and loses.",
+   "evidence": [
+    "2026-10-25: real htf_entry (captured at entry), 210 tr: h1 int same 87 tr 33% per0.01 -73.25 avgW 1.28 (halves 33/33); 0 25 tr 52% +11.2; opposite 98 tr 54% +0.05. Holds by day (28% vs 49%) and night (41% vs 60%), before 10-10 (31 vs 58) and after (34 vs 51), flips (34 vs 52) and BOS (31 vs 55), after a loss (26 vs 48). Top 25 wins: 3 same, 14 opp, 8 zero. m15 internal the OTHER way (same 57% vs opp 31%). Not in engine nor piles: requested h1_int_size."
    ]
   }
  ],
@@ -1867,6 +1880,46 @@
    "d": "2026-10-24",
    "run": "proposed",
    "res": "pb_ext450_flipl05, pb_day025_flipl05 (out of box), pb_day05_flipl05; requests builder_unblock, trail_in_menu; pile loss_quick15"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "official filter base (cfg_of pb_dir_gate) 41.7 d",
+   "res": "-61.30 hole 56.52 55 tr (h1 -45.19 on 12 tr / h2 -38.09 on 41)"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "official + ext450 / ext450+fl05",
+   "res": "A +39.7 / A +38.5 hole 43.3"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "official + all 0.5 / day 0.5 (control)",
+   "res": "A +30.65 hole 28.3 / A +23.8 hole 41.4"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "official + ext450 + chase 250/300/350/400",
+   "res": "A +58.8 / A +52.0 / A +54.3 / A +40.1 (inert)"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "official + ext450 + fl05 + chase 300/350",
+   "res": "A +63.65 (h +40.8/+14.7) / A +63.45 (h +50.2/+31.0), hole 43.3, net +2.35/+2.15"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "official + ext450 + all 0.5",
+   "res": "A +50.5 hole 28.3 (h +42.7/+24.7)"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "69 d + real: base / ext450 / ext450+chase300 / ext450+fl05 / ext450+fl05+chase300",
+   "res": "base +81.37 104 tr, real 31 tr -48.15 / B +32.5 r+14.4 / B +27.1 r+12.6 / B +22.6 r+23.8 / B +30.7 (h1 -29.6/+44.3) r+21.3"
+  },
+  {
+   "d": "2026-10-25",
+   "run": "proposed",
+   "res": "pb_ext450_fl05_chase350, pb_ext450_chase350 (out of box, h1_internal proxy), pb_ext450_fl05_chase300, pb_ext450_chase250, pb_ext450_all05 (belt); request h1_int_size; no new pile"
   }
  ],
  "scrutiny_log": [
@@ -3061,6 +3114,11 @@
    "t": "2026-10-25T06:30:06Z",
    "look": "veille (2 night closes 05:33/05:46): wake_context, --pile europe, --pile asia",
    "saw": "BOS BUY -5.56 (05:33, pace 0.769 calm), FLIP-BOS SELL +3.90 (05:46, pace 0.537 calm). asia 91 tr 54% +23.73 PF 1.14 (h 67/43); calm <0.8 28 tr 43% -25.09 (h 64/29), 1.0-1.3 18 tr +42.55; 05 h 13 tr -1.39. europe 82 tr 40% -108.41 PF 0.53 (h 42/38): after a loss 45 tr 31% -103.82 (h 33/29) vs after a win 36 tr -12.39; 13 h 9 tr 1 won -52.47; held 30-60 18 tr -57.59. Total 231 tr. Twins empty in context. Answered labo ask europe (no rule, waiting loss_wait_day). No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-25T10:30:00Z",
+   "look": "night: --by dur, nerv, dist; htf_entry parsed by hand (h1/h4/m15 trend and internal vs trade dir), top/worst 25 by H1 internal; wealth since 10-20/10-24",
+   "saw": "Every dur and nerv band loses. dist 250-400 40 tr 58% +15.31, 150-250 73 tr 41% -94.89. H1 internal same way 87 tr 33% -73.25 per 0.01 (halves 33/33) vs others 123 tr 53% +11.22; top 25 wins only 3 of them. Wealth since 10-24: 13 tr, 2 won, about -6.9 per 0.01 on each signal account; the pekos-owl accounts small. Twin nervgate stopped duel_lost: no twin runs."
   }
  ],
  "lessons": [
@@ -3113,17 +3171,19 @@
   "2026-10-20: a dial that only moves a few trades (flip_hot_size on S: +1 to +2 over 150 tr) is below the measured drag of 0.47 per trade times the trades it touches; call it neutral, not a gain.",
   "2026-10-24: when the base loses about 60 in the second half, the kill line at -60 makes every battery variant h2 about -60: battery verdicts then say nothing; judge against my own filtered base.",
   "2026-10-24: in a losing window any stake cut looks better on both halves (critic hothalf). A size rule on a slice must beat the same cut on all trades before it is a cause.",
-  "2026-10-24: night sessions of 10-21 to 10-23 did not run as chercheur (log: fallback model rc 1); the constructor is reverted for files written by other programs. Check chercheur.log first when notes are missing."
+  "2026-10-24: night sessions of 10-21 to 10-23 did not run as chercheur (log: fallback model rc 1); the constructor is reverted for files written by other programs. Check chercheur.log first when notes are missing.",
+  "2026-10-25: scrutiny --by htf prints raw JSON (useless): parse htf_entry by hand (json, h1.i times trade dir). It is captured AT ENTRY (open_ctx), so it is a fair pre-trade fact.",
+  "2026-10-25: a dial rejected on the raw robot can be alive on the filtered one (chase_pts: C/jagged raw 10-05, smooth A plateau with filter+ext450 tonight). Re-test old dials on the current base before quoting the old verdict."
  ],
  "open": [
-  "Battery + critic on pb_ext450_flipl05 (base h1 has 14 trades).",
-  "Control run: stake cut on ALL trades vs day-only, for pb_day ideas.",
-  "builder_unblock: 18 requests waiting; loss_wait_day, time_exit, tight_stop_size first.",
-  "trail_in_menu: stop that follows the structure.",
+  "Build/request h1_int_size: refusal or half stake when the H1 internal trend points the trade way (strongest real fact).",
+  "Battery + critic on pb_ext450_fl05_chase350 and neighbours (base h1 has 12 trades only).",
+  "Check overlap: how many h1-internal-same trades did chase 350 remove in the engine (TRACE)?",
+  "Long window h1 negative for every ext450 variant (-25..-33): find which weeks.",
+  "builder_unblock: 19 requests waiting; loss_wait_day, time_exit, tight_stop_size, trail_in_menu.",
   "Pile loss_quick15 to watch.",
   "pb_gate_parity: replay filter 1.3 a day vs live.",
   "Night fading: nervous vs calm night split.",
-  "Same entry, different exit on 10-19.",
   "Buys vs sells: wait for a falling week.",
   "Capped ideas parked (no daily cap since 10-14)."
  ]

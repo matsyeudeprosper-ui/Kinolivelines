@@ -1,30 +1,30 @@
 {
- "week_end": "2026-10-11",
- "from": "2026-10-05",
- "t": "2026-10-11T09:13:47+00:00",
+ "week_end": "2026-10-25",
+ "from": "2026-10-19",
+ "t": "2026-10-25T09:32:31+00:00",
  "fr": [
-  "Cette semaine le labo a testé 62 idées en 6 nuits : 3 mieux sur les deux moitiés, 28 un peu mieux, 31 non.",
-  "Le chercheur a proposé 30 nouvelles idées, par exemple « Viser autant que ce qu'on risque, quatre rattrapages, sans courir » ; « Viser autant que ce qu'on risque, quatre rattrapages, repos le dimanche ».",
-  "Aucun jumeau cette semaine : aucune idée n’a tenu deux nuits de suite.",
-  "Le constructeur a livré « Miser moins sur un changement de sens quand le marché est nerveux », « Une cible à part pour les comptes avec plafond de gain par jour » ; le critique a dit non à 2.",
-  "Ce que le chercheur tient maintenant : pas d'entrée après une heure agitée et une pause après chaque trade aident tous les comptes, surtout ensemble."
+  "Cette semaine le labo a testé 46 idées en 4 nuits : 19 mieux sur les deux moitiés, 20 un peu mieux, 7 non.",
+  "Le chercheur a proposé 14 nouvelles idées, par exemple « Filtre souple et 500 points : refuser les stops de moins de 175 points » ; « Filtre officiel et 450 points : refuser les stops de moins de 175 points ».",
+  "Jumeaux : 4 jumeaux lancés, 5 ont perdu le duel.",
+  "Le critique a dit non à 3.",
+  "Ce que le chercheur tient maintenant : ne pas entrer après une heure qui a déjà beaucoup bougé rapporte, avec le filtre des comptes."
  ],
  "en": [
-  "This week the lab tested 62 ideas over 6 nights: 3 better on both halves, 28 a little better, 31 no.",
-  "The researcher proposed 30 new ideas, e.g. « Aim for as much as we risk, four catch-ups, no chasing » ; « Aim for as much as we risk, four catch-ups, Sunday off ».",
-  "No twin this week: no idea held two nights in a row.",
-  "The builder delivered « Stake less on a change of direction when the market is nervous », « A separate target for accounts with a daily cap » ; the critic said no to 2.",
-  "What the researcher now holds: no entry after a busy hour and a pause after each trade help every account, above all together."
+  "This week the lab tested 46 ideas over 4 nights: 19 better on both halves, 20 a little better, 7 no.",
+  "The researcher proposed 14 new ideas, e.g. « Looser filter and 500 points: refuse stops under 175 points » ; « Official filter and 450 points: refuse stops under 175 points ».",
+  "Twins: 4 twins started, 5 lost the duel.",
+  "The critic said no to 3.",
+  "What the researcher now holds: not entering after an hour that already moved a lot pays, with the accounts' filter."
  ],
  "counts": {
-  "tested": 62,
-  "A": 3,
-  "B": 28,
-  "proposals": 30,
-  "twins_started": 0,
-  "twins_lost": 0,
+  "tested": 46,
+  "A": 19,
+  "B": 20,
+  "proposals": 14,
+  "twins_started": 4,
+  "twins_lost": 5,
   "went_in": 0,
   "came_out": 0,
-  "built": 7
+  "built": 0
  }
 }

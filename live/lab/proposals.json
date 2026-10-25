@@ -3803,7 +3803,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-24",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-25"
   },
   {
    "id": "pb_day025_flipl05",
@@ -3864,7 +3866,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-24",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-25"
   },
   {
    "id": "pb_day05_flipl05",
@@ -3924,6 +3928,210 @@
    },
    "by": "chercheur",
    "date": "2026-10-24",
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-25"
+  },
+  {
+   "id": "pb_ext450_fl05_chase350",
+   "family": "structure",
+   "title_fr": "Ne pas courir après un prix qui a déjà filé, moitié moins après une perte",
+   "title_en": "Do not chase a price that already ran, half stake after a loss",
+   "why_fr": "Pas d'entrée quand la dernière heure a déjà bougé de 450 points, ni de 350 dans le sens du trade ; moitié moins sur un changement de sens juste après une perte. 42 jours : +63 $, mieux sur les deux moitiés (+50 et +31), trou de 43 au lieu de 57. Le robot filtré passe enfin au-dessus de zéro.",
+   "why_en": "No entry when the last hour already moved 450 points, nor 350 the trade's way; half stake on a change of direction right after a loss. 42 days: +$63, better on both halves (+50 and +31), hole of 43 instead of 57. The filtered robot finally ends above zero.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "chase_pts": 350,
+    "flip_loss_size": 0.5
+   },
+   "pretest": {
+    "net": 2.15,
+    "worst": 43.3,
+    "h1": 50.15,
+    "h2": 30.96,
+    "base_net": -61.3,
+    "base_worst": 56.52,
+    "verdict": "A",
+    "at": "2026-10-25",
+    "vs": "filtre officiel / official filter",
+    "trades": 55
+   },
+   "by": "chercheur",
+   "date": "2026-10-25",
+   "status": "pending"
+  },
+  {
+   "id": "pb_ext450_chase350",
+   "family": "structure",
+   "title_fr": "Ne pas entrer quand le prix a déjà couru dans notre sens",
+   "title_en": "Do not enter when the price already ran our way",
+   "why_fr": "Idée neuve, née des vrais trades : quand la petite tendance de l'heure va déjà dans le sens du trade, le robot n'en gagne qu'un sur trois. Le test ne connaît pas cette tendance ; le plus proche est « la dernière heure a déjà couru 350 points dans notre sens ». Ajouté au frein des 450 points : +54 $, mieux sur les deux moitiés (+52 et +22).",
+   "why_en": "A new idea from the real trades: when the hour's small trend already points the trade's way, the robot wins only one in three. The test does not know that trend; the closest is 'the last hour already ran 350 points our way'. Added to the 450-point brake: +$54, better on both halves (+52 and +22).",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "chase_pts": 350
+   },
+   "pretest": {
+    "net": -7.02,
+    "worst": 56.52,
+    "h1": 51.56,
+    "h2": 21.58,
+    "base_net": -61.3,
+    "base_worst": 56.52,
+    "verdict": "A",
+    "at": "2026-10-25",
+    "vs": "filtre officiel / official filter",
+    "trades": 55
+   },
+   "by": "chercheur",
+   "date": "2026-10-25",
+   "status": "pending"
+  },
+  {
+   "id": "pb_ext450_fl05_chase300",
+   "family": "structure",
+   "title_fr": "Même idée, en refusant dès 300 points dans notre sens",
+   "title_en": "Same idea, refusing from 300 points our way",
+   "why_fr": "Le réglage voisin, pour montrer que l'idée ne tient pas à un seul chiffre : 250, 300 et 350 points gagnent tous. Ici : +64 $ sur 42 jours (+41 et +15), trou de 43 au lieu de 57 ; +31 $ sur 69 jours, mais la première moitié de ces 69 jours perd 30 $ ; +21 $ sur les vrais trades (23 trades, trop peu).",
+   "why_en": "The neighbouring setting, to show the idea does not hang on one number: 250, 300 and 350 points all win. Here: +$64 over 42 days (+41 and +15), hole of 43 instead of 57; +$31 over 69 days, but the first half of those 69 days loses $30; +$21 on the real trades (23 trades, too few).",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "chase_pts": 300,
+    "flip_loss_size": 0.5
+   },
+   "pretest": {
+    "net": 2.35,
+    "worst": 43.3,
+    "h1": 40.84,
+    "h2": 14.67,
+    "base_net": -61.3,
+    "base_worst": 56.52,
+    "verdict": "A",
+    "at": "2026-10-25",
+    "vs": "filtre officiel / official filter",
+    "trades": 49,
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 30.7
+    },
+    "real": {
+     "n_real": 23,
+     "diff_net": 21.32
+    }
+   },
+   "by": "chercheur",
+   "date": "2026-10-25",
+   "status": "pending"
+  },
+  {
+   "id": "pb_ext450_chase250",
+   "family": "structure",
+   "title_fr": "Refuser dès 250 points déjà courus dans notre sens",
+   "title_en": "Refuse from 250 points already run our way",
+   "why_fr": "Le réglage le plus serré de l'échelle : pas d'entrée après une heure de 450 points, ni après 250 points dans le sens du trade. +59 $ sur 42 jours, mieux sur les deux moitiés (+41 et +10), trou de 53 au lieu de 57, 48 trades au lieu de 55. À 400 points, le frein ne mord plus.",
+   "why_en": "The tightest setting of the ladder: no entry after a 450-point hour, nor after 250 points the trade's way. +$59 over 42 days, better on both halves (+41 and +10), hole of 53 instead of 57, 48 trades instead of 55. At 400 points the brake no longer bites.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "chase_pts": 250
+   },
+   "pretest": {
+    "net": -2.51,
+    "worst": 52.63,
+    "h1": 41.48,
+    "h2": 10.29,
+    "base_net": -61.3,
+    "base_worst": 56.52,
+    "verdict": "A",
+    "at": "2026-10-25",
+    "vs": "filtre officiel / official filter",
+    "trades": 48
+   },
+   "by": "chercheur",
+   "date": "2026-10-25",
+   "status": "pending"
+  },
+  {
+   "id": "pb_ext450_all05",
+   "family": "argent",
+   "title_fr": "Pendant la mauvaise passe, miser moitié moins sur chaque trade",
+   "title_en": "During the bad spell, stake half on every trade",
+   "why_fr": "Une ceinture, pas une idée de gain : le robot perd en ce moment, donc miser moitié moins partout réduit le trou de moitié (28 au lieu de 57) et vaut mieux que miser moins seulement le jour. Avec le frein des 450 points : +50 $, mieux sur les deux moitiés (+43 et +25).",
+   "why_en": "A safety belt, not a profit idea: the robot is losing right now, so staking half everywhere halves the hole (28 instead of 57) and beats staking less by day only. With the 450-point brake: +$50, better on both halves (+43 and +25).",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450,
+    "size_hours": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23
+    ],
+    "hour_size": 0.5
+   },
+   "pretest": {
+    "net": -10.81,
+    "worst": 28.26,
+    "h1": 42.72,
+    "h2": 24.74,
+    "base_net": -61.3,
+    "base_worst": 56.52,
+    "verdict": "A",
+    "at": "2026-10-25",
+    "vs": "filtre officiel / official filter",
+    "trades": 59
+   },
+   "by": "chercheur",
+   "date": "2026-10-25",
    "status": "pending"
   }
  ]

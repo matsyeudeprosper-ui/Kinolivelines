@@ -1,82 +1,84 @@
 {
- "date": "2026-10-24",
- "headline_fr": "Pas d'entrée après une heure de 450 points, et moitié moins après une perte : ça tient sur 42 jours, 69 jours et les vrais trades.",
- "headline_en": "No entry after a 450-point hour, and half stake after a loss: it holds on 42 days, 69 days and the real trades.",
+ "date": "2026-10-25",
+ "fr": "**Ce soir : ne pas courir après un prix qui a déjà filé dans notre sens. Avec le frein des 450 points et moitié moins après une perte, le robot filtré finit enfin au-dessus de zéro sur 42 jours.**\n\n**Les verdicts.** La batterie touche encore la limite de perte de 60 $ (2 mieux sur les deux moitiés, 14 un peu mieux, 19 non) et dit peu. Mes 17 essais sont contre le robot filtré (-61 $, trou de 57). Pas d'entrée après 450 points : +40 $. En plus, refuser quand la dernière heure a déjà couru 250, 300 ou 350 points dans notre sens : +59, +52, +54 $, mieux sur les deux moitiés aux trois réglages. Le trio avec moitié moins après une perte : +63 $ (+50 et +31), trou de 43 ; 69 jours +31 $, mais leur première moitié perd 30 $ ; vrais trades +21 $ (23 trades, trop peu).\n\n**Ce que je crois.** Plus fort : pas d'entrée après une grosse heure. Nouveau : quand la petite tendance de l'heure va déjà dans notre sens, on arrive trop tard. Plus faible : miser moins le jour ; moitié moins sur TOUS les trades fait mieux (+31 $, trou de 28 contre +24 $, trou de 41) : pas une vraie cause.\n\n**Ce que les trades apprennent.** 232 vrais trades, 46 % gagnés, -149 $. Quand la petite tendance de l'heure va déjà dans le sens du trade : 87 trades, 33 % gagnés sur chaque moitié, -73 $ pour 0,01 lot ; les 123 autres, 53 %, +11 $. Vrai le jour et la nuit. 3 seulement des 25 plus beaux gains en font partie. Pas de nouvelle pile : ce fait n'existe pas encore dans les piles ; je le demande.\n\n**Je propose.** Le trio à 350 points, ses voisins à 300 et 250, le frein seul (hors des sentiers : approcher la tendance de l'heure avec ce que le test sait), et une ceinture : moitié moins partout pendant la mauvaise passe.\n\n**Je demande.** Que le test et les piles connaissent la petite tendance de l'heure. Le constructeur reste bloqué.",
+ "en": "**Tonight: do not chase a price that already ran our way. With the 450-point brake and half stake after a loss, the filtered robot finally ends above zero over 42 days.**\n\n**The verdicts.** The battery still hits the $60 loss limit (2 better on both halves, 14 a little better, 19 no) and says little. My 17 runs are against the filtered robot (-$61, hole of 57). No entry after 450 points: +$40. Also refusing when the last hour already ran 250, 300 or 350 points our way: +$59, +52, +54, better on both halves at all three settings. The trio with half stake after a loss: +$63 (+50 and +31), hole of 43; 69 days +$31, but their first half loses $30; real trades +$21 (23 trades, too few).\n\n**What I believe.** Stronger: no entry after a big hour. New: when the hour's small trend already points our way, we arrive too late. Weaker: staking less by day. Half stake on ALL trades does better (+$31, hole 28) than by day alone (+$24, hole 41): it was \"bet less during the bad spell\", not a real cause.\n\n**What the trades teach.** 232 real trades, 46 % won, -$149; since yesterday, 13 trades, 2 won. When the one-hour chart's small trend already points the trade's way: 87 trades, 33 % won in each half, -$73 per 0.01 lot; the other 123, 53 %, +$11. True by day and night, before and after the filter. Only 3 of the 25 best wins belong to it. No new pile: this fact does not exist in the piles yet; I ask for it.\n\n**I propose.** The trio at 350 points, its neighbours at 300 and 250, the brake alone (out of the box: approaching the hour's trend with what the test knows), and a belt: half stake everywhere during the bad spell.\n\n**I ask.** That the test and the piles learn the hour's small trend. The builder is still blocked.",
  "proposals": [
-  "pb_ext450_flipl05",
-  "pb_day025_flipl05",
-  "pb_day05_flipl05"
+  "pb_ext450_fl05_chase350",
+  "pb_ext450_chase350",
+  "pb_ext450_fl05_chase300",
+  "pb_ext450_chase250",
+  "pb_ext450_all05"
  ],
- "fr": "**Ce soir : avec le filtre des comptes, ne pas entrer après une heure de 450 points et miser moitié moins sur un changement de sens juste après une perte tient sur les 42 jours, les 69 jours et les vrais trades.**\n\n**Les verdicts.** Le robot sans filtre perd 62 $ en 42 jours ; sur la seconde moitié, la limite de perte de 60 $ arrête presque tout, donc les 32 idées de la batterie se ressemblent (3 mieux sur les deux moitiés, 9 un peu mieux, 20 non). Mes 20 essais, eux, sont faits contre le robot filtré des comptes (-67 $, 55 trades). Pas d'entrée après 450 points : +61 $. Avec moitié moins après une perte : même argent, trou de 37 au lieu de 61, +41 $ sur 69 jours, +24 $ sur les vrais trades. Le jour à un quart de mise : +43 $, mais -41 $ sur 69 jours.\n\n**Ce que je crois.** RENFORCÉ : pas d'entrée après une grosse heure. RENFORCÉ : la hâte après une perte coûte (35 trades repris en moins de 15 minutes, 8 gagnés, -56 $). AFFAIBLI : la nuit porte le robot (67 % puis 45 % gagnés ; la nuit calme perd). AFFAIBLI : le filtre rapporte ; depuis le 20, les comptes filtrés ont perdu leur avance, mais perdent moins par trade que le compte sans filtre.\n\n**Ce que les trades apprennent.** 220 vrais trades, 46 % gagnés, -143 $. Presque toute la perte est le jour après une perte (80 trades, -135 $). Les 25 meilleurs gains ont des stops presque deux fois plus larges que la moyenne (308 points contre 168) ; ce matin, sept petites pertes à stops serrés, marché calme. Nouvelle pile : « repris moins de 15 minutes après une perte ».\n\n**Je propose.** 450 points + moitié moins après une perte (la plus solide). Hors des sentiers : au lieu de ne plus trader le jour, miser quatre fois moins de 8 h à minuit (les trois réglages gagnent ; prudence sur 69 jours, et le critique dira peut-être que miser moins aide toujours quand le robot perd). Le réglage moitié, en voisin.\n\n**Je demande.** Débloquer le constructeur : rien de construit depuis le 14, annulé par des fichiers d'autres programmes. Mettre dans ma liste le stop qui suit la structure (+41 $ sur 42 jours, +43 $ sur les vrais trades). Mes séances du 21 au 23 n'ont rien écrit.",
- "en": "**Tonight: with the accounts' filter, no entry after a 450-point hour plus half stake on a change of direction right after a loss holds on 42 days, 69 days and the real trades.**\n\n**The verdicts.** The unfiltered robot loses $62 in 42 days; on the second half the $60 loss limit stops almost everything, so the battery's 32 ideas look alike (3 better on both halves, 9 a little better, 20 no). My 20 runs are against the accounts' filtered robot (-$67, 55 trades). No entry after 450 points: +$61. With half stake after a loss: same money, hole of 37 instead of 61, +$41 on 69 days, +$24 on the real trades. A quarter stake by day: +$43, but -$41 on 69 days.\n\n**What I believe.** STRONGER: no entry after a big hour. STRONGER: hurrying after a loss costs (35 trades restarted within 15 minutes, 8 won, -$56). WEAKER: the night carries the robot (67 % then 45 % won; the calm night loses). WEAKER: the filter pays; since the 20th the filtered accounts lost their lead, but lose less per trade than the unfiltered account.\n\n**What the trades teach.** 220 real trades, 46 % won, -$143. Almost all the loss is by day after a loss (80 trades, -$135). The 25 best wins have stops almost twice as wide as usual (308 points vs 168); this morning, seven small losses on tight stops, calm market. New pile: \"restarted within 15 minutes of a loss\".\n\n**I propose.** 450 points + half stake after a loss (the most solid). Out of the box: instead of stopping daytime trading, stake a quarter from 08:00 to midnight (all three settings win; caution on 69 days, and the critic may say betting less always helps while the robot loses). The half setting as its neighbour.\n\n**I ask.** Unblock the builder: nothing built since the 14th, undone by other programs' files. Put the stop that follows the structure in my list (+$41 on 42 days, +$43 on the real trades). My sessions of the 21st to the 23rd wrote nothing.",
+ "headline_fr": "Ne pas courir après un prix qui a déjà filé dans notre sens : le robot filtré finit enfin au-dessus de zéro sur 42 jours.",
+ "headline_en": "Do not chase a price that already ran our way: the filtered robot finally ends above zero over 42 days.",
  "beliefs": [
   {
    "fr": "Ne pas entrer après une heure qui a déjà beaucoup bougé rapporte, avec le filtre des comptes.",
    "en": "Not entering after an hour that already moved a lot pays, with the accounts' filter.",
-   "evidence": "Ce soir : +61 $ sur 42 jours, +54 $ sur 69 jours, +14 $ sur les vrais trades, contre le robot filtré."
+   "evidence": "Ce soir : +40 $ sur 42 jours (mieux sur les deux moitiés), +32 $ sur 69 jours, +14 $ sur les vrais trades."
   },
   {
-   "fr": "Repartir vite après une perte coûte ; c'est la hâte, pas la perte.",
-   "en": "Starting again fast after a loss costs; it is the hurry, not the loss.",
-   "evidence": "35 trades repris en moins de 15 minutes après une perte : 8 gagnés, -56 $, les deux moitiés perdent. Plus tard après une perte : presque un sur deux gagné."
+   "fr": "Quand la petite tendance de l'heure va déjà dans notre sens, le robot arrive trop tard et perd.",
+   "en": "When the hour's small trend already points our way, the robot arrives too late and loses.",
+   "evidence": "87 vrais trades, un sur trois gagnés sur chaque moitié, contre 53 % pour les autres ; 3 des 25 plus beaux gains seulement."
   },
   {
-   "fr": "Le jour perd, surtout juste après une perte.",
-   "en": "The day loses, above all right after a loss.",
-   "evidence": "Le jour après une perte : 80 trades, 38 % gagnés, -135 $, presque toute la perte du robot. Mais sur 69 jours, miser moins le jour aurait coûté 41 $."
+   "fr": "Ne pas entrer quand la dernière heure a déjà couru 250 à 350 points dans notre sens aide en plus du frein des 450 points.",
+   "en": "Not entering when the last hour already ran 250 to 350 points our way helps on top of the 450-point brake.",
+   "evidence": "Trois réglages voisins, tous mieux sur les deux moitiés : +59, +52, +54 $ au lieu de +40."
   },
   {
-   "fr": "La nuit porte le robot, mais moins qu'avant.",
-   "en": "The night carries the robot, but less than before.",
-   "evidence": "La nuit : 84 trades, 56 % gagnés, +29 $ ; 67 % sur la première moitié, 45 % sur la seconde. La nuit calme perd, la nuit nerveuse gagne."
+   "fr": "Le jour, juste après une perte, le robot court après son argent et perd.",
+   "en": "By day, right after a loss, the robot chases its money and loses.",
+   "evidence": "Le jour : 82 trades, -108 $, dont 96 % juste après une perte."
   },
   {
-   "fr": "Le filtre des comptes perd moins que le compte sans filtre, mais ne gagne plus.",
-   "en": "The accounts' filter loses less than the unfiltered account, but no longer wins.",
-   "evidence": "Depuis le 20 octobre, comptes filtrés : environ 23 trades, 7 gagnés, -0,59 $ par trade à petite mise ; compte sans filtre : 61 trades, -0,84 $."
+   "fr": "Miser moins le jour n'est pas une vraie cause : miser moins partout fait mieux pendant que le robot perd.",
+   "en": "Staking less by day is not a real cause: staking less everywhere does better while the robot loses.",
+   "evidence": "Moitié moins partout : +31 $, trou de 28 ; moitié moins le jour seulement : +24 $, trou de 41."
   },
   {
-   "fr": "Les meilleurs trades ont des stops larges.",
-   "en": "The best trades have wide stops.",
-   "evidence": "Les 25 meilleurs gains : stop médian de 308 points contre 168 pour tous. Ce matin, sept petites pertes à stops serrés, marché calme."
+   "fr": "Miser moitié moins sur un changement de sens juste après une perte réduit le trou sans coûter d'argent.",
+   "en": "Staking half on a change of direction right after a loss shrinks the hole without costing money.",
+   "evidence": "Avec le frein des 450 points : même argent, trou de 43 au lieu de 57 ; +24 $ sur les vrais trades (25 trades, trop peu)."
   }
  ],
  "sections": [
   {
    "title_fr": "Ce soir",
    "title_en": "Tonight",
-   "fr": "Le robot perd : 220 vrais trades, 46 % gagnés, -143 $. J'ai fait 20 essais contre le robot filtré des comptes, qui perd aussi sur 42 jours (-67 $). La meilleure piste : ne pas entrer après une heure de 450 points, et miser moitié moins sur un changement de sens juste après une perte. Elle tient sur les trois vues.",
-   "en": "The robot is losing: 220 real trades, 46 % won, -$143. I ran 20 tests against the accounts' filtered robot, which also loses over 42 days (-$67). The best lead: no entry after a 450-point hour, and half stake on a change of direction right after a loss. It holds on all three views."
+   "fr": "Une idée simple : ne pas courir après un prix qui a déjà filé dans notre sens. Avec le frein des 450 points et moitié moins après une perte, le robot filtré des comptes finit enfin au-dessus de zéro sur 42 jours : +2 $ au lieu de -61 $, trou de 43 au lieu de 57.",
+   "en": "A simple idea: do not chase a price that already ran our way. With the 450-point brake and half stake after a loss, the accounts' filtered robot finally ends above zero over 42 days: +$2 instead of -$61, hole of 43 instead of 57."
   },
   {
    "title_fr": "Les verdicts",
    "title_en": "The verdicts",
-   "fr": "Batterie : 3 mieux sur les deux moitiés, 9 un peu mieux, 20 non ; la limite de perte de 60 $ écrase la seconde moitié de toutes. Mes essais : 450 points + moitié après une perte, +61 $, trou de 37 au lieu de 61 ; 69 jours +41 $ ; vrais trades +24 $. Viser 1 fois ce qu'on risque, attendre 15 minutes : non.",
-   "en": "Battery: 3 better on both halves, 9 a little better, 20 no; the $60 loss limit flattens every second half. My tests: 450 points + half after a loss, +$61, hole 37 instead of 61; 69 days +$41; real trades +$24. Aiming 1 times what we risk, waiting 15 minutes: no."
+   "fr": "La batterie touche encore la limite de perte de 60 $ et dit peu. Contre le robot filtré : refuser après 250, 300 ou 350 points dans notre sens gagne aux trois réglages, mieux sur les deux moitiés. Sur 69 jours +31 $, mais la première moitié de ces 69 jours perd 30 $. Vrais trades +21 $ (23 trades, trop peu).",
+   "en": "The battery still hits the $60 loss limit and says little. Against the filtered robot: refusing after 250, 300 or 350 points our way wins at all three settings, better on both halves. Over 69 days +$31, but the first half of those 69 days loses $30. Real trades +$21 (23 trades, too few)."
   },
   {
    "title_fr": "Ce que les trades apprennent",
    "title_en": "What the trades teach",
-   "fr": "Presque toute la perte est le jour, juste après une perte : 80 trades, -135 $. Le pire : repris moins de 15 minutes après une perte, 35 trades, 8 gagnés. La nuit gagne encore (+29 $) mais s'essouffle. Les meilleurs gains ont des stops presque deux fois plus larges. Nouvelle pile : la hâte après une perte.",
-   "en": "Almost all the loss is by day, right after a loss: 80 trades, -$135. Worst: restarted within 15 minutes of a loss, 35 trades, 8 won. The night still wins (+$29) but is fading. The best wins have stops almost twice as wide. New pile: the hurry after a loss."
+   "fr": "232 vrais trades, 46 % gagnés, -149 $. Quand la petite tendance de l'heure va déjà dans le sens du trade : 87 trades, un sur trois gagnés, sur chaque moitié, le jour comme la nuit. Les autres : 53 % gagnés. 3 seulement des 25 plus beaux gains en font partie.",
+   "en": "232 real trades, 46 % won, -$149. When the hour's small trend already points the trade's way: 87 trades, one in three won, in each half, by day and by night. The rest: 53 % won. Only 3 of the 25 best wins belong to it."
   },
   {
    "title_fr": "Ce que je crois",
    "title_en": "What I believe",
-   "fr": "Plus fort : ne pas entrer après une grosse heure ; la hâte après une perte coûte. Plus faible : la nuit porte le robot ; le filtre rapporte. Depuis le 20, les comptes filtrés ont rendu leur avance, mais perdent moins par trade que le compte sans filtre.",
-   "en": "Stronger: no entry after a big hour; hurrying after a loss costs. Weaker: the night carries the robot; the filter pays. Since the 20th the filtered accounts gave back their lead, but lose less per trade than the unfiltered account."
+   "fr": "Plus fort : ne pas entrer après une grosse heure. Nouveau : on arrive trop tard quand l'heure va déjà dans notre sens. Plus faible : miser moins le jour. Miser moitié moins sur tous les trades fait mieux que le jour seul : c'était « miser moins pendant la mauvaise passe », pas une vraie cause.",
+   "en": "Stronger: no entry after a big hour. New: we arrive too late when the hour already points our way. Weaker: staking less by day. Half stake on every trade beats the day alone: it was 'bet less during the bad spell', not a real cause."
   },
   {
    "title_fr": "Ce que je propose",
    "title_en": "What I propose",
-   "fr": "1. Pas d'entrée après 450 points, moitié moins après une perte. 2. Hors des sentiers : garder les trades de jour mais miser quatre fois moins de 8 h à minuit (+43 $, trou de 24) ; prudence, sur 69 jours cela aurait coûté. 3. Le même à moitié de mise, en voisin.",
-   "en": "1. No entry after 450 points, half stake after a loss. 2. Out of the box: keep the day trades but stake a quarter from 08:00 to midnight (+$43, hole 24); caution, over 69 days it would have cost. 3. The same at half stake, as its neighbour."
+   "fr": "Le frein « déjà couru 350 points dans notre sens » avec les 450 points et moitié moins après une perte ; ses voisins à 300 et 250 ; le frein seul ; et une ceinture : moitié moins sur chaque trade pendant la mauvaise passe, trou de 28 au lieu de 57.",
+   "en": "The 'already ran 350 points our way' brake with the 450 points and half stake after a loss; its neighbours at 300 and 250; the brake alone; and a belt: half stake on every trade during the bad spell, hole of 28 instead of 57."
   },
   {
    "title_fr": "Ce que je demande",
    "title_en": "What I ask",
-   "fr": "Débloquer le constructeur : rien de construit depuis le 14 octobre, il est annulé par les fichiers d'autres programmes. Me laisser proposer le stop qui suit la structure : +41 $ sur 42 jours, +43 $ sur les vrais trades (trop peu de trades). Mes séances de nuit du 21 au 23 n'ont rien écrit.",
-   "en": "Unblock the builder: nothing built since 14 October, it is undone by other programs' files. Let me propose the stop that follows the structure: +$41 over 42 days, +$43 on the real trades (too few trades). My night sessions of the 21st to the 23rd wrote nothing."
+   "fr": "Que le test et les piles connaissent la petite tendance du graphique d'une heure, pour essayer une demi-mise ou un refus quand elle va déjà dans notre sens. Le constructeur reste bloqué : 19 demandes attendent.",
+   "en": "That the test and the piles learn the one-hour chart's small trend, to try a half stake or a refusal when it already points our way. The builder is still blocked: 19 requests wait."
   }
  ]
 }

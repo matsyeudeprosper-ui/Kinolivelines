@@ -492,8 +492,11 @@
    },
    "verdict": "A",
    "started": "2026-10-22T09:48:54+00:00",
-   "status": "running",
-   "by": "chercheur"
+   "status": "stopped",
+   "by": "chercheur",
+   "reached30": "2026-10-25",
+   "stopped": "2026-10-25",
+   "reason": "duel_lost"
   }
  ]
 }
