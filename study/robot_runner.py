@@ -389,7 +389,7 @@ if __name__ == "__main__":
     RUN_T0 = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     try:
         reg = json.load(open(REG, encoding="utf-8")); robots = {r["id"]: r for r in reg.get("robots") or []}
-        todo = ARGS[1:] or [r["id"] for r in reg.get("robots") or [] if r.get("stage") == "queued" or r.get("retest")]   # 2026-10-18: re-tests keep their stage
+        todo = ARGS[1:] or [r["id"] for r in reg.get("robots") or [] if r.get("stage") == "queued" or r.get("retest") or r.get("range_jobs")]   # 2026-10-18: re-tests keep their stage
         if not todo:
             print("nothing queued"); raise _NoBtc()
         os.makedirs(RES, exist_ok=True)
@@ -420,6 +420,44 @@ if __name__ == "__main__":
             missing = [v for k, v in parts.items() if k != "money" and k != "filters" and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
             if missing:
                 print(rid, "skipped: pieces not testable yet", missing, flush=True); continue
+            # 2026-10-25 (owner: "test it on any given range of dates available"): date-range jobs. The same bench on a
+            # slice of the recorded ticks and signals; written to results/ranges/, the main 42-day result is untouched.
+            _rj = list(r.get("range_jobs") or [])
+            if _rj and not (r.get("stage") == "queued" or r.get("retest")):
+                for job in _rj:
+                    try:
+                        a_ms = int(__import__("calendar").timegm(time.strptime(job["from"], "%Y-%m-%d"))) * 1000
+                        b_ms = int(__import__("calendar").timegm(time.strptime(job["to"], "%Y-%m-%d"))) * 1000 + 86400000
+                        a_ms, b_ms = max(a_ms, int(TM[0])), min(b_ms, int(END))
+                        if b_ms - a_ms < 86400000:
+                            raise ValueError("window under one day")
+                        w = (TM >= a_ms) & (TM < b_ms)
+                        o2 = [o for o in opps if a_ms <= o["t"] * 1000 < b_ms]
+                        S2 = {o["t"]: S[o["t"]] for o in o2 if o["t"] in S}
+                        out = run_robot_and_parent(parts, resolve(parent, robots), PCS, TM[w], BID[w], ASK[w], b_ms, o2, bars, S2)
+                        _T = TM[w]
+                        res = {"id": rid, "parent": parent, "parts": parts, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                               "balance": BAL, "drag": DRAG, "days": round((int(_T[-1]) - int(_T[0])) / 86400000, 1), "range": [job["from"], job["to"]],
+                               "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(_T[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(_T[-1]) / 1000))],
+                               "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}
+                        os.makedirs(os.path.join(RES, "ranges"), exist_ok=True)
+                        json.dump(res, open(os.path.join(RES, "ranges", "%s__%s_%s.json" % (rid, job["from"], job["to"])), "w", encoding="utf-8"), indent=1)
+                        print(rid, "range", job["from"], job["to"], "net %.2f" % out["robot"]["net"], flush=True)
+                    except Exception as e:
+                        print(rid, "range job failed", job, e, flush=True)
+                        try:
+                            os.makedirs(os.path.join(RES, "ranges"), exist_ok=True)
+                            json.dump({"id": rid, "range": [job.get("from"), job.get("to")], "error": str(e)[:200],
+                                       "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())},
+                                      open(os.path.join(RES, "ranges", "%s__%s_%s.json" % (rid, job.get("from"), job.get("to"))), "w", encoding="utf-8"))
+                        except Exception:
+                            pass
+                reg = json.load(open(REG, encoding="utf-8"))
+                for x in reg.get("robots") or []:
+                    if x["id"] == rid:
+                        x["range_jobs"] = [j for j in (x.get("range_jobs") or []) if j not in _rj]
+                json.dump(reg, open(REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                continue
             out = run_robot_and_parent(parts, resolve(parent, robots), PCS, TM, BID, ASK, END, opps, bars, S)
             res = {"id": rid, "parent": parent, "parts": parts, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                    "balance": BAL, "drag": DRAG, "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),

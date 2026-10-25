@@ -13718,6 +13718,121 @@ def robot_test(user, body):
     return {"ok": True, "ahead": pos, "minutes": ROBOT_TEST_MIN * (pos + 1)}
 
 
+# ---- 2026-10-25 (owner): the TESTS space - build, test on any recorded dates, follow the progress, see the proof ----
+TICK_MANIFEST = os.path.join(os.path.dirname(DIR), "study", "ticks", "manifest.json")
+BACKTEST_PROOF = os.path.join(DIR, "lab", "backtest_proof.json")
+
+
+def _tests_data_window():
+    """the recorded days a test can use (every broker tick of those days is on disk)"""
+    try:
+        m = json.load(open(TICK_MANIFEST, encoding="utf-8"))
+        d = sorted(k for k, v in (m.get("days") or {}).items() if v.get("n"))
+        return (d[0], d[-1]) if d else (None, None)
+    except Exception:
+        return (None, None)
+
+
+def _test_summary(res):
+    rb = (res or {}).get("robot") or {}
+    if rb.get("net") is None:
+        return None
+    return {"net": rb.get("net"), "trades": rb.get("trades"), "wins": rb.get("wins"), "win_rate": rb.get("win_rate"),
+            "dip": rb.get("cc_dd"), "h1": rb.get("first_half"), "h2": rb.get("later_half"), "pf": rb.get("profit_factor"),
+            "best": rb.get("best"), "worst": rb.get("worst"), "streak": rb.get("max_loss_streak"),
+            "curve": (rb.get("curve") or [])[-120:], "days": res.get("days"), "window": res.get("window_utc"),
+            "when": str(res.get("generated_at") or "")[:16].replace("T", " "), "range": res.get("range"),
+            "parent_net": ((res.get("parent_result") or {}).get("net"))}
+
+
+def tests_overview(user, body):
+    """every robot of this member (+ the Owl as the reference), its last full test, its date-range tests, the queue"""
+    reg = robot_reg()
+    rob = reg.get("robots") or []
+    uid = user.get("id")
+    mine = [r for r in rob if r.get("by_uid") == uid or (is_admin(user) and r.get("by_uid") in (None, "", uid))]
+    mine = [r for r in mine if r.get("id") != "owl"]
+    owl = next((r for r in rob if r.get("id") == "owl"), None)
+    queued = [r["id"] for r in sorted([x for x in rob if x.get("stage") == "queued" or x.get("retest") or x.get("range_jobs")],
+                                      key=lambda x: str(x.get("queued_at") or ""))]
+    running = None
+    try:
+        lk = os.path.join(DIR, "robots", "runner.lock")
+        running = os.path.exists(lk) and time.time() - os.path.getmtime(lk) < 3 * 3600
+    except Exception:
+        pass
+    out = []
+    for r in ([owl] if owl else []) + sorted(mine, key=lambda x: str(x.get("created") or ""), reverse=True):
+        rid = r["id"]
+        res = None
+        try:
+            res = json.load(open(os.path.join(DIR, "robots", "results", rid + ".json"), encoding="utf-8"))
+        except Exception:
+            pass
+        if res is None and rid == "owl":
+            # the Owl is the bench's parent: its newest Bitcoin run sits next to every robot tested against it
+            try:
+                _best = None
+                for f in os.listdir(os.path.join(DIR, "robots", "results")):
+                    if f.endswith(".json") and "@" not in f:
+                        j = json.load(open(os.path.join(DIR, "robots", "results", f), encoding="utf-8"))
+                        if j.get("parent") == "owl" and j.get("parent_result") and (_best is None or str(j.get("generated_at")) > str(_best.get("generated_at"))):
+                            _best = j
+                if _best:
+                    res = dict(_best, robot=_best["parent_result"], parent_result=None)
+            except Exception:
+                pass
+        rng = []
+        try:
+            for f in sorted(os.listdir(os.path.join(DIR, "robots", "results", "ranges"))):
+                if f.startswith(rid + "__") and f.endswith(".json"):
+                    j = json.load(open(os.path.join(DIR, "robots", "results", "ranges", f), encoding="utf-8"))
+                    rng.append({"range": j.get("range"), "error": j.get("error"), "test": _test_summary(j)})
+        except Exception:
+            pass
+        pend = [{"from": j.get("from"), "to": j.get("to"), "at": j.get("at")} for j in (r.get("range_jobs") or [])]
+        state = ("queued" if (r.get("stage") == "queued" or r.get("retest") or pend) else r.get("stage") or "draft")
+        pos = queued.index(rid) if rid in queued else None
+        out.append({"id": rid, "name": r.get("name_fr") or r.get("name") or rid, "market": r.get("market") or "BTCUSD",
+                    "ref": rid == "owl", "state": state, "queued_at": r.get("queued_at"), "ahead": pos,
+                    "eta_min": (ROBOT_TEST_MIN * ((pos or 0) + 1)) if pos is not None else None,
+                    "test": _test_summary(res), "ranges": rng[-8:], "pending": pend})
+    a, b = _tests_data_window()
+    return {"ok": True, "robots": out, "data_from": a, "data_to": b, "running": bool(running), "test_min": ROBOT_TEST_MIN}
+
+
+def test_range(user, body):
+    """a test of one of this member's robots on chosen dates (inside the recorded window)"""
+    reg = robot_reg()
+    rob = reg.get("robots") or []
+    r = next((x for x in rob if x.get("id") == body.get("id")), None)
+    if not (r and (r.get("id") == "owl" and is_admin(user) or _robot_mine(user, r))):
+        return {"ok": False, "err": "not_yours"}
+    a, b = str(body.get("from") or "")[:10], str(body.get("to") or "")[:10]
+    lo, hi = _tests_data_window()
+    if not (re.match(r"^\d{4}-\d{2}-\d{2}$", a) and re.match(r"^\d{4}-\d{2}-\d{2}$", b)) or a > b:
+        return {"ok": False, "err": "dates"}
+    if lo and (a < lo or b > hi):
+        return {"ok": False, "err": "outside", "data_from": lo, "data_to": hi}
+    jobs = [j for j in (r.get("range_jobs") or []) if not (j.get("from") == a and j.get("to") == b)]
+    if len(jobs) >= 4:
+        return {"ok": False, "err": "too_many"}
+    jobs.append({"from": a, "to": b, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
+    r["range_jobs"] = jobs
+    r.setdefault("queued_at", jobs[-1]["at"])
+    _robot_save(reg)
+    robot_runner_kick()
+    return {"ok": True, "minutes": ROBOT_TEST_MIN}
+
+
+def tests_proof(user, body):
+    """the latest check of the test against reality (written by study/botsim/publish_proof.py)"""
+    try:
+        return dict(json.load(open(BACKTEST_PROOF, encoding="utf-8")), ok=True)
+    except Exception:
+        return {"ok": True, "status": "none"}
+
+
 # ---- 2026-10-14 (owner): test a robot on another market of the member's OWN broker ----
 # The list comes from the member's account (owl_nest_worker writes nest_data/<uid>.symbols.json every 6 h);
 # the test is queued in live/robots/market_tests.json and run by study/robot_runner.py --markets, which first
@@ -30012,7 +30127,7 @@ class H(BaseHTTPRequestHandler):
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
-                                              "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
+                                              "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "tests_proof", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
@@ -30030,6 +30145,7 @@ class H(BaseHTTPRequestHandler):
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
+                       "tests_overview": tests_overview, "test_range": test_range, "tests_proof": tests_proof,
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
@@ -32544,6 +32660,12 @@ class H(BaseHTTPRequestHandler):
                                                              int(_q.get("adv", ["0"])[0] or 0), int(_q.get("since", ["0"])[0] or 0) or None)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "tests":
+            # 2026-10-25 (owner): the Tests space - Strategie members and the admin
+            if (is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"):
+                self._send(open(os.path.join(DIR, "owl_tests_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                self.send_error(404)
         elif sub in ("strategies", "strategies_data", "robots", "equipe", "robots_data", "team_data"):
             # 2026-10-12 (owner): "Strategies" - every strategy in one catalog. Strategie members and the
             # admin only (the numbers per account and the research are the Strategie offer)
