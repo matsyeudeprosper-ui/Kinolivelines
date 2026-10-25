@@ -8,6 +8,7 @@ Dead subscriptions (410/404) are pruned automatically.
 """
 import json
 import subprocess
+import sys          # 2026-10-25: missing - every lab wake knock (76 in the log) and the share clock failed with NameError
 import os
 import re
 import time
