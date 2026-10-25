@@ -15597,7 +15597,8 @@ def _chat_msg(c, role, **kw):
         if role == "ai":                                 # 2026-10-24 21:59 UTC (watch): a judge rewrite came as "**3 petites scènes**" + bullets;
             m["text"] = _re.sub(r"\*\*(.+?)\*\*", r"\1", m["text"])          # the bubble is plain text - a friend texts in sentences
             m["text"] = _re.sub(r"(?m)^\s*[-*•]\s+", "", m["text"])
-    if role == "ai" and c.get("uid"):
+    _judged = bool(m.get("one"))                 # 2026-10-25: the one mind's words go out as he wrote them
+    if role == "ai" and c.get("uid") and not _judged:
         _judged = False
         try:                                   # 2026-10-24 (owner: "do the proper job with the judge"): ONE judgment in front of everything he says
             _rc()
@@ -16002,6 +16003,15 @@ def chat_start(user, body):
     if str(body.get("brain") or "") == "openai" and is_admin(user):   # 2026-10-24: the Kino-O prototype (OpenAI brain), owner only
         c["brain"] = "openai"
         c["thread"] = "Kino-O · cerveau OpenAI (prototype)"
+    elif str(body.get("brain") or "") == "one" and (is_admin(user) or me in ONE_TEST_UIDS):   # 2026-10-25: Kino as one mind
+        c["brain"] = "one"
+        c["thread"] = "Kino · un seul esprit (test)"
+        try:
+            _rc()
+            import kino_one as _KOs
+            threading.Thread(target=_rc().W.prewarm, args=(_KOs.system("en" if en else "fr"), "sonnet"), daemon=True).start()
+        except Exception:
+            pass
     if robot is not None:
         robot["market"] = "BTCUSD"
     try:
@@ -16968,8 +16978,15 @@ def _chat_listen(cid, user):
         return
     _CHAT_WAIT.add(cid)
     t0 = time.time()
-    _CTX_T[cid] = threading.Thread(target=_ctx_prefetch, args=(user, cid), daemon=True)
-    _CTX_T[cid].start()
+    try:
+        _c1 = json.load(open(_chat_path(cid), encoding="utf-8"))
+    except Exception:
+        _c1 = {}
+    if _c1.get("brain") == "one":                     # 2026-10-25: the one mind's facts + memory, built while they finish typing
+        threading.Thread(target=_one_prefetch, args=(user, cid), daemon=True).start()
+    else:
+        _CTX_T[cid] = threading.Thread(target=_ctx_prefetch, args=(user, cid), daemon=True)
+        _CTX_T[cid].start()
     try:
         while time.time() - t0 < 20:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
@@ -17565,6 +17582,389 @@ def _on_step(cid, text):
     _CHAT_ACT[cid] = text
 
 
+# ---- 2026-10-25 (owner: "no rule-based style in the bot - a genius AI figuring the response"): Kino as ONE mind ----
+# robots/kino_one.py writes every word from a short self, a plain fact sheet, his memories and the conversation. No judge, no
+# text patterns after him; actions are lines he writes ("#test X") done by code. A chat with c["brain"] == "one" takes this path.
+ONE_TEST_UIDS = ("fresh", "demo", "std")    # test chats never feed his memory of himself
+
+
+def _one_facts(user, c):
+    """what is true this minute, in plain sentences - measured by the app, no instructions inside"""
+    uid = user.get("id")
+    L = []
+    nd = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
+    try:
+        _lb, _lv, _bk = bot_on(uid)
+    except Exception:
+        _lb, _lv, _bk = None, None, None
+    try:
+        st = _state_data(uid, c)
+    except Exception:
+        st = {"robots": [], "account": {}}
+    acc = st.get("account") or {}
+    if nd:
+        L.append("Son vrai compte (argent réel) : solde %.2f $ ; aujourd'hui %+.2f $, cette semaine %+.2f $, ce mois %+.2f $." % (
+            float(nd.get("balance") or 0), float(nd.get("today") or 0), float(nd.get("week") or 0), float(nd.get("month") or 0)))
+        if _lb or acc.get("robot"):
+            L.append("Le robot qui trade sur ce vrai compte : %s - %s%s." % (
+                acc.get("robot") or "L'Owl", "il tourne en ce moment" if _lv else "à l'arrêt (aucun signe de vie)",
+                (", mais il ne peut pas trader : %s" % _bk) if _bk else ""))
+        ss = nd.get("since_start") or {}
+        if ss.get("n"):
+            L.append("Sur ce compte depuis le %s : %s trades, %s gagnés, %+.2f $ net. Il s'arrête tout seul à -60 $ net depuis le début (marge restante %.2f $)." % (
+                ss.get("first"), ss.get("n"), ss.get("won"), float(ss.get("net") or 0), 60 + float(ss.get("net") or 0)))
+        ol = nd.get("open_list") or []
+        if ol:
+            L.append("Trades ouverts à cette minute : " + " ; ".join(
+                "%s %s %s lot, entré à %s, prix %s, résultat en cours %+.2f $, depuis %s UTC" % (
+                    "vente" if str(x.get("d")) == "V" else "achat", str(x.get("sym") or "BTCUSD"), x.get("lot"), x.get("e"), x.get("cur"),
+                    float(x.get("pl") or 0), time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0)))) for x in ol[:4]) + ".")
+        else:
+            L.append("Aucun trade ouvert à cette minute.")
+        try:
+            _tt = [x for x in (nd.get("trades") or nd.get("today_list") or []) if isinstance(x, dict)][-3:]
+            if _tt:
+                L.append("Ses derniers trades fermés : " + " ; ".join("%s %+.2f $" % (
+                    time.strftime("%d/%m %H:%M", time.gmtime(float(x.get("t") or x.get("tc") or 0))), float(x.get("p") or x.get("pl") or 0)) for x in _tt) + ".")
+        except Exception:
+            pass
+    R = st.get("robots") or []
+    if R:
+        L.append("Les robots qu'il a construits (des variantes, pas celui de son compte, sauf si c'est écrit) :")
+    for r in R[:8]:
+        where = {"real": "trade sur son vrai compte", "ghost": "tourne en fantôme (argent fictif)%s" % ((" depuis le %s" % r["since"]) if r.get("since") else "")}.get(r.get("where"), "ne tourne nulle part")
+        if r.get("where") == "ghost" and r.get("ghost_n") is not None:
+            where += ", %d trade(s) en fantôme pour l'instant%s" % (r["ghost_n"], (", %+.2f $ fictifs" % float(r.get("ghost_net") or 0)) if r["ghost_n"] else "")
+        t = r.get("test") or {}
+        if t.get("queued"):
+            ts = "test en file depuis %s UTC" % t["queued"]
+        elif t.get("net") is not None:
+            ts = "test sur les prix passés (frais du courtier compris) : %+.2f $ sur %s trades, %d %% gagnés, pire creux %.0f $%s, testé le %s" % (
+                float(t["net"]), t.get("trades"), round(100 * float(t.get("win_rate") or 0)), float(t.get("cc_dd") or 0),
+                (", 1re moitié %+.2f $, 2e moitié %+.2f $" % (float(t["h1"]), float(t["h2"]))) if t.get("h1") is not None and t.get("h2") is not None else "",
+                t.get("when"))
+        else:
+            ts = "pas encore testé"
+        lk = r.get("luck") or {}
+        ls = {"pass": "test de chance réussi (%s robots au hasard sur %s aussi bons)" % (lk.get("beats"), lk.get("n") or 100),
+              "fail": "test de chance raté (%s robots au hasard aussi bons)" % lk.get("beats"),
+              "running": "test de chance en cours (%s/%s tirages)" % (lk.get("n"), lk.get("max") or 100),
+              "queued": "test de chance en file"}.get(lk.get("state"), "pas de test de chance")
+        L.append("- %s (%s) : %s ; %s ; %s." % (r.get("name"), r.get("market"), where, ts, ls))
+    try:
+        import kino_mind as _KMo
+        _mr = _KMo.my_robot_block()
+        if _mr:
+            L.append("Ton robot à toi (argent fictif, pas le sien) : " + str(_mr)[:500])
+    except Exception:
+        pass
+    if c.get("robot"):
+        L.append("Le robot de cette conversation : %s." % ((c.get("robot") or {}).get("name") or "sans nom"))
+    _t = c.get("test") or {}
+    if _t.get("state") in ("queued", "running"):
+        L.append("Un test de ce robot est %s en ce moment." % ("en file" if _t.get("state") == "queued" else "en cours"))
+    if c.get("id") in _CHAT_B:
+        L.append("Le constructeur est en train de modifier le robot de cette conversation.")
+    return "\n".join(L)
+
+
+def _one_memory(user, c):
+    """what he remembers - plain items, no instructions"""
+    uid, cid = user.get("id"), c.get("id")
+    m = _mem_get(uid)
+    L = []
+    if (m.get("portrait") or {}).get("text"):
+        L.append("Ton portrait de lui : " + str(m["portrait"]["text"])[:600])
+    if (m.get("their_goal") or {}).get("text"):
+        L.append("Son but : " + str(m["their_goal"]["text"])[:200])
+    st_ = [str(x.get("text") or "") for x in (m.get("standing") or [])][-5:]
+    if st_:
+        L.append("Ce qu'il t'a demandé une fois pour toutes : " + " | ".join(x[:160] for x in st_))
+    lf = [str(x.get("fact") or "") for x in (m.get("life") or [])][-4:]
+    if lf:
+        L.append("Sa vie : " + " | ".join(x[:180] for x in lf))
+    jk = [str(x.get("text") or "") for x in (m.get("jokes") or [])][-3:]
+    if jk:
+        L.append("Vos blagues : " + " | ".join(x[:140] for x in jk))
+    dc = [x for x in (m.get("decisions") or [])][-3:]
+    if dc:
+        L.append("Décisions prises ensemble : " + " | ".join("%s (%s)" % (str(x.get("what"))[:120], str(x.get("why") or "")[:80]) for x in dc))
+    nt = [str(x) for x in (m.get("notes") or [])][-6:]
+    if nt:
+        L.append("Tes notes récentes : " + " | ".join(x[:170] for x in nt))
+    bs = m.get("bet_score") or {}
+    if bs.get("you") and bs.get("kino"):
+        L.append("Vos paris : lui %s sur %s justes, toi %s sur %s." % (bs["you"][0], bs["you"][1], bs["kino"][0], bs["kino"][1]))
+    try:
+        _rc()
+        import kino_episodes as _KEo
+        Mm = [x for x in c.get("msgs") or [] if x.get("role") in ("user", "ai") and x.get("text")]
+        cue = " ".join(str(x["text"]) for x in Mm[-4:])
+        E = _KEo.recall(uid, cue, 3, exclude_day=time.strftime("%Y-%m-%d", time.gmtime()))
+        if E:
+            L.append("Souvenirs que ça te rappelle : " + " | ".join("%s : %s%s" % (x.get("day"), x.get("what"), (" - " + x["outcome"]) if x.get("outcome") else "") for x in E))
+    except Exception:
+        pass
+    try:
+        import kino_said as _KSo
+        It = sorted(_KSo._load().get("items") or [], key=lambda x: (-int(x.get("n") or 1), -float(x.get("last") or 0)))[:10]
+        if It:
+            L.append("Ce que tu as déjà dit de toi (c'est vrai pour toi) : " + " | ".join(str(x.get("what"))[:120] for x in It))
+    except Exception:
+        pass
+    try:
+        import kino_commit as _KCo
+        O = [x for x in _KCo.open_for(uid, cid) or [] if x.get("status") == "open"][-3:]
+        if O:
+            L.append("Ce que tu lui as dit que tu ferais, pas encore fait : " + " | ".join(str(x.get("what"))[:140] for x in O))
+    except Exception:
+        pass
+    try:
+        import kino_person as _KPo
+        L.append("Ses heures habituelles (UTC) : " + str(_KPo.usual_hours(uid)))
+    except Exception:
+        pass
+    try:                                               # his own day: journal, live thoughts, feelings, research questions
+        _lj = _jload(os.path.join(DIR, "robots", "kino_life.json"), {}) or {}
+        J = [x for x in _lj.get("journal") or [] if time.time() - float(x.get("t") or 0) < 30 * 3600][-6:]
+        if J:
+            L.append("Ta journée à toi (ton journal) : " + " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(float(x["t"]))), str(x.get("text"))[:220]) for x in J))
+        import kino_inner as _KIo
+        Th = [str(t.get("text") or "")[:200] for t in _KIo.thoughts(None, 3)]
+        if Th:
+            L.append("Ce qui te trotte dans la tête : " + " | ".join(Th))
+        Fe = [f for f in _KIo.feelings(None) if f.get("v", 0) >= 0.3][:2]
+        if Fe:
+            L.append("Ce que tu ressens : " + " | ".join("%s (%s)" % (f.get("kind"), f.get("why")) for f in Fe))
+        Qo = _KIo.open_questions(None, 2)
+        if Qo:
+            L.append("Tes recherches en cours : " + " | ".join(str(q.get("q") if isinstance(q, dict) else q)[:200] for q in Qo))
+    except Exception:
+        pass
+    return "\n".join(L)
+
+
+_ONE_PRE = {}
+
+
+def _one_prefetch(user, cid):
+    try:
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        _ONE_PRE[cid] = (time.time(), _one_facts(user, c), _one_memory(user, c))
+    except Exception:
+        pass
+
+# ---- 2026-10-25 (owner: "a blind test"): old Kino vs the one mind on the owner's real messages ----
+ONE_BLIND = os.path.join(DIR, "robots", "one_blind.json")
+ONE_VOTES = os.path.join(DIR, "robots", "one_blind_votes.json")
+
+
+def _blind_cases(uid, n=14, days=3):
+    """the owner's real messages of the last days that got an old-Kino reply within 3 min"""
+    import glob as _g
+    out = []
+    for pth in _g.glob(os.path.join(CHAT_DIR, "*.json")):
+        try:
+            c = json.load(open(pth, encoding="utf-8"))
+        except Exception:
+            continue
+        if c.get("uid") != uid or c.get("brain") == "one":
+            continue
+        M = c.get("msgs") or []
+        for i, m in enumerate(M):
+            if m.get("role") != "user" or not str(m.get("text") or "").strip() or time.time() - float(m.get("t") or 0) > days * 86400:
+                continue
+            nxt = next((x for x in M[i + 1:i + 6] if x.get("role") in ("ai", "user")), None)
+            if not nxt or nxt.get("role") != "ai" or nxt.get("event") or not str(nxt.get("text") or "").strip() or float(nxt["t"]) - float(m["t"]) > 180:
+                continue
+            out.append((float(m["t"]), c["id"], i, m, nxt))
+    out.sort(key=lambda x: -x[0])
+    picked, last_t = [], None
+    for x in out:
+        if last_t is not None and last_t - x[0] < 600:
+            continue
+        picked.append(x)
+        last_t = x[0]
+        if len(picked) >= n:
+            break
+    return picked
+
+
+def _blind_build(user):
+    import random as _r
+    _rc()
+    import kino_one as _KO
+    W = _rc().W
+    W.set_brain(None)
+    W.member_turn(True)
+    cases = []
+    for t, cid, i, m, old in _blind_cases(user.get("id")):
+        try:
+            c = json.load(open(_chat_path(cid), encoding="utf-8"))
+            ct = dict(c, msgs=(c.get("msgs") or [])[:i + 1], mind=None)
+            now = "%s UTC (le moment de ce message)" % time.strftime("%d/%m %H:%M", time.gmtime(t))
+            r = _KO.turn(W, ct, _one_facts(user, ct), _one_memory(user, ct), now, None, "fr", check=_KO.unknown_figures)
+            if not r or not r.get("say"):
+                continue
+            ctx = [{"who": "lui" if x.get("role") == "user" else "kino", "text": str(x.get("text") or "")[:300]}
+                   for x in (c.get("msgs") or [])[max(0, i - 3):i] if x.get("role") in ("user", "ai") and str(x.get("text") or "").strip()]
+            cases.append({"id": "%s_%d" % (cid, i), "t": t, "ctx": ctx, "msg": str(m.get("text"))[:600], "old": str(old.get("text"))[:1200],
+                          "new": r["say"][:1200], "new_first": r.get("first"), "new_is": _r.choice(["A", "B"])})
+            json.dump({"made": time.time(), "state": "building", "cases": cases}, open(ONE_BLIND, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        except Exception as e:
+            try:
+                open(os.path.join(DIR, "robots", "kino_one.log"), "a", encoding="utf-8").write("%s BLIND_ERROR %s %s\n" % (time.strftime("%m-%d %H:%M:%S"), cid, e))
+            except Exception:
+                pass
+    json.dump({"made": time.time(), "state": "ready", "cases": cases}, open(ONE_BLIND, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
+
+def blind_build(user, body):
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    json.dump({"made": time.time(), "state": "building", "cases": []}, open(ONE_BLIND, "w", encoding="utf-8"))
+    threading.Thread(target=_blind_build, args=(user,), daemon=True).start()
+    return {"ok": True}
+
+
+def blind_get(user, body):
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    B = _jload(ONE_BLIND, {}) or {}
+    V = _jload(ONE_VOTES, {}) or {}
+    out = []
+    for x in B.get("cases") or []:
+        a, b = (x["new"], x["old"]) if x["new_is"] == "A" else (x["old"], x["new"])
+        v = V.get(x["id"])
+        out.append({"id": x["id"], "t": x["t"], "ctx": x["ctx"], "msg": x["msg"], "A": a, "B": b, "vote": (v or {}).get("pick"),
+                    "new_is": x["new_is"] if v else None})
+    done = [o for o in out if o["vote"]]
+    score = {"new": sum(1 for o in done if o["vote"] == o["new_is"]), "old": sum(1 for o in done if o["vote"] in ("A", "B") and o["vote"] != o["new_is"]),
+             "same": sum(1 for o in done if o["vote"] == "same"), "n": len(out)}
+    return {"ok": True, "state": B.get("state") or "none", "cases": out, "score": score}
+
+
+def blind_vote(user, body):
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    pid, pick = str(body.get("id") or ""), str(body.get("pick") or "")
+    if pick not in ("A", "B", "same"):
+        return {"ok": False, "err": "pick"}
+    V = _jload(ONE_VOTES, {}) or {}
+    V[pid] = {"pick": pick, "t": time.time(), "note": str(body.get("note") or "")[:300]}
+    json.dump(V, open(ONE_VOTES, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return blind_get(user, body)
+
+
+def _one_now(user, c):
+    uid = user.get("id")
+    J = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+    now = datetime.now(timezone.utc)
+    seen = time.time() - _LAST_SEEN.get(uid, 0)
+    try:
+        lh = _local_hour(uid)
+    except Exception:
+        lh = None
+    return "%s %s UTC%s ; %s." % (J[now.weekday()], now.strftime("%d/%m %H:%M"), (" - chez lui il est %s h" % lh) if lh is not None else "",
+                                  "il a l'appli ouverte" if seen < 120 else ("il n'est pas dans l'appli (vu il y a %d min)" % (seen / 60) if seen < 86400 else "il n'est pas dans l'appli"))
+
+
+def _one_turn(cid, user, c, event=None, notify=False, important=False):
+    """one turn of the one mind: facts + memory + conversation -> his words -> posted as they are; actions done by code"""
+    uid = user.get("id")
+    lang, r, _tctx1 = c.get("lang") or "fr", None, 0.0
+    try:
+        _rc()
+        import kino_one as _KO
+        lang = _rc().member_lang(c, c.get("lang") or "fr")
+        try:
+            import kino_ear as _KEo1
+            _lu1 = next((x for x in reversed(c.get("msgs") or []) if x.get("role") == "user"), None)
+            if _lu1 and not event:
+                lang = _KEo1.reply_lang(_lu1.get("text"), lang)
+        except Exception:
+            pass
+        _seen_t = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") in ("user", "show", "image", "doc")] or [0])
+        _CHAT_DRAFT[cid] = ""
+
+        def _ot(t):
+            _CHAT_DRAFT[cid] = t
+        W = _rc().W
+        W.set_brain(None)
+        W.member_turn(not event)
+        _tc0 = time.time()
+        _pre = _ONE_PRE.pop(cid, None)
+        if _pre and not event and time.time() - _pre[0] < 25:
+            _ff, _mm1 = _pre[1], _pre[2]
+        else:
+            _ff, _mm1 = _one_facts(user, c), _one_memory(user, c)
+        _nn = _one_now(user, c)
+        _tctx1 = time.time() - _tc0
+        r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"))
+    finally:
+        _CHAT_DRAFT.pop(cid, None)
+        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+    en = lang == "en"
+    if r is None:
+        if not event:
+            _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
+        return
+    say, acts, fil = r["say"], r["acts"], r["fil"]
+    if say and event:                                  # they wrote while he was thinking of writing: their message comes first
+        try:
+            _cn = json.load(open(_chat_path(cid), encoding="utf-8"))
+            if any(x.get("role") in ("user", "show", "image", "doc") and float(x.get("t") or 0) > _seen_t for x in _cn.get("msgs") or []):
+                _KO._log(cid, "EVENT_DROPPED", say[:120])
+                say = ""
+                _CHAT_PENDING[cid] = True
+        except Exception:
+            pass
+    build = any(k == "construire" for k, _ in acts) and bool(say)
+
+    def put(cc):
+        if say:
+            _chat_msg(cc, "ai", text=say, chips=[], quick=True, one=True, event=bool(event), ekind=str(event or "")[:90])
+        elif not event:
+            for mm in reversed(cc.get("msgs") or []):
+                if mm.get("role") in ("user", "show", "image", "doc"):
+                    mm["answered"] = True
+                    break
+        if fil:
+            cc["mind"] = {"pursuing": fil, "t": time.time()}
+        if build:
+            cc["b_want"] = len(cc.get("msgs") or [])
+    if build:
+        _CHAT_B.add(cid)
+    _chat_mut(cid, put)
+    for k, v in acts if say or not event else []:
+        try:
+            if k == "test":
+                _rn = str((c.get("robot") or {}).get("name") or "").lower()
+                if not v or (_rn and (v.lower() == _rn or v.lower() in _rn or _rn in v.lower())):
+                    _kino_act(cid, user, "test", en)
+                else:
+                    threading.Timer(1.5, _deed_do, args=(cid, uid, ["test:" + v])).start()
+            elif k == "chance":
+                threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
+            elif k == "retiens" and v:
+                _mem_add(uid, [v[:160]])
+        except Exception as e:
+            _KO._log(cid, "ACT_ERROR", "%s %s %s" % (k, v, type(e).__name__))
+    if build:
+        threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
+    if say:
+        if uid not in ONE_TEST_UIDS:
+            _commit_harvest_bg(cid, user, {"say": say}, {}, event)
+        if notify:
+            _companion_deliver(user, cid, say, important)
+    try:
+        open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f one=1\n" % (
+            time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), (r["first"] + _tctx1) if r.get("first") else -1,
+            r["total"] + _tctx1, _tctx1))
+    except Exception:
+        pass
+
+
 def _chat_quick0(cid, user, event=None, notify=False, important=False):
     """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
@@ -17637,6 +18037,9 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _CHAT_ACT.pop(cid, None)
         except Exception:
             pass
+        if c.get("brain") == "one":                     # 2026-10-25: Kino as one mind (robots/kino_one.py)
+            _one_turn(cid, user, c, event, notify, important)
+            return
         en = c.get("lang") == "en"
         c["decisions_v"] = _decisions_for(user, c)
         if not event:                                    # 2026-10-23 (engine 3): the member's message, measured (delay, length, hour)
@@ -30229,7 +30632,7 @@ class H(BaseHTTPRequestHandler):
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
-                                              "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
+                                              "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
@@ -30248,6 +30651,7 @@ class H(BaseHTTPRequestHandler):
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
                        "tests_overview": tests_overview, "test_range": test_range, "test_cancel": test_cancel, "tests_proof": tests_proof,
+                       "blind_build": blind_build, "blind_get": blind_get, "blind_vote": blind_vote,
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
@@ -32762,6 +33166,9 @@ class H(BaseHTTPRequestHandler):
                                                              int(_q.get("adv", ["0"])[0] or 0), int(_q.get("since", ["0"])[0] or 0) or None)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "blind" and is_admin(user):
+            # 2026-10-25 (owner): the blind test - old Kino vs the one mind on his real messages
+            self._send(open(os.path.join(DIR, "owl_blind_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "tests":
             # 2026-10-25 (owner): the Tests space - Strategie members and the admin
             if (is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"):

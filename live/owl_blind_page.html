@@ -1,0 +1,80 @@
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8"><meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Test à l'aveugle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-10-25 (owner: "a blind test"): old Kino vs the one mind on his own real messages - he picks the more human reply */
+:root{--bg:#0a0e13;--surface:#111923;--surface2:#16202d;--surface3:#1c2837;--border:#1e2936;--border2:#2a394b;
+ --text:#e9eff5;--text2:#c6d3df;--muted:#8796aa;--accent:#3b82f6;--accent2:#6366f1;--accent-bg:rgba(59,130,246,.14);--accent-soft:#8fc6ff;
+ --up:#2ecc71;--up-soft:#8df0bb;--down-soft:#ff9a9a;--sh:0 18px 50px -24px rgba(0,0,0,.7)}
+:root[data-theme=light]{--bg:#eef2f7;--surface:#fff;--surface2:#f5f7fb;--surface3:#e7edf5;--border:#dde4ed;--border2:#c9d3df;--text:#0f172a;--text2:#33415a;--muted:#5f6f85;
+ --accent:#2563eb;--accent2:#4f46e5;--accent-bg:rgba(37,99,235,.10);--accent-soft:#1d4ed8;--up:#15803d;--up-soft:#166534;--down-soft:#b91c1c;--sh:0 18px 40px -26px rgba(15,23,42,.35)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:40px}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none}a{color:inherit;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+header{display:flex;align-items:center;gap:12px;padding:calc(14px + env(safe-area-inset-top,0px)) 0 14px}
+.ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;flex:none}
+h1{font-size:1.35rem;font-weight:850;letter-spacing:-.02em}.sub{font-size:.82rem;color:var(--muted);margin-top:2px;line-height:1.45}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px;margin-bottom:12px}
+.intro{font-size:.9rem;line-height:1.55;color:var(--text2)}
+.prog{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted);margin:14px 2px 10px}
+.bar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-bottom:14px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
+.ctx{font-size:.78rem;color:var(--muted);line-height:1.45;margin-bottom:10px}
+.ctx div{margin:3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me{margin:6px 0 14px auto;max-width:86%;width:fit-content;padding:10px 13px;border-radius:16px 16px 4px 16px;background:var(--accent);color:#fff;font-size:.93rem;line-height:1.45;white-space:pre-wrap}
+.lbl{font-size:.68rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:2px 2px 8px}
+.opt{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:16px 16px 16px 4px;background:var(--surface2);border:1.5px solid var(--border2);margin-bottom:10px;font-size:.93rem;line-height:1.5;white-space:pre-wrap;transition:border-color .15s,background .15s}
+.opt .k{display:inline-flex;width:22px;height:22px;border-radius:7px;background:var(--surface3);font-size:.72rem;font-weight:900;align-items:center;justify-content:center;margin-right:8px;vertical-align:1px}
+.opt.on{border-color:var(--accent);background:var(--accent-bg)}
+.same{width:100%;padding:11px;border-radius:12px;border:1px dashed var(--border2);font-size:.86rem;font-weight:750;color:var(--text2)}
+.same.on{border-color:var(--accent);color:var(--accent-soft)}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.btn{padding:13px;border-radius:13px;font-weight:800;font-size:.92rem;border:1px solid var(--border2);background:var(--surface2)}
+.btn.pri{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff}.btn:disabled{opacity:.4}
+.res{text-align:center;padding:24px 14px}.res .big{font-size:2.6rem;font-weight:900;letter-spacing:-.03em;margin:6px 0}
+.tag{display:inline-block;font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:2px}
+.tag.n{background:rgba(46,204,113,.16);color:var(--up-soft)}.tag.o{background:var(--surface3);color:var(--muted)}
+.rev .opt{cursor:default}
+.empty{text-align:center;padding:30px 10px;color:var(--muted);font-size:.9rem;line-height:1.5}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent-bg);border-top-color:var(--accent);animation:sp .9s linear infinite;margin:0 auto 12px}@keyframes sp{to{transform:rotate(360deg)}}
+</style></head><body><div class="wrap">
+<header><a class="ib" href="atelier" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+<div><h1>Test à l'aveugle</h1><div class="sub">Quelle réponse sonne le plus comme une vraie personne ?</div></div></header>
+<div id="app"><div class="card empty"><div class="spin"></div>Chargement…</div></div>
+</div>
+<script>
+const BASE=location.pathname.replace(/[^/]*$/,'');const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function post(a,b){try{const r=await fetch(BASE+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});return await r.json();}catch(e){return{ok:false,err:'net'};}}
+const S={d:null,i:0,timer:null};
+async function load(){const j=await post('blind_get');if(!j.ok){$('app').innerHTML='<div class="card empty">Réservé au propriétaire.</div>';return;}
+ S.d=j;if(j.state==='building'&&!(j.cases||[]).length){$('app').innerHTML='<div class="card empty"><div class="spin"></div>Le nouveau Kino répond à tes vrais messages… ('+(j.cases||[]).length+' prêts)</div>';clearTimeout(S.timer);S.timer=setTimeout(load,5000);return;}
+ if(!(j.cases||[]).length){render();return;}
+ const first=j.cases.findIndex(c=>!c.vote);S.i=first<0?j.cases.length:first;render();
+ if(j.state==='building'){clearTimeout(S.timer);S.timer=setTimeout(async()=>{const k=await post('blind_get');if(k.ok){S.d=k;render();}},8000);}}
+function render(){const d=S.d,C=d.cases||[];
+ if(!C.length){$('app').innerHTML='<div class="card intro">Aucun test pour l’instant.<div class="nav" style="grid-template-columns:1fr"><button class="btn pri" id="mk">Préparer un test</button></div></div>';$('mk').onclick=build;return;}
+ if(S.i>=C.length){return renderEnd();}
+ const x=C[S.i],done=C.filter(c=>c.vote).length;
+ $('app').innerHTML=(S.i===0&&!done?'<div class="card intro">Voici tes vrais messages des derniers jours. Pour chacun, deux réponses de Kino : l’ancienne, et celle du nouveau Kino. Tu ne sais pas laquelle est laquelle. Touche celle qui sonne le plus comme une vraie personne.</div>':'')+
+  '<div class="prog"><span>Message '+(S.i+1)+' sur '+C.length+(d.state==='building'?' (d’autres arrivent)':'')+'</span><span>'+done+' choisis</span></div><div class="bar"><i style="width:'+(100*done/C.length).toFixed(0)+'%"></i></div>'+
+  '<div class="card">'+(x.ctx.length?'<div class="ctx">'+x.ctx.map(c=>'<div>'+(c.who==='lui'?'Toi':'Kino')+' : '+esc(c.text)+'</div>').join('')+'</div>':'')+
+  '<div class="me">'+esc(x.msg)+'</div><div class="lbl">Les deux réponses</div>'+
+  ['A','B'].map(k=>'<button class="opt'+(x.vote===k?' on':'')+'" data-k="'+k+'"><span class="k">'+k+'</span>'+esc(x[k])+'</button>').join('')+
+  '<button class="same'+(x.vote==='same'?' on':'')+'" data-k="same">Pareil, je ne vois pas de différence</button>'+
+  '<div class="nav"><button class="btn" id="prev"'+(S.i?'':' disabled')+'>Précédent</button><button class="btn pri" id="next"'+(x.vote?'':' disabled')+'>'+(S.i===C.length-1?'Voir le résultat':'Suivant')+'</button></div></div>';
+ $('app').querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{const j=await post('blind_vote',{id:x.id,pick:b.dataset.k});if(j.ok){S.d=j;setTimeout(()=>{S.i++;render();window.scrollTo({top:0,behavior:'smooth'});},250);render();}});
+ $('prev').onclick=()=>{S.i=Math.max(0,S.i-1);render();};$('next').onclick=()=>{S.i++;render();};}
+function renderEnd(){const d=S.d,sc=d.score,C=d.cases;
+ $('app').innerHTML='<div class="card res"><div class="sub">Le nouveau Kino a été choisi</div><div class="big">'+sc.new+' / '+(sc.new+sc.old+sc.same)+'</div><div class="sub">L’ancien : '+sc.old+' · pareil : '+sc.same+'</div>'+
+  '<div class="nav"><button class="btn" id="again">Revoir</button><button class="btn pri" id="mk">Nouveau test</button></div></div>'+
+  C.filter(c=>c.vote).map(c=>'<div class="card rev"><div class="me">'+esc(c.msg)+'</div>'+['A','B'].map(k=>'<div class="opt'+(c.vote===k?' on':'')+'"><span class="k">'+k+'</span>'+esc(c[k])+'<span class="tag '+(c.new_is===k?'n':'o')+'">'+(c.new_is===k?'nouveau':'ancien')+'</span></div>').join('')+'</div>').join('');
+ $('again').onclick=()=>{S.i=0;render();};$('mk').onclick=build;}
+async function build(){if(!confirm('Préparer un nouveau test ? Le nouveau Kino va répondre à tes derniers vrais messages (rien n’est envoyé).'))return;await post('blind_build');setTimeout(load,1500);}
+load();
+</script></body></html>

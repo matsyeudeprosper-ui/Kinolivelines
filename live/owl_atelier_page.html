@@ -931,6 +931,7 @@ async function histSh(){let L=[];try{L=(await getJ('chat_list')).chats||[];}catc
  shOpen('<h4>'+T('Mes conversations','My conversations')+'</h4><input id="hq" class="hq" placeholder="'+T('Chercher une conversation…','Search a conversation…')+'" oninput="histPaint()" enterkeyhint="search">'+
   '<button class="btn pri" style="margin:10px 0 12px" onclick="shClose();start()">+ '+T('Nouvelle conversation','New conversation')+'</button>'+
   (C&&C.admin?'<button class="btn" style="margin:0 0 12px" onclick="shClose();start(undefined,\'openai\')">\u2697\ufe0f Kino-O \u00b7 '+T('cerveau OpenAI (prototype)','OpenAI brain (prototype)')+'</button>':'')+   // 2026-10-24: the owner tests Kino-O from his phone
+  (C&&C.admin?'<button class="btn" style="margin:0 0 12px" onclick="shClose();start(undefined,\'one\')">\ud83e\udde0 Kino \u00b7 '+T('un seul esprit (test)','one mind (test)')+'</button><a class="btn" style="margin:0 0 12px;display:flex;justify-content:center" href="blind">\ud83d\udd0d '+T('Test \u00e0 l\u2019aveugle : ancien ou nouveau Kino ?','Blind test: old or new Kino?')+'</a>':'')+   // 2026-10-25: the one mind (robots/kino_one.py) + its blind test
   '<div id="hlist"></div>');histPaint();}
 let HLD={};
 function histRow(c){const dup=(HLD[c.title||c.name||'']||0)>1;const un=(c.unread||0)>0&&c.id!==CID,mk=c.market?MKN(c.market):null,sub=un?(c.unread+' '+(c.unread>1?T('nouveaux messages','new messages'):T('nouveau message','new message'))+(c.news?' · '+c.news:'')):(c.status||((c.last_role==='user'?T('Toi : ','You: '):'')+(c.last||c.understood||'')));
