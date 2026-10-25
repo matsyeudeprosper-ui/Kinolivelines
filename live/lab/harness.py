@@ -347,7 +347,9 @@ PB_STICKY = None
 # None = the old exact-midpoint fill.
 BULLET_TICKS = None
 BULLET_LAG_S = 3.0
-RESTARTS = None          # sorted epoch seconds of live bot starts (fidelity): the structure is re-seeded there         # path of a chain file for this run (None = the old memoised, non-sticky state)
+RESTARTS = None
+ENTRY_TICKS = False      # True (with BULLET_TICKS) = main entries filled from ticks ENTRY_LAG_S after the close
+ENTRY_LAG_S = 4.0          # sorted epoch seconds of live bot starts (fidelity): the structure is re-seeded there         # path of a chain file for this run (None = the old memoised, non-sticky state)
 
 
 def _pb_state(R, i):
@@ -561,6 +563,7 @@ def simulate(R, spread, cfg):
     streak = 0
     _seeded = False
     pos_t_in, bullet_fill = 0, None
+    pos_nosp = False
     _rs_k = 0
     curve = []
     day_key = None
@@ -670,7 +673,7 @@ def simulate(R, spread, cfg):
                     _fill = _pmid if _pd * (o - _pmid) > 0 else o          # gap: the open is the quote
                     _lot = pend["lot"]
                     pos = (_pd, _fill, _psl, _ptp, pend["dist"], _pmid, True, _lot)
-                    pos_t_in = t; bullet_fill = None
+                    pos_t_in = t; bullet_fill = None; pos_nosp = False
                     pos_geo = {"e0": pend["e0"], "fill": _fill, "amb": _amb, "skip_eval": (_amb == "mid_tp" and not _fav)}
                     pos_trailed = False; last_hour = t // 3600
                     n_trades += 1; day_n += 1; n_pend_fill += 1
@@ -782,9 +785,10 @@ def simulate(R, spread, cfg):
                 if pos_geo is not None:
                     pts = (d * (tp - e) - spread) if win else (d * (sl - e) - spread)
                 else:
-                    pts = ((pos_rr * dist - spread) if win
-                           else ((d * (sl - e) - spread) if c["trail_prot"]
-                                 else -(dist + spread)))
+                    _spx = 0.0 if pos_nosp else spread
+                    pts = ((pos_rr * dist - _spx) if win
+                           else ((d * (sl - e) - _spx) if c["trail_prot"]
+                                 else -(dist + _spx)))
                 debt = (debt_led if c["debt_mode"] == "half"
                         else max(0.0, pk - run))
                 before = run
@@ -1212,6 +1216,18 @@ def simulate(R, spread, cfg):
             blocked += 1
             continue
         dist = abs(e_px - slp)
+        pos_nosp = False
+        if ENTRY_TICKS and BULLET_TICKS is not None:
+            # 2026-10-25 (fidelity): the live bot sends its entry a few seconds after the close (median 4 s, p90 19 s:
+            # the pullback check takes time) at the ASK (buy) / BID (sell), and sets its target from THAT fill
+            # (Valere 10-19 08:39: +28 pts later, target 52 pts higher, not reached -> -7.51 live vs +3.36 replayed)
+            _tt, _bd, _ak = BULLET_TICKS
+            _j = int(np.searchsorted(_tt, int((t + 60 + ENTRY_LAG_S) * 1000)))
+            if 0 <= _j < len(_tt) and abs(int(_tt[_j]) - int((t + 60 + ENTRY_LAG_S) * 1000)) < 120000:
+                e_px = float(_ak[_j] if d == 1 else _bd[_j])
+                if d * (e_px - float(slp)) > 0:
+                    dist = abs(e_px - slp)
+                    pos_nosp = True      # the fill already paid the spread; exits trigger on the bid (buy) / ask (sell)
         # 2026-09-29 (owner): the spread is fixed at 7 pts on this broker, but
         # that is 1.2 % of a wide trade and 8.7 % of a tight one - and a market
         # too small to move cannot pay for it at all

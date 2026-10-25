@@ -14,6 +14,7 @@ Prices: Exness public archive BTCUSD M1 from bid ticks (the 2026 run's data), co
 -> study/live_vs_engine/trades_match.json + a printed table
 """
 import csv
+import re
 import datetime as dt
 import json
 import os
@@ -35,20 +36,42 @@ def hm(t):
     return dt.datetime.fromtimestamp(t, tz=dt.timezone.utc).strftime("%m-%d %H:%M")
 
 
+LOGF = None
+
+
 def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol=3):
     sys.path.insert(0, os.path.join(LIVE, "lab"))
     sys.path.insert(0, LIVE)
     os.chdir(LIVE)
     import harness as H
     import owl_package as PKM
-    L = PKM.for_account("kino")
+    # 2026-10-25 (owner): the REFERENCE account is Valere (u224016179) - never managed by hand since its start
+    ACCT = os.environ.get("ACCT", "valere")
+    UID = {"valere": "u224016179", "kino": "kino"}[ACCT]
+    global LOGF
+    LOGF = os.path.join(LIVE, "bos_bot_%s.log" % ACCT)
+    L = PKM.for_account(UID)
     cfg = H.cfg_of({
-        "lot": 0.01, "bullets": float(L["max_extra"]), "jar": bool(L["jar"]), "kill_net": float(L["kill_net"] or 0.0),
+        "lot": float(L["base_lot"]) if L.get("scale_with_balance") else 0.01, "bullets": float(L["max_extra"]), "jar": bool(L["jar"]), "kill_net": float(L["kill_net"] or 0.0),
         "day_cap": float(L.get("day_cap") or 0.0), "nerv_gate": bool(L.get("nervosity", True)), "storm": 1.85,
         "rr": float(L.get("rr") or 0.8), "k_streak": int(L.get("k_streak") or 2),
         "pb_dir_gate": bool(L.get("pb_dir_gate", False)), "pb_gate_mode": str(L.get("pb_gate_mode") or "trend"),
         "risk_pct": 100.0 * float(L.get("max_risk_pct") or 0.0), "internal": 1 if L.get("internal_entries") else 0,
-        "debt_gate": 1 if L.get("debt_gate", True) else 0, "balance": 0.0, "drag": 0.0})
+        "debt_gate": 1 if L.get("debt_gate", True) else 0, "balance": 0.0, "drag": 0.0,
+        "risk_fit": float(L.get("risk_fit_pct") or 0.0), "scale_ref": float(L.get("scale_ref_balance") or 200.0)})
+    if L.get("scale_with_balance"):           # the real balance at the window start: last "balance X" before t0 in the log
+        _b0 = None
+        for _ln in open(LOGF, encoding="utf-8", errors="replace"):
+            _m = re.match(r"(\S+) BOS-BOT starting on \d+ balance ([0-9.]+)", _ln) or re.match(r"(\S+) lot resized to [0-9.]+ \(balance \$([0-9.]+)", _ln)
+            if _m:
+                try:
+                    if ts(_m.group(1)) > ts(start):
+                        break
+                except Exception:
+                    continue
+                _b0 = float(_m.group(2))
+        cfg["balance"] = _b0 or 200.0
+        print("balance at start (scaling):", cfg["balance"])
     for _k, _v in json.loads(os.environ.get("OVER", "{}")).items():     # diagnostic overrides, e.g. OVER='{"pb_dir_gate": false}'
         cfg[_k] = _v
     t0, t1 = ts(start), ts(end)
@@ -63,7 +86,7 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
         import re as _re0
         _ws = t0                      # the real state AT the window start (the warm-up only builds structure)
         _d0 = _c0 = 0.0
-        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+        for _ln in open(LOGF, encoding="utf-8", errors="replace"):
             _m = _re0.match(r"(\S+) .*debt \$([0-9.]+) \(peak [^)]*\), chest \$([0-9.]+)", _ln)
             if _m:
                 try:
@@ -74,7 +97,7 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
                 _d0, _c0 = float(_m.group(2)), float(_m.group(3))
         cfg["debt0"], cfg["chest0"], cfg["seed_at"] = _d0, _c0, t0
         _stk = 0                      # losing streak: consecutive main LOSS lines before t0 since the last WIN
-        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+        for _ln in open(LOGF, encoding="utf-8", errors="replace"):
             _m = _re0.match(r"(\S+) (WIN|LOSS) [+-]", _ln)
             if _m:
                 try:
@@ -90,7 +113,7 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     if os.environ.get("DOWN", "1") == "1":
         import re as _re1
         _dn = []
-        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+        for _ln in open(LOGF, encoding="utf-8", errors="replace"):
             _m = _re1.match(r"(\S+) bougies figees depuis (\d+) min", _ln)
             if _m:
                 try:
@@ -109,7 +132,7 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     if os.environ.get("RESTART", "1") == "1":         # the live bot's starts: its structure is re-seeded there
         import re as _re2
         _rs = []
-        for _ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+        for _ln in open(LOGF, encoding="utf-8", errors="replace"):
             _m = _re2.match(r"(\S+) BOS-BOT starting", _ln)
             if _m:
                 try:
@@ -121,9 +144,20 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
         H.RESTARTS = sorted(_rs)
         print("live restarts replayed:", len(_rs))
     if os.environ.get("TICKS", "1") == "1":
-        _T = np.load(os.path.join(HERE, "live_vs_engine", "ticks", "2026-10_ticks.npz"))
-        H.BULLET_TICKS = (_T["t"], _T["bid"], _T["ask"])
+        _bt = sorted(f for f in os.listdir(os.path.join(HERE, "ticks_u224016179_forward")) if f.endswith(".npz"))
+        if ACCT == "valere" and _bt:            # the broker's own ticks (1-s sampled) for the same server
+            _tt, _bb, _aa = [], [], []
+            for f in _bt:
+                z = np.load(os.path.join(HERE, "ticks_u224016179_forward", f))
+                _tt.append(z["time_msc"]); _bb.append(z["bid"]); _aa.append(z["ask"])
+            _o = np.argsort(np.concatenate(_tt), kind="stable")
+            H.BULLET_TICKS = (np.concatenate(_tt)[_o], np.concatenate(_bb)[_o], np.concatenate(_aa)[_o])
+        else:
+            _T = np.load(os.path.join(HERE, "live_vs_engine", "ticks", "2026-10_ticks.npz"))
+            H.BULLET_TICKS = (_T["t"], _T["bid"], _T["ask"])
         H.BULLET_LAG_S = float(os.environ.get("LAG", "3"))
+        H.ENTRY_TICKS = os.environ.get("ENTRY_TICKS", "1") == "1"
+        H.ENTRY_LAG_S = float(os.environ.get("ENTRY_LAG", "4"))
     H.simulate(R, float(os.environ.get("SPREAD", "7")), cfg)
     E = [x for x in H.TRACE if t0 <= int(x["t"]) < t1]
     eng = [{"t": int(x["t"]), "d": "BUY" if x["d"] == 1 else "SELL", "kind": "FLIP-BOS" if x.get("flip") else "BOS",
@@ -135,7 +169,7 @@ def main(start="2026-10-10T08:49:00+00:00", end="2026-10-25T00:00:00+00:00", tol
     import re as _re
     real = []
     cur = None
-    for ln in open(os.path.join(LIVE, "bos_bot_kino.log"), encoding="utf-8", errors="replace"):
+    for ln in open(LOGF, encoding="utf-8", errors="replace"):
         m = _re.match(r"(\S+) (FLIP-BOS|BOS|INT) ENTRY: (BUY|SELL)", ln)
         if m:
             if cur is not None:                       # an entry whose close the log never wrote (10-19 08:39): kept, result unknown
