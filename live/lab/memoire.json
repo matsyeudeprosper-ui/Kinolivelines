@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-25T05:00:08Z",
+ "updated": "2026-10-25T06:30:06Z",
  "hypotheses": [
   {
    "id": "ext_with_filter",
@@ -50,7 +50,8 @@
     "2026-10-19: soft+ext500 + debt_nerv_gate C -71.5 (h +10.0/-63.4) hole 57->37; soft + debt vs soft B +5.1 (h +46.3/-46.2). On the filtered robot refusing in the red costs money.",
     "2026-10-24: real: after a loss restart <15 min 35 tr 23% -56.49 (h 15/27 agree), >=15 min 82 tr 45% -64.43; after a win <15 min 30 tr -12.46. Inside: flips 21 tr 14% -51.74, day 25 tr -58.23, night 10 tr +1.74. Filtered account 4 since 10-10: after loss <15 12 tr 2 won -5.75/0.01 vs >60 12 tr 8 won +3.17. Engine official: flip_loss 0.5 B +14.3 (h1 -0.2); wait15 C -15.8. Pile loss_quick15 opened.",
     "2026-10-24 12:00 veille: BOS SELL -2.36 (closed 10:01, pace 0.89) restarted quick after the 09:29 loss, as predicted. Pile loss_quick15 36 tr 22% vs 51% -58.85 PF 0.39 (h 13/29 agree); inside <15 min held 23 tr 17% -44.76.",
-    "2026-10-24 13:30 veille: FLIP-BOS BUY +2.63 (closed 12:47, pace 0.99) by day after the 10:01 loss, restarted hours later (not quick) - won; fits 'the hurry, not the loss'. Pile loss_quick15 unchanged 36 tr 22% vs 51% -58.85 PF 0.39 (h 12/30, both lose); inside held <15 min 23 tr 17% -44.76; every pace band loses (calm <0.8 8 tr 0 won). Answered labo ask loss_quick15: no rule (wait15 C on official), waiting for loss_wait_day."
+    "2026-10-24 13:30 veille: FLIP-BOS BUY +2.63 (closed 12:47, pace 0.99) by day after the 10:01 loss, restarted hours later (not quick) - won; fits 'the hurry, not the loss'. Pile loss_quick15 unchanged 36 tr 22% vs 51% -58.85 PF 0.39 (h 12/30, both lose); inside held <15 min 23 tr 17% -44.76; every pace band loses (calm <0.8 8 tr 0 won). Answered labo ask loss_quick15: no rule (wait15 C on official), waiting for loss_wait_day.",
+    "2026-10-25 06:30 veille (labo ask europe): europe 08-16 h 82 tr 40% -108.41 PF 0.53 (h 42/38); inside after a loss 45 tr 31% vs 51% -103.82 PF 0.32 (h 33/29 agree), after a win 36 tr 50% -12.39. 96% of the day's loss sits after a loss. Answered: no rule, loss_wait_day still open."
    ]
   },
   {
@@ -104,7 +105,8 @@
     "2026-10-24 06:30 veille: 5 calm closes 05:23-06:18, 1 won ~-5.08; since 01:50 9 tr 1 won. asia 83 tr 57% +32.23 PF 1.21, halves 67%/46%. Inside asia by pace: <0.8 22 tr 45% -18.79 (h 64/27 agree), 0.8-1.0 27 tr -3.51, 1.0-1.85 34 tr ~+54.5. The night's money sits at pace >=1.0, not in the calm night (peu).",
     "2026-10-24: asia pile 84 tr 56% +29.31 (h 67/45, fading); europe 79 tr 39% -110.19, us 57 tr -62.33. Engine official noday A +48.5 but 24 tr only; day stake 0.25 long 69 d C -66.5: the day used to earn.",
     "2026-10-24 12:00 veille: morning 07:57-10:01 4 tr 1 won ~-3.05 (3 BOS lost small, FLIP SELL +3.78). cont_day 56 tr 39% vs 48% -83.83 PF 0.54 (h 39/39 agree); 1.3-1.85 14 tr -56.27, after a loss 27 tr -66.47. Day leak intact, small today.",
-    "2026-10-25 05:00 veille: 5 night closes 00:26-02:15, 1 won ~-3.92 (4 FLIP-BOS, 1 BOS BUY -2.99; paces 0.73-1.02). asia 89 tr 54% +25.39 PF 1.16 (h 67/43, fading); calm <0.8 26 tr 42% -23.43 (h 64/27), was 22 tr -18.79; 0.8-1.0 28 tr -4.59; >=1.0 35 tr ~+53.4. 00 h 16 tr 38% -20.43. The calm night keeps losing, as hinted (peu)."
+    "2026-10-25 05:00 veille: 5 night closes 00:26-02:15, 1 won ~-3.92 (4 FLIP-BOS, 1 BOS BUY -2.99; paces 0.73-1.02). asia 89 tr 54% +25.39 PF 1.16 (h 67/43, fading); calm <0.8 26 tr 42% -23.43 (h 64/27), was 22 tr -18.79; 0.8-1.0 28 tr -4.59; >=1.0 35 tr ~+53.4. 00 h 16 tr 38% -20.43. The calm night keeps losing, as hinted (peu).",
+    "2026-10-25 06:30 veille: two calm night closes: BOS BUY -5.56 (05:33, 0.769), FLIP-BOS SELL +3.90 (05:46, 0.537). asia 91 tr 54% +23.73 PF 1.14 (h 67/43); calm <0.8 28 tr 43% -25.09 (h 64/29); 1.0-1.3 18 tr +42.55. europe 82 tr 40% -108.41 (h 42/38), of which after a loss 45 tr -103.82: the day leak is the after-loss leak (see day_loss_chase)."
    ],
    "next": "Watch asia second half; nervous vs calm night split."
   },
@@ -3054,6 +3056,11 @@
    "t": "2026-10-25T05:00:08Z",
    "look": "veille (5 night closes 00:26-02:15): wake_context, --pile asia",
    "saw": "FLIP-BOS SELL -1.12 (1.015), BUY -1.08 (0.905), SELL -0.38 (0.754), BUY +1.65 (0.749), BOS BUY -2.99 (0.729) ~-3.92. asia 89 tr 54% +25.39 PF 1.16 (h 67/43); calm <0.8 26 tr 42% -23.43 (h 64/27), >=1.0 35 tr ~+53.4; 00 h 16 tr -20.43, 04 h 8 tr -10.55. Total 229 tr. Twin nervgate 28 tr -42.0 (+3 tr +0.11 vs real -3.92 on 5): slight separation for it (peu). No ask, no run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-25T06:30:06Z",
+   "look": "veille (2 night closes 05:33/05:46): wake_context, --pile europe, --pile asia",
+   "saw": "BOS BUY -5.56 (05:33, pace 0.769 calm), FLIP-BOS SELL +3.90 (05:46, pace 0.537 calm). asia 91 tr 54% +23.73 PF 1.14 (h 67/43); calm <0.8 28 tr 43% -25.09 (h 64/29), 1.0-1.3 18 tr +42.55; 05 h 13 tr -1.39. europe 82 tr 40% -108.41 PF 0.53 (h 42/38): after a loss 45 tr 31% -103.82 (h 33/29) vs after a win 36 tr -12.39; 13 h 9 tr 1 won -52.47; held 30-60 18 tr -57.59. Total 231 tr. Twins empty in context. Answered labo ask europe (no rule, waiting loss_wait_day). No run, no pile, no proposal."
   }
  ],
  "lessons": [
