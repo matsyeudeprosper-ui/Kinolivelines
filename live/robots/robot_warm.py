@@ -136,6 +136,7 @@ def pin(system, model="sonnet"):
         _KEYS[key] = (sp, model)
         new = key not in PINNED
         PINNED.add(key)
+        _LAST[key] = max(_LAST.get(key, 0), time.time())
     if new:
         threading.Thread(target=_fill, args=(key,), daemon=True).start()
     return key
