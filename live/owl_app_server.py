@@ -19664,10 +19664,19 @@ def _companion_tick():
                     ts["open"], ts["closed"] = keys_open, last_cl.get("pid")
                 tl = [t for t in (m.get("trade_log") or []) if now - t < 86400]
                 _mem_note_safe(uid, lambda mm, ts=ts: mm.__setitem__("trade_seen", ts))
-                if ev and len(tl) < 4 and not busy(ch[0]["id"]):
+                # 2026-10-26 (owner: "is Kino still watching? the trade closed and he says nothing"): with the Kino panel
+                # open on the chart he is sitting beside them - every open/close goes to the chart chat, no 4-a-day cap
+                _cs7 = _CHART_SEEN.get(uid) or {}
+                _side = bool(_cs7.get("panel")) and now - float(_cs7.get("t") or 0) < 180
+                _tg7 = ch[0]["id"]
+                if _side:
+                    _tg7 = (_jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}).get(uid) or _tg7
+                    if ev:
+                        ev += " THEY ARE AT THE CHART WITH YOU RIGHT NOW (the Kino panel is open): one short natural line about it is expected."
+                if ev and (len(tl) < 4 or _side) and not busy(_tg7):
                     _mem_note_safe(uid, lambda mm: mm.__setitem__("trade_log", tl + [now]))
-                    _CHAT_Q[ch[0]["id"]] = _CHAT_Q.get(ch[0]["id"], 0) + 1
-                    threading.Thread(target=_chat_quick, args=(ch[0]["id"], u, ev + " You watch their trades like a friend "
+                    _CHAT_Q[_tg7] = _CHAT_Q.get(_tg7, 0) + 1
+                    threading.Thread(target=_chat_quick, args=(_tg7, u, ev + " You watch their trades like a friend "
                                      "sitting next to them: say something ONLY if a person would (the first trade of the day, a nice "
                                      "win, an annoying loss, a streak, a trade during big news) - one short line, human, no lecture; "
                                      "otherwise \"send\": false. Never comment two trades in a row the same way."),
