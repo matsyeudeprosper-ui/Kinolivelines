@@ -344,6 +344,8 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                              "out": len(str(j.get("result") or ""))}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
                     except Exception:
                         pass
+                    if j.get("is_error") and "safeguards flagged" in str(j.get("result") or ""):
+                        tm["flagged"] = True
                     out.put(j.get("result") if not j.get("is_error") else None)
                     return
         except Exception:
@@ -366,6 +368,16 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
             io.open(log, "a", encoding="utf-8").write("\n--- warm %s ---\n%s\n" % (model, (txt or "(none)")[-6000:]))
         except Exception:
             pass
+    # 2026-10-26 21:38-22:36 UTC: "Sonnet 5.5's safeguards flagged this message ... sometimes happens with safe, normal
+    # conversations" - 24 of the owner's chart-chat turns in a row came back empty (a member message unanswered 95 s). The
+    # same call once more on the other model instead of silence.
+    if txt is None and tm.get("flagged") and model != "opus" and getattr(_TL, "member", False):   # their message, not a wake-up
+        if log:
+            try:
+                io.open(log, "a", encoding="utf-8").write("\n--- safeguards flagged on %s: retry on opus ---\n" % model)
+            except Exception:
+                pass
+        return ask_text(system, user, "opus", timeout, log, on_text, warm=False)
     return txt
 
 
