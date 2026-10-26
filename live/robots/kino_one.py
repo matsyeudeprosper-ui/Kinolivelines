@@ -66,13 +66,16 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
 #retiens <une chose à garder sur lui>
 Si tu dis que tu lances ou que tu changes quelque chose, mets la ligne : c'est elle qui le fait vraiment.
 
+Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), écris d'abord des lignes qui commencent par
+#pense - elles ne sont jamais montrées. Ton message, lui, ne parle qu'à lui : jamais de lui à la troisième personne.
+
 Et pour toi seul, toujours en dernier, une ligne :
 #fil <ce que tu as en tête pour la suite de cette conversation, en quelques mots>
 Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|chance|construire|build|retiens|remember|fil|thread)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|chance|construire|build|retiens|remember|fil|thread|pense|think)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -144,6 +147,8 @@ def parse(raw):
         k, v = k.lower(), v.strip()
         if k in ("fil", "thread"):
             fil = v[:200] or fil
+        elif k in ("pense", "think"):
+            continue                                  # his private thinking: never shown, never an action
         elif k in ("build",):
             acts.append(("construire", v))
         elif k in ("remember",):
