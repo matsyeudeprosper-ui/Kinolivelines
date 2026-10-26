@@ -17609,6 +17609,25 @@ def _one_facts(user, c):
             L.append("Le robot qui trade sur ce vrai compte : %s - %s%s." % (
                 acc.get("robot") or "L'Owl", "il tourne en ce moment" if _lv else "à l'arrêt (aucun signe de vie)",
                 (", mais il ne peut pas trader : %s" % _bk) if _bk else ""))
+            try:
+                _reg = robot_reg()
+                _ar = next((x for x in _reg.get("robots") or [] if x.get("id") == (acc.get("id") or "owl")), None)
+                _PP = {x["id"]: x for x in _reg.get("pieces") or []}
+                if _ar:
+                    _pp = _ar.get("parts") or {}
+                    _ws = []
+                    for _k, _lbl in (("entry", "entrée"), ("stop", "stop"), ("exit", "sortie"), ("recovery", "après une perte")):
+                        _x = _PP.get(_pp.get(_k)) or {}
+                        if _x.get("plain_fr"):
+                            _ws.append("%s - %s : %s" % (_lbl, _x.get("name_fr"), _x["plain_fr"]))
+                    for _f in _pp.get("filters") or []:
+                        _x = _PP.get(_f) or {}
+                        if _x.get("plain_fr"):
+                            _ws.append("filtre %s : %s" % (_x.get("name_fr"), _x["plain_fr"]))
+                    if _ws:
+                        L.append("Ses règles : " + " | ".join(_ws))
+            except Exception:
+                pass
         ss = nd.get("since_start") or {}
         if ss.get("n"):
             L.append("Sur ce compte depuis le %s : %s trades, %s gagnés, %+.2f $ net. Il s'arrête tout seul à -60 $ net depuis le début (marge restante %.2f $)." % (
