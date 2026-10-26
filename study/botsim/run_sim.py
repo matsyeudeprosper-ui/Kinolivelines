@@ -135,6 +135,8 @@ def main():
     ap.add_argument("--net-lag", type=float, default=0.0, help="s a tick takes to reach the terminal")
     ap.add_argument("--order-lag", type=float, default=0.0, help="s between the sim's entry and the fill (real median ~2 s more)")
     ap.add_argument("--order-lag-real", action="store_true", help="replay each real entry's own delay from the real log")
+    ap.add_argument("--bars", default="", help="M1 candles npz (key R) instead of the account's recorded ones; several with +")
+    ap.add_argument("--ticks", default="", help="tick folder(s) under study/ instead of the account's, comma separated")
     a = ap.parse_args()
     A = ACCTS[a.acct]
     t0, t1 = ts(a.start), ts(a.end)
@@ -151,8 +153,12 @@ def main():
         print("bot from revision", a.rev, flush=True)
     print("sandbox", sb, "| start state", st0, "| balance", bal, flush=True)
 
-    bars = np.load(os.path.join(STUDY, A["bars"]))["R"]
-    ticks = load_ticks(A["ticks"], t0 - 3 * 86400, t1)
+    if a.bars:                                  # 2026-10-26: other data (the Exness public archive for months before our recording)
+        bars = np.concatenate([np.load(os.path.join(STUDY, f))["R"] for f in a.bars.split("+")])
+        bars = bars[np.argsort(bars["time"], kind="stable")]
+    else:
+        bars = np.load(os.path.join(STUDY, A["bars"]))["R"]
+    ticks = load_ticks(a.ticks.split(",") if a.ticks else A["ticks"], t0 - 3 * 86400, t1)
     print("bars", len(bars), "ticks", len(ticks[0]), flush=True)
 
     clock = SC.Clock(t0, t1, real_compute=False)        # switched on when the BOT starts (set-up is not the bot's time)
