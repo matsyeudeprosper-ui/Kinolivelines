@@ -68,6 +68,8 @@ try {
   }
 } finally {
   try { ws && ws.close(); } catch { }
-  edge.kill(); await sleep(500);
+  // 2026-10-26: edge.kill() ends only the launcher; its children lived on (34 headless browsers, ~7 GB). Kill the whole tree.
+  try { spawn("taskkill", ["/PID", String(edge.pid), "/T", "/F"], { stdio: "ignore" }); } catch { }
+  edge.kill(); await sleep(1500);
   try { rmSync(prof, { recursive: true, force: true }); } catch { }
 }
