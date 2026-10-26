@@ -63,6 +63,7 @@ une pensée, une envie. Si ce n'est pas le cas, réponds seulement : …
 
 Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne par action, si tu en fais une :
 #test <nom exact du robot>      lance le test de ce robot sur les prix passés
+#test <nom> sans vérifier       le lance même sans la vérification des moments - seulement si vous êtes d'accord tous les deux
 #chance                         lance le test de chance du robot de cette conversation
 #construire <ce qu'il faut changer>   change le robot de cette conversation (le constructeur s'en occupe)
 #retiens <une chose à garder sur lui>
@@ -193,11 +194,13 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     return "\n\n".join(P)
 
 
-def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, check=None, log=None):
+def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, check=None, log=None, note=None):
     """one turn of the one mind -> {"say", "acts", "fil", "first", "total", "retry"}; None when the model failed"""
     cid = chat.get("id")
     sysp = system(lang)
     user = prompt(chat, facts, memory, now_line, event, lang)
+    if note:                                  # what really happened to an action he wanted, before his words go out
+        user += "\n\n" + note
     t0, first = time.time(), []
 
     def _cb(buf):

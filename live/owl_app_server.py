@@ -17718,7 +17718,7 @@ def _one_facts(user, c):
                 L.append({"none": "Avant son test, il doit d'abord regarder une semaine où ce robot aurait tradé et dire si c'est ce qu'il veut "
                                   "(c'est la règle de l'appli) : #test lui montre cette semaine, et le test part quand il a validé.",
                           "open": "La semaine à vérifier avant le test est affichée, il n'a pas encore répondu : le test partira après son oui.",
-                          "no": "Il a refusé un des 5 moments affichés : le robot ne fait pas ce qu'il voulait, il faut le corriger avant de tester."}.get(_ck, ""))
+                          "no": "Il a dit non aux moments affichés : l'appli bloque le test tant que le robot n'est pas corrigé, sauf si vous êtes d'accord tous les deux pour le tester sans vérifier."}.get(_ck, ""))
         except Exception:
             pass
     _t = c.get("test") or {}
@@ -17971,6 +17971,27 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
+    try:                                               # an action that cannot happen goes back to him BEFORE his words go out
+        _ta = [v for k, v in acts if k == "test"]
+        _rn = str((c.get("robot") or {}).get("name") or "").lower()
+        if _ta and c.get("robot") and not any("sans v" in v.lower() or "force" in v.lower() for v in _ta) and \
+                any(not v or (_rn and (v.lower() in _rn or _rn in v.lower())) for v in _ta):
+            _ck2 = _check_state(c, user)
+            _why = {"no": "il a dit non aux moments de la semaine, donc l'appli bloque le test tant que le robot n'est pas corrigé",
+                    "open": "il n'a pas encore répondu sur les moments de la semaine, donc le test attend son oui"}.get(_ck2)
+            if _why:
+                _KO._log(cid, "ACT_BLOCKED", "test: %s" % _ck2)
+                r2 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
+                              note=("AVANT D'ENVOYER : ton #test ne peut pas partir - %s. Ton brouillon était : « %s ». Écris ton vrai message : "
+                                    "dis-le-lui franchement. Si vous êtes d'accord tous les deux pour le tester quand même, écris #test %s sans vérifier.") % (
+                                  _why, say[:400], (c.get("robot") or {}).get("name") or ""))
+                if r2 and r2.get("say"):
+                    say, acts, fil = r2["say"], r2["acts"], r2["fil"] or fil
+    except Exception as e:
+        try:
+            _KO._log(cid, "ACT_CHECK_ERROR", "%s %s" % (type(e).__name__, e))
+        except Exception:
+            pass
     if say and event:                                  # they wrote while he was thinking of writing: their message comes first
         try:
             _cn = json.load(open(_chat_path(cid), encoding="utf-8"))
@@ -18005,7 +18026,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         try:
             if k == "test":
                 _rn = str((c.get("robot") or {}).get("name") or "").lower()
-                if not v or (_rn and (v.lower() == _rn or v.lower() in _rn or _rn in v.lower())):
+                _forced = "sans v" in v.lower() or "force" in v.lower()
+                _vn = re.sub(r"\s*(sans v\S*|forc\S*).*$", "", v, flags=re.I).strip()
+                if _forced and c.get("robot") and (not _vn or (_rn and (_vn.lower() in _rn or _rn in _vn.lower()))):
+                    _trf = chat_test(user, {"id": cid, "force": 1})       # both agreed to test without the check
+                    _KO._log(cid, "ACT_TEST_FORCED", str(_trf)[:160])
+                elif not v or (_rn and (v.lower() == _rn or v.lower() in _rn or _rn in v.lower())):
                     _kino_act(cid, user, "test", en)
                 else:
                     threading.Timer(1.5, _deed_do, args=(cid, uid, ["test:" + v])).start()
@@ -33713,13 +33739,20 @@ if __name__ == "__main__":
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
 
     def _one_warm():                     # 2026-10-26: the first green-chat reply after a restart met a cold process (15-17 s)
-        try:
-            time.sleep(5)
-            _rc()
-            import kino_one as _KOw
-            _rc().W.pin(_KOw.system("fr"), "sonnet")
-        except Exception:
-            pass
+        for _k in range(5):              # 01:49 the first try failed silently: retry, and say so in kino_one.log
+            try:
+                time.sleep(8)
+                _rc()
+                import kino_one as _KOw
+                _rc().W.pin(_KOw.system("fr"), "sonnet")
+                _KOw._log("-", "PIN", "warm process pinned at start (try %d)" % (_k + 1))
+                return
+            except Exception as e:
+                try:
+                    io.open(os.path.join(DIR, "robots", "kino_one.log"), "a", encoding="utf-8").write(
+                        "%s - PIN_FAIL %s %s\n" % (time.strftime("%m-%d %H:%M:%S"), type(e).__name__, str(e)[:160]))
+                except Exception:
+                    pass
     threading.Thread(target=_one_warm, daemon=True).start()
     def _tts_warm():                     # 2026-10-20: the first OpenAI call after a restart hung ~15 s; open the road early
         try:
