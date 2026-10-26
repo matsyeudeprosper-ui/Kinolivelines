@@ -13720,6 +13720,8 @@ def robot_test(user, body):
         _robot_save(reg)
         robot_runner_kick()
         return {"ok": True, "minutes": ROBOT_TEST_MIN}
+    if r.get("stage") in ("queued", "running"):       # 2026-10-26: already waiting its turn = fine, not a "hiccup"
+        return {"ok": True, "already": True, "minutes": ROBOT_TEST_MIN}
     if r.get("stage") not in ("draft", "error"):
         return {"ok": False, "err": "state"}
     r["stage"] = "queued"
@@ -17724,6 +17726,11 @@ def _one_facts(user, c):
                 return "%s (%s)" % (x.get("name") or "étape à lui", x.get("plain_fr") or x.get("plain") or "")
             _st = ["%s : %s" % (lb, _pl(_rb.get(k))) for k, lb in (("entry", "entrée"), ("stop", "stop"), ("exit", "sortie")) if _rb.get(k)]
             _st += ["filtre : " + _pl(f) for f in (_rb.get("filters") or [])]
+            _mo = _rb.get("money") or {}            # 2026-10-26: his sizing rule is part of the robot too
+            if isinstance(_mo, dict) and _mo.get("lot"):
+                _st.append("taille du lot : formule %s (sur l'historique de ce robot)" % _mo["lot"])
+            elif isinstance(_mo, dict) and _mo.get("use"):
+                _st.append("argent : %s" % _mo["use"])
             if _st:
                 L.append("Ce robot, tel qu'il est maintenant (version %s) : %s." % (c.get("rev") or 1, " | ".join(_st)))
         except Exception:

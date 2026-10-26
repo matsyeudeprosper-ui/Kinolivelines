@@ -41,6 +41,7 @@ B.say = lambda *a, **k: None
 
 CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
             "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "bullets": 3, "k_streak": 2, "lot": 0.02,
+            "lot_rule": None,          # 2026-10-26: a lot formula over the robot's own history (robots/robot_lot.py), None = off
             "debt_nerv_gate": False,   # built 2026-09-29 on the chercheur's request: still in the red AND nervous
             # 2026-10-02 (chercheur): wait_win = minutes with no new entry
             # after a WINNING close only; after a loss the recovery trade

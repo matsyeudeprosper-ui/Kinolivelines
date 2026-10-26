@@ -281,6 +281,11 @@
    "max_extra": 0,
    "adds_on": false,
    "scale_with_balance": false
+  },
+  "lot-10c999b6": {
+   "extends": "simple",
+   "label": "Taille : min(0.04, 0.01 + 0.01 * losses_since_peak)",
+   "lot_rule": "min(0.04, 0.01 + 0.01 * losses_since_peak)"
   }
  },
  "accounts": {
