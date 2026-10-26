@@ -165,6 +165,8 @@ class PolicyArm(E.Arm):
         d, slp, flip = o["d"], o["slp"], o["flip"]
         e0 = ASK[k] if d == 1 else BID[k]
         lot = self.LOT
+        if getattr(self, "ladh", None) is not None:      # 2026-10-26: a money with a lot formula (robots/robot_lot.py)
+            lot = E.H._RLOT.lot(c["lot_rule"], self.ladh.names(self.bal + self.run))
         if self.gate_order == "live":
             debt_now = self.early_gates(o, k, TM, BID, ASK)
             if debt_now is None: return
