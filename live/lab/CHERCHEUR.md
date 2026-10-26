@@ -259,8 +259,14 @@ itself (an ask with `"by":"labo"`); answer it like any other.
          "cap_rr": 0|0.5-1.5, "first_move_size": 0.25-1.0, "cap_wait": 0-120,
          "early_moves_size": 0.25-1.0, "early_moves_max": 1-3,
          "flip_loss_size": 0.25-1.0, "size_hours": [0-23], "hour_size": 0.25-1.0,
-         "pb_dir_gate": true|false, "pb_gate_mode": "trend"|"choch"|"strict"}}
+         "pb_dir_gate": true|false, "pb_gate_mode": "trend"|"choch"|"strict",
+         "hour_brake_days": 0|7-28}}
 ```
+`hour_brake_days` (2026-10-26, your request): the day is cut in four UTC blocks
+(01-08, 08-16, 16-21, 21-01); no entry in a block while the replay's own trades
+entered in that block over the last X days, at least 5 of them, lose in total.
+A braked block takes no new trades, so it reopens only as its losers age out
+of the window; 0 = off.
 `early_moves_size` + `early_moves_max` (2026-10-13, your request): multiplies the
 stake by X when the `move` fact (main structure) is between 1 and N; N = 1 is
 `first_move_size` again (do not set both, they stack); the trade is still taken; 1.0 = off.

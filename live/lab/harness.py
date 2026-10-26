@@ -79,6 +79,12 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # (bullets) are scaled by the same X. The trade is still taken.
             # Empty list or 1.0 = off.
             "size_hours": [], "hour_size": 1.0,
+            # 2026-10-26 (chercheur, hour_brake_rebuild): hour_brake_days =
+            # the day is cut in four UTC blocks (01-08, 08-16, 16-21, 21-01);
+            # no entry when the replay's own trades entered in the same block
+            # over the last X days (closed ones, at least HB_MIN of them) add
+            # up to a loss. 0 = off.
+            "hour_brake_days": 0,
             # 2026-10-11 (chercheur): pb_dir_gate = the live accounts'
             # pullback-direction filter (structure_bos_bot PB_DIR_GATE), with
             # the bot's own decision function live/pb_gate.py in pb_gate_mode
@@ -271,6 +277,27 @@ CHEST_CAP = getattr(B, "CHEST_CAP", 10.0)
 BANK0 = 10.0    # the starting allowance for bank_mult, about two average losses
 BAL0 = 230.0    # the reference balance, the same one structure_bos_bot uses
 CFG_KEYS = list(CFG_BASE.keys())
+HB_MIN = 5      # hour_brake_days: fewest trades in the block's window before it can brake
+
+
+def _hb_block(h):
+    """the hour brake's block of a UTC hour: 0 = 01-08, 1 = 08-16, 2 = 16-21, 3 = 21-01"""
+    if 1 <= h < 8:
+        return 0
+    if 8 <= h < 16:
+        return 1
+    if 16 <= h < 21:
+        return 2
+    return 3
+
+
+def _hb_stop(log, t, h, days):
+    """True when the trades in `log` [(entry t, block, money)] entered in the
+    block of hour `h` during the `days` days before `t` are at least HB_MIN
+    and lose in total"""
+    b, t0 = _hb_block(h), t - int(days) * 86400
+    xs = [m for (ti, bi, m) in log if bi == b and t0 <= ti < t]
+    return len(xs) >= HB_MIN and sum(xs) < 0
 # 2026-09-29 (owner): bump this whenever a change makes old numbers wrong.
 # Anything stored under an older stamp is shown as "to be re-checked" and is
 # never compared against a number from this one.
@@ -591,6 +618,8 @@ def simulate(R, spread, cfg):
     pos_trailed = False
     pos_rr = rr          # the open trade's own target, rr unless cap_fit shrank it
     pos_hs = 1.0         # the open trade's hour_size multiplier (its bullets follow it)
+    pos_hb_t = 0         # the open trade's entry bar, for the hour brake
+    hb_log = []          # hour brake: (entry t, block, money) of every closed trade
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
     hi_touch = lo_touch = 0
@@ -674,6 +703,7 @@ def simulate(R, spread, cfg):
                     _lot = pend["lot"]
                     pos = (_pd, _fill, _psl, _ptp, pend["dist"], _pmid, True, _lot)
                     pos_t_in = t; bullet_fill = None; pos_nosp = False
+                    pos_hb_t = t
                     pos_geo = {"e0": pend["e0"], "fill": _fill, "amb": _amb, "skip_eval": (_amb == "mid_tp" and not _fav)}
                     pos_trailed = False; last_hour = t // 3600
                     n_trades += 1; day_n += 1; n_pend_fill += 1
@@ -758,6 +788,8 @@ def simulate(R, spread, cfg):
                 run -= drag_cost(c, lot)
                 day_profit += run - before
                 pnls.append(round(run - before, 2))
+                if c["hour_brake_days"]:
+                    hb_log.append((pos_hb_t, _hb_block(datetime.fromtimestamp(pos_hb_t, tz=timezone.utc).hour), run - before))
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(win)
                     cur_tr["pnl"] = round(run - before, 2)
@@ -860,6 +892,8 @@ def simulate(R, spread, cfg):
                 run -= drag_cost(c, lot)
                 day_profit += run - before
                 pnls.append(round(run - before, 2))      # 2026-09-29: per-trade money, for the "normal range" band
+                if c["hour_brake_days"]:
+                    hb_log.append((pos_hb_t, _hb_block(datetime.fromtimestamp(pos_hb_t, tz=timezone.utc).hour), run - before))
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(win)
                     cur_tr["pnl"] = round(run - before, 2)
@@ -1076,6 +1110,8 @@ def simulate(R, spread, cfg):
                 run -= drag_cost(c, _lot0)
                 day_profit += run - _before
                 pnls.append(round(run - _before, 2))
+                if c["hour_brake_days"]:
+                    hb_log.append((pos_hb_t, _hb_block(datetime.fromtimestamp(pos_hb_t, tz=timezone.utc).hour), run - _before))
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(_win)
                     cur_tr["pnl"] = round(run - _before, 2)
@@ -1173,6 +1209,9 @@ def simulate(R, spread, cfg):
             blocked += 1
             continue
         if skip_h and g.hour in skip_h:
+            blocked += 1
+            continue
+        if c["hour_brake_days"] and _hb_stop(hb_log, t, g.hour, c["hour_brake_days"]):
             blocked += 1
             continue
         if DIRGATE is not None and not DIRGATE(t, d):
@@ -1325,6 +1364,7 @@ def simulate(R, spread, cfg):
             lp_snap = (run, pk, chest, debt_led, streak, wins)
         pos = (d, e_px, float(slp), tp, dist, e_px - d * dist / 2.0, False, lot)
         pos_t_in = t + 60; bullet_fill = None
+        pos_hb_t = t
         pos_geo = None
         if TLMODE:
             tl_stats["entries"] += 1
@@ -1539,6 +1579,7 @@ def simulate_real(T, R, spread, cfg):
     n_trades = wins = blocked = 0
     actual_taken = 0.0        # the real money of exactly the entries taken: like-for-like with `net`
     open_until = -1
+    hb_log = []               # hour brake: (entry t, block, money) of every closed trade
     for e in T:
         t = e["t"]
         if not times or t < times[0]:
@@ -1581,6 +1622,9 @@ def simulate_real(T, R, spread, cfg):
             blocked += 1
             continue
         if skip_h and g.hour in skip_h:
+            blocked += 1
+            continue
+        if c["hour_brake_days"] and _hb_stop(hb_log, t, g.hour, c["hour_brake_days"]):
             blocked += 1
             continue
         debt_now = max(0.0, pk - run)
@@ -1644,12 +1688,15 @@ def simulate_real(T, R, spread, cfg):
                else ((d * (sl - ent) - spread) if c["trail_prot"]
                      else -(dist + spread)))
         debt = max(0.0, pk - run)
+        _before = run
         run += pts * lot
         run -= drag_cost(c, lot)
         if debt > 0.5 and streak < K and hit_mid and NB > 0:
             run += ((1.3 * dist - spread) if win
                     else ((d * (sl - mid) - spread) if c["trail_prot"]
                           else -(dist / 2.0 + spread))) * BLOT * NB * hs
+        if c["hour_brake_days"]:
+            hb_log.append((t, _hb_block(g.hour), run - _before))
         streak = 0 if win else streak + 1
         wins += 1 if win else 0
         pk = max(pk, run)
@@ -1685,6 +1732,7 @@ def main():
     ap.add_argument("--early-moves-size", type=float, help="lot multiplier when 1 to --early-moves-max big moves were counted in the last 2 hours")
     ap.add_argument("--early-moves-max", type=int, help="most big moves counted in the last 2 hours for --early-moves-size to apply (1-3)")
     ap.add_argument("--hour-size", type=str, help="HOURS:X = lot multiplier X (bullets too) at these UTC entry hours, e.g. 8-24:0.5")
+    ap.add_argument("--hour-brake", type=int, help="no entry in a UTC block (01-08, 08-16, 16-21, 21-01) while its trades of the last X days (at least 5) lose in total; 7-28, 0 = off")
     ap.add_argument("--flip-loss-size", type=float, help="lot multiplier on a change-of-direction trade when the previous trade lost")
     ap.add_argument("--pb-gate", type=int, help="1 = the live pullback-direction filter (the bot's own rule), 0 = off")
     ap.add_argument("--pb-gate-mode", type=str, help="the filter's rule: trend (official), choch, strict")
@@ -1732,6 +1780,7 @@ def main():
     if a.early_moves_size is not None: over["early_moves_size"] = a.early_moves_size
     if a.early_moves_max is not None: over["early_moves_max"] = a.early_moves_max
     if a.flip_loss_size is not None: over["flip_loss_size"] = a.flip_loss_size
+    if a.hour_brake is not None: over["hour_brake_days"] = a.hour_brake
     if a.hour_size:
         _hp, _hx = a.hour_size.rsplit(":", 1)
         hs = set()
