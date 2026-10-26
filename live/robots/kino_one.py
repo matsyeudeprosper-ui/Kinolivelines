@@ -93,8 +93,9 @@ style change, tu adaptes le robot : un changement important, tu lui montres d'ab
 évident, tu le fais et tu le lui dis.
 Si tu dis que tu lances ou que tu changes quelque chose, mets la ligne : c'est elle qui le fait vraiment.
 
-Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), écris d'abord des lignes qui commencent par
-#pense - elles ne sont jamais montrées. Ton message, lui, ne parle qu'à lui : jamais de lui à la troisième personne.
+Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), commence par une ligne #pense et réfléchis
+autant de lignes que tu veux : RIEN n'est montré tant que tu n'as pas écrit une ligne #message. Puis la ligne #message, et
+dessous ton message. Ton message, lui, ne parle qu'à lui : jamais de lui à la troisième personne.
 
 Et pour toi seul, toujours en dernier, une ligne :
 #fil <ce que tu as en tête pour la suite de cette conversation, en quelques mots>
@@ -166,11 +167,26 @@ def unknown_figures(say, ctx):
     return bad
 
 
-def parse(raw):
-    """-> (say, actions, thread): the message he wrote, the actions he asked for, his thread of mind"""
+_MSG_RE = re.compile(r"(?m)^\s*#(message|msg)\b[ \t:]*")
+
+
+def parse(raw, partial=False):
+    """-> (say, actions, thread): the message he wrote, the actions he asked for, his thread of mind.
+    2026-10-26 21:16 (watch): one #pense line, then his thinking went on in plain lines and was SENT ("Also builder pending,
+    target by hand. Honest: I'm not sure; say it."). Now everything before a #message line is his own; partial = the text
+    is still streaming (a #pense start with no #message yet shows nothing)."""
     raw = str(raw or "")
+    _mm = _MSG_RE.search(raw)
+    if _mm:
+        _acts_src = raw
+        raw = raw[_mm.end():]
+        _head_acts = [x for x in ACT_RE.findall(_acts_src[:_mm.start()]) if x[0].lower() not in ("pense", "think")]
+    else:
+        _head_acts = []
+        if partial and re.match(r"\s*#(pense|think)\b", raw):
+            return "", [], None
     acts, fil = [], None
-    for k, v in ACT_RE.findall(raw):
+    for k, v in _head_acts + ACT_RE.findall(raw):
         k, v = k.lower(), v.strip()
         if k in ("fil", "thread"):
             fil = v[:200] or fil
@@ -235,7 +251,7 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
             first.append(time.time() - t0)
         if on_text:
             try:
-                on_text(parse(buf)[0])
+                on_text(parse(buf, partial=True)[0])
             except Exception:
                 pass
     try:

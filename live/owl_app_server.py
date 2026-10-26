@@ -17850,6 +17850,13 @@ def _one_memory(user, c):
             _df = _desk_facts(uid)
             if _df:
                 L.append(_df)
+            _lf = _chart_levels_facts()                # 2026-10-26: every level drawn on his chart
+            if _lf:
+                L.append(_lf)
+        if _auto_on(c):                                # 2026-10-26 21:25: he said "hit Confirm on the card" while in auto mode
+            _ax = c.get("auto_trade") or {}
+            L.append("TU ES EN MODE SEUL jusqu'à %s UTC%s : tes #ordre partent DIRECTEMENT chez le broker, sans carte ni Confirmer." % (
+                time.strftime("%H:%M", time.gmtime(float(_ax.get("until") or 0))), (" (lot max %s)" % _ax["max_lot"]) if _ax.get("max_lot") else ""))
     except Exception:
         pass
     return "\n".join(L)
@@ -17871,6 +17878,42 @@ def chart_seen(user, body):
         return {"ok": False}
     _CHART_SEEN[user.get("id")] = {"t": time.time(), "v": v, "panel": bool(body.get("panel"))}
     return {"ok": True}
+
+
+def _chart_levels_facts():
+    """2026-10-26 (owner: "Kino can't see the custom chart levels"): every structure level drawn on the Bitcoin chart, from the
+    live feed's own file - the 1-minute chart and the pullback chart: next BOS, protected point, turn-around BOS, the small
+    structure's levels, the swing points (dots) and the last breaks (marks). Read each time, chart open or not."""
+    try:
+        j = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8"))
+    except Exception:
+        return ""
+    if time.time() - float(j.get("updated") or 0) > 600:
+        return ""
+    f = lambda v: ("%.0f" % float(v)) if v else "-"
+    hm = lambda t: time.strftime("%d/%m %H:%M", time.gmtime(int(t)))
+
+    def one(d, label):
+        out = ["%s : prochain BOS %s, point protégé %s, BOS de retournement %s" % (label, f(d.get("next_bos")), f(d.get("invalid")), f(d.get("flip_bos")))]
+        sm = [("BOS de la petite structure", d.get("int_bos")), ("protégé de la petite structure", d.get("int_inv")),
+              ("retournement de la petite structure", d.get("int_flip_bos"))]
+        sm = ["%s %s" % (a, f(b)) for a, b in sm if b]
+        if sm:
+            out.append("; " + ", ".join(sm))
+        dots = (d.get("dots") or [])[-8:]
+        if dots:
+            out.append("; points de structure (du plus ancien au plus récent) : " + ", ".join(
+                "%s %s (%s)" % ("bas" if int(x[2]) == 1 else "haut", f(x[1]), hm(x[0])) for x in dots))
+        mk = (d.get("marks") or [])[-5:]
+        if mk:
+            out.append("; dernières cassures : " + ", ".join(
+                "%s %s à %s (%s)" % (str(x[2]).upper(), "haussière" if int(x[3]) == 1 else "baissière", f(x[1]), hm(x[0])) for x in mk if len(x) >= 4))
+        return "".join(out) + "."
+    L = ["NIVEAUX DE STRUCTURE SUR SON GRAPHIQUE BITCOIN (en direct, prix %s) - un objectif ou un stop « sur un niveau » se prend ici :" % f(j.get("px"))]
+    L.append(one(j, "Graphique 1 minute"))
+    if j.get("pb"):
+        L.append(one(j["pb"], "Graphique des reculs (celui du haut)"))
+    return "\n".join(L)
 
 
 def _chart_seen_facts(uid):
