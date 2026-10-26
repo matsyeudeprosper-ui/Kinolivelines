@@ -72,8 +72,7 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
                                       trade par trade. Ne dis jamais qu'une de ses règles ne peut pas être construite ou
                                       testée : écris #construire avec sa règle, le constructeur trouve comment.
 #retiens <une chose à garder sur lui>
-#infos on | #infos off          il veut (ou ne veut plus) que tu le tiennes au courant des grandes nouvelles du monde : tu as
-                                les titres de RFI et France 24, et on te réveille quand il y en a de nouveaux
+#infos on | #infos off          il aime (ou n'aime plus) entendre les grandes nouvelles du monde dans vos conversations
 #montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
 Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que tu sais - les prix en chiffres, pas de mots) :
 #ordre sl=<prix> tp=<prix> [ticket=<n>]          déplace le stop et/ou l'objectif d'une position ouverte
