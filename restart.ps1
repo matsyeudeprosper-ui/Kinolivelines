@@ -125,6 +125,19 @@ if ($What -eq "all" -or $What -eq "app") {
     } else { Say "app already relaunched by the watchdog - not starting a second one" }
 }
 Start-Sleep -Seconds 12
+# 2026-10-26: twice the app was not listening after 12 s and stayed down until a second restart (the old one still held
+# the port, the new one exited). Wait up to 45 s for the port; if no app process is left, start it once more.
+if ($What -eq "all" -or $What -eq "app") {
+    $tries = 0
+    while (-not (Get-NetTCPConnection -LocalPort 8787 -State Listen -ErrorAction SilentlyContinue) -and $tries -lt 15) {
+        if ($tries -eq 5 -and @(Running "*owl_app_server.py*").Count -eq 0) {
+            Say "app not running after 22 s - starting it again"
+            Start-Process $PYW -ArgumentList "owl_app_server.py" -WorkingDirectory $LIVE -WindowStyle Hidden
+        }
+        Start-Sleep -Seconds 3
+        $tries++
+    }
+}
 
 # ---- 5. count what came back, and say if it does not match -------------
 $after = @{
