@@ -271,7 +271,12 @@ class FakeMT5:
     def symbol_info_tick(self, name):
         if name != self.b.symbol:
             return None
-        q = self.b.quote()
+        # 2026-10-26 (exactness): in a minute where the real bot sent an order (--order-lag-deals), it also READ its price
+        # that late - the entry, the TP and the follow-up order levels are built from that read, not only the fill
+        t = self.b.clock.now
+        k = int(t) // 60 * 60
+        lag = float((getattr(self.b, "order_lag_at", None) or {}).get(k, 0.0) or 0.0)
+        q = self.b.quote(t + lag) if lag > 0 and t - k < 15 else self.b.quote()
         if not q:
             return None
         return Tick(q[2] // 1000, q[0], q[1], 0.0, 0, q[2], 6, 0.0)
