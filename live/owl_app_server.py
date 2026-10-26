@@ -18035,6 +18035,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     _kino_act(cid, user, "test", en)
                 else:
                     threading.Timer(1.5, _deed_do, args=(cid, uid, ["test:" + v])).start()
+            elif k == "annule":
+                _nmc = (v or "").strip().lower()
+                _rid = c.get("robot_id") if (not _nmc or _nmc in str((c.get("robot") or {}).get("name") or "").lower()) else None
+                if not _rid:
+                    for _r3 in (_state_data(uid, c).get("robots") or []):
+                        if _nmc and (_nmc == str(_r3.get("name") or "").lower() or _nmc in str(_r3.get("name") or "").lower()):
+                            _rid = _r3["id"]
+                            break
+                _cr = test_cancel(user, {"id": _rid}) if _rid else {"ok": False, "err": "unknown"}
+                _KO._log(cid, "ACT_CANCEL", "%s -> %s" % (_rid, _cr))
+                if _cr.get("ok"):
+                    _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Test withdrawn." if en else "Test retiré de la file.")))
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:

@@ -64,6 +64,7 @@ une pensée, une envie. Si ce n'est pas le cas, réponds seulement : …
 Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne par action, si tu en fais une :
 #test <nom exact du robot>      lance le test de ce robot sur les prix passés
 #test <nom> sans vérifier       le lance même sans la vérification des moments - seulement si vous êtes d'accord tous les deux
+#annule <nom du robot>          retire un test en file pour ce robot (s'il change d'avis, tu peux vraiment l'arrêter)
 #chance                         lance le test de chance du robot de cette conversation
 #construire <ce qu'il faut changer>   change le robot de cette conversation (le constructeur s'en occupe)
 #retiens <une chose à garder sur lui>
@@ -79,7 +80,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -159,6 +160,8 @@ def parse(raw):
             acts.append(("retiens", v))
         elif k in ("show",):
             acts.append(("montre", v))
+        elif k in ("cancel",):
+            acts.append(("annule", v))
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)
