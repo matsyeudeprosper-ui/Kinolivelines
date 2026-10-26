@@ -177,6 +177,26 @@ def main():
     sys.stdout = out
 
     import owl_chart_feed as FEED
+    # 2026-10-26 (speed, profile: build() = ~70% of the time, called ~75 times a simulated minute on the same candles):
+    # build() is a pure function of its candles, so the same candles give the same answer - a memo keyed on the exact bytes
+    # of the candles changes nothing in what the bot sees. Only the simulator holds the memo; live code is untouched.
+    import hashlib as _hl
+    _build0, _memo = FEED.build, {}
+
+    def _build_memo(rates):
+        try:
+            k = _hl.blake2b(rates.tobytes(), digest_size=16).digest()
+        except Exception:
+            return _build0(rates)
+        v = _memo.get(k)
+        if v is None:
+            v = _build0(rates)
+            if len(_memo) > 4000:
+                _memo.clear()
+            _memo[k] = v
+        return [list(x) for x in v]                # a fresh copy: callers may change the lists they get
+    if not os.environ.get("BOTSIM_NOMEMO"):
+        FEED.build = _build_memo
     # the sticky pullback chain: built causally over the 8000 bars before the start (the live one exists since 10-10)
     json.dump({"times": [], "updated": int(t0) - 8000 * 60}, open(FEED.PB_CHAIN, "w"))
     try:
