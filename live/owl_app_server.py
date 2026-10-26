@@ -17707,7 +17707,7 @@ def _one_facts(user, c):
                         time.strftime("%a %d/%m %H:%M", time.gmtime(float(_x["t"]))), "vente" if _sd == "sell" else "achat",
                         "dans le bon sens" if _ok else "contre lui", round(abs(float(_x.get("after") or 0)), 1),
                         {True: " [il a dit oui]", False: " [il a dit non]"}.get(_V.get(str(_j)), "")))
-                L.append("Les moments affichés sous la conversation pour qu'il vérifie (%s, %d en tout, %d dans le bon sens) : %s" % (
+                L.append("Les moments affichés plus haut dans la conversation pour qu'il vérifie (#montre les remet sous ton message) (%s, %d en tout, %d dans le bon sens) : %s" % (
                     ("la semaine du %s" % (_dm.get("week") or {}).get("mon")) if _dm.get("week") else "les derniers", len(_ms),
                     sum(1 for x in _ms if "bon sens" in x), " ; ".join(_ms[:24])))
         except Exception:
@@ -17994,6 +17994,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             cc["mind"] = {"pursuing": fil, "t": time.time()}
         if build:
             cc["b_want"] = len(cc.get("msgs") or [])
+        if any(k == "montre" for k, _ in acts) and say:
+            _dmc = next((x for x in reversed(cc.get("msgs") or []) if x.get("role") == "demo" and x.get("check")), None)
+            if _dmc is not None:
+                cc.setdefault("msgs", []).append(dict(_dmc, t=int(time.time()), again=True))
     if build:
         _CHAT_B.add(cid)
     _chat_mut(cid, put)

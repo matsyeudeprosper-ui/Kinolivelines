@@ -66,6 +66,7 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
 #chance                         lance le test de chance du robot de cette conversation
 #construire <ce qu'il faut changer>   change le robot de cette conversation (le constructeur s'en occupe)
 #retiens <une chose à garder sur lui>
+#montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
 Si tu dis que tu lances ou que tu changes quelque chose, mets la ligne : c'est elle qui le fait vraiment.
 
 Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), écris d'abord des lignes qui commencent par
@@ -77,7 +78,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|chance|construire|build|retiens|remember|fil|thread|pense|think)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -155,6 +156,8 @@ def parse(raw):
             acts.append(("construire", v))
         elif k in ("remember",):
             acts.append(("retiens", v))
+        elif k in ("show",):
+            acts.append(("montre", v))
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)
