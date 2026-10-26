@@ -18,7 +18,8 @@ CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
 NEWS_URL = "https://cointelegraph.com/rss"
 MACRO_URL = "https://www.forexlive.com/feed/news"     # 2026-10-19 (owner list-4 item 5): markets news, not only crypto
 # 2026-10-26 (owner: "keep me updated for really major news - not trading, like the journal de 20h"): world news, in French
-WORLD_URLS = (("RFI", "https://www.rfi.fr/fr/rss"), ("France 24", "https://www.france24.com/fr/rss"))
+WORLD_URLS = (("RFI", "https://www.rfi.fr/fr/rss"), ("France 24", "https://www.france24.com/fr/rss"),
+              ("RFI Afrique", "https://www.rfi.fr/fr/afrique/rss"))      # owner's example was Brazzaville
 MARKETS = [("XAUUSD", "or"), ("USTEC", "Nasdaq"), ("US30", "Dow"), ("US500", "S&P 500"), ("DE30", "DAX"), ("USOIL", "pétrole"),
            ("EURUSD", "EUR/USD"), ("USDJPY", "USD/JPY")]
 _LOCK = threading.Lock()
