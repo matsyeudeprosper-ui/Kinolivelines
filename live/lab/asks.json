@@ -256,6 +256,16 @@
    "status": "answered",
    "answer_fr": "Oui, la journée perd : quatre-vingt-deux trades, quatre sur dix gagnés, environ moins cent huit dollars, les deux moitiés d'accord. Mais presque tout vient des trades pris juste après une perte : quarante-cinq trades, trois sur dix gagnés, moins cent quatre. Après un gain, la journée perd peu (moins douze sur trente-six). C'est la hâte après une perte, pas l'heure. J'attends le réglage « pause après une perte, de jour » plutôt que de couper la journée.",
    "answer_en": "Yes, the daytime loses: eighty-two trades, four in ten won, about minus a hundred and eight dollars, both halves agree. But almost all of it comes from trades taken right after a loss: forty-five trades, three in ten won, minus a hundred and four. After a win, the day loses little (minus twelve over thirty-six). It is the hurry after a loss, not the hour. I am waiting for the 'pause after a loss, by day' dial rather than cutting the day."
+  },
+  {
+   "id": "ask_1792990818_day_after_loss",
+   "seed": "day_after_loss",
+   "seed_fr": "Trade pris le jour (8 h - minuit UTC) juste après une perte",
+   "seed_en": "Trade taken by day (08:00 - midnight UTC) right after a loss",
+   "by": "labo",
+   "date": "2026-10-26",
+   "note": "86 trades, 38 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
