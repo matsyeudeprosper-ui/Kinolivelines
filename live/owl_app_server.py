@@ -17679,6 +17679,15 @@ def _one_facts(user, c):
         pass
     if c.get("robot"):
         L.append("Le robot de cette conversation : %s." % ((c.get("robot") or {}).get("name") or "sans nom"))
+        try:                                           # 2026-10-26 01:06 (watch): "je lance le test" - the app first shows 5 moments to check
+            _ck = _check_state(c, user)
+            if _ck != "ok":
+                L.append({"none": "Avant son test, il doit d'abord regarder 5 moments où ce robot aurait tradé et dire oui ou non pour chacun "
+                                  "(c'est la règle de l'appli) : #test lui montre ces moments, et le test part quand il a validé.",
+                          "open": "Les 5 moments à vérifier avant le test sont affichés, il n'a pas encore répondu à tous : le test partira après.",
+                          "no": "Il a refusé un des 5 moments affichés : le robot ne fait pas ce qu'il voulait, il faut le corriger avant de tester."}.get(_ck, ""))
+        except Exception:
+            pass
     _t = c.get("test") or {}
     if _t.get("state") in ("queued", "running"):
         L.append("Un test de ce robot est %s en ce moment." % ("en file" if _t.get("state") == "queued" else "en cours"))
@@ -17938,7 +17947,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _CHAT_PENDING[cid] = True
         except Exception:
             pass
-    build = any(k == "construire" for k, _ in acts) and bool(say)
+    build = any(k == "construire" for k, _ in acts) and bool(say) and cid not in _CHAT_B and cid not in _CHAT_BUILDING
 
     def put(cc):
         if say:
@@ -18503,7 +18512,18 @@ def _chat_build(cid, user):
                             "\n\n(Une pièce n'a pas passé les contrôles, j'ai gardé l'ancienne.)")
                 if txt.strip() and _tg_live(user.get("id")) and any(mm.get("via") == "telegram" for mm in (c.get("msgs") or [])[-4:]):
                     threading.Thread(target=tg_send, args=(user.get("id"), txt.strip()), daemon=True).start()
-                if txt.strip() or ans.get("made") or ans.get("robot"):
+                if c.get("brain") == "one" and (txt.strip() or ans.get("made") or ans.get("robot")):
+                    # 2026-10-26 01:01 (watch, green chat): the builder spoke in its own voice ("Voilà, il est monté...") and its text was
+                    # merged into Kino's answer to "on a pas déjà fait un truc comme ça qui a failed ?". In a one-mind chat the builder
+                    # only shows its result card; Kino hears what it did and says it himself, if he has not already.
+                    _chat_msg(c, "ai", text="", one=True, made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")),
+                              probs=probs[:4] if probs else None, follow=True, link=ans.get("link"), chips=[])
+                    _bd = "; ".join("%s: %s" % (x.get("name"), x.get("plain")) for x in (ans.get("made") or []) if isinstance(x, dict))
+                    threading.Timer(1.0, lambda: (_CHAT_Q.__setitem__(cid, _CHAT_Q.get(cid, 0) + 1), _chat_quick(cid, user, (
+                        "BUILD DONE - the builder finished the change you asked for. What it did: %s. Its own note: %s%s. Tell them in your own "
+                        "words only if you have not already said it; if they asked you something meanwhile, answer that first.") % (
+                        _bd or "the robot is up to date", txt.strip()[:400] or "-", " (one piece failed its checks, the old one was kept)" if probs else ""))) ).start()
+                elif txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Done, your robot is up to date." if _rc().member_lang(c, "en" if en else "fr") == "en" else "C'est fait, ton robot est à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
                               follow=True, link=ans.get("link"), tools=ans.get("tools_used"), intent={"act": ans.get("act"), "build": True},
