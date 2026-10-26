@@ -723,6 +723,7 @@ function htDraw(){
  HT.off=Math.max(0,Math.min(Math.max(0,LEN-N),HT.off));
  const end=Math.max(3,LEN-Math.round(HT.off));
  const cs=ALL.slice(Math.max(0,end-N),end);
+ window._HTVIEW={cs:cs,live:HT.off<0.5};   // 2026-10-26: the split's top panel, for Kino (kpCtx)
  const t0=cs[0][0],t1=cs[cs.length-1][0];
  let hi=-1e18,lo=1e18;
  cs.forEach(k=>{if(k[2]>hi)hi=k[2];if(k[3]<lo)lo=k[3];});
@@ -3722,7 +3723,7 @@ function kpCtx(){
  let hi=-Infinity,lo=Infinity;cs.forEach(c=>{if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];});
  const C=D.candles,tfm=C.length>1?Math.round((C[C.length-1][0]-C[C.length-2][0])/60):null;
  const h1=document.querySelector('#hd h1');
- const o={sym:SYM,px:f(D.px),tf_min:tfm,title:h1?h1.textContent.trim().slice(0,40):'',filter:(typeof CTPB==='function')?(CTPB()?'reculs':'silence'):'',from:cs.length?cs[0][0]:null,to:cs.length?cs[cs.length-1][0]:null,live:!!V.live,
+ const o={sym:SYM,px:f(D.px),tf_min:tfm,title:h1?h1.textContent.replace(/[▾▼]/g,'').trim().slice(0,40):'',filter:(typeof CTPB==='function')?(CTPB()?'reculs':'silence'):'',from:cs.length?cs[0][0]:null,to:cs.length?cs[cs.length-1][0]:null,live:!!V.live,
   hi:isFinite(hi)?f(hi):null,lo:isFinite(lo)?f(lo):null,trend:D.trend||0,choch:D.choch||0,next_bos:f(D.next_bos),
   protected:f(D.invalid),flip_bos:f(D.flip_bos),int_trend:D.int_trend||0,int_bos:f(D.int_bos),pb_trend:D.pb_trend||0,
   nerv:(D.vol_now&&D.vol_ref)?+(D.vol_now/D.vol_ref).toFixed(2):null,
@@ -3733,6 +3734,13 @@ function kpCtx(){
  if(MT){try{const c=mtCalc();if(c)o.draft={d:c.d,kind:c.kind,entry:f(c.px),sl:f(c.sl),tp:f(c.tp),lot:c.lot,
   risk:+(c.risk||0).toFixed(2),gain:+(c.gain||0).toFixed(2),rr:+(c.rr||0).toFixed(2),bad:c.bad||'',edit:!!c.edit};}catch(e){}}
  if(window.KDRAW){try{o.kdraw=JSON.stringify(window.KDRAW).slice(0,600);}catch(e){}}
+ // 2026-10-26 (owner: "Kino can see both charts on my split screen"): the other panel too
+ if(HT.on&&HT.data&&window._HTVIEW){const T=HT.data,hc=window._HTVIEW.cs||[];
+  let th=-Infinity,tl=Infinity;hc.forEach(c=>{if(c[2]>th)th=c[2];if(c[3]<tl)tl=c[3];});
+  o.top={tf:HT.tf,where:HT.split==='h'?'à gauche':'au-dessus',from:hc.length?hc[0][0]:null,to:hc.length?hc[hc.length-1][0]:null,
+   live:!!window._HTVIEW.live,hi:isFinite(th)?f(th):null,lo:isFinite(tl)?f(tl):null,trend:T.trend||0,choch:T.choch||0,
+   next_bos:f(T.next_bos),protected:f(T.invalid),flip_bos:f(T.flip_bos),int_trend:T.int_trend||0,int_bos:f(T.int_bos),
+   last:hc.slice(-12).map(c=>[c[0],f(c[1]),f(c[2]),f(c[3]),f(c[4])])};}
  return o;}
 async function kpSend(force){
  if(KP.off||document.visibilityState!=='visible')return;

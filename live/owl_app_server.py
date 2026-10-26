@@ -17922,6 +17922,28 @@ def _chart_seen_facts(uid):
             (" - l'app affiche : " + str(d.get("bad"))[:120]) if d.get("bad") else ""))
     if v.get("kdraw"):
         L.append("Ce que tu as dessiné sur son graphique : " + str(v["kdraw"])[:500])
+    tp = v.get("top")
+    if isinstance(tp, dict):                     # 2026-10-26: the split screen's other panel
+        tfn = "graphique des reculs (seulement les reculs sérieux)" if tp.get("tf") == "PB" else "graphique %s" % str(tp.get("tf"))[:6]
+        s2 = "Son écran est partagé en deux : %s, %s du graphique principal ; il y regarde du %s au %s UTC (%s) ; plus haut %s, plus bas %s ; tendance %s" % (
+            tfn, str(tp.get("where") or "au-dessus")[:12], hm(tp.get("from")), hm(tp.get("to")),
+            "en direct" if tp.get("live") else "dans le passé", px("hi", tp), px("lo", tp), up.get(tp.get("trend"), "aucune"))
+        if tp.get("choch") in (1, -1):
+            s2 += ", changement de sens (CHoCH) en attente vers le %s" % ("haut" if tp["choch"] == 1 else "bas")
+        s2 += " ; prochain BOS %s ; point protégé %s" % (px("next_bos", tp), px("protected", tp))
+        if n("flip_bos", tp):
+            s2 += " ; BOS de retournement %s" % px("flip_bos", tp)
+        if tp.get("int_trend") in (1, -1):
+            s2 += " ; petite structure %s, son BOS %s" % (up[tp["int_trend"]], px("int_bos", tp))
+        L.append(s2 + ".")
+        C2 = [c for c in (tp.get("last") or []) if isinstance(c, list) and len(c) >= 5][-12:]
+        if C2:
+            try:
+                L.append("Dernières bougies de ce panneau (heure UTC : ouverture/haut/bas/clôture) : " + " | ".join(
+                    "%s %s" % (time.strftime("%d/%m %H:%M", time.gmtime(float(c[0]))), "/".join(
+                        ("%.0f" % float(z) if abs(float(z)) >= 1000 else "%g" % float(z)) for z in c[1:5])) for c in C2))
+            except Exception:
+                pass
     C = [c for c in (v.get("last") or []) if isinstance(c, list) and len(c) >= 5][-12:]
     if C:
         def f(z):
