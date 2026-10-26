@@ -15213,6 +15213,12 @@ def _chat_member(user, c):
     except Exception:
         pass
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
+    try:                                         # 2026-10-26 (owner): Kino sees the member's chart at all times
+        _cs = _chart_seen_facts(uid)
+        if _cs:
+            out += "\n\n" + _cs
+    except Exception:
+        pass
     return out
 
 
@@ -17826,10 +17832,135 @@ def _one_memory(user, c):
             L.append("Tes recherches en cours : " + " | ".join(str(q.get("q") if isinstance(q, dict) else q)[:200] for q in Qo))
     except Exception:
         pass
+    try:                                               # 2026-10-26: what his chart shows right now
+        _cs = _chart_seen_facts(uid)
+        if _cs:
+            L.append(_cs)
+    except Exception:
+        pass
     return "\n".join(L)
 
 
 _ONE_PRE = {}
+
+_CHART_SEEN = {}        # uid -> {t, v, panel}: what the member's chart page shows right now (2026-10-26)
+
+
+def chart_seen(user, body):
+    """2026-10-26 (owner: "Kino should be aware at all times what's going on the chart"): the chart page sends what is on
+    the screen every few seconds while it is open; both brains read it in their facts (_chart_seen_facts)"""
+    try:
+        v = body.get("v") or {}
+        if not isinstance(v, dict) or len(json.dumps(v)) > 8000:
+            return {"ok": False, "err": "big"}
+    except Exception:
+        return {"ok": False}
+    _CHART_SEEN[user.get("id")] = {"t": time.time(), "v": v, "panel": bool(body.get("panel"))}
+    return {"ok": True}
+
+
+def _chart_seen_facts(uid):
+    """the member's chart, in plain sentences - empty when no chart page has been open in the last 3 minutes"""
+    x = _CHART_SEEN.get(uid)
+    if not x or time.time() - x["t"] > 180:
+        return ""
+    v = x.get("v") or {}
+
+    def n(k, d=None):
+        try:
+            return float((d or v).get(k))
+        except Exception:
+            return None
+
+    def px(k, d=None):
+        f = n(k, d)
+        return "-" if f is None else ("%.0f" % f if abs(f) >= 1000 else "%g" % round(f, 5))
+
+    def hm(t):
+        try:
+            return time.strftime("%d/%m %H:%M", time.gmtime(float(t)))
+        except Exception:
+            return "?"
+
+    up = {1: "haussière", -1: "baissière"}
+    sd = {1: "ACHAT", -1: "VENTE"}
+    L = ["SON GRAPHIQUE EN CE MOMENT (ce qu'il a sous les yeux dans l'app, vu il y a %d s%s) :" % (
+        time.time() - x["t"], " - il te parle depuis le panneau Kino du graphique" if x.get("panel") else "")]
+    L.append("graphique « %s », prix %s ; il regarde du %s au %s UTC (%s) ; dans sa vue : plus haut %s, plus bas %s." % (
+        str(v.get("title") or v.get("sym"))[:40], px("px"), hm(v.get("from")), hm(v.get("to")),
+        "en direct" if v.get("live") else "il a remonté dans le passé", px("hi"), px("lo")))
+    if v.get("filter") == "silence":
+        L.append("Type de graphique : filtre silence - les bougies calmes sont retirées, donc l'écart de temps entre deux bougies n'est pas fixe.")
+    elif v.get("filter") == "reculs":
+        L.append("Type de graphique : filtre reculs - seulement les reculs sérieux sont montrés.")
+    st = "Structure de l'Owl sur ce graphique : tendance %s" % up.get(v.get("trend"), "aucune")
+    if v.get("choch") in (1, -1):
+        st += ", changement de sens (CHoCH) en attente vers le %s" % ("haut" if v["choch"] == 1 else "bas")
+    st += " ; prochain BOS %s ; point protégé %s" % (px("next_bos"), px("protected"))
+    if n("flip_bos"):
+        st += " ; BOS de retournement %s" % px("flip_bos")
+    if v.get("int_trend") in (1, -1):
+        st += " ; petite structure (interne) %s, son BOS %s" % (up[v["int_trend"]], px("int_bos"))
+    if v.get("pb_trend") in (1, -1):
+        st += " ; tendance des reculs %s" % up[v["pb_trend"]]
+    if n("nerv"):
+        st += " ; nervosité %.2fx la normale" % n("nerv")
+    L.append(st + ".")
+    if n("balance"):
+        L.append("Solde du compte affiché : %.2f $." % n("balance"))
+    for o in (v.get("open") or [])[:3]:
+        L.append("Position ouverte : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $." % (
+            sd.get(o.get("d"), "?"), o.get("lot"), px("e", o), px("sl", o), px("tp", o), n("pl", o) or 0))
+    for o in (v.get("pending") or [])[:3]:
+        L.append("Ordre en attente : %s %s lot à %s, SL %s, TP %s." % (str(o.get("kind") or "?")[:20], o.get("lot"),
+                                                                     px("e", o), px("sl", o), px("tp", o)))
+    d = v.get("draft")
+    if isinstance(d, dict):
+        L.append("Il prépare un trade à la main sur le graphique (PAS encore envoyé) : %s %s, entrée %s, SL %s, TP %s, lot %s, risque %s $, gain visé %s $, R:R %s%s." % (
+            "modification de la position" if d.get("edit") else sd.get(d.get("d"), "sens pas clair"), str(d.get("kind") or "")[:14],
+            px("entry", d), px("sl", d), px("tp", d), d.get("lot"), d.get("risk"), d.get("gain"), d.get("rr"),
+            (" - l'app affiche : " + str(d.get("bad"))[:120]) if d.get("bad") else ""))
+    if v.get("kdraw"):
+        L.append("Ce que tu as dessiné sur son graphique : " + str(v["kdraw"])[:500])
+    C = [c for c in (v.get("last") or []) if isinstance(c, list) and len(c) >= 5][-12:]
+    if C:
+        def f(z):
+            z = float(z)
+            return "%.0f" % z if abs(z) >= 1000 else "%g" % z
+        try:
+            L.append("Dernières bougies de sa vue (heure UTC : ouverture/haut/bas/clôture) : " + " | ".join(
+                "%s %s/%s/%s/%s" % (time.strftime("%H:%M", time.gmtime(float(c[0]))), f(c[1]), f(c[2]), f(c[3]), f(c[4])) for c in C))
+        except Exception:
+            pass
+    return "\n".join(L)
+
+
+def chart_chat(user, body):
+    """2026-10-26 (owner: "the Kino chat as a panel that slides from the chart"): the chart's own conversation, one per
+    member (robots/chart_chat.json); the one mind where it is allowed"""
+    uid = user.get("id")
+    p = os.path.join(DIR, "robots", "chart_chat.json")
+    m = _jload(p, {}) or {}
+    cid = m.get(uid)
+    if cid and not body.get("new"):
+        try:
+            if _chat_load(user, cid) is not None:
+                return {"ok": True, "id": cid}
+        except Exception:
+            pass
+    one = is_admin(user) or uid in ONE_TEST_UIDS
+    r = chat_start(user, {"lang": "en" if body.get("lang") == "en" else "fr", "brain": "one" if one else None})
+    cid = (r or {}).get("id")
+    if not cid:
+        return r or {"ok": False}
+
+    def put(c):
+        c["thread"] = "Kino · graphique"
+        c["chart"] = True
+    _chat_mut(cid, put)
+    m[uid] = cid
+    json.dump(m, open(p, "w", encoding="utf-8"))
+    return {"ok": True, "id": cid}
 
 
 def _one_prefetch(user, cid):
@@ -30812,7 +30943,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply",
+                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
@@ -30835,7 +30966,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
-                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chat_ghost": chat_ghost,
+                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,

@@ -2,7 +2,7 @@
 // DevTools protocol, the way review/ui_smoke.mjs drives the browser. Plain `msedge --screenshot` ignores the
 // window size in headless mode, so its captures lie about phone layouts (2026-10-16).
 //   node review/phone_shot.mjs <out_dir> <url-or-file> [...]      -> <out_dir>/<basename>.png
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
@@ -19,6 +19,26 @@ const prof = join(tmpdir(), "owl_phone_shot_" + PORT);
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars",
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${prof}`, "about:blank"], { stdio: "ignore" });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// 2026-10-26: a page that never settles (or a run killed from outside) skipped the finally below, and every such run
+// left a headless Edge burning CPU - nine of them starved the chart feed's terminal 20 min behind the market.
+// Kill by PROFILE DIR (the launcher exits early, so /T on its pid misses orphans), on exit, on signals, and after 150 s.
+function killEdge() {
+  try {
+    spawnSync("powershell", ["-NoProfile", "-Command", "Get-CimInstance Win32_Process -Filter \"Name='msedge.exe'\" | " +
+      "Where-Object { $_.CommandLine -like '*" + basename(prof) + "*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"],
+      { stdio: "ignore", timeout: 30000 });
+  } catch { }
+}
+process.on("exit", killEdge);
+// a hard kill from outside (timeout, TerminateProcess) runs no handler at all, so each run first sweeps screenshot
+// browsers older than 3 min - longer than any run can live (150 s deadline) - which bounds a leak to one run
+try {
+  spawnSync("powershell", ["-NoProfile", "-Command", "$c=(Get-Date).AddMinutes(-3); Get-CimInstance Win32_Process -Filter " +
+    "\"Name='msedge.exe'\" | Where-Object { $_.CommandLine -like '*owl_phone_shot_*' -and $_.CreationDate -lt $c } | " +
+    "ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"], { stdio: "ignore", timeout: 30000 });
+} catch { }
+for (const sig of ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK"]) process.on(sig, () => process.exit(130));
+setTimeout(() => { console.error("phone_shot: 150 s deadline - closing the browser"); process.exit(3); }, 150000).unref();
 let ws, id = 0; const pending = new Map();
 function send(method, params = {}) {
   return new Promise((res, rej) => { const i = ++id; pending.set(i, { res, rej }); ws.send(JSON.stringify({ id: i, method, params })); });
@@ -70,6 +90,6 @@ try {
   try { ws && ws.close(); } catch { }
   // 2026-10-26: edge.kill() ends only the launcher; its children lived on (34 headless browsers, ~7 GB). Kill the whole tree.
   try { spawn("taskkill", ["/PID", String(edge.pid), "/T", "/F"], { stdio: "ignore" }); } catch { }
-  edge.kill(); await sleep(1500);
+  edge.kill(); await sleep(1500); killEdge();
   try { rmSync(prof, { recursive: true, force: true }); } catch { }
 }

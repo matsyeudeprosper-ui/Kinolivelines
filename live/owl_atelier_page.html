@@ -2388,4 +2388,7 @@ function tGuess(btn,g){const w=btn.closest('.tgs');try{localStorage.setItem(w.da
 <div id="call" role="dialog" aria-label="Appel avec Kino"><div><div class="ctm" id="ctm">0:00</div><div class="cav" id="cav" onclick="callTap()">🦉</div><div class="cn">Kino</div><div class="cst" id="cst"></div><div class="ctx" id="ctx"></div><div class="cbtns" id="cbtns"></div><button class="cvis" id="cvis" onclick="liveMin()"></button><button class="cmin" onclick="liveMin()">⌄ Voir la conversation</button></div>
 <button class="chg" onclick="callEnd()" aria-label="Raccrocher">✆</button></div>
 <div id="fsc"><div class="fh"><button onclick="fsClose()" aria-label="Fermer">✕</button><b id="fst"></b><button onclick="fsZoom(1)" aria-label="Zoomer">＋</button><button onclick="fsZoom(-1)" aria-label="Dézoomer">－</button><button onclick="fsPlay()" aria-label="Rejouer">▶</button></div><canvas id="fcv"></canvas><div class="fz" id="fzh">Pince pour zoomer · glisse pour te déplacer</div></div>
+<style>/* 2026-10-26: inside the chart's Kino panel - no back arrow, no side plan, no footnote */
+body.emb #bk,body.emb aside.bp,body.emb #hint{display:none!important}</style>
+<script>try{if(/[?&]embed=1/.test(location.search)&&window.top!==window)document.body.classList.add('emb');}catch(e){}</script>
 </body></html>

@@ -1224,6 +1224,7 @@ function draw(){
  const end=D.candles.length-Math.round(viewOff);
  const cs=D.candles.slice(Math.max(0,end-N),end);
  const atLive=viewOff<0.5;
+ window._VIEW={cs:cs,live:atLive};   // 2026-10-26: what is on screen, for Kino (kpCtx)
  window._xref=(HT.on&&cs.length)?cs[Math.floor(cs.length/2)][0]:undefined;
  document.getElementById('backlive').style.display=
   (atLive&&!voff&&vzoom===1)?'none':'block';
@@ -3631,5 +3632,118 @@ async function askKino(){var b=document.getElementById('askkino');b.disabled=tru
   if(j.ok||j.id){location.href=base+'atelier'+(j.id?'?c='+encodeURIComponent(j.id):'');return;}
   alert(j.err==='strategy'?'Kino est inclus dans la formule Stratégie.':'Kino est occupé, réessaie dans un instant.');}catch(e){alert('Hors ligne.');}
  b.disabled=false;b.style.opacity=1;}
+</script>
+<style>
+/* 2026-10-26 (owner: "the Kino chat as a panel that slides whenever I need to chat to Kino from the chart, and Kino aware
+   at all times of what's on the chart") - a slim edge tab, the chat slides in from the right (wide) or up (phone) */
+#kptab{position:fixed;right:0;top:50%;z-index:95;transform:translateY(-50%);border:0;border-radius:12px 0 0 12px;
+ padding:10px 5px 12px 7px;background:linear-gradient(160deg,#6d5cf6,#3b82f6);color:#fff;font:800 11px Inter,system-ui,sans-serif;
+ letter-spacing:.1em;box-shadow:-4px 6px 18px rgba(0,0,0,.35);opacity:.78;cursor:pointer;display:flex;flex-direction:column;
+ align-items:center;gap:6px;transition:opacity .2s,transform .3s}
+#kptab:hover{opacity:1}
+#kptab .kpo{font-size:15px;line-height:1}
+#kptab .kpl{writing-mode:vertical-rl;text-orientation:mixed}
+#kptab.hid{transform:translate(110%,-50%)}
+#kpn{position:fixed;z-index:400;background:var(--bg);display:flex;flex-direction:column;
+ box-shadow:0 0 44px rgba(0,0,0,.55);transition:transform .34s cubic-bezier(.2,.85,.25,1);will-change:transform}
+#kpn .kph{display:flex;align-items:center;gap:8px;padding:8px 10px 7px 14px;flex:none;
+ border-bottom:1px solid var(--border);touch-action:none;user-select:none}
+#kpn .kpg{display:none}
+#kpn .kpt{flex:1;min-width:0;font:800 13px Inter,system-ui,sans-serif;color:var(--text1,#e7eef7);white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis}
+#kpn .kpt small{display:inline-flex;align-items:center;gap:5px;margin-left:8px;font-weight:700;font-size:10.5px;color:#8df0bb}
+#kpn .kpt small i{width:7px;height:7px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 0 rgba(46,204,113,.6);
+ animation:kpPulse 1.8s infinite}
+@keyframes kpPulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}70%{box-shadow:0 0 0 7px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+#kpn .kpb{flex:none;width:32px;height:32px;border-radius:10px;border:1px solid var(--border2);background:var(--surface2);
+ color:var(--text2);display:grid;place-items:center;font-size:14px;cursor:pointer;text-decoration:none}
+#kpn iframe{flex:1;width:100%;border:0;background:var(--bg)}
+#kpn .kpw{flex:1;display:grid;place-items:center;color:var(--text3,#7e93a8);font-size:13px}
+@media (min-width:760px){
+ #kpn{top:0;right:0;bottom:0;width:min(430px,42vw);border-left:1px solid rgba(109,92,246,.4);transform:translateX(105%)}
+ #kpn.on{transform:none}}
+@media (max-width:759px){
+ #kpn{left:0;right:0;bottom:0;height:66vh;border-radius:18px 18px 0 0;border-top:1px solid rgba(109,92,246,.5);
+  transform:translateY(105%)}
+ #kpn.on{transform:none}
+ #kpn .kph{flex-wrap:wrap;padding-top:6px;cursor:grab}
+ #kpn .kpg{display:block;flex-basis:100%;height:4px;margin:0 auto 6px;max-width:40px;border-radius:4px;background:rgba(255,255,255,.22)}}
+#kpn.drag{transition:none}
+</style>
+<button id="kptab" onclick="kpToggle(true)" aria-label="Parler à Kino" title="Parler à Kino"><span class="kpo">🦉</span><span class="kpl">KINO</span></button>
+<div id="kpn" aria-hidden="true">
+ <div class="kph" id="kph"><div class="kpg"></div>
+  <div class="kpt">🦉 Kino<small><i></i><span id="kpst">voit ton graphique</span></small></div>
+  <a class="kpb" id="kpfull" href="#" target="_top" aria-label="Plein écran" title="Plein écran">↗</a>
+  <button class="kpb" onclick="kpToggle(false)" aria-label="Fermer" title="Fermer">✕</button>
+ </div>
+ <div class="kpw" id="kpw">…</div>
+</div>
+<script>
+/* the panel: the chart's own Kino conversation (chart_chat) in the chat page, embedded */
+const KP={on:false,id:null,last:'',sent:0,off:false,y0:null,h0:0};
+function kpBase(){return '/'+tok+'/';}
+(function(){try{if(window.top!==window||EQ){document.getElementById('kptab').style.display='none';KP.off=true;}}catch(e){}})();
+async function kpToggle(on){
+ const P=document.getElementById('kpn'),tb=document.getElementById('kptab');
+ KP.on=!!on;P.classList.toggle('on',KP.on);P.setAttribute('aria-hidden',KP.on?'false':'true');tb.classList.toggle('hid',KP.on);
+ if(!KP.on){P.style.transform='';return;}
+ kpSend(true);
+ if(KP.id)return;
+ try{
+  const r=await fetch(kpBase()+'chart_chat',{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({lang:(typeof EN!=='undefined'&&EN)?'en':'fr'})});
+  const j=await r.json();
+  if(!j.ok||!j.id){document.getElementById('kpw').textContent=j.err==='strategy'?'Kino est inclus dans la formule Stratégie.':'Kino est occupé, réessaie dans un instant.';return;}
+  KP.id=j.id;
+  const u=kpBase()+'atelier?embed=1&c='+encodeURIComponent(j.id);
+  document.getElementById('kpfull').href=kpBase()+'atelier?c='+encodeURIComponent(j.id);
+  const f=document.createElement('iframe');f.title='Kino';f.src=u;f.allow='microphone; autoplay';
+  const w=document.getElementById('kpw');w.replaceWith(f);
+ }catch(e){document.getElementById('kpw').textContent='Hors ligne.';}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&KP.on)kpToggle(false);});
+/* phone: drag the top bar - down far enough closes, otherwise the sheet keeps the height you leave it at */
+(function(){const h=document.getElementById('kph'),P=document.getElementById('kpn');
+ h.addEventListener('pointerdown',e=>{if(window.innerWidth>=760||e.target.closest('.kpb'))return;
+  KP.y0=e.clientY;KP.h0=P.offsetHeight;P.classList.add('drag');h.setPointerCapture(e.pointerId);});
+ h.addEventListener('pointermove',e=>{if(KP.y0===null)return;const dy=e.clientY-KP.y0;
+  if(dy>0)P.style.transform='translateY('+dy+'px)';
+  else{P.style.transform='';P.style.height=Math.min(window.innerHeight*0.94,KP.h0-dy)+'px';}});
+ const end=e=>{if(KP.y0===null)return;const dy=e.clientY-KP.y0;KP.y0=null;P.classList.remove('drag');P.style.transform='';
+  if(dy>KP.h0*0.3)kpToggle(false);};
+ h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);})();
+/* what Kino sees: the screen as numbers, every few seconds while the chart is open (faster while the panel is open) */
+function kpCtx(){
+ if(!D||!D.candles||!D.candles.length)return null;
+ const btc=SYM==='BTCUSD';
+ const f=v=>(v==null||!isFinite(v)||v===0)?null:+(btc?Number(v):Number(v)/SC).toFixed(btc?1:Math.max(2,DG));
+ const V=window._VIEW||{},cs=V.cs||[];
+ let hi=-Infinity,lo=Infinity;cs.forEach(c=>{if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];});
+ const C=D.candles,tfm=C.length>1?Math.round((C[C.length-1][0]-C[C.length-2][0])/60):null;
+ const h1=document.querySelector('#hd h1');
+ const o={sym:SYM,px:f(D.px),tf_min:tfm,title:h1?h1.textContent.trim().slice(0,40):'',filter:(typeof CTPB==='function')?(CTPB()?'reculs':'silence'):'',from:cs.length?cs[0][0]:null,to:cs.length?cs[cs.length-1][0]:null,live:!!V.live,
+  hi:isFinite(hi)?f(hi):null,lo:isFinite(lo)?f(lo):null,trend:D.trend||0,choch:D.choch||0,next_bos:f(D.next_bos),
+  protected:f(D.invalid),flip_bos:f(D.flip_bos),int_trend:D.int_trend||0,int_bos:f(D.int_bos),pb_trend:D.pb_trend||0,
+  nerv:(D.vol_now&&D.vol_ref)?+(D.vol_now/D.vol_ref).toFixed(2):null,
+  last:cs.slice(-12).map(c=>[c[0],f(c[1]),f(c[2]),f(c[3]),f(c[4])])};
+ if(MS){o.balance=MS.balance;
+  o.open=(MS.open||[]).slice(0,3).map(p=>({d:p.d,lot:p.lot,e:f(p.e),sl:f(p.sl),tp:f(p.tp),pl:p.pl}));
+  o.pending=(MS.pending||[]).slice(0,3).map(p=>({kind:p.kind,lot:p.lot,e:f(p.e),sl:f(p.sl),tp:f(p.tp)}));}
+ if(MT){try{const c=mtCalc();if(c)o.draft={d:c.d,kind:c.kind,entry:f(c.px),sl:f(c.sl),tp:f(c.tp),lot:c.lot,
+  risk:+(c.risk||0).toFixed(2),gain:+(c.gain||0).toFixed(2),rr:+(c.rr||0).toFixed(2),bad:c.bad||'',edit:!!c.edit};}catch(e){}}
+ if(window.KDRAW){try{o.kdraw=JSON.stringify(window.KDRAW).slice(0,600);}catch(e){}}
+ return o;}
+async function kpSend(force){
+ if(KP.off||document.visibilityState!=='visible')return;
+ const o=kpCtx();if(!o)return;
+ const s=JSON.stringify(o),now=Date.now();
+ if(!force&&s===KP.last&&now-KP.sent<45000)return;
+ if(!force&&!KP.on&&now-KP.sent<15000)return;
+ KP.last=s;KP.sent=now;
+ try{const r=await fetch(kpBase()+'chart_seen',{method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({v:o,panel:KP.on})});const j=await r.json();
+  if(j.err==='strategy'){KP.off=true;}}catch(e){}}
+setInterval(()=>kpSend(false),4000);setTimeout(()=>kpSend(true),2500);
 </script>
 </body></html>
