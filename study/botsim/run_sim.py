@@ -135,6 +135,8 @@ def main():
     ap.add_argument("--net-lag", type=float, default=0.0, help="s a tick takes to reach the terminal")
     ap.add_argument("--order-lag", type=float, default=0.0, help="s between the sim's entry and the fill (real median ~2 s more)")
     ap.add_argument("--order-lag-real", action="store_true", help="replay each real entry's own delay from the real log")
+    ap.add_argument("--fresh", action="store_true", help="start with no debt, no history and --balance (month studies)")
+    ap.add_argument("--balance", type=float, default=200.0)
     ap.add_argument("--bars", default="", help="M1 candles npz (key R) instead of the account's recorded ones; several with +")
     ap.add_argument("--ticks", default="", help="tick folder(s) under study/ instead of the account's, comma separated")
     a = ap.parse_args()
@@ -144,6 +146,10 @@ def main():
     logf = os.path.join(LIVE, A["log"])
     st0, bal_log = state_from_log(logf, t0)
     bal = balance_at(logf, t0) or bal_log or 200.0
+    if a.fresh:
+        st0 = {"debt": 0.0, "chest": 0.0, "banked": 0.0, "trades": 0, "killed": False, "last_bar": 0, "open_lot": 0.0,
+               "loss_streak": 0, "add": None}
+        bal = a.balance
     build_sandbox(sb, a.acct, st0)
     if a.rev:                                   # the bot as it was at that revision (what really traded then)
         import subprocess
