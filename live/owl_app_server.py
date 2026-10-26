@@ -22108,16 +22108,35 @@ def chat_fires(user, body):
     for side, f in ((1, b), (-1, s)):
         if not f:
             continue
-        r = _RD.moments(mk, f, side, n=5)
+        r = _RD.moments(mk, f, side, n=60)
         if r is None:
             return {"ok": False, "err": "nodata"}
         cnt += int(r.get("count") or 0); per += float(r.get("per_day") or 0)
         mo += [dict(x, side="buy" if side == 1 else "sell") for x in r.get("moments") or []]
-    mo = sorted(mo, key=lambda x: x["t"])[-5:]
+    mo = sorted(mo, key=lambda x: x["t"])
     if not mo:
         return {"ok": False, "err": "nofire"}
+    # 2026-10-26 (owner: "confusing ... maybe Monday to Sunday"): one whole week of the robot, Monday to Sunday - the most recent
+    # week with data (the previous one when the latest has under four days), checked with one answer instead of five votes
+    wk = None
+    try:
+        _lt = datetime.fromtimestamp(mo[-1]["t"], timezone.utc)
+        _mon = (_lt - timedelta(days=_lt.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+        if _lt.weekday() < 3:
+            _mon -= timedelta(days=7)
+        _m0 = _mon.timestamp()
+        _wm = [x for x in mo if _m0 <= x["t"] < _m0 + 7 * 86400][:24]
+        if len(_wm) >= 2:
+            wk = {"mon": _mon.strftime("%Y-%m-%d"), "mon_t": int(_m0)}
+            mo = _wm
+    except Exception:
+        wk = None
+    if wk is None:
+        mo = mo[-5:]
     m = {"role": "demo", "kind": "moments", "check": True, "market": mk, "moments": mo, "count": cnt, "per_day": round(per, 1),
          "side": "buy" if all(x["side"] == "buy" for x in mo) else "sell" if all(x["side"] == "sell" for x in mo) else "mix"}
+    if wk:
+        m["week"] = wk
 
     def put(c):
         c["check"] = {"sig": sig, "n": len(mo), "votes": {}, "t": int(time.time())}
@@ -22130,6 +22149,13 @@ def chat_fires_vote(user, body):
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None or not c.get("check"):
         return {"ok": False, "err": "missing"}
+    if body.get("all"):                              # 2026-10-26: the week card - one answer for every moment shown
+        yes = bool(body.get("yes"))
+
+        def put(c):
+            c["check"]["votes"] = {str(k): yes for k in range(int(c["check"].get("n") or 0))}
+        _chat_mut(c["id"], put)
+        return {"ok": True, "state": _check_state(_chat_load(user, c["id"]), user)}
     try:
         j = int(body.get("j"))
     except Exception:
