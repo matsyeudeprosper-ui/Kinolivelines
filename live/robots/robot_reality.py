@@ -17,6 +17,8 @@ CACHE = os.path.join(HERE, "demo_cache", "world.json")
 CAL_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
 NEWS_URL = "https://cointelegraph.com/rss"
 MACRO_URL = "https://www.forexlive.com/feed/news"     # 2026-10-19 (owner list-4 item 5): markets news, not only crypto
+# 2026-10-26 (owner: "keep me updated for really major news - not trading, like the journal de 20h"): world news, in French
+WORLD_URLS = (("RFI", "https://www.rfi.fr/fr/rss"), ("France 24", "https://www.france24.com/fr/rss"))
 MARKETS = [("XAUUSD", "or"), ("USTEC", "Nasdaq"), ("US30", "Dow"), ("US500", "S&P 500"), ("DE30", "DAX"), ("USOIL", "pétrole"),
            ("EURUSD", "EUR/USD"), ("USDJPY", "USD/JPY")]
 _LOCK = threading.Lock()
@@ -82,6 +84,30 @@ def _refresh():
                 out["macro"] = mac
         except Exception:
             pass
+        try:
+            from email.utils import parsedate_to_datetime as _pd
+            wl = []
+            for src, url in WORLD_URLS:
+                try:
+                    xml = _get(url).decode("utf-8", "replace")
+                except Exception:
+                    continue
+                for it in re.findall(r"<item>(.*?)</item>", xml, re.S)[:15]:
+                    t = re.search(r"<title>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?</title>", it, re.S)
+                    d = re.search(r"<pubDate>(.*?)</pubDate>", it, re.S)
+                    if not t:
+                        continue
+                    try:
+                        ts = int(_pd(d.group(1).strip()).timestamp()) if d else 0
+                    except Exception:
+                        ts = 0
+                    wl.append({"t": html.unescape(re.sub(r"<[^>]+>", "", t.group(1))).strip()[:180], "ts": ts, "src": src})
+            if wl:
+                wl.sort(key=lambda x: -x["ts"])
+                out["world"] = wl[:24]
+                out["world_t"] = int(time.time())
+        except Exception:
+            pass
         os.makedirs(os.path.dirname(CACHE), exist_ok=True)
         json.dump(out, open(CACHE + ".tmp", "w", encoding="utf-8"), ensure_ascii=False)
         os.replace(CACHE + ".tmp", CACHE)
@@ -90,7 +116,8 @@ def _refresh():
 
 
 def _maybe_refresh(c):
-    if time.time() - max(c.get("cal_t") or 0, 0) > 3600 or time.time() - (c.get("news_t") or 0) > 3600:
+    if time.time() - max(c.get("cal_t") or 0, 0) > 3600 or time.time() - (c.get("news_t") or 0) > 3600 \
+            or time.time() - (c.get("world_t") or 0) > 3600:
         with _LOCK:
             if _BUSY["on"]:
                 return

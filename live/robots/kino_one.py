@@ -72,6 +72,8 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
                                       trade par trade. Ne dis jamais qu'une de ses règles ne peut pas être construite ou
                                       testée : écris #construire avec sa règle, le constructeur trouve comment.
 #retiens <une chose à garder sur lui>
+#infos on | #infos off          il veut (ou ne veut plus) que tu le tiennes au courant des grandes nouvelles du monde : tu as
+                                les titres de RFI et France 24, et on te réveille quand il y en a de nouveaux
 #montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
 Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que tu sais - les prix en chiffres, pas de mots) :
 #ordre sl=<prix> tp=<prix> [ticket=<n>]          déplace le stop et/ou l'objectif d'une position ouverte
@@ -103,7 +105,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
