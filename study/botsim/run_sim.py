@@ -135,6 +135,8 @@ def main():
     ap.add_argument("--net-lag", type=float, default=0.0, help="s a tick takes to reach the terminal")
     ap.add_argument("--order-lag", type=float, default=0.0, help="s between the sim's entry and the fill (real median ~2 s more)")
     ap.add_argument("--order-lag-real", action="store_true", help="replay each real entry's own delay from the real log")
+    ap.add_argument("--order-lag-deals", default="", help="real deals json [(time, pos, entry, ...)]: each entry fills at its real "
+                                                             "deal time (the log line is written seconds after the fill)")
     ap.add_argument("--fresh", action="store_true", help="start with no debt, no history and --balance (month studies)")
     ap.add_argument("--balance", type=float, default=200.0)
     ap.add_argument("--bars", default="", help="M1 candles npz (key R) instead of the account's recorded ones; several with +")
@@ -171,6 +173,14 @@ def main():
     broker = FM.Broker(clock, bars, ticks, login=A["login"], balance=bal)
     broker.net_lag = a.net_lag
     broker.order_lag = a.order_lag
+    if a.order_lag_deals:                      # 2026-10-26: the broker's own deal times are the truth (log lines come after the fill)
+        _od = {}
+        for r in json.load(open(a.order_lag_deals)):
+            if int(r[2]) == 0 and t0 <= float(r[0]) <= t1:          # entry IN
+                k = int(r[0]) // 60 * 60
+                _od.setdefault(k, max(0.0, float(r[0]) - k - 1.0))   # the sim sends at :01
+        broker.order_lag_at = _od
+        print("real deal delays:", {_real_time.strftime("%m-%d %H:%M", _real_time.gmtime(k)): v for k, v in sorted(_od.items())}, flush=True)
     if a.order_lag_real:                        # each real entry's second after the minute, minus the sim's own (1 s)
         _oa = {}
         for ln in open(logf, encoding="utf-8", errors="replace"):
