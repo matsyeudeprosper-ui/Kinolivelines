@@ -17652,11 +17652,11 @@ def _one_facts(user, c):
                     float(x.get("pl") or 0), time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0)))) for x in ol[:4]) + ".")
         else:
             L.append("Aucun trade ouvert à cette minute.")
-        try:
-            _tt = [x for x in (nd.get("trades") or nd.get("today_list") or []) if isinstance(x, dict)][-3:]
+        try:                                           # 2026-10-26 07:19 (watch): "I don't have the closing line" - the list is newest
+            _tt = [x for x in (nd.get("trades") or []) if isinstance(x, dict)][:4]     # first, its time is the text field "w"
             if _tt:
-                L.append("Ses derniers trades fermés : " + " ; ".join("%s %+.2f $" % (
-                    time.strftime("%d/%m %H:%M", time.gmtime(float(x.get("t") or x.get("tc") or 0))), float(x.get("p") or x.get("pl") or 0)) for x in _tt) + ".")
+                L.append("Ses derniers trades fermés (le plus récent d'abord, heure UTC) : " + " ; ".join("%s %s %s lot, entré à %s, sorti à %s, %+.2f $" % (
+                    x.get("w"), "vente" if str(x.get("dir")) == "V" else "achat", x.get("lot"), x.get("ep"), x.get("xp"), float(x.get("p") or 0)) for x in _tt) + ".")
         except Exception:
             pass
     R = st.get("robots") or []

@@ -69,7 +69,9 @@ def gate(event, msgs, local_hour=None, now=None, present=False):
             break
         if m["role"] == "ai" and m.get("event"):
             unanswered += 1
-    if unanswered >= (4 if present else 3):
+    # 2026-10-26 07:19 (watch): a 4th message of his own at 9 am their time - the app was open on the phone, so "present" allowed
+    # four; nobody answered three. Three of his own with no answer = he waits, present or not.
+    if unanswered >= 3:
         return False, "%d of your own unanswered - wait for them" % unanswered
     gap *= 2 ** unanswered
     # flat member (not while they are here: "Ok" from someone in the app is a nod, not a wall)
