@@ -39,11 +39,12 @@ class Candles:
 
     def __init__(self):
         self.rows = []                 # (t, o, h, l, c, v, bos_up, bos_down, choch_up, choch_down, trend)
+        self.pb = []                   # 2026-10-26: per row, the pullback chart's facts (robot_expr.PB order) or None
         self.trend = 0
         self._B = None
         self._memo = {}
 
-    def add(self, t, o, h, l, c, v, d=0, flip=False, trend=None):
+    def add(self, t, o, h, l, c, v, d=0, flip=False, trend=None, pb=None):
         """one closed candle; d = the eyes' break on it (+1 / -1 / 0), flip = that break turned the trend,
         trend = the background trend read at that break (kept until the next break, as the bench does)"""
         if self.rows and int(t) <= self.rows[-1][0]:
@@ -53,8 +54,10 @@ class Candles:
         self.rows.append((int(t), float(o), float(h), float(l), float(c), float(v),
                           1.0 if d == 1 and not flip else 0.0, 1.0 if d == -1 and not flip else 0.0,
                           1.0 if d == 1 and flip else 0.0, 1.0 if d == -1 and flip else 0.0, float(self.trend)))
+        self.pb.append(pb)
         if len(self.rows) > self.KEEP + 500:
             del self.rows[:len(self.rows) - self.KEEP]
+            del self.pb[:len(self.pb) - self.KEEP]
         self._B = None
         self._memo = {}
 
@@ -62,6 +65,9 @@ class Candles:
         if self._B is None:
             A = np.array(self.rows, dtype=float).reshape(-1, 11)
             eyes = {k: A[:, 6 + j] for j, k in enumerate(("bos_up", "bos_down", "choch_up", "choch_down", "trend"))}
+            if any(p is not None for p in self.pb):
+                P = np.array([p if p is not None else [np.nan] * len(X.PB) for p in self.pb], dtype=float).reshape(-1, len(X.PB))
+                eyes.update({k: P[:, j] for j, k in enumerate(X.PB)})
             self._B = X.Bars(A[:, 0].astype(np.int64), A[:, 1], A[:, 2], A[:, 3], A[:, 4], A[:, 5], eyes)
         return self._B
 

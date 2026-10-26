@@ -877,7 +877,16 @@ def robot_tick(bar, sig, prev_trend, eng):
     o, h, l, c = float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"])
     flip = sig is not None and eng.trend != prev_trend
     if C is not None:
-        C.add(bt, o, h, l, c, float(bar["tick_volume"]), d=sig[0] if sig else 0, flip=flip, trend=eng.trend if sig else None)
+        pbv = None
+        try:                                           # the pullback chart as the member sees it (owl_chart_btc.json "pb")
+            _pb = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8")).get("pb") or {}
+            _pc = _pb.get("candles") or []
+            if len(_pc) >= 2:
+                q = _pc[-2]
+                pbv = [float(q[5]), float(_pc[-1][5]), float(_pb.get("trend") or 0), float(q[1]), float(q[2]), float(q[3]), float(q[4])]
+        except Exception:
+            pbv = None
+        C.add(bt, o, h, l, c, float(bar["tick_volume"]), d=sig[0] if sig else 0, flip=flip, trend=eng.trend if sig else None, pb=pbv)
     mine = [p for p in (mt5.positions_get(symbol=SYMBOL) or []) if p.magic == ROBOT_MAGIC]
     now = time.time()
     tick = mt5.symbol_info_tick(SYMBOL)

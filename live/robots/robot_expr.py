@@ -30,6 +30,11 @@ SERIES = ("open", "high", "low", "close", "volume", "body", "range", "upper_wick
 CLOCK = ("hour", "minute", "weekday", "asia", "london", "newyork")
 DAY = ("pdh", "pdl", "pdc", "day_open", "day_high", "day_low")
 EYES = ("trend", "bos_up", "bos_down", "choch_up", "choch_down")
+# 2026-10-26 (owner: "the higher timeframe is the pullback chart"): the PULLBACK CHART's facts per 1-minute candle -
+# pb_dir = direction of its last finished candle (+1 / -1), pb_open..pb_close = that candle, pb_live_dir = the one in
+# progress, pb_trend = its own trend. Unknown (no series for that minute) = a condition with them is false.
+PB = ("pb_dir", "pb_live_dir", "pb_trend", "pb_open", "pb_high", "pb_low", "pb_close")
+EYES = EYES + PB
 NAMES = SERIES + CLOCK + DAY + EYES
 # function -> (min args, max args, which args are constant whole numbers (index), max for those)
 FUNCS = {"ema": (2, 2), "sma": (2, 2), "rsi": (2, 2), "stdev": (2, 2), "highest": (2, 2), "lowest": (2, 2),
@@ -277,7 +282,7 @@ def evaluate(src, B):
         else:                                          # the eyes: only on the 1-minute chart
             if C.tf != "M1":
                 raise FormulaError("%s is read on the 1-minute chart only" % x)
-            v = np.asarray(C.eyes.get(x, np.zeros(len(C.t))), float)
+            v = np.asarray(C.eyes.get(x, np.full(len(C.t), np.nan) if x in PB else np.zeros(len(C.t))), float)
         memo[k] = v
         return v
 
@@ -374,6 +379,33 @@ def truth(src, B):
     """a condition as a boolean array (unknown = false)"""
     v = evaluate(src, B)
     return np.nan_to_num(v, nan=0.0) != 0
+
+
+_PBC = {}
+
+
+def pb_attach(E, times):
+    """the pullback chart's per-minute facts (study/pb_minute_series.npz, built by study/pb_minute_series.py) added to an
+    eyes dict, aligned on the candle times; minutes the series does not cover stay unknown (nan)"""
+    import os
+    p = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "study", "pb_minute_series.npz")
+    try:
+        mt = os.path.getmtime(p)
+        if _PBC.get("mt") != mt:
+            d = np.load(p)
+            _PBC.clear()
+            _PBC.update({k: d[k] for k in d.files}, mt=mt)
+    except Exception:
+        return E
+    T = _PBC["time"]
+    times = np.asarray(times, dtype=np.int64)
+    idx = np.clip(np.searchsorted(T, times), 0, len(T) - 1)
+    ok = T[idx] == times
+    for k in PB:
+        a = np.full(len(times), np.nan)
+        a[ok] = _PBC[k][idx[ok]]
+        E[k] = a
+    return E
 
 
 def eyes_from_opps(opps, n, S=None):

@@ -90,6 +90,8 @@ class Arm:
         self.day_cap_eff = float(c["day_cap"]) * self.ratio
         self.rr, self.NB, self.K = float(c["rr"]), int(c["bullets"]), int(c["k_streak"])
         self.run = self.pk = 0.0; self.streak = 0; self.wins = 0; self.chest = 0.0
+        # 2026-10-26: a money with a lot formula (robots/robot_lot.py) sizes each trade from this run's own history
+        self.ladh = H._RLOT.History(self.bal) if c.get("lot_rule") else None
         self.day_key = None; self.day_profit = 0.0; self.day_n = 0
         self.used_hi = self.used_lo = None; self.last_flip_t = None; self.cont_left = 0; self.dead = False
         self.pos = None; self.pend = None; self.order = None      # order = dict(due_ms, kind: main|bullet, ...)
@@ -138,6 +140,8 @@ class Arm:
         # signal quote: the eligibility tick (frozen geometry for the candidate; the immediate arms re-derive at the fill)
         e0 = ASK[k] if d == 1 else BID[k]
         lot = self.LOT
+        if self.ladh is not None:
+            lot = H._RLOT.lot(c["lot_rule"], self.ladh.names(self.bal + self.run))
         if self.mode == "half" and debt_now > 0.5:
             lot = max(0.01, math.floor(lot * 0.5 / 0.01 + 1e-9) * 0.01)
         dist0 = abs(e0 - slp)
@@ -284,6 +288,8 @@ class Arm:
         self.run -= H.drag_cost(c, lot)
         pnl = self.run - before; self.day_profit += pnl; self.pnls.append(round(pnl, 2))
         self.streak = 0 if win else self.streak + 1; self.wins += 1 if win else 0
+        if self.ladh is not None:
+            self.ladh.add(pnl)
         self.pk = max(self.pk, self.run)
         rec = {"t": p["t"], "tc": t_ms, "d": d, "e": round(p["e"], 2), "e0": round(p["e0"], 2), "sl": round(p["sl"], 2), "tp": round(p["tp"], 2), "lot": lot, "win": win,
                "pnl": round(pnl, 2), "pnl_main": round(pts * lot - H.drag_cost(c, lot), 2), "pnl_add": round(bmoney - (H.drag_cost(c, BLOT * nb) if nb else 0.0), 2),

@@ -49,7 +49,7 @@ class DslArm(RobotArm):
     def _prepare(self, opps, S):
         """every formula of this robot computed once over the bar array"""
         R = E.R
-        B = X.Bars.from_rates(R, X.eyes_from_opps(opps or [], len(R), S))
+        B = X.Bars.from_rates(R, X.pb_attach(X.eyes_from_opps(opps or [], len(R), S), R["time"]))
         T = lambda f: X.truth(f, B) if f else None
         V = lambda f: X.evaluate(f, B) if f else None
         self._fx = {"filters": {j: (T(f.get("buy")), T(f.get("sell"))) for j, f in enumerate(self.dsl.get("filters") or []) if f.get("kind") == "formula"}}

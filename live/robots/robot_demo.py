@@ -124,7 +124,7 @@ def _bars(R, eyes=None, upto=None):
         idx = np.flatnonzero(eyes["d"])
         pos = np.searchsorted(idx, np.arange(n), side="right") - 1
         E["trend"] = np.where(pos >= 0, eyes["d"][idx[np.maximum(pos, 0)]] if len(idx) else 0, 0).astype(float)
-    return X.Bars.from_rates(R, E)
+    return X.Bars.from_rates(R, X.pb_attach(E if E is not None else {}, R["time"]))
 
 
 def _rows(R, k, i0, i1, tf="M1"):

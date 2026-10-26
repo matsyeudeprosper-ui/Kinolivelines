@@ -274,6 +274,10 @@ FORMULA PIECES (for ANYTHING the fixed language cannot say - this is how you cre
 FORMULA = an expression over the candles (1 minute by default):
   names: open high low close volume body range upper_wick lower_wick mid hour minute weekday asia london newyork
          pdh pdl pdc day_open day_high day_low trend bos_up bos_down choch_up choch_down
+         THE PULLBACK CHART (the app's "Filtre : reculs" view - the top chart of the member's split screen; when a member
+         says "the higher chart / la bougie du haut / the pullback chart", it is THIS one, not a timeframe):
+         pb_dir (+1 / -1 = its last finished candle up / down)  pb_live_dir (the one in progress)  pb_trend (its trend)
+         pb_open pb_high pb_low pb_close (its last finished candle). e.g. buy: "pb_dir == -1 and close > open"
   functions: ema sma rsi stdev highest lowest (series, n)  atr(n)  prev(series, k)  change(series, k)
          cross_up cross_down (a, b)  rising falling (series, n)  bb_up bb_low (series, n, k)
          macd(series, fast, slow)  macd_signal(series, fast, slow, signal)  vwap()  abs min max

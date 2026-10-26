@@ -93,7 +93,7 @@ def robot_opps(parts, pieces, opps, S, bars):
     import robot_expr as X
     from datetime import datetime, timezone
     R = E.R; n = len(R)
-    B = X.Bars.from_rates(R, X.eyes_from_opps(opps, n, S))
+    B = X.Bars.from_rates(R, X.pb_attach(X.eyes_from_opps(opps, n, S), R["time"]))
     times = [int(x) for x in R["time"]]
     lo = min(1440, n - 1)                           # the harness's warm-up (a day of bars)
     rt = sorted(opps, key=lambda o: o["t"]); rts = [o["t"] for o in rt]
