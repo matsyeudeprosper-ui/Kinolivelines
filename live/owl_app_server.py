@@ -15843,8 +15843,8 @@ def _deed_do(cid, uid, todo):
                     if _r.get("ok"):
                         _en = c.get("lang") == "en"
                         _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=(
-                            "Before the test: the last 5 moments where your robot would have traded are below - ✅ or ❌ under each one, then it runs."
-                            if _en else "Avant le test : les 5 derniers moments où ton robot aurait tradé sont juste en dessous - ✅ ou ❌ sous chacun, puis il part.")))
+                            "Before the test: one week of your robot is just below - say whether it trades at the right moments, then it runs."
+                            if _en else "Avant le test : une semaine de ton robot est juste en dessous - dis s'il trade aux bons moments, puis il part.")))
             elif k == "build":
                 H["build"](cid, uid)
             elif k == "ghost":
@@ -17444,8 +17444,8 @@ def _kino_act(cid, user, act, en=False):
                     # 2026-10-22: Kino wanted to test - the member checks the moments first (they launch it from there)
                     if tr.get("state") in ("none",):
                         ck_ = chat_fires(user, {"id": cid})
-                        line = (("Before the test: here are the last 5 moments where your robot would have traded - tell me ✅ or ❌ for each, then we test." if en else
-                                 "Avant le test : voici les 5 derniers moments où ton robot aurait tradé - dis-moi ✅ ou ❌ pour chacun, puis on teste.")
+                        line = (("Before the test: here is one week of your robot - tell me whether it trades at the right moments, then we test." if en else
+                                 "Avant le test : voici une semaine de ton robot - dis-moi s'il trade aux bons moments, puis on teste.")
                                 if ck_.get("ok") else ("Your robot never triggers on the last 42 days - let's look at the entry together." if en else
                                                        "Ton robot ne se déclenche jamais sur les 42 derniers jours - regardons l'entrée ensemble.")
                                 if ck_.get("err") == "nofire" else None)
@@ -17679,6 +17679,22 @@ def _one_facts(user, c):
         pass
     if c.get("robot"):
         L.append("Le robot de cette conversation : %s." % ((c.get("robot") or {}).get("name") or "sans nom"))
+        try:
+            _rb, _PP2 = c.get("robot") or {}, {x["id"]: x for x in robot_reg().get("pieces") or []}
+
+            def _pl(x):
+                if not isinstance(x, dict):
+                    return ""
+                if x.get("use"):
+                    _q = _PP2.get(x["use"]) or {}
+                    return "%s (%s)" % (_q.get("name_fr") or x["use"], _q.get("plain_fr") or "")
+                return "%s (%s)" % (x.get("name") or "étape à lui", x.get("plain_fr") or x.get("plain") or "")
+            _st = ["%s : %s" % (lb, _pl(_rb.get(k))) for k, lb in (("entry", "entrée"), ("stop", "stop"), ("exit", "sortie")) if _rb.get(k)]
+            _st += ["filtre : " + _pl(f) for f in (_rb.get("filters") or [])]
+            if _st:
+                L.append("Ce robot, tel qu'il est maintenant (version %s) : %s." % (c.get("rev") or 1, " | ".join(_st)))
+        except Exception:
+            pass
         try:                                           # 2026-10-26 01:06 (watch): "je lance le test" - the app first shows 5 moments to check
             _ck = _check_state(c, user)
             if _ck != "ok":
@@ -18513,11 +18529,13 @@ def _chat_build(cid, user):
                 if txt.strip() and _tg_live(user.get("id")) and any(mm.get("via") == "telegram" for mm in (c.get("msgs") or [])[-4:]):
                     threading.Thread(target=tg_send, args=(user.get("id"), txt.strip()), daemon=True).start()
                 if c.get("brain") == "one" and (txt.strip() or ans.get("made") or ans.get("robot")):
+                    _hasmade = bool(ans.get("made"))
                     # 2026-10-26 01:01 (watch, green chat): the builder spoke in its own voice ("Voilà, il est monté...") and its text was
                     # merged into Kino's answer to "on a pas déjà fait un truc comme ça qui a failed ?". In a one-mind chat the builder
                     # only shows its result card; Kino hears what it did and says it himself, if he has not already.
-                    _chat_msg(c, "ai", text="", one=True, made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")),
-                              probs=probs[:4] if probs else None, follow=True, link=ans.get("link"), chips=[])
+                    if _hasmade:                       # 2026-10-26 01:19 (watch): an empty card bubble when nothing was made
+                        _chat_msg(c, "ai", text="", one=True, made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")),
+                                  probs=probs[:4] if probs else None, follow=True, link=ans.get("link"), chips=[])
                     _bd = "; ".join("%s: %s" % (x.get("name"), x.get("plain")) for x in (ans.get("made") or []) if isinstance(x, dict))
                     threading.Timer(1.0, lambda: (_CHAT_Q.__setitem__(cid, _CHAT_Q.get(cid, 0) + 1), _chat_quick(cid, user, (
                         "BUILD DONE - the builder finished the change you asked for. What it did: %s. Its own note: %s%s. Tell them in your own "
@@ -33672,6 +33690,16 @@ if __name__ == "__main__":
     _hook_steps()
     threading.Thread(target=_inner_engine_loop, daemon=True).start()  # 2026-10-20: feelings, thoughts, daydreams   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
     threading.Thread(target=_robot_pending_watch, daemon=True).start()
+
+    def _one_warm():                     # 2026-10-26: the first green-chat reply after a restart met a cold process (15-17 s)
+        try:
+            time.sleep(5)
+            _rc()
+            import kino_one as _KOw
+            _rc().W.pin(_KOw.system("fr"), "sonnet")
+        except Exception:
+            pass
+    threading.Thread(target=_one_warm, daemon=True).start()
     def _tts_warm():                     # 2026-10-20: the first OpenAI call after a restart hung ~15 s; open the road early
         try:
             import urllib.request as _uw

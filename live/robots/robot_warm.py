@@ -124,10 +124,27 @@ def _live_total_locked():
     return sum(1 for L in _POOL.values() for p, _ in L if p.poll() is None)
 
 
+PINNED = set()        # 2026-10-26 (green chat watch: first word 15-17 s right after a builder run): the one mind's key is never
+                      # the one let go - the builder and the old pipeline's keys go first
+
+
+def pin(system, model="sonnet"):
+    """keep this prompt + model warm whatever else runs (the one mind - robots/kino_one.py)"""
+    sp, h = _sysfile(system)
+    key = h + model
+    with _LOCK:
+        _KEYS[key] = (sp, model)
+        new = key not in PINNED
+        PINNED.add(key)
+    if new:
+        threading.Thread(target=_fill, args=(key,), daemon=True).start()
+    return key
+
+
 def _cap_locked(keep):
     """with _LOCK held: let the least recently used OTHER keys go until fewer than MAX_TOTAL processes are alive"""
     while _live_total_locked() >= MAX_TOTAL:
-        others = sorted((k for k, L in _POOL.items() if k != keep and any(p.poll() is None for p, _ in L)),
+        others = sorted((k for k, L in _POOL.items() if k != keep and k not in PINNED and any(p.poll() is None for p, _ in L)),
                         key=lambda k: _LAST.get(k, 0))
         if not others:
             break
@@ -169,6 +186,8 @@ def reap(idle=None):
     now = time.time()
     with _LOCK:
         for key, L in _POOL.items():
+            if key in PINNED and now - _LAST.get(key, 0) < 3 * 3600:
+                continue                      # the one mind stays warm through a quiet evening
             if idle is None:
                 if now - _SEEN["t"] < IDLE and now - _LAST.get(key, 0) < IDLE:
                     continue
@@ -189,7 +208,7 @@ def _reaper():
         try:                                  # 2026-10-24 (speed): keep the keys in use warm - a ready process older than MAX_AGE was
             now = time.time()                 # dropped at the next call and nothing replaced it, so the judge met a cold boot after
             with _LOCK:                       # every quiet spell. A refill for each key used in the last 30 min, two boots a minute at most.
-                keys = [k for k in _KEYS if now - _LAST.get(k, 0) < 1800
+                keys = [k for k in _KEYS if (now - _LAST.get(k, 0) < 1800 or (k in PINNED and now - _LAST.get(k, 0) < 3 * 3600))
                         and sum(1 for p, t in _POOL.get(k, []) if p.poll() is None and now - t < MAX_AGE) < WARM]
             for k in keys[:2]:
                 _fill(k)

@@ -203,6 +203,10 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
                 on_text(parse(buf)[0])
             except Exception:
                 pass
+    try:
+        W.pin(sysp, "sonnet")                 # his process stays warm whatever else the app runs
+    except Exception:
+        pass
     raw = W.ask_text(sysp, user, model="sonnet", timeout=90, log=log, on_text=_cb, warm=True)
     if raw is None:
         _log(cid, "FAIL", "no answer")
