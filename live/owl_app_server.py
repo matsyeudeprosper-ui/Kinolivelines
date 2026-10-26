@@ -18386,7 +18386,13 @@ def _auto_watch_loop():
                 continue
             lc = cs[-1]
             for uid, cid in list(m.items()):
-                try:
+                try:                                   # 2026-10-26 (speed): the chat is re-read only when its file changed
+                    _mt = os.path.getmtime(_chat_path(cid))
+                    if last.get("mt:" + cid, (None,))[0] != _mt:
+                        _c0 = json.load(open(_chat_path(cid), encoding="utf-8"))
+                        last["mt:" + cid] = (_mt, _c0.get("auto_trade") or {})
+                    if not (last["mt:" + cid][1] or {}).get("on"):
+                        continue
                     c = json.load(open(_chat_path(cid), encoding="utf-8"))
                 except Exception:
                     continue
