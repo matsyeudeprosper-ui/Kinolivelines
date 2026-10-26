@@ -38,9 +38,32 @@ class DslArm(RobotArm):
                        "dsl_orders_stopped": 0, "dsl_orders_now": 0, "dsl_order_bad": 0, "dsl_partials": 0,
                        "dsl_partial_too_small": 0, "dsl_trail_trades": 0})
         self._fx = None; self._xi = 0
+        self._lv = None
+        if (self.dsl.get("exit") or {}).get("levels"):             # 2026-10-26: target on the next structure level
+            try:
+                _d = np.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "pb_minute_series.npz"))
+                if "levels" in _d.files:
+                    self._lv = (_d["time"], _d["levels"])
+            except Exception:
+                self._lv = None
         self.lmt = None                          # 2026-10-22: a waiting limit / stop order of the entry piece
         if self._uses_formulas():
             self._prepare(opps, S)
+
+    def size_at_fill(self, setup, fill_px, frozen):
+        pos = super().size_at_fill(setup, fill_px, frozen)
+        lv = (self.dsl.get("exit") or {}).get("levels")
+        if pos is not None and lv:
+            row = []
+            if self._lv is not None:
+                T, LV = self._lv
+                k = int(np.searchsorted(T, int(setup["t"])))
+                if k < len(T) and int(T[k]) == int(setup["t"]):
+                    row = list(LV[k])
+            sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "live", "robots"))
+            import robot_live as _RLv
+            pos["tp"] = float(_RLv.level_target(pos["d"], pos["e"], pos["dist"], row, lv["min_r"]))
+        return pos
 
     def _uses_formulas(self):
         d = self.dsl

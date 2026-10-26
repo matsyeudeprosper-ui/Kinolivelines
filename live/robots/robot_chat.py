@@ -261,6 +261,9 @@ FIXED PIECE LANGUAGE (simple pieces, numbers inside the ranges):
            "close_buy": FORMULA | null, "close_sell": FORMULA | null}   (target in R = times the risk)
           + "partial": {"at": 0.3..5, "pct": 10..90}   close pct % once the trade gains `at` R, the rest runs
           + "trail": {"start": 0.3..5, "dist": 0.2..3}   from `start` R the stop follows the price `dist` R behind
+          + "levels": {"min_r": 0.3..5}   TARGET ON THE NEXT STRUCTURE LEVEL: the nearest CHoCH / BOS / last-BOS / next-BOS
+            level of the 1-minute AND pullback charts at least min_r x the risk away; none -> min_r x the risk (e.g. a member's
+            "my TP is the next level at >= 1R, else 1R" = "levels": {"min_r": 1}). Runs in the test AND on a member's desk.
   entry   + "order": {"type": "limit" | "stop", "buy": PRICE | null, "sell": PRICE | null, "expire_min": 5..1440}
           on any entry: instead of buying at the close, an order waits at that price (limit = better price, e.g. a buy
           back in a zone "lowest(low, 60) + 0.2 * atr(14)"; stop = a breakout further on), cancelled after expire_min

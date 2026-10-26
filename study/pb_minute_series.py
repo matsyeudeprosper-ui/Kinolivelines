@@ -9,6 +9,10 @@ Per minute it stores:
     pb_open pb_high pb_low pb_close   that candle
     pb_live_dir             direction of the pullback candle in progress (chain[-1])
     pb_trend                the pullback chart's own trend (+1 / -1 / 0)
+    levels (n x 30)         2026-10-26 (owner's target rule: "the next level - CHoCH, BOS, last BOS - at >= 1R"): every
+                            structure level drawn that minute on both charts - next BOS, protected point, turn-around BOS
+                            and the last 12 breaks (BOS / CHoCH prices) of the 1-minute chart, the same of the pullback chart
+                            (nan padded)
 Speed: botsim's exact sliding build (slidebuild.Slider) and the exact fastidx engine (both proved identical).
 Output: study/pb_minute_series.npz (+ .json fingerprint). python study/pb_minute_series.py
 """
@@ -47,6 +51,7 @@ def main():
     assert int(W["time"][-1]) < int(R["time"][0])
     RW = np.concatenate([W, R]); off = len(W); n = len(R)
     cols = {k: np.full(n, np.nan) for k in ("pb_dir", "pb_open", "pb_high", "pb_low", "pb_close", "pb_live_dir", "pb_trend")}
+    LV = np.full((n, 30), np.nan)
     Sl = SB.Slider(RW)
     S = set()
     t0 = time.time()
@@ -56,7 +61,7 @@ def main():
         if len(kept) < 3:
             continue
         bk = []
-        dots, marks, trend, *_ = F.engine(kept, brk_out=bk)
+        dots, marks, trend, _ch, nxt, inv, _nt, _it, _dr, flp, *_ = F.engine(kept, brk_out=bk)
         if trend:
             dots = [d for d in dots if d[2] == trend]
         S |= {t for t in ({d[0] for d in dots} | {m[0] for m in marks} | {b[0] for b in bk}) if t < kept[-1][0]}
@@ -72,13 +77,17 @@ def main():
             c = chain[-2]
             cols["pb_dir"][j] = c[5]; cols["pb_open"][j] = c[1]; cols["pb_high"][j] = c[2]; cols["pb_low"][j] = c[3]; cols["pb_close"][j] = c[4]
             cols["pb_live_dir"][j] = chain[-1][5]
+        lv = [nxt, inv, flp] + [m[1] for m in marks[-12:]]
         if len(chain) >= 3:
             r2 = F.engine(chain, brk_out=[])
             cols["pb_trend"][j] = int(r2[2] or 0)
+            lv += [r2[4], r2[5], r2[9]] + [m[1] for m in r2[1][-12:]]
+        lv = [float(x) for x in lv if x][:30]
+        LV[j, :len(lv)] = lv
         if j % 2000 == 0:
             el = time.time() - t0
             print("pb walk %d / %d  (%.0f s, ~%.0f min left)" % (j, n, el, el / max(1, j + 1) * (n - j) / 60), flush=True)
-    np.savez_compressed(OUT, time=R["time"].astype(np.int64), **cols)
+    np.savez_compressed(OUT, time=R["time"].astype(np.int64), levels=LV, **cols)
     json.dump({"fingerprint": fingerprint(), "dataset_sha": E.META["sha256"], "bars": int(n), "made": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                "seconds": round(time.time() - t0)}, open(OUT.replace(".npz", ".json"), "w"))
     print("done %s (%.0f s)" % (OUT, time.time() - t0), flush=True)

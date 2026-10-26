@@ -159,6 +159,11 @@ def validate(kind, rule):
         return False, "partial"
     if tr is not None and (not isinstance(tr, dict) or not _num(tr.get("start"), 0.3, 5) or not _num(tr.get("dist"), 0.2, 3)):
         return False, "trail"
+    lvs = rule.get("levels")          # 2026-10-26: the target on the next structure level (robot_live.level_target)
+    if lvs is not None:
+        if not isinstance(lvs, dict) or not _num(lvs.get("min_r"), 0.3, 5):
+            return False, "levels"
+        t = float(lvs["min_r"]) if t is None else t
     if t is None and not c and tm is None and cb is None and cs is None and tr is None:
         return False, "exit_none"
     if be is not None and t is not None and float(be) >= float(t):
@@ -171,6 +176,8 @@ def validate(kind, rule):
         out["partial"] = {"at": round(float(pa["at"]), 2), "pct": int(round(float(pa["pct"])))}
     if tr is not None:
         out["trail"] = {"start": round(float(tr["start"]), 2), "dist": round(float(tr["dist"]), 2)}
+    if lvs is not None:
+        out["levels"] = {"min_r": round(float(lvs["min_r"]), 2)}
     return True, out
 
 
@@ -250,7 +257,11 @@ def describe(kind, rule):
                     "Stop on the other side of the break candle" + (", %s points further." % _f(b)[0] if b else "."))
         return ("Stop toujours à %s points de l'entrée." % _f(rule["points"])[1], "Stop always %s points from the entry." % _f(rule["points"])[0])
     fr, en = [], []
-    if rule.get("target") is not None:
+    if rule.get("levels"):
+        _m = _f(rule["levels"]["min_r"])
+        fr.append("sur le prochain niveau de structure (CHoCH, BOS, dernier BOS) à au moins %s fois le risque, sinon à %s fois le risque" % (_m[1], _m[1]))
+        en.append("on the next structure level (CHoCH, BOS, last BOS) at least %s times the risk away, else at %s times the risk" % (_m[0], _m[0]))
+    elif rule.get("target") is not None:
         fr.append("à %s fois le risque" % _f(rule["target"])[1]); en.append("at %s times the risk" % _f(rule["target"])[0])
     if rule.get("choch"):
         fr.append("au CHoCH contre le trade"); en.append("on a CHoCH against the trade")

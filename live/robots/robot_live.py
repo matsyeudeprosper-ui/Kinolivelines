@@ -182,11 +182,20 @@ def stop_for(rules, d, slp, close, bar_low, bar_high, C=None):
     return slp
 
 
-def tp_for(rules, d, e, dist, rr):
+def level_target(d, e, dist, levels, min_r):
+    """2026-10-26 (owner's rule): the nearest structure level at least min_r x risk beyond the entry; none -> min_r x risk"""
+    base = e + d * float(min_r) * dist
+    c = [float(x) for x in (levels or []) if x == x and x and d * (float(x) - base) >= 0]
+    return min(c, key=lambda x: d * (x - base)) if c else base
+
+
+def tp_for(rules, d, e, dist, rr, levels=None):
     """the target price; 0 = no target order (MT5: no TP)"""
     ex = (rules or {}).get("exit")
     if not ex:
         return e + d * rr * dist
+    if ex.get("levels"):
+        return level_target(d, e, dist, levels, ex["levels"]["min_r"])
     if ex.get("target") is None:
         return 0.0
     return e + d * float(ex["target"]) * dist

@@ -934,7 +934,13 @@ def robot_tick(bar, sig, prev_trend, eng):
     if not (sl == sl) or d * (px - sl) <= B.S_MIN_DIST:
         say(f"ROBOT signal refuse: stop {sl} trop proche ou absent")
         return
-    tp = RL.tp_for(rules, d, px, abs(px - sl), float(cfg.get("rr") or B.RR))
+    lvl = []
+    try:                                               # 2026-10-26: the structure levels of both charts, as drawn now
+        for q in (cj, cj.get("pb") or {}):
+            lvl += [q.get("next_bos"), q.get("invalid"), q.get("flip_bos")] + [m[1] for m in (q.get("marks") or [])[-12:]]
+    except Exception:
+        pass
+    tp = RL.tp_for(rules, d, px, abs(px - sl), float(cfg.get("rr") or B.RR), levels=[x for x in lvl if x])
     lot = _norm_lot(cfg["lot"])
     if cfg.get("lot_rule"):                        # the robot's sizing rule over ITS OWN closed trades since it started here
         try:
