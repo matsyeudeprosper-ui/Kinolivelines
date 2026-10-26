@@ -15219,6 +15219,9 @@ def _chat_member(user, c):
         _cs = _chart_seen_facts(uid)
         if _cs:
             out += "\n\n" + _cs
+        _pf = _page_seen_facts(uid)
+        if _pf:
+            out += "\n\n" + _pf
     except Exception:
         pass
     return out
@@ -17846,6 +17849,9 @@ def _one_memory(user, c):
         _cs = _chart_seen_facts(uid)
         if _cs:
             L.append(_cs)
+        _pf = _page_seen_facts(uid)                    # 2026-10-26: where he is in the app, what is on his screen
+        if _pf:
+            L.append(_pf)
         if manual_ok(user):                            # and his hand trades, with tickets, so #ordre can name them
             _df = _desk_facts(uid)
             if _df:
@@ -17900,6 +17906,64 @@ def chart_seen(user, body):
         return {"ok": False}
     _CHART_SEEN[user.get("id")] = {"t": time.time(), "v": v, "panel": bool(body.get("panel"))}
     return {"ok": True}
+
+
+_KPANEL = {"mt": None, "html": ""}
+
+
+def _kino_panel_html():
+    """the panel block injected into member pages (read from disk, live on save)"""
+    pth = os.path.join(DIR, "kino_panel_inject.html")
+    try:
+        mt = os.path.getmtime(pth)
+        if _KPANEL["mt"] != mt:
+            _KPANEL.update(mt=mt, html=io.open(pth, encoding="utf-8").read())
+    except Exception:
+        pass
+    return _KPANEL["html"]
+
+
+_PAGE_SEEN = {}         # uid -> {t, v, panel}: the app page the member is on, what is on his screen, his last taps (2026-10-26)
+
+
+def page_seen(user, body):
+    """the injected panel reports where the member is (page, screen text, scroll, last taps) every few seconds"""
+    try:
+        v = body.get("v") or {}
+        if not isinstance(v, dict) or len(json.dumps(v)) > 6000:
+            return {"ok": False, "err": "big"}
+    except Exception:
+        return {"ok": False}
+    _PAGE_SEEN[user.get("id")] = {"t": time.time(), "v": v, "panel": bool(body.get("panel"))}
+    return {"ok": True}
+
+
+_PAGE_NAMES = {"/": "l'accueil", "": "l'accueil", "/chart": "le graphique", "/robots": "les robots", "/wealth": "le patrimoine",
+               "/rentabilite": "la rentabilité", "/tests": "les tests", "/strategies": "les coulisses", "/place": "la place des robots",
+               "/kino": "la page de Kino", "/decouvrir-kino": "la découverte de Kino"}
+
+
+def _page_seen_facts(uid):
+    """2026-10-26 (owner: "Kino needs to know where the user is without being told, track his activities and viewport, to
+    help intuitively - never as support, always friendly")"""
+    x = _PAGE_SEEN.get(uid)
+    cs = _CHART_SEEN.get(uid) or {}
+    if cs and (not x or float(cs.get("t") or 0) > float(x.get("t") or 0)) and time.time() - float(cs.get("t") or 0) < 180:
+        where = "OÙ IL EST DANS L'APPLI : sur le graphique (ce qu'il voit est plus bas)."
+    elif x and time.time() - x["t"] < 180:
+        v = x.get("v") or {}
+        pth = str(v.get("path") or "/")[:60]
+        nm = _PAGE_NAMES.get(pth.rstrip("/") if pth != "/" else "/", "la page « %s »" % (str(v.get("title") or pth)[:60]))
+        acts = [a for a in (v.get("acts") or []) if isinstance(a, list) and len(a) == 2 and time.time() - float(a[0]) < 900][-6:]
+        where = ("OÙ IL EST DANS L'APPLI (vu il y a %d s%s) : %s%s, défilé à %s %% ; à l'écran : %s%s" % (
+            time.time() - x["t"], ", le panneau Kino ouvert" if x.get("panel") else "", nm,
+            (" - " + str(v.get("head"))[:80]) if v.get("head") else "", v.get("scroll"), str(v.get("view") or "-")[:1200],
+            ("\nCe qu'il vient de toucher : " + " ; ".join("%s « %s »" % (time.strftime("%H:%M", time.gmtime(float(a[0]))), str(a[1])[:48]) for a in acts)) if acts else ""))
+    else:
+        return ""
+    return where + ("\nTu le sais sans qu'il te le dise, comme un ami assis à côté de lui : ça t'aide à comprendre de quoi il parle et à "
+                    "l'aider au bon moment. Tu ne commentes pas ce qu'il fait (jamais « je vois que tu as cliqué... »), tu ne fais "
+                    "jamais le support : tu en parles seulement si c'est naturel et utile.")
 
 
 def _chart_levels_facts():
@@ -31445,11 +31509,11 @@ class H(BaseHTTPRequestHandler):
                     _uk = user_by_token(_pp[0])
                     if _uk and (is_admin(_uk) or has(_uk.get("id"), "strategy")):
                         _b = body.decode("utf-8") if isinstance(body, bytes) else body
-                        if "</body>" in _b and "id=\"kfab\"" not in _b:
-                            _fab = ("<a id=\"kfab\" href=\"/%s/atelier?ask=%s\" aria-label=\"Kino\" style=\"position:fixed;right:16px;bottom:92px;z-index:20;"
-                                    "width:52px;height:52px;border-radius:50%%;background:linear-gradient(135deg,#6d5cf6,#3b82f6);display:flex;align-items:center;"
-                                    "justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:26px;text-decoration:none\">🦉</a>") % (_pp[0], _pg)
-                            body = _b.replace("</body>", _fab + "</body>", 1)
+                        # 2026-10-26 (owner: "the Kino panel on all pages, Kino reachable from anywhere and knowing where the user
+                        # is"): the sliding panel + the page awareness (kino_panel_inject.html) replace the floating button. The
+                        # chart has its own panel (#kptab); the chat page is the chat itself.
+                        if "</body>" in _b and "id=\"kpgtab\"" not in _b and "id=\"kptab\"" not in _b:
+                            body = _b.replace("</body>", _kino_panel_html().replace("__TOK__", _pp[0]) + "</body>", 1)
         except Exception:
             pass
         if isinstance(body, str):
@@ -31546,7 +31610,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto",
+                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
@@ -31569,7 +31633,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
-                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "chat_ghost": chat_ghost,
+                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
