@@ -17830,7 +17830,9 @@ def _one_memory(user, c):
         pass
     try:                                               # his own day: journal, live thoughts, feelings, research questions
         _lj = _jload(os.path.join(DIR, "robots", "kino_life.json"), {}) or {}
-        J = [x for x in _lj.get("journal") or [] if time.time() - float(x.get("t") or 0) < 30 * 3600][-6:]
+        # 2026-10-26 (owner: "no cross information sharing - each friend's secrets stay his"): his journal entries made with
+        # ANOTHER member (their strategy, their trades) are not this member's - only his own general entries and this member's
+        J = [x for x in _lj.get("journal") or [] if time.time() - float(x.get("t") or 0) < 30 * 3600 and x.get("uid") in (None, uid)][-6:]
         if J:
             L.append("Ta journée à toi (ton journal) : " + " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(float(x["t"]))), str(x.get("text"))[:220]) for x in J))
         import kino_inner as _KIo
