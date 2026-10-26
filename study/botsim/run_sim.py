@@ -192,6 +192,18 @@ def main():
     real_stdout = sys.stdout
     sys.stdout = out
 
+    # 2026-10-26 (speed, profile: json.dump ~25% of the steady time): json.dump() always takes the pure-Python encoder, json.dumps()
+    # the C one - same text, byte for byte. The sim writes the same files, faster. Live code is untouched.
+    import json as _js
+    _jdump0 = _js.dump
+
+    def _jdump_fast(obj, fp, **kw):
+        if kw.get("indent") is None and not kw.get("cls"):
+            fp.write(_js.dumps(obj, **kw))
+        else:
+            _jdump0(obj, fp, **kw)
+    if not os.environ.get("BOTSIM_NOFASTJSON"):
+        _js.dump = _jdump_fast
     import owl_chart_feed as FEED
     # 2026-10-26 (speed, profile: build() = ~70% of the time, called ~75 times a simulated minute on the same candles):
     # build() is a pure function of its candles, so the same candles give the same answer - a memo keyed on the exact bytes
