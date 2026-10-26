@@ -1167,7 +1167,7 @@ setInterval(()=>{if(document.visibilityState!=='visible')return;APIC.t=0;documen
 async function cardFill(el){const k=el.dataset.kind,a=JSON.parse(el.dataset.args||'{}'),b=el.querySelector('.kcb');if(!b)return;
  if(k==='order'){orderFill(b,a);return;}
  if(k==='autotrade'){const on=!!(C&&C.auto_trade&&C.auto_trade.on&&Date.now()/1000<(+C.auto_trade.until||0));
-  b.innerHTML='<p class="sub" style="margin:0 0 8px">'+(on?T('Ses ordres partent sans carte jusqu’à ','His orders go out with no card until ')+new Date((+a.until||0)*1000).toISOString().slice(11,16)+' UTC'+(a.max_lot?T(' · lot max ',' · max lot ')+esc(String(a.max_lot)):''):T('Terminé.','Over.'))+'</p>'+
+  b.innerHTML='<p class="sub" style="margin:0 0 8px">'+(on?((+a.until||0)-Date.now()/1000>30*86400?T('Ses ordres partent sans carte, jusqu’à ce que tu l’arrêtes','His orders go out with no card, until you stop him'):T('Ses ordres partent sans carte jusqu’à ','His orders go out with no card until ')+new Date((+a.until||0)*1000).toISOString().slice(11,16)+' UTC')+(a.max_lot?T(' · lot max ',' · max lot ')+esc(String(a.max_lot)):''):T('Terminé.','Over.'))+'</p>'+
    (on?'<div class="kact"><button class="pri" onclick="autoStop(this)">⏹ '+T('Arrêter','Stop')+'</button></div>':'');return;}
  if(k==='trade'){await tradeFill(b,a);return;}
  if(k==='ghost'){await ghostFill(b);return;}

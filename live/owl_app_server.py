@@ -17875,8 +17875,10 @@ def _one_memory(user, c):
             pass
         if _auto_on(c):                                # 2026-10-26 21:25: he said "hit Confirm on the card" while in auto mode
             _ax = c.get("auto_trade") or {}
-            L.append("TU ES EN MODE SEUL jusqu'à %s UTC%s : tes #ordre partent DIRECTEMENT chez le broker, sans carte ni Confirmer." % (
-                time.strftime("%H:%M", time.gmtime(float(_ax.get("until") or 0))), (" (lot max %s)" % _ax["max_lot"]) if _ax.get("max_lot") else ""))
+            _un = float(_ax.get("until") or 0)
+            L.append("TU ES EN MODE SEUL %s%s : tes #ordre partent DIRECTEMENT chez le broker, sans carte ni Confirmer." % (
+                ("jusqu'à ce qu'il dise stop" if _un - time.time() > 30 * 86400 else "jusqu'à %s UTC" % time.strftime("%H:%M", time.gmtime(_un))),
+                (" (lot max %s)" % _ax["max_lot"]) if _ax.get("max_lot") else ""))
     except Exception:
         pass
     return "\n".join(L)
@@ -18318,12 +18320,18 @@ def _auto_set(cid, user, v, en, c, event):
             pass
         return
     kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(lot|heures|hours|h)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0)}
-    hrs = max(0.25, min(12.0, kv.get("heures") or kv.get("hours") or kv.get("h") or 4.0))
-    a = {"on": True, "t": time.time(), "until": time.time() + hrs * 3600, "max_lot": kv.get("lot") or None}
-    till = time.strftime("%H:%M", time.gmtime(a["until"]))
-    line = (("🤖 Kino may now trade on his own, with no card, until %s UTC%s. Say \"stop\" any time." if en else
-             "🤖 Kino peut maintenant trader seul, sans carte, jusqu'à %s UTC%s. Dis « stop » quand tu veux.") %
-            (till, ((", max lot %s" if en else ", lot max %s") % a["max_lot"]) if a["max_lot"] else ""))
+    # 2026-10-26 23:30 (owner: "remove that trading time, I want him to trade any time I ask him to"): no end unless HE gives one
+    _hq = kv.get("heures") or kv.get("hours") or kv.get("h")
+    a = {"on": True, "t": time.time(), "until": time.time() + (max(0.25, float(_hq)) * 3600 if _hq else 10 * 365 * 86400),
+         "max_lot": kv.get("lot") or None}
+    _ml = ((", max lot %s" if en else ", lot max %s") % a["max_lot"]) if a["max_lot"] else ""
+    if _hq:
+        line = (("🤖 Kino may now trade on his own, with no card, until %s UTC%s. Say \"stop\" any time." if en else
+                 "🤖 Kino peut maintenant trader seul, sans carte, jusqu'à %s UTC%s. Dis « stop » quand tu veux.") %
+                (time.strftime("%H:%M", time.gmtime(a["until"])), _ml))
+    else:
+        line = (("🤖 Kino may now trade on his own, with no card%s, until you say \"stop\"." if en else
+                 "🤖 Kino peut maintenant trader seul, sans carte%s, jusqu'à ce que tu dises « stop ».") % _ml)
     _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", a), _chat_msg(cc, "sys", text=line),
                                _chat_msg(cc, "card", kind="autotrade", text="", args={"title": "🤖 " + ("Kino trades alone" if en else "Kino trade seul"),
                                                                                        "until": a["until"], "max_lot": a["max_lot"]})))
