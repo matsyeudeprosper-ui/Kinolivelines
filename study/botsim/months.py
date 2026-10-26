@@ -56,7 +56,13 @@ def main():
     running = {}
     while todo or running:
         while todo and len(running) < PAR:
-            ym = todo.pop(0)
+            # a month whose archive files are not downloaded yet waits; the next ready month goes first
+            ready = [m for m in todo if all(os.path.exists(os.path.join(STUDY, f)) for f in
+                                            (month_args(m)[2][1].split("+") if month_args(m)[2] else []))]
+            if not ready:
+                break
+            ym = ready[0]
+            todo.remove(ym)
             start, end, extra = month_args(ym)
             tag = "month"
             cmd = [sys.executable, os.path.join(HERE, "run_sim.py"), "--acct", "valere", "--start", start, "--end", end, "--tag", tag, "--fresh", "--balance", "200"] + extra
