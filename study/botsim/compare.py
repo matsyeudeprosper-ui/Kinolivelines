@@ -10,7 +10,10 @@ import sys
 
 
 def ts(s):
-    return dt.datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
+    d = dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if d.tzinfo is None:                 # 2026-10-26: a bare time is UTC (the logs are UTC) - read as local it ran the window 5 h long
+        d = d.replace(tzinfo=dt.timezone.utc)
+    return d.timestamp()
 
 
 def trades(path, a, b):
