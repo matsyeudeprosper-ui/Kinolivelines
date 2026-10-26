@@ -385,7 +385,17 @@
    "what_en": "The 10 October request (pause a block of hours while its trades of the last days lose) is marked built, but tonight the setting exists nowhere in the test; the build had hit a locked file. Ask: build it for real, as described on 10 October: blocks 1-8, 8-16, 16-21, 21-1 UTC, 7 to 28 days, at least 5 trades, 0 = off (default, nothing changes).",
    "why_fr": "Ce soir encore, miser moitié moins de 8 h à 16 h est pire sur la première moitié (-27 $) et meilleur sur la seconde (+12 $) : une règle d'heures fixe ne peut pas passer. Un frein qui suit les heures qui perdent en ce moment est la seule façon honnête de tester l'idée « la nuit porte le robot ».",
    "why_en": "Again tonight, half stake from 08:00 to 16:00 is worse on the first half (-$27) and better on the second (+$12): a fixed hour rule cannot pass. A brake that follows the hours losing right now is the only honest way to test the idea that the night carries the robot.",
-   "status": "open"
+   "status": "built",
+   "key": "hour_brake_days",
+   "built_note_fr": "Le test peut maintenant suspendre les entrées dans une tranche d'heures (1-8 h, 8-16 h, 16-21 h, 21-1 h UTC) tant que ses propres trades de cette tranche sur les derniers jours, au moins 5, sont en perte au total. Par défaut c'est éteint : rien ne change tant qu'une idée qui l'utilise n'a pas gagné son duel.",
+   "built_note_en": "The test can now pause entries in a block of hours (1-8, 8-16, 16-21, 21-1 UTC) while its own trades in that block over the last few days, at least 5 of them, add up to a loss. It is off by default: nothing changes until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--hour-brake",
+    "a": 0,
+    "b": 14
+   },
+   "built_date": "2026-10-26",
+   "built_commit": "4261a69"
   },
   {
    "id": "day_loss_size",
@@ -572,6 +582,17 @@
    "what_en": "Two things. 1) A setting h1_int_size (0 to 1.0; default 1.0 = nothing changes): when, at entry, the internal small trend of the one-hour chart already points the trade's way, the stake is multiplied by X; 0 = the trade is not taken. The test must rebuild that trend from one-minute candles, as the robot's higher-timeframe feed does. 2) For the piles, a fact h1_int (1 = same way, 0 = none, -1 = opposite), read from the journal's htf_entry column.",
    "why_fr": "Sur 210 vrais trades, quand cette tendance va déjà dans notre sens : 87 trades, un sur trois gagnés, -73 $ pour 0,01 lot, et les deux moitiés disent pareil (33 % et 33 %). Les autres : 123 trades, 53 % gagnés, +11 $. Seulement 3 des 25 meilleurs gains en faisaient partie. J'attends qu'une demi-mise ou un refus fasse mieux sur les deux moitiés.",
    "why_en": "Over 210 real trades, when that trend already points our way: 87 trades, one in three won, -$73 per 0.01 lot, and both halves agree (33 % and 33 %). The rest: 123 trades, 53 % won, +$11. Only 3 of the 25 best wins were among them. I expect a half stake or a refusal to do better on both halves.",
+   "status": "open"
+  },
+  {
+   "id": "late_wave_size",
+   "date": "2026-10-26",
+   "title_fr": "Reconnaître la fin d'une vague : l'heure va dans notre sens, le quart d'heure non",
+   "title_en": "Spot the end of a wave: the hour points our way, the quarter-hour does not",
+   "what_fr": "Un complément à la demande du 25/10 sur la petite tendance de l'heure. Un réglage late_wave_size (0 à 1,0 ; défaut 1,0 = rien ne change) : quand, à l'entrée, la petite tendance interne du graphique d'une heure va dans le sens du trade ET que celle du graphique de 15 minutes ne va PAS dans ce sens (contraire ou aucune), la mise est multipliée par X ; 0 = le trade n'est pas pris. Les deux tendances sont reconstruites à partir des bougies d'une minute, comme le flux des grandes unités de temps du robot. Pour les piles, deux faits h1_int et m15_int (1 même sens, 0 aucune, -1 contraire) lus dans la colonne htf_entry.",
+   "what_en": "A complement to the 10-25 request on the hour's small trend. A setting late_wave_size (0 to 1.0; default 1.0 = nothing changes): when, at entry, the internal small trend of the one-hour chart points the trade's way AND the 15-minute chart's does NOT (opposite or none), the stake is multiplied by X; 0 = the trade is not taken. Both trends rebuilt from one-minute candles, like the robot's higher-timeframe feed. For the piles, two facts h1_int and m15_int (1 same way, 0 none, -1 opposite) read from the journal's htf_entry column.",
+   "why_fr": "Sur 117 vrais trades comptés une seule fois : quand l'heure va dans notre sens mais pas le quart d'heure, 33 trades, 7 gagnés seulement, -47 $ pour 0,01 lot. Quand l'heure est contre nous et le quart d'heure avec nous : 38 trades, 63 % gagnés, +11 $, les deux moitiés d'accord. On entre à la fin d'une vague. J'attends qu'un refus fasse mieux sur les deux moitiés.",
+   "why_en": "Over 117 real trades counted once: when the hour points our way but the quarter-hour does not, 33 trades, only 7 won, -$47 per 0.01 lot. When the hour is against us and the quarter-hour with us: 38 trades, 63 % won, +$11, both halves agree. We enter at the end of a wave. I expect a refusal to do better on both halves.",
    "status": "open"
   }
  ]
