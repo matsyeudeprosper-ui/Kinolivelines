@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-26T06:30:20Z",
+ "updated": "2026-10-26T07:45:35Z",
  "hypotheses": [
   {
    "id": "ext_with_filter",
@@ -146,7 +146,8 @@
    "evidence": [
     "2026-10-19: real dur 30-60 min 20 tr 45% -38.33 PF 0.43, avg win 3.21 / loss -6.11, halves 44/45 agree; <15 76 tr -3.9, 15-30 26 tr +6.3, 1-3 h 22 tr -4.6, >3 h 9 tr -0.3 (avg win 7.41). Opened pile slow_30_60 and request time_exit.",
     "2026-10-20: pile slow_30_60 now 22 tr 41% -48.75 (h 44/38 agree, h1n 9). Mon 13:30 loss after 54 min on every filtered account added to it.",
-    "2026-10-24: trail_prot 2 (stop follows protected level past entry, owner dial 10-01, not in grammar) vs official: B +40.6 (h +49.1/0), long B +13.8, real +43.3 on 34 tr. Requested trail_in_menu."
+    "2026-10-24: trail_prot 2 (stop follows protected level past entry, owner dial 10-01, not in grammar) vs official: B +40.6 (h +49.1/0), long B +13.8, real +43.3 on 34 tr. Requested trail_in_menu.",
+    "2026-10-26 07:45 veille: FLIP-BOS SELL (entry 06:25 Mon, pace 1.137, gap 509 min after a win, h1 i=0, dist 136) held 35 min, lost -4.21 as predicted. dur 30-60 min now 39 tr 44% -52.15 (h 46/42 agree, 13/26)."
    ]
   },
   {
@@ -163,7 +164,8 @@
     "2026-10-23: --by gap all kinds: <15 min 54 tr 39% -40.61; 15-30 26 tr 62% +10.10; 30-60 42 tr 57% +11.28 (halves 62/52, disagree); 1-3 h 33 tr 39% -53.23; >3 h 39 tr -28.75. Small edge at 15-60 min, the loss at 1-3 h is new weight.",
     "2026-10-24: real gap <15 min 65 tr 34% -68.95 (h 33/34), 15-30 31 tr 61% +12.19, 30-60 49 tr 55% -0.45, 1-3 h 35 tr 37% -65.05. Engine official wait15 C -15.8 again.",
     "2026-10-25 12:00 veille: 06:52 BOS SELL gap 66 min lost -3.97 against the hypothesis; h1 internal was same way. Rested BOS (15-180) split by h1: same 21 tr 33% -21.82, opp 25 tr 68% +21.43: the rest helps only when the hour chart's small trend is not already the trade's way (peu, wait for 30 each).",
-    "2026-10-26 05:05 veille: Sunday 21:25 BOS after 385 min pause (session open) lost -3.75 - the >3 h arm of the inverted U again; 16 min and 10 min follow-ups won small."
+    "2026-10-26 05:05 veille: Sunday 21:25 BOS after 385 min pause (session open) lost -3.75 - the >3 h arm of the inverted U again; 16 min and 10 min follow-ups won small.",
+    "2026-10-26 07:45 veille: FLIP after 509 min pause lost -4.21, but gap >3 h by kind: flips 31 tr 52% +8.21, all kinds 44 tr 48% -38.67 (night 17 tr 41% -15.83, day 27 tr -22.84). The long-pause loss is a BOS thing, not flips."
    ],
    "next": "cont_wait when built; re-read on src=filtre once real_pool_split exists."
   },
@@ -3157,6 +3159,11 @@
    "t": "2026-10-26T06:30:20Z",
    "look": "veille (labo ask day_after_loss): scrutiny --pile day_after_loss (nerv/prev/hour/dur); requests.json loss-related; harness --help for a day-loss dial",
    "saw": "No new trades, no twins, no labo. Pile 86 tr 38% -138.16 (h 37/40). New split by hour: 08-16 h 57 tr 28% -158.29 vs 17-23 h 29 tr 59% +20.13. The daytime after-loss leak is 08-16 h. loss_wait_day marked built in requests.json but absent from harness flags. Answered ask. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-26T07:45:35Z",
+   "look": "veille (1 close 07:00): wake_context, last 5 trades by hand (htf_entry), gap>3h by kind/day-night, dur 30-60, asia pace 1.0-1.3",
+   "saw": "FLIP-BOS SELL -4.21 (06:25-07:00, pace 1.137, gap 509 min after a win, h1 i=0 neutral so h1_internal_late silent). slow_trade predicted it (35 min): dur 30-60 39 tr 44% -52.15 (h 46/42). gap>3h 44 tr 48% -38.67 but flips 31 tr 52% +8.21: pause not the cause for flips. asia pace 1.0-1.3 20 tr 45% +34.37 (h 56/36), was 18 tr +42.55 (peu). Twins empty, labo empty, no ask. No run, no pile, no proposal."
   }
  ],
  "lessons": [
