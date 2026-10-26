@@ -38,15 +38,15 @@ class Slider:
         self.a = self.b = None
         self.idx = None                   # kept row indices of the last window
         self.rows = {}
+        self.oldset = None
 
     def keep(self, a, b):
         H, L, C = self.H, self.L, self.C
         if self.idx is not None and a == self.a + 1 and b == self.b + 1 and self.idx:
             old = self.idx
-            pos = {k: n for n, k in enumerate(old)}
-            fresh, met = _scan(H, L, C, a, self.b, None, set(old))
+            fresh, met = _scan(H, L, C, a, self.b, None, self.oldset if self.oldset is not None else set(old))
             if met is not None:
-                idx = fresh + old[pos[met] + 1:]
+                idx = fresh + old[old.index(met) + 1:]
             else:
                 idx = fresh
             # the new last row, from the state of the last kept row
@@ -56,9 +56,11 @@ class Slider:
         else:
             idx, _ = _scan(H, L, C, a, b)
         self.a, self.b, self.idx = a, b, idx
+        self.oldset = set(idx)
         return idx
 
     def kept(self, a, b):
+        """the rows are SHARED between windows (the feed's engine only reads them - checked 2026-10-26); never mutate them"""
         R, rc = self.base, self.rows
         out = []
         for k in self.keep(a, b):
@@ -66,8 +68,8 @@ class Slider:
             if v is None:                 # each row is made once, exactly as build() makes it
                 r = R[k]
                 o, h, l, c = float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"])
-                v = rc[k] = (int(r["time"]), round(o, 2), round(h, 2), round(l, 2), round(c, 2), 1 if c >= o else -1)
-            out.append(list(v))
+                v = rc[k] = [int(r["time"]), round(o, 2), round(h, 2), round(l, 2), round(c, 2), 1 if c >= o else -1]
+            out.append(v)
         return out
 
 

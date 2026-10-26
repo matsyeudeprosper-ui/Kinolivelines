@@ -235,10 +235,12 @@ def main():
         FEED.build = _build_memo
     # the sticky pullback chain: built causally over the 8000 bars before the start (the live one exists since 10-10)
     json.dump({"times": [], "updated": int(t0) - 8000 * 60}, open(FEED.PB_CHAIN, "w"))
+    _tcu = _real_time.perf_counter()
     try:
         FEED.pb_catch_up()
     except Exception as e:
         print("catch-up failed", e, flush=True)
+    real_stdout.write("catch-up %.1f s\n" % (_real_time.perf_counter() - _tcu)); real_stdout.flush()
 
     def feed_job(now):
         try:
