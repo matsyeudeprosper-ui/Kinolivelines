@@ -701,35 +701,49 @@ def cancel_pending(ticket=None):
     return n
 
 
+def _pick(pos, req):
+    """2026-10-26: Kino's orders name a ticket when several positions are open (free-lot account)"""
+    try:
+        tk = int(req.get("ticket") or 0)
+    except Exception:
+        tk = 0
+    if tk:
+        return next((p for p in pos if p.ticket == tk), None)
+    return pos[0] if pos else None
+
+
 def modify(req):
     """Owner 2026-09-16: move the SL/TP of a position that is already open,
     by dragging the lines on the chart. Nothing else about the position is
     touched - not the lot, not the direction."""
-    pos = [p for p in open_positions() if p.magic == MAGIC]
+    pos = [p for p in open_positions() if p.magic == MAGIC or FREE_LOT]
     if not pos:
         return False, "aucune position a modifier"
-    p = pos[0]
+    p = _pick(pos, req)
+    if p is None:
+        return False, "position introuvable"
     sl, tp = float(req.get("sl", 0)), float(req.get("tp", 0))
-    if sl <= 0 or tp <= 0:
+    # 2026-10-26: on Kino manuel a level may be 0 = none (a position opened without a stop or a target)
+    if sl < 0 or tp < 0 or (not FREE_LOT and (sl <= 0 or tp <= 0)) or (sl <= 0 and tp <= 0):
         return False, "SL et TP requis"
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return False, "pas de cotation"
     d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
     px = tick.bid if d == 1 else tick.ask
-    if d == 1 and not (sl < px < tp):
+    if d == 1 and not ((not sl or sl < px) and (not tp or px < tp)):
         return False, f"achat: il faut SL < {px:.2f} < TP"
-    if d == -1 and not (tp < px < sl):
+    if d == -1 and not ((not tp or tp < px) and (not sl or px < sl)):
         return False, f"vente: il faut TP < {px:.2f} < SL"
     info = mt5.symbol_info(SYMBOL)
     gap = (info.trade_stops_level * info.point) if info else 0.0
-    if min(abs(px - sl), abs(px - tp)) <= max(gap, B.S_MIN_DIST):
+    if min([abs(px - x) for x in (sl, tp) if x] or [1e9]) <= max(gap, B.S_MIN_DIST):
         return False, "SL ou TP trop pres du marche"
     # the 10% rule still applies - but never block a move that REDUCES the
     # risk, or a position already over the cap could not be tightened
-    new_risk = abs(p.price_open - sl) * p.volume
+    new_risk = abs(p.price_open - sl) * p.volume if sl else 0.0
     old_risk = abs(p.price_open - p.sl) * p.volume if p.sl else None
-    if old_risk is None or new_risk > old_risk:
+    if not FREE_LOT and (old_risk is None or new_risk > old_risk):
         bad = risk_ok(abs(p.price_open - sl), p.volume)
         if bad:
             return False, bad
@@ -750,17 +764,25 @@ def close_now(req):
     """Owner 2026-09-16: close the running position on demand, at market.
     The ledger replays every closing deal on the symbol, so the debt and
     the war chest follow on their own."""
-    pos = [p for p in open_positions() if p.magic == MAGIC]
+    pos = [p for p in open_positions() if p.magic == MAGIC or FREE_LOT]
     if not pos:
         return False, "aucune position ouverte"
-    p = pos[0]
+    p = _pick(pos, req)
+    if p is None:
+        return False, "position introuvable"
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return False, "pas de cotation"
     d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+    vol = p.volume                          # 2026-10-26: a part of it when Kino was asked to close only some
+    try:
+        if float(req.get("volume") or 0) > 0:
+            vol = min(p.volume, max(0.01, round(float(req["volume"]), 2)))
+    except Exception:
+        pass
     r = mt5.order_send({
         "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
-        "volume": p.volume, "position": p.ticket,
+        "volume": vol, "position": p.ticket,
         "type": mt5.ORDER_TYPE_SELL if d == 1 else mt5.ORDER_TYPE_BUY,
         "price": tick.bid if d == 1 else tick.ask,
         "deviation": 200, "magic": MAGIC, "comment": COMMENT + "-X",
@@ -768,12 +790,12 @@ def close_now(req):
         "type_filling": mt5.ORDER_FILLING_IOC})
     if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
         return False, f"broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}"
-    say(f"POSITION FERMEE A LA MAIN #{p.ticket} {p.volume} @ {r.price:.2f} "
+    say(f"POSITION FERMEE A LA MAIN #{p.ticket} {vol}/{p.volume} @ {r.price:.2f} "
         f"(P&L flottant ${p.profit:.2f})")
     push("Position fermee", f"{p.volume} lot a {r.price:.0f}, "
                             f"P&L ${p.profit:.2f}")
-    return True, dict(ticket=p.ticket, lot=p.volume, price=r.price,
-                      pl=round(p.profit, 2), closed=True)
+    return True, dict(ticket=p.ticket, lot=vol, price=r.price,
+                      pl=round(p.profit * vol / p.volume, 2), closed=True)
 
 
 def execute(req, led, trend=0):
@@ -800,8 +822,8 @@ def execute(req, led, trend=0):
         return False, "requete invalide"
     if time.time() - float(req.get("ts", 0)) > REQ_MAX_AGE:
         return False, "requete perimee"
-    if open_positions():
-        return False, "une position est deja ouverte"
+    if open_positions() and not (FREE_LOT and req.get("add")):
+        return False, "une position est deja ouverte"   # Kino manuel may ADD one (2026-10-26, owner)
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return False, "pas de cotation"
@@ -1176,7 +1198,7 @@ def main():
                                and _ENG["signal"].get("expires", 0) > time.time() else None),
                     "px": round(float(tick.bid), 2) if tick else None,
                     "spread": round(float(tick.ask - tick.bid), 2) if tick else None,
-                    "open": [{"lot": p.volume, "d": 1 if p.type == 0 else -1,
+                    "open": [{"ticket": p.ticket, "lot": p.volume, "d": 1 if p.type == 0 else -1,
                               "e": p.price_open, "sl": p.sl, "tp": p.tp,
                               "pl": round(p.profit, 2)} for p in pos],
                     "pending": ([{

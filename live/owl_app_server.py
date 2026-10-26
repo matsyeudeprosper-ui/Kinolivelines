@@ -17836,6 +17836,10 @@ def _one_memory(user, c):
         _cs = _chart_seen_facts(uid)
         if _cs:
             L.append(_cs)
+        if manual_ok(user):                            # and his hand trades, with tickets, so #ordre can name them
+            _df = _desk_facts(uid)
+            if _df:
+                L.append(_df)
     except Exception:
         pass
     return "\n".join(L)
@@ -17983,6 +17987,152 @@ def chart_chat(user, body):
     m[uid] = cid
     json.dump(m, open(p, "w", encoding="utf-8"))
     return {"ok": True, "id": cid}
+
+
+def _desk_state(uid):
+    """the manual trade desk's own snapshot (manual_state_<uid>.json, written every few seconds) - None when stale"""
+    st = _jload(os.path.join(DIR, "manual_state_%s.json" % uid), None)
+    if not st or time.time() - float(st.get("updated") or 0) > 120:
+        return None
+    return st
+
+
+def _desk_facts(uid):
+    """2026-10-26 (owner: Kino acts on my trades): what is open on the desk, with tickets, for Kino's #ordre lines"""
+    st = _desk_state(uid)
+    if not st:
+        return ""
+    sd = {1: "ACHAT", -1: "VENTE"}
+    L = ["SES TRADES À LA MAIN (son outil de trading, maintenant) : prix %s, solde %.2f $." % (st.get("px"), float(st.get("balance") or 0))]
+    for o in st.get("open") or []:
+        L.append("Position ouverte ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $." % (
+            o.get("ticket"), sd.get(o.get("d"), "?"), o.get("lot"), round(float(o.get("e") or 0), 2), round(float(o.get("sl") or 0), 2) or "aucun",
+            round(float(o.get("tp") or 0), 2) or "aucun", float(o.get("pl") or 0)))
+    for o in st.get("pending") or []:
+        L.append("Ordre en attente : %s %s lot à %s, SL %s, TP %s." % (o.get("kind"), o.get("lot"), o.get("e"), o.get("sl"), o.get("tp")))
+    if not (st.get("open") or st.get("pending")):
+        L.append("Aucune position ouverte, aucun ordre en attente.")
+    return "\n".join(L)
+
+
+def _order_parse(uid, v):
+    """Kino's '#ordre ...' line -> (req for the desk, plain words) or (None, why)"""
+    s0 = str(v or "").lower().replace("entrée", "entree")
+    kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(sl|tp|lot|entree|entry|ticket)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0)}
+    st = _desk_state(uid) or {}
+    P = st.get("open") or []
+    tk = int(kv.get("ticket") or 0)
+    pos = next((o for o in P if int(o.get("ticket") or 0) == tk), None) if tk else (P[0] if P else None)
+    nm = lambda o: "%s %s lot ouvert à %s" % ("achat" if o.get("d") == 1 else "vente", o.get("lot"), round(float(o.get("e") or 0), 2))
+    f0 = lambda x: ("%.0f" % x) if x >= 1000 else ("%g" % x)
+    if re.search(r"\b(ferme|fermer|close|coupe|couper)\b", s0):
+        if not pos:
+            return None, "aucune position ouverte à fermer"
+        req = {"close": 1, "ticket": pos.get("ticket")}
+        if kv.get("lot"):
+            req["volume"] = kv["lot"]
+        return req, "Fermer %s (%s) au prix du marché" % ("%s lot de la position" % f0(kv["lot"]) if kv.get("lot") else "la position", nm(pos))
+    if re.search(r"\b(annule|annuler|cancel)\b", s0):
+        if not st.get("pending"):
+            return None, "aucun ordre en attente à annuler"
+        return {"cancel": 1}, "Annuler l'ordre en attente"
+    m = re.search(r"\b(achat|acheter|achete|buy|vente|vendre|vends|sell)\b", s0)
+    if m:
+        d = 1 if m.group(1) in ("achat", "acheter", "achete", "buy") else -1
+        if not (kv.get("sl") and kv.get("tp") and kv.get("lot")):
+            return None, "il manque le lot, le stop ou l'objectif"
+        e = kv.get("entree") or kv.get("entry") or 0
+        req = {"d": d, "sl": kv["sl"], "tp": kv["tp"], "entry": e, "lot": kv["lot"], "add": 1}
+        return req, "%s %s lot %s, stop %s, objectif %s%s" % ("Acheter" if d == 1 else "Vendre", f0(kv["lot"]),
+                                                             ("en attente à %s" % f0(e)) if e else "au prix du marché",
+                                                             f0(kv["sl"]), f0(kv["tp"]), " (en plus de la position ouverte)" if P else "")
+    if kv.get("sl") or kv.get("tp"):
+        if not pos:
+            return None, "aucune position ouverte à modifier"
+        sl, tp = kv.get("sl") or float(pos.get("sl") or 0), kv.get("tp") or float(pos.get("tp") or 0)
+        if not (sl or tp):
+            return None, "il faut le stop ou l'objectif"
+        return ({"modify": 1, "sl": sl, "tp": tp, "ticket": pos.get("ticket")},
+                "Mettre le stop à %s et l'objectif à %s (%s)" % (f0(sl) if sl else "aucun", f0(tp) if tp else "aucun", nm(pos)))
+    return None, "ordre pas compris"
+
+
+def _order_card(cid, user, v, en):
+    """Kino asked for an order: a card he confirms - nothing reaches the broker without his tap"""
+    uid = user.get("id")
+    if not manual_ok(user):
+        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("This account has no manual trading tool, so I can't place orders here."
+                                                              if en else "Ce compte n'a pas l'outil de trading à la main : je ne peux pas passer d'ordre ici.")))
+        return
+    req, txt = _order_parse(uid, v)
+    if req is None:
+        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Order not prepared: %s." if en else "Ordre pas préparé : %s.") % txt))
+        return
+    oid = "o%d" % int(time.time() * 1000)
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "card", kind="order", text=("order card: %s - waiting for his Confirm tap" if en else "carte d'ordre : %s - attend qu'il appuie sur Confirmer") % txt, args={"oid": oid, "req": req, "txt": txt, "t": int(time.time()), "status": "wait",
+                                                                       "title": "📝 " + ("Order from Kino" if en else "Ordre préparé par Kino")}))
+
+
+def chat_order(user, body):
+    """2026-10-26 (owner: "ask Kino to adjust my SL/TP, add, close or start a trade"): the member taps Confirmer on Kino's
+    order card -> the desk (owl_manual_trader) validates and sends it; the outcome goes back on the card and in the chat"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    oid = str(body.get("oid") or "")
+    mc = next((x for x in c.get("msgs") or [] if x.get("role") == "card" and x.get("kind") == "order" and (x.get("args") or {}).get("oid") == oid), None)
+    if mc is None:
+        return {"ok": False, "err": "missing"}
+    a = mc.get("args") or {}
+    if a.get("status") != "wait":
+        return {"ok": False, "err": "done"}
+    en = (c.get("lang") or "fr") == "en"
+    uid = user.get("id")
+
+    def setst(stt, res=None, line=None):
+        def put(cc):
+            for x in cc.get("msgs") or []:
+                if x.get("role") == "card" and (x.get("args") or {}).get("oid") == oid:
+                    x["args"]["status"] = stt
+                    if res is not None:
+                        x["args"]["res"] = res
+            if line:
+                _chat_msg(cc, "sys", text=line)
+        _chat_mut(c["id"], put)
+    if not body.get("ok"):
+        setst("no", line=("Order dropped." if en else "Ordre abandonné."))
+        return {"ok": True}
+    if time.time() - float(a.get("t") or 0) > 600:
+        setst("old", line=("Order too old - prices moved. Ask Kino again." if en else "Ordre trop ancien - les prix ont bougé. Redemande à Kino."))
+        return {"ok": False, "err": "old"}
+    if not manual_ok(user):
+        return {"ok": False, "err": "manual"}
+    req = dict(a.get("req") or {}, ts=time.time(), by=uid, kino=1)
+    rp = os.path.join(DIR, "manual_order_result_%s.json" % uid)
+    try:
+        os.remove(rp)
+    except Exception:
+        pass
+    setst("sent")
+    with open(os.path.join(DIR, "manual_order_%s.json" % uid), "w") as f:
+        json.dump(req, f)
+    res = None
+    for _ in range(40):                       # the desk reads its request every second
+        time.sleep(0.5)
+        res = _jload(rp, None)
+        if res:
+            break
+    if not res:
+        setst("sent", line=("Sent to your trading tool - no answer yet, check the chart." if en else
+                            "Envoyé à ton outil de trading - pas encore de réponse, regarde le graphique."))
+        return {"ok": True, "pending": True}
+    ok, info = bool(res.get("ok")), res.get("info")
+    if ok:
+        line = ("Done: " if en else "C'est fait : ") + str(a.get("txt") or "")
+    else:
+        line = ("Refused by your trading tool: %s" if en else "Refusé par ton outil de trading : %s") % str(info)[:160]
+    setst("done" if ok else "refused", res={"ok": ok, "info": info if isinstance(info, (str, int, float)) else json.dumps(info)[:300]}, line=line)
+    return {"ok": True, "done": ok, "info": info}
 
 
 def _one_prefetch(user, cid):
@@ -18238,6 +18388,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
                 _mem_add(uid, [v[:160]])
+            elif k == "ordre":
+                _order_card(cid, user, v, en)
+                _KO._log(cid, "ACT_ORDER", v[:160])
         except Exception as e:
             _KO._log(cid, "ACT_ERROR", "%s %s %s" % (k, v, type(e).__name__))
     if build:
@@ -30965,7 +31118,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat",
+                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
@@ -30988,7 +31141,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
-                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_ghost": chat_ghost,
+                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,

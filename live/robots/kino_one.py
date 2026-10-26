@@ -69,6 +69,13 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
 #construire <ce qu'il faut changer>   change le robot de cette conversation (le constructeur s'en occupe)
 #retiens <une chose à garder sur lui>
 #montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
+Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que tu sais - les prix en chiffres, pas de mots) :
+#ordre sl=<prix> tp=<prix> [ticket=<n>]          déplace le stop et/ou l'objectif d'une position ouverte
+#ordre fermer [ticket=<n>] [lot=<lot>]           ferme une position (en entier, ou seulement ce lot)
+#ordre achat|vente lot=<lot> sl=<prix> tp=<prix> [entree=<prix>]   ouvre un trade (au marché, ou en attente à ce prix) ; ça s'ajoute s'il y en a déjà un
+#ordre annuler                                   annule l'ordre en attente
+Un ordre ne part jamais tout seul : il s'affiche en carte et c'est lui qui appuie sur Confirmer. Dis-le simplement. S'il manque
+une chose (le lot, le stop, l'objectif), demande-la plutôt que de l'inventer. Tu ne passes un ordre que s'il te le demande.
 Si tu dis que tu lances ou que tu changes quelque chose, mets la ligne : c'est elle qui le fait vraiment.
 
 Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), écris d'abord des lignes qui commencent par
@@ -80,7 +87,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -162,6 +169,8 @@ def parse(raw):
             acts.append(("montre", v))
         elif k in ("cancel",):
             acts.append(("annule", v))
+        elif k in ("order",):
+            acts.append(("ordre", v))
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)

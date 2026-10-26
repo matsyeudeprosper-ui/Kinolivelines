@@ -1165,6 +1165,7 @@ async function cardsFill(force){for(const el of document.querySelectorAll('.kc')
  try{await cardFill(el);}catch(e){const b=el.querySelector('.kcb');if(b)b.innerHTML='<p class="sub">'+T('Indisponible pour le moment.','Unavailable right now.')+'</p>';}}}
 setInterval(()=>{if(document.visibilityState!=='visible')return;APIC.t=0;document.querySelectorAll('.kc[data-kind=account],.kc[data-kind=live],.kc[data-kind=trade],.kc[data-kind=ghost]').forEach(el=>cardFill(el).catch(()=>{}));},20000);
 async function cardFill(el){const k=el.dataset.kind,a=JSON.parse(el.dataset.args||'{}'),b=el.querySelector('.kcb');if(!b)return;
+ if(k==='order'){orderFill(b,a);return;}
  if(k==='trade'){await tradeFill(b,a);return;}
  if(k==='ghost'){await ghostFill(b);return;}
  if(k==='agenda'){await agendaFill(b);return;}
@@ -1207,6 +1208,15 @@ async function cardFill(el){const k=el.dataset.kind,a=JSON.parse(el.dataset.args
 function perfP(btn,p){const el=btn.closest('.kc');const a=JSON.parse(el.dataset.args||'{}');a.p=p;el.dataset.args=JSON.stringify(a);cardFill(el);}
 function addCard(k,a){shOpen(cardShell(k,a||{},'s'+Date.now()));[60,500,4500].forEach(ms=>setTimeout(()=>cardsFill(),ms));}
 function confirmCard(action,btn){addCard('confirm',{action:action});}
+/* 2026-10-26 (owner: "ask Kino to act on my trades"): Kino's order, sent only when the member taps Confirmer */
+function orderFill(b,a){const st=a.status||'wait',old=Date.now()/1000-(+a.t||0)>600;
+ const S={sent:T('⏳ Envoyé, en cours…','⏳ Sent, in progress…'),done:T('✅ Fait','✅ Done'),refused:T('⛔ Refusé','⛔ Refused'),no:T('Abandonné','Dropped'),old:T('Trop ancien','Too old')};
+ b.innerHTML='<p style="margin:0 0 8px;font-weight:700">'+esc(a.txt||'')+'</p>'+
+  (st==='wait'&&!old?'<p class="sub" style="margin:0 0 8px">'+T('Rien ne part tant que tu n’as pas confirmé.','Nothing is sent until you confirm.')+'</p><div class="kact"><button class="pri" onclick="orderGo(this,1)">✅ '+T('Confirmer','Confirm')+'</button><button onclick="orderGo(this,0)">'+T('Non','No')+'</button></div>'
+   :'<p class="sub" style="margin:0">'+(st==='wait'?T('Trop ancien : redemande à Kino.','Too old: ask Kino again.'):(S[st]||st))+(a.res&&a.res.info&&st==='refused'?' · '+esc(String(a.res.info)):'')+'</p>');}
+async function orderGo(btn,ok){const el=btn.closest('.kc'),a=JSON.parse(el.dataset.args||'{}');el.querySelectorAll('button').forEach(x=>x.disabled=true);btn.textContent=ok?T('Envoi…','Sending…'):'…';
+ try{const j=await post('chat_order',{id:CID,oid:a.oid,ok:ok?1:0});if(j&&j.err&&j.err!=='done')toast(j.err==='old'?T('Trop ancien : redemande à Kino.','Too old: ask Kino again.'):T('Impossible pour le moment.','Not possible right now.'));}catch(e){toast(T('Hors ligne.','Offline.'));}
+ try{await load(CID,true);}catch(e){}}
 async function doPause(btn,on){const el=btn.closest('.kc'),pw=(el.querySelector('.kpw')||{}).value||'';if(!pw){toast(T('Il faut ton mot de passe du compte.','Your account password is needed.'));return;}
  btn.disabled=true;try{const r=await fetch(B+'pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+on+'&pwd='+encodeURIComponent(pw)});const j=await r.json();
   el.querySelector('.kcb').innerHTML='<p>'+(j.ok?(on?T('⏸ C’est fait : ton robot est en pause.','⏸ Done: your robot is paused.'):T('▶️ C’est fait : ton robot est relancé.','▶️ Done: your robot is running again.')):(j.err==='verrouille'?T('Ce réglage est verrouillé sur ce compte.','This setting is locked on this account.'):T('Mot de passe incorrect ou action impossible.','Wrong password or not possible.')))+'</p>';APIC.t=0;}
