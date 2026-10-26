@@ -22559,7 +22559,28 @@ def chat_check(user, body):
     return {"ok": True, "rule": cl, "fr": fr, "en": en, "formula": D.is_formula(kind, cl)}
 
 
+_CHAT_TEST_LOCKS = {}
+
+
 def chat_test(user, body):
+    """2026-10-26 (owner: two "Test started" 2 s apart, two copies of his robot): the member's tap and Kino's own #test
+    ran together, both saw no robot_id yet and each created a robot. One at a time per chat; a second call for the same
+    version within 2 minutes is the same job."""
+    cid = str(body.get("id") or "")
+    lk = _CHAT_TEST_LOCKS.setdefault(cid, threading.Lock())
+    with lk:
+        c = _chat_load(user, cid)
+        try:
+            t0 = (c or {}).get("test") or {}
+            import calendar as _cal2
+            if t0.get("state") == "queued" and t0.get("rev") == (c or {}).get("rev") and                     time.time() - _cal2.timegm(time.strptime(str(t0.get("at") or "")[:19], "%Y-%m-%dT%H:%M:%S")) < 120:
+                return {"ok": True, "dup": True, "minutes": t0.get("minutes")}
+        except Exception:
+            pass
+        return _chat_test0(user, body)
+
+
+def _chat_test0(user, body):
     """save the chat's robot (new pieces + robot, or an update of the robot it edits) and queue its test"""
     c = _chat_load(user, str(body.get("id") or ""))
     if c is None or not c.get("robot"):
