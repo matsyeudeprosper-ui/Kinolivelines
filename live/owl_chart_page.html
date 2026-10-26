@@ -284,7 +284,8 @@ body.othsym #autobadge,body.othsym #meteo,body.othsym #sigseg,body.othsym #wkseg
 
 /* 2026-10-13: inside the app's terminal view */
 html.embed #back{display:none!important}
-</style></head><body><script>try{if(window.top!==window)document.documentElement.classList.add('embed');}catch(e){}</script>
+</style><style>/* 2026-10-26 (owner: "remove the Kinos floating on the screen, they block my chart view") */#askkino,#kfab,#kask,#ktip,#ainudge{display:none!important}</style>
+</head><body><script>try{if(window.top!==window)document.documentElement.classList.add('embed');}catch(e){}</script>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
 <div id="aura"></div>
 <div id="hd">
@@ -412,6 +413,11 @@ html.embed #back{display:none!important}
    <div id="mtline2" style="font-size:.68rem;color:#7e93a8;line-height:1.45;
     margin-top:1px;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis"></div>
+   <div id="mtlotrow" style="display:none;margin-top:5px;align-items:center;gap:6px;font-size:.74rem;color:#7e93a8">
+    lot <button id="mtlotm" style="width:30px;height:26px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-weight:800">&minus;</button>
+    <input id="mtlotin" type="number" inputmode="decimal" step="0.01" min="0.01" style="width:68px;height:26px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:#cfe3f5;text-align:center;font-weight:800">
+    <button id="mtlotp" style="width:30px;height:26px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-weight:800">+</button>
+   </div>
   </div>
   <button id="mtcancel" title="Fermer l'outil" aria-label="Fermer l'outil" style="flex:none;width:28px;
    height:28px;padding:0;border-radius:9px;border:1px solid var(--border2);
@@ -2499,6 +2505,31 @@ function mtLot(dist,against){
  }else bul=Math.min(MS.max_extra||3,Math.floor((MS.chest||0)/r1));
  return{lot:Math.round((base+bul*0.01)*100)/100,bul:bul};
 }
+// 2026-10-26 (owner): free lot on the Kino manuel account - the member types any lot
+function mtLotRow(c){
+ const row=document.getElementById('mtlotrow');
+ if(!row)return;
+ const on=!!(MS&&MS.free_lot&&!c.edit);
+ row.style.display=on?'flex':'none';
+ if(!on)return;
+ const inp=document.getElementById('mtlotin');
+ if(!(MT.ulot>0))MT.ulot=c.lot;
+ if(document.activeElement!==inp)inp.value=MT.ulot.toFixed(2);
+}
+function mtLotSet(v){
+ if(!MT)return;
+ v=Math.round((parseFloat(v)||0)*100)/100;
+ if(v<0.01)v=0.01;
+ MT.ulot=v;mtRender();
+}
+document.addEventListener('click',e=>{
+ const id=e.target&&e.target.id;
+ if(id==='mtlotm')mtLotSet((MT&&MT.ulot||0.01)-0.01);
+ else if(id==='mtlotp')mtLotSet((MT&&MT.ulot||0.01)+0.01);
+});
+document.addEventListener('change',e=>{
+ if(e.target&&e.target.id==='mtlotin')mtLotSet(e.target.value);
+});
 function mtCalc(){
  if(!MT||!MS||!MS.px)return null;
  const mkt=MS.px,ref=MT.entry||mkt,sl=MT.sl,tp=MT.tp;
@@ -2532,6 +2563,8 @@ function mtCalc(){
  const inner=!!(ilv&&D&&D.invalid&&
   Math.abs(sl-ilv)<Math.abs(sl-D.invalid));
  const L=mtLot(dist,against||inner);
+ const free=!!(MS.free_lot&&MT.ulot>0);
+ if(free){L.lot=MT.ulot;L.bul=0;L.half=false;}
  let kind='MARCHE',bad='';
  if(MT.entry){
   const stopSide=(d===1)?(ref>mkt):(ref<mkt);
@@ -2539,14 +2572,14 @@ function mtCalc(){
   if(Math.abs(ref-mkt)<=(MS.s_min_dist||10))
    bad='entree trop pres du marche';
  }
- if(!bad&&(against||inner)&&MS.counter_ok===false)
+ if(!bad&&!free&&(against||inner)&&MS.counter_ok===false)
   bad=(against?'à contre-sens':'petite structure')+
       ' impossible a cette taille de lot';
  if(!bad)bad=(d===0?'mets le SL et le TP de part et d’autre de l’entree'
       :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
  // the desk refuses a trade risking more than 10% of the balance - say so
  // here rather than letting the refusal arrive after Confirmer
- if(!bad&&MS.max_risk>0&&dist*L.lot>MS.max_risk)
+ if(!bad&&!free&&MS.max_risk>0&&dist*L.lot>MS.max_risk)
   bad='risque $'+(dist*L.lot).toFixed(2)+' > '+
       Math.round((MS.max_risk_pct||0.1)*100)+'% du solde ($'+
       MS.max_risk.toFixed(2)+') - rapproche le SL';
@@ -2559,6 +2592,7 @@ function mtRender(){
  const l1=document.getElementById('mtline1');
  const l2=document.getElementById('mtline2');
  if(!c){l1.textContent='en attente des donnees...';l2.textContent='';return;}
+ mtLotRow(c);
  const chip=(txt,col,bg)=>'<span style="display:inline-block;padding:1px 6px;'+
   'border-radius:6px;font-weight:800;font-size:.74rem;color:'+col+
   ';background:'+bg+'">'+txt+'</span>';
@@ -2823,7 +2857,8 @@ document.getElementById('mtgo').onclick=async()=>{
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:(c.edit?'modify=1':'d='+c.d)+
     '&sl='+c.sl.toFixed(2)+'&tp='+c.tp.toFixed(2)+
-    (MT.entry?'&entry='+MT.entry.toFixed(2):'')});
+    (MT.entry?'&entry='+MT.entry.toFixed(2):'')+
+    (!c.edit&&MS.free_lot&&MT.ulot>0?'&lot='+MT.ulot.toFixed(2):'')});
   const j=await r.json();
   g.textContent=j.ok?'Envoye':'Refuse';
   if(j.ok){MT=null;setTimeout(()=>{mtbar.style.display='none';

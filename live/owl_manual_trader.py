@@ -61,6 +61,7 @@ BASE_LOT = 0.02
 MAX_EXTRA = 3
 CHEST_CAP = 10.0
 LOT_MIN, LOT_MAX = 0.01, 0.10
+FREE_LOT = (UID == "std")                   # 2026-10-26: Kino manuel picks its own lot (user_lot)
 REQ = os.path.join(DIR, f"manual_order_{UID}.json")
 RES = os.path.join(DIR, f"manual_order_result_{UID}.json")
 STATE = os.path.join(DIR, f"manual_state_{UID}.json")
@@ -284,6 +285,26 @@ def gates(cj, need_int, sig_t=None):
 MAX_RISK_PCT = 0.10
 
 
+def user_lot(req):
+    """2026-10-26 (owner: "no restrictions on the lot size on the manual trade tool - I'd like to freely manual trade"): the lot
+    the member picks on the chart goes out as is - no 0.10 cap, no 10 % risk refusal, no automatic halving. Only the broker's
+    own minimum and step apply. Only on the Kino manuel account (std); every other account keeps the rules."""
+    if not FREE_LOT:
+        return None
+    try:
+        v = float((req or {}).get("lot") or 0)
+    except Exception:
+        return None
+    if v <= 0:
+        return None
+    info = mt5.symbol_info(SYMBOL)
+    mn = float(getattr(info, "volume_min", 0.01) or 0.01)
+    st = float(getattr(info, "volume_step", 0.01) or 0.01)
+    mx = float(getattr(info, "volume_max", 0) or 0)
+    v = max(mn, round(round(v / st) * st, 2))
+    return min(v, mx) if mx else v
+
+
 def risk_ok(dist, lot):
     """None when the trade is allowed, otherwise the refusal message."""
     ai = mt5.account_info()
@@ -487,7 +508,7 @@ def bos_level_near(entry):
     return (best[0], best[1]) if best else None
 
 
-def place_pending(d, entry, sl, tp, tick, led, trend=0):
+def place_pending(d, entry, sl, tp, tick, led, trend=0, ulot=None):
     """Owner 2026-09-15: a programmed entry must NOT fire on a touch. MT5's
     native pending orders trigger on price, so we hold the order here and
     send it at market only once a completed M1 candle CLOSES beyond the
@@ -510,13 +531,15 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
     against = (trend != 0 and d != trend)
     inner = internal_trade(entry, sl, d)
     lot, bullets = lot_for(dist, led)
-    if against or inner:
+    if ulot:                                # the member's own lot: free (2026-10-26)
+        lot, bullets = ulot, 0
+    elif against or inner:
         half, ok = counter_lot()
         if not ok:
             why = "contre-tendance" if against else "structure interne"
             return False, why + " impossible a cette taille de lot"
         lot, bullets = half, 0
-    bad = risk_ok(dist, lot)
+    bad = None if ulot else risk_ok(dist, lot)
     if bad:
         say(f"ORDRE PROGRAMME REFUSE: {bad}")
         return False, bad
@@ -783,7 +806,7 @@ def execute(req, led, trend=0):
     if tick is None:
         return False, "pas de cotation"
     if entry > 0:
-        return place_pending(d, entry, sl, tp, tick, led, trend)
+        return place_pending(d, entry, sl, tp, tick, led, trend, ulot=user_lot(req))
     px = tick.ask if d == 1 else tick.bid
     if d == 1 and not (sl < px < tp):
         return False, f"achat: il faut SL < {px:.2f} < TP"
@@ -795,16 +818,17 @@ def execute(req, led, trend=0):
     lot, bullets = lot_for(dist, led)
     against = (trend != 0 and d != trend)
     inner = internal_trade(px, sl, d)
-    if against or inner:
+    _ul = user_lot(req)
+    if _ul:                                 # the member's own lot: free
+        lot, bullets = _ul, 0
+    elif against or inner:
         half, ok = counter_lot()
         if not ok:
             why = "contre-tendance" if against else "structure interne"
             return False, why + " impossible a cette taille de lot"
         # half once, never twice: a trade that is both stays at half
         lot, bullets = half, 0
-    elif req.get("lot"):                    # the chart may pin a lot
-        lot = max(LOT_MIN, min(LOT_MAX, round(float(req["lot"]), 2)))
-    bad = risk_ok(dist, lot)
+    bad = None if _ul else risk_ok(dist, lot)
     if bad:
         say(f"ORDRE REFUSE: {bad}")
         return False, bad
@@ -1145,7 +1169,7 @@ def main():
                     "base_lot": BASE_LOT, "max_extra": MAX_EXTRA,
                     "counter_lot": counter_lot()[0],
                     "counter_ok": counter_lot()[1],
-                    "lot_min": LOT_MIN, "lot_max": LOT_MAX,
+                    "lot_min": LOT_MIN, "lot_max": LOT_MAX, "free_lot": FREE_LOT,
                     "s_min_dist": B.S_MIN_DIST,
                     "trend": eng.trend, "choch": eng.choch,
                     "signal": (_ENG.get("signal") if _ENG.get("signal")
