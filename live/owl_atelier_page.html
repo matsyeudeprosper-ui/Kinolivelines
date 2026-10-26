@@ -1014,7 +1014,7 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
 setInterval(async()=>{if(!CID||!C||document.visibilityState!=='visible'||POLL&&C.status!=='ready')return;
  try{const p=await getJ('chat_ping?id='+encodeURIComponent(CID));if(p.err)return;
   const M=C.msgs||[],lt=(M[M.length-1]||{}).t||0;
-  if(p.n!==M.length||p.last_t!==lt||p.status!==C.status||p.draft||(p.rev||0)!==(C.rev||0)||(p.test||null)!==((C.test||{}).state||null))load(CID);
+  if(p.n!==M.length||p.last_t!==lt||p.status!==C.status||p.draft||(p.rev||0)!==(C.rev||0)||(p.test||null)!==((C.test||{}).state||null)||!!p.building!==!!C.building)load(CID);
   else if(JSON.stringify(p.kst||null)!==JSON.stringify(C.kst||null)||(p.km||'')!==(C.km||'')||(p.act||null)!==(C.act||null)||JSON.stringify(p.steps||[])!==JSON.stringify(C.steps||[])){C.kst=p.kst;C.km=p.km;C.kwhy=p.kwhy;C.act=p.act;C.steps=p.steps||[];hdr();paintPlan();}}catch(e){}},6000);
 /* ---------- 2026-10-20: the header's "more" menu (search, notebook) - the name keeps its room */
 function moreSh(btn){rxClose();const r=btn.getBoundingClientRect(),d=document.createElement('div');d.id='rxbar';d.className='lpm';
@@ -1292,7 +1292,7 @@ function journey(){const v=C&&C.view;if(!v)return [];const r=lastRes(),lk=C.luck
   {k:'acct',a:"stageSh('acct')",i:'🚀',l:T('Compte','Account'),s:ac.is_cur?'done':(ac.allowed?'now':'todo')}];}
 function journeyHTML(){const J=journey();if(!J.length)return '';
  return '<div class="jny">'+J.map((x,i)=>'<button class="js '+x.s+'" onclick="event.stopPropagation();'+x.a.replace(/"/g,'&quot;')+'"><i>'+(x.s==='done'?'✓':(x.s==='bad'?'✗':x.i))+'</i><span>'+esc(x.l)+'</span></button>'+(i<J.length-1?'<b class="jl '+(x.s==='done'?'on':'')+'"></b>':'')).join('')+'</div>';}
-function buildCard(){if(!C)return '';const bl=C.status==='building',fl=LASTFL&&Date.now()-LASTFL.t<9000;if(!bl&&!fl)return '';
+function buildCard(){if(!C)return '';const bl=C.status==='building'||!!C.building,fl=LASTFL&&Date.now()-LASTFL.t<9000;if(!bl&&!fl)return '';
  if(bl&&(C.steps||[]).length){const S=C.steps;return '<div class="bcard"><div class="plh">🛠 '+T('Kino travaille','Kino is working')+'<small><span class="spin"></span></small></div>'+S.map((x,i)=>'<div class="bst '+(i<S.length-1?'ok':'run')+'" style="animation-delay:0s"><span>'+esc(x)+'</span><em>'+(i<S.length-1?'✓':'…')+'</em></div>').join('')+'</div>';}
  const K=['entry','filters','stop','exit','recovery','money'];
  if(bl)return '<div class="bcard"><div class="plh">🛠 '+T('Kino construit ton robot','Kino is building your robot')+'<small><span class="spin"></span></small></div>'+K.slice(0,4).map((k,i)=>'<div class="bst run" style="animation-delay:'+(i*0.25)+'s"><b>'+STEP[k][0]+'</b><span>'+esc(STEP[k][1])+'</span><em>…</em></div>').join('')+'</div>';

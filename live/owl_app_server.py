@@ -16919,8 +16919,11 @@ _CHAT_WAIT, _CHAT_TYPING, _CHAT_PENDING = set(), {}, {}
 _LAST_PROMISE_FIRE = {}      # cid -> when a promise reminder last fired (2026-10-23 23:33: four in 12 min, nine messages)
 
 
+_AUTO_RUN = set()      # 2026-10-26: chats where only the silent auto-trade watch is thinking (no "Kino écrit…")
+
+
 def _chat_status(cid):
-    if _CHAT_Q.get(cid):
+    if _CHAT_Q.get(cid) and not (cid in _AUTO_RUN and _CHAT_Q.get(cid) <= 1):
         return "thinking"
     if cid in _CHAT_WAIT:
         return "listening"            # 2026-10-19 (owner item 1): Kino waits for the member to finish their burst
@@ -17989,6 +17992,67 @@ def chart_chat(user, body):
     return {"ok": True, "id": cid}
 
 
+def _desk_robot_cfg(uid):
+    return _jload(os.path.join(DIR, "desk_robot_%s.json" % uid), {}) or {}
+
+
+def _desk_robot_set(cid, user, v, en, c):
+    """2026-10-26 (owner: "Kino creates the robot to do the job, runs it, shuts it down or edits it"): #robot on <name>
+    [lot=x] / #robot off - the member's own desk (owl_manual_trader) runs that robot next to the hand trades"""
+    uid = user.get("id")
+    say_ = lambda t: _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=t))
+    if not manual_ok(user):
+        return say_("This account has no trading tool for a robot." if en else "Ce compte n'a pas d'outil de trading pour un robot.")
+    pth = os.path.join(DIR, "desk_robot_%s.json" % uid)
+    old = _desk_robot_cfg(uid)
+    s0 = str(v or "").strip()
+    if re.match(r"(?i)^(off|stop|arr[eê]te?r?)\b", s0):
+        json.dump({"on": False, "t": time.time(), "id": old.get("id"), "name": old.get("name"), "lot": old.get("lot")}, open(pth, "w"))
+        return say_(("🤖 Robot «%s» stopped." if en else "🤖 Robot « %s » arrêté.") % (old.get("name") or "-"))
+    kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(lot)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0.lower())}
+    nm = re.sub(r"(?i)^(on|start|lance|marche)\b", "", re.sub(r"(?i)\blot\s*[=:]\s*[0-9.,]+", "", s0)).strip(" :«»\"'").lower()
+    reg = robot_reg()
+    byid = {r["id"]: r for r in reg.get("robots") or []}
+    mine = [r for r in byid.values() if r.get("id") != "owl" and (_robot_mine(user, r) or is_admin(user))]
+    r0 = None
+    if not nm and c.get("robot_id"):
+        r0 = byid.get(c["robot_id"])
+    for r in mine if r0 is None else []:
+        n1 = str(r.get("name_fr") or r.get("id") or "").lower()
+        if nm and (nm == n1 or nm == str(r.get("id")).lower()):
+            r0 = r
+            break
+    if r0 is None and nm:
+        r0 = next((r for r in mine if nm in str(r.get("name_fr") or "").lower()), None)
+    if r0 is None and old.get("id") and not nm:
+        r0 = byid.get(old["id"])
+    if r0 is None:
+        return say_(("No robot called «%s»." if en else "Pas de robot qui s'appelle « %s ».") % (nm or "?"))
+    try:
+        pkg = robot_package(dict(r0, resolved=robot_resolve(r0["id"], byid)), reg.get("pieces") or [], None, None)
+    except Exception as e:
+        return say_(("🤖 «%s» cannot run on an account yet: %s" if en else "🤖 « %s » ne peut pas encore tourner sur un compte : %s") % (
+            r0.get("name_fr") or r0["id"], str(e)[:120]))
+    lot = kv.get("lot") or old.get("lot") or 0.01
+    cfg = {"on": True, "id": r0["id"], "name": r0.get("name_fr") or r0["id"], "rules": pkg.get("robot_rules") or {},
+           "rr": pkg.get("rr"), "lot": lot, "t": time.time(), "by": "kino", "cid": cid}
+    json.dump(cfg, open(pth, "w"), ensure_ascii=False)
+    say_(("🤖 Robot «%s» now runs on this account (lot %s), next to your own trades. Kino watches it." if en else
+          "🤖 Le robot « %s » tourne maintenant sur ce compte (lot %s), à côté de tes trades à la main. Kino le surveille.") % (cfg["name"], lot))
+
+
+def _desk_robot_log(uid, since):
+    """today's robot lines and hand orders from the desk log (for Kino's review)"""
+    out = []
+    try:
+        for ln in io.open(os.path.join(DIR, "owl_manual_trader_%s.log" % uid), encoding="utf-8", errors="replace"):
+            if ln[:19] >= since and ("ROBOT" in ln or "ORDRE MANUEL" in ln or "FERMEE" in ln or "MODIFIEE" in ln):
+                out.append(ln[11:16] + " " + ln[33:].strip()[:150])
+    except Exception:
+        pass
+    return out[-40:]
+
+
 def _desk_state(uid):
     """the manual trade desk's own snapshot (manual_state_<uid>.json, written every few seconds) - None when stale"""
     st = _jload(os.path.join(DIR, "manual_state_%s.json" % uid), None)
@@ -18005,13 +18069,19 @@ def _desk_facts(uid):
     sd = {1: "ACHAT", -1: "VENTE"}
     L = ["SES TRADES À LA MAIN (son outil de trading, maintenant) : prix %s, solde %.2f $." % (st.get("px"), float(st.get("balance") or 0))]
     for o in st.get("open") or []:
-        L.append("Position ouverte ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $." % (
+        L.append("Position ouverte%s ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $." % (" (robot)" if o.get("robot") else "",
             o.get("ticket"), sd.get(o.get("d"), "?"), o.get("lot"), round(float(o.get("e") or 0), 2), round(float(o.get("sl") or 0), 2) or "aucun",
             round(float(o.get("tp") or 0), 2) or "aucun", float(o.get("pl") or 0)))
     for o in st.get("pending") or []:
         L.append("Ordre en attente : %s %s lot à %s, SL %s, TP %s." % (o.get("kind"), o.get("lot"), o.get("e"), o.get("sl"), o.get("tp")))
     if not (st.get("open") or st.get("pending")):
         L.append("Aucune position ouverte, aucun ordre en attente.")
+    rc = _desk_robot_cfg(uid)
+    if rc.get("on"):
+        L.append("SON ROBOT sur ce compte (tu le fais tourner et tu le surveilles) : « %s », lot %s, depuis %s UTC. Les positions marquées "
+                 "robot sont les siennes." % (rc.get("name"), rc.get("lot"), time.strftime("%d/%m %H:%M", time.gmtime(float(rc.get("t") or 0)))))
+    elif rc.get("id"):
+        L.append("Son robot « %s » est arrêté." % rc.get("name"))
     return "\n".join(L)
 
 
@@ -18176,6 +18246,35 @@ def _auto_watch_loop():
             m = _jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}
             if not m:
                 continue
+            for uid, cid in list(m.items()):          # 2026-10-26: Kino's evening look at the robot he runs for them
+                try:
+                    rc = _desk_robot_cfg(uid)
+                    day = time.strftime("%Y-%m-%d", time.gmtime())
+                    if not rc.get("on") or time.gmtime().tm_hour < 21 or last.get("rev:" + uid) == day:
+                        continue
+                    _rvp = os.path.join(DIR, "robots", "desk_robot_review.json")
+                    _rv = _jload(_rvp, {}) or {}
+                    if _rv.get(uid) == day:
+                        last["rev:" + uid] = day
+                        continue
+                    u = _user_by_id(uid)
+                    if not u or _CHAT_Q.get(cid) or cid in _CHAT_B:
+                        continue
+                    last["rev:" + uid] = day
+                    _rv[uid] = day
+                    json.dump(_rv, open(_rvp, "w"))
+                    lines = _desk_robot_log(uid, day + "T00:00:00")
+                    ev = ("ROBOT REVIEW - end of the day for the robot «%s» you run on their account (lot %s). Today's desk log (robot lines "
+                          "and their own hand trades): %s. Look at it like a person who runs this robot for them: does it still trade "
+                          "the way THEY trade by hand? anything wrong (losses piling up, trades that break their rules)? If something is "
+                          "wrong, stop it (#robot off) and tell them. If their style changed: a small obvious adjustment you may just make "
+                          "(#construire, then #robot on to load the new version) and tell them; a big change, show them first and wait "
+                          "for their yes. If all is fine, one short line - or nothing (…) if there is nothing worth saying.") % (
+                        rc.get("name"), rc.get("lot"), " | ".join(lines) or "no trade today")
+                    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                    threading.Thread(target=_chat_quick, args=(cid, u, ev), daemon=True).start()
+                except Exception:
+                    pass
             j = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
             now = time.time()
             cs = [x for x in (j.get("candles") or []) if float(x[0]) + 60 <= now]
@@ -18213,7 +18312,14 @@ def _auto_watch_loop():
                     up.get(pb.get("trend"), "none"), f(pb["next_bos"]) if pb.get("next_bos") else "-",
                     time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "")
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
-                threading.Thread(target=_chat_quick, args=(cid, u, ev), daemon=True).start()
+
+                def _arun(cid=cid, u=u, ev=ev):
+                    _AUTO_RUN.add(cid)
+                    try:
+                        _chat_quick(cid, u, ev)
+                    finally:
+                        _AUTO_RUN.discard(cid)
+                threading.Thread(target=_arun, daemon=True).start()
         except Exception:
             pass
 
@@ -18546,6 +18652,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _KO._log(cid, "ACT_ORDER", v[:160])
             elif k == "auto":
                 _auto_set(cid, user, v, en, _chat_load(user, cid) or c, event)
+            elif k == "robot":
+                _desk_robot_set(cid, user, v, en, _chat_load(user, cid) or c)
+                _KO._log(cid, "ACT_ROBOT", v[:160])
         except Exception as e:
             _KO._log(cid, "ACT_ERROR", "%s %s %s" % (k, v, type(e).__name__))
     if build:
@@ -19827,7 +19936,7 @@ def _companion_tick():
                 _side = bool(_cs7.get("panel")) and now - float(_cs7.get("t") or 0) < 180
                 try:
                     _ccx = (_jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}).get(uid)
-                    if _ccx and _auto_on(_chat_load(u, _ccx)):
+                    if _ccx and (_auto_on(_chat_load(u, _ccx)) or _desk_robot_cfg(uid).get("on")):
                         _side = True
                 except Exception:
                     pass
@@ -22113,7 +22222,7 @@ def chat_ping(user, cid):
     _CHAT_VIEW[cid] = time.time()
     M = c.get("msgs") or []
     return {"n": len(M), "last_t": int((M[-1] if M else {}).get("t") or 0), "status": _chat_status(cid), "rev": c.get("rev") or 0,
-            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "dtx": str(_CHAT_DRAFT.get(cid) or "")[:600], "dnt": str(_CHAT_DRAFT_N.get(cid) or "")[:600],"test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [],
+            "draft": bool(_CHAT_DRAFT.get(cid) or _CHAT_DRAFT.get(cid + ":b")), "dtx": str(_CHAT_DRAFT.get(cid) or "")[:600], "dnt": str(_CHAT_DRAFT_N.get(cid) or "")[:600],"test": (c.get("test") or {}).get("state"), "act": _CHAT_ACT.get(cid), "steps": [x[1] for x in _CHAT_STEPS.get(cid) or [] if time.time() - x[0] < 240] if cid in _CHAT_B else [], "building": cid in _CHAT_B,
             **_kino_presence(user, c)}
 
 
@@ -22200,6 +22309,7 @@ def chat_get(user, cid, ui=""):
         out["admin"] = bool(is_admin(user))
         out["act"] = _CHAT_ACT.get(c["id"])
         out["steps"] = [x[1] for x in _CHAT_STEPS.get(c["id"]) or [] if time.time() - x[0] < 240] if c["id"] in _CHAT_B else []
+        out["building"] = c["id"] in _CHAT_B          # 2026-10-26: the build card shows even while Kino is also thinking
         out["money_plain"] = _money_plain((c.get("robot") or {}).get("money") or {})
         _ow = _ai_owl() or {}
         out["owl_view"] = _rc().view({k: {"use": _ow[k]} for k in ("entry", "stop", "exit", "recovery", "money") if _ow.get(k)} |

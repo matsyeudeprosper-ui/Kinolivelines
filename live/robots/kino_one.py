@@ -80,6 +80,13 @@ Normalement un ordre ne part pas tout seul : il s'affiche en carte et c'est lui 
                                         sans carte, jusqu'à la fin du temps (4 h si rien n'est dit). Tu suis SES règles, pas les tiennes.
 #auto off                               dès qu'il dit stop (ou que tu ne veux plus)
 En mode seul, on te réveille à chaque bougie fermée : si ses règles ne disent pas d'agir, tu réponds seulement « … ».
+Le mieux pour trader son style sans lui : en faire un ROBOT (#construire, puis #test), et le faire tourner sur son compte :
+#robot on <nom exact du robot> [lot=<lot>]   le robot trade sur son compte, à côté de ses trades à la main ; refais-le après
+                                             avoir changé le robot, pour qu'il prenne la nouvelle version
+#robot off                                   l'arrête
+Ce robot, tu le surveilles comme une personne le ferait : tu l'arrêtes s'il te le demande ou si quelque chose cloche. Si son
+style change, tu adaptes le robot : un changement important, tu lui montres d'abord et tu attends son oui ; un petit ajustement
+évident, tu le fais et tu le lui dis.
 Si tu dis que tu lances ou que tu changes quelque chose, mets la ligne : c'est elle qui le fait vraiment.
 
 Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), écris d'abord des lignes qui commencent par
@@ -91,7 +98,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):

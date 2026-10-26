@@ -114,6 +114,11 @@ def build_sandbox(sb, acct, st0):
             shutil.copy2(os.path.join(LIVE, "robots", f), os.path.join(sb, "robots"))
     for f in ("owl_packages.json",):
         shutil.copy2(os.path.join(LIVE, f), sb)
+    if not os.environ.get("BOTSIM_NOFASTIDX"):    # 2026-10-26 (speed): exact patch of the sandbox copy only, see fastidx.py
+        import fastidx
+        _fp = os.path.join(sb, "owl_chart_feed.py")
+        _fs = open(_fp, encoding="utf-8-sig").read()
+        open(_fp, "w", encoding="utf-8").write(fastidx.patch_source(_fs))
     A = ACCTS[acct]
     json.dump([{"id": A["uid"], "name": "sim", "terminal": "SIM", "mt5_login": A["login"], "login": A["login"],
                 "mt5_server": "Exness-MT5Real30", "mt5_password": "sim", "trade": True}],

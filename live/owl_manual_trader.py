@@ -702,6 +702,8 @@ def cancel_pending(ticket=None):
 
 
 def _pick(pos, req):
+    if not req.get("ticket"):
+        pos = [p for p in pos if p.magic != ROBOT_MAGIC] or pos
     """2026-10-26: Kino's orders name a ticket when several positions are open (free-lot account)"""
     try:
         tk = int(req.get("ticket") or 0)
@@ -796,6 +798,144 @@ def close_now(req):
                             f"P&L ${p.profit:.2f}")
     return True, dict(ticket=p.ticket, lot=vol, price=r.price,
                       pl=round(p.profit * vol / p.volume, 2), closed=True)
+
+
+# ---- 2026-10-26 (owner: "Kino creates the robot that trades my style, runs it here, watches it"): the desk runs ONE
+# robot from robots.json next to the hand trades. Kino switches it (desk_robot_<uid>.json, written by the app):
+#   {"on": bool, "id", "name", "rules": <robot_rules as the live bot reads them>, "rr": float, "lot": float, "t"}
+# The decisions are robot_live's (the same interpreter the live bot and the bench use); its trades carry ROBOT_MAGIC.
+DESK_ROBOT = os.path.join(DIR, f"desk_robot_{UID}.json")
+ROBOT_MAGIC = 909104
+_RBT = {"cfg_t": None, "C": None, "be": set(), "last": None}
+
+
+def _robot_cfg():
+    try:
+        c = json.load(open(DESK_ROBOT, encoding="utf-8"))
+        return c if c.get("on") and c.get("lot") else None
+    except Exception:
+        return None
+
+
+def _norm_lot(v):
+    info = mt5.symbol_info(SYMBOL)
+    mn = float(getattr(info, "volume_min", 0.01) or 0.01)
+    st = float(getattr(info, "volume_step", 0.01) or 0.01)
+    mx = float(getattr(info, "volume_max", 0) or 0)
+    v = max(mn, round(round(float(v) / st) * st, 2))
+    return min(v, mx) if mx else v
+
+
+def _robot_seed(RL):
+    """the formula memory: ~42 days of closed candles with the eyes' breaks replayed (as the live bot's fx_seed)"""
+    C = RL.Candles()
+    R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, RL.Candles.KEEP)
+    if R is None or len(R) < 100:
+        say("ROBOT: pas d'historique de bougies - ses formules refusent tout")
+        return C
+    e2 = B.Struct()
+    e2.quiet = True
+    for r in R:
+        pt = e2.trend
+        sg = e2.step(int(r["time"]), float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"]))
+        C.add(r["time"], r["open"], r["high"], r["low"], r["close"], r["tick_volume"],
+              d=sg[0] if sg else 0, flip=bool(sg) and e2.trend != pt, trend=e2.trend if sg else None)
+    say(f"ROBOT: {len(C.rows)} bougies en memoire")
+    return C
+
+
+def _robot_close(p, why):
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return
+    d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+    r = mt5.order_send({"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": p.volume, "position": p.ticket,
+                        "type": mt5.ORDER_TYPE_SELL if d == 1 else mt5.ORDER_TYPE_BUY,
+                        "price": tick.bid if d == 1 else tick.ask, "deviation": 200, "magic": ROBOT_MAGIC,
+                        "comment": "KL-KROBOT-X", "type_time": mt5.ORDER_TIME_GTC, "type_filling": mt5.ORDER_FILLING_IOC})
+    ok = r is not None and r.retcode == mt5.TRADE_RETCODE_DONE
+    say(f"ROBOT ferme #{p.ticket} ({why}): {'ok' if ok else getattr(r, 'retcode', '?')} P&L ${p.profit:.2f}")
+    if ok:
+        push("Robot de Kino", f"Trade ferme ({why}), {p.profit:+.2f} $")
+
+
+def robot_tick(bar, sig, prev_trend, eng):
+    """one closed candle for the robot: manage its open trade, else maybe enter. Never touches hand trades."""
+    cfg = _robot_cfg()
+    if not cfg:
+        if _RBT["last"]:
+            say("ROBOT arrete")
+        _RBT.update(last=None, C=None)
+        return
+    import robot_live as RL
+    rules = cfg.get("rules") or {}
+    if _RBT["last"] != cfg.get("t"):                   # a new robot (or a new version): fresh memory
+        _RBT.update(last=cfg.get("t"), C=_robot_seed(RL) if RL.uses_formulas(rules) else None, be=set())
+        say(f"ROBOT en marche: {cfg.get('name')} lot {cfg.get('lot')}")
+    C = _RBT["C"]
+    bt = int(bar["time"])
+    o, h, l, c = float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"])
+    flip = sig is not None and eng.trend != prev_trend
+    if C is not None:
+        C.add(bt, o, h, l, c, float(bar["tick_volume"]), d=sig[0] if sig else 0, flip=flip, trend=eng.trend if sig else None)
+    mine = [p for p in (mt5.positions_get(symbol=SYMBOL) or []) if p.magic == ROBOT_MAGIC]
+    now = time.time()
+    tick = mt5.symbol_info_tick(SYMBOL)
+    for p in mine:
+        d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+        act = RL.formula_exit(rules, d, C) or RL.manage(rules, d, p.price_open, p.sl, float(p.time), now,
+                                                         (tick.bid if d == 1 else tick.ask) if tick else c,
+                                                         eng.choch == -d, p.ticket in _RBT["be"])
+        if act and act[0] == "close":
+            _robot_close(p, act[1])
+        elif act and act[0] == "sl":
+            r = mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "symbol": SYMBOL, "position": p.ticket,
+                                "sl": round(float(act[1]), 2), "tp": p.tp, "magic": ROBOT_MAGIC})
+            if r is not None and r.retcode == mt5.TRADE_RETCODE_DONE:
+                _RBT["be"].add(p.ticket)
+                say(f"ROBOT stop a l'entree #{p.ticket}")
+    if mine:
+        return
+    sgn = None
+    if (rules.get("entry") or {}).get("event") == "formula":
+        sgn = RL.formula_entry(rules, C)
+        kind = "FORMULA"
+    elif sig is not None:
+        sgn, kind = sig, ("FLIP-BOS" if flip else "BOS")
+    if not sgn:
+        return
+    d, slp = int(sgn[0]), float(sgn[1])
+    ok, why = RL.entry_ok(rules, kind)
+    cj = {}
+    try:
+        cj = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8"))
+    except Exception:
+        pass
+    vn, vr = cj.get("vol_now"), cj.get("vol_ref")
+    nw = datetime.now(timezone.utc)
+    if ok:
+        ok, why = RL.filters_ok(rules, nw.hour, nw.weekday(), (vn / vr) if (vn and vr) else None, cj.get("moves_2h"), d=d, C=C)
+    if not ok:
+        say(f"ROBOT signal {'ACHAT' if d == 1 else 'VENTE'} ignore: {why}")
+        return
+    if tick is None:
+        return
+    px = tick.ask if d == 1 else tick.bid
+    sl = RL.stop_for(rules, d, slp, c, l, h, C)
+    if not (sl == sl) or d * (px - sl) <= B.S_MIN_DIST:
+        say(f"ROBOT signal refuse: stop {sl} trop proche ou absent")
+        return
+    tp = RL.tp_for(rules, d, px, abs(px - sl), float(cfg.get("rr") or B.RR))
+    lot = _norm_lot(cfg["lot"])
+    r = mt5.order_send({"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lot,
+                        "type": mt5.ORDER_TYPE_BUY if d == 1 else mt5.ORDER_TYPE_SELL, "price": px,
+                        "sl": round(sl, 2), "tp": round(tp, 2) if tp else 0.0, "deviation": 200, "magic": ROBOT_MAGIC,
+                        "comment": "KL-KROBOT", "type_time": mt5.ORDER_TIME_GTC, "type_filling": mt5.ORDER_FILLING_IOC})
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        say(f"ROBOT ordre refuse par le broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}")
+        return
+    say(f"ROBOT {cfg.get('name')}: {'ACHAT' if d == 1 else 'VENTE'} {lot} @ {r.price:.2f} SL {sl:.2f} TP {tp:.2f}")
+    push("Robot de Kino", f"{'Achat' if d == 1 else 'Vente'} {lot} lot a {r.price:.0f}")
 
 
 def execute(req, led, trend=0):
@@ -996,6 +1136,10 @@ def main():
                                 "Wait for confirmation before entering."), kind="batch")
                     vpend_check(_c, rebuild_ledger(),
                                 float(bar["high"]), float(bar["low"]))
+                    try:                        # 2026-10-26: Kino's robot, when one is switched on here
+                        robot_tick(bar, sig, prev_trend, eng)
+                    except Exception as _re:
+                        say(f"ROBOT erreur {type(_re).__name__}: {_re}")
                     last_choch = eng.choch
                     _ENG["trend"] = eng.trend
                     # owner 2026-09-17: every mode change is logged and
@@ -1198,7 +1342,7 @@ def main():
                                and _ENG["signal"].get("expires", 0) > time.time() else None),
                     "px": round(float(tick.bid), 2) if tick else None,
                     "spread": round(float(tick.ask - tick.bid), 2) if tick else None,
-                    "open": [{"ticket": p.ticket, "lot": p.volume, "d": 1 if p.type == 0 else -1,
+                    "open": [{"ticket": p.ticket, "robot": p.magic == ROBOT_MAGIC, "lot": p.volume, "d": 1 if p.type == 0 else -1,
                               "e": p.price_open, "sl": p.sl, "tp": p.tp,
                               "pl": round(p.profit, 2)} for p in pos],
                     "pending": ([{
