@@ -133,6 +133,8 @@ def main():
     ap.add_argument("--rev", default="", help="git revision of live/structure_bos_bot.py to run (default: the current file)")
     ap.add_argument("--stall", action="append", default=[], help="ISO_TIME,SECONDS: the bot is busy then (replay a live stall)")
     ap.add_argument("--net-lag", type=float, default=0.0, help="s a tick takes to reach the terminal")
+    ap.add_argument("--order-lag", type=float, default=0.0, help="s between the sim's entry and the fill (real median ~2 s more)")
+    ap.add_argument("--order-lag-real", action="store_true", help="replay each real entry's own delay from the real log")
     a = ap.parse_args()
     A = ACCTS[a.acct]
     t0, t1 = ts(a.start), ts(a.end)
@@ -156,6 +158,20 @@ def main():
     clock = SC.Clock(t0, t1, real_compute=False)        # switched on when the BOT starts (set-up is not the bot's time)
     broker = FM.Broker(clock, bars, ticks, login=A["login"], balance=bal)
     broker.net_lag = a.net_lag
+    broker.order_lag = a.order_lag
+    if a.order_lag_real:                        # each real entry's second after the minute, minus the sim's own (1 s)
+        _oa = {}
+        for ln in open(logf, encoding="utf-8", errors="replace"):
+            m = re.match(r"(\S+) (?:FLIP-)?BOS ENTRY", ln) or re.match(r"(\S+) \S+ ENTRY:", ln)
+            if m:
+                try:
+                    tt = ts(m.group(1))
+                except Exception:
+                    continue
+                if t0 <= tt <= t1:
+                    _oa[int(tt) // 60 * 60] = max(0.0, (tt - int(tt) // 60 * 60) - 1.0)
+        broker.order_lag_at = _oa
+        print("real entry delays:", {_real_time.strftime("%m-%d %H:%M", _real_time.gmtime(k)): v for k, v in sorted(_oa.items())}, flush=True)
     fake = FM.FakeMT5(broker)
 
     # the sandbox modules see the fake MetaTrader, the virtual clock and the virtual datetime
@@ -183,7 +199,27 @@ def main():
     import hashlib as _hl
     _build0, _memo = FEED.build, {}
 
+    import slidebuild as _SB
+    _sl = {"base": None, "S": None, "prev": None}
+
     def _build_memo(rates):
+        # a window of the SAME array one candle further than the previous call (the feed's start-up replay): the exact
+        # sliding build. Anything else (a fresh array each feed tick) goes to the memo below.
+        try:
+            bs = rates.base
+            if bs is not None and getattr(bs, "dtype", None) == rates.dtype and len(rates) > 100:
+                off = int((rates.__array_interface__["data"][0] - bs.__array_interface__["data"][0]) // rates.itemsize)
+                end = off + len(rates)
+                pv, _sl["prev"] = _sl["prev"], (bs, off, end)
+                if pv is not None and pv[0] is bs and off >= 0 and end <= len(bs) and (off, end) in ((pv[1] + 1, pv[2] + 1), (pv[1], pv[2] + 1)):
+                    if _sl["base"] is not bs:
+                        _sl["base"], _sl["S"] = bs, _SB.Slider(bs)
+                        _sl["S"].keep(pv[1], pv[2])            # the previous window, to start from
+                    if (off, end) == (pv[1], pv[2] + 1):       # the window still grows from the start (before it reaches full size)
+                        _sl["S"].idx = None
+                    return _sl["S"].kept(off, end)
+        except Exception:
+            pass
         try:
             k = _hl.blake2b(rates.tobytes(), digest_size=16).digest()
         except Exception:

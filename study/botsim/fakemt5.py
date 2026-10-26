@@ -45,6 +45,7 @@ class Broker:
                  balance=200.0, log=None):
         self.clock = clock
         self.B = bars_m1                                  # closed broker M1 candles (structured, RATES dtype)
+        self._bt = np.ascontiguousarray(bars_m1["time"])  # 2026-10-26 (speed): a strided field made each search ~2 ms
         self.tt, self.bid, self.ask = ticks               # ms, bid, ask (sorted)
         self.symbol, self.login, self.server = symbol, login, server
         self.balance = float(balance)
@@ -67,11 +68,12 @@ class Broker:
             return None
         return float(self.bid[i]), float(self.ask[i]), int(self.tt[i])
 
-    def m1_upto(self, t):
-        """closed M1 bars before t, plus the forming bar built from ticks"""
+    def m1_upto(self, t, tail=None):
+        """closed M1 bars before t, plus the forming bar built from ticks. tail (2026-10-26, speed): only the last `tail`
+        closed bars - the caller takes a window from the end anyway, and copying all 68k bars every second was the cost"""
         cut = int(t) // 60 * 60
-        j = int(np.searchsorted(self.B["time"], cut))     # bars with open time < cut are closed
-        closed = self.B[:j]
+        j = int(np.searchsorted(self._bt, cut))          # bars with open time < cut are closed
+        closed = self.B[(max(0, j - int(tail)) if tail else 0):j]
         if self.net_lag and j > 0 and t - cut < self.net_lag + 2.0:
             # the terminal receives a tick `net_lag` s after its time: a candle read right after its close may still
             # miss its last ticks - rebuild that candle from the ticks the terminal had at t
@@ -98,13 +100,16 @@ class Broker:
 
     def rates(self, tf, start, count):
         t = self.clock.now
-        R = self.m1_upto(t)
         s = _TF_S.get(tf, 60)
-        if s != 60:
+        # M1: the window from the end needs count + start bars (+ the forming one); the rest is never looked at
+        if s == 60:
+            R = self.m1_upto(t, tail=int(count) + int(start) + 2)
+        else:
             key = (tf, int(t) // 60)
-            if key in self._agg:
+            if key in self._agg:                          # the higher timeframe is rebuilt once a minute, not every call
                 R = self._agg[key]
             else:
+                R = self.m1_upto(t)
                 g = R["time"] // s
                 idx = np.nonzero(np.diff(np.concatenate([[-1], g])))[0]
                 out = np.zeros(len(idx), dtype=RATES)
@@ -198,6 +203,13 @@ class Broker:
             self._close(tk, price, t, "[close]", r.get("volume"))
             return Result(TRADE_RETCODE_DONE, tk, self.n, price, float(r.get("volume") or 0), "done", 0)
         buy = r.get("type") == ORDER_TYPE_BUY
+        # 2026-10-26 (exactness): the real bot's entry reaches the broker a few seconds after the sim's (median 3 s after the
+        # minute vs 1 s; its own compute + the terminal). The fill is the price when the order really lands.
+        lag = float(getattr(self, "order_lag_at", {}).get(int(t) // 60 * 60, getattr(self, "order_lag", 0.0)) or 0.0)
+        if lag > 0:
+            q2 = self.quote(t + lag)
+            if q2 is not None:
+                bid, ask = q2[0], q2[1]
         price = ask if buy else bid
         self.n += 1
         tk = self.n
