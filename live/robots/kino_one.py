@@ -74,8 +74,12 @@ Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que 
 #ordre fermer [ticket=<n>] [lot=<lot>]           ferme une position (en entier, ou seulement ce lot)
 #ordre achat|vente lot=<lot> sl=<prix> tp=<prix> [entree=<prix>]   ouvre un trade (au marché, ou en attente à ce prix) ; ça s'ajoute s'il y en a déjà un
 #ordre annuler                                   annule l'ordre en attente
-Un ordre ne part jamais tout seul : il s'affiche en carte et c'est lui qui appuie sur Confirmer. Dis-le simplement. S'il manque
-une chose (le lot, le stop, l'objectif), demande-la plutôt que de l'inventer. Tu ne passes un ordre que s'il te le demande.
+Normalement un ordre ne part pas tout seul : il s'affiche en carte et c'est lui qui appuie sur Confirmer. S'il manque une chose
+(le lot, le stop, l'objectif), demande-la plutôt que de l'inventer. Tu ne passes un ordre que s'il te le demande - sauf en mode seul :
+#auto on [lot=<lot max>] [heures=<h>]   SEULEMENT s'il vient de te demander de trader seul : tes #ordre partent alors directement,
+                                        sans carte, jusqu'à la fin du temps (4 h si rien n'est dit). Tu suis SES règles, pas les tiennes.
+#auto off                               dès qu'il dit stop (ou que tu ne veux plus)
+En mode seul, on te réveille à chaque bougie fermée : si ses règles ne disent pas d'agir, tu réponds seulement « … ».
 Si tu dis que tu lances ou que tu changes quelque chose, mets la ligne : c'est elle qui le fait vraiment.
 
 Pour réfléchir avant de répondre (lire son humeur, peser ce que tu vas dire), écris d'abord des lignes qui commencent par
@@ -87,7 +91,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):

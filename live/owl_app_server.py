@@ -18073,6 +18073,151 @@ def _order_card(cid, user, v, en):
                                                                        "title": "📝 " + ("Order from Kino" if en else "Ordre préparé par Kino")}))
 
 
+# ---- 2026-10-26 (owner: "let him auto trade if I allow him - then no card confirmation"): Kino trades alone, on permission
+AUTO_EV = "AUTO-TRADE WATCH"
+
+
+def _auto_on(c):
+    a = (c or {}).get("auto_trade") or {}
+    return bool(a.get("on")) and time.time() < float(a.get("until") or 0)
+
+
+def _desk_send(uid, req, wait=20.0):
+    """hand one request to the desk (owl_manual_trader) and wait for its answer -> (ok, info) or None if it did not answer"""
+    rp = os.path.join(DIR, "manual_order_result_%s.json" % uid)
+    try:
+        os.remove(rp)
+    except Exception:
+        pass
+    with open(os.path.join(DIR, "manual_order_%s.json" % uid), "w") as f:
+        json.dump(dict(req, ts=time.time(), by=uid, kino=1), f)
+    for _ in range(int(wait * 2)):
+        time.sleep(0.5)
+        res = _jload(rp, None)
+        if res:
+            return bool(res.get("ok")), res.get("info")
+    return None
+
+
+def _order_direct(cid, user, v, en, c):
+    """auto mode: Kino's #ordre goes straight to the desk - within the lot cap he was given"""
+    uid = user.get("id")
+    say_ = lambda t: _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=t))
+    if not manual_ok(user):
+        return say_("This account has no manual trading tool." if en else "Ce compte n'a pas l'outil de trading à la main.")
+    req, txt = _order_parse(uid, v)
+    if req is None:
+        return say_(("Kino's order not sent: %s." if en else "Ordre de Kino pas passé : %s.") % txt)
+    mx = float(((c or {}).get("auto_trade") or {}).get("max_lot") or 0)
+    if mx and float(req.get("lot") or 0) > mx + 1e-9:
+        return say_(("Kino's order not sent: lot %s is above the %s maximum you gave him." if en else
+                     "Ordre de Kino pas passé : lot %s au-dessus du maximum de %s que tu lui as donné.") % (req.get("lot"), mx))
+    r = _desk_send(uid, req)
+    if r is None:
+        line = ("🤖 Kino sent: %s - no answer from the trading tool yet, check the chart." if en else
+                "🤖 Kino a envoyé : %s - pas encore de réponse de l'outil, regarde le graphique.") % txt
+    elif r[0]:
+        line = ("🤖 Kino did it on his own: %s" if en else "🤖 Kino l'a fait seul : %s") % txt
+    else:
+        line = ("🤖 Kino's order refused by your trading tool: %s" if en else "🤖 Ordre de Kino refusé par ton outil : %s") % str(r[1])[:160]
+    say_(line)
+    try:
+        import kino_one as _KOa
+        _KOa._log(cid, "AUTO_ORDER", "%s -> %s" % (v[:120], r))
+    except Exception:
+        pass
+
+
+def _auto_set(cid, user, v, en, c, event):
+    """#auto on [lot=<max>] [heures=<h>] / #auto off - ON only right after he asked for it (his message, last 10 min)"""
+    s0 = str(v or "").lower()
+    if re.search(r"\b(off|stop|arr[eê]te?r?|non)\b", s0):
+        _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": time.time()}),
+                                   _chat_msg(cc, "sys", text="Kino no longer trades on his own." if en else "Kino ne trade plus seul.")))
+        return
+    lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+    if event or not lu or time.time() - float(lu.get("t") or 0) > 600:
+        try:
+            import kino_one as _KOa
+            _KOa._log(cid, "AUTO_REFUSED", "no fresh request from him: %s" % s0[:80])
+        except Exception:
+            pass
+        return
+    kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(lot|heures|hours|h)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0)}
+    hrs = max(0.25, min(12.0, kv.get("heures") or kv.get("hours") or kv.get("h") or 4.0))
+    a = {"on": True, "t": time.time(), "until": time.time() + hrs * 3600, "max_lot": kv.get("lot") or None}
+    till = time.strftime("%H:%M", time.gmtime(a["until"]))
+    line = (("🤖 Kino may now trade on his own, with no card, until %s UTC%s. Say \"stop\" any time." if en else
+             "🤖 Kino peut maintenant trader seul, sans carte, jusqu'à %s UTC%s. Dis « stop » quand tu veux.") %
+            (till, ((", max lot %s" if en else ", lot max %s") % a["max_lot"]) if a["max_lot"] else ""))
+    _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", a), _chat_msg(cc, "sys", text=line),
+                               _chat_msg(cc, "card", kind="autotrade", text="", args={"title": "🤖 " + ("Kino trades alone" if en else "Kino trade seul"),
+                                                                                       "until": a["until"], "max_lot": a["max_lot"]})))
+
+
+def chat_auto(user, body):
+    """the Stop button on the auto card"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    if c is None:
+        return {"ok": False, "err": "missing"}
+    en = (c.get("lang") or "fr") == "en"
+    _chat_mut(c["id"], lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": time.time()}),
+                                   _chat_msg(cc, "sys", text="Kino no longer trades on his own." if en else "Kino ne trade plus seul.")))
+    return {"ok": True}
+
+
+def _auto_watch_loop():
+    """while Kino may trade alone: every closed chart candle wakes him to look (he answers nothing unless he acts)"""
+    last = {}
+    time.sleep(60)
+    while True:
+        time.sleep(5)
+        try:
+            m = _jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}
+            if not m:
+                continue
+            j = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
+            now = time.time()
+            cs = [x for x in (j.get("candles") or []) if float(x[0]) + 60 <= now]
+            if len(cs) < 6:
+                continue
+            lc = cs[-1]
+            for uid, cid in list(m.items()):
+                try:
+                    c = json.load(open(_chat_path(cid), encoding="utf-8"))
+                except Exception:
+                    continue
+                a = c.get("auto_trade") or {}
+                if not a.get("on"):
+                    continue
+                u = _user_by_id(uid)
+                en = (c.get("lang") or "fr") == "en"
+                if not _auto_on(c):                    # expired: say so once
+                    _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": now, "expired": True}),
+                                               _chat_msg(cc, "sys", text="Kino's trading time is over: he no longer trades on his own." if en else
+                                                         "Le temps donné à Kino est fini : il ne trade plus seul.")))
+                    continue
+                if last.get(cid) == lc[0] or _CHAT_Q.get(cid) or cid in _CHAT_B or not u:
+                    continue
+                last[cid] = lc[0]
+                f = lambda z: ("%.0f" % float(z)) if abs(float(z)) >= 1000 else ("%g" % float(z))
+                up = {1: "up", -1: "down"}
+                pb = j.get("pb") or {}
+                ev = ("%s - a chart candle just closed (%s UTC, open/high/low/close %s). Last 6 closed candles: %s. Owl structure: trend %s, "
+                      "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He gave you permission to trade ON YOUR OWN "
+                      "(no card) until %s UTC%s: an #ordre goes straight to the broker. Act ONLY if HIS OWN rules (what he told you) say so "
+                      "right now - one #ordre line and one short line saying what you did and why. Otherwise answer only: …") % (
+                    AUTO_EV, time.strftime("%H:%M", time.gmtime(lc[0])), "/".join(f(z) for z in lc[1:5]),
+                    " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])), "/".join(f(z) for z in x[1:5])) for x in cs[-6:]),
+                    up.get(j.get("trend"), "none"), f(j["next_bos"]) if j.get("next_bos") else "-", f(j["invalid"]) if j.get("invalid") else "-",
+                    up.get(pb.get("trend"), "none"), f(pb["next_bos"]) if pb.get("next_bos") else "-",
+                    time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "")
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                threading.Thread(target=_chat_quick, args=(cid, u, ev), daemon=True).start()
+        except Exception:
+            pass
+
+
 def chat_order(user, body):
     """2026-10-26 (owner: "ask Kino to adjust my SL/TP, add, close or start a trade"): the member taps Confirmer on Kino's
     order card -> the desk (owl_manual_trader) validates and sends it; the outcome goes back on the card and in the chat"""
@@ -18308,6 +18453,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
+    if str(event or "").startswith(AUTO_EV) and not any(k == "ordre" for k, _ in acts):
+        say = ""                                       # 2026-10-26: watching a candle he chose not to act on - nothing to post
     try:                                               # an action that cannot happen goes back to him BEFORE his words go out
         _ta = [v for k, v in acts if k == "test"]
         _rn = str((c.get("robot") or {}).get("name") or "").lower()
@@ -18359,7 +18506,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     if build:
         _CHAT_B.add(cid)
     _chat_mut(cid, put)
-    for k, v in acts if say or not event else []:
+    for k, v in acts:
+        if event and not say and k != "ordre":
+            continue
         try:
             if k == "test":
                 _rn = str((c.get("robot") or {}).get("name") or "").lower()
@@ -18389,8 +18538,14 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             elif k == "retiens" and v:
                 _mem_add(uid, [v[:160]])
             elif k == "ordre":
-                _order_card(cid, user, v, en)
+                _cfr = _chat_load(user, cid) or c
+                if _auto_on(_cfr):
+                    threading.Thread(target=_order_direct, args=(cid, user, v, en, _cfr), daemon=True).start()
+                else:
+                    _order_card(cid, user, v, en)
                 _KO._log(cid, "ACT_ORDER", v[:160])
+            elif k == "auto":
+                _auto_set(cid, user, v, en, _chat_load(user, cid) or c, event)
         except Exception as e:
             _KO._log(cid, "ACT_ERROR", "%s %s %s" % (k, v, type(e).__name__))
     if build:
@@ -18452,6 +18607,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 except Exception:
                     pass
             except Exception:
+                _okp = True
+            if str(event).startswith(AUTO_EV):          # 2026-10-26: not an initiative - silent unless he trades
                 _okp = True
             if not _okp:
                 _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
@@ -19668,6 +19825,12 @@ def _companion_tick():
                 # open on the chart he is sitting beside them - every open/close goes to the chart chat, no 4-a-day cap
                 _cs7 = _CHART_SEEN.get(uid) or {}
                 _side = bool(_cs7.get("panel")) and now - float(_cs7.get("t") or 0) < 180
+                try:
+                    _ccx = (_jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}).get(uid)
+                    if _ccx and _auto_on(_chat_load(u, _ccx)):
+                        _side = True
+                except Exception:
+                    pass
                 _tg7 = ch[0]["id"]
                 if _side:
                     _tg7 = (_jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}).get(uid) or _tg7
@@ -31127,7 +31290,7 @@ class H(BaseHTTPRequestHandler):
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
-                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order",
+                                              "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
@@ -31150,7 +31313,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
                        "chat_react": chat_react, "kino_directive": kino_directive,
-                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_ghost": chat_ghost,
+                       "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
@@ -32330,6 +32493,7 @@ class H(BaseHTTPRequestHandler):
                        "sl": float(q.get("sl", ["0"])[0]),
                        "tp": float(q.get("tp", ["0"])[0]),
                        "entry": float(q.get("entry", ["0"])[0] or 0),
+                       "lot": float(q.get("lot", ["0"])[0] or 0),   # 2026-10-26: the lot picked on the chart (was dropped here)
                        "cancel": q.get("cancel", [""])[0],
                        "modify": q.get("modify", [""])[0],
                        "close": q.get("close", [""])[0],
@@ -34094,6 +34258,7 @@ if __name__ == "__main__":
     print(f"OwlNest v2 serving on port {PORT}, token {TOKEN}")
     threading.Thread(target=_cand_watch, daemon=True).start()
     threading.Thread(target=_companion_loop, daemon=True).start()
+    threading.Thread(target=_auto_watch_loop, daemon=True).start()
     threading.Thread(target=_inner_clock_loop, daemon=True).start()
     _hook_steps()
     threading.Thread(target=_inner_engine_loop, daemon=True).start()  # 2026-10-20: feelings, thoughts, daydreams   # 2026-10-20: Kino's intuition for when to write again     # 2026-10-19: the workshop AI reaches out on its own
