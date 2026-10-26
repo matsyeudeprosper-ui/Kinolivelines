@@ -15,7 +15,8 @@ import io, os, re, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "pace.log")
-DISCRETIONARY = ("YOUR INITIATIV", "A THOUGHT CAME", "INNER VOICE", "PROACTIVE CHECK", "GOAL STEP", "RESEARCH DIARY", "YOUR STORY")
+DISCRETIONARY = ("YOUR INITIATIV", "A THOUGHT CAME", "INNER VOICE", "PROACTIVE CHECK", "GOAL STEP", "RESEARCH DIARY", "YOUR STORY",
+                 "HEADS-UP")     # 2026-10-26 11:36 (watch): a 6th unanswered message of his own - heads-up was never gated
 NEWS = ("LIVE TRADE", "GUARDIAN", "LUCK TEST FINISHED", "LAB NEWS", "END OF DAY", "GHOST TRADE")
 # 2026-10-24 06:00: seven messages of his own in six hours against three of the member's - trade comments, luck news and the
 # guardian were "news" and never counted as unanswered. News still comes when it happens, but not to a wall: after three own
