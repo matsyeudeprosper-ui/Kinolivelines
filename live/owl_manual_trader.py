@@ -927,6 +927,21 @@ def robot_tick(bar, sig, prev_trend, eng):
         return
     tp = RL.tp_for(rules, d, px, abs(px - sl), float(cfg.get("rr") or B.RR))
     lot = _norm_lot(cfg["lot"])
+    if cfg.get("lot_rule"):                        # the robot's sizing rule over ITS OWN closed trades since it started here
+        try:
+            import robot_lot as RLOT
+            H = RLOT.History(0.0)
+            ds = mt5.history_deals_get(datetime.utcfromtimestamp(float(cfg.get("t") or 0)) - timedelta(hours=3),
+                                       datetime.utcnow() + timedelta(days=1)) or []
+            for x in sorted(ds, key=lambda x: x.time_msc):
+                if x.magic == ROBOT_MAGIC and x.entry == mt5.DEAL_ENTRY_OUT and x.time_msc / 1000.0 >= float(cfg.get("t") or 0) - 60:
+                    H.add(x.profit + x.commission + x.swap)
+            ai = mt5.account_info()
+            V = H.names(ai.balance if ai else None)
+            V["start_balance"] = (ai.balance - H.net) if ai else 0.0
+            lot = min(_norm_lot(RLOT.lot(cfg["lot_rule"], V)), _norm_lot(cfg["lot"]))
+        except Exception as _le:
+            say(f"ROBOT taille (formule) erreur {type(_le).__name__}: {_le} - lot {lot}")
     r = mt5.order_send({"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lot,
                         "type": mt5.ORDER_TYPE_BUY if d == 1 else mt5.ORDER_TYPE_SELL, "price": px,
                         "sl": round(sl, 2), "tp": round(tp, 2) if tp else 0.0, "deviation": 200, "magic": ROBOT_MAGIC,

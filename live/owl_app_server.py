@@ -17992,6 +17992,36 @@ def chart_chat(user, body):
     return {"ok": True, "id": cid}
 
 
+def _lot_package(base, formula):
+    """a money package = `base` + a lot formula (robots/robot_lot.py); the same formula and base give the same id"""
+    import hashlib as _hlp
+    _rc()
+    import robot_lot as _RLp
+    _RLp.check(formula)
+    pid = "lot-" + _hlp.sha1(("%s|%s" % (base, formula)).encode("utf-8")).hexdigest()[:8]
+    raw = json.load(open(PKG_FILE, encoding="utf-8"))
+    pk = raw.setdefault("packages", {})
+    if pid not in pk:
+        pk[pid] = {"extends": base, "label": "Taille : " + formula[:80], "lot_rule": formula}
+        _atomic_json(PKG_FILE, raw, ensure_ascii=False, indent=1)   # indent 1 = the file's own layout, byte for byte
+    return pid
+
+
+def _pkg_chain_get(name, key):
+    """a package field, following `extends` (as the bot and the bench do)"""
+    try:
+        pk = json.load(open(PKG_FILE, encoding="utf-8")).get("packages") or {}
+    except Exception:
+        return None
+    seen, cur = set(), name
+    while cur and cur in pk and cur not in seen:
+        seen.add(cur)
+        if key in pk[cur]:
+            return pk[cur][key]
+        cur = pk[cur].get("extends")
+    return None
+
+
 def _desk_robot_cfg(uid):
     return _jload(os.path.join(DIR, "desk_robot_%s.json" % uid), {}) or {}
 
@@ -18034,11 +18064,15 @@ def _desk_robot_set(cid, user, v, en, c):
         return say_(("🤖 «%s» cannot run on an account yet: %s" if en else "🤖 « %s » ne peut pas encore tourner sur un compte : %s") % (
             r0.get("name_fr") or r0["id"], str(e)[:120]))
     lot = kv.get("lot") or old.get("lot") or 0.01
+    _lr = _pkg_chain_get(pkg.get("extends"), "lot_rule")   # the robot's own sizing rule; `lot` is then the most it may use
+    if _lr and not kv.get("lot"):
+        lot = old.get("lot") if old.get("id") == r0["id"] and old.get("lot") else 1.0
     cfg = {"on": True, "id": r0["id"], "name": r0.get("name_fr") or r0["id"], "rules": pkg.get("robot_rules") or {},
-           "rr": pkg.get("rr"), "lot": lot, "t": time.time(), "by": "kino", "cid": cid}
+           "rr": pkg.get("rr"), "lot": lot, "lot_rule": _lr, "t": time.time(), "by": "kino", "cid": cid}
     json.dump(cfg, open(pth, "w"), ensure_ascii=False)
+    _lt = (("%s, max %s" % (_lr, lot)) if _lr and lot < 1.0 else _lr) if _lr else lot
     say_(("🤖 Robot «%s» now runs on this account (lot %s), next to your own trades. Kino watches it." if en else
-          "🤖 Le robot « %s » tourne maintenant sur ce compte (lot %s), à côté de tes trades à la main. Kino le surveille.") % (cfg["name"], lot))
+          "🤖 Le robot « %s » tourne maintenant sur ce compte (lot %s), à côté de tes trades à la main. Kino le surveille.") % (cfg["name"], _lt))
 
 
 def _desk_robot_log(uid, since):
@@ -22556,6 +22590,8 @@ def chat_test(user, body):
         for k in ("recovery", "money"):
             if (rob.get(k) or {}).get("use"):
                 parts[k] = rob[k]["use"]
+        if (rob.get("money") or {}).get("lot"):       # 2026-10-26: the member's sizing rule, as a package of its own
+            parts["money"] = _lot_package(rob["money"].get("use") or "simple", rob["money"]["lot"])
         parts["filters"] = [pid_of("filter", f) for f in rob.get("filters") or []]
     except Exception as e:
         return {"ok": False, "err": "piece:" + str(e)[:40]}

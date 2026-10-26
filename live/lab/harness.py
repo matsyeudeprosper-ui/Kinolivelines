@@ -16,6 +16,10 @@ Verdict rules (fixed, never tuned):
   C  everything else
   =  the change touched fewer than 3 trades / less than $1
 """
+import sys as _sys_lot
+import os as _os_lot
+_sys_lot.path.insert(0, _os_lot.path.join(_os_lot.path.dirname(_os_lot.path.dirname(_os_lot.path.abspath(__file__))), "robots"))
+import robot_lot as _RLOT
 import argparse
 import numpy as np
 import bisect
@@ -79,6 +83,11 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # (bullets) are scaled by the same X. The trade is still taken.
             # Empty list or 1.0 = off.
             "size_hours": [], "hour_size": 1.0,
+            # 2026-10-26 (chercheur, day_loss_size): day_loss_size = lot
+            # multiplier when the previous closed trade lost AND the entry's
+            # UTC hour is 08-23; its catch-up trades (bullets) follow it, like
+            # hour_size (stacks with it). The trade is still taken. 1.0 = off.
+            "day_loss_size": 1.0,
             # 2026-10-26 (chercheur, hour_brake_rebuild): hour_brake_days =
             # the day is cut in four UTC blocks (01-08, 08-16, 16-21, 21-01);
             # no entry when the replay's own trades entered in the same block
@@ -491,6 +500,7 @@ def package_cfg(name, over=None):
     c["kill_net"] = float(merged.get("kill_net") or 0.0)
     c["lot"] = float(merged.get("base_lot") or CFG_BASE["lot"])
     c["bullets"] = float(merged.get("max_extra", CFG_BASE["bullets"]))
+    c["lot_rule"] = merged.get("lot_rule")          # 2026-10-26: a lot formula over the robot's own history (robots/robot_lot.py)
     c["scale_ref"] = float(merged.get("scale_ref_balance") or CFG_BASE["scale_ref"])
     if not merged.get("scale_with_balance", True):
         c["balance"] = 0.0          # this package keeps the flat lot
@@ -538,6 +548,7 @@ def simulate(R, spread, cfg):
     n_minbal = 0
     n_rc_over = 0
     NB, K = float(c["bullets"]), int(c["k_streak"])
+    LADH = _RLOT.History(200.0) if c.get("lot_rule") else None   # robot_lot: a money with a lot formula
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     size_h = set(int(h) for h in (c["size_hours"] or []))
     eng = B.Struct()
@@ -797,6 +808,8 @@ def simulate(R, spread, cfg):
                     cur_tr["storm_exit"] = True
                     cur_tr = None
                 streak = 0 if win else streak + 1
+                if LADH is not None:                # 2026-10-26: the robot's lot formula reads its own history
+                    LADH.add(run - before)
                 wins += 1 if win else 0
                 pk = max(pk, run)
                 if LOSSPAUSE or EQHOOK is not None:
@@ -900,6 +913,8 @@ def simulate(R, spread, cfg):
                     cur_tr["tc"] = t      # 2026-10-08: close time (causal joins)
                     cur_tr = None
                 streak = 0 if win else streak + 1
+                if LADH is not None:                # 2026-10-26: the robot's lot formula reads its own history
+                    LADH.add(run - before)
                 wins += 1 if win else 0
                 pk = max(pk, run)
                 if LOSSPAUSE or EQHOOK is not None:
@@ -1119,6 +1134,8 @@ def simulate(R, spread, cfg):
                     cur_tr["flip_exit"] = True
                     cur_tr = None
                 streak = 0 if _win else streak + 1
+                if LADH is not None:                # 2026-10-26: the robot's lot formula reads its own history
+                    LADH.add(run - _before)
                 wins += 1 if _win else 0
                 pk = max(pk, run)
                 if LOSSPAUSE or EQHOOK is not None:
@@ -1277,6 +1294,8 @@ def simulate(R, spread, cfg):
             blocked += 1
             continue
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
+        if LADH is not None:
+            lot = _RLOT.lot(c["lot_rule"], LADH.names())
         if flip and nv >= 1.0:
             lot *= float(c["flip_hot_size"])
         if not i_fire and i >= 1440 and mv2 == 1:
@@ -1286,6 +1305,8 @@ def simulate(R, spread, cfg):
         if flip and streak > 0:
             lot *= float(c["flip_loss_size"])
         pos_hs = float(c["hour_size"]) if g.hour in size_h else 1.0
+        if streak > 0 and g.hour >= 8:
+            pos_hs *= float(c["day_loss_size"])
         lot *= pos_hs
         eq_v = False
         eq_mult = 1.0
@@ -1552,6 +1573,7 @@ def simulate_real(T, R, spread, cfg):
         rr = float(c["cap_rr"])     # a capped account's own target
     bal_ref = bal if bal > 0 else BAL0
     NB, K = float(c["bullets"]), int(c["k_streak"])
+    LADH = _RLOT.History(200.0) if c.get("lot_rule") else None   # robot_lot: a money with a lot formula
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     size_h = set(int(h) for h in (c["size_hours"] or []))
     times =[int(r["time"]) for r in R]
@@ -1647,6 +1669,8 @@ def simulate_real(T, R, spread, cfg):
             blocked += 1
             continue
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
+        if LADH is not None:
+            lot = _RLOT.lot(c["lot_rule"], LADH.names())
         if e["flip"] and nv >= 1.0:
             lot *= float(c["flip_hot_size"])
         if not e.get("internal") and e.get("move") == 1:
@@ -1656,6 +1680,8 @@ def simulate_real(T, R, spread, cfg):
         if e["flip"] and streak > 0:
             lot *= float(c["flip_loss_size"])
         hs = float(c["hour_size"]) if g.hour in size_h else 1.0
+        if streak > 0 and g.hour >= 8:
+            hs *= float(c["day_loss_size"])
         lot *= hs
         tp =ent + d * rr * dist
         mid = ent - d * dist / 2.0
@@ -1698,6 +1724,8 @@ def simulate_real(T, R, spread, cfg):
         if c["hour_brake_days"]:
             hb_log.append((t, _hb_block(g.hour), run - _before))
         streak = 0 if win else streak + 1
+        if LADH is not None:                # 2026-10-26: the robot's lot formula reads its own history
+            LADH.add(run - _before)
         wins += 1 if win else 0
         pk = max(pk, run)
         worst = max(worst, pk - run)
@@ -1734,6 +1762,7 @@ def main():
     ap.add_argument("--hour-size", type=str, help="HOURS:X = lot multiplier X (bullets too) at these UTC entry hours, e.g. 8-24:0.5")
     ap.add_argument("--hour-brake", type=int, help="no entry in a UTC block (01-08, 08-16, 16-21, 21-01) while its trades of the last X days (at least 5) lose in total; 7-28, 0 = off")
     ap.add_argument("--flip-loss-size", type=float, help="lot multiplier on a change-of-direction trade when the previous trade lost")
+    ap.add_argument("--day-loss-size", type=float, help="lot multiplier (bullets too) when the previous trade lost and the entry is 08-24 UTC (0.25-1.0)")
     ap.add_argument("--pb-gate", type=int, help="1 = the live pullback-direction filter (the bot's own rule), 0 = off")
     ap.add_argument("--pb-gate-mode", type=str, help="the filter's rule: trend (official), choch, strict")
     ap.add_argument("--nerv-gate", action="store_true")
@@ -1780,6 +1809,7 @@ def main():
     if a.early_moves_size is not None: over["early_moves_size"] = a.early_moves_size
     if a.early_moves_max is not None: over["early_moves_max"] = a.early_moves_max
     if a.flip_loss_size is not None: over["flip_loss_size"] = a.flip_loss_size
+    if a.day_loss_size is not None: over["day_loss_size"] = a.day_loss_size
     if a.hour_brake is not None: over["hour_brake_days"] = a.hour_brake
     if a.hour_size:
         _hp, _hx = a.hour_size.rsplit(":", 1)

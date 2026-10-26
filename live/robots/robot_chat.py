@@ -285,7 +285,16 @@ FORMULA = an expression over the candles (1 minute by default):
   distance in points (no fixed stop, no "close - 50"): use atr() multiples ("close - 2 * atr(14)") or a share of the
   price ("close * 0.998"). Keep formulas short and readable.
   A formula entry has no protected point: give it a formula stop (or a fixed one on Bitcoin).
-Recovery and money: only the existing pieces.
+Recovery: only the existing pieces. MONEY: an existing money piece ("simple" for their idea alone) - and when the member
+  has ANY sizing rule (a lot that changes with losses, wins, streaks, balance, drawdown: a ladder, a martingale, anti-martingale,
+  a % of the balance...), add a LOT FORMULA to it: money SLOT = {"use": "simple", "lot": LOTFORMULA}
+  LOTFORMULA names: losses_since_peak (losses since the robot's net last made a new high; 0 at a new high) loss_streak
+  win_streak trades wins losses net peak drawdown (peak - net) balance start_balance last_pnl
+  functions: min max abs round floor; + - * /  < <= > >= == !=  and or not  and  A if CONDITION else B
+  the value is the lot (floored to 0.01, at least 0.01). Examples:
+    "min(0.04, 0.01 + 0.01 * losses_since_peak)"   +0.01 after each loss, 0.04 at most, back to 0.01 at a new high
+    "0.02 if loss_streak >= 2 else 0.01"            "floor(balance / 100) * 0.01"   (0.01 per 100 $)
+  A sizing rule CAN ALWAYS be coded this way - never tell a member it cannot.
 
 CHARTS - you and the member can SHOW things, like two traders looking at one screen:
 - The member can mark a chart (buy / sell / stop / exit / line). You get the marks and the NUMBERS at the marked
@@ -1453,6 +1462,17 @@ def clean(raw, pieces, owl, prev, markets=None):
         return ans, probs
 
     def one(slot, v, typ):
+        if typ == "money" and isinstance(v, dict) and v.get("lot"):
+            # 2026-10-26: a money piece + the member's lot formula (robots/robot_lot.py)
+            import robot_lot as _RLc
+            try:
+                _RLc.check(str(v["lot"]))
+            except _RLc.LotError as e:
+                probs.append("money: lot formula %s (%s)" % (e, str(v["lot"])[:120])); return None
+            pid = str(v.get("use") or "simple")
+            if pid not in P or P[pid].get("type") != "money":
+                pid = "simple"
+            return {"use": pid, "lot": str(v["lot"]).strip()[:300]}
         if isinstance(v, dict) and v.get("use"):
             pid = str(v["use"])
             if pid in P and P[pid].get("type") == typ and P[pid].get("status") not in ("pending", "to_build"):
