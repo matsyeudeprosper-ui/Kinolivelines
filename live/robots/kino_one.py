@@ -88,8 +88,8 @@ def _log(cid, kind, msg):
 
 
 def system(lang="fr"):
-    """stable between turns (warm process + cache): only the language note varies"""
-    return SELF + (SELF_EN_NOTE if lang == "en" else "")
+    """stable between turns AND languages (one warm process + cache); the language goes in the message"""
+    return SELF
 
 
 def _hm(t):
@@ -173,6 +173,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     fil = md.get("pursuing") or md.get("next") or ""
     P = []
     P.append(("NOW: " if en else "MAINTENANT : ") + now_line)
+    if en:
+        P.append("He writes in English: answer in English, same person, same voice.")
     P.append(("WHAT IS TRUE THIS MINUTE (measured by the app):\n" if en else "CE QUI EST VRAI À CETTE MINUTE (mesuré par l'appli) :\n") + (facts or "-"))
     if memory:
         P.append(("WHAT YOU REMEMBER:\n" if en else "CE DONT TU TE SOUVIENS :\n") + memory)

@@ -17695,12 +17695,29 @@ def _one_facts(user, c):
                 L.append("Ce robot, tel qu'il est maintenant (version %s) : %s." % (c.get("rev") or 1, " | ".join(_st)))
         except Exception:
             pass
+        try:                                           # 2026-10-26 01:34 (watch): "I can't see those charts" - the moments shown are facts
+            _dm = next((x for x in reversed(c.get("msgs") or []) if x.get("role") == "demo" and x.get("check")), None)
+            if _dm and _check_state(c, user) != "ok":
+                _V = (c.get("check") or {}).get("votes") or {}
+                _ms = []
+                for _j, _x in enumerate(_dm.get("moments") or []):
+                    _sd = _x.get("side") or _dm.get("side")
+                    _ok = (-1 if _sd == "sell" else 1) * float(_x.get("after") or 0) > 0
+                    _ms.append("%s %s, 30 min après %s (%s points)%s" % (
+                        time.strftime("%a %d/%m %H:%M", time.gmtime(float(_x["t"]))), "vente" if _sd == "sell" else "achat",
+                        "dans le bon sens" if _ok else "contre lui", round(abs(float(_x.get("after") or 0)), 1),
+                        {True: " [il a dit oui]", False: " [il a dit non]"}.get(_V.get(str(_j)), "")))
+                L.append("Les moments affichés sous la conversation pour qu'il vérifie (%s, %d en tout, %d dans le bon sens) : %s" % (
+                    ("la semaine du %s" % (_dm.get("week") or {}).get("mon")) if _dm.get("week") else "les derniers", len(_ms),
+                    sum(1 for x in _ms if "bon sens" in x), " ; ".join(_ms[:24])))
+        except Exception:
+            pass
         try:                                           # 2026-10-26 01:06 (watch): "je lance le test" - the app first shows 5 moments to check
             _ck = _check_state(c, user)
             if _ck != "ok":
-                L.append({"none": "Avant son test, il doit d'abord regarder 5 moments où ce robot aurait tradé et dire oui ou non pour chacun "
-                                  "(c'est la règle de l'appli) : #test lui montre ces moments, et le test part quand il a validé.",
-                          "open": "Les 5 moments à vérifier avant le test sont affichés, il n'a pas encore répondu à tous : le test partira après.",
+                L.append({"none": "Avant son test, il doit d'abord regarder une semaine où ce robot aurait tradé et dire si c'est ce qu'il veut "
+                                  "(c'est la règle de l'appli) : #test lui montre cette semaine, et le test part quand il a validé.",
+                          "open": "La semaine à vérifier avant le test est affichée, il n'a pas encore répondu : le test partira après son oui.",
                           "no": "Il a refusé un des 5 moments affichés : le robot ne fait pas ce qu'il voulait, il faut le corriger avant de tester."}.get(_ck, ""))
         except Exception:
             pass
