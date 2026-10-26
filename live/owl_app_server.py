@@ -13700,6 +13700,18 @@ def robot_test(user, body):
     r = next((x for x in rob if x.get("id") == body.get("id")), None)
     if not _robot_mine(user, r) or r.get("id") == "owl":
         return {"ok": False, "err": "not_yours"}
+    # 2026-10-26 05:02 (watch): "Or tendances alignées" (XAUUSD) came back -60 $ on 61 trades - tested on BITCOIN, because this
+    # queue is the Bitcoin bench. A robot of another market is tested on that market, on the member's own broker symbol.
+    _mk = str(r.get("market") or "BTCUSD")
+    _mkb = (_mk[:-1] if _mk.endswith("m") and _mk[:-1].isupper() else _mk).upper()
+    if not _mkb.startswith("BTCUSD"):
+        _sj, _ = _member_symbols(user)
+        _sy = next((x["s"] for x in _sj.get("symbols") or []
+                    if (x["s"][:-1] if x["s"].endswith("m") and x["s"][:-1].isupper() else x["s"]).upper() == _mkb), None)
+        if not _sy:
+            return {"ok": False, "err": "market"}
+        _rt = robot_test_market(user, {"id": r["id"], "sym": _sy})
+        return dict(_rt, market=_sy)
     if r.get("stage") in ("tested", "paper", "demo", "real") and body.get("again"):
         if r.get("retest"):
             return {"ok": True, "already": True}
@@ -17926,8 +17938,18 @@ def _one_now(user, c):
         lh = _local_hour(uid)
     except Exception:
         lh = None
-    return "%s %s UTC%s ; %s." % (J[now.weekday()], now.strftime("%d/%m %H:%M"), (" - chez lui il est %s h" % lh) if lh is not None else "",
-                                  "il a l'appli ouverte" if seen < 120 else ("il n'est pas dans l'appli (vu il y a %d min)" % (seen / 60) if seen < 86400 else "il n'est pas dans l'appli"))
+    _usual = ""
+    try:                                               # 2026-10-26 05:02 (watch): "Morning..." at 7 am his time while he slept
+        import kino_person as _KPn
+        _H = (_KPn._load().get(uid) or {}).get("hours") or [0] * 24
+        _tot = sum(_H)
+        if _tot >= 12 and _H[now.hour] < max(1, 0.04 * _tot) and seen > 600:
+            _usual = " ; d'habitude il n'est pas là à cette heure-ci (il écrit plutôt %s), il dort ou il est pris" % _KPn.usual_hours(uid)
+    except Exception:
+        pass
+    return "%s %s UTC%s ; %s%s." % (J[now.weekday()], now.strftime("%d/%m %H:%M"), (" - chez lui il est %s h" % lh) if lh is not None else "",
+                                    "il a l'appli ouverte" if seen < 120 else ("il n'est pas dans l'appli (vu il y a %d min)" % (seen / 60) if seen < 86400 else "il n'est pas dans l'appli"),
+                                    _usual)
 
 
 def _one_turn(cid, user, c, event=None, notify=False, important=False):
