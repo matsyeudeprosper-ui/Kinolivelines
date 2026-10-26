@@ -17640,6 +17640,18 @@ def _one_facts(user, c):
                         L.append("Ses règles : " + " | ".join(_ws))
             except Exception:
                 pass
+        try:                                           # 2026-10-26: the owner paused real money - he must not say "l'Owl tourne"
+            _pz = None
+            for _pf in ("owl_trading_pause.json", "owl_trading_pause_%s.json" % uid):
+                _pj = _jload(os.path.join(DIR, _pf), {}) or {}
+                if _pj.get("paused"):
+                    _pz = _pj
+            if _pz:
+                L.append("MAIS le robot de son vrai compte est EN PAUSE depuis le %s : il ne prend plus aucun nouveau trade (raison : %s). "
+                         "Les comptes démo (argent fictif) continuent pour voir quand le marché redevient bon." % (
+                             time.strftime("%d/%m %H:%M UTC", time.gmtime(float(_pz.get("t") or 0))), str(_pz.get("by") or "décision du propriétaire")[:160]))
+        except Exception:
+            pass
         ss = nd.get("since_start") or {}
         if ss.get("n"):
             L.append("Sur ce compte depuis le %s : %s trades, %s gagnés, %+.2f $ net. Il s'arrête tout seul à -60 $ net depuis le début (marge restante %.2f $)." % (
