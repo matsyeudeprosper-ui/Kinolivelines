@@ -18973,6 +18973,19 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
+    # 2026-10-27 11:34 (watch): one member message, two turns (the first took 85 s) - both answered, 0.03 lot in one and
+    # 0.02 in the other. A member turn whose message already got its answer while it was thinking posts nothing, does nothing.
+    if not event:
+        try:
+            _cn = _chat_load(user, cid) or {}
+            _M9 = _cn.get("msgs") or []
+            _lu9 = max([float(x.get("t") or 0) for x in _M9 if x.get("role") in ("user", "show", "image", "doc")] or [0])
+            if _lu9 <= _seen_t and any(x.get("role") == "ai" and not x.get("event") and float(x.get("t") or 0) >= _seen_t
+                                       and x.get("text") for x in _M9[-6:]):
+                _KO._log(cid, "DUP_TURN", "already answered - dropped: %s" % str(say)[:120])
+                return
+        except Exception:
+            pass
     if str(event or "").startswith(AUTO_EV) and not any(k == "ordre" for k, _ in acts):
         say = ""                                       # 2026-10-26: watching a candle he chose not to act on - nothing to post
     try:                                               # an action that cannot happen goes back to him BEFORE his words go out
