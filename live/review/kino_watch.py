@@ -12,6 +12,14 @@ LIVE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROB = os.path.join(LIVE, "robots")
 STATE = os.path.join(os.path.dirname(LIVE), "study", "kino_watch_state.json")
 UID = sys.argv[sys.argv.index("--uid") + 1] if "--uid" in sys.argv else "kino"
+# 2026-10-27: one person can have several logins (robots/persons.json {"std": "kino"}) - his main chat lives on std,
+# so watching uid "kino" alone missed every message of the night
+try:
+    _P = json.load(open(os.path.join(ROB, "persons.json"), encoding="utf-8"))
+except Exception:
+    _P = {}
+_ROOT = _P.get(UID, UID)
+UIDS = {_ROOT} | {u for u, r in _P.items() if r == _ROOT}
 now = time.time()
 try:
     st = json.load(open(STATE, encoding="utf-8"))
@@ -28,7 +36,7 @@ for f in sorted(glob.glob(os.path.join(ROB, "chats", "*.json")), key=os.path.get
         c = json.load(open(f, encoding="utf-8"))
     except Exception:
         continue
-    if c.get("uid") != UID:
+    if c.get("uid") not in UIDS:
         continue
     M = [m for m in c.get("msgs") or [] if float(m.get("t") or 0) > since]
     if not M:
@@ -77,7 +85,7 @@ except Exception:
 # 3 commitments
 try:
     d = json.load(open(os.path.join(ROB, "kino_commitments.json"), encoding="utf-8"))
-    C = [x for x in d.get("items") or [] if x.get("uid") == UID and (float(x.get("t") or 0) > since or float(x.get("done_t") or 0) > since)]
+    C = [x for x in d.get("items") or [] if x.get("uid") in UIDS and (float(x.get("t") or 0) > since or float(x.get("done_t") or 0) > since)]
     if C:
         print("\n== commitments:")
         for x in C[-12:]:
@@ -87,7 +95,7 @@ except Exception:
 
 # 4 surprises, plan, readings
 try:
-    S = [x for x in (json.load(open(os.path.join(ROB, "kino_surprise.json"), encoding="utf-8")).get("log") or []) if float(x["t"]) > since and x.get("uid") in (None, UID)]
+    S = [x for x in (json.load(open(os.path.join(ROB, "kino_surprise.json"), encoding="utf-8")).get("log") or []) if float(x["t"]) > since and (x.get("uid") is None or x.get("uid") in UIDS)]
     if S:
         print("\n== surprises:")
         for x in S[-6:]:

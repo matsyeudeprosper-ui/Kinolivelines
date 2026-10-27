@@ -18523,6 +18523,9 @@ def _desk_send(uid, req, wait=20.0):
     return None
 
 
+_AUTO_SENT, _AUTO_LK = {}, {}
+
+
 def _order_direct(cid, user, v, en, c):
     """auto mode: Kino's #ordre goes straight to the desk - within the lot cap he was given"""
     uid = user.get("id")
@@ -18536,7 +18539,18 @@ def _order_direct(cid, user, v, en, c):
     if mx and float(req.get("lot") or 0) > mx + 1e-9:
         return say_(("Kino's order not sent: lot %s is above the %s maximum you gave him." if en else
                      "Ordre de Kino pas passé : lot %s au-dessus du maximum de %s que tu lui as donné.") % (req.get("lot"), mx))
-    r = _desk_send(uid, req)
+    # 2026-10-27 (watch, 10-26 20:48): his reply and the owner's "you can add" arrived in the same second - two turns, each
+    # sent the same add, and the owner held 0.03 instead of 0.02. One order at a time per account; the same order again
+    # within 60 s is never sent twice.
+    _k = json.dumps({x: y for x, y in req.items() if x not in ("ts", "by", "kino")}, sort_keys=True, default=str)
+    with _AUTO_LK.setdefault(uid, threading.Lock()):
+        _l = _AUTO_SENT.get(uid)
+        if _l and _l[0] == _k and time.time() - _l[1] < 60:
+            say_(("Same order as %d s ago - not sent twice: %s" if en else "Même ordre qu'il y a %d s - pas envoyé deux fois : %s")
+                 % (int(time.time() - _l[1]), txt))
+            return
+        _AUTO_SENT[uid] = (_k, time.time())
+        r = _desk_send(uid, req)
     if r is None:
         line = ("🤖 Kino sent: %s - no answer from the trading tool yet, check the chart." if en else
                 "🤖 Kino a envoyé : %s - pas encore de réponse de l'outil, regarde le graphique.") % txt
