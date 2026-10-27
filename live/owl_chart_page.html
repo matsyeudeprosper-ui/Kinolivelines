@@ -2551,7 +2551,7 @@ function mtCalc(){
   else if(Math.min(dist,rew)<=(MS.s_min_dist||10))bad='SL ou TP trop pres du marche';
   const nr=Math.abs((MT.e0||mkt)-sl)*L,
         or_=MT.sl0?Math.abs((MT.e0||mkt)-MT.sl0)*L:null;
-  if(!bad&&MS.max_risk>0&&nr>MS.max_risk&&(or_===null||nr>or_))
+  if(!bad&&!MS.free_lot&&MS.max_risk>0&&nr>MS.max_risk&&(or_===null||nr>or_))   /* 2026-10-27 owner: no money limit on the free desk - the desk already allows it */
    bad='risque $'+nr.toFixed(2)+' > '+Math.round((MS.max_risk_pct||0.1)*100)+
        '% du solde ($'+MS.max_risk.toFixed(2)+')';
   return{d:MT.d,px:mkt,mkt:mkt,sl:sl,tp:tp,dist:dist,rew:rew,lot:L,bul:0,
@@ -2581,7 +2581,7 @@ function mtCalc(){
       :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
  // the desk refuses a trade risking more than 10% of the balance - say so
  // here rather than letting the refusal arrive after Confirmer
- if(!bad&&!free&&MS.max_risk>0&&dist*L.lot>MS.max_risk)
+ if(!bad&&!MS.free_lot&&MS.max_risk>0&&dist*L.lot>MS.max_risk)
   bad='risque $'+(dist*L.lot).toFixed(2)+' > '+
       Math.round((MS.max_risk_pct||0.1)*100)+'% du solde ($'+
       MS.max_risk.toFixed(2)+') - rapproche le SL';
