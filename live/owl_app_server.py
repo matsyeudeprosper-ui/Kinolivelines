@@ -18238,7 +18238,7 @@ def _chart_seen_facts(uid):
         C2 = [c for c in (tp.get("last") or []) if isinstance(c, list) and len(c) >= 5][-12:]
         if C2:
             try:
-                L.append("Dernières bougies de ce panneau (heure UTC : ouverture/haut/bas/clôture) : " + " | ".join(
+                L.append("Dernières bougies du graphique du HAUT (%s) (heure UTC : ouverture/haut/bas/clôture) : " % tfn + " | ".join(
                     "%s %s" % (time.strftime("%d/%m %H:%M", time.gmtime(float(c[0]))), "/".join(
                         ("%.0f" % float(z) if abs(float(z)) >= 1000 else "%g" % float(z)) for z in c[1:5])) for c in C2))
             except Exception:
@@ -18249,7 +18249,10 @@ def _chart_seen_facts(uid):
             z = float(z)
             return "%.0f" % z if abs(z) >= 1000 else "%g" % z
         try:
-            L.append("Dernières bougies de sa vue (heure UTC : ouverture/haut/bas/clôture) : " + " | ".join(
+            # 2026-10-27 (owner: "does he understand which is the top chart and which the lower one?"): named by place
+            L.append("Dernières bougies %s (heure UTC : ouverture/haut/bas/clôture) : " % (
+                "du graphique du BAS (le graphique principal, %s)" % str(v.get("title") or v.get("sym"))[:30] if isinstance(v.get("top"), dict)
+                else "de sa vue") + " | ".join(
                 "%s %s/%s/%s/%s" % (time.strftime("%H:%M", time.gmtime(float(c[0]))), f(c[1]), f(c[2]), f(c[3]), f(c[4])) for c in C))
         except Exception:
             pass
