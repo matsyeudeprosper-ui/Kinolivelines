@@ -141,6 +141,8 @@ def transcript(msgs, n=40, lang="fr"):
             L.append("[%s] %s : %s" % (_hm(m.get("t")), them, tx or ("(message vocal)" if m.get("audio") else "")))
         elif r == "ai" and tx:
             L.append("[%s] %s : %s" % (_hm(m.get("t")), me, tx))
+            if m.get("mreact"):                       # 2026-10-27 (owner: "does he see an emoji given to his message?")
+                L.append("   (%s : %s)" % ("they reacted to it" if lang == "en" else "il a réagi à ce message", m["mreact"]))
         elif r in ("image", "doc"):
             L.append("[%s] %s : (%s)" % (_hm(m.get("t")), them, "une image" if r == "image" else "un document"))
         elif r in ("test", "sys", "result", "card") and tx:
