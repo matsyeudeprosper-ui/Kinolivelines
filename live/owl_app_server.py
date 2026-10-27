@@ -21527,7 +21527,7 @@ def _inner_engine_once():
                         if dd_.get("formula"):
                             try:
                                 sx_ = _RT.idea_stats(mk_, dd_["formula"], dd_.get("side") if dd_.get("side") in ("buy", "sell") else "buy", 30)
-                                if not sx_.get("error"):
+                                if not sx_.get("error") and float(sx_.get("per_day") or 0) * 30 >= 20:
                                     ex_ = {"formula": dd_["formula"], "side": dd_.get("side") or "buy", "market": mk_,
                                            "measure": "%s fois par jour, bat le hasard dans %s %% des tirages, sur %s" % (sx_.get("per_day"), sx_.get("beats_random_pct"), mk_)}
                             except Exception:
@@ -21583,7 +21583,7 @@ def _inner_engine_once():
                         try:            # a daydream that can be measured is measured (vs random moments)
                             mk = (c.get("robot") or {}).get("market") or "BTCUSD"
                             st = _RT.idea_stats(mk, th["formula"], th["side"], 30)
-                            if not st.get("error"):
+                            if not st.get("error") and float(st.get("per_day") or 0) * 30 >= 20:    # 2026-10-27: 0 signals = nothing measured
                                 br = st.get("beats_random_pct")
                                 extra = {"formula": th["formula"], "side": th["side"], "market": mk,
                                          "measure": "%s fois par jour, bat le hasard dans %s %% des tirages, sur %s" % (st.get("per_day"), br, mk)}

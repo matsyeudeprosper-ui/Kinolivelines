@@ -684,6 +684,17 @@ def work_question(RT):
         _mut(f0)
         return None
     br = st.get("beats_random_pct") or 0
+    # 2026-10-27 13:27 (watch): the formula fired 0.0 times a day and the verdict still said "non, c'est du hasard" - he told
+    # the owner his flip "doesn't beat chance". No signals = nothing was measured: the question stays open, said as such.
+    if float(st.get("per_day") or 0) * 30 < 20:
+        def f0(dd):
+            for y in dd.get("questions") or []:
+                if y["id"] == x["id"]:
+                    y["formula"] = None
+                    y["finding"] = ("pas mesurable : ma formule ne s'est déclenchée que %s fois par jour sur %s, trop peu pour juger - "
+                                    "la question reste ouverte, je dois l'écrire autrement" % (st.get("per_day"), x["market"]))
+        _mut(f0)
+        return None
     verdict = ("ça tient vraiment, au-dessus du hasard" if br >= 95 else "il y a un petit quelque chose, mais pas une preuve" if br >= 70
                else "non, c'est du hasard")
     fnd = "%s fois par jour, mieux que le hasard dans %s %% des tirages sur %s - %s" % (st.get("per_day"), br, x["market"], verdict)
