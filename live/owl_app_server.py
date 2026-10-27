@@ -23082,6 +23082,9 @@ def _chat_test0(user, body):
         # "Test lancé" twice in a minute - one announcement per job
         if test.get("job") and _old.get("job") == test.get("job") and _old.get("state") == "queued":
             return
+        # 2026-10-27 (watch, 02:59 twice): a Bitcoin test has no job id - the same robot+version still queued is one announcement
+        if not test.get("job") and _old.get("state") == "queued" and _old.get("rid") == rid and _old.get("rev") == test.get("rev"):
+            return
         mt = (" on %s" % mk) if en else (" sur %s" % mk)
         if test.get("first_build"):
             txt = ("Test started%s. First time on this market, so I prepare its prices first: about %d minutes in all. "

@@ -1539,8 +1539,15 @@ def view(robot, pieces):
             return None
         if s.get("use"):
             p = P.get(s["use"]) or {}
-            return {"use": s["use"], "name": p.get("name_fr") or s["use"], "plain_fr": p.get("plain_fr"), "plain_en": p.get("plain_en"),
-                    "rule": p.get("rule"), "formula": D.is_formula(typ, p.get("rule")) if p.get("rule") else False}
+            o = {"use": s["use"], "name": p.get("name_fr") or s["use"], "plain_fr": p.get("plain_fr"), "plain_en": p.get("plain_en"),
+                 "rule": p.get("rule"), "formula": D.is_formula(typ, p.get("rule")) if p.get("rule") else False}
+            # 2026-10-27 (watch): the money slot's lot formula {use, lot} was dropped here, so the builder saw "simple, fixed
+            # lot" and told Kino the owner's ladder was not in the robot - twice in one night, while the test used it
+            if s.get("lot"):
+                o["lot"] = s["lot"]
+                o["plain_en"] = "Lot size: %s" % s["lot"]
+                o["plain_fr"] = "Taille du lot : %s" % s["lot"]
+            return o
         return dict(s)
     v = {"name": robot.get("name"), "market": robot.get("market") or "BTCUSD"}
     for slot in ONE:
