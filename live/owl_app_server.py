@@ -17714,10 +17714,52 @@ def _on_step(cid, text):
 ONE_TEST_UIDS = ("fresh", "demo", "std")    # test chats never feed his memory of himself
 
 
+# ---- 2026-10-27 (watch, 13:48): his trading rules sat among the life notes (#retiens) - Kino argued "+0.01 after a loss is
+# revenge trading" twice and quietly sent 0.01 after the owner had said "stick to the rules". His rules now live apart, per
+# person, numbered, and come first in what Kino knows: he may say once that he disagrees, his cards and orders follow them.
+RULES_FILE = os.path.join(DIR, "robots", "kino_rules.json")
+_RULES_LK = threading.Lock()
+
+
+def _rules_of(uid):
+    return (_jload(RULES_FILE, {}) or {}).get(_person(uid)) or []
+
+
+def _rules_set(uid, v):
+    v = str(v or "").strip()
+    m = re.match(r"^r(\d+)\b[\s:,-]*(.*)$", v, re.I | re.S)
+    with _RULES_LK:
+        d = _jload(RULES_FILE, {}) or {}
+        R = d.get(_person(uid)) or []
+        if m:
+            n, rest = int(m.group(1)), m.group(2).strip()
+            R = [x for x in R if x.get("n") != n] if re.match(r"^(supprimer|enlever|retirer|delete|remove)\b", rest, re.I) else \
+                [dict(x, text=rest[:300], t=int(time.time())) if x.get("n") == n else x for x in R]
+        else:
+            R.append({"n": max([x.get("n", 0) for x in R] or [0]) + 1, "text": v[:300], "t": int(time.time())})
+        d[_person(uid)] = R[-20:]
+        _jsave(RULES_FILE, d)
+
+
+def _rules_facts(uid):
+    R = _rules_of(uid)
+    if not R:
+        return ""
+    return ("SES RÈGLES DE TRADING (c'est lui qui les a données ; tes cartes, tes ordres et ses robots les suivent. Tu peux lui dire "
+            "une fois que tu n'es pas d'accord, puis tu les appliques ; s'il en change une, #regle rN <nouveau texte>) :\n" +
+            "\n".join("r%d. %s" % (x["n"], x["text"]) for x in R))
+
+
 def _one_facts(user, c):
     """what is true this minute, in plain sentences - measured by the app, no instructions inside"""
     uid = user.get("id")
     L = []
+    try:                                               # 2026-10-27: his trading rules first
+        _rf = _rules_facts(uid)
+        if _rf:
+            L.append(_rf)
+    except Exception:
+        pass
     nd = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
     try:
         _lb, _lv, _bk = bot_on(uid)
@@ -19101,6 +19143,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
                 _mem_add(uid, [v[:160]])
+            elif k == "regle" and v:
+                _rules_set(uid, v)
             elif k == "ordre":
                 _cfr = _chat_load(user, cid) or c
                 if _auto_on(_cfr):

@@ -76,6 +76,8 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
                                       trade par trade. Ne dis jamais qu'une de ses règles ne peut pas être construite ou
                                       testée : écris #construire avec sa règle, le constructeur trouve comment.
 #retiens <une chose à garder sur lui>
+#regle <une règle de trading qu'il te donne, en clair>   elle va dans SES RÈGLES DE TRADING ; « #regle r2 <nouveau texte> »
+                                      remplace la règle r2, « #regle r2 supprimer » l'enlève
 #infos on | #infos off          il aime (ou n'aime plus) entendre les grandes nouvelles du monde dans vos conversations
 #montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
 Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que tu sais - les prix en chiffres, pas de mots) :
@@ -109,7 +111,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -204,6 +206,8 @@ def parse(raw, partial=False):
             acts.append(("construire", v))
         elif k in ("remember",):
             acts.append(("retiens", v))
+        elif k in ("règle", "rule"):
+            acts.append(("regle", v))
         elif k in ("show",):
             acts.append(("montre", v))
         elif k in ("cancel",):
