@@ -18127,6 +18127,20 @@ def _chart_levels_facts():
     L.append(one(j, "Graphique 1 minute"))
     if j.get("pb"):
         L.append(one(j["pb"], "Graphique des reculs (celui du haut)"))
+        # 2026-10-27 (owner: "we only look at the LAST CLOSED candle of the top chart - bullish, we wait for a sell below"):
+        # he had the top chart's trend and levels, never its candles, and sent a buy after a bullish top candle
+        try:
+            _pc = [x for x in (j["pb"].get("candles") or []) if len(x) >= 6][-3:]
+            if _pc:
+                _d = lambda x: "HAUSSIÈRE" if float(x[4]) > float(x[1]) else ("BAISSIÈRE" if float(x[4]) < float(x[1]) else "neutre")
+                x = _pc[-1]
+                L.append("Graphique des reculs (celui du haut) - DERNIÈRE BOUGIE FERMÉE : %s, ouverte %s fermée %s (début %s UTC)%s. "
+                         "Elle est faite de bougies fermées : elle peut encore s'allonger dans le même sens, mais sa couleur ne change plus - une bougie de l'autre couleur commencera une nouvelle bougie." % (
+                             _d(x), f(x[1]), f(x[4]), hm(x[0]),
+                             "" if len(_pc) < 2 else " ; avant elle : " + ", ".join(
+                                 "%s %s→%s (%s)" % (_d(y).lower(), f(y[1]), f(y[4]), hm(y[0])) for y in _pc[:-1])))
+        except Exception:
+            pass
     return "\n".join(L)
 
 
