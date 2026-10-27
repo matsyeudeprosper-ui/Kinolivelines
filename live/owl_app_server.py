@@ -15441,7 +15441,7 @@ def _chat_member_fresh(uid, c):
         pass
     try:          # 2026-10-19 (owner: "access to certain real world reality"): time, markets, prices, calendar, headlines
         import robot_reality as _RW
-        _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
+        _tz = _tz_of(uid).get("off") or 0
         L.append("THE WORLD RIGHT NOW:\n" + _RW.world_now(_tz))
     except Exception:
         pass
@@ -16607,7 +16607,7 @@ def _material_ctx(uid, lang="fr"):
     try:
         _rc()
         import robot_reality as _RWm
-        _tz = ((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}).get("off") or 0
+        _tz = _tz_of(uid).get("off") or 0
         L.append("THE WORLD TODAY:\n" + _RWm.world_now(_tz)[:2000])
     except Exception:
         pass
@@ -19582,10 +19582,26 @@ def _mem_note_safe(uid, fn):
         return out
 
 
+def _tz_of(uid):
+    """2026-10-27 (owner: "he thinks it's 17h here"): the member's phone timezone {off, name}; for a person with several
+    logins, the main login's first (a shared thread runs as the other login, whose zone a test browser had overwritten)"""
+    try:
+        T = json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}
+    except Exception:
+        return {}
+    try:
+        U = _person_uids(uid)
+    except Exception:
+        U = [uid]
+    for u in U:
+        if T.get(u):
+            return T[u]
+    return T.get(uid) or {}
+
+
 def _local_hour(uid):
     try:
-        tz = (json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid) or {}
-        return int(((time.time() - int(tz.get("off") or 0) * 60) // 3600) % 24)
+        return int(((time.time() - int(_tz_of(uid).get("off") or 0) * 60) // 3600) % 24)
     except Exception:
         return int(time.gmtime().tm_hour)
 
@@ -19913,7 +19929,7 @@ def _companion_tick():
             # (1i) 2026-10-19 (owner humanity item 12): small spontaneous gestures - rare, so they stay meaningful (1 per 5 days)
             try:
                 if now - float(m.get("gesture_t") or 0) > 5 * 86400 and _active_hour(uid, h0) and not busy(ch[0]["id"]) and now - _LAST_SEEN.get(uid, 0) > 120:
-                    _lt_ = time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60))
+                    _lt_ = time.gmtime(now - int(int(_tz_of(uid).get("off") or 0) * 60))
                     why = None
                     if _lt_.tm_wday == 4 and 17 <= _lt_.tm_hour < 20:
                         why = "it is Friday evening for them - a natural 'bon week-end' moment (with something personal if you can)"
@@ -19986,7 +20002,7 @@ def _companion_tick():
                 pass
             # (1e) 2026-10-19 (owner item 7): the end-of-day debrief - 20:00-22:00 on their clock, on days their robot traded
             try:
-                _dk = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
+                _dk = time.strftime("%Y-%m-%d", time.gmtime(now - int(int(_tz_of(uid).get("off") or 0) * 60)))
                 if 20 <= h0 < 23 and m.get("eod") != _dk and not busy(ch[0]["id"]) and not _member_recent(ch[0]["id"]):
                     nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
                     _td = time.strftime("%d/%m", time.gmtime())
@@ -20005,7 +20021,7 @@ def _companion_tick():
                 pass
             # (1c) 2026-10-19 (owner): the weekly review - Sunday 18:00-21:00 on their clock, members with an account
             wk = time.strftime("%G-%V", time.gmtime(now - 3600 * 6))
-            if time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)).tm_wday == 6 \
+            if time.gmtime(now - int(int(_tz_of(uid).get("off") or 0) * 60)).tm_wday == 6 \
                     and 18 <= h0 < 21 and m.get("week_review") != wk and not busy(ch[0]["id"]):
                 try:
                     nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
@@ -21171,7 +21187,7 @@ def _inner_engine_once():
             h0 = _local_hour(uid)
             _W_ = _rc().W if hasattr(_rc(), "W") else __import__("robot_warm")
             mk_ = (c.get("robot") or {}).get("market") or "BTCUSD"
-            today_ = time.strftime("%Y-%m-%d", time.gmtime(now - int((json.load(open(PUSH_PREFS_FILE)).get("_tz") or {}).get(uid, {}).get("off", 0) * 60)))
+            today_ = time.strftime("%Y-%m-%d", time.gmtime(now - int(int(_tz_of(uid).get("off") or 0) * 60)))
             st_ = _INNER_DAY.setdefault(uid, {})
             # v2 item 7: a bet on their running test (once per test)
             t_ = c.get("test") or {}
@@ -32727,7 +32743,7 @@ class H(BaseHTTPRequestHandler):
                         _new = {"off": int(qs["tzo"][0]), "name": (qs.get("tzn", [""])[0] or "")[:64]}
                         # 2026-10-20: the owner's zone was overwritten to Los Angeles again (Kino thought it was 4 a.m.
                         # in his afternoon): a pinned zone never changes, and every change is logged with its source
-                        if not _old.get("pin") and _new["off"] != _old.get("off"):
+                        if not _old.get("pin") and _new["off"] != _old.get("off") and not re.search(r"Headless|compatible;|Google-|bot|crawl|spider|preview", self.headers.get("User-Agent") or "", re.I):
                             prefs.setdefault("_tz", {})[u["id"]] = _new
                             try:
                                 open(os.path.join(DIR, "owl_tz_changes.log"), "a", encoding="utf-8").write("%s %s %s->%s %s ip=%s xff=%s ua=%s\n" % (
