@@ -23694,6 +23694,8 @@ def chat_pin(user, body):
 def _day_recap(u, uid, m, ch, now, h0, busy):
     """2026-10-21 (owner chat list item 8): at 21:00 their time, one card that sums up the day with Kino - what changed,
     the tests, the money, what comes next. Built from the real data, no AI words; skipped on a quiet day."""
+    if _person(uid) != uid:                 # 2026-10-27 (watch, 20:01 twice): one person, two logins - once, by the main id
+        return
     off = (h0 - time.gmtime(now).tm_hour + 12) % 24 - 12
     dk = time.strftime("%Y-%m-%d", time.gmtime(now + off * 3600))
     if h0 != 21 or m.get("recap_d") == dk:
@@ -24479,6 +24481,8 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
 
 def _week_recap(u, uid, m, ch, now, h0, busy):
     """item 6: Sunday 18:00 their time, a one-minute voice note about the week"""
+    if _person(uid) != uid:                 # 2026-10-27 (watch, 20:01 twice): one person, two logins - once, by the main id
+        return
     off = (h0 - time.gmtime(now).tm_hour + 12) % 24 - 12
     g = time.gmtime(now + off * 3600)
     wk = time.strftime("%Y-%W", g)
