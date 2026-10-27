@@ -17191,6 +17191,7 @@ def _demo_later(cid, user, sh):
 def _chat_quick(cid, user, event=None, notify=False, important=False):
     """one quick turn (_chat_quick0), then - 2026-10-19 (owner item 1) - if the member wrote while Kino was answering,
     Kino listens again and answers that too"""
+    user = _thread_user(cid, user)                    # 2026-10-27: one person, one thread, one account context
     try:
         _chat_quick0(cid, user, event, notify, important)
     finally:
@@ -17775,7 +17776,7 @@ def _one_facts(user, c):
 def _one_memory(user, c):
     """what he remembers - plain items, no instructions"""
     uid, cid = user.get("id"), c.get("id")
-    m = _mem_get(uid)
+    m = _mem_person(uid)                               # 2026-10-27: every login of the person, one memory
     L = []
     if (m.get("portrait") or {}).get("text"):
         L.append("Ton portrait de lui : " + str(m["portrait"]["text"])[:600])
@@ -17948,8 +17949,8 @@ _PAGE_NAMES = {"/": "l'accueil", "": "l'accueil", "/chart": "le graphique", "/ro
 def _page_seen_facts(uid):
     """2026-10-26 (owner: "Kino needs to know where the user is without being told, track his activities and viewport, to
     help intuitively - never as support, always friendly")"""
-    x = _PAGE_SEEN.get(uid)
-    cs = _CHART_SEEN.get(uid) or {}
+    x = _seen_pick(_PAGE_SEEN, uid)
+    cs = _seen_pick(_CHART_SEEN, uid) or {}
     if cs and (not x or float(cs.get("t") or 0) > float(x.get("t") or 0)) and time.time() - float(cs.get("t") or 0) < 180:
         where = "OÙ IL EST DANS L'APPLI : sur le graphique (ce qu'il voit est plus bas)."
     elif x and time.time() - x["t"] < 180:
@@ -18006,7 +18007,7 @@ def _chart_levels_facts():
 
 def _chart_seen_facts(uid):
     """the member's chart, in plain sentences - empty when no chart page has been open in the last 3 minutes"""
-    x = _CHART_SEEN.get(uid)
+    x = _seen_pick(_CHART_SEEN, uid)
     if not x or time.time() - x["t"] > 180:
         return ""
     v = x.get("v") or {}
@@ -18108,7 +18109,8 @@ def chart_chat(user, body):
     uid = user.get("id")
     p = os.path.join(DIR, "robots", "chart_chat.json")
     m = _jload(p, {}) or {}
-    cid = m.get(uid)
+    pk = _person(uid)
+    cid = m.get(pk) or m.get(uid)
     if cid and not body.get("new"):
         try:
             if _chat_load(user, cid) is not None:
@@ -18125,7 +18127,9 @@ def chart_chat(user, body):
         c["thread"] = "Kino · graphique"
         c["chart"] = True
     _chat_mut(cid, put)
-    m[uid] = cid
+    m[pk] = cid
+    if uid != pk:
+        m[uid] = cid
     json.dump(m, open(p, "w", encoding="utf-8"))
     return {"ok": True, "id": cid}
 
@@ -18158,6 +18162,59 @@ def _pkg_chain_get(name, key):
             return pk[cur][key]
         cur = pk[cur].get("extends")
     return None
+
+
+# ---- 2026-10-27 (owner: "Kino manual and main admin login, same person" - "like WhatsApp, talking continuously to the same
+# Kino"): logins of ONE person share ONE main thread (robots/chart_chat.json under the person key), one memory, one brain.
+PERSONS_FILE = os.path.join(DIR, "robots", "persons.json")      # {"login uid": "person uid"}
+
+
+def _person(uid):
+    return (_jload(PERSONS_FILE, {}) or {}).get(uid) or uid
+
+
+def _person_uids(uid):
+    p = _person(uid)
+    return [p] + [k for k, v in (_jload(PERSONS_FILE, {}) or {}).items() if v == p and k != p]
+
+
+def _person_main(uid):
+    """the person's main thread id (the one Kino conversation), or None"""
+    m = _jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}
+    return m.get(_person(uid)) or m.get(uid)
+
+
+def _thread_user(cid, user):
+    """a turn in a thread owned by another login of the SAME person runs as the thread's owner: his desk, his robot,
+    his trades - one Kino, one account context"""
+    try:
+        ow = json.load(open(_chat_path(cid), encoding="utf-8")).get("uid")
+        if ow and ow != user.get("id") and _person(ow) == _person(user.get("id")):
+            return _user_by_id(ow) or user
+    except Exception:
+        pass
+    return user
+
+
+def _seen_pick(store, uid):
+    """the freshest screen report among the person's logins"""
+    xs = [store.get(u) for u in _person_uids(uid) if store.get(u)]
+    return max(xs, key=lambda x: float(x.get("t") or 0)) if xs else None
+
+
+def _mem_person(uid):
+    """one memory for the person: every login's remembered lists together (the main login's portrait/goal first)"""
+    U = _person_uids(uid)
+    base = dict(_mem_get(U[0]) or {})
+    for u in U[1:]:
+        o = _mem_get(u) or {}
+        for k in ("standing", "life", "jokes", "decisions", "notes"):
+            if o.get(k):
+                base[k] = list(o.get(k) or []) + list(base.get(k) or [])
+        for k in ("portrait", "their_goal", "bet_score"):
+            if not base.get(k) and o.get(k):
+                base[k] = o[k]
+    return base
 
 
 def _desk_robot_cfg(uid):
@@ -18469,6 +18526,8 @@ def _auto_watch_loop():
                         continue
                     c = json.load(open(_chat_path(cid), encoding="utf-8"))
                 except Exception:
+                    continue
+                if c.get("uid") != uid:                # 2026-10-27: a shared thread is watched once, as its owner
                     continue
                 a = c.get("auto_trade") or {}
                 if not a.get("on"):
@@ -18935,8 +18994,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _CHAT_ACT.pop(cid, None)
         except Exception:
             pass
-        if c.get("brain") == "one":                     # 2026-10-25: Kino as one mind (robots/kino_one.py)
-            _one_turn(cid, user, c, event, notify, important)
+        if c.get("brain") == "one" or (_person(c.get("uid")) != c.get("uid") or _person_uids(c.get("uid"))[1:]) and _person_main(c.get("uid")):
+            _one_turn(cid, user, c, event, notify, important)       # 2026-10-25 one mind; 2026-10-27 always for a linked person
             return
         en = c.get("lang") == "en"
         c["decisions_v"] = _decisions_for(user, c)
@@ -26273,6 +26332,7 @@ def _chat_news(c, seen):
 def chat_list(user):
     me = re.sub(r"[^A-Za-z0-9]", "", user.get("id") or "")
     out = []
+    _main = _person_main(user.get("id")) if _person_uids(user.get("id"))[1:] or _person(user.get("id")) != user.get("id") else None
     try:
         for f in sorted(os.listdir(CHAT_DIR), reverse=True):
             if not f.endswith(".json") or not (f.startswith(me + "_") or is_admin(user)):
@@ -26281,7 +26341,7 @@ def chat_list(user):
                 c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
             except Exception:
                 continue
-            if c.get("uid") != user.get("id") or c.get("hidden"):
+            if (c.get("uid") != user.get("id") and c.get("id") != _main) or c.get("hidden"):
                 continue
             last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") in ("user", "ai")), {})
             seen = max(float(c.get("seen_t") or 0), _CHAT_VIEW.get(c["id"], 0),
@@ -26303,6 +26363,8 @@ def chat_list(user):
                 break
     except Exception:
         pass
+    if _main:                                         # WhatsApp-like: the one conversation with Kino comes first
+        out.sort(key=lambda x: 0 if x["id"] == _main else 1)
     return {"chats": out}
 
 
