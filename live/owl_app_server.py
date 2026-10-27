@@ -18124,7 +18124,21 @@ def _chart_levels_facts():
                 "%s %s à %s (%s)" % (str(x[2]).upper(), "haussière" if int(x[3]) == 1 else "baissière", f(x[1]), hm(x[0])) for x in mk if len(x) >= 4))
         return "".join(out) + "."
     L = ["NIVEAUX DE STRUCTURE SUR SON GRAPHIQUE BITCOIN (en direct, prix %s) - un objectif ou un stop « sur un niveau » se prend ici :" % f(j.get("px"))]
-    L.append(one(j, "Graphique 1 minute"))
+    L.append(one(j, "Graphique 1 minute (celui du bas)"))
+    # 2026-10-27 13:13 (watch): "can you see that bullish candle in my LOWER chart?" - he had no 1-minute candles, answered with
+    # the top chart's candle and set the sell trigger 240 points too low. The last closed 1-minute candles, as drawn.
+    try:
+        _mc = [x for x in (j.get("candles") or []) if len(x) >= 5][-6:]
+        if _mc:
+            _dm = lambda x: "haussière" if float(x[4]) > float(x[1]) else ("baissière" if float(x[4]) < float(x[1]) else "neutre")
+            L.append("Graphique 1 minute (celui du bas) - DERNIÈRES BOUGIES FERMÉES (de la plus ancienne à la plus récente) : " + " ; ".join(
+                "%s %s : ouverture %s, haut %s, bas %s, clôture %s" % (hm(x[0])[-5:], _dm(x), f(x[1]), f(x[2]), f(x[3]), f(x[4])) for x in _mc) + ".")
+        _lv = j.get("live")
+        if _lv and len(_lv) >= 5:
+            L.append("Bougie 1 minute EN COURS (pas encore fermée) : début %s, ouverture %s, haut %s, bas %s, prix %s." % (
+                hm(_lv[0])[-5:], f(_lv[1]), f(_lv[2]), f(_lv[3]), f(_lv[4])))
+    except Exception:
+        pass
     if j.get("pb"):
         L.append(one(j["pb"], "Graphique des reculs (celui du haut)"))
         # 2026-10-27 (owner: "we only look at the LAST CLOSED candle of the top chart - bullish, we wait for a sell below"):
