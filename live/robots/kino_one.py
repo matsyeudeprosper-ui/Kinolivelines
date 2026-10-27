@@ -245,7 +245,7 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     return "\n\n".join(P)
 
 
-def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, check=None, log=None, note=None):
+def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, check=None, log=None, note=None, model="sonnet"):
     """one turn of the one mind -> {"say", "acts", "fil", "first", "total", "retry"}; None when the model failed"""
     cid = chat.get("id")
     sysp = system(lang)
@@ -266,7 +266,7 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
         W.pin(sysp, "sonnet")                 # his process stays warm whatever else the app runs
     except Exception:
         pass
-    raw = W.ask_text(sysp, user, model="sonnet", timeout=90, log=log, on_text=_cb, warm=True)
+    raw = W.ask_text(sysp, user, model=model, timeout=90, log=log, on_text=_cb, warm=True)
     if raw is None:
         _log(cid, "FAIL", "no answer")
         return None

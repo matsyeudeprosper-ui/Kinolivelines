@@ -69,6 +69,8 @@ function send(force){if(K.off||document.visibilityState!=='visible')return;var o
  fetch(B+'page_seen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({v:o,panel:K.on})})
  .then(function(r){return r.json();}).then(function(j){if(j&&j.err==='strategy')K.off=true;}).catch(function(){});}
 setInterval(function(){send(false);},5000);setTimeout(function(){send(true);},1500);
+/* day one: a new member's first visit - Kino comes to say hello by himself, once */
+if('__FIRST__'==='1'){try{if(!localStorage.getItem('kpgFirst:'+TOK)){localStorage.setItem('kpgFirst:'+TOK,'1');setTimeout(function(){if(!K.on)open(true);},3500);}}catch(e){}}
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')send(true);});
 })();
 </script>

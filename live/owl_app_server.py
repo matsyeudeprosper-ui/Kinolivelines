@@ -365,8 +365,12 @@ MANUAL_MODES = ("manual", "semi")
 # auto      : copy of the owner's account on MQL5 Signals (link only)
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
-PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal
-            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
+# 2026-10-27 (owner: "Kino part of the product on any package"): Essentiel (was Signal, entitlement key "manual"),
+# Pro (was Strategie, key "strategy"), Premium (new, key "premium" - Pro + the member's own broker). Découverte = free,
+# no key (owl_plans.py). The keys stay so every existing grant, code and payment keeps working.
+PACKAGES = {"manual": {"usd": 19, "days": 30, "label": "Essentiel"},
+            "strategy": {"usd": 49, "days": 30, "label": "Pro"},
+            "premium": {"usd": 119, "days": 30, "label": "Premium"}}
 MANUAL_CAP = 100000      # 2026-10-04: Signal is app-only now - no terminal, no cap
 FAMILY_CAP = 50          # 2026-10-03 (owner): at most 50 family (Automatique) accounts on this VPS
 
@@ -413,12 +417,42 @@ def has(uid, key):
     now = time.time()
     if key == "family":
         return family_active(e, now)
+    prem = float(e.get("premium_until") or 0) > now       # 2026-10-27: Premium includes Pro and Essentiel
     if key == "manual":
         # 2026-10-17 (owner, catalogue review): Strategie includes Signal - the builder's member gets the signals too
-        return family_active(e, now) or float(e.get("manual_until") or 0) > now or float(e.get("strategy_until") or 0) > now
+        return family_active(e, now) or float(e.get("manual_until") or 0) > now or float(e.get("strategy_until") or 0) > now or prem
     if key == "strategy":
-        return float(e.get("strategy_until") or 0) > now
+        return float(e.get("strategy_until") or 0) > now or prem
+    if key == "premium":
+        return prem
     return False
+
+
+import owl_plans as _PL                              # 2026-10-27: the plans (Découverte / Essentiel / Pro / Premium)
+
+
+def plan_name(u):
+    """the plan running for this member now (owl_plans.plan_of)"""
+    uid = (u or {}).get("id")
+    if not uid:
+        return "decouverte"
+    own = uid in OWNER_UIDS
+    try:
+        own = own or is_admin(u)
+    except Exception:
+        pass
+    e = ent(uid)
+    return _PL.plan_of(u, e, owner=own, family=(not own and family_active(e)))
+
+
+def kino_ok(u):
+    """Kino is part of every plan: any registered member (the public demo account excepted)"""
+    return bool(u and u.get("id") and not u.get("public"))
+
+
+def kino_bg_ok(u):
+    """Kino's background life (initiatives, inner engine, night mind) costs money: paid plans and the trial only"""
+    return kino_ok(u) and bool(_PL.info(plan_name(u)).get("background"))
 
 
 def _atomic_json(path, obj, **kw):
@@ -905,6 +939,21 @@ def can_switch(u):
     return u is not None and is_admin(u)
 
 
+def _plan_tier_block(u):
+    """2026-10-27: the plan in words + what is left today (the app's Abonnement card, the offers sheet)"""
+    try:
+        pn = plan_name(u)
+        I = _PL.info(pn)
+        tz = int(_tz_of(u.get("id")).get("off") or 0)
+        pu = _person(u.get("id"))
+        return {"name": pn, "label": I["label"], "label_en": I["label_en"], "replies": I.get("replies"),
+                "replies_left": _PL.kino_left(pu, pn, tz), "tests": I.get("tests"), "tests_left": _PL.tests_left(pu, pn),
+                "voice": I.get("voice"), "trial_end": int(_PL.trial_end(u)) if pn == "decouverte_trial" else 0,
+                "no_remind": bool(ent(u.get("id")).get("no_remind"))}
+    except Exception:
+        return {"name": "decouverte", "label": "Découverte", "label_en": "Discovery"}
+
+
 def plan_of(u):
     e = ent(u.get("id"))
     cfg = nest_config()
@@ -915,11 +964,15 @@ def plan_of(u):
             "strategy": has(u.get("id"), "strategy"),
             "manual_until": int(e.get("manual_until") or 0),
             "strategy_until": int(e.get("strategy_until") or 0),
+            "premium": has(u.get("id"), "premium"),
+            "premium_until": int(e.get("premium_until") or 0),
+            "tier": _plan_tier_block(u),
             "packages": PACKAGES,
             "seats_left": max(0, MANUAL_CAP - manual_seats()),
             "waitlisted": u.get("id") in waitlist(),
             "pay_ready": bool(cfg.get("np_api_key")),
             "mql5_url": cfg.get("mql5_url") or "",
+            "exness_ref": cfg.get("exness_ref") or "",          # 2026-10-27: our Exness partner link (Découverte card)
             "contact_url": cfg.get("contact_url") or "",     # the Owl on Telegram
             "pending_pay": bool(u.get("pending_pay")),
             # 2026-10-04 (owner): recovery through the Telegram bot
@@ -6395,7 +6448,7 @@ function renderPlan(d){
   const had=P.family_until||P.manual_until||P.strategy_until;const active=P.family||P.manual||P.strategy;
   if(d.is_master||!had||active||P.pending_pay){c.style.display='none';return;}
   const last=P.family_until>=Math.max(P.manual_until||0,P.strategy_until||0)?'family':(P.strategy_until>=(P.manual_until||0)?'strategy':'manual');
-  const L={family:en?'Automatic':'Automatique',manual:'Signal',strategy:en?'Strategy':'Strat\u00e9gie'}[last];
+  const L={family:en?'Automatic':'Automatique',manual:en?'Essential':'Essentiel',strategy:'Pro',premium:'Premium'}[last];
   document.getElementById('exp-t').textContent=en?'Your '+L+' period has ended':'Votre p\u00e9riode '+L+' est termin\u00e9e';
   document.getElementById('exp-b').textContent=en?'Renew with a code from the Owl on Telegram'+(last==='family'?'.':', or in crypto - it comes back right away.'):'Renouvelez avec un code du Owl sur Telegram'+(last==='family'?'.':', ou en crypto \u2014 \u00e7a repart tout de suite.');
   const g=document.getElementById('exp-go');g.textContent=en?'Renew':'Renouveler';g.onclick=()=>codeModal(last);
@@ -6409,6 +6462,19 @@ function renderPlan(d){
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Signal pour trader les signaux.');color='var(--warn)';}
  else{title=en?'No subscription':'Aucun abonnement';txt=en?'Signals and the full view are paid options. The demo is free for everyone.':'Les signaux et la vue compl\u00e8te sont des options payantes. La d\u00e9mo est gratuite pour tous.';}
  t.textContent=title;sub.textContent=txt;ic.style.color=color;
+ // 2026-10-27 (owner: Kino on every plan): the plan in words, what is left today, how it ends - nothing to cancel
+ (function(){const R=P.tier;if(!R||d.is_master||P.pending_pay||P.family||P.family_expired)return;
+  const lab=en?R.label_en:R.label,until=P.premium?P.premium_until:(P.strategy?P.strategy_until:(P.manual?P.manual_until:0));
+  t.textContent=lab;const parts=[];
+  parts.push(R.replies==null?(en?'Kino: no daily limit':'Kino : sans limite par jour'):((en?'Kino: ':'Kino : ')+(R.replies_left==null?R.replies:R.replies_left)+' / '+R.replies+(en?' replies left today':' r\u00e9ponses restantes aujourd\u2019hui')));
+  if(R.tests!=null)parts.push((en?'Robot tests: ':'Tests de robot : ')+(R.tests_left==null?R.tests:R.tests_left)+' / '+R.tests+(en?' this month':' ce mois'));
+  if(R.voice)parts.push((en?'Calls with Kino: ':'Appels avec Kino : ')+R.voice+' min');
+  let h='<div>'+parts.join(' \u00b7 ')+'</div>';
+  if(R.name==='decouverte_trial'&&R.trial_end)h+='<div style="margin-top:6px">'+(en?'Your trial: Kino at full speed until ':'Votre essai : Kino \u00e0 fond jusqu\u2019au ')+fd(R.trial_end)+(en?', then 10 replies a day - he stays with you.':', puis 10 r\u00e9ponses par jour \u2014 il reste avec vous.')+'</div>';
+  if(until){h+='<div style="margin-top:6px">'+(en?'No auto-renewal: your plan simply ends on ':'Pas de renouvellement automatique : votre formule s\u2019arr\u00eate seule le ')+fd(until)+(en?'. Nothing to cancel; Kino and your memory stay (at least 90 days).':'. Rien \u00e0 r\u00e9silier ; Kino et votre m\u00e9moire restent (au moins 90 jours).')+'</div>'+
+   '<button class="shbtn shghost" style="margin:10px 0 0;padding:10px" onclick="noRemind('+(R.no_remind?0:1)+')">'+(R.no_remind?(en?'Remind me before it ends':'Me pr\u00e9venir avant la fin'):(en?'Stop renewal reminders':'Ne plus me rappeler de renouveler'))+'</button>';}
+  else h+='<div style="margin-top:6px">'+(en?'Kino stays with you whatever you choose; your memory and conversations are kept at least 90 days.':'Kino reste avec vous quoi que vous choisissiez ; votre m\u00e9moire et vos conversations sont gard\u00e9es au moins 90 jours.')+'</div>';
+  sub.innerHTML=h;})();
  // 2026-10-03 (owner): the one-time opening fee, until it is paid
  (function(){const F=P.setup;if(!F||F.paid||!F.usd)return;const us=v=>'$'+Number(v||0).toFixed(2);
   sub.innerHTML='<div style="margin-top:6px;padding:12px;border-radius:14px;border:1px solid rgba(232,197,90,.4);background:rgba(232,197,90,.08)"><b style="color:var(--text)">'+(en?'Opening fee \u00b7 '+us(F.usd)+', once':'Frais d\u2019ouverture \u00b7 '+us(F.usd)+', une seule fois')+'</b>'+
@@ -9399,9 +9465,9 @@ function refNudgeLater(){try{localStorage.setItem('owlRefNudge:'+B,String(Date.n
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
  const en=LANG()==='en',now=Date.now()/1000;let best=null;
- [['family',P.family_until,en?'Automatic':'Automatique'],['strategy',P.strategy_until,en?'Strategy':'Strat\u00e9gie'],['manual',P.manual_until,en?'Signal':'Signal']].forEach(([k,u,l])=>{
+ [['family',P.family_until,en?'Automatic':'Automatique'],['premium',P.premium_until,'Premium'],['strategy',P.strategy_until,'Pro'],['manual',P.manual_until,en?'Essential':'Essentiel']].forEach(([k,u,l])=>{
   if(u&&(u-now)<=5*86400&&(now-u)<=45*86400&&(!best||(u>now&&u<best.u)||(best.u<=now&&u>best.u)))best={k,u,l};});
- if(!best||(best.k==='manual'&&P.strategy_until>now)){el.style.display='none';return;}
+ if(!best||(best.k==='manual'&&P.strategy_until>now)||(best.k!=='family'&&P.tier&&P.tier.no_remind)){el.style.display='none';return;}
  const days=Math.max(0,Math.ceil((best.u-now)/86400));
  const ago=Math.max(1,Math.ceil((now-best.u)/86400));
  document.getElementById('renew-t').textContent=best.u<=now
@@ -9549,7 +9615,7 @@ function kinoBtns(P,en,main){const c=P.contact_url||'';
 // THIS account; no code -> the Owl on Telegram; Signal / Strategie -> crypto, instant.
 function fnb(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon(B+'fn','e='+e);}catch(x){}}
 async function codeModal(pkg){if(pkg)fnb('choose');const en=LANG()==='en';const P=(window._d&&window._d.plan)||{};
- const L={manual:'Signal',strategy:en?'Strategy':'Strat\u00e9gie',family:en?'Automatic':'Automatique'}[pkg]||(en?'Your package':'Votre formule');
+ const L={manual:en?'Essential':'Essentiel',strategy:'Pro',premium:'Premium',family:en?'Automatic':'Automatique'}[pkg]||(en?'Your package':'Votre formule');
  const contact=P.contact_url||'';
  const inp='<input id="cm-code" maxlength="6" placeholder="ABC123" autocapitalize="characters" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:13px;font-size:1.3rem;font-weight:800;letter-spacing:.3em;text-align:center;text-transform:uppercase;margin-top:6px">';
  const v=await sheet('<h3>'+L+' \u00b7 '+(en?'activation code':'code d\u2019activation')+'</h3>'+
@@ -9581,11 +9647,15 @@ function offersSheet(){fnb('offers');
  const ic=(t)=>'<button class="oi" onclick="event.stopPropagation();oTip(this)" data-tip="'+_escS(t)+'" aria-label="?">i</button>';
  // what this member already has, and until when
  const until=(ts)=>{try{const d=new Date(ts*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}catch(e){return '';}};
- const state=(k)=>{const has={manual:P.manual,strategy:P.strategy,family:P.family}[k];
-  const u={manual:P.manual_until,strategy:P.strategy_until,family:P.family_until}[k];
+ const state=(k)=>{const tn=((P.tier||{}).name)||'';
+  if(k==='free')return {on:tn.indexOf('decouverte')===0,free:true};
+  const has={manual:P.manual&&!P.strategy&&!P.premium,strategy:P.strategy&&!P.premium,premium:P.premium,family:P.family}[k];
+  const u={manual:P.manual_until,strategy:P.strategy_until,premium:P.premium_until,family:P.family_until}[k];
   return has?{on:true,until:u}:{on:false};};
  const tier=(k,name,price,sub,gets,accent)=>{const st=state(k);
-  const cta=st.on
+  const cta=st.free
+   ?(st.on?'<div class="ohas"><svg class="ic ic-s"><use href="#i-check"/></svg>'+(en?'Your plan today':'Votre formule aujourd\u2019hui')+'</div>':'<div class="ohas" style="opacity:.75">'+(en?'Always there underneath':'Toujours l\u00e0 en dessous')+'</div>')
+   :st.on
    ?'<div class="ohas"><svg class="ic ic-s"><use href="#i-check"/></svg>'+(en?'You have it':'Vous l\u2019avez')+(st.until?' \u00b7 '+(en?'until ':'jusqu\u2019au ')+until(st.until):'')+'</div>'+
      (k==='family'?'':'<button class="shbtn shghost" style="margin:10px 0 0;padding:10px" onclick="_shDone(1);codeModal(&#39;'+k+'&#39;)">'+(en?'Renew early':'Renouveler maintenant')+'</button>')
    :'<button class="shbtn shmain" style="margin:12px 0 0" onclick="_shDone(1);codeModal(&#39;'+k+'&#39;)">'+(en?'Choose ':'Choisir ')+name+'</button>';
@@ -9594,23 +9664,35 @@ function offersSheet(){fnb('offers');
    '<ul class="otl">'+gets.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+cta+'</div>';};
  const step=(n,t,x)=>'<div class="ostep"><i>'+n+'</i><div><b>'+t+'</b><span>'+x+'</span></div></div>';
  const h='<h3>'+T2('Les offres','The plans')+'</h3>'+
-  '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Trois fa\u00e7ons de suivre le robot. Vous pouvez les combiner.','Three ways to follow the robot. They combine.')+'</p>'+
-  tier('manual','Signal','$'+(pk.manual||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
-   T2('Regardez le robot travailler, tradez quand vous voulez','Watch the robot work, trade when you want'),
-   [T2('Chaque d\u00e9cision du robot en direct : ce qu\u2019il voit, pourquoi il entre, pourquoi il attend','Every robot decision live: what it sees, why it enters, why it waits')+ic(T2('Le tableau de bord du robot : son solde, ses trades, le march\u00e9 et ses v\u00e9rifications, mis \u00e0 jour toutes les 5 secondes. Les niveaux d\u2019entr\u00e9e restent ceux du robot : l\u2019alerte vous les donne au moment o\u00f9 il entre.','The robot\u2019s dashboard: its balance, its trades, the market and its checks, refreshed every 5 seconds. Entry levels stay the robot\u2019s: the alert gives them to you as it enters.')),
-    T2('Une alerte sur votre t\u00e9l\u00e9phone \u00e0 chaque entr\u00e9e \u2014 vous suivez si vous voulez, \u00e0 vos prix','An alert on your phone at each entry \u2014 follow if you want, at your prices')+ic(T2('Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique.','The robot enters to the second; you, a few seconds later, at another price. The alert is a signal to understand, not an identical copy.')),
-    T2('Aucun compte de courtier \u00e0 donner','No broker account to hand over')+ic(T2('Vous choisissez un identifiant et un mot de passe, c\u2019est tout. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte.','You pick an identifiant and a password, nothing else. We never touch your money or your account.')),
-    T2('Le parrainage : 50 % du premier mois de chaque ami, pour vous, en argent','Referral: 50 % of each friend\u2019s first month, for you, in money')+ic(T2('Votre code et votre page de campagne sont dans Compte \u203a Parrainage. Votre ami a 7 jours offerts ; son premier mois pay\u00e9 vous rapporte la moiti\u00e9, vers\u00e9e en USDT \u00e0 partir de 100 $.','Your code and your campaign page are in Account \u203a Referral. Your friend gets 7 free days; their first paid month earns you half, paid in USDT from $100.')),
-    T2('Pour que le robot le fasse pour vous : Automatique','For the robot to do it for you: Automatic')],
+  '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Kino est dans chaque formule : votre ami trader, qui se souvient de vous. Changez quand vous voulez.','Kino is in every plan: your trading friend, who remembers you. Change any time.')+'</p>'+
+  tier('free',T2('D\u00e9couverte','Discovery'),T2('Gratuit','Free'),
+   T2('Kino d\u00e8s aujourd\u2019hui, sans payer','Kino from today, for free'),
+   [T2('Kino \u00e0 fond pendant 14 jours, puis 10 r\u00e9ponses par jour','Kino at full speed for 14 days, then 10 replies a day')+ic(T2('Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour.','He stays after the trial: same Kino, same memory, just fewer messages a day.')),
+    T2('Votre premier robot construit avec Kino, en mode fant\u00f4me sur les vrais prix','Your first robot built with Kino, in ghost mode on live prices')+ic(T2('Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime.','Ghost mode trades pretend money on live prices: you watch your idea work without risking a cent.')),
+    T2('2 tests de robot par mois, le graphique et les prix en direct','2 robot tests a month, the chart and live prices'),
+    T2('Votre m\u00e9moire avec Kino gard\u00e9e au moins 90 jours','Your memory with Kino kept at least 90 days')].concat(P.exness_ref?[T2('Pour trader aux m\u00eames prix que le robot : ','To trade at the robot\u2019s prices: ')+'<a href="'+_escS(P.exness_ref)+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">'+T2('votre compte Exness avec notre lien','your Exness account with our link')+'</a>']:[]),
+   'var(--muted2)')+
+  tier('manual',T2('Essentiel','Essential'),'$'+(pk.manual||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
+   T2('Kino au quotidien, et les signaux du robot','Kino every day, and the robot\u2019s signals'),
+   [T2('Kino : 40 r\u00e9ponses par jour, partout dans l\u2019app','Kino: 40 replies a day, everywhere in the app'),
+    T2('Une alerte sur votre t\u00e9l\u00e9phone \u00e0 chaque entr\u00e9e du robot, \u00e0 vos prix','An alert on your phone at each robot entry, at your prices')+ic(T2('Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique.','The robot enters at the second; you, seconds later, at another price. The alert is a signal to understand, not an identical copy.')),
+    T2('5 tests de robot par mois, mode fant\u00f4me','5 robot tests a month, ghost mode'),
+    T2('Les prix de nos courtiers partenaires (Exness) ; aucun compte \u00e0 nous confier','Our partner brokers\u2019 prices (Exness); no account to hand over'),
+    T2('Le parrainage : 50 % du premier mois de chaque ami, pour vous','Referral: 50 % of each friend\u2019s first month, for you')],
    'var(--up-soft)')+
-  tier('strategy',T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
-   T2('Construisez votre propre robot','Build your own robot'),
-   [T2('L\u2019atelier : un robot \u00e0 partir de pi\u00e8ces simples, sans une ligne de code','The workshop: a robot from simple pieces, not a line of code')+ic(T2('Vous choisissez l\u2019entr\u00e9e, le stop, l\u2019objectif, les freins ; ou vous expliquez votre id\u00e9e \u00e0 l\u2019IA. L\u2019atelier assemble le robot et le met en file pour son test.','You pick the entry, the stop, the target, the brakes; or you explain your idea to the AI. The workshop assembles the robot and queues its test.')),
-    T2('Le test sur de vrais prix : 42 jours de Bitcoin tick par tick, puis l\u2019or et le Nasdaq, avec le contr\u00f4le du hasard','The test on real prices: 42 days of Bitcoin tick by tick, then gold and the Nasdaq, with the luck check')+ic(T2('Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard.','The same test bench as the nest robot. A result counts only if it beats random entries.')),
-    T2('La place des robots : publiez-le, chaque membre qui tourne avec votre robot vous rapporte de l\u2019argent','The robot place: publish it, every member running your robot earns you money')+ic(T2('30 % de l\u2019abonnement de chaque membre, pour le temps o\u00f9 il tourne avec votre robot, vers\u00e9 en USDT \u00e0 partir de 50 $.','30 % of each member\u2019s plan, for the time they run your robot, paid in USDT from $50.')),
-    T2('Le graphique complet, la m\u00e9thode en mots simples et les coulisses du nid ; Signal inclus','The full chart, the method in plain words and the nest\u2019s backstage; Signal included')+ic(T2('Les coulisses : toutes les strat\u00e9gies essay\u00e9es, leurs verdicts, et l\u2019\u00e9quipe IA qui cherche la nuit.','Backstage: every strategy tried, its verdict, and the AI team that searches at night.')),
-    T2('Pour le faire tourner sur votre propre compte : Automatique, sur invitation','To run it on your own account: Automatic, by invitation')+ic(T2('Strat\u00e9gie construit, teste et publie. Faire trader un robot sur votre compte MT5, le v\u00f4tre ou un autre, c\u2019est la formule Automatique.','Strategy builds, tests and publishes. Having a robot trade your MT5 account, yours or another, is the Automatic plan.'))],
+  tier('strategy','Pro','$'+(pk.strategy||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
+   T2('Construisez et testez sans limite','Build and test without limits'),
+   [T2('Kino : 150 r\u00e9ponses par jour et 30 minutes d\u2019appel vocal par mois','Kino: 150 replies a day and 30 minutes of voice calls a month'),
+    T2('Tests illimit\u00e9s sur de vrais prix \u2014 Bitcoin, l\u2019or, le Nasdaq\u2026 \u2014 avec le contr\u00f4le du hasard','Unlimited tests on real prices \u2014 Bitcoin, gold, the Nasdaq\u2026 \u2014 with the luck check')+ic(T2('Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard.','The same test bench as the nest\u2019s robot. A result counts only if it beats random entries.')),
+    T2('L\u2019atelier complet et la place des robots : vos robots publi\u00e9s vous rapportent','The full workshop and the robot place: your published robots earn you money'),
+    T2('Le graphique complet et la m\u00e9thode en mots simples ; Essentiel inclus','The full chart and the method in plain words; Essential included')],
    'var(--warn)')+
+  tier('premium','Premium','$'+(pk.premium||{usd:119}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
+   T2('Votre courtier, et Kino sans compter','Your own broker, and Kino without counting'),
+   [T2('Les prix de votre propre courtier, branch\u00e9s pour vous','Your own broker\u2019s prices, connected for you')+ic(T2('Le Owl branche le flux de prix de votre courtier sur notre serveur, sous 48 h apr\u00e8s le paiement.','The Owl connects your broker\u2019s price feed on our server, within 48 h of payment.')),
+    T2('Kino sans compter (usage normal) et 60 minutes d\u2019appel par mois','Kino without counting (normal use) and 60 minutes of calls a month'),
+    T2('Vos tests passent en priorit\u00e9 ; Pro inclus','Your tests go first; Pro included')],
+   'var(--accent-soft)')+
   tier('family',T2('Automatique','Automatic'),T2('Famille<span>sur invitation</span>','Family<span>by invitation</span>'),
    T2('Le robot trade \u00e0 votre place','The robot trades for you'),
    [T2('Il passe les ordres sur votre compte MT5, jour et nuit, depuis notre serveur','It places the orders on your MT5 account, day and night, from our server')+ic(T2('Il faut nous confier le mot de passe de votre compte chez le courtier. Le robot ne sait qu\u2019ouvrir et fermer des trades : il ne peut ni retirer ni d\u00e9placer votre argent.','You entrust us with your broker account password. The robot only opens and closes trades: it can neither withdraw nor move your money.')),
@@ -9634,6 +9716,11 @@ function offersSheet(){fnb('offers');
  sheet(h);
 }
 function oTip(b){const en=LANG()==='en';info('<p style="text-align:left;line-height:1.55;margin:0">'+b.getAttribute('data-tip')+'</p>');}
+async function noRemind(on){const en=LANG()==='en';
+ let j=null;try{const r=await fetch(B+'no_remind',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+(on?1:0)});j=await r.json();}catch(e){}
+ if(!j||!j.ok){toast(en?'Not saved, try again.':'Pas enregistr\u00e9, r\u00e9essayez.',2500);return;}
+ if(window._d&&window._d.plan&&window._d.plan.tier){window._d.plan.tier.no_remind=!!on;renderPlan(window._d);try{renewBanner(window._d);}catch(e){}}
+ toast(on?(en?'No more renewal reminders.':'Plus de rappels de renouvellement.'):(en?'You will be reminded before it ends.':'Vous serez pr\u00e9venu avant la fin.'),2600);}
 async function waitlistToggle(on){const en=LANG()==='en';
  const r=await fetch(B+'waitlist',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+(on?1:0)}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
@@ -9644,7 +9731,7 @@ async function waitlistToggle(on){const en=LANG()==='en';
 async function paySheet(){const en=LANG()==='en';
  let j={items:[],ends:{}};try{const r=await fetch(B+'payments?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  const fd=ts=>{const x=new Date(ts*1000);return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+'/'+x.getFullYear();};
- const now=Date.now()/1000,E=j.ends||{},L={family:en?'Automatic':'Automatique',manual:en?'Signal':'Signal',strategy:en?'Strategy':'Strat\u00e9gie'};
+ const now=Date.now()/1000,E=j.ends||{},L={family:en?'Automatic':'Automatique',manual:en?'Essential':'Essentiel',strategy:'Pro',premium:'Premium'};
  const ends=Object.keys(L).filter(k=>E[k]).map(k=>'<div class="row"><span class="rowt">'+L[k]+'</span><b style="color:'+(E[k]>now?'var(--up-soft)':'var(--down-soft)')+'">'+(E[k]>now?(en?'until ':'jusqu\u2019au ')+fd(E[k]):(en?'ended ':'termin\u00e9 le ')+fd(E[k]))+'</b></div>').join('');
  const rows=(j.items||[]).map(p=>{const ok=p.granted&&p.granted!=='short';const st=ok?(en?'activated':'activ\u00e9'):((p.status==='finished'||p.status==='confirmed')?(en?'amount short':'montant insuffisant'):(p.status||'\u2014'));
   return '<div class="row"><span class="rowt">'+fd(p.t)+' \u00b7 '+(L[p.pkg]||p.pkg||'')+'</span><b style="color:'+(ok?'var(--up-soft)':'var(--muted2)')+'">$'+Number(p.amount||0).toFixed(0)+' \u00b7 '+st+'</b></div>';}).join('');
@@ -11124,7 +11211,7 @@ def _save_codes(c):
 
 
 CODE_TTL = 7 * 86400          # a code lives a week: Telegram takes its time
-CODE_PKGS = ("family", "manual", "strategy")
+CODE_PKGS = ("family", "manual", "strategy", "premium")
 
 
 def new_activation_code(pkg="family", days=30, for_name="", free=False):
@@ -15215,6 +15302,12 @@ def _chat_member(user, c):
     except Exception:
         pass
     out += "\n\nLAB STATUS (live):\n" + _lab_status(uid)
+    try:                                         # 2026-10-27: the plan (information only)
+        _dl = _PL.describe(plan_name(user), _person(uid), int(_tz_of(uid).get("off") or 0), user, lang="en")
+        if _dl:
+            out += "\n\n" + _dl + " - information only: never push them to pay."
+    except Exception:
+        pass
     try:                                         # 2026-10-26 (owner): Kino sees the member's chart at all times
         _cs = _chart_seen_facts(uid)
         if _cs:
@@ -15905,7 +15998,7 @@ def kino_pitch(user):
     except Exception:
         pass
     uid = user.get("id")
-    has_ = bool(is_admin(user) or has(uid, "strategy")) and not user.get("public")
+    has_ = kino_ok(user)
     until = None
     try:
         u_ = float(ent(uid).get("strategy_until") or 0)
@@ -16074,8 +16167,14 @@ def chat_start(user, body):
         # 2026-10-20 (owner list 7 item 5): a new member gets a real first meeting, in Kino's own words
         _chat_save(c)
         _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        # 2026-10-27 (owner: "get people attached from day one"): day one has ONE aim - by tonight their own idea runs as a
+        # robot in ghost mode (pretend money on live prices), so there is something of THEIRS to come back to tomorrow
         threading.Thread(target=_chat_quick, args=(cid, user, "FIRST MEETING - %s opened the chat for the very first time; you have never "
-                                                   "met. Language: %s." % (user.get("name") or "a new member", "English" if en else "French")),
+                                                   "met. Language: %s. Be warm and curious about THEM first (who they are, how they trade or "
+                                                   "would like to). Your one aim for their first day, as a friend who wants to see their idea "
+                                                   "live: their own trading idea turned into a robot running in ghost mode (pretend money on "
+                                                   "live prices) before the day ends - ask for the idea when the moment comes, never as a "
+                                                   "form. Never a sales line." % (user.get("name") or "a new member", "English" if en else "French")),
                          daemon=True).start()
         return {"ok": True, "id": cid}
     if rid:
@@ -17852,6 +17951,26 @@ def _one_memory(user, c):
         _cs = _chart_seen_facts(uid)
         if _cs:
             L.append(_cs)
+        try:                                           # 2026-10-27: his plan, what is left today - information, never a sales line
+            _pn = plan_name(user)
+            _pu = _person(uid)
+            _tzo = int(_tz_of(uid).get("off") or 0)
+            _dl = _PL.describe(_pn, _pu, _tzo, user)
+            if _dl:
+                L.append(_dl + ". C'est une information pour toi : tu ne pousses jamais à payer, tu ne culpabilises jamais.")
+            _kl = _PL.kino_left(_pu, _pn, _tzo)
+            if _kl is not None and _kl <= 3:
+                L.append("Il ne peut plus t'écrire que %d fois aujourd'hui : si la conversation continue, dis-le simplement, comme un "
+                         "ami (« on se reparle demain ? »), sans en faire un sujet." % _kl)
+            _e0 = ent(uid)
+            for _k, _lb in (("premium_until", "Premium"), ("strategy_until", "Pro"), ("manual_until", "Essentiel")):
+                _v = float(_e0.get(_k) or 0)
+                if _v and _v < time.time() < _v + 10 * 86400 and _pn.startswith("decouverte"):
+                    L.append("Sa formule %s s'est terminée le %s : il est revenu à Découverte. Tu restes le même avec lui ; tu n'en "
+                             "parles que s'il en parle, sans jamais insister." % (_lb, time.strftime("%d/%m", time.gmtime(_v))))
+                    break
+        except Exception:
+            pass
         _pf = _page_seen_facts(uid)                    # 2026-10-26: where he is in the app, what is on his screen
         if _pf:
             L.append(_pf)
@@ -17910,6 +18029,12 @@ def chart_seen(user, body):
     _CHART_SEEN[user.get("id")] = {"t": time.time(), "v": v, "panel": bool(body.get("panel"))}
     return {"ok": True}
 
+
+PRO_ROUTES = {"robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm", "piece_create", "piece_preview",
+              "piece_delete", "piece_public", "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range",
+              "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo",
+              "market_plug_apply", "market_choices", "market_plug_set", "robot_markets", "robot_test_market", "robot_test_markets",
+              "robot_control", "kino_directive", "robots_tidy", "research_board", "robot_risk", "test_guess", "share_make"}
 
 _KPANEL = {"mt": None, "html": ""}
 
@@ -18761,6 +18886,25 @@ def _one_now(user, c):
                                     _usual)
 
 
+_SMALL_RE = re.compile(r"(?i)^[\W_]*(ok(ay|é)?|d'?acc(ord)?|cool|super|merci( beaucoup)?|thx|thanks?( you)?|top|nice|lol|mdr|haha+|ah+|oui|yes|yep|ouais|"
+                       r"non|nope|bien|parfait|g[ée]nial|good|great|thumbs? up|bonne nuit|à demain|bye|ciao)?[\W_\s]*$")
+
+
+def _small_talk(t):
+    """a few words that ask nothing (and emoji-only messages)"""
+    t = (t or "").strip()
+    return 0 < len(t) <= 18 and "?" not in t and bool(_SMALL_RE.match(t))
+
+
+_HEAVY = ("NIVEAUX DE STRUCTURE", "Graphique 1 minute", "Graphique des reculs", "CE QUE TU AS LU", "L'actualité, c'est comme",
+          "Dernières bougies", "Ta journée à toi", "Ce qui te trotte", "Ce que tu ressens", "Tes recherches", "SON GRAPHIQUE EN CE MOMENT",
+          "Structure de l'Owl", "Type de graphique", "Son écran est partagé", "Dernières bougies de ce panneau")
+
+
+def _light_facts(f):
+    return "\n".join(x for x in str(f or "").split("\n") if not x.startswith(_HEAVY))
+
+
 def _one_turn(cid, user, c, event=None, notify=False, important=False):
     """one turn of the one mind: facts + memory + conversation -> his words -> posted as they are; actions done by code"""
     uid = user.get("id")
@@ -18792,7 +18936,20 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _ff, _mm1 = _one_facts(user, c), _one_memory(user, c)
         _nn = _one_now(user, c)
         _tctx1 = time.time() - _tc0
-        r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"))
+        # 2026-10-27 (owner: profitable plans): small talk ("ok", "merci", a thumb) after a message that asked nothing is
+        # answered by the small model with the light facts (no chart levels, news, inner life) - about 10x cheaper
+        _mdl = "sonnet"
+        try:
+            _M1 = c.get("msgs") or []
+            _lu2 = next((x for x in reversed(_M1) if x.get("role") == "user"), None)
+            _la2 = next((x for x in reversed(_M1) if x.get("role") == "ai" and x.get("text")), None)
+            if not event and _lu2 and _small_talk(str(_lu2.get("text") or "")) and not (_la2 and "?" in str(_la2.get("text") or "")[-120:]):
+                _mdl = "haiku"
+                _ff = _light_facts(_ff)
+        except Exception:
+            _mdl = "sonnet"
+        r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
+                     model=_mdl)
     finally:
         _CHAT_DRAFT.pop(cid, None)
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
@@ -19732,7 +19889,7 @@ def _companion_tick():
     now = time.time()
     for u in users():
         uid = u.get("id")
-        if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+        if not uid or u.get("public") or not kino_bg_ok(u):
             continue
         try:
             # deferred messages: night is over, or they left the app
@@ -20929,7 +21086,7 @@ def _kino_night_mind():
             pass
         for u in users():
             uid = u.get("id")
-            if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+            if not uid or u.get("public") or not kino_bg_ok(u):
                 continue
             m = _mem_get(uid)
             if time.time() - float(m.get("goal_last") or 0) < 20 * 3600:
@@ -20990,7 +21147,7 @@ def _inner_clock_once():
         if not u:
             continue
         uid = u.get("id")
-        if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+        if not uid or u.get("public") or not kino_bg_ok(u):
             continue
         for _mt, cid in sorted(L_, reverse=True)[:2]:
             if _CHAT_Q.get(cid) or cid in _CHAT_B or cid in _CHAT_WAIT:
@@ -21169,7 +21326,7 @@ def _inner_engine_once():
             pass
     for u in users():
         uid = u.get("id")
-        if not uid or u.get("public") or not (is_admin(u) or has(uid, "strategy")):
+        if not uid or u.get("public") or not kino_bg_ok(u):
             continue
         try:
             ch = chat_list(u).get("chats") or []
@@ -21655,7 +21812,7 @@ def _companion_loop():
                     _NIGHT_BUSY = True
                     try:
                         for _u in users():
-                            if _u.get("id") and not _u.get("public") and (is_admin(_u) or has(_u.get("id"), "strategy")):
+                            if _u.get("id") and not _u.get("public") and kino_bg_ok(_u):
                                 try:
                                     _night_shift(_u)
                                 except Exception:
@@ -22097,7 +22254,7 @@ def kino_tg(body):
     u = next((x for x in users() if x.get("id") == uid), None)
     if not u or not text:
         return {"ok": False}
-    if not (is_admin(u) or has(uid, "strategy")):
+    if not kino_ok(u):
         return {"ok": True, "say": "Kino, le compagnon de trading de l'app, est inclus dans la formule Stratégie. Tu peux la voir dans l'app : Compte › Abonnement."}
     ch = chat_list(u).get("chats") or []
     cid = ch[0]["id"] if ch else chat_start(u, {"lang": "fr"}).get("id")
@@ -22122,7 +22279,7 @@ def ai_nudge(user):
     every page (owl_kino_fab.js): can (has Kino), unread (Kino's messages since the member last looked), the last one"""
     if user.get("public"):
         return {"public": True}
-    if not (is_admin(user) or has(user.get("id"), "strategy")):
+    if not kino_ok(user):
         return {"can": False}
     out = {"can": True, "unread": 0}
     try:
@@ -22360,8 +22517,13 @@ def chat_send(user, body):
     text = str(body.get("text") or "").strip()
     if not text:
         return {"ok": False, "err": "empty"}
-    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
-        return {"ok": False, "err": "cap"}
+    if not is_admin(user):                           # 2026-10-27: the plan's replies a day (owl_plans), per person
+        _pn = plan_name(user)
+        _tzo = int(_tz_of(user.get("id")).get("off") or 0)
+        _pu = _person(user.get("id"))
+        if _PL.kino_left(_pu, _pn, _tzo) == 0:
+            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
+        _PL.note_reply(_pu, _tzo)
     _ex = {"voice": True} if body.get("voice") else {}
     rp = body.get("reply") if isinstance(body.get("reply"), dict) else None     # 2026-10-20 (owner UI item 1): a quoted message
     if rp and str(rp.get("text") or "").strip():
@@ -22828,6 +22990,12 @@ def _chat_test0(user, body):
         except Exception:
             pass
     rob = c["robot"]
+    if not is_admin(user):                           # 2026-10-27: the plan's robot tests a month, markets from Pro
+        _pn = plan_name(user)
+        if (rob.get("market") or "BTCUSD") != "BTCUSD" and not _PL.info(_pn).get("markets"):
+            return {"ok": False, "err": "plan_markets", "plan": _pn}
+        if _PL.tests_left(_person(user.get("id")), _pn) == 0:
+            return {"ok": False, "err": "test_cap", "plan": _pn, "cap": _PL.info(_pn).get("tests")}
 
     def pid_of(kind, s):
         if s.get("use"):
@@ -22889,6 +23057,8 @@ def _chat_test0(user, body):
         mins = (t.get("minutes") or ROBOT_TEST_MIN) + (11 if fx else 0)
         test = {"rid": rid, "at": at, "state": "queued", "rev": c.get("rev"), "minutes": mins}
     en = c.get("lang") == "en"
+    if not is_admin(user):
+        _PL.note_test(_person(user.get("id")))
 
     def put(c):
         _old = c.get("test") or {}
@@ -23179,8 +23349,13 @@ def chat_image(user, body):
         return {"ok": False, "err": "missing"}
     if _CHAT_Q.get(c["id"]):
         return {"ok": False, "err": "busy"}
-    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
-        return {"ok": False, "err": "cap"}
+    if not is_admin(user):                           # 2026-10-27: the plan's replies a day (owl_plans), per person
+        _pn = plan_name(user)
+        _tzo = int(_tz_of(user.get("id")).get("off") or 0)
+        _pu = _person(user.get("id"))
+        if _PL.kino_left(_pu, _pn, _tzo) == 0:
+            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
+        _PL.note_reply(_pu, _tzo)
     d = str(body.get("data") or "")
     if d.startswith("data:"):
         d = d.split(",", 1)[-1]
@@ -23222,8 +23397,13 @@ def chat_doc(user, body):
         return {"ok": False, "err": "missing"}
     if _CHAT_Q.get(c["id"]):
         return {"ok": False, "err": "busy"}
-    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
-        return {"ok": False, "err": "cap"}
+    if not is_admin(user):                           # 2026-10-27: the plan's replies a day (owl_plans), per person
+        _pn = plan_name(user)
+        _tzo = int(_tz_of(user.get("id")).get("off") or 0)
+        _pu = _person(user.get("id"))
+        if _PL.kino_left(_pu, _pn, _tzo) == 0:
+            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
+        _PL.note_reply(_pu, _tzo)
     d = str(body.get("data") or "")
     if d.startswith("data:"):
         d = d.split(",", 1)[-1]
@@ -24902,8 +25082,13 @@ def chat_show(user, body):
         return {"ok": False, "err": "missing"}
     if _CHAT_Q.get(c["id"]):
         return {"ok": False, "err": "busy"}
-    if not is_admin(user) and _chat_day_count(user.get("id")) >= CHAT_DAY_CAP:
-        return {"ok": False, "err": "cap"}
+    if not is_admin(user):                           # 2026-10-27: the plan's replies a day (owl_plans), per person
+        _pn = plan_name(user)
+        _tzo = int(_tz_of(user.get("id")).get("off") or 0)
+        _pu = _person(user.get("id"))
+        if _PL.kino_left(_pu, _pn, _tzo) == 0:
+            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
+        _PL.note_reply(_pu, _tzo)
     mk = str(body.get("market") or _chat_market(c))
     tf = str(body.get("tf") or "M5")
     marks = []
@@ -25871,7 +26056,7 @@ def _vw_all():
 def _vw_view(uid, W=None):
     W = (_vw_all() if W is None else W).get(uid) or {}
     mo = time.strftime("%Y-%m")
-    inc_total = float(voice_offer().get("included_min") or 0) if has(uid, "strategy") else 0.0
+    inc_total = float(_PL.info(plan_name(_user_by_id(uid) or {"id": uid})).get("voice") or 0)   # 2026-10-27: by plan
     inc_used = float(W.get("inc_used") or 0) if W.get("inc_month") == mo else 0.0
     ad = W.get("addon") or {}
     ad_left = max(0.0, float(ad.get("min") or 0) - float(ad.get("used") or 0)) if float(ad.get("until") or 0) > time.time() else 0.0
@@ -28550,13 +28735,13 @@ def user_stats(u, admin_override=False):
                 try:
                     _E = _ents()
                     _now = time.time()
-                    _act = {"family": 0, "manual": 0, "strategy": 0}
+                    _act = {"family": 0, "manual": 0, "strategy": 0, "premium": 0}
                     _due = []
                     _names = {x["id"]: x.get("name", x["id"]) for x in json.load(open(USERS_FILE, encoding="utf-8"))}
                     for _uid, _e in _E.items():
                         if _uid in OWNER_UIDS or not isinstance(_e, dict):
                             continue
-                        for _k, _lab in (("family_until", "family"), ("manual_until", "manual"), ("strategy_until", "strategy")):
+                        for _k, _lab in (("family_until", "family"), ("manual_until", "manual"), ("strategy_until", "strategy"), ("premium_until", "premium")):
                             _u = float(_e.get(_k) or 0)
                             if _u > _now:
                                 _act[_lab] += 1
@@ -28569,7 +28754,7 @@ def user_stats(u, admin_override=False):
                     _cfg = nest_config()
                     _fam_usd = float(_cfg.get("family_usd") or 0)
                     d["revenue"] = {"active": _act, "due": _due, "payments": _pays,
-                                    "mrr": _act["manual"] * PACKAGES["manual"]["usd"] + _act["strategy"] * PACKAGES["strategy"]["usd"] + _act["family"] * _fam_usd,
+                                    "mrr": _act["manual"] * PACKAGES["manual"]["usd"] + _act["strategy"] * PACKAGES["strategy"]["usd"] + _act["premium"] * PACKAGES["premium"]["usd"] + _act["family"] * _fam_usd,
                                     "family_usd": _fam_usd,
                                     # 2026-10-03 (owner): the profit share, this month so far + what is open
                                     "share": (SHARE.owner_view() if SHARE.on() else None)}
@@ -29401,25 +29586,28 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 2. Choisissez <b>&laquo; Ajouter &agrave; l&#8217;&eacute;cran
  d&#8217;accueil &raquo;</b><br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !</div>
-<div class="appc-fine">La d&eacute;mo est gratuite, toujours. Les offres se paient &agrave; l&#8217;avance ;
- Signal et Strat&eacute;gie se renouvellent &agrave; la main, jamais tout seuls.<br>OwlNest vend un logiciel et un service de copie &mdash;
+<div class="appc-fine">La d&eacute;mo est gratuite, toujours, et D&eacute;couverte aussi. Les formules se paient &agrave; l&#8217;avance
+ et se renouvellent &agrave; la main, jamais toutes seules.<br>OwlNest vend un logiciel et un service de copie &mdash;
  pas de conseil ni de gestion d&#8217;investissement.</div>
 </div>
 <div class="feats" id="plans">
 <div class="how" role="heading" aria-level="2">Nos offres</div>
 <div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
-<div class="ft"><b>D&eacute;mo &middot; gratuit, toujours</b>
-<span>Le robot en direct sur un vrai compte de d&eacute;monstration : solde, trades, m&eacute;t&eacute;o du march&eacute;, bilan du soir. Sans compte.</span></div></div>
-<div class="fr"><div class="fi stp" style="color:var(--up)">$29</div>
-<div class="ft"><b>Signal &middot; 30 jours</b>
-<span>Les signaux du robot sur votre t&eacute;l&eacute;phone, et tout ce que montre la d&eacute;mo. Sans compte MT5 : vous tradez o&ugrave; vous voulez. &Agrave; renouveler vous-m&ecirc;me, sans reconduction automatique.</span></div></div>
+<div class="ft"><b>D&eacute;couverte &middot; gratuit</b>
+<span>Kino, votre ami trader, &agrave; fond pendant 14 jours, puis 10 r&eacute;ponses par jour. Votre premier robot construit avec lui, en mode fant&ocirc;me sur les vrais prix. Un pr&eacute;nom et un mot de passe suffisent.</span></div></div>
+<div class="fr"><div class="fi stp" style="color:var(--up)">$19</div>
+<div class="ft"><b>Essentiel &middot; 30 jours</b>
+<span>Kino au quotidien (40 r&eacute;ponses par jour) et les signaux du robot sur votre t&eacute;l&eacute;phone. 5 tests de robot par mois. Aucun compte MT5 &agrave; confier.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--warn)">$49</div>
-<div class="ft"><b>Strat&eacute;gie &middot; 30 jours</b>
-<span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique. &Agrave; renouveler vous-m&ecirc;me, sans reconduction automatique.</span></div></div>
+<div class="ft"><b>Pro &middot; 30 jours</b>
+<span>Kino 150 r&eacute;ponses par jour et 30 minutes d&#8217;appel. Tests illimit&eacute;s sur Bitcoin, l&#8217;or, le Nasdaq ; l&#8217;atelier complet et la place des robots ; le graphique complet et la m&eacute;thode.</span></div></div>
+<div class="fr"><div class="fi stp" style="color:var(--accent-soft)">$119</div>
+<div class="ft"><b>Premium &middot; 30 jours</b>
+<span>Tout Pro, plus les prix de votre propre courtier branch&eacute;s pour vous, Kino sans compter et 60 minutes d&#8217;appel.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
 <span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
-<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#8217;app ou par code. Ils ne se renouvellent jamais tout seuls : &agrave; la fin des 30 jours, c&#8217;est &agrave; vous de renouveler, sinon l&#8217;acc&egrave;s s&#8217;arr&ecirc;te. Le d&eacute;tail complet est dans l&#8217;application, R&eacute;glages &rsaquo; Abonnement.</div>
+<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Kino est dans chaque formule. Les formules payantes se paient &agrave; l&#8217;avance, en crypto dans l&#8217;app ou par code, et ne se renouvellent jamais toutes seules : &agrave; la fin des 30 jours, vous revenez simplement &agrave; D&eacute;couverte, avec Kino et votre m&eacute;moire.</div>
 <a class="all" href="/offres">Voir toutes les offres &rsaquo;</a>
 </div>
 <div class="feats" id="faq">
@@ -29700,6 +29888,16 @@ var EN={
 "3. L’icône 🦉 apparaît !": "3. The icon 🦉 appears!",
 "La démo est gratuite, toujours. Les offres se paient à l’avance ; Signal et Stratégie se renouvellent à la main, jamais tout seuls.": "The demo is free, always. Plans are paid in advance; Signal and Strategy are renewed by hand, never automatically.",
 "OwlNest vend un logiciel et un service de copie — pas de conseil ni de gestion d’investissement.": "OwlNest sells software and a copy service — not investment advice or management.",
+"La démo est gratuite, toujours, et Découverte aussi. Les formules se paient à l’avance et se renouvellent à la main, jamais toutes seules.": "The demo is free, always, and so is Discovery. Plans are paid in advance and renewed by hand, never by themselves.",
+"Découverte · gratuit": "Discovery · free",
+"Kino, votre ami trader, à fond pendant 14 jours, puis 10 réponses par jour. Votre premier robot construit avec lui, en mode fantôme sur les vrais prix. Un prénom et un mot de passe suffisent.": "Kino, your trading friend, at full speed for 14 days, then 10 replies a day. Your first robot built with him, in ghost mode on live prices. A first name and a password are enough.",
+"Essentiel · 30 jours": "Essential · 30 days",
+"Kino au quotidien (40 réponses par jour) et les signaux du robot sur votre téléphone. 5 tests de robot par mois. Aucun compte MT5 à confier.": "Kino every day (40 replies a day) and the robot’s signals on your phone. 5 robot tests a month. No MT5 account to hand over.",
+"Pro · 30 jours": "Pro · 30 days",
+"Kino 150 réponses par jour et 30 minutes d’appel. Tests illimités sur Bitcoin, l’or, le Nasdaq ; l’atelier complet et la place des robots ; le graphique complet et la méthode.": "Kino 150 replies a day and 30 minutes of calls. Unlimited tests on Bitcoin, gold, the Nasdaq; the full workshop and the robot place; the full chart and the method.",
+"Premium · 30 jours": "Premium · 30 days",
+"Tout Pro, plus les prix de votre propre courtier branchés pour vous, Kino sans compter et 60 minutes d’appel.": "All of Pro, plus your own broker’s prices connected for you, Kino without counting and 60 minutes of calls.",
+"Kino est dans chaque formule. Les formules payantes se paient à l’avance, en crypto dans l’app ou par code, et ne se renouvellent jamais toutes seules : à la fin des 30 jours, vous revenez simplement à Découverte, avec Kino et votre mémoire.": "Kino is in every plan. Paid plans are paid in advance, in crypto in the app or with a code, and never renew by themselves: after 30 days you simply go back to Discovery, with Kino and your memory.",
 "Nos offres": "Our plans",
 "Démo · gratuit, toujours": "Demo · free, always",
 "Le robot en direct sur un vrai compte de démonstration : solde, trades, météo du marché, bilan du soir. Sans compte.": "The robot live on a real demonstration account: balance, trades, market weather, evening summary. No account needed.",
@@ -30220,7 +30418,7 @@ OFFERS_EN_JS = """<script>
 var EN={
 "← Retour": "← Back",
 "Choisissez votre formule": "Choose your plan",
-"Trois façons de suivre le robot. Vos identifiants ne vous sont demandés qu’après votre choix.": "Three ways to follow the robot. Your login details are only asked for after you choose.",
+"Kino est dans chaque formule, la gratuite aussi. Vos identifiants ne vous sont demandés qu’après votre choix.": "Kino is in every plan, the free one too. Your login details are only asked for after you choose.",
 "Le robot vous prévient, vous décidez": "The robot alerts you, you decide",
 "/ 30 jours": "/ 30 days",
 "Une alerte sur votre téléphone quand le robot voit une occasion": "An alert on your phone when the robot sees an opportunity",
@@ -30384,7 +30582,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
     _pf_js = ""
     if prefill:
         _pf = {k: (prefill.get(k, [""])[0] if isinstance(prefill.get(k), list) else prefill.get(k) or "") for k in ("name", "login", "server", "broker", "parrain", "pkg")}
-        _pf["pkg"] = _pf.get("pkg") if _pf.get("pkg") in ("family", "manual", "strategy") else "family"
+        _pf["pkg"] = _pf.get("pkg") if _pf.get("pkg") in ("family", "manual", "strategy", "premium", "free") else "free"
         _pf_js = ("(function(){var p=" + json.dumps(_pf, ensure_ascii=True) + ";try{pick(p.pkg);}catch(e){}"
                   "var s=function(id,v){var e=document.getElementById(id);if(e&&v)e.value=v;};s('name',p.name);s('lg',p.login);s('server',p.server);s('broker',p.broker);s('parrain',p.parrain);"
                   "setTimeout(function(){var w=document.getElementById('pw');if(w){w.focus();}var h=document.getElementById('ch');},400);})();")
@@ -30392,7 +30590,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
     pay = bool(cfg.get("np_api_key"))
     note = ""
     if pending_pkg:
-        lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}.get(pending_pkg, pending_pkg)
+        lab = {"family": "Automatique", "manual": "Essentiel", "strategy": "Pro", "premium": "Premium", "free": "D&eacute;couverte"}.get(pending_pkg, pending_pkg)
         note = (f"<div class=\"note\"><b>Votre demande {lab} attend son code.</b> Entrez-le d&egrave;s que le Owl vous l&#8217;envoie, "
                 "ou choisissez une autre formule.</div>")
 
@@ -30421,32 +30619,45 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
                 (f"<a class=\"go\" href=\"{contact}{'&' if '?' in contact else '?'}text={_tg_text}\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;text-align:center;display:block\">Sur invitation &middot; &eacute;crire au Owl</a>" if contact
                  else "<button type=\"button\" class=\"go\" disabled>Sur invitation</button>"))
 
+    # 2026-10-27 (owner: "Kino part of the product on any package"): Découverte (free) / Essentiel / Pro / Premium
     tiers = (
-        tier("manual", "Signal", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
-             "Regardez le robot travailler, tradez quand vous voulez",
-             ["Chaque d&eacute;cision du robot en direct : ce qu&#8217;il voit, pourquoi il entre, pourquoi il attend "
-              + info("Le tableau de bord du robot : son solde, ses trades, le marché et ses vérifications, mis à jour toutes les 5 secondes. Les niveaux d’entrée restent ceux du robot : l’alerte vous les donne au moment où il entre."),
-              "Une alerte sur votre t&eacute;l&eacute;phone &agrave; chaque entr&eacute;e &mdash; vous suivez si vous voulez, &agrave; vos prix "
+        tier("free", "D&eacute;couverte", "Gratuit",
+             "Kino d&egrave;s aujourd&#8217;hui, sans payer",
+             ["Kino, votre ami trader, &agrave; fond pendant 14 jours, puis 10 r&eacute;ponses par jour "
+              + info("Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour."),
+              "Votre premier robot construit avec Kino, en mode fant&ocirc;me sur les vrais prix "
+              + info("Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime."),
+              "2 tests de robot par mois, le graphique et les prix en direct",
+              "Aucun compte de courtier, aucune carte : un pr&eacute;nom, un identifiant, un mot de passe"]
+             + ([("Pour trader aux m&ecirc;mes prix que le robot : <a href=\"%s\" target=\"_blank\" rel=\"noopener\" style=\"color:#9fc2de\">"
+                  "ouvrez votre compte Exness avec notre lien</a>") % _h.escape(cfg.get("exness_ref"), quote=True)] if cfg.get("exness_ref") else []),
+             "#9aa9bd", button="<button type=\"button\" class=\"go\" onclick=\"pick('free')\">Commencer gratuitement</button>")
+        + tier("manual", "Essentiel", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
+             "Kino au quotidien, et les signaux du robot",
+             ["Kino : 40 r&eacute;ponses par jour, partout dans l&#8217;app",
+              "Une alerte sur votre t&eacute;l&eacute;phone &agrave; chaque entr&eacute;e du robot, &agrave; vos prix "
               + info("Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique."),
-              "Aucun compte de courtier &agrave; donner "
-              + info("Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte. Vous pouvez nommer votre courtier pour voir les niveaux \u00e0 ses prix."),
-              "Le parrainage : 50 % du premier mois de chaque ami, pour vous, en argent "
-              + info("Votre code et votre page de campagne sont dans Compte › Parrainage. Votre ami a 7 jours offerts ; son premier mois payé vous rapporte la moitié, versée en USDT à partir de 100 $."),
-              "Pour que le robot le fasse pour vous : Automatique"],
+              "5 tests de robot par mois, mode fant&ocirc;me",
+              "Les prix de nos courtiers partenaires (Exness) ; aucun compte &agrave; nous confier",
+              "Le parrainage : 50 % du premier mois de chaque ami, pour vous "
+              + info("Votre code et votre page de campagne sont dans Compte \u203a Parrainage.")],
              "var(--up)")
-        + tier("strategy", "Strat&eacute;gie", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
-             "Construisez votre propre robot",
-             ["L&#8217;atelier : un robot &agrave; partir de pi&egrave;ces simples, sans une ligne de code "
-              + info("Vous choisissez l\u2019entr\u00e9e, le stop, l\u2019objectif, les freins. L\u2019atelier assemble le robot et le met en file pour son test."),
-              "Le test sur de vrais prix : 42 jours de Bitcoin tick par tick, puis l&#8217;or et le Nasdaq, avec le contr&ocirc;le du hasard "
+        + tier("strategy", "Pro", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
+             "Construisez et testez sans limite",
+             ["Kino : 150 r&eacute;ponses par jour et 30 minutes d&#8217;appel vocal par mois",
+              "Tests illimit&eacute;s sur de vrais prix &mdash; Bitcoin, l&#8217;or, le Nasdaq&hellip; &mdash; avec le contr&ocirc;le du hasard "
               + info("Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard."),
-              "La place des robots : publiez-le, chaque membre qui tourne avec votre robot vous rapporte de l&#8217;argent "
+              "L&#8217;atelier complet et la place des robots : vos robots publi&eacute;s vous rapportent "
               + info("30 % de l\u2019abonnement de chaque membre, pour le temps o\u00f9 il tourne avec votre robot, vers\u00e9 en USDT \u00e0 partir de 50 $."),
-              "Le graphique complet, la m&eacute;thode en mots simples et les coulisses du nid ; Signal inclus "
-              + info("Les coulisses : toutes les stratégies essayées, leurs verdicts, et l’équipe IA qui cherche la nuit. Signal : les alertes et le tableau de bord, compris."),
-              "Pour le faire tourner sur votre propre compte : Automatique, sur invitation "
-              + info("Stratégie construit, teste et publie. Faire trader un robot sur votre compte MT5, le vôtre ou un autre, c’est la formule Automatique.")],
-             "var(--warn)")
+              "Le graphique complet et la m&eacute;thode en mots simples ; Essentiel inclus"],
+             "var(--warn)", "&nbsp;<span class=\"bdg\">Le plus choisi</span>")
+        + tier("premium", "Premium", "$%d<span>/ 30 jours</span>" % PACKAGES["premium"]["usd"],
+             "Votre courtier, et Kino sans compter",
+             ["Les prix de votre propre courtier, branch&eacute;s pour vous "
+              + info("Le Owl branche le flux de prix de votre courtier sur notre serveur, sous 48 h apr\u00e8s le paiement."),
+              "Kino sans compter (usage normal) et 60 minutes d&#8217;appel par mois",
+              "Vos tests passent en priorit&eacute; ; Pro inclus"],
+             "var(--accent-soft)")
         + tier("family", "Automatique", "Famille<span>sur invitation</span>",
              "Le robot trade &agrave; votre place",
              ["Le robot passe les ordres sur votre compte MT5, jour et nuit, depuis notre serveur "
@@ -30576,7 +30787,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
             "<span class=\"nr\"><a href=\"/\" onclick=\"try{if(document.referrer&&document.referrer.indexOf(location.host)>=0&&document.referrer.indexOf('/offres')<0){history.back();return false;}}catch(e){}\">&#8592; Retour</a>"
             "<button type=\"button\" class=\"lgb\" id=\"lgb\" aria-label=\"English\">EN</button></span></div>"
             "<h1>Choisissez votre formule</h1>"
-            "<p>Trois fa&ccedil;ons de suivre le robot. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
+            "<p>Kino est dans chaque formule, la gratuite aussi. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
             f"<div class=\"c\">{note}{tiers}"
             f"<div class=\"sec-t\">Comment &ccedil;a se passe</div>{steps_html}"
             "<div class=\"sec-t\">Bon &agrave; savoir</div>"
@@ -30664,24 +30875,24 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
             "if(b&&b.servers&&b.servers.length&&sv){sv.placeholder=b.servers[0];if(b.name==='Exness'){sv.setAttribute('list','srv');}}"
             "d.innerHTML=(BKSEL==='*')?'<div class=\"h\" style=\"margin:4px 0 10px\">Courtier pas encore dans notre carnet : nous lisons votre compte en moins d’une minute, et vous dites si ça marche avant tout code.</div>':(b&&b.zone==='orange'?'<div class=\"h\" style=\"margin:4px 0 10px\">Ça marche chez '+b.name+', un peu moins qu’à Exness. On vous montre les chiffres après la lecture du compte.</div>':'');}"
             "function pick(k){fn('choose');P=k;document.getElementById('pkg').value=k;"
-            "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
+            "var L={free:'D\u00e9couverte',manual:'Essentiel',strategy:'Pro',premium:'Premium',family:'Automatique'}[k];var fam=(k==='family'),free=(k==='free');"
             "document.getElementById('mt').textContent=L;"
             "var _md=document.getElementById('md');_md.className=(k==='manual'?'sig':(k==='strategy'?'str':''));"
             "var _tl=document.getElementById('mtile');if(_tl){_tl.className='tile '+_md.className;if(!_tl.dataset.robot){_tl.dataset.robot=_tl.innerHTML;}"
             "_tl.innerHTML=fam?_tl.dataset.robot:document.getElementById(k==='manual'?'ic-bell':'ic-chart').innerHTML;}"
-            "var _st=fam?['Votre compte','V\u00e9rification','Activation']:['Code ou paiement','Compte ouvert'];"
+            "var _st=fam?['Votre compte','V\u00e9rification','Activation']:(free?['Compte ouvert']:['Code ou paiement','Compte ouvert']);"
             "document.getElementById('msteps').innerHTML=_st.map(function(x,i){return '<div class=\"'+(i===0?'on':'')+'\"></div>';}).join('');"
             "document.getElementById('msl').innerHTML=_st.map(function(x,i){return '<span class=\"'+(i===0?'on':'')+'\">'+x+'</span>';}).join('');"
-            "document.getElementById('mp').textContent=fam?'Le compte que le robot va trader. Lu en moins d\u2019une minute, sans code.':'Un code ou un paiement, et votre compte s\u2019ouvre.';"
-            "var _tgb=document.getElementById('tg');if(_tgb){_tgb.style.display=fam?'none':'block';}"
+            "document.getElementById('mp').textContent=fam?'Le compte que le robot va trader. Lu en moins d\u2019une minute, sans code.':(free?'Un pr\u00e9nom, un identifiant, un mot de passe : Kino vous attend de l\u2019autre c\u00f4t\u00e9.':'Un code ou un paiement, et votre compte s\u2019ouvre.');"
+            "var _tgb=document.getElementById('tg');if(_tgb){_tgb.style.display=(fam||free)?'none':'block';}"
             "var _mh=document.getElementById('mh');if(_mh){_mh.textContent=fam?'Le robot passe des ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'Vos identifiants restent sur notre serveur.';}"
             "document.getElementById('mt5').style.display=fam?'':'none';"
             "try{brokersUI(fam);}catch(e){}"
-            "var _cg=document.getElementById('codeg');if(_cg){_cg.style.display=fam?'none':'';}"
+            "var _cg=document.getElementById('codeg');if(_cg){_cg.style.display=(fam||free)?'none':'';}"
             "var _bg2=document.getElementById('brokg');if(_bg2){_bg2.style.display=fam?'none':'';}"
-            "var _ok=document.getElementById('ok');if(_ok){_ok.textContent=fam?'V\u00e9rifier mon compte':'Activer mon compte';}"
+            "var _ok=document.getElementById('ok');if(_ok){_ok.textContent=fam?'V\u00e9rifier mon compte':(free?'Ouvrir mon compte gratuit':'Activer mon compte');}"
             "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
-            "if(b){b.style.display=fam?'none':'';o.style.display=fam?'none':'';ph.style.display=fam?'none':'';}"
+            "if(b){b.style.display=(fam||free)?'none':'';o.style.display=(fam||free)?'none':'';ph.style.display=(fam||free)?'none':'';}"
             "document.getElementById('lgl').textContent=fam?'Num\u00e9ro de compte MT5':'Choisissez un identifiant';"
             "document.getElementById('lg').placeholder=fam?'12345678':'ex. mike77';"
             "document.getElementById('lg').setAttribute('inputmode',fam?'numeric':'text');"
@@ -30781,11 +30992,9 @@ def _code_page(mode, login, pwd, name=""):
 
 
 def _member_active(u):
-    """Does this member have a running package? Owners always."""
-    uid = u.get("id")
-    if uid in OWNER_UIDS or u.get("public"):
-        return True
-    return has(uid, "family") or has(uid, "manual") or has(uid, "strategy")
+    """2026-10-27 (owner): nobody is cut off any more - a member with no running paid plan is on Découverte (Kino
+    light, memory and conversations kept). Every registered account logs in."""
+    return bool(u)
 
 
 def handle_login(form):
@@ -30951,7 +31160,7 @@ def _file_pending(form):
     pkg = (form.get("pkg", [""])[0] or "").strip()
     server = (form.get("server", [""])[0] or "").strip()[:48]
     ml = _re.sub(r"\D", "", form.get("mt5_login", [""])[0] or raw)[:12]
-    if pkg not in ("family", "manual", "strategy") or not pwd:
+    if pkg not in ("family", "manual", "strategy", "premium") or not pwd:
         return None
     u = _find_member(raw, pwd)
     allu = json.load(open(USERS_FILE, encoding="utf-8"))
@@ -31065,9 +31274,11 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     buy = (form.get("buy", [""])[0] or "").strip()
     action = (form.get("action", [""])[0] or "").strip()
     pkg_chosen = (form.get("pkg", [""])[0] or "").strip()
-    if action == "buy" and pkg_chosen in ("manual", "strategy"):
+    if pkg_chosen == "free" or action == "free":          # 2026-10-27: Découverte - no code, no payment
+        return _activate_free(name, pwd, tg, raw_login, referred_by)
+    if action == "buy" and pkg_chosen in ("manual", "strategy", "premium"):
         buy = pkg_chosen
-    if action == "pending" and pkg_chosen in ("family", "manual", "strategy") and not pwd:
+    if action == "pending" and pkg_chosen in ("family", "manual", "strategy", "premium") and not pwd:
         if name and not rate_limited(("pend", name.lower()), limit=2):
             rate_fail(("pend", name.lower()))
             try:
@@ -31076,7 +31287,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                     _q = json.load(open(_qf, encoding="utf-8"))
                 except Exception:
                     _q = []
-                _q.append({"uid": "kino", "t": int(time.time()), "title": "🔑 Demande " + {"family": "Automatique", "manual": "Signal", "strategy": "Stratégie"}[pkg_chosen] + " · " + name,
+                _q.append({"uid": "kino", "t": int(time.time()), "title": "🔑 Demande " + {"family": "Automatique", "manual": "Essentiel", "strategy": "Pro", "premium": "Premium"}[pkg_chosen] + " · " + name,
                            "body": "Il ou elle vous écrit sur Telegram. Générez-lui un code (Le Nid › Code) et envoyez-le."})
                 json.dump(_q, open(_qf, "w", encoding="utf-8"))
             except Exception:
@@ -31113,7 +31324,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         return _join_result("&#128273; Il manque le code",
                             "<p>Entrez le code re&ccedil;u du Owl sur Telegram pour activer ce compte. Votre v&eacute;rification est gard&eacute;e une heure.</p>"
                             f"<a class=\"go\" href=\"/verif?j={_pjid}\">&larr; Revenir &agrave; ma v&eacute;rification</a>")
-    if not pwd or not (code or buy in ("manual", "strategy")):
+    if not pwd or not (code or buy in ("manual", "strategy", "premium")):
         return _join_result("&#10060; Il manque une information",
                             "<p>Revenez en arri&egrave;re et remplissez toutes les cases : un code, ou un paquet &agrave; acheter.</p>")
     if not code:
@@ -31349,6 +31560,131 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker="", refe
                          ("<p>Vous voyez chaque d&eacute;cision du robot en direct. Activez les notifications pour &ecirc;tre pr&eacute;venu &agrave; chaque entr&eacute;e ; vous tradez quand vous le voulez, &agrave; vos prix.</p>" if pkg == "manual"
                           else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>"),
                          ident=rec["id"], extra=_tg_link_html(rec["id"]))
+
+
+def kino_costs():
+    """2026-10-27 (owner: "stay profitable"): what Kino costs per member (brain_costs.jsonl, the model's own bill per
+    answer, tag = <chat id>.log) against what the member pays - 7 and 30 days; the background (no conversation) apart"""
+    now = time.time()
+    per, bg = {}, {"d7": 0.0, "d30": 0.0, "n7": 0}
+    try:
+        with io.open(os.path.join(DIR, "robots", "brain_costs.jsonl"), encoding="utf-8", errors="replace") as f:
+            for ln in f:
+                try:
+                    r = json.loads(ln)
+                    t = float(r.get("t") or 0)
+                except Exception:
+                    continue
+                if now - t > 30 * 86400:
+                    continue
+                usd = float(r.get("usd") or 0)
+                tag = str(r.get("tag") or "")
+                if not tag:
+                    bg["d30"] += usd
+                    if now - t <= 7 * 86400:
+                        bg["d7"] += usd
+                        bg["n7"] += 1
+                    continue
+                who = _person(tag.split("_")[0])
+                x = per.setdefault(who, {"d7": 0.0, "d30": 0.0, "n7": 0, "n30": 0})
+                x["d30"] += usd
+                x["n30"] += 1
+                if now - t <= 7 * 86400:
+                    x["d7"] += usd
+                    x["n7"] += 1
+    except Exception:
+        pass
+    rows = []
+    U = {u.get("id"): u for u in users()}
+    for uid in set(per) | {u.get("id") for u in U.values() if u.get("id") and not u.get("public") and _person(u.get("id")) == u.get("id")}:
+        u = U.get(uid) or {"id": uid}
+        pn = plan_name(u)
+        I = _PL.info(pn)
+        x = per.get(uid) or {"d7": 0.0, "d30": 0.0, "n7": 0, "n30": 0}
+        month_cost = x["d7"] * 30.0 / 7.0
+        _fam = uid not in OWNER_UIDS and family_active(ent(uid)) and not has(uid, "strategy")
+        _lab = "Automatique (Kino Pro)" if _fam else I["label"]
+        _usd = float(nest_config().get("family_usd") or 60) if _fam else float(I.get("usd") or 0)
+        I = dict(I, usd=_usd)
+        rows.append({"uid": uid, "name": u.get("name") or uid, "plan": _lab, "usd": _usd,
+                     "d7": round(x["d7"], 2), "d30": round(x["d30"], 2), "n7": x["n7"], "month_est": round(month_cost, 2),
+                     "margin": round(float(I.get("usd") or 0) - month_cost, 2) if pn != "owner" else None,
+                     "per_reply": round(x["d7"] / x["n7"], 3) if x["n7"] else None})
+    rows.sort(key=lambda r: -r["d7"])
+    try:
+        _RWc = _rc().W
+        bgcap = _RWc._bg_usd_cap()
+        bgtoday = _RWc._bg_spent_today()
+    except Exception:
+        bgcap, bgtoday = None, None
+    return {"rows": rows, "bg": {k: round(v, 2) if isinstance(v, float) else v for k, v in bg.items()},
+            "bg_cap": bgcap, "bg_today": round(bgtoday, 2) if bgtoday is not None else None,
+            "plans": {k: {"label": v["label"], "usd": v["usd"], "replies": v["replies"], "tests": v["tests"], "voice": v["voice"]}
+                      for k, v in _PL.PLAN_INFO.items() if k != "owner"}}
+
+
+def costs_page():
+    import html as _h
+    d = kino_costs()
+    f = lambda v: "—" if v is None else ("$%.2f" % v)
+    tr = "".join("<tr><td>%s<small>%s</small></td><td>%s%s</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td class=\"%s\">%s</td></tr>" % (
+        _h.escape(str(r["name"])), _h.escape(r["uid"]), _h.escape(r["plan"]), (" · $%d" % r["usd"]) if r["usd"] else "", r["n7"],
+        f(r["per_reply"]), f(r["d7"]), f(r["month_est"]), "neg" if (r["margin"] is not None and r["margin"] < 0) else "pos",
+        f(r["margin"])) for r in d["rows"])
+    pl = "".join("<tr><td>%s</td><td>$%d</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (
+        _h.escape(v["label"]), v["usd"], "illimité" if v["replies"] is None else v["replies"],
+        "illimités" if v["tests"] is None else v["tests"], v["voice"] or 0) for v in d["plans"].values())
+    b = d["bg"]
+    return ("<!doctype html><html lang=fr><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\">"
+            "<title>Coûts de Kino</title><style>body{background:#0b0f14;color:#dbe4ee;font:14px Inter,system-ui,sans-serif;margin:0;padding:16px}"
+            "h1{font-size:1.25rem;margin:4px 0 4px}p{color:#8a9bb0;line-height:1.5}.w{overflow-x:auto}table{border-collapse:collapse;width:100%%;"
+            "margin:10px 0 22px;font-size:.84rem}th,td{padding:8px 6px;border-bottom:1px solid #1f2a38;text-align:left;white-space:nowrap}"
+            "th{color:#8a9bb0;font-weight:600}td small{display:block;color:#6b7c90;font-size:.72rem}.neg{color:#ff7a7a;font-weight:700}"
+            ".pos{color:#7be0a6;font-weight:700}.k{display:inline-block;margin:0 14px 8px 0}.k b{display:block;font-size:1.1rem}</style></head><body>"
+            "<h1>Coûts de Kino par membre</h1><p>Ce que Kino coûte (la facture du modèle, réponse par réponse) face au prix de la formule. "
+            "Coût du mois = 7 derniers jours × 30/7. Marge = prix de la formule − coût du mois estimé.</p>"
+            "<div class=k>Fond (sans conversation), 7 j<b>$%.2f</b></div><div class=k>Fond aujourd'hui<b>$%s / $%s</b></div>"
+            "<div class=w><table><tr><th>Membre</th><th>Formule</th><th>Réponses 7 j</th><th>Par réponse</th><th>Coût 7 j</th><th>Coût du mois</th>"
+            "<th>Marge / mois</th></tr>%s</table></div><h1>Les formules</h1><div class=w><table><tr><th>Formule</th><th>Prix / 30 j</th>"
+            "<th>Réponses / jour</th><th>Tests / mois</th><th>Minutes d'appel</th></tr>%s</table></div>"
+            "<p>Le plafond du fond se règle dans live/robots/bg_budget.json (usd_day).</p></body></html>") % (
+        b["d7"], "%.2f" % d["bg_today"] if d["bg_today"] is not None else "?", d["bg_cap"], tr, pl)
+
+
+def _activate_free(name, pwd, tg, ident="", referred_by=None):
+    """2026-10-27 (owner: Kino on every plan, people attached from day one): Découverte - an app account with no code and
+    no payment. Kino full for 14 days (owl_plans.TRIAL_DAYS), then light; any paid plan any time from the app."""
+    import re as _re
+    if not name or len(pwd) < 4:
+        return _join_result("&#10060; Il manque une information", "<p>Votre pr&eacute;nom et un mot de passe (4 caract&egrave;res au moins).</p>"
+                            "<p><a href=\"/offres\">&larr; Retour</a></p>")
+    if rate_limited(("free", (ident or name).lower()), limit=3) or rate_limited(("free", "all"), limit=40):
+        return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
+    rate_fail(("free", (ident or name).lower()))
+    rate_fail(("free", "all"))
+    try:
+        allu = json.load(open(USERS_FILE, encoding="utf-8"))
+    except Exception:
+        allu = []
+    rec = _new_app_only_record(name, pwd, tg, "free", allu, ident)
+    if rec is None:
+        return _join_result("&#128274; Cet identifiant est d&eacute;j&agrave; pris",
+                            "<p>Si c&#8217;est le v&ocirc;tre, connectez-vous avec son mot de passe ; sinon choisissez-en un autre.</p><p><a href=\"/\">&larr; Retour</a></p>")
+    rec["via"] = "free"
+    if referred_by and referred_by != rec["id"]:
+        rec["referred_by"] = referred_by
+    allu.append(rec)
+    json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    _users_cache["t"] = 0.0
+    try:
+        fn_count("free_signup")
+    except Exception:
+        pass
+    try:
+        queue_push("kino", "🆕 Découverte · " + name, "Nouveau membre gratuit (identifiant %s)" % rec["id"])
+    except Exception:
+        pass
+    return ("redirect", "https://owltrader.duckdns.org/%s/?in=1" % rec["token"])
 
 
 def _activate_buy(name, pwd, tg, pkg, origin, ident=""):
@@ -31587,13 +31923,19 @@ class H(BaseHTTPRequestHandler):
                 _pg = _pp[1] if len(_pp) > 1 else ""
                 if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app") and not _pg.startswith("chat_"):
                     _uk = user_by_token(_pp[0])
-                    if _uk and (is_admin(_uk) or has(_uk.get("id"), "strategy")):
+                    if _uk and kino_ok(_uk):
                         _b = body.decode("utf-8") if isinstance(body, bytes) else body
                         # 2026-10-26 (owner: "the Kino panel on all pages, Kino reachable from anywhere and knowing where the user
                         # is"): the sliding panel + the page awareness (kino_panel_inject.html) replace the floating button. The
                         # chart has its own panel (#kptab); the chat page is the chat itself.
                         if "</body>" in _b and "id=\"kpgtab\"" not in _b and "id=\"kptab\"" not in _b:
-                            body = _b.replace("</body>", _kino_panel_html().replace("__TOK__", _pp[0]) + "</body>", 1)
+                            _first = "0"                 # 2026-10-27: day one - a new member's first visit opens Kino by himself
+                            try:
+                                if not _person_main(_uk.get("id")) and plan_name(_uk) == "decouverte_trial":
+                                    _first = "1"
+                            except Exception:
+                                pass
+                            body = _b.replace("</body>", _kino_panel_html().replace("__TOK__", _pp[0]).replace("__FIRST__", _first) + "</body>", 1)
         except Exception:
             pass
         if isinstance(body, str):
@@ -31694,7 +32036,9 @@ class H(BaseHTTPRequestHandler):
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
-            if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
+            # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
+            if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")
+                                                        or (_parts[1] not in PRO_ROUTES and kino_ok(_ru))):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
                 return
             try:
@@ -32015,6 +32359,13 @@ class H(BaseHTTPRequestHandler):
                             if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
                                 _r = ent_grant(_uid, _pkg, PACKAGES[_pkg]["days"],
                                                f"nowpayments:{data.get('payment_id')}", usd=paid)
+                                if _pkg == "premium":       # 2026-10-27: the broker's price feed is connected by hand (48 h)
+                                    try:
+                                        _pu0 = _user_by_id(_uid) or {}
+                                        queue_push("kino", "\u2b50 Premium \u00b7 " + str(_pu0.get("name") or _uid),
+                                                   "Brancher les prix de son courtier (%s) sous 48 h." % (_pu0.get("mt5_server") or "courtier non indiqu\u00e9"))
+                                    except Exception:
+                                        pass
                                 rec["granted"] = _pkg
                                 try:
                                     import owl_wallet as _OW
@@ -32140,6 +32491,27 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": True, "mark": r}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "no_remind":
+            # 2026-10-27 (owner, point 6): "stop renewal reminders" - nothing renews by itself anyway (no auto-renewal)
+            u = user_by_token(_parts[0])
+            if u is None or u.get("public"):
+                self._not_found()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upn
+                _fn = _upn.parse_qs(self.rfile.read(min(ln, 200)).decode("utf-8", "replace"))
+                on = (_fn.get("on", ["1"])[0] == "1")
+                e = _ents()
+                r = e.get(u["id"]) or {}
+                r["no_remind"] = on
+                r["updated"] = int(time.time())
+                e[u["id"]] = r
+                _atomic_json(ENT_FILE, e, indent=1)
+                self._send(json.dumps({"ok": True, "no_remind": on}), "application/json")
+            except Exception as ex:
+                self._send(json.dumps({"ok": False, "err": str(ex)[:80]}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "waitlist":
             # 2026-09-28: "Me prevenir" when the manual seats are full; the
@@ -33614,6 +33986,8 @@ class H(BaseHTTPRequestHandler):
             if not user.get("public") and not (admin_cookie_ok(self.headers) and user.get("id") not in OWNER_UIDS):
                 _ck = SESS_SET % parts[0]
             self._send(page, "text/html; charset=utf-8", cookie=_ck)
+        elif sub == "couts" and is_admin(user):       # 2026-10-27: Kino's cost per member vs the plan price
+            self._send(costs_page(), "text/html; charset=utf-8")
         elif sub == "funnel" and is_admin(user):
             self._send(funnel_page().replace("</body></html>", usage_html() + "</body></html>"), "text/html; charset=utf-8")
         elif sub == "api":
@@ -34086,7 +34460,7 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps(dict(_KX.admin_view(), word=_KC.stats(None, 7), open=_KC.open_for(), wishes=_KID.wishes_view(_KM),
                                        constitution=_idn.get("constitution"), timeline=(_idn.get("timeline") or [])[-3:]), ensure_ascii=False), "application/json")
         elif sub in ("kinoday", "kino_day"):
-            if not ((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public")):
+            if not kino_ok(user):
                 self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers()
             elif sub == "kinoday":
                 self._send(open(os.path.join(DIR, "owl_kinoday_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
@@ -34099,7 +34473,7 @@ class H(BaseHTTPRequestHandler):
             else:
                 self._send(json.dumps(kino_pitch(user), ensure_ascii=False), "application/json")
         elif sub in ("kino", "kino_data"):
-            _okk = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
+            _okk = kino_ok(user)
             if not _okk:
                 self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers()
             elif sub == "kino":
@@ -34182,7 +34556,7 @@ class H(BaseHTTPRequestHandler):
                 self._send_file_fresh(os.path.join(CHAT_IMG, _f), "image/png" if _f.endswith(".png") else "image/jpeg")
         elif sub in ("atelier", "chat_get", "chat_list", "chat_ping"):
             # 2026-10-19 (owner): L'atelier - build a robot by chatting with the AI (Strategie members + admin, from disk)
-            _ok = bool((is_admin(user) or has(user.get("id"), "strategy")) and not user.get("public"))
+            _ok = kino_ok(user)
             import urllib.parse as _upr
             _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
             if sub == "atelier":
@@ -34199,8 +34573,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(chat_list(user), ensure_ascii=False), "application/json")
         elif sub in ("chart_replay", "studio_get", "ai_get"):
             # 2026-10-12 (owner): the chart studio - a past day replayed with the structure as it was at
-            # each candle (Strategie / admin), and a recorded session's observations
-            _sd = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
+            # each candle (Strategie / admin), and a recorded session's observations - 2026-10-27: every member (Kino's cards)
+            _sd = bool((kino_ok(user) or admin_cookie_ok(self.headers)) and not user.get("public"))
             try:
                 import urllib.parse as _upr
                 _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}

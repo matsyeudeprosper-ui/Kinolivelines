@@ -429,7 +429,16 @@ let MK=null;
 
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200);}
 async function getJ(u){const r=await fetch(B+u+(u.includes('?')?'&':'?')+'t='+Date.now(),{cache:'no-store'});return r.json();}
-async function post(fn,body){const r=await fetch(B+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});return r.json();}
+async function post(fn,body){const r=await fetch(B+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});const j=await r.json();
+ if(j&&(j.err==='cap'||j.err==='test_cap'||j.err==='plan_markets'))setTimeout(()=>limitSh(j),60);return j;}
+/* 2026-10-27 (owner: plans): a limit of the member's plan, said plainly, with the way to more - never a wall of text */
+function limitSh(j){const lab=j.label||'';
+ const t=j.err==='cap'?T('Kino a beaucoup parlé avec toi aujourd’hui','Kino has talked a lot with you today'):(j.err==='test_cap'?T('Tes tests de robot du mois sont faits','Your robot tests for the month are done'):T('Tester sur d’autres marchés','Testing on other markets'));
+ const x=j.err==='cap'?T('Ta formule '+lab+' compte '+(j.cap||'')+' réponses par jour. Kino reprend demain, il n’oublie rien d’ici là.','Your '+lab+' plan counts '+(j.cap||'')+' replies a day. Kino picks up tomorrow and forgets nothing meanwhile.')
+  :(j.err==='test_cap'?T('Ta formule en compte '+(j.cap||'')+' par mois. Avec Pro, les tests sont illimités.','Your plan counts '+(j.cap||'')+' a month. With Pro, tests are unlimited.')
+  :T('L’or, le Nasdaq et les autres marchés se testent avec la formule Pro. Le Bitcoin reste ouvert à tous.','Gold, the Nasdaq and other markets are tested with the Pro plan. Bitcoin stays open to everyone.'));
+ shOpen('<h3 style="margin:4px 0 8px">'+t+'</h3><p class="sub" style="line-height:1.55">'+x+'</p>'+
+  '<div class="kact"><a class="btn" style="text-decoration:none;text-align:center" target="_top" href="'+B+'#offres">'+T('Voir les formules','See the plans')+'</a><button onclick="shClose()">'+T('Plus tard','Later')+'</button></div>');}
 const ERR={market:T('Ce marché n’est pas chez ton courtier.','That market isn’t at your broker.'),busy:T('Je suis encore en train de répondre, une seconde.','Still answering, one second.'),cap:T('Tu as beaucoup parlé aujourd’hui : on reprend demain.','Lots of chatting today: let’s pick it up tomorrow.'),
  same:T('Pour l’instant c’est encore l’Owl tel quel : change au moins une pièce.','Right now it is still the plain Owl: change at least one piece.'),limit:T('Tu as atteint le nombre maximum de robots.','You reached the maximum number of robots.'),
  state:T('Un test est déjà en route pour ce robot.','A test is already on its way for this robot.'),check:T('Ça ne passe pas les contrôles.','That does not pass the checks.'),missing:T('Conversation introuvable.','Conversation not found.'),strategy:T('L’atelier fait partie de la formule Stratégie.','The workshop is part of the Strategy plan.')};

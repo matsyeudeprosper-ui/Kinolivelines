@@ -25,6 +25,19 @@ _LAST = {}            # key -> last use (2026-10-23: one key per member now - a 
 
 _TL = threading.local()          # member_turn: this thread answers the member right now (never budgeted)
 _HIST = []                       # (t, ok) of every model call, last hour
+BG_USD_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bg_budget.json")   # {"usd_day": 6}
+_BGDAY = {}                      # 2026-10-27 (owner: profitable plans): {UTC day: $ spent by calls with no conversation}
+try:                             # today's background spend so far (an app restart must not reset the day)
+    _bgd = time.strftime("%Y-%m-%d", time.gmtime())
+    for _l in io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), encoding="utf-8", errors="replace"):
+        try:
+            _r = json.loads(_l)
+        except Exception:
+            continue
+        if not _r.get("tag") and time.strftime("%Y-%m-%d", time.gmtime(float(_r.get("t") or 0))) == _bgd:
+            _BGDAY[_bgd] = float(_BGDAY.get(_bgd, 0.0)) + float(_r.get("usd") or 0)
+except Exception:
+    pass
 BG_MAX_PER_HOUR = 150            # 2026-10-23: four night research processes made 360 calls ($19) in ONE hour, the usage
 BG_FAIL_PAUSE = (5, 600)         # limit was hit and 1 266 calls failed for 6 h - the member's chat included. Background
                                  # work stops at 150 calls/hour, and for 10 min after 5 failures in 10 min (API down or capped).
@@ -48,8 +61,21 @@ def brain():
     return getattr(_TL, "brain", None)
 
 
-def _budget_ok():
+def _bg_usd_cap():
+    try:
+        return float(json.load(open(BG_USD_FILE, encoding="utf-8")).get("usd_day") or 6.0)
+    except Exception:
+        return 6.0
+
+
+def _bg_spent_today():
+    return float(_BGDAY.get(time.strftime("%Y-%m-%d", time.gmtime()), 0.0))
+
+
+def _budget_ok(log=None):
     now = time.time()
+    if log is None and _bg_spent_today() >= _bg_usd_cap():      # the inner life's day is paid for; chats are never counted
+        return False
     with _LOCK:
         _HIST[:] = [(t, ok) for t, ok in _HIST if now - t <= 3600]
         n = len(_HIST)
@@ -282,7 +308,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         _OA_DOWN["n"] += 1
         if _OA_DOWN["n"] >= 2:
             _OA_DOWN["until"], _OA_DOWN["n"] = time.time() + 600, 0
-    if not getattr(_TL, "member", False) and not _budget_ok():
+    if not getattr(_TL, "member", False) and not _budget_ok(log):
         try:                                      # refused, and said so in the cost log
             io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
                 {"t": int(time.time()), "m": model, "usd": 0, "tag": os.path.basename(log) if log else "", "skip": "budget"}) + "\n")
@@ -336,6 +362,12 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                         except Exception:
                             pass
                 if j.get("type") == "result":
+                    if log is None:               # 2026-10-27: background spend of the day
+                        try:
+                            _dk = time.strftime("%Y-%m-%d", time.gmtime())
+                            _BGDAY[_dk] = float(_BGDAY.get(_dk, 0.0)) + float(j.get("total_cost_usd") or 0)
+                        except Exception:
+                            pass
                     try:                          # 2026-10-21 (owner item 12): what each answer costs
                         io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
                             {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else "",
