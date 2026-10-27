@@ -253,7 +253,13 @@ def plan_block(uid=None, lang="fr"):
     p = plan_today()
     if not p:
         return ""
-    I = [i for i in p["items"] if not i.get("member") or i.get("member") == uid]
+    # 2026-10-27: one person, several logins (robots/persons.json) - an item for "kino" is also for his "std" chat
+    try:
+        _P = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "persons.json"), encoding="utf-8"))
+    except Exception:
+        _P = {}
+    _r = lambda x: _P.get(x, x)
+    I = [i for i in p["items"] if not i.get("member") or _r(i.get("member")) == _r(uid)]
     if not I:
         return ""
     rv = (_load().get("reviews") or [{}])[-1]

@@ -20884,11 +20884,18 @@ def _exec_ctx(kind="plan"):
         try:
             if not (chat_list(u).get("chats") or []):
                 continue                                  # a technical account (bots, demo) is not a person to plan for
+            # 2026-10-27 (watch): the plan said "message kino" AND "tell std" - one person with two logins (persons.json);
+            # he is listed once, under his main id, with the jobs and last visit of all his logins
+            if _person(uid) != uid:
+                continue
+            _us = _person_uids(uid)
             m = _mem_get(uid)
-            sn = _CHAT_SEEN.get(uid)
+            _sn = [(_CHAT_SEEN.get(x) or [0])[0] for x in _us]
+            sn = (max(_sn),) if max(_sn) else None
+            _jt = " ".join(_jobs_text(next((y for y in users() if y.get("id") == x), None) or {"id": x})[:300] for x in _us)
             L.append("MEMBER %s: their goal: %s | last seen: %s | %s" % (
                 uid, ((m.get("their_goal") or {}).get("text") or "-"), ("%.0f h ago" % ((now - sn[0]) / 3600)) if sn else "never",
-                _jobs_text(u)[:300]))
+                _jt[:500]))
         except Exception:
             pass
     try:
