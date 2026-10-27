@@ -9664,9 +9664,9 @@ function offersSheet(){fnb('offers');
    '<ul class="otl">'+gets.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+cta+'</div>';};
  const step=(n,t,x)=>'<div class="ostep"><i>'+n+'</i><div><b>'+t+'</b><span>'+x+'</span></div></div>';
  const h='<h3>'+T2('Les offres','The plans')+'</h3>'+
-  '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Kino est dans chaque formule : votre ami trader, qui se souvient de vous. Changez quand vous voulez.','Kino is in every plan: your trading friend, who remembers you. Change any time.')+'</p>'+
+  '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Chaque formule vient avec Kino, l\u2019intelligence artificielle de l\u2019app : un vrai trader et un compagnon, qui lit les march\u00e9s avec vous, transforme vos id\u00e9es en robots en quelques phrases et se souvient de vous. Le reste, vous le d\u00e9couvrirez avec lui.','Every plan comes with Kino, the app\u2019s built-in AI: a real trader and a companion, who reads the markets with you, turns your ideas into robots in a few sentences and remembers you. The rest you\u2019ll discover with him.')+'</p>'+
   tier('free',T2('D\u00e9couverte','Discovery'),T2('Gratuit','Free'),
-   T2('Kino d\u00e8s aujourd\u2019hui, sans payer','Kino from today, for free'),
+   T2('Rencontrez Kino aujourd\u2019hui, sans payer','Meet Kino today, for free'),
    [T2('Kino \u00e0 fond pendant 14 jours, puis 10 r\u00e9ponses par jour','Kino at full speed for 14 days, then 10 replies a day')+ic(T2('Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour.','He stays after the trial: same Kino, same memory, just fewer messages a day.')),
     T2('Votre premier robot construit avec Kino, en mode fant\u00f4me sur les vrais prix','Your first robot built with Kino, in ghost mode on live prices')+ic(T2('Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime.','Ghost mode trades pretend money on live prices: you watch your idea work without risking a cent.')),
     T2('2 tests de robot par mois, le graphique et les prix en direct','2 robot tests a month, the chart and live prices'),
@@ -29592,6 +29592,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 </div>
 <div class="feats" id="plans">
 <div class="how" role="heading" aria-level="2">Nos offres</div>
+<div style="font-size:.86rem;color:var(--text2);margin:2px 4px 10px;line-height:1.55">Dans chaque formule, il y a Kino : l&#8217;intelligence artificielle int&eacute;gr&eacute;e &agrave; l&#8217;app. Pas un simple assistant : un vrai trader, qui lit les march&eacute;s avec vous, transforme vos id&eacute;es en robots en quelques phrases et se souvient de vous d&#8217;un jour &agrave; l&#8217;autre. Un compagnon plut&ocirc;t qu&#8217;un outil. Pour le reste, on vous laisse le d&eacute;couvrir.</div>
 <div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
 <div class="ft"><b>D&eacute;couverte &middot; gratuit</b>
 <span>Kino, votre ami trader, &agrave; fond pendant 14 jours, puis 10 r&eacute;ponses par jour. Votre premier robot construit avec lui, en mode fant&ocirc;me sur les vrais prix. Un pr&eacute;nom et un mot de passe suffisent.</span></div></div>
@@ -29607,7 +29608,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
 <span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
-<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Kino est dans chaque formule. Les formules payantes se paient &agrave; l&#8217;avance, en crypto dans l&#8217;app ou par code, et ne se renouvellent jamais toutes seules : &agrave; la fin des 30 jours, vous revenez simplement &agrave; D&eacute;couverte, avec Kino et votre m&eacute;moire.</div>
+<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Kino, l&#8217;IA trader de l&#8217;app, est dans chaque formule. Les formules payantes se paient &agrave; l&#8217;avance, en crypto dans l&#8217;app ou par code, et ne se renouvellent jamais toutes seules : &agrave; la fin des 30 jours, vous revenez simplement &agrave; D&eacute;couverte, avec Kino et votre m&eacute;moire.</div>
 <a class="all" href="/offres">Voir toutes les offres &rsaquo;</a>
 </div>
 <div class="feats" id="faq">
@@ -29897,7 +29898,8 @@ var EN={
 "Kino 150 réponses par jour et 30 minutes d’appel. Tests illimités sur Bitcoin, l’or, le Nasdaq ; l’atelier complet et la place des robots ; le graphique complet et la méthode.": "Kino 150 replies a day and 30 minutes of calls. Unlimited tests on Bitcoin, gold, the Nasdaq; the full workshop and the robot place; the full chart and the method.",
 "Premium · 30 jours": "Premium · 30 days",
 "Tout Pro, plus les prix de votre propre courtier branchés pour vous, Kino sans compter et 60 minutes d’appel.": "All of Pro, plus your own broker’s prices connected for you, Kino without counting and 60 minutes of calls.",
-"Kino est dans chaque formule. Les formules payantes se paient à l’avance, en crypto dans l’app ou par code, et ne se renouvellent jamais toutes seules : à la fin des 30 jours, vous revenez simplement à Découverte, avec Kino et votre mémoire.": "Kino is in every plan. Paid plans are paid in advance, in crypto in the app or with a code, and never renew by themselves: after 30 days you simply go back to Discovery, with Kino and your memory.",
+"Kino, l’IA trader de l’app, est dans chaque formule. Les formules payantes se paient à l’avance, en crypto dans l’app ou par code, et ne se renouvellent jamais toutes seules : à la fin des 30 jours, vous revenez simplement à Découverte, avec Kino et votre mémoire.": "Kino, the app’s trading AI, is in every plan. Paid plans are paid in advance, in crypto in the app or with a code, and never renew by themselves: after 30 days you simply go back to Discovery, with Kino and your memory.",
+"Dans chaque formule, il y a Kino : l’intelligence artificielle intégrée à l’app. Pas un simple assistant : un vrai trader, qui lit les marchés avec vous, transforme vos idées en robots en quelques phrases et se souvient de vous d’un jour à l’autre. Un compagnon plutôt qu’un outil. Pour le reste, on vous laisse le découvrir.": "In every plan there is Kino: the AI built into the app. Not just an assistant: a real trader who reads the markets with you, turns your ideas into robots in a few sentences and remembers you from one day to the next. A companion rather than a tool. The rest, we’ll let you discover.",
 "Nos offres": "Our plans",
 "Démo · gratuit, toujours": "Demo · free, always",
 "Le robot en direct sur un vrai compte de démonstration : solde, trades, météo du marché, bilan du soir. Sans compte.": "The robot live on a real demonstration account: balance, trades, market weather, evening summary. No account needed.",
@@ -30418,7 +30420,7 @@ OFFERS_EN_JS = """<script>
 var EN={
 "← Retour": "← Back",
 "Choisissez votre formule": "Choose your plan",
-"Kino est dans chaque formule, la gratuite aussi. Vos identifiants ne vous sont demandés qu’après votre choix.": "Kino is in every plan, the free one too. Your login details are only asked for after you choose.",
+"Chaque formule vient avec Kino, l’intelligence artificielle de l’app : un vrai trader et un compagnon, qui lit les marchés avec vous, transforme vos idées en robots en quelques phrases et se souvient de vous. Le reste, vous le découvrirez avec lui. Vos identifiants ne vous sont demandés qu’après votre choix.": "Every plan comes with Kino, the app’s built-in AI: a real trader and a companion, who reads the markets with you, turns your ideas into robots in a few sentences and remembers you. The rest you’ll discover with him. Your login details are only asked for after you choose.",
 "Le robot vous prévient, vous décidez": "The robot alerts you, you decide",
 "/ 30 jours": "/ 30 days",
 "Une alerte sur votre téléphone quand le robot voit une occasion": "An alert on your phone when the robot sees an opportunity",
@@ -30787,7 +30789,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
             "<span class=\"nr\"><a href=\"/\" onclick=\"try{if(document.referrer&&document.referrer.indexOf(location.host)>=0&&document.referrer.indexOf('/offres')<0){history.back();return false;}}catch(e){}\">&#8592; Retour</a>"
             "<button type=\"button\" class=\"lgb\" id=\"lgb\" aria-label=\"English\">EN</button></span></div>"
             "<h1>Choisissez votre formule</h1>"
-            "<p>Kino est dans chaque formule, la gratuite aussi. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
+            "<p>Chaque formule vient avec Kino, l&#8217;intelligence artificielle de l&#8217;app : un vrai trader et un compagnon, qui lit les march&eacute;s avec vous, transforme vos id&eacute;es en robots en quelques phrases et se souvient de vous. Le reste, vous le d&eacute;couvrirez avec lui. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
             f"<div class=\"c\">{note}{tiers}"
             f"<div class=\"sec-t\">Comment &ccedil;a se passe</div>{steps_html}"
             "<div class=\"sec-t\">Bon &agrave; savoir</div>"
