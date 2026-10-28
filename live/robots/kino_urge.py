@@ -25,6 +25,9 @@ WEIGHTS = (
     ("YOUR INITIATIVE", 0.5), ("INNER VOICE", 0.5), ("MORNING BRIEF", 0.5), ("WEEKLY REVIEW", 0.5), ("GOAL STEP", 0.45),
     ("RESEARCH DIARY", 0.4), ("END OF DAY", 0.4), ("SOUVENIR", 0.35), ("MISSING", 0.3), ("GHOST TRADE", 0.3),
     ("BIG HEADLINE", 0.3), ("HEADS-UP", 0.25),
+    # 2026-10-28 (owner: "nothing rule based"): the moments that came at a fixed clock time or straight to him
+    ("SHARED EXPERIMENT", 0.6), ("WEEK RECAP", 0.5), ("NIGHT TEST RESULT", 0.5), ("DECISION LOOK BACK", 0.45),
+    ("ROBOT REVIEW", 0.45), ("GESTURE", 0.4), ("REPLAY WEEK", 0.4), ("TESTS RESUMED", 0.3),
 )
 
 
