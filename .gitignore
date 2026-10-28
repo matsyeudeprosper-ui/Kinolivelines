@@ -213,3 +213,6 @@ study/botsim/runs/
 live/robots/plan_usage.json
 live/robots/kino_rules.json
 live/robots/kino_tics.json
+live/robots/kino_urge.json
+live/robots/kino_urge.json.tmp
+live/robots/kino_urge.log

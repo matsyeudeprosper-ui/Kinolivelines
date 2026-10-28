@@ -19041,14 +19041,18 @@ def _in_talk(uid, c):
 def _one_turn(cid, user, c, event=None, notify=False, important=False):
     """one turn of the one mind: facts + memory + conversation -> his words -> posted as they are; actions done by code"""
     uid = user.get("id")
-    if event and str(event).startswith(ROUTINE_EV) and not _in_talk(uid, c):
+    # 2026-10-28 (owner: "build it properly"): a non-urgent reason to talk is not a message - it adds to his ONE wish to talk
+    # (robots/kino_urge.py); _urge_tick decides when that wish tips over. Urgent events and WISH TO TALK itself pass.
+    if event and not str(event).startswith("WISH TO TALK"):
         try:
-            io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD routine %s | not in the conversation\n" % (
-                time.strftime("%m-%d %H:%M:%S"), uid, cid, str(event)[:22].replace(" ", "_")))
+            _rc()
+            import kino_urge as _KUa
+            if _KUa.is_urge(event) and _person_main(uid):
+                _KUa.add(_person(uid), event)
+                _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+                return
         except Exception:
             pass
-        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
-        return
     lang, r, _tctx1 = c.get("lang") or "fr", None, 0.0
     try:
         _rc()
@@ -22006,11 +22010,78 @@ def _inner_clock_loop():
         time.sleep(30)
 
 
+_URGE_SOUV = {}
+
+
+def _urge_tick():
+    """2026-10-28: every minute, for each person with a main thread on the one mind - does the wish to talk tip over now?"""
+    _rc()
+    import kino_urge as _KU
+    import random as _rd
+    now = time.time()
+    seen = set()
+    for u in users():
+        uid = u.get("id")
+        if not uid or u.get("public") or not kino_bg_ok(u):
+            continue
+        pm = _person(uid)
+        if pm in seen:
+            continue
+        cid = _person_main(uid)
+        if not cid:
+            continue
+        seen.add(pm)
+        try:
+            ow = _thread_user(cid, u)
+            c = _chat_load(ow, cid)
+            if not c or not (c.get("brain") == "one" or _person_uids(uid)[1:]):
+                continue
+            if cid in _CHAT_B or _CHAT_Q.get(cid) or cid in _CHAT_WAIT:
+                continue
+            M = c.get("msgs") or []
+            lu = max([float(m.get("t") or 0) for m in M if m.get("role") == "user"] or [0])
+            own = [float(m.get("t") or 0) for m in M if m.get("role") == "ai" and m.get("event") and m.get("text")]
+            ctx = {"in_talk": _in_talk(uid, c), "their_hour": _active_hour(pm),
+                   "unanswered": sum(1 for t in own if t > lu), "since_own_min": round((now - max(own or [0])) / 60, 1),
+                   "hours_since_member": round((now - lu) / 3600, 1) if lu else 99}
+            # now and then, in their hours, something of their life comes back to him
+            if ctx["their_hour"] and now - _URGE_SOUV.get(pm, 0) > 6 * 3600 and _rd.random() < 0.02:
+                _URGE_SOUV[pm] = now
+                mm = _mem_person(uid)
+                pool = [str(x.get("fact") or "") for x in (mm.get("life") or [])][-12:] + \
+                       [str(x.get("text") or "") for x in (mm.get("jokes") or [])][-6:]
+                pool = [x for x in pool if x]
+                if pool:
+                    _KU.add(pm, "SOUVENIR - something of his life comes back to you: %s" % _rd.choice(pool)[:200])
+            items = _KU.decide(pm, ctx, now)
+            if not items:
+                continue
+            ev = _KU.wish_text(items, ctx)
+            _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+
+            def go(cid=cid, ow=ow, ev=ev, lu=lu, here=ctx["in_talk"]):
+                try:                                   # a person is not instant: if he wrote meanwhile, the talk goes on instead
+                    cn = _chat_load(ow, cid) or {}
+                    if max([float(m.get("t") or 0) for m in cn.get("msgs") or [] if m.get("role") == "user"] or [0]) > lu:
+                        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+                        return
+                    _chat_quick(cid, ow, ev, notify=not here)
+                except Exception:
+                    _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+            threading.Timer(_rd.uniform(5, 40) if ctx["in_talk"] else _rd.uniform(30, 300), go).start()
+        except Exception:
+            pass
+
+
 def _companion_loop():
     time.sleep(90)
     while True:
         try:
             _companion_tick()
+        except Exception:
+            pass
+        try:
+            _urge_tick()
         except Exception:
             pass
         try:
