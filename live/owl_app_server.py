@@ -17918,11 +17918,35 @@ def _one_facts(user, c):
     return "\n".join(L)
 
 
+def _rhythm_line(c):
+    """2026-10-28 (owner: human replies): how long THEY write and how long YOU write, measured on the last messages"""
+    try:
+        M = c.get("msgs") or []
+        U = [len(str(m.get("text") or "").split()) for m in M if m.get("role") == "user" and m.get("text")][-15:]
+        A = [len(str(m.get("text") or "").split()) for m in M if m.get("role") == "ai" and m.get("text")][-15:]
+        if len(U) < 3 or not A:
+            return ""
+        U.sort()
+        return ("Votre rythme (mesuré sur les derniers messages) : lui écrit en général %d mots (moitié de ses messages sous %d), "
+                "toi %d mots en moyenne." % (round(sum(U) / len(U)), U[len(U) // 2], round(sum(A) / len(A))))
+    except Exception:
+        return ""
+
+
 def _one_memory(user, c):
     """what he remembers - plain items, no instructions"""
     uid, cid = user.get("id"), c.get("id")
     m = _mem_person(uid)                               # 2026-10-27: every login of the person, one memory
     L = []
+    _rl = _rhythm_line(c)
+    if _rl:
+        L.append(_rl)
+    try:                                               # 2026-10-28: what he noticed last night about his own way of talking
+        _tc = _jload(os.path.join(DIR, "robots", "kino_tics.json"), {}) or {}
+        if _tc.get("text") and time.time() - float(_tc.get("t") or 0) < 3 * 86400:
+            L.append("Ce que tu as remarqué hier soir sur ta façon de parler : " + str(_tc["text"])[:400])
+    except Exception:
+        pass
     if (m.get("portrait") or {}).get("text"):
         L.append("Ton portrait de lui : " + str(m["portrait"]["text"])[:600])
     if (m.get("their_goal") or {}).get("text"):
@@ -18996,9 +19020,35 @@ def _light_facts(f):
     return "\n".join(x for x in str(f or "").split("\n") if not x.startswith(_HEAVY))
 
 
+# 2026-10-28 (owner: "is he replying exactly like a human? are we off 'if X do Y'?"): 42 of his own messages in 2 days came
+# from code triggers. A friend tells you your trade closed, his test result, what he promised - any time. He does not send a
+# bulletin (busy hour coming, a market headline, a ghost trade, a morning brief, a diary, an end-of-day report) to someone who
+# is not talking with him: those wait for a moment they are in the conversation (wrote in the last 20 min, or app open now).
+ROUTINE_EV = ("HEADS-UP", "BIG HEADLINE", "GHOST TRADE", "MORNING BRIEF", "RESEARCH DIARY", "END OF DAY", "WEEKLY REVIEW")
+
+
+def _in_talk(uid, c):
+    try:
+        _us = _person_uids(uid)
+        if any(time.time() - float((_CHAT_SEEN.get(x) or [0])[0]) < 120 for x in _us):
+            return True
+        _lu = max([float(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "user"] or [0])
+        return time.time() - _lu < 1200
+    except Exception:
+        return True
+
+
 def _one_turn(cid, user, c, event=None, notify=False, important=False):
     """one turn of the one mind: facts + memory + conversation -> his words -> posted as they are; actions done by code"""
     uid = user.get("id")
+    if event and str(event).startswith(ROUTINE_EV) and not _in_talk(uid, c):
+        try:
+            io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD routine %s | not in the conversation\n" % (
+                time.strftime("%m-%d %H:%M:%S"), uid, cid, str(event)[:22].replace(" ", "_")))
+        except Exception:
+            pass
+        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+        return
     lang, r, _tctx1 = c.get("lang") or "fr", None, 0.0
     try:
         _rc()
@@ -21171,6 +21221,47 @@ def _exec_morning():
         _EXEC_BUSY["m"] = False
 
 
+def _kino_tics_night():
+    """2026-10-28 (owner: human replies): at night he rereads his own messages of the day and notices the phrases he keeps
+    repeating - a person hearing themselves, not a filter: what he does with it is his"""
+    import collections
+    now = time.time()
+    C = collections.Counter()
+    n = 0
+    for f in os.listdir(CHAT_DIR):
+        if not f.endswith(".json"):
+            continue
+        try:
+            c = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+        except Exception:
+            continue
+        for m in c.get("msgs") or []:
+            if m.get("role") == "ai" and m.get("text") and now - float(m.get("t") or 0) < 86400:
+                n += 1
+                w = re.findall(r"[\w’'-]+", str(m["text"]).lower())
+                seen = set()
+                for k in (2, 3, 4):
+                    for i in range(len(w) - k + 1):
+                        g = " ".join(w[i:i + k])
+                        if g not in seen and not re.fullmatch(r"[\d .,-]+", g):
+                            seen.add(g)
+                            C[g] += 1
+    if n < 10:
+        return
+    STOP = {"it s", "i m", "it is", "of the", "on the", "in the", "to the", "and the", "de la", "à la", "c est", "il y", "il y a",
+            "for the", "at the", "is the", "that s", "you re", "if the", "and i", "so i", "i ll", "don t", "the top", "de l"}
+    top = [(g, k) for g, k in C.most_common(400) if k >= max(3, n * 0.08) and g not in STOP and len(g) > 6]
+    out = []
+    for g, k in top:
+        if not any(g in o for o, _ in out):
+            out.append((g, k))
+        if len(out) >= 6:
+            break
+    if out:
+        txt = "sur %d de mes messages d'hier, je me suis entendu répéter : %s." % (n, ", ".join("« %s » (%d fois)" % (g, k) for g, k in out))
+        _jsave(os.path.join(DIR, "robots", "kino_tics.json"), {"t": int(now), "text": txt, "n": n})
+
+
 def _kino_night_mind():
     """self-review (level 4), the lab's playbook (level 7), a goal with each active member (level 8)"""
     global _NIGHT_BUSY
@@ -21196,6 +21287,10 @@ def _kino_night_mind():
             _lg = os.path.join(DIR, "robots", "kino_exec.log")
             _KX.review_night(_rc().W, _exec_ctx("review"), log=_lg)
             _KX.set_goals(_rc().W, _exec_ctx("goals"), log=_lg)
+        except Exception:
+            pass
+        try:
+            _kino_tics_night()       # 2026-10-28: he hears his own repeated phrases
         except Exception:
             pass
         _identity_night()        # 2026-10-23 (engine 6): monthly constitution + "who I have become" (idempotent inside)
