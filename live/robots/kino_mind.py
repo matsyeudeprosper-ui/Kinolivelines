@@ -639,6 +639,25 @@ def my_robot_block():
                 json.dumps([t["r"] for t in tr[-5:]]), ch.get("date"), ch.get("what"), ch.get("why"), di.get("text") or "-"))
 
 
+def my_robot_short():
+    """2026-10-28 (watch: "I don't have its numbers in front of me" about his OWN robot, twice): my_robot_block() was cut at
+    500 characters by the one mind and its entry formula filled them - the results never reached him. Results first, short."""
+    r = my_robot()
+    if not r:
+        return ""
+    g = r.get("ghost") or {}
+    tr = g.get("trades") or []
+    w = sum(1 for t in tr if t["r"] > 0)
+    di = (r.get("diary") or [{}])[-1]
+    ch = (r.get("changes") or [{}])[-1]
+    return ("'%s' sur %s depuis le %s, argent fictif : %d trades, %d gagnés (%d %%), total %+.1f R ; 5 derniers %s%s. "
+            "Ton dernier changement (%s) : %s. Ton journal : %s" % (
+                r["robot"].get("name"), g.get("market"), r.get("born"), len(tr), w, round(100 * w / len(tr)) if tr else 0,
+                sum(t["r"] for t in tr), json.dumps([round(t["r"], 1) for t in tr[-5:]]),
+                " ; un trade fictif est OUVERT" if g.get("open") else "", ch.get("date") or "-", str(ch.get("what") or "-")[:120],
+                str(di.get("text") or "-")[:160]))
+
+
 # ---------------------------------------------------------------- the night idea (owner 2026-10-19 next-list item 4)
 def night_idea(market, member_notes, lab):
     """a WHOLE new robot idea for one member, from the lab's experience and what Kino knows of them -> up to 3 entries"""

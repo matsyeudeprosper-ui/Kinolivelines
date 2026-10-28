@@ -17869,9 +17869,9 @@ def _one_facts(user, c):
         L.append("- %s (%s) : %s ; %s ; %s." % (r.get("name"), r.get("market"), where, ts, ls))
     try:
         import kino_mind as _KMo
-        _mr = _KMo.my_robot_block()
+        _mr = _KMo.my_robot_short()
         if _mr:
-            L.append("Ton robot à toi (argent fictif, pas le sien) : " + str(_mr)[:500])
+            L.append("Ton robot à toi (argent fictif, pas le sien) : " + str(_mr)[:600])
     except Exception:
         pass
     if c.get("robot"):
