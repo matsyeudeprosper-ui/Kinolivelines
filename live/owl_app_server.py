@@ -19419,13 +19419,17 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         # re-run for "Hi". The drop below compared with the turn's start (_t0q), set after the pace gate and the context,
         # so a message written in those seconds counted as seen. What this turn has seen = the newest message loaded here.
         _seen_t = max([float(m.get("t") or 0) for m in c.get("msgs") or [] if m.get("role") in ("user", "show", "image", "doc")] or [0])
+        # 2026-10-28 (owner: "nothing rule based"): on the one mind the counters below (gap, 3-unanswered backoff, 8/hour, held
+        # news) are not used - his wish to talk (kino_urge) carries timing as a state: unanswered messages raise its bar, each
+        # decision leaves a bar that melts. The counters also stopped reasons from ever reaching that wish.
+        _one_mind = c.get("brain") == "one" or bool(_person_uids(c.get("uid") or user.get("id"))[1:])
         if event:                                        # 2026-10-23 (owner: "Ok. And?" after two initiatives in 16 min): the tact of when
             try:                                         # to speak on his own - member first, a gap, backoff when unanswered, flat member
                 _rc()
                 import kino_pace as _KPC
                 _pres = (time.time() - _LAST_SEEN.get(user.get("id"), 0) < 120) or any(
                     m_.get("role") == "user" and time.time() - float(m_.get("t") or 0) < 600 for m_ in (c.get("msgs") or [])[-6:])
-                _okp, _whyp = _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")), present=_pres)
+                _okp, _whyp = (True, "one mind") if _one_mind else _KPC.decide(user.get("id"), cid, event, c.get("msgs") or [], _local_hour(user.get("id")), present=_pres)
                 if _judge_on():
                     _lu_t = max([float(m_.get("t") or 0) for m_ in (c.get("msgs") or []) if m_.get("role") == "user"] or [0])
                     # 2026-10-24: the judge decided when to speak and pace only avoided talking over a message being typed.
@@ -19455,7 +19459,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                     pass
             except Exception:
                 _okp = True
-            if str(event).startswith(AUTO_EV):          # 2026-10-26: not an initiative - silent unless he trades
+            if str(event).startswith(AUTO_EV) or _one_mind:     # 2026-10-26: not an initiative; 2026-10-28: the one mind's timing is his wish
                 _okp = True
             if not _okp:
                 _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
@@ -22965,6 +22969,12 @@ def chat_open(user, body):
 
 def chat_send(user, body):
     _CHAT_SENT_T[0] = time.time()                    # 2026-10-21 item 1: the luck tests give Kino the machine
+    # 2026-10-28 (owner: "nothing rule based"): on the one mind, no keyword detectors on the member's words - his read of
+    # them (kino_read) senses "awake", "wants me to decide", "laughed at that"
+    try:
+        _onem = bool(_person_uids(user.get("id"))[1:]) or (json.load(open(_chat_path(str(body.get("id") or "")), encoding="utf-8")).get("brain") == "one")
+    except Exception:
+        _onem = False
     try:
         _rc()
         import kino_life as _KLa
@@ -22972,7 +22982,7 @@ def chat_send(user, body):
     except Exception:
         pass
     try:                                             # 2026-10-21 (humanity watch): "je dors pas" -> no "bonne nuit" / "demain" for 10 h
-        if re.search(r"(je (ne )?dors pas|j'?ai pas sommeil|je n'ai pas sommeil|pas fatigu|arr[êe]te de dire[^.]{0,40}(demain|reprendre|dormir)|"
+        if not _onem and re.search(r"(je (ne )?dors pas|j'?ai pas sommeil|je n'ai pas sommeil|pas fatigu|arr[êe]te de dire[^.]{0,40}(demain|reprendre|dormir)|"
                      r"i'?m not (sleepy|tired)|i can'?t sleep|stop saying[^.]{0,30}tomorrow)", str(body.get("text") or ""), re.I):
             _aw = "Awake tonight (until %d): they said '%s' - never say bonne nuit / go to sleep / we continue tomorrow; keep going with them now" % (
                 int(time.time()) + 36000, str(body.get("text"))[:60])
@@ -22984,7 +22994,7 @@ def chat_send(user, body):
     except Exception:
         pass
     try:                                             # 2026-10-21 (humanity watch): "Laisse choisir" in one chat, "X ou Y ?" in the next
-        if re.search(r"(choisis|choisi toi|laisse[- ]?(moi |le |toi )?choisir|à toi de (voir|choisir|décider)|c'est toi qui (vois|choisis|décides)|"
+        if not _onem and re.search(r"(choisis|choisi toi|laisse[- ]?(moi |le |toi )?choisir|à toi de (voir|choisir|décider)|c'est toi qui (vois|choisis|décides)|"
                      r"you (choose|decide|pick)|your call|up to you)", str(body.get("text") or ""), re.I):
             _st = "Decide yourself: they said '%s' - never offer them a choice (X or Y?), say what you do and why" % str(body.get("text"))[:60]
 
@@ -23038,7 +23048,7 @@ def chat_send(user, body):
         _fbk = _KFB.observe(user.get("id"), c["id"], text, _la.get("text") or "")
         try:                                     # 2026-10-24 (item 6, humour measured): what made them laugh is kept - HIS line before their laugh
             import kino_inner as _KIj
-            if re.search(r"\b(lol|mdr|ptdr|haha|hihi|xd)\b|\U0001f602|\U0001f923|\U0001f605", text, re.I) and _la.get("text"):
+            if not _onem and re.search(r"\b(lol|mdr|ptdr|haha|hihi|xd)\b|\U0001f602|\U0001f923|\U0001f605", text, re.I) and _la.get("text"):
                 _jl = str(_la["text"]).strip().replace(chr(10), " ")[:160]
                 _have = [str(x.get("text") or "")[:60] for x in _KIj.moments(user.get("id"), "joke")]
                 if _jl[:60] not in _have:

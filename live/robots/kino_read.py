@@ -22,7 +22,8 @@ Read him RIGHT NOW. JSON only:
 {"mood": "a few plain words", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
- "next": "short|long|silent - how he will most likely answer Kino's next message"}
+ "next": "short|long|silent - how he will most likely answer Kino's next message",
+ "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -55,4 +56,12 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         KP.set_read(uid, chat.get("id"), r)
     except Exception:
         pass
+    lj = " ".join(str(j.get("laughed_at") or "").split())[:160]
+    if len(lj) >= 8:                                   # what made him laugh becomes a shared joke (no keyword list)
+        try:
+            import kino_inner as KI
+            if lj[:60] not in [str(x.get("text") or "")[:60] for x in KI.moments(uid, "joke")]:
+                KI.add_moment(uid, lj, "joke")
+        except Exception:
+            pass
     return r
