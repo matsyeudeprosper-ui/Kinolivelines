@@ -19227,7 +19227,8 @@ def _ground(text, c, minutes=60):
             if m.get("role") == "ai" and m.get("text") and now - float(m.get("t") or 0) < minutes * 60:
                 for x in re.findall(r"(?<![\d.])[+-]?\d[\d ,.]*\d|\d", str(m["text"])):
                     v = x.replace(" ", "").replace(",", ".").lstrip("+-")
-                    if (len(v.replace(".", "")) >= 3 and not v.startswith("0.")) or (v.count(".") == 1 and len(v) >= 3 and not v.startswith("0.")):
+                    # 2026-10-28 22:14 (watch): "25 out of 60" said 3 times in 12 min - two-digit numbers count too
+                    if len(v.replace(".", "")) >= 2 and not v.startswith("0."):
                         said.append((v, float(m.get("t") or 0)))
         if not said:
             return text
