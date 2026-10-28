@@ -256,7 +256,11 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
         if en:                                # 2026-10-28 03:13 (watch): an inner-voice event written in French pulled his own message into French
             P.append("(Whatever language the line above is in: if you write to him, write in English.)")
     else:
-        P.append("Your turn." if en else "À toi.")
+        # 2026-10-28 (watch, round 4 "the last word"): on a member turn silence was never offered, so every "cool" got a reply
+        P.append("Your turn. (Like between friends: if his message closes the exchange and you have nothing real to add, you can "
+                 "leave him the last word - write only … or just a #reaction.)" if en else
+                 "À toi. (Comme entre amis : si son message clôt l'échange et que tu n'as rien de vrai à ajouter, tu peux lui laisser le "
+                 "dernier mot - écris seulement …, ou juste un #reaction.)")
     return "\n\n".join(P)
 
 
