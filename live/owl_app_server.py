@@ -19181,6 +19181,37 @@ def _in_talk(uid, c):
         return True
 
 
+def _ground(text, c, minutes=60):
+    """2026-10-28 (owner: "'one more miss for me' twice - robots smell"; KINO_V3 engine 3, common ground): people keep track of
+    what has already been said and do not say it again. A line of what he knows that holds a number he already told the
+    member in the last hour is marked "already told at HH:MM" - he sees what is news and what is not; nothing stops him."""
+    try:
+        now = time.time()
+        said = []
+        for m in (c.get("msgs") or [])[-30:]:
+            if m.get("role") == "ai" and m.get("text") and now - float(m.get("t") or 0) < minutes * 60:
+                for x in re.findall(r"(?<![\d.])[+-]?\d[\d ,.]*\d|\d", str(m["text"])):
+                    v = x.replace(" ", "").replace(",", ".").lstrip("+-")
+                    if (len(v.replace(".", "")) >= 3 and not v.startswith("0.")) or (v.count(".") == 1 and len(v) >= 3 and not v.startswith("0.")):
+                        said.append((v, float(m.get("t") or 0)))
+        if not said:
+            return text
+        _nv = lambda v: "%g" % round(float(v), 2) if v.count(".") <= 1 else v      # "17.5" and "17.50" are the same number
+        S = {}
+        for v, t in said:
+            S[_nv(v)] = max(S.get(_nv(v), 0), t)
+        out = []
+        for ln in str(text).split("\n"):
+            nums = [x.replace(" ", "").replace(",", ".").lstrip("+-") for x in re.findall(r"(?<![\d.])[+-]?\d[\d ,.]*\d|\d", ln)]
+            hit = [S[_nv(v)] for v in nums if v.count(".") <= 1 and _nv(v) in S]
+            if hit and len(ln) > 20:
+                ln += " [déjà dit à lui à %s UTC]" % time.strftime("%H:%M", time.gmtime(max(hit)))
+            out.append(ln)
+        return "\n".join(out)
+    except Exception:
+        return text
+
+
 def _one_turn(cid, user, c, event=None, notify=False, important=False):
     """one turn of the one mind: facts + memory + conversation -> his words -> posted as they are; actions done by code"""
     uid = user.get("id")
@@ -19236,6 +19267,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _ff = _light_facts(_ff)
         except Exception:
             _mdl = "sonnet"
+        _ff, _mm1 = _ground(_ff, c), _ground(_mm1, c)          # 2026-10-28: what he already said is marked as such
         r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
                      model=_mdl)
     finally:
