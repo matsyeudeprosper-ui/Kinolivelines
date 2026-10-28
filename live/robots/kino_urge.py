@@ -125,7 +125,9 @@ def decide(person, ctx, now=None):
                                     "text": "MISSING - you have not talked for %d hours; you think of him." % hs})
         T = threshold(ctx)
         fire = None
-        if st["p"] >= T and st["items"] and float(ctx.get("since_own_min") or 999) >= 20:
+        # 2026-10-28 (watch): a fire that ended in silence posts nothing, so "since his last message" never moved and it fired
+        # again 6 min later - a person who just decided not to text does not reconsider that soon
+        if st["p"] >= T and st["items"] and float(ctx.get("since_own_min") or 999) >= 20 and now - float(st.get("last_fire") or 0) >= 20 * 60:
             fire = sorted(st["items"], key=lambda it: -it["w"])[:3]
             st["p"] *= 0.25
             ks = {id(it) for it in fire}

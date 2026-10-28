@@ -426,6 +426,20 @@ if __name__ == "__main__":
             r = robots.get(rid)
             if not r:
                 continue
+
+            def _still_wanted(rid=rid):
+                """2026-10-28 (watch): a full test withdrawn while another robot was being tested still ran and its result
+                was written - the run's list is from its start. Asked by name on the command line = always wanted."""
+                if rid in ARGS[1:]:
+                    return True
+                try:
+                    x = next((y for y in json.load(open(REG, encoding="utf-8")).get("robots") or [] if y.get("id") == rid), None)
+                except Exception:
+                    return True
+                return bool(x and (x.get("stage") in ("queued", "testing") or x.get("retest") or x.get("range_jobs")))
+            if not _still_wanted():
+                print(rid, "withdrawn by the member before it started - skipped", flush=True)
+                continue
             t0 = time.time()
             parts = resolve(rid, robots); parent = r.get("parent") or "owl"
             PCS = {p["id"]: p for p in json.load(open(REG, encoding="utf-8")).get("pieces") or []}   # fresh: pieces made meanwhile
@@ -484,6 +498,9 @@ if __name__ == "__main__":
                    "balance": BAL, "drag": DRAG, "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
                    "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[-1]) / 1000))],
                    "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}
+            if not _still_wanted():
+                print(rid, "withdrawn by the member during the test - result dropped", flush=True)
+                continue
             json.dump(res, open(os.path.join(RES, rid + ".json"), "w", encoding="utf-8"), indent=1)
             reg = json.load(open(REG, encoding="utf-8"))           # re-read: the app may have added robots meanwhile
             for x in reg.get("robots") or []:
