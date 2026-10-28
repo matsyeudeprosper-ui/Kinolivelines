@@ -17760,9 +17760,24 @@ def _rules_of(uid):
 def _rules_set(uid, v):
     v = str(v or "").strip()
     m = re.match(r"^r(\d+)\b[\s:,-]*(.*)$", v, re.I | re.S)
+    # 2026-10-28: rules are shown without numbers (he said "r5 says" to the owner) - an old rule is pointed at by a few of
+    # its words: "#regle remplace : <quelques mots> => <nouveau texte>" / "#regle supprime : <quelques mots>"
+    mr = re.match(r"^(remplace|replace|supprime|supprimer|delete|remove)\s*:?\s*(.+?)(?:\s*=>\s*(.+))?$", v, re.I | re.S)
     with _RULES_LK:
         d = _jload(RULES_FILE, {}) or {}
         R = d.get(_person(uid)) or []
+        if mr and R:
+            _w = lambda t: set(re.findall(r"[a-zà-ÿ0-9]{3,}", str(t).lower()))
+            q = _w(mr.group(2))
+            best = max(R, key=lambda x: len(q & _w(x.get("text"))))
+            if len(q & _w(best.get("text"))) >= max(1, len(q) // 2):
+                if mr.group(1).lower().startswith(("supp", "del", "rem")) or not (mr.group(3) or "").strip():
+                    R = [x for x in R if x is not best]
+                else:
+                    best.update(text=mr.group(3).strip()[:300], t=int(time.time()))
+            d[_person(uid)] = R[-20:]
+            _jsave(RULES_FILE, d)
+            return
         if m:
             n, rest = int(m.group(1)), m.group(2).strip()
             R = [x for x in R if x.get("n") != n] if re.match(r"^(supprimer|enlever|retirer|delete|remove)\b", rest, re.I) else \
@@ -17780,10 +17795,8 @@ def _rules_facts(uid):
     # 2026-10-28 (owner: "very machine-like this morning"): he quoted "r1", "r2" and audited each trade - the numbers are
     # handles for #regle only; in his words they are just "ta règle", "on a dit", the way a friend who trades with him talks
     return ("SES RÈGLES DE TRADING (c'est lui qui les a données ; tes cartes, tes ordres et ses robots les suivent. Tu peux lui dire "
-            "une fois que tu n'es pas d'accord, puis tu les appliques ; s'il en change une, #regle rN <nouveau texte>. Les numéros rN "
-            "sont seulement pour la ligne #regle : avec lui tu parles comme un ami qui trade à côté de lui, jamais « r2 » ni une "
-            "liste de contrôle) :\n" +
-            "\n".join("r%d. %s" % (x["n"], x["text"]) for x in R))
+            "une fois que tu n'es pas d'accord, puis tu les appliques) :\n" +
+            "\n".join("- %s" % x["text"] for x in R))
 
 
 def _one_facts(user, c):

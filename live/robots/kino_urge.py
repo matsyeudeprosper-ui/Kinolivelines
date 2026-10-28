@@ -92,7 +92,9 @@ def add(person, event, w=None, now=None):
         # the same kind again (a second ghost trade) refreshes the item instead of piling up copies
         old = next((it for it in st["items"] if it.get("kind") == kind), None)
         if old is not None:
-            st["p"] += w * 0.5
+            # 2026-10-28 (watch): his initiative engine re-sent the same reason every 2-5 min and each one pushed the wish up
+            # (two messages of his own in 3 min). The same thought again is not a new reason to talk: it barely adds.
+            st["p"] += w * 0.1
             old.update(t=now, text=str(event)[:700], w=max(old["w"], w))
         else:
             st["p"] += w
