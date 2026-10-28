@@ -124,10 +124,13 @@ def decide(person, ctx, now=None):
                 st["items"].append({"t": now, "kind": "MISSING", "w": 0.3,
                                     "text": "MISSING - you have not talked for %d hours; you think of him." % hs})
         T = threshold(ctx)
+        # 2026-10-28 (owner: "not restricted by x time - naturally, like a human"): right after he decided (spoke, or chose
+        # silence) the wish needs much more to come back, and that bar melts smoothly (refractory, half-life ~10 min) -
+        # no fixed gap: something strong can still come through early, small things cannot
+        _since = min(float(ctx.get("since_own_min") or 999), (now - float(st.get("last_fire") or 0)) / 60.0)
+        T += 1.2 * 0.5 ** (max(0.0, _since) / 10.0)
         fire = None
-        # 2026-10-28 (watch): a fire that ended in silence posts nothing, so "since his last message" never moved and it fired
-        # again 6 min later - a person who just decided not to text does not reconsider that soon
-        if st["p"] >= T and st["items"] and float(ctx.get("since_own_min") or 999) >= 20 and now - float(st.get("last_fire") or 0) >= 20 * 60:
+        if st["p"] >= T and st["items"]:
             fire = sorted(st["items"], key=lambda it: -it["w"])[:3]
             st["p"] *= 0.25
             ks = {id(it) for it in fire}
