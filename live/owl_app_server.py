@@ -15608,9 +15608,22 @@ def _chat_load(user, cid):
 def _chat_save(c):
     os.makedirs(CHAT_DIR, exist_ok=True)
     c["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    # 2026-10-28 (owner: "getting no reply"): the main thread had grown to 2 MB (7 week-check cards x 129 KB of candles,
+    # pretty-printed) and every background loop parses it - the app sat at 100 % CPU and a reply took 105 s. Only the two
+    # newest check cards keep their candles (older ones are folded on the page); the file is written compact.
+    try:
+        _dm = [m for m in c.get("msgs") or [] if m.get("role") == "demo" and m.get("moments")]
+        for m in _dm[:-2]:
+            for x in m.get("moments") or []:
+                if isinstance(x, dict) and ("candles" in x or "overlays" in x):
+                    x.pop("candles", None)
+                    x.pop("overlays", None)
+                    x["nochart"] = 1
+    except Exception:
+        pass
     tmp = _chat_path(c["id"]) + ".%d.tmp" % threading.get_ident()
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(c, f, ensure_ascii=False, indent=1)
+        json.dump(c, f, ensure_ascii=False, separators=(",", ":"))
     for k in range(3):                   # Windows refuses the swap while the page's poll is reading the file (os.replace itself waits 4 s since 2026-10-23)
         try:
             os.replace(tmp, _chat_path(c["id"]))

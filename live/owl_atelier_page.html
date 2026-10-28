@@ -786,7 +786,7 @@ function demoHTML(m,i,last){if(m.kind==='moments')return momentsHTML(m,i,last);i
 function showHTML(m,i){const id='cs'+i;return '<div class="m me"><div class="bub">'+(m.text?md(m.text):T('Regarde ce que je te montre sur le graphique 👇','Look at what I show you on the chart 👇'))+'</div></div><div class="att mine"><div class="chartc"><div class="chh"><b>'+esc(m.market)+' · '+esc(m.tf)+'</b><span class="rb">'+((n_)=>n_+' '+(n_>1?T('repères','marks'):T('repère','mark')))((m.marks||[]).length)+'</span></div><canvas class="cvs" id="'+id+'" data-s="'+i+'"></canvas></div></div>';}
 function drawAll(){document.querySelectorAll('#chat canvas[data-m]').forEach(cv=>{const m=C.msgs[+cv.dataset.m],t=(m.trades||[])[+cv.dataset.j];if(!t)return;const st=CH[cv.id];
   drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:st&&(st.timer||st.paused)?st.k:null});});
- document.querySelectorAll('#chat canvas[data-o]').forEach(cv=>{const x=((C.msgs[+cv.dataset.o]||{}).moments||[])[+cv.dataset.j];if(!x)return;const st=CH[cv.id];
+ document.querySelectorAll('#chat canvas[data-o]').forEach(cv=>{const x=((C.msgs[+cv.dataset.o]||{}).moments||[])[+cv.dataset.j];if(!x||!x.candles)return;const st=CH[cv.id];
   drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:(st&&(st.timer||st.paused)&&st.k<idxAt(x.candles,x.t))?[]:x.marks,upto:st&&(st.timer||st.paused)?st.k:null});});
  document.querySelectorAll('#chat canvas[data-s]').forEach(cv=>{const m=C.msgs[+cv.dataset.s];drawChart(cv,{rows:m.candles||[],marks:m.marks});});}
 function vote(j,yes){$('tx').value=yes?T('Le trade '+j+' : oui, c’est exactement ce genre de trade.','Trade '+j+': yes, that’s exactly the kind of trade.'):T('Le trade '+j+' : non, ce n’est pas ce que je veux. ','Trade '+j+': no, that’s not what I mean. ');autosize();
@@ -1537,7 +1537,7 @@ function cpUi(id){const st=CH[id]||{},n=st.n||0,b=$('pb_'+id),g=$('pg_'+id),s=$(
  if(b)b.innerHTML=st.timer?'<span>⏸ '+T('Pause','Pause')+'</span>':'<svg><use href="#play"/></svg><span>'+(st.paused?T('Reprendre','Resume'):T('Rejouer','Replay'))+'</span>';
  if(g)g.style.width=(st.k!=null&&n>1?Math.round(100*st.k/(n-1)):0)+'%';if(s)s.textContent='×'+(st.sp||1);}
 function cpSpeed(id){const st=CH[id]||(CH[id]={});st.sp=(st.sp||1)===1?4:1;cpUi(id);}
-function playM(id,i,j){const x=C.msgs[i].moments[j];const ie=idxAt(x.candles,x.t);
+function playM(id,i,j){const x=C.msgs[i].moments[j];if(!x||!x.candles)return;const ie=idxAt(x.candles,x.t);
  cpRun(id,x.candles.length,Math.max(5,ie-30),k=>{const cv=$(id);if(cv)drawChart(cv,{rows:x.candles,overlays:x.overlays,marks:k>=ie?x.marks:[],upto:k});});}
 function play(id,i,j){const t=C.msgs[i].trades[j];const ie=idxAt(t.candles,t.t_in);
  cpRun(id,t.candles.length,Math.max(5,ie-30),k=>{const cv=$(id);if(cv)drawChart(cv,{rows:t.candles,trade:t,overlays:t.overlays,upto:k});});}
