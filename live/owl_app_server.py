@@ -17745,8 +17745,12 @@ def _rules_facts(uid):
     R = _rules_of(uid)
     if not R:
         return ""
+    # 2026-10-28 (owner: "very machine-like this morning"): he quoted "r1", "r2" and audited each trade - the numbers are
+    # handles for #regle only; in his words they are just "ta règle", "on a dit", the way a friend who trades with him talks
     return ("SES RÈGLES DE TRADING (c'est lui qui les a données ; tes cartes, tes ordres et ses robots les suivent. Tu peux lui dire "
-            "une fois que tu n'es pas d'accord, puis tu les appliques ; s'il en change une, #regle rN <nouveau texte>) :\n" +
+            "une fois que tu n'es pas d'accord, puis tu les appliques ; s'il en change une, #regle rN <nouveau texte>. Les numéros rN "
+            "sont seulement pour la ligne #regle : avec lui tu parles comme un ami qui trade à côté de lui, jamais « r2 » ni une "
+            "liste de contrôle) :\n" +
             "\n".join("r%d. %s" % (x["n"], x["text"]) for x in R))
 
 
