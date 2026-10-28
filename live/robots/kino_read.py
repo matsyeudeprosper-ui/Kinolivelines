@@ -19,7 +19,8 @@ SYSTEM = """You are the intuition of Kino, a friend who trades and talks with th
 You sense him, the way a close friend does from how he writes - not only what he says: the length, the speed, a "lol",
 a dry "ok", a change of subject, the hour for him.
 Read him RIGHT NOW. JSON only:
-{"mood": "a few plain words", "valence": -1.0 to 1.0 (how low or how up he feels), "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
+{"mood": "a few plain words", "valence": -1.0 to 1.0 (how low or how up he feels),
+ "calls_for_answer": "yes|optional|no - does his LAST message call for an answer, or does it close the exchange by itself (a 'cool', a 'thx', a thumbs-up after a goodbye)", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
  "next": "short|long|silent - how he will most likely answer Kino's next message",
@@ -67,6 +68,7 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         return None
     r = {k: " ".join(str(j.get(k) or "").split())[:160] for k in ("mood", "energy", "engaged", "reaching_for", "on_his_mind")}
     r["next"] = str(j.get("next") or "").lower().strip()
+    r["calls"] = str(j.get("calls_for_answer") or "").lower().strip()[:10]
     try:
         r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
     except Exception:

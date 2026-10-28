@@ -18109,6 +18109,78 @@ def _one_memory(user, c):
         L.append("Ses heures habituelles (UTC) : " + str(_KPo.usual_hours(uid)))
     except Exception:
         pass
+    try:                                               # 2026-10-28 (round 4): what is coming - felt before it arrives
+        _co = []
+        _fu = (_jload(os.path.join(DIR, "robots", "kino_followups.json"), {}) or {}).get(_person(uid)) or []
+        for x in _fu:
+            if not x.get("done") and 0 < float(x.get("due") or 0) - time.time() < 36 * 3600:
+                _co.append("lui demander : %s (dans %d h)" % (str(x.get("what"))[:80], (float(x["due"]) - time.time()) / 3600))
+        _tq = c.get("test") or {}
+        if _tq.get("state") in ("queued", "running"):
+            _co.append("le résultat du test de « %s »" % ((c.get("robot") or {}).get("name") or "son robot"))
+        try:
+            import kino_commit as _KCc
+            for x in (_KCc.open_for(_person(uid)) or [])[:2]:
+                _co.append("tenir ta parole : %s" % str(x.get("what") or x.get("text") or "")[:80])
+        except Exception:
+            pass
+        if _co:
+            L.append("Ce que tu attends / ce qui arrive : " + " ; ".join(_co[:4]) + ".")
+    except Exception:
+        pass
+    try:                                               # round 4: the calendar - what the date means
+        _off3 = int(_tz_of(_person(uid)).get("off") or 0)
+        _g = time.gmtime(time.time() - _off3 * 60)
+        _cal = []
+        _seas = {12: "l'hiver", 1: "l'hiver", 2: "l'hiver", 3: "le printemps", 4: "le printemps", 5: "le printemps", 6: "l'été",
+                 7: "l'été", 8: "l'été", 9: "l'automne", 10: "l'automne", 11: "l'automne"}[_g.tm_mon]
+        _cal.append("c'est %s" % _seas)
+        import calendar as _cl
+        _last = _cl.monthrange(_g.tm_year, _g.tm_mon)[1]
+        if _g.tm_mday >= _last - 2:
+            _cal.append("la fin du mois approche")
+        elif _g.tm_mday <= 2:
+            _cal.append("début de mois")
+        _lsun = max(d for d in range(25, 32) if d <= _last and _cl.weekday(_g.tm_year, _g.tm_mon, d) == 6) if _g.tm_mon in (3, 10) else None
+        if _lsun and 0 <= _g.tm_mday - _lsun <= 6:
+            _cal.append("on a changé d'heure en Europe dimanche dernier (%s)" % ("une heure de plus le matin" if _g.tm_mon == 10 else "une heure de moins"))
+        _hol = {(1, 1): "le Nouvel An", (5, 1): "le 1er mai", (5, 8): "le 8 mai", (7, 14): "le 14 juillet", (8, 15): "le 15 août",
+                (11, 1): "la Toussaint", (11, 11): "le 11 novembre", (12, 24): "le réveillon de Noël", (12, 25): "Noël",
+                (12, 31): "le réveillon du Nouvel An"}
+        for _dd in range(0, 4):
+            _gg = time.gmtime(time.time() - _off3 * 60 + _dd * 86400)
+            if (_gg.tm_mon, _gg.tm_mday) in _hol:
+                _cal.append("%s %s" % (_hol[(_gg.tm_mon, _gg.tm_mday)], "c'est aujourd'hui" if _dd == 0 else "dans %d jour%s" % (_dd, "s" if _dd > 1 else "")))
+                break
+        L.append("Le calendrier (chez lui) : " + ", ".join(_cal) + ".")
+    except Exception:
+        pass
+    try:                                               # round 4: his life with the others - counts only, never a person or a detail
+        _pp = set(_person_uids(uid) or [uid]) | {_person(uid)}
+        _day0 = time.time() - 24 * 3600
+        _others, _tests = set(), 0
+        for _f in os.listdir(CHAT_DIR):
+            if not _f.endswith(".json"):
+                continue
+            try:
+                if os.path.getmtime(os.path.join(CHAT_DIR, _f)) < _day0:
+                    continue
+                _cc = json.load(open(os.path.join(CHAT_DIR, _f), encoding="utf-8"))
+            except Exception:
+                continue
+            _ou = _cc.get("uid")
+            if not _ou or _ou in _pp or _person(_ou) in _pp or str(_ou).startswith(("test", "demo")):
+                continue
+            if any(m.get("role") == "user" and float(m.get("t") or 0) > _day0 for m in _cc.get("msgs") or []):
+                _others.add(_person(_ou))
+                _tests += sum(1 for m in _cc.get("msgs") or [] if m.get("role") == "result" and float(m.get("t") or 0) > _day0)
+        if _others:
+            L.append("Ta vie avec les autres (anonyme - jamais un nom, jamais un détail de leur vie ou de leurs trades) : ces dernières 24 h "
+                     "tu as parlé avec %d autre%s personne%s du nid%s." % (len(_others), "s" if len(_others) > 1 else "",
+                                                                     "s" if len(_others) > 1 else "",
+                                                                     (", %d test%s de robot avec eux" % (_tests, "s" if _tests > 1 else "")) if _tests else ""))
+    except Exception:
+        pass
     try:                                               # 2026-10-28 (engines 7+8): his day - body clock, load, what he really does
         _rc()
         import kino_day as _KDy, kino_exec as _KXy, kino_mind as _KMy
@@ -18145,6 +18217,31 @@ def _one_memory(user, c):
             (_done if it.get("done") else _later).append(str(it.get("what") or "")[:90])
         L.append(_KDy.state_line(_lh, turns_3h=len(_M3), doing=_doing, done=_done[:4], later=_later[:3],
                                  wday=time.gmtime(time.time() - _off * 60).tm_wday))
+    except Exception:
+        pass
+    try:                                               # 2026-10-28 (round 4): what he told you about how you talk, every login
+        _rc()
+        import kino_feedback as _KFo
+        _fb = []
+        for _ux in _person_uids(uid) or [uid]:
+            _b = _KFo.block(_ux) or ""
+            _fb += [x.strip() for x in _b.split("\n")[1:] if x.strip()]
+        if _fb:
+            L.append("Ce qu'il t'a déjà dit sur ta façon de lui parler (daté ; ce qui est revenu plusieurs fois compte le plus) : " + " | ".join(_fb[:6]))
+    except Exception:
+        pass
+    try:                                               # round 4: your mood over the last days (not only this minute)
+        import kino_inner as _KIms
+        _ms = _KIms.mood_slow() or {}
+        if _ms.get("label"):
+            L.append("Ton humeur de fond ces derniers jours : %s (%s)." % (_ms["label"], ", ".join(str(x) for x in (_ms.get("why") or [])[:3])))
+    except Exception:
+        pass
+    try:                                               # round 4: your tastes - the ones you have said, kept consistent
+        _sdt = _jload(os.path.join(DIR, "robots", "kino_said.json"), {}) or {}
+        _tst = [str(x.get("what")) for x in (_sdt.get("items") or []) if x.get("kind") == "taste"][-8:]
+        if _tst:
+            L.append("Tes goûts (ce que tu as dit aimer ou pas - ils restent les tiens) : " + " | ".join(t[:100] for t in _tst))
     except Exception:
         pass
     try:                                               # 2026-10-28 (round 3): who he is - his values in his own words, and his story

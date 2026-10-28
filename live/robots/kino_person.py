@@ -206,6 +206,9 @@ def block_one(uid, cid):
          "conversation : %s ; ce qu'il cherche dans cet échange : %s ; ce qui l'occupe vraiment : %s." % (
              max(0, (time.time() - float(r["t"])) / 60), r.get("mood") or "-", r.get("energy") or "-", r.get("engaged") or "-",
              r.get("reaching_for") or "-", r.get("on_his_mind") or "-"))
+    if r.get("calls") in ("no", "optional"):
+        s += (" Son dernier message se suffit à lui-même : il clôt l'échange, rien n'appelle une réponse." if r["calls"] == "no" else
+              " Son dernier message n'appelle pas vraiment de réponse.")
     if sg:
         s += " Mesuré : " + sg.replace("NOT one of their hours - do not write on your own", "pas une de ses heures") + "."
     if n >= 5:
