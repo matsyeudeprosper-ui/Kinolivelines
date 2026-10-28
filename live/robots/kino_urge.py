@@ -11,7 +11,7 @@ wait for, news they asked for) never go through here.
 
 Store: robots/kino_urge.json (git-ignored). Log: robots/kino_urge.log.
 """
-import json, os, threading, time
+import json, os, re, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_urge.json")
@@ -85,7 +85,10 @@ def add(person, event, w=None, now=None):
     with _LK:
         d = _load()
         st = _st(d, person, now)
-        kind = str(event).split(" - ")[0].split(" (")[0][:40]
+        # 2026-10-28 (watch): "CAME BACK after 51 minutes" / "...55 minutes" were three kinds and piled up - the kind is the
+        # leading capitalised name only, so the same reason refreshes instead of stacking
+        _mk = re.match(r"[A-Z][A-Z' -]*[A-Z]", str(event))
+        kind = (_mk.group(0).strip() if _mk else str(event).split(" - ")[0].split(" (")[0])[:40]
         # the same kind again (a second ghost trade) refreshes the item instead of piling up copies
         old = next((it for it in st["items"] if it.get("kind") == kind), None)
         if old is not None:
