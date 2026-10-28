@@ -14015,6 +14015,9 @@ def test_cancel(user, body):
             r["stage"] = "draft"
         else:
             return {"ok": False, "err": "gone"}
+        # 2026-10-28 (watch): queued_at stayed after a withdraw, newer than tested_at -> the robot still read "queued" and
+        # Kino kept cancelling a test that was gone
+        r.pop("queued_at", None)
     _robot_save(reg)
     return {"ok": True}
 
@@ -17109,6 +17112,20 @@ def _ctx_get(user, cid, c):
     return (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
 
 
+def _read_them(user, cid):
+    """2026-10-28 (KINO_V3_HUMAN engine 2): his intuition reads them while they finish typing - ready for the turn, or the next"""
+    try:
+        time.sleep(1.5)                               # the burst usually ends within a second or two
+        _rc()
+        import kino_read as _KRd, kino_person as _KPd
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        ow = c.get("uid") or user.get("id")
+        _KRd.read(_rc().W, ow, c, cues=_KPd.signals(ow, cid), local_hour=_local_hour(ow),
+                  log=os.path.join(DIR, "robots", "kino_read.log"))
+    except Exception:
+        pass
+
+
 def _chat_listen(cid, user):
     """read a burst like a person: wait until the member stopped writing (2.5 s without a new message or a typing signal,
     20 s at most), then answer everything at once"""
@@ -17122,6 +17139,8 @@ def _chat_listen(cid, user):
         _c1 = {}
     if _c1.get("brain") == "one":                     # 2026-10-25: the one mind's facts + memory, built while they finish typing
         threading.Thread(target=_one_prefetch, args=(user, cid), daemon=True).start()
+    if _c1.get("brain") == "one" or _person_uids(user.get("id"))[1:]:
+        threading.Thread(target=_read_them, args=(user, cid), daemon=True).start()
     else:
         _CTX_T[cid] = threading.Thread(target=_ctx_prefetch, args=(user, cid), daemon=True)
         _CTX_T[cid].start()
@@ -17926,6 +17945,8 @@ def _one_facts(user, c):
     _t = c.get("test") or {}
     if _t.get("state") in ("queued", "running"):
         L.append("Un test de ce robot est %s en ce moment." % ("en file" if _t.get("state") == "queued" else "en cours"))
+    elif c.get("robot_id"):                          # 2026-10-28 (watch): silence here left him unsure a withdrawn test was gone
+        L.append("Aucun test de ce robot en file ni en cours à cette minute.")
     if c.get("id") in _CHAT_B:
         L.append("Le constructeur est en train de modifier le robot de cette conversation.")
     return "\n".join(L)
@@ -17954,6 +17975,22 @@ def _one_memory(user, c):
     _rl = _rhythm_line(c)
     if _rl:
         L.append(_rl)
+    try:                                               # 2026-10-28 (engine 4): what he believes near this topic
+        _rc()
+        import kino_beliefs as _KBo
+        _ctx = " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-8:] if m.get("role") in ("user", "ai"))
+        _bb = _KBo.block(_person(uid), _ctx)
+        if _bb:
+            L.append(_bb)
+    except Exception:
+        pass
+    try:                                               # 2026-10-28 (engine 2): his gut read of them right now
+        import kino_person as _KPr
+        _br = _KPr.block_one(c.get("uid") or uid, cid)
+        if _br:
+            L.append(_br)
+    except Exception:
+        pass
     try:                                               # 2026-10-28: what he noticed last night about his own way of talking
         _tc = _jload(os.path.join(DIR, "robots", "kino_tics.json"), {}) or {}
         if _tc.get("text") and time.time() - float(_tc.get("t") or 0) < 3 * 86400:
@@ -17987,7 +18024,14 @@ def _one_memory(user, c):
         import kino_episodes as _KEo
         Mm = [x for x in c.get("msgs") or [] if x.get("role") in ("user", "ai") and x.get("text")]
         cue = " ".join(str(x["text"]) for x in Mm[-4:])
-        E = _KEo.recall(uid, cue, 3, exclude_day=time.strftime("%Y-%m-%d", time.gmtime()))
+        # 2026-10-28 (engine 5): one person, all his logins - the shared moments of every thread come back
+        E, _seen_e = [], set()
+        for _ux in _person_uids(uid) or [uid]:
+            for _rk, x in enumerate(_KEo.recall(_ux, cue, 3, exclude_day=time.strftime("%Y-%m-%d", time.gmtime())) or []):
+                if (_ux, x.get("id")) not in _seen_e:
+                    _seen_e.add((_ux, x.get("id")))
+                    E.append((_rk, x))
+        E = [x for _rk, x in sorted(E, key=lambda z: z[0])][:3]      # each login's best first, by relevance rank
         if E:
             L.append("Souvenirs que ça te rappelle : " + " | ".join("%s : %s%s" % (x.get("day"), x.get("what"), (" - " + x["outcome"]) if x.get("outcome") else "") for x in E))
     except Exception:
@@ -18009,6 +18053,36 @@ def _one_memory(user, c):
     try:
         import kino_person as _KPo
         L.append("Ses heures habituelles (UTC) : " + str(_KPo.usual_hours(uid)))
+    except Exception:
+        pass
+    try:                                               # 2026-10-28 (engines 7+8): his day - body clock, load, what he really does
+        _rc()
+        import kino_day as _KDy, kino_exec as _KXy, kino_mind as _KMy
+        _off = int(_tz_of(_person(uid)).get("off") or 0)
+        _lh = ((time.time() - _off * 60) / 3600.0) % 24
+        _M3 = [m for m in (c.get("msgs") or []) if m.get("role") == "ai" and not m.get("event") and time.time() - float(m.get("t") or 0) < 3 * 3600]
+        _doing, _done, _later = [], [], []
+        _ts = c.get("test") or {}
+        if _ts.get("state") in ("queued", "running"):
+            _doing.append("un test de « %s » tourne" % ((c.get("robot") or {}).get("name") or "son robot"))
+        try:
+            _mr = _KMy.my_robot() or {}
+            if (_mr.get("ghost") or {}).get("open"):
+                _doing.append("ton robot à toi a un trade fictif ouvert")
+        except Exception:
+            pass
+        _dayk = time.strftime("%Y-%m-%d", time.gmtime(time.time() - _off * 60))
+        _nres = sum(1 for m in (c.get("msgs") or []) if m.get("role") == "result" and
+                    time.strftime("%Y-%m-%d", time.gmtime(float(m.get("t") or 0) - _off * 60)) == _dayk)
+        if _nres:
+            _done.append("%d test%s de robot avec lui" % (_nres, "s" if _nres > 1 else ""))
+        _pl = _KXy.plan_today() or {}
+        _pu = {_person(uid), uid}
+        for it in _pl.get("items") or []:
+            if it.get("member") and it.get("member") not in _pu and _person(it.get("member")) not in _pu:
+                continue                               # another member's plan item never crosses
+            (_done if it.get("done") else _later).append(str(it.get("what") or "")[:90])
+        L.append(_KDy.state_line(_lh, turns_3h=len(_M3), doing=_doing, done=_done[:4], later=_later[:3]))
     except Exception:
         pass
     try:                                               # his own day: journal, live thoughts, feelings, research questions
@@ -18529,6 +18603,49 @@ def _desk_state(uid):
     return st
 
 
+# ---- 2026-10-28 (KINO_V3_HUMAN engine 3, owner: "he answers everything, adds the trade status each time"): habituation.
+# People stop noticing what has not changed since they last talked about it. After each of his messages, each open position
+# he spoke about is noted with its result then; the facts carry "you told him N min ago at X; since then Y" - he feels
+# whether there is anything new, nobody tells him to stay quiet.
+TOLD_FILE = os.path.join(DIR, "robots", "kino_told.json")
+
+
+def _told_note(uid, say):
+    try:
+        st = _desk_state(uid) or {}
+        P = st.get("open") or []
+        if not P or not say:
+            return
+        t = str(say)
+        d = _jload(TOLD_FILE, {}) or {}
+        T = d.setdefault(_person(uid), {})
+        for o in P:
+            e, pl = float(o.get("e") or 0), float(o.get("pl") or 0)
+            hit = (e and ("%d" % round(e)) in t.replace(" ", "").replace(",", "")) or ("%.2f" % abs(pl)) in t or ("%.1f" % abs(pl)) in t \
+                or re.search(r"\b(your|ton|ta) (sell|buy|vente|achat|trade|position)\b", t, re.I)
+            if hit:
+                T[str(o.get("ticket"))] = {"t": int(time.time()), "pl": round(pl, 2)}
+        for k in list(T):
+            if k not in {str(o.get("ticket")) for o in P}:
+                T.pop(k, None)
+        _jsave(TOLD_FILE, d)
+    except Exception:
+        pass
+
+
+def _told_line(uid, o):
+    try:
+        x = ((_jload(TOLD_FILE, {}) or {}).get(_person(uid)) or {}).get(str(o.get("ticket")))
+        if not x:
+            return " Tu ne lui en as pas encore parlé."
+        mn = (time.time() - float(x["t"])) / 60
+        dv = float(o.get("pl") or 0) - float(x["pl"])
+        return " Tu lui en as parlé il y a %s, il était à %+.2f $ ; depuis : %+.2f $." % (
+            ("%d min" % mn) if mn < 120 else ("%.0f h" % (mn / 60)), float(x["pl"]), dv)
+    except Exception:
+        return ""
+
+
 def _desk_facts(uid):
     """2026-10-26 (owner: Kino acts on my trades): what is open on the desk, with tickets, for Kino's #ordre lines"""
     st = _desk_state(uid)
@@ -18537,9 +18654,9 @@ def _desk_facts(uid):
     sd = {1: "ACHAT", -1: "VENTE"}
     L = ["SES TRADES À LA MAIN (son outil de trading, maintenant) : prix %s, solde %.2f $." % (st.get("px"), float(st.get("balance") or 0))]
     for o in st.get("open") or []:
-        L.append("Position ouverte%s ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $." % (" (robot)" if o.get("robot") else "",
+        L.append("Position ouverte%s ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $.%s" % (" (robot)" if o.get("robot") else "",
             o.get("ticket"), sd.get(o.get("d"), "?"), o.get("lot"), round(float(o.get("e") or 0), 2), round(float(o.get("sl") or 0), 2) or "aucun",
-            round(float(o.get("tp") or 0), 2) or "aucun", float(o.get("pl") or 0)))
+            round(float(o.get("tp") or 0), 2) or "aucun", float(o.get("pl") or 0), _told_line(uid, o)))
     for o in st.get("pending") or []:
         L.append("Ordre en attente : %s %s lot à %s, SL %s, TP %s." % (o.get("kind"), o.get("lot"), o.get("e"), o.get("sl"), o.get("tp")))
     if not (st.get("open") or st.get("pending")):
@@ -19117,6 +19234,26 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
+    if not event and not say:
+        # 2026-10-28 (engine 6): he chose to let it rest ("ok", "thx", a goodnight) - a real choice, so the missed-reply
+        # watchdog must not wake him up again 75 s later as if he had crashed
+        def _rest(cc):
+            lm_ = next((x for x in reversed(cc.get("msgs") or []) if x.get("role") == "user"), None)
+            if lm_ is not None:
+                lm_["answered"] = True
+        _chat_mut(cid, _rest)
+        _KO._log(cid, "REST", "he chose not to answer")
+    if say:
+        threading.Thread(target=_told_note, args=(uid, say), daemon=True).start()
+
+        def _bel(uid=uid, cid=cid, say=say, c=c):        # 2026-10-28 (engine 4): what he just said he thinks
+            try:
+                import kino_beliefs as _KBl
+                _lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
+                _KBl.harvest(_rc().W, _person(uid), cid, say, _lu.get("text"), log=os.path.join(DIR, "robots", "kino_beliefs.log"))
+            except Exception:
+                pass
+        threading.Thread(target=_bel, daemon=True).start()
     if not event:
         # 2026-10-28 (watch): the person model (when they write, how fast, their usual hours) was fed only by the old brain;
         # on the one mind it froze on 10-26 and Kino wondered "il n'a pas écrit depuis 2 jours" an hour after a message

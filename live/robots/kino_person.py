@@ -175,3 +175,39 @@ def block(uid, cid, lang="fr"):
     if n >= 3:
         L.append("  your readings so far: %d of %d right on how they would answer%s" % (k, n, " - trust your reading less" if k < 0.5 * n else ""))
     return "\n".join(L)
+
+
+def set_read(uid, cid, r, t=None):
+    """2026-10-28 (kino_read): the intuition's full read of them, with its guess of how they answer next"""
+    t = t or time.time()
+    r = dict(r, t=t)
+    nxt = str(r.get("next") or "")
+
+    def f(d):
+        u = _u(d, uid)
+        u.setdefault("read", {})[cid] = r
+        if len(u["read"]) > 12:
+            for k in sorted(u["read"], key=lambda k: u["read"][k].get("t", 0))[:-12]:
+                u["read"].pop(k, None)
+        if nxt in ("short", "long", "silent"):
+            u["preds"] = [p for p in u["preds"] if not (p.get("cid") == cid and not p.get("checked"))] + [{"t": t, "cid": cid, "next": nxt}]
+    _mut(f)
+
+
+def block_one(uid, cid):
+    """for the one mind: his gut feeling about them right now (plain, can be wrong) + what was measured + how good his gut has been"""
+    u = _load().get(uid) or {}
+    r = (u.get("read") or {}).get(cid) or {}
+    if not r or time.time() - float(r.get("t") or 0) > 6 * 3600:
+        return ""
+    k, n = score(uid)
+    sg = signals(uid, cid)
+    s = ("Ta lecture de lui en ce moment (ton intuition, il y a %d min - elle peut se tromper) : humeur %s ; énergie %s ; dans la "
+         "conversation : %s ; ce qu'il cherche dans cet échange : %s ; ce qui l'occupe vraiment : %s." % (
+             max(0, (time.time() - float(r["t"])) / 60), r.get("mood") or "-", r.get("energy") or "-", r.get("engaged") or "-",
+             r.get("reaching_for") or "-", r.get("on_his_mind") or "-"))
+    if sg:
+        s += " Mesuré : " + sg.replace("NOT one of their hours - do not write on your own", "pas une de ses heures") + "."
+    if n >= 5:
+        s += " Ton intuition sur sa façon de répondre a vu juste %d fois sur %d." % (k, n)
+    return s
