@@ -71,8 +71,16 @@ def _people(d, KI, KP, humans):
                     uid, {"short": "court", "long": "long", "silent": "par un silence"}.get(p.get("next"), p.get("next")),
                     {"short": "court", "long": "long", "silent": "un silence"}.get(p.get("actual"), p.get("actual"))), ("curiosity", 0.08), 0.25, KI, "people")
         M = u.get("msgs") or []
+        # 2026-10-28: one person, several logins (persons.json) - absent only if ALL his logins are quiet, said once
+        try:
+            _PS = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "persons.json"), encoding="utf-8"))
+        except Exception:
+            _PS = {}
+        if _PS.get(uid, uid) != uid:
+            continue
+        _others = [x for x, r in _PS.items() if r == uid]
         if M and u.get("hours") and sum(u["hours"]) >= 12:
-            last = float(M[-1].get("t") or 0)
+            last = max([float(M[-1].get("t") or 0)] + [float(((P.get(x) or {}).get("msgs") or [{}])[-1].get("t") or 0) for x in _others])
             days = (now - last) / 86400
             h = time.gmtime(now).tm_hour
             usual = u["hours"][h] >= max(1, 0.04 * sum(u["hours"]))

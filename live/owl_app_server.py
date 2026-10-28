@@ -19046,6 +19046,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
+    if not event:
+        # 2026-10-28 (watch): the person model (when they write, how fast, their usual hours) was fed only by the old brain;
+        # on the one mind it froze on 10-26 and Kino wondered "il n'a pas écrit depuis 2 jours" an hour after a message
+        try:
+            import kino_person as _KPo1
+            _lu_ = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+            _la_ = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and m.get("text")
+                         and float(m.get("t") or 0) < float((_lu_ or {}).get("t") or 0)), None)
+            if _lu_:
+                _KPo1.observe(uid, cid, _lu_.get("text"), float(_lu_.get("t") or time.time()), float(_la_.get("t")) if _la_ else None)
+        except Exception:
+            pass
     # 2026-10-27 11:34 (watch): one member message, two turns (the first took 85 s) - both answered, 0.03 lot in one and
     # 0.02 in the other. A member turn whose message already got its answer while it was thinking posts nothing, does nothing.
     if not event:
