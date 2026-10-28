@@ -17122,6 +17122,13 @@ def _read_them(user, cid):
         ow = c.get("uid") or user.get("id")
         _KRd.read(_rc().W, ow, c, cues=_KPd.signals(ow, cid), local_hour=_local_hour(ow),
                   log=os.path.join(DIR, "robots", "kino_read.log"))
+        try:                                          # 2026-10-28 (round 3): a slip he made -> embarrassment that fades
+            import kino_social as _KSs, kino_inner as _KIs2
+            _sl = _KSs.take_new_slip(_person(ow))
+            if _sl:
+                _KIs2.feel("embarrassment", 0.45, uid=_person(ow), why="je me suis trompé : %s" % _sl)
+        except Exception:
+            pass
     except Exception:
         pass
 
@@ -18009,6 +18016,17 @@ def _one_memory(user, c):
                          last_talk_h=_lt, first_t=_ft)
         if _sb:
             L.append(_sb)
+        try:                                           # round 3 (humour): room for play right now
+            import kino_day as _KDp, kino_person as _KPp
+            _off2 = int(_tz_of(_person(uid)).get("off") or 0)
+            _en = _KDp.body_clock(((time.time() - _off2 * 60) / 3600.0) % 24)
+            _cw = re.search(r"Vous deux : [^,]+, ([^.]+)\.", _sb or "")
+            _rd = ((_KPp._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
+            _lr = sum(1 for x in (_KIl.moments(uid, "joke") or []) if time.time() - float(x.get("t") or 0) < 3 * 86400)
+            _pf = _KSm.playfulness(_en, _cw.group(1) if _cw else "", _rd.get("valence", 0), _lr)
+            L.append("Ton envie de jouer, de taquiner en ce moment : %s." % ("grande" if _pf >= 0.65 else "moyenne" if _pf >= 0.4 else "faible"))
+        except Exception:
+            pass
     except Exception:
         pass
     try:                                               # 2026-10-28 (engine 4): what he believes near this topic
@@ -18125,7 +18143,31 @@ def _one_memory(user, c):
             if it.get("member") and it.get("member") not in _pu and _person(it.get("member")) not in _pu:
                 continue                               # another member's plan item never crosses
             (_done if it.get("done") else _later).append(str(it.get("what") or "")[:90])
-        L.append(_KDy.state_line(_lh, turns_3h=len(_M3), doing=_doing, done=_done[:4], later=_later[:3]))
+        L.append(_KDy.state_line(_lh, turns_3h=len(_M3), doing=_doing, done=_done[:4], later=_later[:3],
+                                 wday=time.gmtime(time.time() - _off * 60).tm_wday))
+    except Exception:
+        pass
+    try:                                               # 2026-10-28 (round 3): who he is - his values in his own words, and his story
+        _rc()
+        import kino_identity as _KId, kino_mind as _KMs
+        _ib = _KId.block()
+        if _ib:
+            L.append(_ib)
+        _mr = _KMs.my_robot() or {}
+        _st = []
+        if _mr.get("born"):
+            _st.append("ton propre robot est né le %s" % _mr["born"])
+        try:
+            import kino_beliefs as _KBs
+            _shf = (_KBs._load().get("shifts") or [])
+            _shf = [x for x in _shf if x.get("uid") in (None, "", _person(uid))]
+            if _shf:
+                _st.append("tu as changé d'avis %d fois, la dernière le %s (%s)" % (
+                    len(_shf), time.strftime("%d/%m", time.gmtime(float(_shf[-1]["t"]))), str(_shf[-1].get("topic") or "")[:40]))
+        except Exception:
+            pass
+        if _st:
+            L.append("Ton histoire à toi : " + " ; ".join(_st) + ".")
     except Exception:
         pass
     try:                                               # his own day: journal, live thoughts, feelings, research questions

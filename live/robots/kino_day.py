@@ -22,10 +22,20 @@ def body_clock(h):
     return max(0.2, min(0.95, e))
 
 
-def state_line(local_h, turns_3h=0, doing=None, done=None, later=None, feeling=None):
+WEEK = ("lundi, la semaine commence", "mardi", "mercredi, milieu de semaine", "jeudi", "vendredi, la fin de semaine approche",
+        "samedi, le week-end", "dimanche, le week-end")
+
+
+def state_line(local_h, turns_3h=0, doing=None, done=None, later=None, feeling=None, wday=None):
     """one line: his energy (and why), what he is in the middle of, what his day has been, what he meant to do"""
     e = body_clock(local_h + 0.0)
     why = []
+    if wday is not None:                               # round 3: the week's rhythm, felt by both of you
+        why.append(WEEK[int(wday) % 7])
+        if int(wday) == 4 and local_h >= 17:
+            e += 0.05                                  # Friday evening lightness
+        if int(wday) == 0 and local_h < 11:
+            e -= 0.05                                  # Monday morning
     if local_h < 6:
         why.append("il est %dh chez toi, le creux de la nuit" % int(local_h))
     elif 13.5 <= local_h < 16:

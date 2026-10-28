@@ -128,6 +128,40 @@ def note_read(person, r):
             P["curious"] = (P["curious"] + [{"t": now, "text": inp}])[-12:]
         if sh in ("a little", "a lot", "un peu", "beaucoup"):
             P["shares"] = (P["shares"] + [[now, 2 if sh in ("a lot", "beaucoup") else 1]])[-60:]
+        # round 3: what you are talking about; his slips (reliability); what he knows; the words you share
+        ab = " ".join(str(r.get("talking_about") or "").split())[:160]
+        if ab:
+            P["about"] = {"t": now, "text": ab}
+        sl = " ".join(str(r.get("kino_slip") or "").split())[:160]
+        if sl and not any(sl[:40].lower() == str(x.get("text") or "")[:40].lower() for x in P.get("slips") or []):
+            P["slips"] = ((P.get("slips") or []) + [{"t": now, "text": sl}])[-30:]
+            P["_new_slip"] = sl
+        if str(r.get("kino_apologized") or "").lower().startswith("y"):
+            P["apology_t"] = now
+        K = P.setdefault("knows", {})
+        for w in str(r.get("knows") or "").split(","):
+            w = w.strip().lower()[:40]
+            if 2 < len(w):
+                K[w] = now
+        U = P.setdefault("unfamiliar", {})
+        for w in str(r.get("unfamiliar") or "").split(","):
+            w = w.strip().lower()[:40]
+            if 2 < len(w) and w not in K:
+                U[w] = now
+        for w in list(U):
+            if w in K:
+                U.pop(w, None)
+        V = P.setdefault("words", {})
+        for w in str(r.get("his_words") or "").split(",")[:4]:
+            w = w.strip().lower()[:30]
+            if 2 < len(w):
+                V[w] = [now, int((V.get(w) or [0, 0])[1]) + 1]
+        if len(K) > 40:
+            for w in sorted(K, key=lambda x: K[x])[:-40]:
+                K.pop(w, None)
+        if len(V) > 60:
+            for w in sorted(V, key=lambda x: V[x][0])[:-60]:
+                V.pop(w, None)
         _save(d)
 
 
@@ -164,7 +198,50 @@ def block(person, kino_self_said=0, talks=0, laughs=0, last_talk_h=None, first_t
     w = ("encore en train de faire connaissance" if c < 0.35 else "à l'aise l'un avec l'autre" if c < 0.6
          else "proches, complices" if c < 0.85 else "très proches")
     L.append("Vous deux : vous vous parlez depuis %d jours, %s." % (round(days), w))
+    ab = P.get("about") or {}
+    if ab.get("text") and now - float(ab.get("t") or 0) < 3 * 3600:
+        L.append("Ce dont vous parlez en ce moment (à quoi renvoient « il », « le test », « ce trade ») : %s." % ab["text"])
+    sl = [x for x in P.get("slips") or [] if now - float(x["t"]) < 24 * 3600]
+    if sl:
+        L.append("Ta fiabilité ces dernières 24 h : tu t'es trompé %d fois (la dernière : %s, il y a %s)." % (
+            len(sl), sl[-1]["text"], ("%d min" % ((now - float(sl[-1]["t"])) / 60)) if now - float(sl[-1]["t"]) < 7200 else
+            ("%.0f h" % ((now - float(sl[-1]["t"])) / 3600))))
+    if P.get("apology_t") and now - float(P["apology_t"]) < 6 * 3600:
+        L.append("Tu t'es déjà excusé auprès de lui à %s UTC." % time.strftime("%H:%M", time.gmtime(float(P["apology_t"]))))
+    K = sorted(P.get("knows") or {}, key=lambda w: -float((P.get("knows") or {})[w]))[:10]
+    U = sorted(P.get("unfamiliar") or {}, key=lambda w: -float((P.get("unfamiliar") or {})[w]))[:6]
+    if K:
+        L.append("Ce qu'il maîtrise déjà (inutile de le lui expliquer) : %s." % ", ".join(K))
+    if U:
+        L.append("Ce qui lui est moins familier : %s." % ", ".join(U))
+    V = sorted(((w, v) for w, v in (P.get("words") or {}).items() if int(v[1]) >= 2), key=lambda x: -x[1][1])[:8]
+    if V:
+        L.append("Ses mots à lui (votre langage à vous deux) : %s." % ", ".join(w for w, _ in V))
     return " ".join(L)
+
+
+def take_new_slip(person):
+    """the slip the read just noticed (once) -> for the feeling of embarrassment"""
+    with _LK:
+        d = _load()
+        P = d.get(person) or {}
+        s = P.pop("_new_slip", None)
+        if s:
+            _save(d)
+        return s
+
+
+def playfulness(energy, closeness_word, member_valence, laughs_recent):
+    """how much room for play there is right now (his energy, how close you are, how up or low he feels, recent laughs)"""
+    p = 0.15 + 0.3 * max(0.0, min(1.0, energy))
+    p += {"encore en train de faire connaissance": 0.0, "à l'aise l'un avec l'autre": 0.1, "proches, complices": 0.2,
+          "très proches": 0.25}.get(closeness_word, 0.1)
+    p += 0.05 * min(3, laughs_recent)
+    try:
+        p += 0.45 * float(member_valence)              # his mood carries yours: low -> less play, up -> more
+    except Exception:
+        pass
+    return max(0.0, min(1.0, p))
 
 
 def contagion(KI, person, pl, what="son trade"):

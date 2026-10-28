@@ -19,14 +19,20 @@ SYSTEM = """You are the intuition of Kino, a friend who trades and talks with th
 You sense him, the way a close friend does from how he writes - not only what he says: the length, the speed, a "lol",
 a dry "ok", a change of subject, the hour for him.
 Read him RIGHT NOW. JSON only:
-{"mood": "a few plain words", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
+{"mood": "a few plain words", "valence": -1.0 to 1.0 (how low or how up he feels), "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
  "next": "short|long|silent - how he will most likely answer Kino's next message",
  "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty",
  "domain": "what the talk is about right now, ONE word: trading|robots|his life|family|work|health|news|kino|other",
  "in_passing": "something about his life he mentioned in passing that a friend would be curious about (a person, a plan, a worry); else empty",
- "shared": "how much his last message confides about himself: none|a little|a lot"}
+ "shared": "how much his last message confides about himself: none|a little|a lot",
+ "talking_about": "what 'it', 'the test', 'that trade', 'your robot' refer to RIGHT NOW in this talk - name the exact thing (whose robot, which trade)",
+ "kino_slip": "if one of Kino's recent messages had a mistake (wrong fact, wrong robot, wrong number, misunderstanding) that he or the member noticed: what, briefly; else empty",
+ "kino_apologized": "yes if Kino's last message apologised or owned a mistake, else no",
+ "knows": "trading ideas/words he clearly masters, comma separated (empty if none showed)",
+ "unfamiliar": "ideas/words he seems not to know or asked about, comma separated (empty if none)",
+ "his_words": "his OWN expressions for things in his last message (his way of naming them), comma separated, max 4; empty if none"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -61,6 +67,10 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         return None
     r = {k: " ".join(str(j.get(k) or "").split())[:160] for k in ("mood", "energy", "engaged", "reaching_for", "on_his_mind")}
     r["next"] = str(j.get("next") or "").lower().strip()
+    try:
+        r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
+    except Exception:
+        pass
     try:
         import kino_person as KP
         KP.set_read(uid, chat.get("id"), r)
