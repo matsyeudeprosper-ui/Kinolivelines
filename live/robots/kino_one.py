@@ -244,6 +244,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     if event:
         P.append(("Nobody wrote to you. What is happening: %s\nWrite only if you really want to tell them something; otherwise answer: …" if en else
                   "Personne ne t'a écrit. Ce qui se passe : %s\nÉcris seulement si tu as vraiment envie de lui dire quelque chose ; sinon réponds : …") % event)
+        if en:                                # 2026-10-28 03:13 (watch): an inner-voice event written in French pulled his own message into French
+            P.append("(Whatever language the line above is in: if you write to him, write in English.)")
     else:
         P.append("Your turn." if en else "À toi.")
     return "\n\n".join(P)
