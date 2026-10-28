@@ -19272,7 +19272,14 @@ def _ground(text, c, minutes=60):
                     # 2026-10-28 22:14 (watch): "25 out of 60" said 3 times in 12 min - two-digit numbers count too
                     if len(v.replace(".", "")) >= 2 and not v.startswith("0."):
                         said.append((v, float(m.get("t") or 0)))
-        if not said:
+        # 2026-10-28 23:16 (watch): the same Arrival scene 3 times - a thought in his memory stayed "fresh"; ideas are common
+        # ground too: a line sharing 4+ distinctive words with what he said in the last hour is marked as told
+        _sw = {}
+        for m in (c.get("msgs") or [])[-30:]:
+            if m.get("role") == "ai" and m.get("text") and now - float(m.get("t") or 0) < minutes * 60:
+                for w in set(re.findall(r"[a-zà-ÿ]{5,}", str(m["text"]).lower())):
+                    _sw[w] = max(_sw.get(w, 0), float(m.get("t") or 0))
+        if not said and not _sw:
             return text
         _nv = lambda v: "%g" % round(float(v), 2) if v.count(".") <= 1 else v      # "17.5" and "17.50" are the same number
         S = {}
@@ -19282,6 +19289,10 @@ def _ground(text, c, minutes=60):
         for ln in str(text).split("\n"):
             nums = [x.replace(" ", "").replace(",", ".").lstrip("+-") for x in re.findall(r"(?<![\d.])[+-]?\d[\d ,.]*\d|\d", ln)]
             hit = [S[_nv(v)] for v in nums if v.count(".") <= 1 and _nv(v) in S]
+            if not hit and len(ln) > 40 and "[déjà dit" not in ln:
+                _lw = [_sw[w] for w in set(re.findall(r"[a-zà-ÿ]{5,}", ln.lower())) if w in _sw]
+                if len(_lw) >= 4:
+                    hit = _lw
             if hit and len(ln) > 20:
                 ln += " [déjà dit à lui à %s UTC]" % time.strftime("%H:%M", time.gmtime(max(hit)))
             out.append(ln)
