@@ -23,7 +23,10 @@ Read him RIGHT NOW. JSON only:
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
  "next": "short|long|silent - how he will most likely answer Kino's next message",
- "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty"}
+ "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty",
+ "domain": "what the talk is about right now, ONE word: trading|robots|his life|family|work|health|news|kino|other",
+ "in_passing": "something about his life he mentioned in passing that a friend would be curious about (a person, a plan, a worry); else empty",
+ "shared": "how much his last message confides about himself: none|a little|a lot"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -34,6 +37,13 @@ def _transcript(M, n=14):
         L.append("%s %s: %s" % (time.strftime("%H:%M", time.gmtime(float(m.get("t") or 0))), who,
                                 " ".join(str(m["text"]).split())[:300]))
     return "\n".join(L)
+
+
+def _person_of(uid):
+    try:
+        return json.load(open(os.path.join(HERE, "persons.json"), encoding="utf-8")).get(uid, uid)
+    except Exception:
+        return uid
 
 
 def read(W, uid, chat, cues="", local_hour=None, log=None):
@@ -54,6 +64,11 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     try:
         import kino_person as KP
         KP.set_read(uid, chat.get("id"), r)
+    except Exception:
+        pass
+    try:                                               # 2026-10-28 (round 2): topics, curiosity, sharing
+        import kino_social as KS
+        KS.note_read(_person_of(uid), j)
     except Exception:
         pass
     lj = " ".join(str(j.get("laughed_at") or "").split())[:160]

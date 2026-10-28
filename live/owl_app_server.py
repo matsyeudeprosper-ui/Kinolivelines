@@ -17988,6 +17988,29 @@ def _one_memory(user, c):
     _rl = _rhythm_line(c)
     if _rl:
         L.append(_rl)
+    try:                                               # 2026-10-28 (round 2): topics, curiosity, sharing, closeness
+        _rc()
+        import kino_social as _KSm
+        _pu_ = set(_person_uids(uid) or [uid]) | {_person(uid)}
+        _sd = _jload(os.path.join(DIR, "robots", "kino_said.json"), {}) or {}
+        _ks = sum(1 for x in _sd.get("items") or [] if x.get("uid") in _pu_ and time.time() - float(x.get("last") or x.get("t") or 0) < 7 * 86400)
+        _Mu = [m for m in (c.get("msgs") or []) if m.get("role") == "user"]
+        _lt = (time.time() - float(_Mu[-2].get("t") or 0)) / 3600 if len(_Mu) >= 2 else None
+        import kino_inner as _KIl
+        _ft, _days = None, set()
+        for _ux in _person_uids(uid) or [uid]:          # every thread of the person: when they met, how many days they talked
+            for _x in (chat_list(_user_by_id(_ux) or {"id": _ux}).get("chats") or [])[:30]:
+                _cx = _jload(_chat_path(_x["id"]), {}) or {}
+                for _m in _cx.get("msgs") or []:
+                    if _m.get("role") == "user" and _m.get("t"):
+                        _ft = min(_ft or float(_m["t"]), float(_m["t"]))
+                        _days.add(time.strftime("%Y-%m-%d", time.gmtime(float(_m["t"]))))
+        _sb = _KSm.block(_person(uid), kino_self_said=_ks, talks=len(_days), laughs=len(_KIl.moments(uid, "joke") or []),
+                         last_talk_h=_lt, first_t=_ft)
+        if _sb:
+            L.append(_sb)
+    except Exception:
+        pass
     try:                                               # 2026-10-28 (engine 4): what he believes near this topic
         _rc()
         import kino_beliefs as _KBo
@@ -18075,6 +18098,13 @@ def _one_memory(user, c):
         _lh = ((time.time() - _off * 60) / 3600.0) % 24
         _M3 = [m for m in (c.get("msgs") or []) if m.get("role") == "ai" and not m.get("event") and time.time() - float(m.get("t") or 0) < 3 * 3600]
         _doing, _done, _later = [], [], []
+        try:                                           # 2026-10-28 (round 2, item 8): what he was looking at - never a delay
+            import kino_inner as _KIa
+            _ma = (_KIa.last_activity(uid) or {}).get("market")
+            if isinstance(_ma, list) and time.time() - float(_ma[0]) < 1800:
+                _doing.append("tu regardais %s" % _ma[1])
+        except Exception:
+            pass
         _ts = c.get("test") or {}
         if _ts.get("state") in ("queued", "running"):
             _doing.append("un test de « %s » tourne" % ((c.get("robot") or {}).get("name") or "son robot"))
@@ -18667,9 +18697,14 @@ def _desk_facts(uid):
     sd = {1: "ACHAT", -1: "VENTE"}
     L = ["SES TRADES À LA MAIN (son outil de trading, maintenant) : prix %s, solde %.2f $." % (st.get("px"), float(st.get("balance") or 0))]
     for o in st.get("open") or []:
-        L.append("Position ouverte%s ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $.%s" % (" (robot)" if o.get("robot") else "",
+        try:                                     # 2026-10-28 (round 2, meaning): what the number means, next to the number
+            import kino_social as _KSg
+            _gs = _KSg.gist_open(o.get("d"), o.get("e"), st.get("px"), o.get("sl"), o.get("tp"))
+        except Exception:
+            _gs = ""
+        L.append("Position ouverte%s ticket=%s : %s %s lot à %s, SL %s, TP %s, en cours %+.2f $%s.%s" % (" (robot)" if o.get("robot") else "",
             o.get("ticket"), sd.get(o.get("d"), "?"), o.get("lot"), round(float(o.get("e") or 0), 2), round(float(o.get("sl") or 0), 2) or "aucun",
-            round(float(o.get("tp") or 0), 2) or "aucun", float(o.get("pl") or 0), _told_line(uid, o)))
+            round(float(o.get("tp") or 0), 2) or "aucun", float(o.get("pl") or 0), (" - pour lui : " + _gs) if _gs else "", _told_line(uid, o)))
     for o in st.get("pending") or []:
         L.append("Ordre en attente : %s %s lot à %s, SL %s, TP %s." % (o.get("kind"), o.get("lot"), o.get("e"), o.get("sl"), o.get("tp")))
     if not (st.get("open") or st.get("pending")):
@@ -19268,6 +19303,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             _mdl = "sonnet"
         _ff, _mm1 = _ground(_ff, c), _ground(_mm1, c)          # 2026-10-28: what he already said is marked as such
+        try:                                                    # 2026-10-28 (round 2): a few things in mind, the rest in the background
+            import kino_social as _KSf
+            _lum = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
+            _ff = _KSf.focus(_ff, str(_lum.get("text") or "") + " " + str(event or "")[:300])
+            if event and str(event).startswith("LIVE TRADE CLOSED"):
+                _mpl = re.search(r"([+-]\d+(?:[.,]\d+)?) ?\$", str(event))
+                if _mpl:                                        # his result moves Kino before any analysis
+                    import kino_inner as _KIc
+                    _KSf.contagion(_KIc, _person(uid), _mpl.group(1).replace(",", "."))
+                    _mm1 = _one_memory(user, c)
+        except Exception:
+            pass
         r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
                      model=_mdl)
     finally:

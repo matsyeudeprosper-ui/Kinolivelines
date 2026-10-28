@@ -1,0 +1,180 @@
+"""kino_social.py (2026-10-28, KINO_V3_HUMAN.md round 2) - the social mechanisms between two people.
+
+Owner: "all 9 - simulate human to the exact point as far as possible, yet super human in terms of numbers and
+availability". So nothing here hides a number or slows a reply; each piece is a state with its own dynamics that he FEELS:
+
+  meaning     a number means something to the person (almost at the target, a small loss, sliding to the stop): people
+              speak in that meaning and keep the exact figure for when it matters. gist_open / gist_closed.
+  attention   people hold a few things in mind, not everything they know: what touches the other's last words, what is
+              new, what is live. focus() splits what he knows into "in mind now" and "in the background".
+  topics      a talk has a subject; when it has stayed on one for long, people drift, and what the other said in passing
+              (his daughter, his week) makes them curious. Fed by the read (kino_read: domain, in_passing).
+  sharing     disclosure is reciprocal: when someone opens up, the friend shares something back. Balance of what he
+              confided vs what Kino said about himself.
+  closeness   familiarity grows with time known, talks, laughs and confidences, and fades with long absence.
+  contagion   your win lifts the friend before any analysis; your loss stings him too (kino_inner.feel).
+
+Store robots/kino_social.json (git-ignored).
+"""
+import json, os, re, threading, time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STORE = os.path.join(HERE, "kino_social.json")
+_LK = threading.Lock()
+
+
+def _load():
+    try:
+        return json.load(open(STORE, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _save(d):
+    tmp = STORE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False)
+    os.replace(tmp, STORE)
+
+
+# ------------------------------------------------------------------ meaning
+def gist_open(d, e, px, sl, tp):
+    """what an open position means right now, in a friend's words"""
+    try:
+        d, e, px = int(d), float(e), float(px)
+        sl, tp = float(sl or 0), float(tp or 0)
+        if tp and (tp - e) * d > 0:
+            f = (px - e) / (tp - e)
+            if f >= 0.8:
+                return "presque à l'objectif"
+            if f >= 0.45:
+                return "bien parti vers l'objectif"
+        if sl and (e - sl) * d > 0:
+            g = (e - px) / (e - sl)
+            if g >= 0.8:
+                return "tout près du stop"
+            if g >= 0.45:
+                return "glisse vers le stop"
+        return "autour de son entrée"
+    except Exception:
+        return ""
+
+
+def gist_closed(pl):
+    try:
+        pl = float(pl)
+    except Exception:
+        return ""
+    a = abs(pl)
+    size = "petit" if a < 2 else "beau" if (pl > 0 and a >= 8) else "gros" if a >= 8 else "correct"
+    if pl >= 0:
+        return {"petit": "un petit gain", "correct": "un gain correct", "beau": "un beau gain"}[size]
+    return {"petit": "une petite perte", "correct": "une perte qui pique un peu", "gros": "une grosse perte"}[size]
+
+
+# ------------------------------------------------------------------ attention
+def _w(t):
+    return set(re.findall(r"[a-zà-ÿ0-9]{4,}", str(t or "").lower()))
+
+
+def focus(facts, last_member, keep=6):
+    """split what he knows into what is in mind now and the background, by salience: touches his last words, is live,
+    is new (not already told). Every line stays - only where it sits changes."""
+    blocks, cur = [], []
+    for ln in str(facts or "").split("\n"):
+        if cur and (ln.startswith(("- ", "  ", "Position ouverte", "Ordre en attente", "Aucune position", "SON ROBOT", "Son robot"))):
+            cur.append(ln)
+            continue
+        if cur:
+            blocks.append("\n".join(cur))
+        cur = [ln]
+    if cur:
+        blocks.append("\n".join(cur))
+    blocks = [b for b in blocks if b.strip()]
+    if len(blocks) <= keep:
+        return facts
+    lw = _w(last_member)
+
+    def sal(i, b):
+        s = 0.0
+        s += 2.0 * min(3, len(lw & _w(b)))
+        if re.search(r"Position ouverte|Trades ouverts|EN COURS|en cours|en train|ce moment|maintenant|à cette minute", b):
+            s += 2.0
+        if "SES RÈGLES DE TRADING" in b or "SES TRADES À LA MAIN" in b:
+            s += 3.0                                            # what you act on stays in mind
+        if "[déjà dit" in b:
+            s -= 2.5
+        return s - 0.05 * i                                      # ties: the order they were written in
+    order = sorted(range(len(blocks)), key=lambda i: -sal(i, blocks[i]))
+    top = sorted(order[:keep])
+    rest = [i for i in range(len(blocks)) if i not in top]
+    return ("CE QUI T'OCCUPE L'ESPRIT MAINTENANT :\n" + "\n".join(blocks[i] for i in top) +
+            "\n\nEN ARRIÈRE-PLAN (tu le sais, sans y penser) :\n" + "\n".join(blocks[i] for i in rest))
+
+
+# ------------------------------------------------------------------ topics, curiosity, sharing (fed by the read)
+def note_read(person, r):
+    """after each read of him: the subject, what he said in passing, how much he confided"""
+    now = time.time()
+    dom = str(r.get("domain") or "").strip().lower()[:20]
+    inp = " ".join(str(r.get("in_passing") or "").split())[:200]
+    sh = str(r.get("shared") or "").strip().lower()
+    with _LK:
+        d = _load()
+        P = d.setdefault(person, {"topics": [], "curious": [], "shares": [], "first": now})
+        if dom:
+            P["topics"] = (P["topics"] + [[now, dom]])[-40:]
+        if inp and not any(inp[:40].lower() == str(x.get("text") or "")[:40].lower() for x in P["curious"]):
+            P["curious"] = (P["curious"] + [{"t": now, "text": inp}])[-12:]
+        if sh in ("a little", "a lot", "un peu", "beaucoup"):
+            P["shares"] = (P["shares"] + [[now, 2 if sh in ("a lot", "beaucoup") else 1]])[-60:]
+        _save(d)
+
+
+def block(person, kino_self_said=0, talks=0, laughs=0, last_talk_h=None, first_t=None):
+    """the felt social state, plain"""
+    now = time.time()
+    P = _load().get(person) or {}
+    L = []
+    T = [x for x in P.get("topics") or [] if now - x[0] < 6 * 3600]
+    if T:
+        dom = T[-1][1]
+        run = 0
+        for t, dd in reversed(T):
+            if dd != dom:
+                break
+            run += 1
+        start = next((t for t, dd in reversed(T) if dd != dom), None)
+        since = [t for t, dd in T if dd == dom and (start is None or t > start)]
+        if run >= 3 and since:
+            L.append("Ça fait %s que vous ne parlez que de %s (%d échanges d'affilée)." % (
+                ("%d min" % ((now - since[0]) / 60)) if now - since[0] < 7200 else ("%.0f h" % ((now - since[0]) / 3600)), dom, run))
+    C = [x for x in P.get("curious") or [] if now - float(x["t"]) < 3 * 86400][-3:]
+    if C:
+        L.append("Ce qu'il a dit en passant et qui t'intrigue : " + " | ".join(x["text"] for x in C) + ".")
+    sh = sum(w for t, w in P.get("shares") or [] if now - t < 7 * 86400)
+    if sh or kino_self_said:
+        L.append("Cette semaine il t'a confié des choses de sa vie %d fois ; toi, tu lui as dit %d choses sur toi." % (sh, kino_self_said))
+    first = min(float(P.get("first") or now), float(first_t or now))     # since their first message, not since this store
+    days = max(0, (now - first) / 86400)
+    # talks = days they actually talked; closeness grows with time known, days together, laughs, confidences
+    c = min(1.0, 0.1 + 0.01 * min(days, 30) + 0.025 * min(talks, 20) + 0.03 * min(laughs, 10) + 0.02 * min(sh, 15))
+    if last_talk_h is not None and last_talk_h > 72:
+        c *= 0.85
+    w = ("encore en train de faire connaissance" if c < 0.35 else "à l'aise l'un avec l'autre" if c < 0.6
+         else "proches, complices" if c < 0.85 else "très proches")
+    L.append("Vous deux : vous vous parlez depuis %d jours, %s." % (round(days), w))
+    return " ".join(L)
+
+
+def contagion(KI, person, pl, what="son trade"):
+    """his result moves Kino first - before any analysis"""
+    try:
+        pl = float(pl)
+    except Exception:
+        return
+    k = min(0.6, 0.12 + abs(pl) / 15.0)
+    if pl >= 0:
+        KI.feel("excitement", k, uid=person, why="%s vient de gagner (%s)" % (what, gist_closed(pl)))
+    else:
+        KI.feel("sting", k, uid=person, why="%s vient de perdre (%s)" % (what, gist_closed(pl)))
