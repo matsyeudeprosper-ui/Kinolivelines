@@ -78,6 +78,10 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
 #retiens <une chose à garder sur lui>
 #regle <une règle de trading qu'il te donne, en clair>   elle va dans SES RÈGLES DE TRADING ; « #regle r2 <nouveau texte> »
                                       remplace la règle r2, « #regle r2 supprimer » l'enlève
+#suivi <dans combien d'heures> <ce que tu veux savoir>   quelque chose de SA vie à suivre (un rendez-vous, une journée
+                                      importante, un souci, une sortie) : le moment venu, l'envie de lui en reparler te revient
+#reaction <un emoji>                  comme dans une messagerie : un emoji posé sur son dernier message, avec ta réponse ou à la
+                                      place d'une réponse (alors ton message est seulement : …)
 #infos on | #infos off          il aime (ou n'aime plus) entendre les grandes nouvelles du monde dans vos conversations
 #montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
 Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que tu sais - les prix en chiffres, pas de mots) :
@@ -111,7 +115,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -208,6 +212,10 @@ def parse(raw, partial=False):
             acts.append(("retiens", v))
         elif k in ("règle", "rule"):
             acts.append(("regle", v))
+        elif k in ("followup",):
+            acts.append(("suivi", v))
+        elif k in ("react",):
+            acts.append(("reaction", v))
         elif k in ("show",):
             acts.append(("montre", v))
         elif k in ("cancel",):

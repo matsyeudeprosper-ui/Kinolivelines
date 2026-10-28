@@ -19215,6 +19215,17 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _mem_add(uid, [v[:160]])
             elif k == "regle" and v:
                 _rules_set(uid, v)
+            elif k == "suivi" and v:
+                _followup_add(uid, v)
+            elif k == "reaction" and v and not event:
+                _em = v.strip().split()[0][:8]
+
+                def _rx(cc, _em=_em):           # on their last message; it counts as an answer (the watchdog stays asleep)
+                    lm_ = next((x for x in reversed(cc.get("msgs") or []) if x.get("role") == "user"), None)
+                    if lm_ is not None:
+                        lm_["react"] = _em
+                        lm_["answered"] = True
+                _chat_mut(cid, _rx)
             elif k == "ordre":
                 _cfr = _chat_load(user, cid) or c
                 if _auto_on(_cfr):
@@ -22011,6 +22022,33 @@ def _inner_clock_loop():
 
 
 _URGE_SOUV = {}
+# ---- 2026-10-28 (owner: "go" - follow-ups on their life): "#suivi 20 son rendez-vous chez le médecin" -> in 20 h, in their
+# hours, the wish to ask comes back to him (FOLLOW-UP weighs 0.85 in kino_urge). Per person, robots/kino_followups.json.
+FOLLOW_FILE = os.path.join(DIR, "robots", "kino_followups.json")
+
+
+def _followup_add(uid, v):
+    m = re.match(r"^\s*(\d+(?:[.,]\d+)?)\s*(?:h|heures?|hours?)?\s+(.+)$", str(v or ""), re.S)
+    h, what = (float(m.group(1).replace(",", ".")), m.group(2).strip()) if m else (20.0, str(v or "").strip())
+    if not what:
+        return
+    with _RULES_LK:
+        d = _jload(FOLLOW_FILE, {}) or {}
+        L_ = [x for x in d.get(_person(uid)) or [] if not x.get("done")]
+        L_.append({"t": int(time.time()), "due": int(time.time() + max(0.5, min(h, 24 * 21)) * 3600), "what": what[:240]})
+        d[_person(uid)] = L_[-20:]
+        _jsave(FOLLOW_FILE, d)
+
+
+def _followups_due(pm, now):
+    with _RULES_LK:
+        d = _jload(FOLLOW_FILE, {}) or {}
+        due = [x for x in d.get(pm) or [] if not x.get("done") and now >= float(x.get("due") or 0)]
+        for x in due:
+            x["done"] = int(now)
+        if due:
+            _jsave(FOLLOW_FILE, d)
+    return due
 
 
 def _urge_tick():
@@ -22053,6 +22091,10 @@ def _urge_tick():
                 pool = [x for x in pool if x]
                 if pool:
                     _KU.add(pm, "SOUVENIR - something of his life comes back to you: %s" % _rd.choice(pool)[:200])
+            if ctx["their_hour"]:
+                for x in _followups_due(pm, now):
+                    _KU.add(pm, "FOLLOW-UP - something in his life you wanted to ask about (you noted it %s): %s" % (
+                        time.strftime("%d/%m %H:%M UTC", time.gmtime(float(x.get("t") or now))), x["what"]))
             items = _KU.decide(pm, ctx, now)
             if not items:
                 continue

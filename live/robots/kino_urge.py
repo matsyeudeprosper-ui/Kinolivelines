@@ -21,7 +21,7 @@ HALF_H = 4.0
 
 # event prefix -> how much it makes him want to talk (1.0 = enough on its own in their hours)
 WEIGHTS = (
-    ("CAME BACK", 0.9), ("NEW CONVERSATION", 0.8), ("MILESTONE", 0.8), ("A THOUGHT CAME TO YOU", 0.6),
+    ("CAME BACK", 0.9), ("FOLLOW-UP", 0.85), ("NEW CONVERSATION", 0.8), ("MILESTONE", 0.8), ("A THOUGHT CAME TO YOU", 0.6),
     ("YOUR INITIATIVE", 0.5), ("INNER VOICE", 0.5), ("MORNING BRIEF", 0.5), ("WEEKLY REVIEW", 0.5), ("GOAL STEP", 0.45),
     ("RESEARCH DIARY", 0.4), ("END OF DAY", 0.4), ("SOUVENIR", 0.35), ("MISSING", 0.3), ("GHOST TRADE", 0.3),
     ("BIG HEADLINE", 0.3), ("HEADS-UP", 0.25),
