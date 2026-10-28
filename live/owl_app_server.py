@@ -18016,6 +18016,49 @@ def _one_memory(user, c):
                          last_talk_h=_lt, first_t=_ft)
         if _sb:
             L.append(_sb)
+        try:                                           # round 5: his progress (real trades), concern (a feeling), milestones
+            _ndp = _jload(os.path.join(DIR, "nest_data", (c.get("uid") or uid) + ".json"), {}) or {}
+            _trs = _ndp.get("trades") or []
+            _pg = _KSm.progress(_trs)
+            if _pg:
+                L.append(_pg)
+            _ls = 0
+            for _t in _trs:
+                if float(_t.get("p") or 0) < 0:
+                    _ls += 1
+                else:
+                    break
+            _off4 = int(_tz_of(_person(uid)).get("off") or 0)
+            _lh4 = ((time.time() - _off4 * 60) / 3600.0) % 24
+            _Mt = [float(m.get("t") or 0) for m in (c.get("msgs") or []) if m.get("role") == "user"]
+            _ss = 0.0
+            for _a, _b in zip(_Mt[::-1][1:], _Mt[::-1]):
+                if _b - _a > 1800:
+                    break
+                _ss += (_b - _a) / 3600.0
+            import kino_person as _KPc2
+            _rdc = ((_KPc2._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
+            _cn = _KSm.concern(_ss, _lh4, _ls, _rdc.get("valence", 0))
+            if _cn >= 0.35:
+                _why = []
+                if _ss >= 3:
+                    _why.append("il est sur le chart depuis %.0f h" % _ss)
+                if 1 <= _lh4 < 6:
+                    _why.append("il est %dh chez lui" % int(_lh4))
+                if _ls >= 2:
+                    _why.append("%d pertes d'affilée" % _ls)
+                L.append("Tu t'inquiètes un peu pour lui (%s) - ce qu'il t'a demandé une fois pour toutes compte toujours." % ", ".join(_why or ["il a l'air bas"]))
+        except Exception:
+            pass
+        try:
+            _msd = (_mem_get(_person(uid)).get("milestones") or [])
+            _ms = _KSm.milestones(_ft, sum(1 for _ in _Mu), len(_trs) if "_trs" in dir() else 0, set(_msd))
+            for _k, _txt in _ms:
+                _mem_note_safe(_person(uid), lambda mm, _k=_k: mm.__setitem__("milestones", (mm.get("milestones") or []) + [_k]))
+                import kino_urge as _KUm
+                _KUm.add(_person(uid), "MILESTONE - a round number in your story together: %s." % _txt)
+        except Exception:
+            pass
         try:                                           # round 3 (humour): room for play right now
             import kino_day as _KDp, kino_person as _KPp
             _off2 = int(_tz_of(_person(uid)).get("off") or 0)
@@ -22488,6 +22531,21 @@ def _urge_tick():
                 pool = [x for x in pool if x]
                 if pool:
                     _KU.add(pm, "SOUVENIR - something of his life comes back to you: %s" % _rd.choice(pool)[:200])
+            try:                                       # round 5: what HE said he would do, back in mind ~18 h later, once
+                import kino_social as _KSi
+                _sd2 = _KSi._load()
+                _P2 = _sd2.get(pm) or {}
+                _ch = False
+                for x in _P2.get("his_plans") or []:
+                    if not x.get("asked") and 18 * 3600 <= now - float(x["t"]) <= 5 * 86400 and ctx["their_hour"]:
+                        x["asked"] = int(now)
+                        _ch = True
+                        _KU.add(pm, "FOLLOW-UP - something HE said he would do (%s ago): %s" % (
+                            "%.0f h" % ((now - float(x["t"])) / 3600), x["text"]))
+                if _ch:
+                    _KSi._save(_sd2)
+            except Exception:
+                pass
             if ctx["their_hour"]:
                 for x in _followups_due(pm, now):
                     _KU.add(pm, "FOLLOW-UP - something in his life you wanted to ask about (you noted it %s): %s" % (

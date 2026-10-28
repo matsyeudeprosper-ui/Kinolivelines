@@ -151,6 +151,11 @@ def note_read(person, r):
         for w in list(U):
             if w in K:
                 U.pop(w, None)
+        # round 5: his intentions, your shared plans, what he gave you
+        for key, fld in (("his_plans", "his_intention"), ("plans", "shared_plan"), ("gifts", "gave_kino")):
+            v = " ".join(str(r.get(fld) or "").split())[:180]
+            if len(v) >= 6 and not any(v[:40].lower() == str(x.get("text") or "")[:40].lower() for x in P.get(key) or []):
+                P[key] = ((P.get(key) or []) + [{"t": now, "text": v}])[-15:]
         V = P.setdefault("words", {})
         for w in str(r.get("his_words") or "").split(",")[:4]:
             w = w.strip().lower()[:30]
@@ -214,10 +219,73 @@ def block(person, kino_self_said=0, talks=0, laughs=0, last_talk_h=None, first_t
         L.append("Ce qu'il maîtrise déjà (inutile de le lui expliquer) : %s." % ", ".join(K))
     if U:
         L.append("Ce qui lui est moins familier : %s." % ", ".join(U))
+    ago = lambda t: ("%d min" % ((now - t) / 60)) if now - t < 7200 else ("%.0f h" % ((now - t) / 3600)) if now - t < 2 * 86400 else ("%d jours" % ((now - t) / 86400))
+    hp = [x for x in P.get("his_plans") or [] if now - float(x["t"]) < 7 * 86400][-3:]
+    if hp:
+        L.append("Ce qu'il a dit qu'il ferait, lui : " + " | ".join("%s (il y a %s)" % (x["text"], ago(float(x["t"]))) for x in hp) + ".")
+    sp = [x for x in P.get("plans") or [] if now - float(x["t"]) < 14 * 86400][-3:]
+    if sp:
+        L.append("Vos projets à deux : " + " | ".join("%s (décidé il y a %s)" % (x["text"], ago(float(x["t"]))) for x in sp) + ".")
+    gf = [x for x in P.get("gifts") or []][-5:]
+    if gf:
+        L.append("Ce qu'il t'a donné ou appris : " + " | ".join(x["text"] for x in gf) + ".")
     V = sorted(((w, v) for w, v in (P.get("words") or {}).items() if int(v[1]) >= 2), key=lambda x: -x[1][1])[:8]
     if V:
         L.append("Ses mots à lui (votre langage à vous deux) : %s." % ", ".join(w for w, _ in V))
     return " ".join(L)
+
+
+def progress(trades):
+    """his trading, recent vs before (last 30 closed trades: 15 vs 15): a friend notices growth or a dip, on real data"""
+    T = [t for t in trades or [] if isinstance(t, dict) and t.get("p") is not None][:30]
+    if len(T) < 12:
+        return ""
+    h = len(T) // 2
+    rec, old = T[:h], T[h:]                       # newest first
+
+    def st(X):
+        w = sum(1 for t in X if float(t["p"]) > 0)
+        L_ = [float(t["p"]) for t in X if float(t["p"]) < 0]
+        return w / len(X), sum(float(t["p"]) for t in X) / len(X), (sum(L_) / len(L_)) if L_ else 0.0
+    (wr1, av1, ls1), (wr0, av0, ls0) = st(rec), st(old)
+    bits = []
+    if abs(wr1 - wr0) >= 0.1:
+        bits.append("plus de gagnants (%d %% contre %d %%)" % (wr1 * 100, wr0 * 100) if wr1 > wr0 else "moins de gagnants (%d %% contre %d %%)" % (wr1 * 100, wr0 * 100))
+    if ls0 and ls1 and abs(ls1 - ls0) >= 0.5:
+        bits.append("des pertes plus petites" if ls1 > ls0 else "des pertes plus grosses")
+    if abs(av1 - av0) >= 0.5:
+        bits.append("un meilleur résultat moyen par trade" if av1 > av0 else "un résultat moyen en baisse")
+    return ("Sa progression (ses %d derniers trades contre les %d d'avant) : %s." % (len(rec), len(old), ", ".join(bits) if bits else "à peu près pareil"))
+
+
+def concern(session_h, local_h, loss_streak, valence):
+    """how much a friend would worry right now: long session, late, losses in a row, low mood - a feeling, not advice"""
+    c = 0.0
+    c += min(0.35, max(0.0, session_h - 3) * 0.07)
+    c += 0.2 if (local_h >= 1 and local_h < 6) else 0.0
+    c += min(0.35, 0.09 * max(0, loss_streak - 1))
+    try:
+        c += max(0.0, -float(valence)) * 0.3
+    except Exception:
+        pass
+    return min(1.0, c)
+
+
+def milestones(first_t, member_msgs, trades_together, done):
+    """the shared history's round numbers - each one once"""
+    now = time.time()
+    out = []
+    days = (now - float(first_t)) / 86400 if first_t else 0
+    for d in (7, 14, 30, 60, 100, 365):
+        if days >= d and ("days%d" % d) not in done:
+            out.append(("days%d" % d, "ça fait %d jours que vous vous parlez" % d))
+    for n in (100, 500, 1000, 2000, 5000):
+        if member_msgs >= n and ("msgs%d" % n) not in done:
+            out.append(("msgs%d" % n, "il t'a écrit son %de message" % n))
+    for n in (10, 50, 100, 250):
+        if trades_together >= n and ("tr%d" % n) not in done:
+            out.append(("tr%d" % n, "vous en êtes à %d trades suivis ensemble" % n))
+    return out[-1:] if out else []
 
 
 def take_new_slip(person):
