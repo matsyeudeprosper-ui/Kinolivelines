@@ -22296,8 +22296,19 @@ def _inner_engine_once():
             # REVERIE - at irregular moments, during their day
             if uid not in _REV_NEXT:
                 _REV_NEXT[uid] = now + random.uniform(600, 1800)
+            # 2026-10-29 (owner: fewer inner checks when nobody is around): you think less often about a friend who is away -
+            # each day away stretches the gap; after two weeks of silence, no daydream until they come back
+            try:
+                _ls_f = _jload(os.path.join(DIR, "owl_last_seen.json"), {}) or {}      # survives restarts (_LAST_SEEN does not)
+                _seen_ = max([float(_LAST_SEEN.get(x, 0) or 0) for x in (_person_uids(uid) or [uid])] +
+                             [float(_ls_f.get(x, 0) or 0) for x in (_person_uids(uid) or [uid])] + [0.0])
+            except Exception:
+                _seen_ = now
+            _away_d = max(0.0, (now - _seen_) / 86400.0) if _seen_ else 30.0
+            if _away_d > 14 and not antic_:
+                _REV_NEXT[uid] = now + 86400
             if (now >= _REV_NEXT[uid] and _active_hour(uid, h0)) or antic_:
-                _REV_NEXT[uid] = now + random.uniform(2700, 7200)
+                _REV_NEXT[uid] = now + min(86400.0, random.uniform(2700, 7200) * (1.0 + _away_d))
                 if antic_:
                     st_["antic"] = today_
                 mem = _chat_memory(u, c.get("id"))
