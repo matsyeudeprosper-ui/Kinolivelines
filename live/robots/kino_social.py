@@ -382,6 +382,84 @@ def patterns(trades):
     return ("Ce que tu remarques dans sa façon de trader (ses %d derniers trades) : %s." % (len(T), " ; ".join(out))) if out else ""
 
 
+def lessons_night(W, person):
+    """round 7: what his mistakes taught him - the slips of the last days become 1-3 lasting lessons (30 days)"""
+    d = _load()
+    P = d.get(person) or {}
+    S = [x for x in P.get("slips") or [] if time.time() - float(x["t"]) < 4 * 86400]
+    if len(S) < 2:
+        return
+    j = W.ask_json("You are Kino, an AI friend who trades with this person. These are mistakes you made with him lately. Draw 1 to 3 "
+                   "LASTING lessons, first person, concrete, French, one line each (what you will do differently). JSON only: "
+                   "{\"lessons\": [\"...\"]}", "\n".join("- " + x["text"] for x in S[-12:]) + "\nJSON only.",
+                   models=("haiku", "sonnet"), timeout=60, warm=False)
+    new = [str(x)[:200] for x in ((j or {}).get("lessons") or []) if str(x).strip()][:3] if isinstance(j, dict) else []
+    if not new:
+        return
+    with _LK:
+        d = _load()
+        P = d.setdefault(person, {})
+        P["lessons"] = ((P.get("lessons") or []) + [{"t": time.time(), "text": x} for x in new])[-12:]
+        _save(d)
+
+
+def method_night(W, person, rules, trades, talk):
+    """round 7 (owner: "there are still cases I want you to learn"): what he has understood of the member's method, what is
+    unclear, which cases he has not seen yet - from the rules, the member's recent trades and their talk"""
+    if not rules:
+        return
+    j = W.ask_json("You are Kino, learning a friend's hand-trading method by watching him. From HIS RULES, his RECENT TRADES and your "
+                   "TALK, say honestly what you understand of his method and what you don't yet. French, short items. JSON only: "
+                   "{\"clear\": [\"...\"], \"unclear\": [\"...\"], \"unseen\": [\"situations of his method you have not seen him trade yet\"]}",
+                   "HIS RULES:\n%s\n\nHIS RECENT TRADES (newest first):\n%s\n\nYOUR TALK (recent):\n%s\nJSON only." % (
+                       "\n".join("- " + str(x.get("text")) for x in rules), json.dumps(trades[:20], ensure_ascii=False)[:2500], talk[-4000:]),
+                   models=("sonnet", "haiku"), timeout=120, warm=False)
+    if not isinstance(j, dict):
+        return
+    m = {k: [str(x)[:160] for x in (j.get(k) or []) if str(x).strip()][:5] for k in ("clear", "unclear", "unseen")}
+    with _LK:
+        d = _load()
+        d.setdefault(person, {})["method"] = dict(m, t=time.time())
+        _save(d)
+
+
+def mind_block(person):
+    """round 7: his lasting lessons and his understanding of the member's method"""
+    P = _load().get(person) or {}
+    L = []
+    ls = [x for x in P.get("lessons") or [] if time.time() - float(x["t"]) < 30 * 86400][-4:]
+    if ls:
+        L.append("Ce que tes erreurs avec lui t'ont appris (et que tu gardes) : " + " | ".join(x["text"] for x in ls) + ".")
+    m = P.get("method") or {}
+    if m and time.time() - float(m.get("t") or 0) < 7 * 86400:
+        parts = []
+        if m.get("clear"):
+            parts.append("clair pour toi : " + " ; ".join(m["clear"]))
+        if m.get("unclear"):
+            parts.append("encore flou : " + " ; ".join(m["unclear"]))
+        if m.get("unseen"):
+            parts.append("cas que tu ne l'as pas encore vu trader : " + " ; ".join(m["unseen"]))
+        if parts:
+            L.append("Ta compréhension de sa méthode (tu l'apprends en le regardant) : " + " | ".join(parts) + ".")
+    return " ".join(L)
+
+
+def session_over(msgs, now=None):
+    """round 7 (debriefs): a real session just ended - many messages close together, then 45+ min of quiet. -> start t or None"""
+    now = now or time.time()
+    T = sorted(float(m.get("t") or 0) for m in msgs or [] if m.get("role") in ("user", "ai"))
+    if not T or not (45 * 60 <= now - T[-1] <= 4 * 3600):
+        return None
+    start = T[-1]
+    n = 1
+    for a in reversed(T[:-1]):
+        if start - a > 25 * 60:
+            break
+        start = a
+        n += 1
+    return start if n >= 14 and T[-1] - start >= 30 * 60 else None
+
+
 def take_new_slip(person):
     """the slip the read just noticed (once) -> for the feeling of embarrassment"""
     with _LK:

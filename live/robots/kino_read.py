@@ -24,6 +24,8 @@ Read him RIGHT NOW. JSON only:
  "his_intention": "something HE said he will do himself (watch a film, trade more by hand, test later...), with when if he said it; else empty",
  "shared_plan": "a plan the two of them agreed to do TOGETHER (what, when); else empty",
  "gave_kino": "something he just taught, gave or trusted Kino with (his method, a rule, a tip, his trust); else empty",
+ "teaching_moment": "yes|no - is this a moment where a question back would make him think more than an explanation (he just made a decision worth looking at, he asked why, he is close to seeing it himself)",
+ "lang_mix": "fr|en|mixed - the language(s) of his last messages",
  "calls_for_answer": "yes|optional|no - does his LAST message call for an answer, or does it close the exchange by itself (a 'cool', a 'thx', a thumbs-up after a goodbye)", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
@@ -74,6 +76,8 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     r["next"] = str(j.get("next") or "").lower().strip()
     r["calls"] = str(j.get("calls_for_answer") or "").lower().strip()[:10]
     r["confused"] = str(j.get("confused") or "").lower().startswith("y")
+    r["teach"] = str(j.get("teaching_moment") or "").lower().startswith("y")
+    r["mix"] = str(j.get("lang_mix") or "").lower().strip()[:6]
     try:
         r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
     except Exception:

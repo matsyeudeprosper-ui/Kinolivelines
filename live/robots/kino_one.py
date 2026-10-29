@@ -242,7 +242,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     P = []
     P.append(("NOW: " if en else "MAINTENANT : ") + now_line)
     if en:
-        P.append("He writes in English: answer in English, same person, same voice.")
+        P.append("He writes mostly in English: answer in English, same person, same voice - and if he mixes in French, you can too, "
+                 "naturally, like bilingual friends do.")
     P.append(("WHAT IS TRUE THIS MINUTE (measured by the app):\n" if en else "CE QUI EST VRAI À CETTE MINUTE (mesuré par l'appli) :\n") + (facts or "-"))
     if memory:
         P.append(("WHAT YOU REMEMBER:\n" if en else "CE DONT TU TE SOUVIENS :\n") + memory)

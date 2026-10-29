@@ -18059,6 +18059,18 @@ def _one_memory(user, c):
                 _KUm.add(_person(uid), "MILESTONE - a round number in your story together: %s." % _txt)
         except Exception:
             pass
+        try:                                           # round 7: lasting lessons, his understanding of the method
+            _mb = _KSm.mind_block(_person(uid))
+            if _mb:
+                L.append(_mb)
+            _lz = _jload(os.path.join(DIR, "robots", "kino_lessons.json"), {}) or {}
+            _lw = _KSm._w(" ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-8:]) + " " + str((c.get("robot") or {}).get("name") or ""))
+            _lt2 = sorted(_lz.values(), key=lambda x: -(len(_lw & _KSm._w(x.get("line"))) + float(x.get("t") or 0) / 1e10))[:3] if isinstance(_lz, dict) else []
+            _lt2 = [x for x in _lt2 if x.get("line")]
+            if _lt2:
+                L.append("Ce que tes tests de robots t'ont appris : " + " | ".join("%s (%s)" % (str(x["line"])[:150], x.get("verdict") or "") for x in _lt2) + ".")
+        except Exception:
+            pass
         try:                                           # round 6: his patterns as a trader, seen by a friend
             _pt = _KSm.patterns(_trs if "_trs" in dir() else [])
             if _pt:
@@ -21762,6 +21774,34 @@ def _kino_tics_night():
         _jsave(os.path.join(DIR, "robots", "kino_tics.json"), {"t": int(now), "text": txt, "n": n, "signature": sig})
 
 
+def _method_and_lessons_night():
+    _rc()
+    import kino_social as _KSn
+    R = _jload(RULES_FILE, {}) or {}
+    for person in set(list(R.keys()) + list((_KSn._load() or {}).keys())):
+        try:
+            _KSn.lessons_night(_rc().W, person)
+        except Exception:
+            pass
+        if not R.get(person):
+            continue
+        try:
+            u0 = next((u for u in users() if _person(u.get("id")) == person), None)
+            mains = [_user_by_id(x) or {"id": x} for x in (_person_uids(person) or [person])]
+            trades = []
+            for ux in mains:
+                trades += (_jload(os.path.join(DIR, "nest_data", ux.get("id") + ".json"), {}) or {}).get("trades") or []
+            cid0 = _person_main(person)
+            talk = ""
+            if cid0:
+                cc = _jload(_chat_path(cid0), {}) or {}
+                talk = "\n".join("%s: %s" % ("HIM" if m.get("role") == "user" else "KINO", " ".join(str(m.get("text")).split())[:300])
+                                  for m in (cc.get("msgs") or [])[-60:] if m.get("role") in ("user", "ai") and m.get("text"))
+            _KSn.method_night(_rc().W, person, R[person], trades, talk)
+        except Exception:
+            pass
+
+
 def _member_questions_night():
     """round 6 (owner: "working on things for you between chats"): at night, for each person with trading rules, one
     measurable question about THEIR method goes into his open questions; work_question measures it on real prices when
@@ -21820,6 +21860,10 @@ def _kino_night_mind():
             pass
         try:
             _member_questions_night()   # round 6: his free time goes to their open questions
+        except Exception:
+            pass
+        try:
+            _method_and_lessons_night()  # round 7: lasting lessons; his understanding of their method
         except Exception:
             pass
         _identity_night()        # 2026-10-23 (engine 6): monthly constitution + "who I have become" (idempotent inside)
@@ -22537,6 +22581,7 @@ def _inner_clock_loop():
 
 _URGE_SOUV = {}
 _SETUP_SEEN = {}          # 2026-10-28 (round 6): person -> setup keys already in his mind (each setup once)
+_DEBRIEF_SEEN = {}        # round 7: person -> start of the session already debriefed
 # ---- 2026-10-28 (owner: "go" - follow-ups on their life): "#suivi 20 son rendez-vous chez le médecin" -> in 20 h, in their
 # hours, the wish to ask comes back to him (FOLLOW-UP weighs 0.85 in kino_urge). Per person, robots/kino_followups.json.
 FOLLOW_FILE = os.path.join(DIR, "robots", "kino_followups.json")
@@ -22619,6 +22664,15 @@ def _urge_tick():
                             "%.0f h" % ((now - float(x["t"])) / 3600), x["text"]))
                 if _ch:
                     _KSi._save(_sd2)
+            except Exception:
+                pass
+            try:                                       # round 7: a real session just ended - a short look back may come
+                import kino_social as _KSd
+                _ss0 = _KSd.session_over(c.get("msgs") or [], now)
+                if _ss0 and _DEBRIEF_SEEN.get(pm) != int(_ss0):
+                    _DEBRIEF_SEEN[pm] = int(_ss0)
+                    _KU.add(pm, "DEBRIEF - the session you two just had is over (since %s UTC): if it fits, a short look back - "
+                                "what you learned today, from his trades or from your own mistakes." % time.strftime("%H:%M", time.gmtime(_ss0)), w=0.5)
             except Exception:
                 pass
             try:                                       # round 6: his setups on the live chart, like a friend at his side
@@ -24869,6 +24923,15 @@ def _voice_brain(cid, user):
     en = c.get("lang") == "en"
     x = _VB_SYS.get(cid)
     sysp = x[1] if x and time.time() - x[0] < 1500 else (VOICE_BRAIN + "\n\n" + _live_facts(user, c))   # never wait for a warm-up here
+    try:                                             # 2026-10-28 (round 7): on a call too - his read of you, the two of you, his day
+        _rc()
+        import kino_social as _KSv
+        _hm = _KSv.memfocus(_one_memory(user, c), " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-3:]), keep=8, gist=0)
+        _hm = "\n".join(b for b in _hm.split("\n") if not b.endswith(" …"))[:2500]
+        if _hm:
+            sysp += "\n\nHOW YOU ARE AND HOW HE IS RIGHT NOW (felt, not to recite):\n" + _hm
+    except Exception:
+        pass
     M = [m for m in c.get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")][-10:]
     conv = "\n".join(("MEMBER: " if m["role"] == "user" else "YOU: ") + str(m["text"])[:500] for m in M)
     try:                                             # behaviour list item 2: the call brain knows what really runs (fresh each question)
