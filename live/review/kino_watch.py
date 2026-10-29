@@ -135,6 +135,14 @@ if "--all" not in sys.argv and "--peek" not in sys.argv:
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     json.dump({"t": now, "ran": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))}, open(STATE, "w", encoding="utf-8"))
 
+# 2026-10-29: the humanity numbers of the last 12 h (review/kino_humanity.py, logged to study/kino_humanity.csv)
+try:
+    import subprocess as _sp
+    _o = _sp.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_humanity.py"), "--hours", "12"],
+                 capture_output=True, text=True, encoding="utf-8", timeout=60).stdout
+    print("\n== " + "\n   ".join(l for l in _o.splitlines()[:3]))
+except Exception:
+    pass
 # 2026-10-23: today's humanity scorecard on the real conversation (robots/kino_scorecard.py)
 try:
     import sys as _sys, os as _os

@@ -22666,6 +22666,20 @@ def _urge_tick():
                     _KSi._save(_sd2)
             except Exception:
                 pass
+            try:                                       # 2026-10-29: what he does not get yet of their method - a student asks his mentor
+                import kino_social as _KSq
+                _sdq = _KSq._load()
+                _Pq = _sdq.get(pm) or {}
+                _uq = [x for x in ((_Pq.get("method") or {}).get("unclear") or []) if x not in (_Pq.get("method_asked") or [])]
+                if _uq and ctx["their_hour"] and not any(it.get("kind") == "CURIOUS ABOUT HIS METHOD" for it in
+                                                         (_KU._load().get(pm) or {}).get("items") or []) \
+                        and now - float(_Pq.get("method_asked_t") or 0) > 6 * 3600:
+                    _Pq.setdefault("method_asked", []).append(_uq[0])
+                    _Pq["method_asked_t"] = now
+                    _KSq._save(_sdq)
+                    _KU.add(pm, "CURIOUS ABOUT HIS METHOD - something of his method you do not get yet, and only he can tell you: %s" % _uq[0], w=0.45)
+            except Exception:
+                pass
             try:                                       # round 7: a real session just ended - a short look back may come
                 import kino_social as _KSd
                 _ss0 = _KSd.session_over(c.get("msgs") or [], now)
