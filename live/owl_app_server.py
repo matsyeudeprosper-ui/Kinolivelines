@@ -22701,11 +22701,13 @@ def _urge_tick():
                                 _seen = _SETUP_SEEN.setdefault(pm, set())
                                 if _sw["crossed"] and _sw["ckey"] not in _seen:
                                     _seen.add(_sw["ckey"])
+                                    # 2026-10-29 (watch): a setup matters to a friend only if he is there to take it - away, it is
+                                    # something you noticed, not a reason to write (it tipped the wish 3 times in a night, all silence)
                                     _KU.add(pm, "SETUP SIGNAL - his method on the live chart, as you read it: %s. Check it against HIS rules "
-                                                "before you say anything; a card only if it really fits them." % _sw["text"], w=1.1)
+                                                "before you say anything; a card only if it really fits them." % _sw["text"], w=1.1 if ctx["in_talk"] else 0.25)
                                 elif not _sw["crossed"] and _sw["dist"] < 60 and _sw["key"] not in _seen:
                                     _seen.add(_sw["key"])
-                                    _KU.add(pm, "SETUP WATCH - his method on the live chart, as you read it: %s." % _sw["text"], w=0.55)
+                                    _KU.add(pm, "SETUP WATCH - his method on the live chart, as you read it: %s." % _sw["text"], w=0.55 if ctx["in_talk"] else 0.1)
             except Exception:
                 pass
             if ctx["their_hour"]:
