@@ -289,6 +289,8 @@ def _walk(rules, i, d, e, sl, R, B, cache, rr):
             return j, c, "time", tp
         if ex.get("breakeven_at") and not be and d * (c - e) >= float(ex["breakeven_at"]) * risk:
             sl, be = e, True
+        if ex.get("breakeven_frac") and not be and tp is not None and d * (tp - e) > 0 and d * (c - e) >= float(ex["breakeven_frac"]) * d * (tp - e):
+            sl, be = e, True
     return None
 
 

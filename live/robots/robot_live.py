@@ -201,7 +201,7 @@ def tp_for(rules, d, e, dist, rr, levels=None):
     return e + d * float(ex["target"]) * dist
 
 
-def manage(rules, d, e, sl, opened_at, now, price, choch_against, be_done):
+def manage(rules, d, e, sl, opened_at, now, price, choch_against, be_done, tp=None):
     """what to do with the open main trade now: None, ("close", why) or ("sl", new stop)"""
     ex = (rules or {}).get("exit")
     if not ex:
@@ -212,4 +212,7 @@ def manage(rules, d, e, sl, opened_at, now, price, choch_against, be_done):
         return ("close", "duree maximum %d min" % int(ex["time_min"]))
     if ex.get("breakeven_at") and not be_done and sl and d * (price - e) >= float(ex["breakeven_at"]) * abs(e - sl):
         return ("sl", e)
+    if ex.get("breakeven_frac") and not be_done and tp and d * (float(tp) - e) > 0 \
+            and d * (price - e) >= float(ex["breakeven_frac"]) * d * (float(tp) - e):
+        return ("sl", e)                              # 2026-10-29: share of the way to the actual target
     return None

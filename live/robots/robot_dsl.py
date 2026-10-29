@@ -170,6 +170,15 @@ def validate(kind, rule):
         return False, "breakeven"
     out = {"target": None if t is None else round(float(t), 2), "choch": c, "time_min": None if tm is None else int(tm),
            "breakeven_at": None if be is None else round(float(be), 2)}
+    # 2026-10-29 (owner: "half is just midway between entry and TP"): breakeven as a share of the way to the ACTUAL target
+    # (a structure level too), not a fixed R - 0.5 = the stop goes to the entry once price is halfway to the target
+    bf = rule.get("breakeven_frac")
+    if bf is not None:
+        if not _num(bf, 0.1, 0.95):
+            return False, "breakeven_frac"
+        if t is None and lvs is None:
+            return False, "breakeven_frac_needs_target"
+        out["breakeven_frac"] = round(float(bf), 2)
     if cb is not None or cs is not None:
         out.update(close_buy=cb, close_sell=cs)
     if pa is not None:
@@ -286,4 +295,10 @@ def describe(kind, rule):
     if rule.get("breakeven_at") is not None:
         s_fr += " Le stop passe au prix d'entrée dès que le trade gagne %s R." % _f(rule["breakeven_at"])[1]
         s_en += " The stop moves to the entry price once the trade gains %sR." % _f(rule["breakeven_at"])[0]
+    if rule.get("breakeven_frac") is not None:
+        _bf = float(rule["breakeven_frac"])
+        s_fr += (" Le stop passe au prix d'entrée dès que le prix est à mi-chemin de l'objectif." if abs(_bf - 0.5) < 1e-9 else
+                 " Le stop passe au prix d'entrée dès que le prix a fait %d %% du chemin vers l'objectif." % round(_bf * 100))
+        s_en += (" The stop moves to the entry price once price is halfway to the target." if abs(_bf - 0.5) < 1e-9 else
+                 " The stop moves to the entry price once price has covered %d%% of the way to the target." % round(_bf * 100))
     return s_fr, s_en

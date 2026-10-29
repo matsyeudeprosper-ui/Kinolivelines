@@ -93,6 +93,9 @@ def advance(g, rules, rr=0.8):
                     why, xp = "time", c
                 if not why and ex.get("breakeven_at") and not o.get("be") and d * (c - o["e"]) >= float(ex["breakeven_at"]) * o["risk"]:
                     o["sl"] = o["e"]; o["be"] = True
+                if not why and ex.get("breakeven_frac") and not o.get("be") and tp is not None and d * (tp - o["e"]) > 0 \
+                        and d * (c - o["e"]) >= float(ex["breakeven_frac"]) * d * (tp - o["e"]):
+                    o["sl"] = o["e"]; o["be"] = True
             if why:
                 r = round(d * (xp - o["e"]) / o["risk"], 2)
                 tr = {"t_in": o["t_in"], "t_out": int(T[j]), "d": d, "e": round(o["e"] / k, 5), "x": round(xp / k, 5), "why": why, "r": r}

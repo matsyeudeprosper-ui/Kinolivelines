@@ -257,7 +257,7 @@ FIXED PIECE LANGUAGE (simple pieces, numbers inside the ranges):
           {"kind": "pace", "min": 0.3..3 | null, "max": 0.3..3 | null}   1 = usual pace
           {"kind": "moves", "min": 1..10}                        big moves in the last 2 hours
   stop    {"kind": "protected", "buffer": 0..500} | {"kind": "break_candle", "buffer": 0..500} | {"kind": "fixed", "points": 20..3000}
-  exit    {"target": 0.3..5 | null, "choch": bool, "time_min": 5..1440 | null, "breakeven_at": 0.2..3 | null,
+  exit    {"target": 0.3..5 | null, "choch": bool, "time_min": 5..1440 | null, "breakeven_at": 0.2..3 | null, "breakeven_frac": 0.1..0.95 | null (share of the way from entry to the ACTUAL target: 0.5 = halfway to the target),
            "close_buy": FORMULA | null, "close_sell": FORMULA | null}   (target in R = times the risk)
           + "partial": {"at": 0.3..5, "pct": 10..90}   close pct % once the trade gains `at` R, the rest runs
           + "trail": {"start": 0.3..5, "dist": 0.2..3}   from `start` R the stop follows the price `dist` R behind

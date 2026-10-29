@@ -41,7 +41,7 @@ THE PIECE LANGUAGE (for a piece that does not exist yet; numbers must stay insid
           {"kind": "pace", "min": 0.3..3 or null, "max": 0.3..3 or null}   1 = the usual pace
           {"kind": "moves", "min": 1..10}                         big moves in the last 2 hours
   stop    {"kind": "protected", "buffer": 0..500} | {"kind": "break_candle", "buffer": 0..500} | {"kind": "fixed", "points": 20..3000}
-  exit    {"target": 0.3..5 or null, "choch": true|false, "time_min": 5..1440 or null, "breakeven_at": 0.2..3 or null}
+  exit    {"target": 0.3..5 or null, "choch": true|false, "time_min": 5..1440 or null, "breakeven_at": 0.2..3 or null, "breakeven_frac": 0.1..0.95 or null (share of the way entry -> actual target; 0.5 = halfway)}
           at least one of target / choch / time_min; breakeven_at < target. Points are dollars of BTC price.
 Recovery has only the two existing pieces. Money has only the existing money pieces.
 

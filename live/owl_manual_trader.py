@@ -936,7 +936,7 @@ def robot_tick(bar, sig, prev_trend, eng):
         d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
         act = RL.formula_exit(rules, d, C) or RL.manage(rules, d, p.price_open, p.sl, float(p.time), now,
                                                          (tick.bid if d == 1 else tick.ask) if tick else c,
-                                                         eng.choch == -d, p.ticket in _RBT["be"])
+                                                         eng.choch == -d, p.ticket in _RBT["be"], tp=p.tp or None)
         if act and act[0] == "close":
             _robot_close(p, act[1])
         elif act and act[0] == "sl":

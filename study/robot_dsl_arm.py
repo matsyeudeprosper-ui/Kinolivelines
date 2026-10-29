@@ -242,6 +242,9 @@ class DslArm(RobotArm):
                 self.close(p, xq, t_ms, prof > 0)
             elif ex.get("breakeven_at") and not p.get("be") and d * (xq - p["e"]) >= float(ex["breakeven_at"]) * float(p["risk_dist"]):
                 p["sl"] = p["e"]; p["be"] = True; self.n["dsl_breakevens"] += 1
+            elif ex.get("breakeven_frac") and not p.get("be") and (ex.get("target") is not None or ex.get("levels")) \
+                    and d * (float(p["tp"]) - p["e"]) > 0 and d * (xq - p["e"]) >= float(ex["breakeven_frac"]) * d * (float(p["tp"]) - p["e"]):
+                p["sl"] = p["e"]; p["be"] = True; self.n["dsl_breakevens"] += 1       # 2026-10-29: halfway to the actual target
             p = self.pos
             if p is not None:
                 gain = d * (xq - p["e"]); rk = float(p["risk_dist"])
