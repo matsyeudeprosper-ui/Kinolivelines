@@ -229,6 +229,10 @@ def parse(raw, partial=False):
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)
+    # 2026-10-29 (owner screenshot): a stray "</br>" after his #fil line came out as a bubble of its own - HTML line-break
+    # tags are formatting debris, never words: a break becomes a line break, a bare tag disappears
+    say = re.sub(r"(?i)</?\s*br\s*/?>", "\n", say)
+    say = re.sub(r"(?i)</?(p|div|span)\s*/?>", "", say)
     say = re.sub(r"\*\*(.+?)\*\*", r"\1", say)
     say = re.sub(r"(?m)^\s*[-*•]\s+", "", say)
     say = re.sub(r"\n{3,}", "\n\n", say).strip()
