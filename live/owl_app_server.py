@@ -19442,7 +19442,7 @@ def _in_talk(uid, c):
         return True
 
 
-def _ground(text, c, minutes=60):
+def _ground(text, c, minutes=60, need=4):
     """2026-10-28 (owner: "'one more miss for me' twice - robots smell"; KINO_V3 engine 3, common ground): people keep track of
     what has already been said and do not say it again. A line of what he knows that holds a number he already told the
     member in the last hour is marked "already told at HH:MM" - he sees what is news and what is not; nothing stops him."""
@@ -19462,7 +19462,7 @@ def _ground(text, c, minutes=60):
         for m in (c.get("msgs") or [])[-30:]:
             if m.get("role") == "ai" and m.get("text") and now - float(m.get("t") or 0) < minutes * 60:
                 for w in set(re.findall(r"[a-zà-ÿ]{5,}", str(m["text"]).lower())):
-                    _sw[w] = max(_sw.get(w, 0), float(m.get("t") or 0))
+                    _sw[w[:5]] = max(_sw.get(w[:5], 0), float(m.get("t") or 0))       # 2026-10-29: stems
         if not said and not _sw:
             return text
         _nv = lambda v: "%g" % round(float(v), 2) if v.count(".") <= 1 else v      # "17.5" and "17.50" are the same number
@@ -19473,9 +19473,9 @@ def _ground(text, c, minutes=60):
         for ln in str(text).split("\n"):
             nums = [x.replace(" ", "").replace(",", ".").lstrip("+-") for x in re.findall(r"(?<![\d.])[+-]?\d[\d ,.]*\d|\d", ln)]
             hit = [S[_nv(v)] for v in nums if v.count(".") <= 1 and _nv(v) in S]
-            if not hit and len(ln) > 40 and "[déjà dit" not in ln:
-                _lw = [_sw[w] for w in set(re.findall(r"[a-zà-ÿ]{5,}", ln.lower())) if w in _sw]
-                if len(_lw) >= 4:
+            if not hit and len(ln) > 30 and "[déjà dit" not in ln:
+                _lw = [_sw[w[:5]] for w in set(re.findall(r"[a-zà-ÿ]{5,}", ln.lower())) if w[:5] in _sw]
+                if len(set(_lw)) and len(_lw) >= need:
                     hit = _lw
             if hit and len(ln) > 20:
                 ln += " [déjà dit à lui à %s UTC]" % time.strftime("%H:%M", time.gmtime(max(hit)))
@@ -19541,6 +19541,14 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             _mdl = "sonnet"
         _ff, _mm1 = _ground(_ff, c), _ground(_mm1, c)          # 2026-10-28: what he already said is marked as such
+        try:                                                    # 2026-10-29: his own note too (it re-announced "only watching" x3)
+            _md0 = dict(c.get("mind") or {})
+            if _md0.get("pursuing"):
+                _gp = _ground(str(_md0["pursuing"]), c, need=3)
+                if _gp != _md0["pursuing"]:
+                    c = dict(c, mind=dict(_md0, pursuing=_gp))
+        except Exception:
+            pass
         try:                                                    # 2026-10-28 (round 2): a few things in mind, the rest in the background
             import kino_social as _KSf
             _lum = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
