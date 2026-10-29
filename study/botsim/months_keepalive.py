@@ -28,6 +28,13 @@ def done():
 
 
 def running():
+    try:
+        return _running()
+    except Exception:
+        return True                      # 2026-10-29: a slow or failed check (busy machine) = assume it runs, look again later
+
+
+def _running():
     r = subprocess.run(["powershell", "-NoProfile", "-Command",
                         "Get-CimInstance Win32_Process -Filter \"Name='python.exe' or Name='pythonw.exe'\" | "
                         "Where-Object { $_.CommandLine -match 'botsim[\\\\/]months.py|botsim_months' } | Measure-Object | "
