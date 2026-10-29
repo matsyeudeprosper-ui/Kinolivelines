@@ -165,10 +165,10 @@ def recall(uid, query, n=4, exclude_day=None):
             continue
         T = set(x.get("tags") or []) | _words(x.get("what")) | _words(x.get("outcome"))
         ov = len(q & T)
-        if ov < 2:
+        if ov < 2 and not (ov >= 1 and int(x.get("imp", 3)) >= 5):     # 2026-10-28 (round 6): vivid moments intrude
             continue
         age_d = (now - float(x.get("t") or now)) / 86400
-        sc = ov * (0.6 + x.get("imp", 3) / 5.0) * (1 + 0.1 * min(10, x.get("recalls", 0))) * (0.7 if age_d > 60 else 1.0)
+        sc = ov * (0.3 + x.get("imp", 3) / 3.0) * (1 + 0.1 * min(10, x.get("recalls", 0))) * (0.7 if age_d > 60 else 1.0)
         hits.append((sc, x))
     hits.sort(key=lambda h: -h[0])
     out = [x for _, x in hits[:n]]

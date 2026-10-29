@@ -288,6 +288,100 @@ def milestones(first_t, member_msgs, trades_together, done):
     return out[-1:] if out else []
 
 
+ALWAYS = ("Ta lecture de lui", "Vous deux", "Toi, maintenant", "Ce que tu ressens", "Ce qu'il t'a demandé une fois pour toutes",
+          "Ce qu'il t'a déjà dit sur ta façon", "Tu t'inquiètes", "Ce dont vous parlez", "Votre rythme", "TU ES EN MODE SEUL",
+          "Ce que tu lui as dit que tu ferais", "Il ne peut plus t'écrire")
+
+
+def memfocus(mem, cue, keep=12, gist=150):
+    """round 6 (working memory): people recall what fits the moment; the rest is a vague awareness. What touches the
+    moment (his words, the event) and what is always with him (his read of him, the two of them, his state) stay whole;
+    the rest is kept as a short gist - nothing is lost, the exact data stays in what he knows of this minute."""
+    blocks, cur = [], []
+    for ln in str(mem or "").split("\n"):
+        if cur and ln.startswith(("  ", "- ", "WHO YOU HAVE BECOME")):
+            cur.append(ln)
+            continue
+        if cur:
+            blocks.append("\n".join(cur))
+        cur = [ln]
+    if cur:
+        blocks.append("\n".join(cur))
+    blocks = [b for b in blocks if b.strip()]
+    cw = _w(cue)
+    sc = []
+    for i, b in enumerate(blocks):
+        s = 2.0 * min(4, len(cw & _w(b)))
+        if b.startswith(ALWAYS):
+            s += 10
+        sc.append((s - 0.01 * i, i))
+    top = set(i for _, i in sorted(sc, reverse=True)[:keep])
+    out = []
+    for i, b in enumerate(blocks):
+        if i in top or len(b) <= gist:
+            out.append(b)
+        else:
+            out.append(b[:gist].rsplit(" ", 1)[0] + " …")
+    return "\n".join(out)
+
+
+def setup_watch(feed, rules_text=""):
+    """round 6: his method on the live chart, as a friend at his side would watch it. The top (pullback) chart's last
+    candle sets the side; on the lower chart, the candle that made the move's extreme since then gives the level; a
+    closed 1-minute candle beyond it is the signal. Returns None, or {key, side, level, dist, crossed, text}."""
+    try:
+        pb = (feed.get("pb") or {}).get("candles") or []
+        m1 = feed.get("candles") or []
+        px = float(feed.get("px") or 0)
+        if len(pb) < 2 or len(m1) < 5 or not px:
+            return None
+        top = pb[-1]
+        bull = float(top[4]) > float(top[1])
+        side = "VENTE" if bull else "ACHAT"
+        since = [c for c in m1 if int(c[0]) >= int(top[0])][-40:] or m1[-15:]
+        if len(since) < 2:
+            return None
+        ext = max(since, key=lambda c: float(c[2])) if bull else min(since, key=lambda c: float(c[3]))
+        level = float(ext[3]) if bull else float(ext[2])
+        after = [c for c in since if int(c[0]) > int(ext[0])]
+        crossed = next((c for c in after if (float(c[4]) < level if bull else float(c[4]) > level)), None)
+        dist = abs(px - level)
+        hm = lambda t: __import__("time").strftime("%H:%M", __import__("time").gmtime(int(t)))
+        txt = ("graphique du haut : dernière bougie %s (depuis %s UTC) -> on attend une %s ; graphique du bas : la bougie qui a fait "
+               "l'extrême du mouvement est celle de %s UTC (%s %.0f) ; une bougie 1 minute qui clôture %s %.0f serait le signal ; prix %.0f, "
+               "à %.0f points" % ("haussière" if bull else "baissière", hm(top[0]), side.lower(), hm(ext[0]), "bas" if bull else "haut", level,
+                                    "sous" if bull else "au-dessus de", level, px, dist))
+        if crossed:
+            txt += " - et la bougie de %s UTC vient de clôturer à %.0f, %s le niveau" % (hm(crossed[0]), float(crossed[4]), "sous" if bull else "au-dessus")
+        return {"key": "%s:%d" % (int(top[0]), round(level)), "side": side, "level": level, "dist": dist, "crossed": bool(crossed),
+                "ckey": ("%s:%d:%s" % (int(top[0]), round(level), int(crossed[0]))) if crossed else None, "text": txt}
+    except Exception:
+        return None
+
+
+def patterns(trades):
+    """round 6: what a friend notices in how he trades - after a loss, after a win, buys vs sells (last 30 trades)"""
+    T = [t for t in trades or [] if isinstance(t, dict) and t.get("p") is not None][:30][::-1]     # oldest first
+    if len(T) < 12:
+        return ""
+    out = []
+    al = [(T[i - 1], T[i]) for i in range(1, len(T)) if float(T[i - 1]["p"]) < 0]
+    aw = [(T[i - 1], T[i]) for i in range(1, len(T)) if float(T[i - 1]["p"]) > 0]
+    if len(al) >= 4:
+        up = sum(1 for a, b in al if float(b.get("lot") or 0) > float(a.get("lot") or 0))
+        wr = sum(1 for a, b in al if float(b["p"]) > 0) / len(al)
+        out.append("après une perte : lot augmenté %d fois sur %d, trade suivant gagnant %d %% du temps" % (up, len(al), wr * 100))
+    if len(aw) >= 4:
+        wr = sum(1 for a, b in aw if float(b["p"]) > 0) / len(aw)
+        out.append("après un gain : trade suivant gagnant %d %% du temps" % (wr * 100))
+    B = [t for t in T if str(t.get("dir")).upper().startswith(("A", "B"))]
+    S = [t for t in T if str(t.get("dir")).upper().startswith(("V", "S"))]
+    if len(B) >= 4 and len(S) >= 4:
+        wb, ws = sum(1 for t in B if float(t["p"]) > 0) / len(B), sum(1 for t in S if float(t["p"]) > 0) / len(S)
+        out.append("achats gagnants %d %%, ventes %d %%" % (wb * 100, ws * 100))
+    return ("Ce que tu remarques dans sa façon de trader (ses %d derniers trades) : %s." % (len(T), " ; ".join(out))) if out else ""
+
+
 def take_new_slip(person):
     """the slip the read just noticed (once) -> for the feeling of embarrassment"""
     with _LK:

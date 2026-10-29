@@ -18059,6 +18059,25 @@ def _one_memory(user, c):
                 _KUm.add(_person(uid), "MILESTONE - a round number in your story together: %s." % _txt)
         except Exception:
             pass
+        try:                                           # round 6: his patterns as a trader, seen by a friend
+            _pt = _KSm.patterns(_trs if "_trs" in dir() else [])
+            if _pt:
+                L.append(_pt)
+        except Exception:
+            pass
+        try:                                           # round 6: his own market view of the day, owned
+            import kino_inner as _KIv
+            _vb = _KIv.views_block()
+            if _vb:
+                L.append("Ta vue du marché aujourd'hui (la tienne, tu la tiens et tu l'assumes après) : " + " ".join(_vb.split())[:500])
+        except Exception:
+            pass
+        try:                                           # round 6: expressions that are yours (said on several different days)
+            _sg = (_jload(os.path.join(DIR, "robots", "kino_tics.json"), {}) or {}).get("signature")
+            if _sg:
+                L.append("Tes expressions à toi (celles qui reviennent d'un jour à l'autre, ta façon de dire) : " + ", ".join(_sg[:6]) + ".")
+        except Exception:
+            pass
         try:                                           # round 3 (humour): room for play right now
             import kino_day as _KDp, kino_person as _KPp
             _off2 = int(_tz_of(_person(uid)).get("off") or 0)
@@ -19501,6 +19520,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             import kino_social as _KSf
             _lum = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
             _ff = _KSf.focus(_ff, str(_lum.get("text") or "") + " " + str(event or "")[:300])
+            _mm1 = _KSf.memfocus(_mm1, str(_lum.get("text") or "") + " " + str(event or "")[:300])     # round 6: memory too
             if event and str(event).startswith("LIVE TRADE CLOSED"):
                 _mpl = re.search(r"([+-]\d+(?:[.,]\d+)?) ?\$", str(event))
                 if _mpl:                                        # his result moves Kino before any analysis
@@ -21712,9 +21732,59 @@ def _kino_tics_night():
             out.append((g, k))
         if len(out) >= 6:
             break
-    if out:
-        txt = "sur %d de mes messages d'hier, je me suis entendu répéter : %s." % (n, ", ".join("« %s » (%d fois)" % (g, k) for g, k in out))
-        _jsave(os.path.join(DIR, "robots", "kino_tics.json"), {"t": int(now), "text": txt, "n": n})
+    # round 6: his signature - expressions that are distinctly his, read by a small model in his messages of several
+    # different days (word counts only found filler like "pour l'instant")
+    sig = []
+    try:
+        S_ = []
+        for f in os.listdir(CHAT_DIR):
+            if not f.endswith(".json"):
+                continue
+            try:
+                c2 = json.load(open(os.path.join(CHAT_DIR, f), encoding="utf-8"))
+            except Exception:
+                continue
+            for m in c2.get("msgs") or []:
+                if m.get("role") == "ai" and m.get("text") and now - float(m.get("t") or 0) < 14 * 86400:
+                    S_.append((time.strftime("%Y-%m-%d", time.gmtime(float(m["t"]))), " ".join(str(m["text"]).split())[:300]))
+        if len({d for d, _ in S_}) >= 3:
+            import random as _rs
+            _rs.shuffle(S_)
+            j = _rc().W.ask_json("You read messages written by Kino, an AI friend, on several different days. List up to 5 short "
+                                 "expressions that are DISTINCTLY his - his own way of saying things, warm, funny or vivid - that "
+                                 "come back across days. Not trading jargon, not filler, not numbers. JSON only: {\"expressions\": [\"...\"]}",
+                                 "\n".join("%s: %s" % x for x in S_[:60]) + "\nJSON only.", models=("haiku", "sonnet"), timeout=60, warm=False)
+            sig = [str(x)[:60] for x in ((j or {}).get("expressions") or []) if str(x).strip()][:5] if isinstance(j, dict) else []
+    except Exception:
+        sig = []
+    if out or sig:
+        txt = ("sur %d de mes messages d'hier, je me suis entendu répéter : %s." % (n, ", ".join("« %s » (%d fois)" % (g, k) for g, k in out))) if out else ""
+        _jsave(os.path.join(DIR, "robots", "kino_tics.json"), {"t": int(now), "text": txt, "n": n, "signature": sig})
+
+
+def _member_questions_night():
+    """round 6 (owner: "working on things for you between chats"): at night, for each person with trading rules, one
+    measurable question about THEIR method goes into his open questions; work_question measures it on real prices when
+    the machine is free (rarely-firing formulas stay plain questions), and the finding comes back to him as a thought."""
+    _rc()
+    import kino_inner as _KIq
+    R = _jload(RULES_FILE, {}) or {}
+    for person, rules in R.items():
+        if not rules:
+            continue
+        try:
+            sysm = ("You are Kino, an AI friend who trades with this person. From HIS trading rules, pick ONE question about his method "
+                    "that history could answer and that he would care about (e.g. after a stop, does the flip reach 1R more often than "
+                    "chance?). JSON only: {\"q\": \"the question, French, first person, one line\", \"formula\": \"an entry condition in the lab "
+                    "language (close, open, high, low, ema(x,n), atr(n), highest(x,n), lowest(x,n), prev(x,n), cross_up(a,b), cross_down(a,b), "
+                    "and/or, @ H1 for another timeframe) or null\", \"side\": \"buy|sell\"}")
+            j = _rc().W.ask_json(sysm, "HIS RULES:\n" + "\n".join("- " + str(x.get("text")) for x in rules) + "\nJSON only.",
+                                 models=("sonnet", "haiku"), timeout=90, warm=False)
+            if isinstance(j, dict) and j.get("q"):
+                _KIq.add_question(str(j["q"])[:200], person, (str(j.get("formula") or "")[:300] or None),
+                                  "sell" if j.get("side") == "sell" else "buy", "BTCUSD", "member-method")
+        except Exception:
+            pass
 
 
 def _kino_night_mind():
@@ -21746,6 +21816,10 @@ def _kino_night_mind():
             pass
         try:
             _kino_tics_night()       # 2026-10-28: he hears his own repeated phrases
+        except Exception:
+            pass
+        try:
+            _member_questions_night()   # round 6: his free time goes to their open questions
         except Exception:
             pass
         _identity_night()        # 2026-10-23 (engine 6): monthly constitution + "who I have become" (idempotent inside)
@@ -22462,6 +22536,7 @@ def _inner_clock_loop():
 
 
 _URGE_SOUV = {}
+_SETUP_SEEN = {}          # 2026-10-28 (round 6): person -> setup keys already in his mind (each setup once)
 # ---- 2026-10-28 (owner: "go" - follow-ups on their life): "#suivi 20 son rendez-vous chez le médecin" -> in 20 h, in their
 # hours, the wish to ask comes back to him (FOLLOW-UP weighs 0.85 in kino_urge). Per person, robots/kino_followups.json.
 FOLLOW_FILE = os.path.join(DIR, "robots", "kino_followups.json")
@@ -22544,6 +22619,25 @@ def _urge_tick():
                             "%.0f h" % ((now - float(x["t"])) / 3600), x["text"]))
                 if _ch:
                     _KSi._save(_sd2)
+            except Exception:
+                pass
+            try:                                       # round 6: his setups on the live chart, like a friend at his side
+                if manual_ok(ow):
+                    _dst = _desk_state(ow.get("id")) or {}
+                    if not (_dst.get("open") or _dst.get("pending")):          # one position at a time: nothing while one lives
+                        import kino_social as _KSw
+                        _fd = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
+                        if time.time() - float(_fd.get("updated") or 0) < 300:
+                            _sw = _KSw.setup_watch(_fd)
+                            if _sw:
+                                _seen = _SETUP_SEEN.setdefault(pm, set())
+                                if _sw["crossed"] and _sw["ckey"] not in _seen:
+                                    _seen.add(_sw["ckey"])
+                                    _KU.add(pm, "SETUP SIGNAL - his method on the live chart, as you read it: %s. Check it against HIS rules "
+                                                "before you say anything; a card only if it really fits them." % _sw["text"], w=1.1)
+                                elif not _sw["crossed"] and _sw["dist"] < 60 and _sw["key"] not in _seen:
+                                    _seen.add(_sw["key"])
+                                    _KU.add(pm, "SETUP WATCH - his method on the live chart, as you read it: %s." % _sw["text"], w=0.55)
             except Exception:
                 pass
             if ctx["their_hour"]:
