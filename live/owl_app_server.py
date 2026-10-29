@@ -18922,6 +18922,13 @@ def _desk_facts(uid):
         L.append("Ordre en attente : %s %s lot à %s, SL %s, TP %s." % (o.get("kind"), o.get("lot"), o.get("e"), o.get("sl"), o.get("tp")))
     if not (st.get("open") or st.get("pending")):
         L.append("Aucune position ouverte, aucun ordre en attente.")
+    try:                                         # 2026-10-29: what the desk does by itself
+        _mg = _jload(os.path.join(DIR, "desk_manage_%s.json" % uid), {}) or {}
+        if _mg.get("be_half_tp"):
+            L.append("GESTION AUTOMATIQUE ACTIVE sur son outil : dès qu'une position ouverte est à mi-chemin de son objectif, son outil "
+                     "met le stop au prix d'entrée, tout seul, à chaque seconde - tu n'as pas à le surveiller.")
+    except Exception:
+        pass
     rc = _desk_robot_cfg(uid)
     if rc.get("on"):
         L.append("SON ROBOT sur ce compte (tu le fais tourner et tu le surveilles) : « %s », lot %s, depuis %s UTC. Les positions marquées "
@@ -19685,6 +19692,13 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _rules_set(uid, v)
             elif k == "suivi" and v:
                 _followup_add(uid, v)
+            elif k == "gestion" and v:                   # 2026-10-29: the desk manages positions itself (breakeven at half the TP)
+                _on = not re.search(r"\b(off|non|stop|arr[eê]t)\b", v, re.I)
+                _du = (_thread_user(cid, user) or user).get("id")
+                _jsave(os.path.join(DIR, "desk_manage_%s.json" % _du), {"be_half_tp": bool(_on), "t": int(time.time()), "by": uid})
+                _chat_mut(cid, lambda cc, _on=_on: _chat_msg(cc, "sys", text=(
+                    "🛡 Ton outil met maintenant le stop au prix d'entrée dès que le prix est à mi-chemin de l'objectif - tout seul, à chaque seconde."
+                    if _on else "Gestion automatique du stop arrêtée.")))
             elif k == "reaction" and v and not event:
                 _em = v.strip().split()[0][:8]
 

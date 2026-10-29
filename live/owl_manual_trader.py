@@ -762,6 +762,48 @@ def modify(req):
                       risk=round(new_risk, 2), modified=True)
 
 
+# ---- 2026-10-29 (owner: "can't Kino build a piece that auto does breakeven as prescribed, so he doesn't have to watch the
+# chart when I'm not there?"): the desk itself manages open positions, every second, whoever is watching.
+# desk_manage_<uid>.json {"be_half_tp": true} - stop moved to the entry price once price is halfway to the target.
+_BE_DONE = {}
+
+
+def manage_positions():
+    try:
+        cfg = json.load(open(os.path.join(DIR, "desk_manage_%s.json" % UID), encoding="utf-8")) or {}
+    except Exception:
+        cfg = {}
+    if not cfg.get("be_half_tp"):
+        return
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return
+    for p in [p for p in open_positions() if p.magic == MAGIC or FREE_LOT]:
+        if not p.tp or _BE_DONE.get(p.ticket, 0) >= 3:
+            continue
+        d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+        e = float(p.price_open)
+        if (float(p.tp) - e) * d <= 0:
+            continue
+        if p.sl and (float(p.sl) - e) * d >= 0:          # already at breakeven or better
+            _BE_DONE[p.ticket] = 9
+            continue
+        half = e + (float(p.tp) - e) / 2.0
+        px = tick.bid if d == 1 else tick.ask
+        if (px - half) * d < 0:
+            continue
+        ok, info = modify({"ticket": p.ticket, "sl": round(e, 2), "tp": float(p.tp)})
+        if ok:
+            _BE_DONE[p.ticket] = 9
+            say(f"BREAKEVEN AUTO #{p.ticket}: mi-chemin de l'objectif atteint ({half:.2f}), stop a l'entree {e:.2f}")
+            push(_t("\U0001f6e1 Stop à l'équilibre", "\U0001f6e1 Stop at breakeven"),
+                 _t(f"Mi-chemin de l'objectif atteint : le stop est maintenant à votre entrée ({e:.0f}).",
+                    f"Halfway to the target: the stop is now at your entry ({e:.0f})."))
+        else:
+            _BE_DONE[p.ticket] = _BE_DONE.get(p.ticket, 0) + 1
+            say(f"BREAKEVEN AUTO #{p.ticket} refuse: {info}")
+
+
 def close_now(req):
     """Owner 2026-09-16: close the running position on demand, at market.
     The ledger replays every closing deal on the symbol, so the debt and
@@ -1124,6 +1166,10 @@ def main():
     say(f"moteur amorce: tendance {eng.trend} choch {eng.choch}")
     while True:
         time.sleep(min(60.0 - (time.time() % 60.0) + 0.2, 1.0))
+        try:                                    # 2026-10-29: position management (breakeven at half the target)
+            manage_positions()
+        except Exception as _me:
+            say(f"GESTION erreur {type(_me).__name__}: {_me}")
         try:
             # ---- order request from the chart
             if os.path.exists(REQ):

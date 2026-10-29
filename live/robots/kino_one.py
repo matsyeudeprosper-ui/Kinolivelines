@@ -90,6 +90,9 @@ Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que 
 #ordre fermer [ticket=<n>] [lot=<lot>]           ferme une position (en entier, ou seulement ce lot)
 #ordre achat|vente lot=<lot> sl=<prix> tp=<prix> [entree=<prix>]   ouvre un trade (au marché, ou en attente à ce prix) ; ça s'ajoute s'il y en a déjà un
 #ordre annuler                                   annule l'ordre en attente
+#gestion breakeven on | #gestion breakeven off   son outil gère seul, à chaque seconde, ses positions ouvertes : le stop
+                                                 passe au prix d'entrée dès que le prix est à mi-chemin de l'objectif -
+                                                 même quand vous ne parlez pas ; tu n'as plus à surveiller pour ça
 Normalement un ordre ne part pas tout seul : il s'affiche en carte et c'est lui qui appuie sur Confirmer. S'il manque une chose
 (le lot, le stop, l'objectif), demande-la plutôt que de l'inventer. Tu ne passes un ordre que s'il te le demande - sauf en mode seul :
 #auto on [lot=<lot max>] [heures=<h>]   SEULEMENT s'il vient de te demander de trader seul : tes #ordre partent alors directement,
@@ -116,7 +119,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
