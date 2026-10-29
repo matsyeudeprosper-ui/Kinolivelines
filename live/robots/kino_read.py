@@ -31,6 +31,7 @@ Read him RIGHT NOW. JSON only:
  "on_his_mind": "what is really occupying him, in a few words",
  "next": "short|long|silent - how he will most likely answer Kino's next message",
  "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty",
+ "joke_fell_flat": "if Kino tried to be funny and it fell flat or annoyed him: that Kino line, word for word; else empty",
  "domain": "what the talk is about right now, ONE word: trading|robots|his life|family|work|health|news|kino|other",
  "in_passing": "something about his life he mentioned in passing that a friend would be curious about (a person, a plan, a worry); else empty",
  "shared": "how much his last message confides about himself: none|a little|a lot",
@@ -92,6 +93,14 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         KS.note_read(_person_of(uid), j)
     except Exception:
         pass
+    fj = " ".join(str(j.get("joke_fell_flat") or "").split())[:160]
+    if len(fj) >= 8:                                   # what did not land is remembered too - a person adjusts to a friend
+        try:
+            import kino_inner as KI
+            if fj[:60] not in [str(x.get("text") or "")[:60] for x in KI.moments(uid, "flat")]:
+                KI.add_moment(uid, fj, "flat")
+        except Exception:
+            pass
     lj = " ".join(str(j.get("laughed_at") or "").split())[:160]
     if len(lj) >= 8:                                   # what made him laugh becomes a shared joke (no keyword list)
         try:

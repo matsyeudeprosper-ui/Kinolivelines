@@ -18098,7 +18098,13 @@ def _one_memory(user, c):
             _rd = ((_KPp._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
             _lr = sum(1 for x in (_KIl.moments(uid, "joke") or []) if time.time() - float(x.get("t") or 0) < 3 * 86400)
             _pf = _KSm.playfulness(_en, _cw.group(1) if _cw else "", _rd.get("valence", 0), _lr)
+            _pf -= 0.4 * float(locals().get("_cn") or 0)     # 2026-10-29: money at risk, a worry for him - less room to play
             L.append("Ton envie de jouer, de taquiner en ce moment : %s." % ("grande" if _pf >= 0.65 else "moyenne" if _pf >= 0.4 else "faible"))
+            _hl = [str(x.get("text") or "")[:90] for x in (_KIl.moments(uid, "joke") or [])][-3:]
+            _hf = [str(x.get("text") or "")[:90] for x in (_KIl.moments(uid, "flat") or [])][-2:]
+            if _hl or _hf:
+                L.append("Ton humour avec lui - ce qui l'a fait rire : %s%s." % (" | ".join(_hl) or "-",
+                                                                             (" ; ce qui est tombé à plat : " + " | ".join(_hf)) if _hf else ""))
         except Exception:
             pass
     except Exception:
