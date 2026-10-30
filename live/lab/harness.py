@@ -254,7 +254,7 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # 2026-10-25 (fidelity): start the replay with the REAL account's recovery state (debt under the
             # high-water mark, recovery pot) instead of a clean slate - the live bot entered the 10-10 window
             # $41.42 in debt, so its "FLIP + 1 continuation during recovery" rule refused trades the clean engine took.
-            "debt0": 0.0, "chest0": 0.0, "streak0": 0, "seed_at": 0,   # seed_at = epoch s: apply debt0/chest0/streak0 there (else at the start)
+            "debt0": 0.0, "chest0": 0.0, "streak0": 0, "seed_at": 0, "trade_from": 0,   # seed_at = epoch s: apply debt0/chest0/streak0 there (else at the start)
             "nv_live": False,   # True = the live feed's speed formula (see the storm line)
             "down": [],         # [[t0, t1], ...] minutes the live terminal was down (no new entry), fidelity only
             # 2026-10-09 (review 10): per-entry money limits the LIVE way.
@@ -1222,6 +1222,8 @@ def simulate(R, spread, cfg):
             continue
         if c["chase_pts"] and i >= 61 and d * (closes[i-1] - closes[i-61]) > float(c["chase_pts"]):
             blocked += 1
+            continue
+        if c.get("trade_from") and t < int(c["trade_from"]):     # 2026-10-30 (owl v2 quick test): warm-up bars build structure, no entries
             continue
         if skip_wd and g.weekday() in skip_wd:
             blocked += 1
