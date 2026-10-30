@@ -1,0 +1,243 @@
+{
+ "rows": [
+  {
+   "month": "2026-01",
+   "net": 16.32,
+   "killed": false,
+   "ret_pct": -10.1,
+   "day_range_pct": 3.02,
+   "h1_vol_pct": 0.426,
+   "trendiness": 0.235,
+   "spread": 1260.0,
+   "trades": 56,
+   "win_rate": 55,
+   "avg_win": 1.96,
+   "avg_loss": -2.55,
+   "dur_min": 17.4,
+   "flip_share": 52,
+   "dist_pts": 209
+  },
+  {
+   "month": "2026-02",
+   "net": -60.01,
+   "killed": true,
+   "ret_pct": -14.9,
+   "day_range_pct": 5.62,
+   "h1_vol_pct": 0.701,
+   "trendiness": 0.232,
+   "spread": 1260.4,
+   "trades": 35,
+   "win_rate": 34,
+   "avg_win": 2.53,
+   "avg_loss": -3.48,
+   "dur_min": 11.1,
+   "flip_share": 43,
+   "dist_pts": 291
+  },
+  {
+   "month": "2026-03",
+   "net": -9.31,
+   "killed": false,
+   "ret_pct": 1.9,
+   "day_range_pct": 4.2,
+   "h1_vol_pct": 0.547,
+   "trendiness": 0.221,
+   "spread": 1156.8,
+   "trades": 31,
+   "win_rate": 55,
+   "avg_win": 3.13,
+   "avg_loss": -4.2,
+   "dur_min": 12.7,
+   "flip_share": 55,
+   "dist_pts": 262
+  },
+  {
+   "month": "2026-04",
+   "net": -20.71,
+   "killed": false,
+   "ret_pct": 11.9,
+   "day_range_pct": 3.19,
+   "h1_vol_pct": 0.378,
+   "trendiness": 0.228,
+   "spread": 980.0,
+   "trades": 43,
+   "win_rate": 47,
+   "avg_win": 2.38,
+   "avg_loss": -2.76,
+   "dur_min": 15.0,
+   "flip_share": 58,
+   "dist_pts": 270
+  },
+  {
+   "month": "2026-05",
+   "net": -5.17,
+   "killed": false,
+   "ret_pct": -3.6,
+   "day_range_pct": 2.45,
+   "h1_vol_pct": 0.319,
+   "trendiness": 0.225,
+   "spread": 980.0,
+   "trades": 46,
+   "win_rate": 57,
+   "avg_win": 2.5,
+   "avg_loss": -3.26,
+   "dur_min": 17.8,
+   "flip_share": 54,
+   "dist_pts": 163
+  },
+  {
+   "month": "2026-06",
+   "net": 21.75,
+   "killed": false,
+   "ret_pct": -20.4,
+   "day_range_pct": 3.9,
+   "h1_vol_pct": 0.537,
+   "trendiness": 0.226,
+   "spread": 733.1,
+   "trades": 46,
+   "win_rate": 63,
+   "avg_win": 3.35,
+   "avg_loss": -4.71,
+   "dur_min": 15.1,
+   "flip_share": 41,
+   "dist_pts": 269
+  },
+  {
+   "month": "2026-07",
+   "net": -20.09,
+   "killed": false,
+   "ret_pct": 7.3,
+   "day_range_pct": 2.8,
+   "h1_vol_pct": 0.351,
+   "trendiness": 0.24,
+   "spread": 700.0,
+   "trades": 53,
+   "win_rate": 53,
+   "avg_win": 1.4,
+   "avg_loss": -2.03,
+   "dur_min": 15.4,
+   "flip_share": 51,
+   "dist_pts": 155
+  },
+  {
+   "month": "2026-08",
+   "net": 23.28,
+   "killed": false,
+   "ret_pct": 25.1,
+   "day_range_pct": 2.86,
+   "h1_vol_pct": 0.363,
+   "trendiness": 0.191,
+   "spread": 700.0,
+   "trades": 54,
+   "win_rate": 57,
+   "avg_win": 2.23,
+   "avg_loss": -2.32,
+   "dur_min": 13.8,
+   "flip_share": 52,
+   "dist_pts": 103
+  },
+  {
+   "month": "2026-09",
+   "net": 47.47,
+   "killed": false,
+   "ret_pct": 6.4,
+   "day_range_pct": 2.91,
+   "h1_vol_pct": 0.374,
+   "trendiness": 0.199,
+   "spread": 700.0,
+   "trades": 55,
+   "win_rate": 67,
+   "avg_win": 2.72,
+   "avg_loss": -4.07,
+   "dur_min": 9.6,
+   "flip_share": 38,
+   "dist_pts": 185
+  },
+  {
+   "month": "2026-10",
+   "net": 11.43,
+   "killed": false,
+   "trades": 81,
+   "win_rate": 54,
+   "avg_win": 2.42,
+   "avg_loss": -2.95,
+   "dur_min": 10.0,
+   "flip_share": 47,
+   "dist_pts": 150
+  }
+ ],
+ "compare": {
+  "ret_pct": {
+   "up": 0.25,
+   "down": 0.52,
+   "rho": 0.08,
+   "n": 9
+  },
+  "day_range_pct": {
+   "up": 3.172,
+   "down": 3.652,
+   "rho": -0.37,
+   "n": 9
+  },
+  "h1_vol_pct": {
+   "up": 0.425,
+   "down": 0.459,
+   "rho": -0.3,
+   "n": 9
+  },
+  "trendiness": {
+   "up": 0.213,
+   "down": 0.229,
+   "rho": -0.63,
+   "n": 9
+  },
+  "spread": {
+   "up": 848.275,
+   "down": 1015.44,
+   "rho": -0.43,
+   "n": 9
+  },
+  "trades": {
+   "up": 58.4,
+   "down": 41.6,
+   "rho": 0.65,
+   "n": 10
+  },
+  "win_rate": {
+   "up": 59.2,
+   "down": 49.2,
+   "rho": 0.89,
+   "n": 10
+  },
+  "avg_win": {
+   "up": 2.536,
+   "down": 2.388,
+   "rho": 0.15,
+   "n": 10
+  },
+  "avg_loss": {
+   "up": -3.32,
+   "down": -3.146,
+   "rho": -0.13,
+   "n": 10
+  },
+  "dur_min": {
+   "up": 13.18,
+   "down": 14.4,
+   "rho": -0.14,
+   "n": 10
+  },
+  "flip_share": {
+   "up": 46,
+   "down": 52.2,
+   "rho": -0.41,
+   "n": 10
+  },
+  "dist_pts": {
+   "up": 183.2,
+   "down": 228.2,
+   "rho": -0.49,
+   "n": 10
+  }
+ }
+}
