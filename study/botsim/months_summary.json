@@ -1,0 +1,92 @@
+[
+ {
+  "month": "2026-01",
+  "net": 16.32,
+  "end_balance": 216.32,
+  "wins": 31,
+  "losses": 25,
+  "killed": false,
+  "wall_h": 19.99
+ },
+ {
+  "month": "2026-02",
+  "net": -60.01,
+  "end_balance": 139.99,
+  "wins": 12,
+  "losses": 23,
+  "killed": true,
+  "wall_h": 18.36
+ },
+ {
+  "month": "2026-03",
+  "net": -9.31,
+  "end_balance": 190.69,
+  "wins": 17,
+  "losses": 14,
+  "killed": false,
+  "wall_h": 18.99
+ },
+ {
+  "month": "2026-04",
+  "net": -20.71,
+  "end_balance": 179.29,
+  "wins": 20,
+  "losses": 23,
+  "killed": false,
+  "wall_h": 18.51
+ },
+ {
+  "month": "2026-05",
+  "net": -5.17,
+  "end_balance": 194.83,
+  "wins": 26,
+  "losses": 20,
+  "killed": false,
+  "wall_h": 22.4
+ },
+ {
+  "month": "2026-06",
+  "net": 21.75,
+  "end_balance": 221.75,
+  "wins": 29,
+  "losses": 17,
+  "killed": false,
+  "wall_h": 21.91
+ },
+ {
+  "month": "2026-07",
+  "net": -20.09,
+  "end_balance": 179.91,
+  "wins": 28,
+  "losses": 25,
+  "killed": false,
+  "wall_h": 17.82
+ },
+ {
+  "month": "2026-08",
+  "net": 23.28,
+  "end_balance": 223.28,
+  "wins": 31,
+  "losses": 23,
+  "killed": false,
+  "wall_h": 17.98
+ },
+ {
+  "month": "2026-09",
+  "net": 47.47,
+  "end_balance": 247.47,
+  "wins": 37,
+  "losses": 18,
+  "killed": false,
+  "wall_h": 18.18
+ },
+ {
+  "month": "2026-10",
+  "net": 11.43,
+  "end_balance": 211.43,
+  "wins": 44,
+  "losses": 37,
+  "killed": false,
+  "wall_h": 17.27
+ }
+]
