@@ -28,7 +28,11 @@ import simclock as SC          # noqa: E402
 import fakemt5 as FM           # noqa: E402
 
 ACCTS = {"valere": {"uid": "u224016179", "login": 224016179, "log": "bos_bot_valere.log", "state": "bos_state_valere.json",
-                    "bars": "bars_u224016179.npz", "ticks": ["ticks_u224016179", "ticks_u224016179_forward"]}}
+                    "bars": "bars_u224016179.npz", "ticks": ["ticks_u224016179", "ticks_u224016179_forward"]},
+         # 2026-10-30 (owner: "do the last week test"): the bot's own demo kept trading through the real-money pause; same broker
+         # feed (Valere's recording) - its own tick recording stops 10-09
+         "reference": {"uid": "u477508138", "login": 477508138, "log": "bos_bot_u477508138.log", "state": "bos_state_u477508138.json",
+                       "bars": "bars_u224016179.npz", "ticks": ["ticks_u477508138", "ticks_u224016179_forward"]}}
 
 
 def ts(s):
