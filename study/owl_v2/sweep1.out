@@ -1,0 +1,209 @@
+bos tf1 k2 rr0.8 follow                  n=19412 net -2020.40  m+  0/10  w+  2/44  days 303/303  wr 49.7  [Jan-May -1186.7 | Jun-Oct -833.7]  -203 -304 -251 -193 -237 -221 -121 -124 -206 -162
+      random-dir net -1515.42  m+ 0
+bos tf1 k2 rr0.8 fade                    n=19552 net -1247.02  m+  0/10  w+  6/44  days 303/303  wr 51.2  [Jan-May -782.3 | Jun-Oct -464.7]  -229 -119 -135 -176 -124 -68 -185 -98 -84 -30
+      random-dir net -1515.42  m+ 0
+bos tf1 k2 rr1.0 follow                  n=17022 net -1842.94  m+  0/10  w+  4/44  days 303/303  wr 44.8  [Jan-May -1213.2 | Jun-Oct -629.8]  -232 -301 -268 -167 -245 -153 -104 -98 -170 -105
+      random-dir net -1237.91  m+ 0
+bos tf1 k2 rr1.0 fade                    n=16613 net  -793.51  m+  0/10  w+  9/44  days 303/303  wr 46.8  [Jan-May -413.8 | Jun-Oct -379.7]  -118 -69 -90 -68 -70 -19 -120 -114 -82 -46
+      random-dir net -1237.91  m+ 0
+bos tf1 k2 rr1.5 follow                  n=12917 net -1315.48  m+  0/10  w+  8/44  days 303/303  wr 35.9  [Jan-May -713.2 | Jun-Oct -602.2]  -155 -79 -214 -66 -199 -237 -119 -54 -64 -129
+      random-dir net -1056.13  m+ 1
+bos tf1 k2 rr1.5 fade                    n=12034 net  -412.91  m+  3/10  w+ 12/44  days 303/303  wr 37.8  [Jan-May -326.9 | Jun-Oct -86.0]  -212 +96 -2 -176 -33 +7 -14 -110 -30 +61
+      random-dir net -1056.13  m+ 1
+bos tf1 k2 rr2.0 follow                  n=10160 net  -715.77  m+  2/10  w+ 13/44  days 303/303  wr 30.5  [Jan-May -285.3 | Jun-Oct -430.5]  -87 +45 -191 +26 -78 -148 -111 -22 -72 -78
+      random-dir net -668.50  m+ 2
+bos tf1 k2 rr2.0 fade                    n= 9128 net  -263.94  m+  2/10  w+ 16/44  days 303/303  wr 31.8  [Jan-May -195.7 | Jun-Oct -68.3]  -124 +145 -77 -106 -34 -10 -12 -78 -19 +51
+      random-dir net -668.50  m+ 2
+bos tf1 k3 rr0.8 follow                  n=14624 net -1438.64  m+  0/10  w+  3/44  days 303/303  wr 50.6  [Jan-May -875.4 | Jun-Oct -563.2]  -163 -240 -189 -159 -124 -212 -88 -75 -115 -74
+      random-dir net -993.80  m+ 1
+bos tf1 k3 rr0.8 fade                    n=14671 net -1105.99  m+  1/10  w+  7/44  days 303/303  wr 51.0  [Jan-May -676.4 | Jun-Oct -429.6]  -200 -137 -104 -88 -148 +7 -135 -75 -113 -114
+      random-dir net -993.80  m+ 1
+bos tf1 k3 rr1.0 follow                  n=13021 net -1299.42  m+  0/10  w+  9/44  days 303/303  wr 45.2  [Jan-May -823.5 | Jun-Oct -476.0]  -98 -190 -239 -163 -134 -215 -60 -56 -103 -41
+      random-dir net -705.57  m+ 0
+bos tf1 k3 rr1.0 fade                    n=12615 net  -708.15  m+  1/10  w+  9/44  days 303/303  wr 46.5  [Jan-May -383.6 | Jun-Oct -324.6]  -85 -84 -37 -99 -79 +38 -136 -75 -57 -95
+      random-dir net -705.57  m+ 0
+bos tf1 k3 rr1.5 follow                  n=10204 net -1238.04  m+  0/10  w+  8/44  days 303/303  wr 35.6  [Jan-May -759.7 | Jun-Oct -478.4]  -140 -80 -307 -132 -100 -200 -57 -52 -95 -73
+      random-dir net -499.43  m+ 2
+bos tf1 k3 rr1.5 fade                    n= 9427 net  -587.65  m+  2/10  w+ 13/44  days 303/303  wr 37.0  [Jan-May -465.6 | Jun-Oct -122.0]  -66 -116 -101 -134 -49 +6 -39 -79 -35 +26
+      random-dir net -499.43  m+ 2
+bos tf1 k3 rr2.0 follow                  n= 8416 net  -954.30  m+  2/10  w+  9/44  days 303/303  wr 29.8  [Jan-May -585.2 | Jun-Oct -369.1]  -225 +56 -176 -128 -112 -168 +9 -51 -78 -81
+      random-dir net -323.28  m+ 3
+bos tf1 k3 rr2.0 fade                    n= 7375 net  -379.46  m+  3/10  w+ 19/44  days 303/303  wr 31.3  [Jan-May -259.2 | Jun-Oct -120.2]  +8 -92 -52 -88 -36 +30 -55 -64 -86 +55
+      random-dir net -323.28  m+ 3
+bos tf1 k5 rr0.8 follow                  n= 9030 net -1181.62  m+  0/10  w+  5/44  days 303/303  wr 49.9  [Jan-May -785.8 | Jun-Oct -395.9]  -211 -197 -160 -126 -91 -88 -96 -74 -79 -59
+      random-dir net -606.49  m+ 2
+bos tf1 k5 rr0.8 fade                    n= 9053 net  -394.66  m+  0/10  w+ 14/44  days 303/303  wr 52.6  [Jan-May -190.8 | Jun-Oct -203.9]  -23 -12 -67 -15 -75 -62 -55 -30 -33 -24
+      random-dir net -606.49  m+ 2
+bos tf1 k5 rr1.0 follow                  n= 8236 net -1132.26  m+  0/10  w+  5/44  days 303/303  wr 44.5  [Jan-May -740.9 | Jun-Oct -391.4]  -201 -135 -160 -134 -111 -120 -82 -59 -58 -73
+      random-dir net -379.42  m+ 2
+bos tf1 k5 rr1.0 fade                    n= 8082 net  -182.53  m+  0/10  w+ 16/44  days 303/303  wr 48.2  [Jan-May -115.4 | Jun-Oct -67.2]  -1 -30 -7 -42 -35 -12 -8 -20 -25 -2
+      random-dir net -379.42  m+ 2
+bos tf1 k5 rr1.5 follow                  n= 6851 net -1109.81  m+  0/10  w+  6/44  days 303/303  wr 35.2  [Jan-May -708.7 | Jun-Oct -401.1]  -213 -101 -166 -104 -124 -128 -80 -107 -64 -22
+      random-dir net -555.70  m+ 1
+bos tf1 k5 rr1.5 fade                    n= 6267 net   -75.90  m+  6/10  w+ 20/44  days 303/303  wr 38.9  [Jan-May -117.5 | Jun-Oct +41.6]  +60 -68 -57 +6 -58 -45 +43 +18 +10 +16
+      random-dir net -555.70  m+ 1
+bos tf1 k5 rr2.0 follow                  n= 5832 net  -874.96  m+  0/10  w+ 13/44  days 303/303  wr 29.7  [Jan-May -576.1 | Jun-Oct -298.9]  -188 -113 -84 -119 -71 -91 -75 -91 -22 -19
+      random-dir net -451.22  m+ 4
+bos tf1 k5 rr2.0 fade                    n= 5115 net   +77.21  m+  7/10  w+ 23/44  days 303/303  wr 33.1  [Jan-May -43.8 | Jun-Oct +121.0]  +35 +12 -41 +10 -59 +83 +31 +4 -33 +36
+      random-dir net -451.22  m+ 4
+bos tf5 k2 rr0.8 follow                  n= 3576 net  -667.49  m+  0/10  w+ 14/44  days 303/303  wr 53.1  [Jan-May -489.2 | Jun-Oct -178.3]  -35 -200 -116 -112 -26 -56 -27 -46 -48 -2
+      random-dir net -205.07  m+ 3
+bos tf5 k2 rr0.8 fade                    n= 3785 net  -234.04  m+  1/10  w+ 17/44  days 303/303  wr 52.7  [Jan-May -30.9 | Jun-Oct -203.1]  -46 +109 -9 -13 -73 -60 -32 -29 -47 -33
+      random-dir net -205.07  m+ 3
+bos tf5 k2 rr1.0 follow                  n= 3178 net  -483.18  m+  2/10  w+ 18/44  days 303/303  wr 48.3  [Jan-May -437.0 | Jun-Oct -46.2]  -47 -229 -60 -87 -15 -46 +7 -11 -7 +11
+      random-dir net -59.34  m+ 4
+bos tf5 k2 rr1.0 fade                    n= 3112 net   -63.04  m+  3/10  w+ 19/44  days 303/303  wr 47.4  [Jan-May +67.5 | Jun-Oct -130.6]  -9 +152 +4 +13 -92 -12 -43 -19 -23 -34
+      random-dir net -59.34  m+ 4
+bos tf5 k2 rr1.5 follow                  n= 2362 net  -476.96  m+  2/10  w+ 18/44  days 303/303  wr 38.2  [Jan-May -319.1 | Jun-Oct -157.9]  +37 -171 -81 -85 -19 -25 -52 -85 -64 +68
+      random-dir net -31.81  m+ 5
+bos tf5 k2 rr1.5 fade                    n= 2288 net  +120.75  m+  9/10  w+ 23/44  days 303/303  wr 39.5  [Jan-May +48.7 | Jun-Oct +72.0]  +10 +8 +42 +74 -86 +16 +19 +7 +18 +12
+      random-dir net -31.81  m+ 5
+bos tf5 k2 rr2.0 follow                  n= 1892 net  -109.54  m+  5/10  w+ 21/44  days 302/303  wr 33.5  [Jan-May -11.7 | Jun-Oct -97.8]  +13 -65 +5 +30 +6 -1 -26 -58 -19 +7
+      random-dir net +119.96  m+ 7
+bos tf5 k2 rr2.0 fade                    n= 1800 net  +113.21  m+  6/10  w+ 22/44  days 303/303  wr 33.5  [Jan-May +24.4 | Jun-Oct +88.8]  -28 +28 +9 +77 -62 -60 +52 +39 -19 +76
+      random-dir net +119.96  m+ 7
+bos tf5 k3 rr0.8 follow                  n= 2672 net  -510.60  m+  1/10  w+ 14/44  days 303/303  wr 53.2  [Jan-May -302.7 | Jun-Oct -207.9]  -46 -117 -115 +7 -32 -10 -37 -61 -54 -46
+      random-dir net -316.37  m+ 1
+bos tf5 k3 rr0.8 fade                    n= 2786 net   -48.51  m+  5/10  w+ 19/44  days 303/303  wr 53.9  [Jan-May -74.0 | Jun-Oct +25.4]  -24 -17 +38 -39 -32 -77 +18 +15 +47 +21
+      random-dir net -316.37  m+ 1
+bos tf5 k3 rr1.0 follow                  n= 2392 net  -427.86  m+  1/10  w+ 14/44  days 303/303  wr 48.0  [Jan-May -282.4 | Jun-Oct -145.5]  -112 -79 -55 -14 -22 +35 -11 -63 -53 -54
+      random-dir net -198.09  m+ 2
+bos tf5 k3 rr1.0 fade                    n= 2360 net   +78.29  m+  6/10  w+ 23/44  days 303/303  wr 48.7  [Jan-May +49.6 | Jun-Oct +28.7]  +26 +53 +34 -50 -14 -53 -4 +41 +23 +23
+      random-dir net -198.09  m+ 2
+bos tf5 k3 rr1.5 follow                  n= 1790 net  -510.43  m+  1/10  w+ 14/44  days 303/303  wr 37.9  [Jan-May -347.1 | Jun-Oct -163.3]  -59 -124 -51 -72 -41 -11 +13 -61 -60 -45
+      random-dir net -442.03  m+ 2
+bos tf5 k3 rr1.5 fade                    n= 1795 net  +139.71  m+  6/10  w+ 23/44  days 303/303  wr 40.8  [Jan-May +24.0 | Jun-Oct +115.7]  +64 -13 -53 +25 +2 -72 +42 +133 +15 -2
+      random-dir net -442.03  m+ 2
+bos tf5 k3 rr2.0 follow                  n= 1480 net  -313.30  m+  3/10  w+ 18/44  days 301/303  wr 33.0  [Jan-May -188.8 | Jun-Oct -124.5]  +9 -9 -69 -40 -79 +42 -42 -104 -45 +24
+      random-dir net -329.03  m+ 3
+bos tf5 k3 rr2.0 fade                    n= 1413 net  +201.32  m+  6/10  w+ 31/44  days 303/303  wr 35.0  [Jan-May +70.3 | Jun-Oct +131.0]  -19 +2 -37 +91 +33 -40 +56 +130 +36 -51
+      random-dir net -329.03  m+ 3
+bos tf5 k5 rr0.8 follow                  n= 1680 net  -268.95  m+  2/10  w+ 15/44  days 301/303  wr 52.9  [Jan-May -68.4 | Jun-Oct -200.6]  -90 +55 +15 -39 -9 -7 -10 -30 -115 -38
+      random-dir net -271.69  m+ 3
+bos tf5 k5 rr0.8 fade                    n= 1746 net  -155.83  m+  6/10  w+ 19/44  days 302/303  wr 53.4  [Jan-May -262.1 | Jun-Oct +106.3]  +34 -155 -124 +14 -32 -9 +12 +5 +45 +53
+      random-dir net -271.69  m+ 3
+bos tf5 k5 rr1.0 follow                  n= 1545 net  -264.08  m+  2/10  w+ 17/44  days 302/303  wr 48.1  [Jan-May -59.6 | Jun-Oct -204.5]  -89 +79 +16 -46 -20 -14 -26 -37 -78 -50
+      random-dir net -160.76  m+ 3
+bos tf5 k5 rr1.0 fade                    n= 1534 net    +5.95  m+  6/10  w+ 22/44  days 301/303  wr 48.8  [Jan-May -147.8 | Jun-Oct +153.7]  +70 -127 -66 -8 -16 +8 +11 +27 +73 +35
+      random-dir net -160.76  m+ 3
+bos tf5 k5 rr1.5 follow                  n= 1263 net  -289.60  m+  2/10  w+ 19/44  days 299/303  wr 38.2  [Jan-May -84.8 | Jun-Oct -204.8]  -116 +31 +41 -39 -2 -40 -35 -8 -99 -23
+      random-dir net -221.78  m+ 2
+bos tf5 k5 rr1.5 fade                    n= 1250 net  +114.12  m+  8/10  w+ 25/44  days 300/303  wr 40.5  [Jan-May -56.6 | Jun-Oct +170.8]  +70 -148 -27 +22 +26 +31 +22 +58 +36 +24
+      random-dir net -221.78  m+ 2
+bos tf5 k5 rr2.0 follow                  n= 1073 net  -149.06  m+  2/10  w+ 16/44  days 299/303  wr 33.0  [Jan-May +38.2 | Jun-Oct -187.2]  -99 +75 +85 -13 -11 -54 -25 -16 -68 -24
+      random-dir net -165.49  m+ 3
+bos tf5 k5 rr2.0 fade                    n= 1065 net    -6.40  m+  5/10  w+ 22/44  days 299/303  wr 33.7  [Jan-May -100.4 | Jun-Oct +94.0]  +16 -93 -64 -11 +51 -16 +45 +47 +34 -16
+      random-dir net -165.49  m+ 3
+bos tf15 k2 rr0.8 follow                 n= 1287 net    +5.82  m+  5/10  w+ 26/44  days 300/303  wr 54.9  [Jan-May -169.4 | Jun-Oct +175.2]  -78 -10 -44 -23 -14 +28 +1 +92 +40 +13
+      random-dir net -358.08  m+ 2
+bos tf15 k2 rr0.8 fade                   n= 1293 net  -362.13  m+  2/10  w+ 17/44  days 299/303  wr 52.7  [Jan-May -55.0 | Jun-Oct -307.1]  -75 -57 -22 +62 +38 -40 -43 -86 -91 -47
+      random-dir net -358.08  m+ 2
+bos tf15 k2 rr1.0 follow                 n= 1142 net   -55.42  m+  4/10  w+ 23/44  days 298/303  wr 48.9  [Jan-May -218.1 | Jun-Oct +162.7]  -6 +18 -74 -111 -45 -25 -11 +87 +63 +49
+      random-dir net -238.31  m+ 3
+bos tf15 k2 rr1.0 fade                   n= 1131 net  -150.93  m+  4/10  w+ 19/44  days 298/303  wr 49.3  [Jan-May +83.7 | Jun-Oct -234.7]  -23 -29 +39 +93 +3 +0 -45 -84 -57 -49
+      random-dir net -238.31  m+ 3
+bos tf15 k2 rr1.5 follow                 n=  891 net   +41.66  m+  4/10  w+ 22/44  days 295/303  wr 39.7  [Jan-May +31.1 | Jun-Oct +10.6]  -15 +79 +21 -35 -19 -23 -6 +66 -51 +24
+      random-dir net +10.46  m+ 2
+bos tf15 k2 rr1.5 fade                   n=  906 net   +51.42  m+  4/10  w+ 23/44  days 298/303  wr 43.0  [Jan-May +75.8 | Jun-Oct -24.4]  -22 -19 +28 +105 -16 -39 -1 -48 +20 +44
+      random-dir net +10.46  m+ 2
+bos tf15 k2 rr2.0 follow                 n=  807 net   -81.93  m+  5/10  w+ 22/44  days 294/303  wr 33.7  [Jan-May +19.5 | Jun-Oct -101.4]  +103 -19 +22 -79 -8 +5 +35 +18 -125 -34
+      random-dir net -87.67  m+ 3
+bos tf15 k2 rr2.0 fade                   n=  769 net  +272.73  m+  6/10  w+ 24/44  days 297/303  wr 38.9  [Jan-May +163.6 | Jun-Oct +109.1]  -59 +146 +61 +99 -84 -11 +58 -5 +50 +18
+      random-dir net -87.67  m+ 3
+bos tf15 k3 rr0.8 follow                 n=  995 net  +196.30  m+  7/10  w+ 28/44  days 295/303  wr 57.0  [Jan-May +24.1 | Jun-Oct +172.2]  -56 +130 +9 +10 -68 +28 +24 +83 -23 +60
+      random-dir net +217.98  m+ 6
+bos tf15 k3 rr0.8 fade                   n= 1037 net  -264.04  m+  2/10  w+ 17/44  days 295/303  wr 52.6  [Jan-May -129.8 | Jun-Oct -134.2]  +8 -115 -54 -24 +55 -39 -12 -19 -24 -40
+      random-dir net +217.98  m+ 6
+bos tf15 k3 rr1.0 follow                 n=  914 net  +148.64  m+  6/10  w+ 27/44  days 295/303  wr 50.8  [Jan-May +7.8 | Jun-Oct +140.9]  -47 +153 +2 -22 -78 +39 +5 +63 -22 +55
+      random-dir net +288.24  m+ 6
+bos tf15 k3 rr1.0 fade                   n=  916 net  -312.32  m+  3/10  w+ 15/44  days 295/303  wr 46.9  [Jan-May -107.3 | Jun-Oct -205.0]  +25 -190 -12 -2 +72 -47 -60 -59 +17 -57
+      random-dir net +288.24  m+ 6
+bos tf15 k3 rr1.5 follow                 n=  746 net   +78.16  m+  6/10  w+ 24/44  days 292/303  wr 41.6  [Jan-May +38.6 | Jun-Oct +39.5]  +13 +53 +57 -31 -53 -22 +20 +49 -21 +13
+      random-dir net +487.20  m+ 6
+bos tf15 k3 rr1.5 fade                   n=  748 net  +178.11  m+  6/10  w+ 23/44  days 293/303  wr 41.3  [Jan-May +166.1 | Jun-Oct +12.0]  +17 -60 +88 +87 +34 -53 -23 -20 +81 +27
+      random-dir net +487.20  m+ 6
+bos tf15 k3 rr2.0 follow                 n=  668 net  +166.38  m+  6/10  w+ 25/44  days 288/303  wr 37.9  [Jan-May +26.1 | Jun-Oct +140.2]  +62 +44 +39 -47 -71 +8 +89 +108 -64 -1
+      random-dir net +394.30  m+ 5
+bos tf15 k3 rr2.0 fade                   n=  633 net  +168.79  m+  6/10  w+ 22/44  days 290/303  wr 36.0  [Jan-May +49.6 | Jun-Oct +119.2]  -24 +64 +28 -30 +10 -9 +11 -18 +48 +87
+      random-dir net +394.30  m+ 5
+bos tf15 k5 rr0.8 follow                 n=  643 net   +91.70  m+  5/10  w+ 23/44  days 279/303  wr 56.3  [Jan-May +12.5 | Jun-Oct +79.2]  -36 +112 +4 -3 -65 +47 -48 +57 -2 +26
+      random-dir net -105.44  m+ 3
+bos tf15 k5 rr0.8 fade                   n=  645 net  -182.40  m+  5/10  w+ 17/44  days 279/303  wr 52.4  [Jan-May -69.1 | Jun-Oct -113.3]  +25 -116 -14 +4 +32 -52 +11 -50 -27 +5
+      random-dir net -105.44  m+ 3
+bos tf15 k5 rr1.0 follow                 n=  594 net  +117.03  m+  6/10  w+ 23/44  days 275/303  wr 51.0  [Jan-May +27.1 | Jun-Oct +89.9]  -61 +148 +5 -5 -59 +35 -56 +61 +14 +36
+      random-dir net -137.30  m+ 3
+bos tf15 k5 rr1.0 fade                   n=  591 net  -179.32  m+  3/10  w+ 20/44  days 275/303  wr 47.4  [Jan-May -45.1 | Jun-Oct -134.2]  +69 -164 -6 -2 +59 -45 +42 -73 -14 -44
+      random-dir net -137.30  m+ 3
+bos tf15 k5 rr1.5 follow                 n=  527 net   +80.19  m+  4/10  w+ 22/44  days 273/303  wr 42.9  [Jan-May +50.7 | Jun-Oct +29.5]  -28 +97 +65 -55 -29 +53 -79 +91 -21 -15
+      random-dir net -140.27  m+ 4
+bos tf15 k5 rr1.5 fade                   n=  508 net   -77.23  m+  6/10  w+ 20/44  days 269/303  wr 40.7  [Jan-May -65.9 | Jun-Oct -11.3]  +31 -240 +56 +56 +31 -35 +60 -86 +83 -33
+      random-dir net -140.27  m+ 4
+bos tf15 k5 rr2.0 follow                 n=  487 net  +225.59  m+  6/10  w+ 22/44  days 267/303  wr 40.2  [Jan-May +168.1 | Jun-Oct +57.5]  +39 +81 +72 -10 -14 +19 -75 +116 -24 +22
+      random-dir net -97.89  m+ 5
+bos tf15 k5 rr2.0 fade                   n=  462 net    +8.22  m+  6/10  w+ 22/44  days 265/303  wr 37.0  [Jan-May -45.0 | Jun-Oct +53.2]  +39 -258 +52 +66 +57 -27 +71 -79 +90 -2
+      random-dir net -97.89  m+ 5
+bos tf60 k2 rr0.8 follow                 n=  430 net  +296.20  m+  6/10  w+ 23/44  days 257/303  wr 55.6  [Jan-May +201.8 | Jun-Oct +94.4]  +60 +189 +92 -67 -73 +78 +1 -12 -35 +63
+      random-dir net -19.22  m+ 6
+bos tf60 k2 rr0.8 fade                   n=  431 net  -222.78  m+  3/10  w+ 22/44  days 257/303  wr 52.4  [Jan-May -97.4 | Jun-Oct -125.3]  -10 -142 -81 +82 +54 -62 -23 -8 +6 -38
+      random-dir net -19.22  m+ 6
+bos tf60 k2 rr1.0 follow                 n=  402 net   +86.73  m+  5/10  w+ 21/44  days 253/303  wr 49.8  [Jan-May -44.3 | Jun-Oct +131.0]  -3 +105 +46 -106 -87 +88 -7 +2 -33 +80
+      random-dir net -168.89  m+ 4
+bos tf60 k2 rr1.0 fade                   n=  400 net  -209.29  m+  3/10  w+ 20/44  days 252/303  wr 49.2  [Jan-May -51.5 | Jun-Oct -157.8]  -3 -163 -49 +67 +96 -98 -2 -9 +33 -81
+      random-dir net -168.89  m+ 4
+bos tf60 k2 rr1.5 follow                 n=  369 net  +269.45  m+  7/10  w+ 24/44  days 252/303  wr 46.6  [Jan-May +167.8 | Jun-Oct +101.6]  +2 +163 +84 -54 -27 +48 +11 +9 -17 +50
+      random-dir net -151.20  m+ 5
+bos tf60 k2 rr1.5 fade                   n=  350 net  -214.22  m+  5/10  w+ 18/44  days 250/303  wr 43.7  [Jan-May -150.6 | Jun-Oct -63.6]  -87 -146 -33 +63 +53 -115 +12 +7 +70 -38
+      random-dir net -151.20  m+ 5
+bos tf60 k2 rr2.0 follow                 n=  348 net   +94.19  m+  6/10  w+ 19/44  days 249/303  wr 42.0  [Jan-May +93.6 | Jun-Oct +0.6]  +51 +53 +54 -59 -5 +66 +14 +24 -47 -56
+      random-dir net -278.25  m+ 4
+bos tf60 k2 rr2.0 fade                   n=  335 net  -316.65  m+  4/10  w+ 19/44  days 249/303  wr 39.4  [Jan-May -282.7 | Jun-Oct -34.0]  -100 -174 -43 +13 +22 -80 -1 +3 +83 -38
+      random-dir net -278.25  m+ 4
+bos tf60 k3 rr0.8 follow                 n=  325 net   +88.36  m+  5/10  w+ 23/44  days 231/303  wr 54.8  [Jan-May +116.2 | Jun-Oct -27.8]  +24 +117 +72 -31 -65 +38 +20 -7 -44 -35
+      random-dir net -301.69  m+ 3
+bos tf60 k3 rr0.8 fade                   n=  330 net  -241.38  m+  3/10  w+ 17/44  days 235/303  wr 50.3  [Jan-May -174.4 | Jun-Oct -67.0]  -64 -91 -80 +49 +12 -12 -31 -33 -0 +9
+      random-dir net -301.69  m+ 3
+bos tf60 k3 rr1.0 follow                 n=  313 net   +93.91  m+  6/10  w+ 25/44  days 229/303  wr 51.8  [Jan-May +59.6 | Jun-Oct +34.3]  +43 +54 +55 -58 -34 +35 +27 +18 -30 -16
+      random-dir net -286.25  m+ 2
+bos tf60 k3 rr1.0 fade                   n=  314 net  -132.57  m+  4/10  w+ 18/44  days 229/303  wr 47.8  [Jan-May -81.2 | Jun-Oct -51.4]  -48 -65 -53 +34 +52 -47 -31 -19 +29 +16
+      random-dir net -286.25  m+ 2
+bos tf60 k3 rr1.5 follow                 n=  286 net  +183.93  m+  6/10  w+ 21/44  days 221/303  wr 46.2  [Jan-May +105.0 | Jun-Oct +78.9]  +33 +99 +50 +0 -78 +54 +64 -3 -19 -16
+      random-dir net -109.19  m+ 3
+bos tf60 k3 rr1.5 fade                   n=  287 net  -176.74  m+  3/10  w+ 17/44  days 228/303  wr 42.2  [Jan-May -61.6 | Jun-Oct -115.2]  -40 -27 -33 +25 +13 -69 -26 -17 -25 +22
+      random-dir net -109.19  m+ 3
+bos tf60 k3 rr2.0 follow                 n=  277 net   +76.87  m+  5/10  w+ 18/44  days 216/303  wr 42.2  [Jan-May +77.2 | Jun-Oct -0.3]  +30 +77 +85 -32 -83 +77 +41 -6 -31 -81
+      random-dir net -197.41  m+ 3
+bos tf60 k3 rr2.0 fade                   n=  270 net  -243.48  m+  1/10  w+ 15/44  days 224/303  wr 38.5  [Jan-May -160.4 | Jun-Oct -83.1]  -29 -32 -54 -29 -17 -40 -40 -10 -7 +14
+      random-dir net -197.41  m+ 3
+bos tf60 k5 rr0.8 follow                 n=  198 net  +104.33  m+  7/10  w+ 24/44  days 166/303  wr 55.1  [Jan-May +4.0 | Jun-Oct +100.3]  +14 +17 +15 -49 +7 +76 +42 +8 -10 -16
+      random-dir net -60.46  m+ 3
+bos tf60 k5 rr0.8 fade                   n=  202 net  -249.90  m+  2/10  w+ 18/44  days 170/303  wr 49.0  [Jan-May -124.0 | Jun-Oct -125.8]  -46 -41 -39 +44 -42 -64 -37 -36 -6 +17
+      random-dir net -60.46  m+ 3
+bos tf60 k5 rr1.0 follow                 n=  194 net  +141.54  m+  7/10  w+ 24/44  days 163/303  wr 51.0  [Jan-May +6.4 | Jun-Oct +135.1]  +35 -6 +2 -68 +44 +72 +38 +26 +4 -5
+      random-dir net +29.79  m+ 4
+bos tf60 k5 rr1.0 fade                   n=  194 net  -168.45  m+  2/10  w+ 19/44  days 163/303  wr 47.9  [Jan-May -24.5 | Jun-Oct -144.0]  -40 -12 -4 +68 -37 -73 -45 -27 -4 +4
+      random-dir net +29.79  m+ 4
+bos tf60 k5 rr1.5 follow                 n=  185 net   +76.39  m+  7/10  w+ 21/44  days 157/303  wr 44.3  [Jan-May -25.0 | Jun-Oct +101.4]  +38 +6 -38 -62 +31 +34 +42 +39 +12 -26
+      random-dir net -40.63  m+ 4
+bos tf60 k5 rr1.5 fade                   n=  180 net  -146.94  m+  4/10  w+ 20/44  days 159/303  wr 42.8  [Jan-May -25.5 | Jun-Oct -121.5]  -87 +7 +43 +62 -49 -87 -32 -9 +26 -20
+      random-dir net -40.63  m+ 4
+bos tf60 k5 rr2.0 follow                 n=  183 net   +45.80  m+  5/10  w+ 18/44  days 155/303  wr 42.1  [Jan-May -10.1 | Jun-Oct +55.9]  +72 -26 -30 -61 +35 +28 +15 +36 -3 -20
+      random-dir net -53.52  m+ 4
+bos tf60 k5 rr2.0 fade                   n=  173 net  -230.98  m+  3/10  w+ 19/44  days 156/303  wr 41.0  [Jan-May -148.1 | Jun-Oct -82.9]  -87 -39 +19 +4 -44 -67 -35 -7 +38 -11
+      random-dir net -53.52  m+ 4
+Traceback (most recent call last):
+  File "C:\Projects\KinoliveLines\study\owl_v2\sweep1.py", line 16, in <module>
+    json.dump(rows, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "sweep1.json"), "w"), indent=1)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\json\__init__.py", line 179, in dump
+    for chunk in iterable:
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\json\encoder.py", line 430, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\json\encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\json\encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\json\encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\Lib\json\encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type int64 is not JSON serializable

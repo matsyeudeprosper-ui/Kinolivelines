@@ -1,0 +1,44 @@
+50 73s
+100 144s
+150 215s
+200 266s
+250 304s
+300 336s
+350 352s
+400 365s
+450 385s
+500 395s
+550 402s
+600 407s
+650 413s
+700 416s
+750 419s
+800 422s
+850 424s
+900 433s
+950 442s
+1000 452s
+1050 462s
+1100 471s
+1150 530s
+pick Jan-May, judge Jun-Oct | bos tf15 k5 struct follow trend=None rr2.5 be0.0 pick +338 judge +67 (3/5 up) null +58 sd 100 p 0.50
+pick Jan-May, judge Jun-Oct | bos tf15 k2 struct follow trend=with rr2.5 be0.0 pick +328 judge -26 (2/5 up) null +31 sd 105 p 0.62
+pick Jan-May, judge Jun-Oct | bos tf15 k2 struct fade trend=None rr2.5 be0.0 pick +309 judge +97 (4/5 up) null +4 sd 134 p 0.23
+pick Jan-May, judge Jun-Oct | bos tf15 k2 struct follow trend=with rr2.5 be0.5 pick +301 judge -67 (2/5 up) null -34 sd 97 p 0.63
+pick Jan-May, judge Jun-Oct | bos tf15 k5 struct fade trend=with rr2.5 be0.0 pick +277 judge -35 (1/5 up) null +3 sd 69 p 0.78
+pick Jan-May, judge Jun-Oct | bos tf15 k5 struct fade trend=with rr2.5 be0.5 pick +262 judge +6 (3/5 up) null +2 sd 66 p 0.43
+pick Jan-May, judge Jun-Oct | orb h13 m120 follow rr2.5 be0.0 pick +255 judge -139 (2/5 up) null +31 sd 111 p 0.95
+pick Jan-May, judge Jun-Oct | orb h13 m120 follow rr1.5 be0.0 pick +254 judge -153 (2/5 up) null -22 sd 102 p 0.93
+pick Jan-May, judge Jun-Oct | orb h13 m120 follow rr2.5 be0.5 pick +246 judge -172 (1/5 up) null +22 sd 114 p 0.95
+pick Jan-May, judge Jun-Oct | bos tf15 k2 struct fade trend=None rr2.5 be0.5 pick +240 judge -18 (3/5 up) null -36 sd 130 p 0.48
+pick Jun-Oct, judge Jan-May | bos tf5 k5 struct fade trend=with rr2.5 be0.5 pick +292 judge +7 (2/5 up) null -98 sd 123 p 0.18
+pick Jun-Oct, judge Jan-May | bos tf15 k2 atr fade trend=None rr2.5 be0.0 pick +266 judge +12 (3/5 up) null -73 sd 148 p 0.30
+pick Jun-Oct, judge Jan-May | bos tf5 k5 struct fade trend=with rr2.5 be0.0 pick +254 judge -96 (2/5 up) null -121 sd 132 p 0.47
+pick Jun-Oct, judge Jan-May | orb h14 m120 fade rr2.5 be0.5 pick +247 judge -144 (2/5 up) null +2 sd 138 p 0.88
+pick Jun-Oct, judge Jan-May | bos tf15 k2 atr fade trend=None rr2.5 be0.5 pick +242 judge -161 (2/5 up) null -163 sd 142 p 0.50
+pick Jun-Oct, judge Jan-May | bos tf5 k5 struct fade trend=with rr1.5 be0.0 pick +228 judge -59 (2/5 up) null -75 sd 126 p 0.52
+pick Jun-Oct, judge Jan-May | orb h14 m120 fade rr2.5 be0.0 pick +216 judge -230 (1/5 up) null -52 sd 134 p 0.92
+pick Jun-Oct, judge Jan-May | bos tf5 k5 struct fade trend=with rr1.5 be0.5 pick +211 judge +3 (2/5 up) null -54 sd 99 p 0.32
+pick Jun-Oct, judge Jan-May | orb h14 m120 fade rr0.8 be0.5 pick +197 judge -39 (2/5 up) null -2 sd 100 p 0.65
+pick Jun-Oct, judge Jan-May | orb h14 m120 fade rr1.5 be0.5 pick +188 judge -137 (2/5 up) null +23 sd 136 p 0.88
+done 1177s
