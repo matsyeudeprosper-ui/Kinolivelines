@@ -760,10 +760,13 @@ async function wkAll(i,yes){if(!CID)return;const n=((C.msgs[i]||{}).moments||[])
 /* 2026-10-22 (owner, audit item 7): the check before the test - one ✅ / ❌ per moment, the test waits for it */
 /* 2026-10-31 (Kino's wish: "sur mobile, le panneau de vote est introuvable, le test reste bloqué"): while a check waits for
    votes, a small button above the input takes you to it - wherever the conversation has scrolled */
-function ckJump(k){let b=$('ckjump');if(k<0||!C||!C.check){if(b)b.style.display='none';return;}
- if(!b){b=document.createElement('button');b.id='ckjump';b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;border:0;border-radius:999px;padding:9px 16px;font-weight:800;font-size:.82rem;background:var(--accent,#3b82f6);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.35);cursor:pointer';document.body.appendChild(b);}
- b.textContent='🗳 '+T('Vérifie les moments avant le test','Check the moments before the test');
- b.onclick=()=>{const n=[...document.querySelectorAll('#msgs .mw')].find(w=>(w.dataset.k||'').startsWith('m'+k+':'));if(n)n.scrollIntoView({behavior:'smooth',block:'start'});};
+/* 2026-10-31 owner ("annoying"): only for a check posted in the last 24 h, small, top-right, and an × closes it for that check */
+function ckJump(k){let b=$('ckjump');const M=(C&&C.msgs)||[],m=M[k]||{},key='ckjx_'+((C&&C.id)||'')+'_'+(m.t||0);let shut=false;try{shut=!!localStorage.getItem(key);}catch(e){}
+ if(k<0||!C||!C.check||shut||Date.now()/1000-(m.t||0)>86400){if(b)b.style.display='none';return;}
+ if(!b){b=document.createElement('div');b.id='ckjump';b.style.cssText='position:fixed;right:10px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:2px;border-radius:999px;background:var(--surface,#1f2937);border:1px solid var(--border,#334155);box-shadow:0 4px 14px rgba(0,0,0,.3);font-size:.74rem;font-weight:700';document.body.appendChild(b);}
+ b.innerHTML='<button style="border:0;background:none;color:inherit;padding:6px 4px 6px 10px;cursor:pointer;font:inherit">🗳 '+T('Vote en attente','Vote waiting')+'</button><button aria-label="x" style="border:0;background:none;color:var(--muted,#94a3b8);padding:6px 10px 6px 4px;cursor:pointer;font:inherit">✕</button>';
+ b.firstChild.onclick=()=>{const n=[...document.querySelectorAll('#msgs .mw')].find(w=>(w.dataset.k||'').startsWith('m'+k+':'));if(n)n.scrollIntoView({behavior:'smooth',block:'start'});};
+ b.lastChild.onclick=()=>{try{localStorage.setItem(key,'1');}catch(e){}b.style.display='none';};
  const n=[...document.querySelectorAll('#msgs .mw')].find(w=>(w.dataset.k||'').startsWith('m'+k+':')),r=n&&n.getBoundingClientRect();
  b.style.display=(r&&r.bottom>0&&r.top<innerHeight)?'none':'block';}
 addEventListener('scroll',()=>{try{const M=(C&&C.msgs)||[];ckJump(M.findIndex((x,j)=>x.role==='demo'&&x.check&&chkCur(j)));}catch(e){}},true);
