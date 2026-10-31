@@ -31,6 +31,13 @@ WEIGHTS = (
 )
 
 
+def _words(t):
+    """content words (numbers rounded to their first two digits: 77,312 and 77,350 are the same price to a person)"""
+    s = str(t or "").lower()
+    s = re.sub(r"\d[\d,.\s]*", lambda m: re.sub(r"\D", "", m.group(0))[:2] + "#", s)
+    return {w for w in re.findall(r"[a-zà-ÿ#0-9']{4,}", s)}
+
+
 def weight_of(event):
     e = str(event or "")
     for k, w in WEIGHTS:
@@ -89,13 +96,24 @@ def add(person, event, w=None, now=None):
         # leading capitalised name only, so the same reason refreshes instead of stacking
         _mk = re.match(r"[A-Z][A-Z' -]*[A-Z]", str(event))
         kind = (_mk.group(0).strip() if _mk else str(event).split(" - ")[0].split(" (")[0])[:40]
+        # 2026-10-31 (owner: "the way a real mind works"): HABITUATION. Something he already talked about, unchanged, stops
+        # pulling at him - each time he spoke of it, it pulls half as much (29-31/10: "the stop is at entry, it can't cost you"
+        # three times about the same open trade). When the thing really changes (most of its words differ), it is new again.
+        hb = (st.get("seen") or {}).get(kind)
+        if hb:
+            ws = _words(event)
+            same = ws and len(ws & set(hb.get("w") or [])) >= 0.6 * len(ws)
+            if same:
+                w = w * 0.5 ** int(hb.get("n") or 1)
+            else:
+                st["seen"].pop(kind, None)
         # the same kind again (a second ghost trade) refreshes the item instead of piling up copies
         old = next((it for it in st["items"] if it.get("kind") == kind), None)
         if old is not None:
             # 2026-10-28 (watch): his initiative engine re-sent the same reason every 2-5 min and each one pushed the wish up
             # (two messages of his own in 3 min). The same thought again is not a new reason to talk: it barely adds.
             st["p"] += w * 0.1
-            old.update(t=now, text=str(event)[:700], w=max(old["w"], w))
+            old.update(t=now, text=str(event)[:700], w=w if hb else max(old["w"], w))
         else:
             st["p"] += w
             st["items"].append({"t": now, "kind": kind, "text": str(event)[:700], "w": w})
@@ -144,6 +162,12 @@ def decide(person, ctx, now=None):
             ks = {id(it) for it in fire}
             st["items"] = [it for it in st["items"] if id(it) not in ks]
             st["last_fire"] = now
+            sn = st.setdefault("seen", {})             # what he was handed now - the next time it comes back unchanged, it pulls less
+            for it in fire:
+                prev = sn.get(it["kind"]) or {}
+                sn[it["kind"]] = {"w": sorted(_words(it.get("text"))), "n": int(prev.get("n") or 0) + 1, "t": now}
+            for k_ in [k_ for k_, v_ in sn.items() if now - float(v_.get("t") or 0) > 24 * 3600]:
+                sn.pop(k_, None)                       # a day later it is fresh again
         _save(d)
         p = st["p"]
     if fire:
