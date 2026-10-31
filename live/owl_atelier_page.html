@@ -642,7 +642,7 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
 function brTxt(s){s=String(s||'');if(s.indexOf('<parameter name="say">')>=0)s=s.split('<parameter name="say">')[1].split('</parameter>')[0];   // a tool-call shaped reply saved as text (10-22)
  s=s.replace(/<\/?(invoke|function_calls|parameter|antml:[a-z_]+)\b[^>]*>/gi,'');
  return s.replace(/<br\s*\/?>/gi,'\n').replace(/\n{3,}/g,'\n\n').trim();}
-let PAINTCID=null,TYPED=new Set(),FIRSTPAINT=true,LIVE_T='',LIVE_N=0,LIVE_RAF=0,CARRY=0;
+let PAINTCID=null,TYPED=new Set(),FIRSTPAINT=true,LIVE_T='',LIVE_N=0,LIVE_RAF=0,CARRY=0,LIVE_SHOWN='';
 /* 2026-10-19 (owner: "it doesn't go down to the very last message"): after opening, the conversation keeps growing for a
    moment (fonts, charts, chips, images) - stay pinned to the very bottom for 2.5 s unless the member scrolls up */
 let PIN_UNTIL=0,PIN_RO=null,USER_SCROLLED=false;
@@ -654,11 +654,18 @@ function pinBottom(ms){const el=$('chat');if(!el)return;PIN_UNTIL=Date.now()+(ms
 function liveTick(){if(LIVE_RAF)return;const step=()=>{LIVE_RAF=0;const b=$('livebub');if(!b||!LIVE_T){return;}
   if(LIVE_N>LIVE_T.length)LIVE_N=LIVE_T.length;const rem=LIVE_T.length-LIVE_N;if(rem>0){LIVE_N+=rem>120?Math.ceil(rem/25):1;
    const el=$('chat'),near=el.scrollHeight-el.scrollTop-el.clientHeight<160;b.innerHTML=md(LIVE_T.slice(0,LIVE_N))+'<span class="caret"></span>';if(near)el.scrollTop=el.scrollHeight;}
-  CARRY=LIVE_N;LIVE_RAF=requestAnimationFrame(step);};LIVE_RAF=requestAnimationFrame(step);}
+  CARRY=LIVE_N;LIVE_SHOWN=LIVE_T.slice(0,LIVE_N);LIVE_RAF=requestAnimationFrame(step);};LIVE_RAF=requestAnimationFrame(step);}
 function typeIn(w,it){const bubs=[...w.querySelectorAll('.m.ai .bub[data-i]')];if(!bubs.length)return;
  const parts=brTxt(it.m.text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).slice(0,4);if(!parts.length)return;
- w._typing=true;w.classList.add('typingnow');const full=w._h;let bi=0,n=Math.min(CARRY,parts[0].length);CARRY=0;LIVE_N=0;
- bubs.forEach((b,k)=>{if(k>0)b.parentNode.style.display='none';});
+ w._typing=true;w.classList.add('typingnow');const full=w._h;let bi=0,n=0;
+ /* 2026-10-31 (owner: "professional, modern"): what he already wrote live stays on screen - the final message takes over the
+    live bubble where it is (every paragraph already shown appears at once), and only a real change of words is typed again */
+ const nz=x=>String(x||'').replace(/\*\*/g,'').replace(/\s+/g,' ').trim(),shown=nz(LIVE_SHOWN),k0=Math.min(40,shown.length);
+ let left=(CARRY&&k0&&nz(parts.join(' ')).slice(0,k0)===shown.slice(0,k0))?shown.length:0;CARRY=0;LIVE_N=0;LIVE_SHOWN='';
+ while(bubs[bi]&&parts[bi]&&left>=nz(parts[bi]).length){left-=nz(parts[bi]).length+1;bubs[bi].innerHTML=md(parts[bi]);bi++;}
+ if(!parts[bi]||!bubs[bi]){w._typing=false;w.classList.remove('typingnow');w.innerHTML=w._h||full;drawAll();chipsPaint();return;}
+ n=Math.max(0,Math.min(left,parts[bi].length));
+ bubs.forEach((b,k)=>{if(k>bi)b.parentNode.style.display='none';});
  const step=()=>{const b=bubs[bi],t=parts[bi]||'';if(!b){done();return;}
   const rem=t.length-n;n+=rem>200?Math.ceil(rem/40):(Math.random()<(w._spd||(w._spd=0.75+Math.random()*0.5))?1:0);b.innerHTML=md(t.slice(0,n))+(n<t.length?'<span class="caret"></span>':'');
   const el=$('chat');if(el.scrollHeight-el.scrollTop-el.clientHeight<200)el.scrollTop=el.scrollHeight;

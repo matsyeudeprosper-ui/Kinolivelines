@@ -19698,6 +19698,17 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             pass
     lang, r, _tctx1 = c.get("lang") or "fr", None, 0.0
+    # 2026-10-31 (owner: "a reply shows a few seconds, disappears, then the complete one comes"): the draft he streamed was
+    # cleared and the chat marked ready the moment his first pass ended - while he still pictured their reaction (and maybe
+    # rewrote) for 2-9 s, the page showed nothing. Now the draft and the "thinking" state stay until his message is posted.
+    _held = [True]
+
+    def _release():
+        if _held[0]:
+            _held[0] = False
+            _CHAT_DRAFT.pop(cid, None)
+            _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+    threading.Timer(240, _release).start()            # never stuck if something below fails silently
     try:
         _rc()
         import kino_one as _KO
@@ -19761,11 +19772,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             pass
         r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
                      model=_mdl, images=None if event else _chat_images(c))   # 2026-10-31: their screenshot / PDF, seen
-    finally:
-        _CHAT_DRAFT.pop(cid, None)
-        _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
+    except BaseException:
+        _release()
+        raise
     en = lang == "en"
     if r is None:
+        _release()
         if not event:
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
@@ -19842,6 +19854,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             if _lu9 <= _seen_t and any(x.get("role") == "ai" and not x.get("event") and float(x.get("t") or 0) >= _seen_t
                                        and x.get("text") for x in _M9[-6:]):
                 _KO._log(cid, "DUP_TURN", "already answered - dropped: %s" % str(say)[:120])
+                _release()
                 return
         except Exception:
             pass
@@ -19921,7 +19934,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 cc.setdefault("msgs", []).append(dict(_dmc, t=int(time.time()), again=True))
     if build:
         _CHAT_B.add(cid)
-    _chat_mut(cid, put)
+    try:
+        _chat_mut(cid, put)
+    finally:
+        _release()                                     # the draft becomes the message in the same moment
     for k, v in acts:
         if event and not say and k != "ordre":
             continue
