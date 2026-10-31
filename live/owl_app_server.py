@@ -15729,7 +15729,9 @@ def _chat_msg(c, role, **kw):
         if role == "ai":                                 # 2026-10-24 21:59 UTC (watch): a judge rewrite came as "**3 petites scènes**" + bullets;
             m["text"] = _re.sub(r"\*\*(.+?)\*\*", r"\1", m["text"])          # the bubble is plain text - a friend texts in sentences
             m["text"] = _re.sub(r"(?m)^\s*[-*•]\s+", "", m["text"])
-    _judged = bool(m.get("one"))                 # 2026-10-25: the one mind's words go out as he wrote them
+    _judged = bool(m.get("one") or m.get("err"))   # 2026-10-25: the one mind's words go out as he wrote them
+    # 2026-10-31 23:02 (watch): an "Oups, I lost the thread" bubble went through the old judge, which "rewrote" it into a new
+    # message with an invented film memory - an error notice is never his words, never judged or rewritten
     if role == "ai" and c.get("uid") and not _judged:
         _judged = False
         try:                                   # 2026-10-24 (owner: "do the proper job with the judge"): ONE judgment in front of everything he says
@@ -19791,6 +19793,16 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     if r is None:
         _release()
         if not event:
+            # 2026-10-31 23:02 (watch): a flagged turn failed AFTER its retry had already answered - the "Oups" went out anyway
+            # (and the old judge then turned it into an invented film memory). A message already answered needs no excuse.
+            try:
+                _M8 = (_chat_load(user, cid) or {}).get("msgs") or []
+                if any(x.get("role") == "ai" and not x.get("event") and not x.get("err") and float(x.get("t") or 0) >= _seen_t
+                       and x.get("text") for x in _M8[-6:]):
+                    _KO._log(cid, "FAIL_ANSWERED", "no answer, but the message was already answered - nothing posted")
+                    return
+            except Exception:
+                pass
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
