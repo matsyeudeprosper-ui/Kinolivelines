@@ -79,7 +79,9 @@ def main():
                 time.sleep(60)
             say("start (try %d, %.1f GB free): %s" % (attempt, free_gb(), " ".join(cmd)))
             t0 = time.time()
-            p = subprocess.Popen(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000 | 0x00004000)   # below-normal priority
+            # 2026-10-31: IDLE priority (was below-normal): 3 botsim months at below-normal still took Kino's reply prep from
+            # 2-5 s to 10-34 s (kino_timing.log ctx=); research only gets the CPU nobody live is using
+            p = subprocess.Popen(cmd, cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, creationflags=0x08000000 | 0x00000040)
             killed = False
             while p.poll() is None:
                 time.sleep(20)

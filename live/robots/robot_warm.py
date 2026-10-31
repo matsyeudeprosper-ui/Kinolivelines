@@ -43,6 +43,20 @@ BG_FAIL_PAUSE = (5, 600)         # limit was hit and 1 266 calls failed for 6 h 
                                  # work stops at 150 calls/hour, and for 10 min after 5 failures in 10 min (API down or capped).
 
 
+def _caller():
+    """2026-10-31: who asked (file:function outside this module) - 436 calls a day had no tag (background, no conversation)
+    and nobody could say what they were. "tag" keeps its meaning (empty = background budget); this only names the source."""
+    try:
+        import inspect
+        for fr in inspect.stack()[2:12]:
+            fn = os.path.basename(fr.filename)
+            if fn not in ("robot_warm.py", "threading.py"):
+                return "%s:%s" % (fn[:-3] if fn.endswith(".py") else fn, fr.function)
+    except Exception:
+        pass
+    return ""
+
+
 def member_turn(flag):
     """the caller is answering the member themselves (chat message, live call): exempt from the background budget"""
     _TL.member = bool(flag)
@@ -373,7 +387,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                             {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else "",
                              "err": (str(j.get("result") or "")[:200] if j.get("is_error") else None),
                              "cold": cold, "ttft_ms": int(((tm["first"] or time.time()) - tm["t0"]) * 1000), "ms": int((time.time() - tm["t0"]) * 1000),
-                             "out": len(str(j.get("result") or ""))}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
+                             "out": len(str(j.get("result") or "")), "src": _caller()}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
                     except Exception:
                         pass
                     if j.get("is_error") and "safeguards flagged" in str(j.get("result") or ""):

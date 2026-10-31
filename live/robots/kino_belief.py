@@ -267,6 +267,60 @@ def theirs_block(uid, cid, n=3):
     return "\n".join(L)
 
 
+SETTLE = """You settle the open bets of Kino (an AI friend who trades with the member). Each bet is something he said he expected.
+TODAY'S FACTS are what is known now. For each bet: true (it happened), false (it did not), or open (not knowable yet from
+these facts - keep it). Only use the facts; when in doubt, open. JSON only:
+{"settled": [{"id": "...", "outcome": true|false|"open", "why": "the fact that settles it, short"}]}"""
+
+
+def night_settle(W, uid, facts, log=None):
+    """2026-10-31 (one mind): once a night, his open bets are settled against what is known now - the way a person finds
+    out whether they were right. Bets older than 10 days that nothing settled become void."""
+    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b["status"] == "open" and b.get("who") != "them"]
+    if not B:
+        return 0
+    old = [b for b in B if time.time() - b["t"] > 10 * 86400]
+    if old:
+        resolve(uid, [{"id": b["id"], "outcome": "void", "why": "rien n'a tranché en 10 jours"} for b in old], src="night")
+    B = [b for b in B if b not in old][-20:]
+    if not B:
+        return 0
+    lines = "\n".join("[%s] %s (dit le %s, %d %%, se tranche : %s)" % (b["id"], b["text"], time.strftime("%d/%m %H:%M", time.gmtime(b["t"])),
+                                                                     round(b["p"] * 100), b.get("resolves") or "?") for b in B)
+    try:
+        j = W.ask_json(SETTLE, "OPEN BETS:\n%s\n\nTODAY'S FACTS:\n%s\n\nJSON only." % (lines, str(facts)[:12000]),
+                       models=("sonnet",), timeout=120, log=log, warm=False)
+    except Exception:
+        return 0
+    S = [x for x in ((j or {}).get("settled") or []) if isinstance(x, dict) and str(x.get("outcome")).lower() in ("true", "false")]
+    resolve(uid, S, src="night")
+    return len(S)
+
+
+def felt_block(uid, lang="fr"):
+    """2026-10-31 (one mind): how often he has been right when he expected something - as self-knowledge, not an instruction"""
+    B = [b for b in _load().get("b") or [] if b["uid"] == uid and b.get("who") != "them"]
+    done = [b for b in B if b["status"] in ("true", "false") and time.time() - float(b.get("resolved_t") or 0) < 30 * 86400]
+    op = [b for b in B if b["status"] == "open"][-3:]
+    en = lang == "en"
+    L = []
+    if done:
+        sure = [b for b in done if b["p"] >= 0.8]
+        hit = sum(1 for b in done if b["status"] == "true")
+        L.append(("Your forecasts over the last 30 days: right %d times out of %d" if en else
+                  "Tes pronostics des 30 derniers jours : juste %d fois sur %d") % (hit, len(done)) +
+                 ((("; when you felt sure, right %d out of %d" if en else "; quand tu te sentais sûr, juste %d fois sur %d") %
+                   (sum(1 for b in sure if b["status"] == "true"), len(sure))) if sure else "") + ".")
+        last = max(done, key=lambda b: float(b.get("resolved_t") or 0))
+        L.append(("Last one settled: \"%s\" - %s (%s)." if en else "Le dernier tranché : « %s » - %s (%s).") % (
+            last["text"][:120], ("right" if en else "juste") if last["status"] == "true" else ("wrong" if en else "faux"),
+            str(last.get("evidence") or "")[:100]))
+    if op:
+        L.append(("Still waiting to see: " if en else "Tu attends encore de voir : ") +
+                 " ; ".join("« %s » (%d %%)" % (b["text"][:90], round(b["p"] * 100)) for b in op) + ".")
+    return " ".join(L)
+
+
 def stats(uid, day):
     import datetime
     d0 = datetime.datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc).timestamp()

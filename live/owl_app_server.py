@@ -16135,9 +16135,10 @@ def chat_start(user, body):
     if str(body.get("brain") or "") == "openai" and is_admin(user):   # 2026-10-24: the Kino-O prototype (OpenAI brain), owner only
         c["brain"] = "openai"
         c["thread"] = "Kino-O · cerveau OpenAI (prototype)"
-    elif str(body.get("brain") or "") == "one" and (is_admin(user) or me in ONE_TEST_UIDS):   # 2026-10-25: Kino as one mind
-        c["brain"] = "one"
-        c["thread"] = "Kino · un seul esprit (test)"
+    elif str(body.get("brain") or "one") == "one":   # 2026-10-25: Kino as one mind; 2026-10-31 (owner: "all the fixes", item 6)
+        c["brain"] = "one"                               # every member, every new chat - same person for everyone
+        if is_admin(user) and body.get("brain") == "one":
+            c["thread"] = "Kino · un seul esprit (test)"
         try:
             _rc()
             import kino_one as _KOs
@@ -17905,6 +17906,8 @@ def _one_facts(user, c):
               "fail": "test de chance raté (%s robots au hasard aussi bons)" % lk.get("beats"),
               "running": "test de chance en cours (%s/%s tirages)" % (lk.get("n"), lk.get("max") or 100),
               "queued": "test de chance en file"}.get(lk.get("state"), "pas de test de chance")
+        if lk.get("state") in ("pass", "fail", "running"):
+            ls += _luck_detail(lk)
         L.append("- %s (%s) : %s ; %s ; %s." % (r.get("name"), r.get("market"), where, ts, ls))
     try:
         import kino_mind as _KMo
@@ -17969,7 +17972,39 @@ def _one_facts(user, c):
         L.append("Aucun test de ce robot en file ni en cours à cette minute.")
     if c.get("id") in _CHAT_B:
         L.append("Le constructeur est en train de modifier le robot de cette conversation.")
+    _wd = _weekday_line(user)
+    if _wd:
+        L.append(_wd)
     return "\n".join(L)
+
+
+def _weekday_line(user):
+    """2026-10-31 (his wish: "classer les trades réels du compte par jour de la semaine"): his real account's closed trades
+    of the last 60 days by UTC weekday (nest_data/<uid>.wealth.json rows [t, pnl, lot, dir, ..., sym]). Raw counts - with
+    this few trades per day a difference is usually luck, and the line says how many trades each day holds."""
+    try:
+        uid = user.get("id")
+        for u_ in [uid] + [x for x in (_person_uids(_person(uid)) or []) if x != uid]:
+            p_ = os.path.join(DIR, "nest_data", "%s.wealth.json" % u_)
+            if os.path.exists(p_):
+                T = [x for x in (json.load(open(p_, encoding="utf-8")).get("trades") or []) if time.time() - float(x[0]) < 60 * 86400]
+                if len(T) >= 20:
+                    break
+        else:
+            return ""
+        D = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+        S = {}
+        for x in T:
+            k = time.gmtime(float(x[0])).tm_wday
+            s = S.setdefault(k, [0, 0, 0.0])
+            s[0] += 1
+            s[1] += 1 if float(x[1]) > 0 else 0
+            s[2] += float(x[1])
+        return ("Ses vrais trades fermés des 60 derniers jours par jour de la semaine (UTC, compte %s) : " % u_ +
+                " ; ".join("%s %d trades, %d gagnés, %+.2f $" % (D[k], S[k][0], S[k][1], S[k][2]) for k in sorted(S)) +
+                ". Peu de trades par jour : un écart entre jours est le plus souvent de la chance tant qu'il n'est pas testé.")
+    except Exception:
+        return ""
 
 
 def _rhythm_line(c):
@@ -18116,6 +18151,22 @@ def _one_memory(user, c):
         _bb = _KBo.block(_person(uid), _ctx)
         if _bb:
             L.append(_bb)
+    except Exception:
+        pass
+    try:                                               # 2026-10-31: how often his forecasts came true (bets from his own words)
+        import kino_belief as _KBf
+        _fb = _KBf.felt_block(_person(uid), "en" if c.get("lang") == "en" else "fr")
+        if _fb:
+            L.append(_fb)
+    except Exception:
+        pass
+    try:                                               # 2026-10-31: true things from today he has not told them (kino_material
+        import kino_material as _KMo1                  # was written every 3 h but the one mind never saw it)
+        _mo = [x for x in _KMo1.items(uid) if x.get("kind") != "robot"][-3:]
+        if _mo:
+            L.append(("Things that happened today you have not told them yet (true, checked): " if c.get("lang") == "en" else
+                      "Des choses vraies d'aujourd'hui que tu ne lui as pas encore racontées : ") +
+                     " | ".join(x["text"][:220] for x in _mo))
     except Exception:
         pass
     try:                                               # 2026-10-28 (engine 2): his gut read of them right now
@@ -18692,8 +18743,7 @@ def chart_chat(user, body):
                 return {"ok": True, "id": cid}
         except Exception:
             pass
-    one = is_admin(user) or uid in ONE_TEST_UIDS
-    r = chat_start(user, {"lang": "en" if body.get("lang") == "en" else "fr", "brain": "one" if one else None})
+    r = chat_start(user, {"lang": "en" if body.get("lang") == "en" else "fr", "brain": "one"})   # 2026-10-31: everyone
     cid = (r or {}).get("id")
     if not cid:
         return r or {"ok": False}
@@ -19563,7 +19613,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             pass
         r = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, on_text=_ot, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
-                     model=_mdl)
+                     model=_mdl, images=None if event else _chat_images(c))   # 2026-10-31: their screenshot / PDF, seen
     finally:
         _CHAT_DRAFT.pop(cid, None)
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
@@ -19590,6 +19640,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 import kino_beliefs as _KBl
                 _lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
                 _KBl.harvest(_rc().W, _person(uid), cid, say, _lu.get("text"), log=os.path.join(DIR, "robots", "kino_beliefs.log"))
+            except Exception:
+                pass
+            try:                                         # 2026-10-31: a story he told is told (no field to fill: word overlap)
+                __import__("kino_material").auto_told(uid, say)
             except Exception:
                 pass
         threading.Thread(target=_bel, daemon=True).start()
@@ -19698,6 +19752,23 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _KO._log(cid, "ACT_CANCEL", "%s -> %s" % (_rid, _cr))
                 if _cr.get("ok"):
                     _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Test withdrawn." if en else "Test retiré de la file.")))
+                try:                                     # 2026-10-31 (his wish): a luck test still WAITING for that robot goes too -
+                    _lqf = os.path.join(os.path.dirname(DIR), "study", "luck", "queue.json")   # also a dropped robot's (by name)
+                    _lq = json.load(open(_lqf, encoding="utf-8"))
+                    _mine = {r_["id"] for r_ in (_state_data(uid, c).get("robots") or [])} | ({_rid} if _rid else set())
+                    _keep, _gone = [], []
+                    for e_ in _lq:
+                        _hit = e_.get("rid") == _rid or (_nmc and _nmc in str(e_.get("nm") or e_.get("rid") or "").lower())
+                        _own = e_.get("uid") in (uid, _person(uid)) or e_.get("rid") in _mine or is_admin(user)
+                        _run = (_luck_of(e_.get("rid"), e_.get("sym") or "BTCUSD") or {}).get("state") == "running"
+                        (_gone if (_hit and _own and not _run) else _keep).append(e_)
+                    if _gone:
+                        _atomic_json(_lqf, _keep, ensure_ascii=False, indent=1)
+                        _KO._log(cid, "ACT_CANCEL_LUCK", ", ".join("%s@%s" % (e_.get("rid"), e_.get("sym")) for e_ in _gone))
+                        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Luck test removed from the line." if en else
+                                                                             "Test de chance retiré de la file.")))
+                except Exception:
+                    pass
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
@@ -21797,8 +21868,20 @@ def _kino_tics_night():
             sig = [str(x)[:60] for x in ((j or {}).get("expressions") or []) if str(x).strip()][:5] if isinstance(j, dict) else []
     except Exception:
         sig = []
-    if out or sig:
+    hab = ""
+    try:                 # 2026-10-31 (owner: "natural human behaviour"): the same rereading notices his habits of talk, from the
+        import kino_scorecard as _KSCh   # day's measured card - redoing what the other just said, how often he asked something
+        _sc = _KSCh.score_day("kino", time.strftime("%Y-%m-%d", time.gmtime(now - 86400)))
+        _rp = int(_sc.get("replies") or 0)
+        if _rp >= 5:
+            hab = ("en relisant mes réponses d'hier à lui (%d), j'ai remarqué que %d commençaient par redire ce qu'il venait d'écrire, "
+                   "et que %d se terminaient par une vraie question." % (
+                       _rp, round((_sc.get("mirror_pct") or 0) * _rp / 100.0), round((_sc.get("question_pct") or 0) * _rp / 100.0)))
+    except Exception:
+        hab = ""
+    if out or sig or hab:
         txt = ("sur %d de mes messages d'hier, je me suis entendu répéter : %s." % (n, ", ".join("« %s » (%d fois)" % (g, k) for g, k in out))) if out else ""
+        txt = (txt + " " + hab).strip()
         _jsave(os.path.join(DIR, "robots", "kino_tics.json"), {"t": int(now), "text": txt, "n": n, "signature": sig})
 
 
@@ -21880,6 +21963,20 @@ def _kino_night_mind():
             _lg = os.path.join(DIR, "robots", "kino_exec.log")
             _KX.review_night(_rc().W, _exec_ctx("review"), log=_lg)
             _KX.set_goals(_rc().W, _exec_ctx("goals"), log=_lg)
+        except Exception:
+            pass
+        try:              # 2026-10-31: his bets (forecasts in his own words) are settled against what is known now
+            import kino_belief as _KBs
+            _done_p = set()
+            for _u in users():
+                _p = _person(_u.get("id"))
+                if _p in _done_p:
+                    continue
+                _ch = [x for x in (_chat_load(_u, y["id"]) for y in (chat_list(_u).get("chats") or [])[:1]) if x]
+                if not _ch:
+                    continue
+                _done_p.add(_p)
+                _KBs.night_settle(_rc().W, _p, _one_facts(_u, _ch[0]), log=os.path.join(DIR, "robots", "kino_belief.log"))
         except Exception:
             pass
         try:
@@ -25651,6 +25748,43 @@ def chat_why(user, body):
             M[i]["mwhy"] = why
             return True
     return {"ok": bool(_chat_mut(c["id"], put))}
+
+
+def _luck_detail(lk):
+    """2026-10-31 (his wish: "détail d'un test de chance terminé, tirage par tirage, raison de l'arrêt"): the draws of a luck
+    test in plain words, from study/luck/<rid>_<SYM>.jsonl, and why it stopped (rules of random_control_market.py)"""
+    try:
+        rid, sym = lk.get("rid"), lk.get("sym") or "BTCUSD"
+        rows = []
+        for ln in open(os.path.join(os.path.dirname(DIR), "study", "luck", "%s_%s.jsonl" % (rid, sym)), encoding="utf-8"):
+            try:
+                x = json.loads(ln)
+            except Exception:
+                continue
+            if x.get("kind") == "draw":
+                rows.append(x)
+        if not rows:
+            return ""
+        rn = float(lk.get("real") or 0)
+        nets = sorted((float(x.get("net") or 0) for x in rows), reverse=True)
+        b = sum(1 for v in nets if v >= rn)
+        n = len(nets)
+        if lk.get("state") == "running":
+            why = ""
+        elif n >= int(lk.get("max") or 100):
+            why = " ; fini après les %d tirages" % n
+        elif b > int(lk.get("allow") or 5):
+            why = " ; arrêté tôt : le %de robot au hasard aussi bon a fini le test (5 permis sur 100)" % b
+        elif n >= 10 and b >= 3:
+            why = (" ; arrêté tôt : %d robots au hasard aussi bons dès %d tirages - à ce rythme il ne pouvait plus réussir "
+                   "(règle : 3 aussi bons après au moins 10 tirages, ou 4 après au moins 20)" % (b, n))
+        else:
+            why = " ; arrêté (%s)" % (lk.get("why") or "raison non notée")
+        return (" - le robot a fait %+.2f $ ; les %d robots au hasard : meilleur %+.2f, milieu %+.2f, pire %+.2f ; tirages du "
+                "meilleur au pire : %s%s" % (rn, n, nets[0], nets[n // 2], nets[-1],
+                                              ", ".join("%+.0f" % v for v in nets[:25]) + (" …" if n > 25 else ""), why))
+    except Exception:
+        return ""
 
 
 def chat_luck_cancel(user, body):

@@ -91,7 +91,10 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           "storm_ceiling",
           # 2026-10-19 (owner): True when the account's OWN robot was built for another market - the account's
           # Bitcoin bot takes no entry (its market bot trades instead); False/None everywhere else
-          "btc_rest")
+          "btc_rest",
+          # 2026-10-31 (owner "run it"): no entry against the M15 trend - a filter_screen candidate, False
+          # everywhere; only the botsim month test switches it on (structure_bos_bot.M15_GATE)
+          "m15_gate")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -104,7 +107,8 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "internal_entries": False, "rr": 0.8, "k_streak": 2,
         "day_cap_pct": None,
         "debt_gate": True, "eq_half": False, "recov_bullets_only": False,
-        "pb_dir_gate": False, "pb_gate_mode": "trend", "robot_rules": None}
+        "pb_dir_gate": False, "pb_gate_mode": "trend", "robot_rules": None,
+        "m15_gate": False}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

@@ -46,16 +46,28 @@ def _day_bounds(day):
     return d0.timestamp(), (d0 + timedelta(days=1)).timestamp()
 
 
+def _person(uid):
+    """2026-10-27 one person = one thread (persons.json {"std": "kino"}): the owner talks from the std login, so a card keyed
+    on 'kino' read 0 replies from 10-27 on. The card is per PERSON, from all their logins."""
+    try:
+        P = json.load(open(os.path.join(HERE, "persons.json"), encoding="utf-8"))
+    except Exception:
+        P = {}
+    p = P.get(uid, uid)
+    return p, {p} | {k for k, v in P.items() if v == p}
+
+
 def score_day(uid, day=None):
     day = day or time.strftime("%Y-%m-%d", time.gmtime())
     t0, t1 = _day_bounds(day)
+    uid, uids = _person(uid)
     msgs = []
     for p in glob.glob(os.path.join(HERE, "chats", "*.json")):
         try:
             c = json.load(open(p, encoding="utf-8"))
         except Exception:
             continue
-        if c.get("uid") != uid or c.get("hidden"):
+        if c.get("uid") not in uids or c.get("hidden"):
             continue
         for m in c.get("msgs") or []:
             if t0 <= float(m.get("t") or 0) < t1 and m.get("role") in ("user", "ai") and (m.get("text") or m.get("role") == "user"):
@@ -133,6 +145,18 @@ def score_day(uid, day=None):
         S["pace"] = KPC.counts(day[5:])
     except Exception:
         S["pace"] = None
+    try:                                   # 2026-10-31: since 10-28 held events feed the wish to talk (kino_urge) - its fires
+        S["wish_fires"] = sum(1 for l in io.open(os.path.join(HERE, "kino_urge.log"), encoding="utf-8")
+                              if l.startswith(day[5:]) and (" %s FIRE" % uid) in l)
+    except Exception:
+        S["wish_fires"] = None
+    try:                                   # 2026-10-31: his opinions on the record (kino_beliefs, the one mind's harvest)
+        import kino_beliefs as KBS
+        _bd = KBS._load()
+        S["stances"] = {"new": sum(1 for x in _bd.get("items") or [] if t0 <= float(x.get("t") or 0) < t1),
+                        "changed_mind": sum(1 for x in _bd.get("shifts") or [] if t0 <= float(x.get("t") or 0) < t1)}
+    except Exception:
+        S["stances"] = None
     try:                                   # 2026-10-24: his beliefs on the record (added / resolved / wrong) and calibration
         import kino_belief as KBL
         S["beliefs"] = KBL.stats(uid, day)
@@ -199,7 +223,7 @@ def save(uid, day=None):
         D = json.load(open(F, encoding="utf-8"))
     except Exception:
         D = {}
-    D.setdefault(S["day"], {})[uid] = S
+    D.setdefault(S["day"], {})[S["uid"]] = S          # keyed by person (all their logins)
     os.makedirs(os.path.dirname(F), exist_ok=True)
     tmp = F + ".tmp"
     io.open(tmp, "w", encoding="utf-8").write(json.dumps(D, ensure_ascii=False, indent=1))
@@ -214,7 +238,7 @@ def block(uid):
     except Exception:
         return ""
     y = time.strftime("%Y-%m-%d", time.gmtime(time.time() - 86400))
-    S = (D.get(y) or {}).get(uid)
+    S = (D.get(y) or {}).get(_person(uid)[0]) or (D.get(y) or {}).get(uid)
     if not S or not S.get("replies"):
         return ""
     L = ["YOUR SCORE YESTERDAY WITH THEM (measured on the real conversation, %d replies): restate-and-approve openers %s %%, "

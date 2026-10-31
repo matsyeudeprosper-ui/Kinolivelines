@@ -414,7 +414,7 @@ function renderTrust(){const p=S.proof||{};
  requestAnimationFrame(()=>{$('ringv').setAttribute('stroke-dasharray',pc+' 100');$('ringv').setAttribute('stroke',ok?'#8df0bb':'#e8c55a');});
  $('ringt').innerHTML=pc+'<small>%</small>';$('trustPill').className='pill '+(ok?'ok':'mid');$('trustPill').textContent=ok?'vérifié':'en cours';
  $('trustH').textContent=ok?'Le test refait exactement ce que fait le vrai robot.':p.same_result+' vrais trades sur '+p.real_trades+' refaits à l’identique';
- $('trustP').textContent='Sur le vrai compte de '+p.account+', du '+fd(p.from)+' au '+fd(p.to);}
+ $('trustP').textContent='Sur le compte '+p.account+', du '+fd(p.from)+' au '+fd(p.to);}
 $('trust').onclick=()=>tab('proof');$('trust').onkeydown=e=>{if(e.key==='Enter')tab('proof');};
 
 /* ---------- sheet ---------- */

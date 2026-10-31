@@ -22,8 +22,11 @@ his judgements and opinions - on trading, a method, a rule, a market, the member
 not numbers, not plans: what he THINKS (e.g. "raising the lot after a loss is risky", "the flip after a stop is sound").
 Compare each with HIS KNOWN BELIEFS (ids). JSON only:
 {"stances": [{"claim": "short, first person, general", "topic": "2-4 words", "same": "id or null", "opposite": "id or null",
- "firmness": 0.0-1.0 (how firmly it was said)}]}
-Empty list if the message holds no opinion. At most 3."""
+ "firmness": 0.0-1.0 (how firmly it was said)}],
+ "bets": [{"text": "what he expects, checkable later (a test result, a price by a time, what a robot or the member will do)",
+           "p": 0.5-0.99 (how sure HIS WORDS sound: 'sûr'/'certain' ~0.9, 'je pense'/'probablement' ~0.7, 'peut-être'/'je dirais' ~0.55),
+           "resolves": "how and when it will be known (e.g. 'the luck test result', 'BTC price tonight 22h UTC')"}]}
+Empty lists if the message holds no opinion / no forecast. A fact he reads out is not a bet. At most 3 of each."""
 
 
 def _load():
@@ -56,6 +59,15 @@ def harvest(W, uid, cid, say, about_member=None, log=None):
         j = W.ask_json(SYSTEM, "HIS KNOWN BELIEFS:\n%s\n\nHIS MESSAGE:\n<<<\n%s\n>>>\n%s\nJSON only." % (
             kt, say[:1500], ("THE MEMBER'S LAST MESSAGE (context): " + str(about_member)[:400]) if about_member else ""),
             models=("haiku", "sonnet"), timeout=60, log=log, warm=False)
+        B = (j or {}).get("bets") if isinstance(j, dict) else None
+        if B:                                            # 2026-10-31: a forecast in his own words is a bet on the record
+            try:                                         # (kino_belief ledger, settled by the nightly resolver) - nothing to
+                import kino_belief as KBL                # fill in, he just talks
+                KBL.add(uid, cid, [{"text": str(b.get("text"))[:200], "p": b.get("p"), "basis": "ses mots",
+                                    "change": "", "resolves": str(b.get("resolves") or "")[:120]}
+                                   for b in B[:3] if isinstance(b, dict) and str(b.get("text") or "").strip()])
+            except Exception:
+                pass
         S = (j or {}).get("stances") if isinstance(j, dict) else None
         if not S:
             return

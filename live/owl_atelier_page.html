@@ -605,7 +605,8 @@ function paintChat(force){const el=$('chat'),M=(C&&C.msgs)||[];const atBottom=el
  // a member it knows gets Kino typing its own greeting straight away - no generic screen that swaps under them
  const wel=fresh&&(M.length?(M[0].role==='ai'&&!M[0].event&&!M[0].quick):(C.status==='ready'&&!C.draft));
  const items=[];if(wel)items.push({k:'wel',h:welcome()});
- let lastDay='',lastSide='';const _sf=showFrom(M);if(_sf>0)items.push({k:'older',h:'<div class="older"><button id="olderb" onclick="olderLoad()">'+T('Messages plus anciens','Older messages')+'</button></div>'});
+ let lastDay='',lastSide='';let _sf=showFrom(M);const _ck=M.findIndex((x,j)=>x.role==='demo'&&x.check&&chkCur(j));if(_ck>=0&&_ck<_sf)_sf=_ck;
+ setTimeout(()=>ckJump(_ck),60);if(_sf>0)items.push({k:'older',h:'<div class="older"><button id="olderb" onclick="olderLoad()">'+T('Messages plus anciens','Older messages')+'</button></div>'});
  M.forEach((m,i)=>{if(wel&&i===0)return;if(i<_sf)return;const dk=dayKey(m.t);if(m.t&&dk!==lastDay){items.push({k:'d'+dk,h:'<div class="day"><span>'+dayLab(m.t)+'</span></div>'});lastDay=dk;lastSide='';}
   const side=m.role==='user'?'me':(m.role==='ai'?'ai':'x');m._tl=(side!=='x'&&side!==lastSide);if(side!=='x')lastSide=side;else lastSide='';
   items.push({k:'m'+i+':'+(m.t||0)+':'+m.role,h:msgHTML(m,i,i===M.length-1),m:m,i:i});});
@@ -757,6 +758,15 @@ async function wkAll(i,yes){if(!CID)return;const n=((C.msgs[i]||{}).moments||[])
  try{await post('chat_fires_vote',{id:CID,all:1,yes:yes?1:0});}catch(e){}
  if(yes)runTest();else{const x=$('tx');if(x){x.value=T('Non, pas comme ça : ','No, not like that: ');autosize();sdPaint();x.focus();}toast(T('Dis-moi ce qui cloche.','Tell me what’s off.'));}}
 /* 2026-10-22 (owner, audit item 7): the check before the test - one ✅ / ❌ per moment, the test waits for it */
+/* 2026-10-31 (Kino's wish: "sur mobile, le panneau de vote est introuvable, le test reste bloqué"): while a check waits for
+   votes, a small button above the input takes you to it - wherever the conversation has scrolled */
+function ckJump(k){let b=$('ckjump');if(k<0||!C||!C.check){if(b)b.style.display='none';return;}
+ if(!b){b=document.createElement('button');b.id='ckjump';b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;border:0;border-radius:999px;padding:9px 16px;font-weight:800;font-size:.82rem;background:var(--accent,#3b82f6);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.35);cursor:pointer';document.body.appendChild(b);}
+ b.textContent='🗳 '+T('Vérifie les moments avant le test','Check the moments before the test');
+ b.onclick=()=>{const n=[...document.querySelectorAll('#msgs .mw')].find(w=>(w.dataset.k||'').startsWith('m'+k+':'));if(n)n.scrollIntoView({behavior:'smooth',block:'start'});};
+ const n=[...document.querySelectorAll('#msgs .mw')].find(w=>(w.dataset.k||'').startsWith('m'+k+':')),r=n&&n.getBoundingClientRect();
+ b.style.display=(r&&r.bottom>0&&r.top<innerHeight)?'none':'block';}
+addEventListener('scroll',()=>{try{const M=(C&&C.msgs)||[];ckJump(M.findIndex((x,j)=>x.role==='demo'&&x.check&&chkCur(j)));}catch(e){}},true);
 function chkCur(i){const M=(C&&C.msgs)||[];let k=-1;M.forEach((x,j)=>{if(x.role==='demo'&&x.check)k=j;});return k===i&&!!C.check;}
 function chkBar(n){const V=(C.check||{}).votes||{},yes=Object.values(V).filter(v=>v===true).length,no=Object.values(V).filter(v=>v===false).length;
  return '<div class="ckb"><p>'+(no?T('❌ Un moment ne va pas : dis à Kino ce qui cloche, il corrige le robot, puis on revérifie.','❌ A moment is off: tell Kino what is wrong, he fixes the robot, then we check again.'):
@@ -1516,7 +1526,7 @@ function durTxt(s){const m=Math.max(1,Math.round(s/60));return m<60?m+' min':Mat
 function outcome(t){const W={target:['✓ ',T('cible touchée','target hit')],stop:['✗ ',T('stop touché','stop hit')],be:['＝ ',T('sorti à zéro','out at break-even')],
   formula:['↩ ',T('sortie par la formule','formula exit')],time:['⏱ ',T('sorti au bout du temps','timed out')]}[t.why]||['',String(t.why||'')];
  return W[0]+W[1]+(t.t_out>t.t_in?' '+T('en ','in ')+durTxt(t.t_out-t.t_in):'');}
-function dFolded(i,m){if(DOPEN.has(i+':'+(m.t||0)))return false;const M=(C&&C.msgs)||[];for(let k=M.length-1;k>i;k--)if(M[k].role==='demo'&&!M[k].nodata)return true;return false;}
+function dFolded(i,m){if(DOPEN.has(i+':'+(m.t||0)))return false;if(m.check&&chkCur(i))return false;   /* 2026-10-31 (Kino's wish: members on a phone could not find the vote) - the open check never folds */const M=(C&&C.msgs)||[];for(let k=M.length-1;k>i;k--)if(M[k].role==='demo'&&!M[k].nodata)return true;return false;}
 function dFoldHTML(k,txt){return '<div class="att demo"><button class="dfold" onclick="dOpen(\''+k+'\')"><svg><use href="#chart"/></svg><span>'+txt+'</span><b>'+T('voir','see')+'</b></button></div>';}
 function dOpen(k){DOPEN.add(k);paintChat();}
 function carOpen(i,n){return n>1?'<div class="car" data-car="'+i+'" onscroll="carDot(this)">':'<div>';}

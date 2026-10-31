@@ -382,6 +382,7 @@ DAY_CAP = _P["day_cap"]
 # over the flat dollar DAY_CAP; sized once a day in day_roll().
 DAY_CAP_PCT = float(_P.get("day_cap_pct") or 0) or None
 MAX_TRADES_DAY = _P["max_trades_day"]
+M15_GATE = bool(_P.get("m15_gate", False))
 WEEK_TARGET = _P["week_target"]
 NERVOSITY = _P.get("nervosity", True)
 MOVEMENT = _P.get("movement", True)
@@ -1554,6 +1555,16 @@ def main():
         if not _mok:
             say(f"{kind} refuse: {MKT} plus autorise sur ce compte - {_mwhy}")
             return False
+        if M15_GATE:
+            # 2026-10-31 (owner "run it"): candidate from study/botsim/filter_screen.py - no trade against the M15
+            # trend. Package dial, default off; only the botsim month test turns it on.
+            try:
+                _m15 = int(((json.load(open(HTF_F, encoding="utf-8")).get("tf") or {}).get("M15") or {}).get("trend") or 0)
+            except Exception:
+                _m15 = 0
+            if _m15 and _m15 != d:
+                say(f"{kind} refuse: tendance 15 min contre")
+                return False
         if ROBOT_RULES:
             _rok, _rwhy = _RL.entry_ok(ROBOT_RULES, kind)
             if not _rok:

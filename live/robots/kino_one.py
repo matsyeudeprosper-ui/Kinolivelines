@@ -78,7 +78,8 @@ une pensée, une envie. Si ce n'est pas le cas, réponds seulement : …
 Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne par action, si tu en fais une :
 #test <nom exact du robot>      lance le test de ce robot sur les prix passés
 #test <nom> sans vérifier       le lance même sans la vérification des moments - seulement si vous êtes d'accord tous les deux
-#annule <nom du robot>          retire un test en file pour ce robot (s'il change d'avis, tu peux vraiment l'arrêter)
+#annule <nom du robot>          retire un test ou un test de chance en file pour ce robot, même un robot abandonné
+                                (s'il change d'avis, tu peux vraiment l'arrêter ; un test déjà en cours finit seul)
 #chance                         lance le test de chance du robot de cette conversation
 #construire <ce qu'il faut changer>   change le robot de cette conversation (le constructeur s'en occupe)
                                       Tout ce qu'il décrit se construit : entrées, filtres, stops, sorties, ET la taille du
@@ -155,16 +156,28 @@ def transcript(msgs, n=40, lang="fr"):
     """the conversation as a person sees it: who, when (UTC), what - cards and system notes in brackets"""
     me, them = ("you", "them") if lang == "en" else ("toi", "lui")
     L = []
-    for m in (msgs or [])[-n:]:
+    _M = (msgs or [])[-n:]
+    _ld = max([i for i, m in enumerate(_M) if m.get("role") == "doc"] or [-1])
+    for _i, m in enumerate(_M):
         r, tx = m.get("role"), str(m.get("text") or "").strip()
+        if r == "doc" and _i != _ld:              # an older document: its opening is enough to remember it
+            tx = tx[:400]
         if r == "user":
             L.append("[%s] %s : %s" % (_hm(m.get("t")), them, tx or ("(message vocal)" if m.get("audio") else "")))
         elif r == "ai" and tx:
             L.append("[%s] %s : %s" % (_hm(m.get("t")), me, tx))
             if m.get("mreact"):                       # 2026-10-27 (owner: "does he see an emoji given to his message?")
                 L.append("   (%s : %s)" % ("they reacted to it" if lang == "en" else "il a réagi à ce message", m["mreact"]))
-        elif r in ("image", "doc"):
-            L.append("[%s] %s : (%s)" % (_hm(m.get("t")), them, "une image" if r == "image" else "un document"))
+        elif r == "image":
+            L.append("[%s] %s : (%s)" % (_hm(m.get("t")), them, "an image" if lang == "en" else "une image"))
+        elif r == "doc":                          # 2026-10-31 (his wish "could not confirm Word/PDF can be read"): he saw only
+            body = " ".join(tx.split())           # "(un document)" - now its name, their note and, for Word/text, what it says
+            L.append("[%s] %s : (%s « %s »%s)%s" % (
+                _hm(m.get("t")), them, "a document" if lang == "en" else "un document", m.get("name") or "?",
+                (" - " + str(m.get("note"))[:300]) if m.get("note") else "",
+                ("\n   " + ("WHAT IT SAYS: " if lang == "en" else "CE QU'IL DIT : ") + body[:6000] + (" …" if len(body) > 6000 else ""))
+                if body else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
+                              "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
         elif r in ("test", "sys", "result", "card") and tx:
             L.append("[%s] (%s)" % (_hm(m.get("t")), tx[:240]))
     return "\n".join(L)
@@ -282,7 +295,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     return "\n\n".join(P)
 
 
-def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, check=None, log=None, note=None, model="sonnet"):
+def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, check=None, log=None, note=None, model="sonnet",
+         images=None):
     """one turn of the one mind -> {"say", "acts", "fil", "first", "total", "retry"}; None when the model failed"""
     cid = chat.get("id")
     sysp = system(lang)
@@ -303,7 +317,12 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
         W.pin(sysp, "sonnet")                 # his process stays warm whatever else the app runs
     except Exception:
         pass
-    raw = W.ask_text(sysp, user, model=model, timeout=90, log=log, on_text=_cb, warm=True)
+    msg = user
+    if images:                                # 2026-10-31 (his wish): the screenshot / PDF they just sent, seen on this turn
+        msg = [({"type": "document", "source": {"type": "base64", "media_type": mt, "data": b64}} if mt == "application/pdf" else
+                {"type": "image", "source": {"type": "base64", "media_type": mt, "data": b64}}) for mt, b64 in images[:2]] + \
+              [{"type": "text", "text": user}]
+    raw = W.ask_text(sysp, msg, model=model, timeout=120 if images else 90, log=log, on_text=_cb, warm=True)
     if raw is None:
         _log(cid, "FAIL", "no answer")
         return None

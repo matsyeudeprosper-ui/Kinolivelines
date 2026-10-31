@@ -15,11 +15,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 LIVE = os.path.join(ROOT, "live")
 OUT = os.path.join(LIVE, "lab", "backtest_proof.json")
-NAMES = {"valere": ("Valère", "vrai compte, argent réel, jamais touché à la main depuis son ouverture")}
+NAMES = {"valere": ("Valère", "vrai compte, argent réel, jamais touché à la main depuis son ouverture"),
+         "u477508138": ("Robot (référence)", "compte démo du robot lui-même, il trade seul chaque jour, jamais touché à la main")}
 
 
 def ts(s):
-    return dt.datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
+    d = dt.datetime.fromisoformat(s.replace("Z", "+00:00"))
+    if d.tzinfo is None:                 # 2026-10-31: bare times are UTC (the logs are UTC), same fix as compare.py
+        d = d.replace(tzinfo=dt.timezone.utc)
+    return d.timestamp()
 
 
 def real_money(acct, a, b):
@@ -52,11 +56,45 @@ def from_harness(path, acct):
     return a, b, rows, test_money, "moteur de test (copie des règles)"
 
 
-def publish(acct, a, b, rows, test_money, engine):
+def from_botsim(parts, acct, tol=120):
+    """the real bot code replayed (botsim) vs the real bot log - same matching as compare.py.
+    parts = [(sim log, start ISO, end ISO)]: trades ENTERED in each window (2026-10-31: several nightly runs, one per day;
+    a run may go on past its window so trades entered late finish). Trades not closed yet in reality are left out."""
+    sys.path.insert(0, HERE)
+    import compare as C
+    S, R, W = [], [], []
+    for log, a, b in parts:
+        a, b = ts(a), ts(b)
+        W.append((a, b))
+        S += C.trades(log, a, b)
+        R += [r for r in C.trades(os.path.join(LIVE, "bos_bot_%s.log" % acct), a, b) if r["pnl"] is not None]
+    wl = lambda x: None if x["pnl"] is None else ("W" if x["pnl"] > 0 else "L")
+    money = lambda x: round((x["pnl"] or 0) + x["add"], 2)
+    used, rows = set(), []
+    for r in R:
+        best = None
+        for j, s in enumerate(S):
+            if j not in used and s["d"] == r["d"] and abs(s["t"] - r["t"]) <= tol and (best is None or abs(s["t"] - r["t"]) < best[1]):
+                best = (j, abs(s["t"] - r["t"]))
+        s = S[best[0]] if best else None
+        if best:
+            used.add(best[0])
+        rows.append({"t": int(r["t"]), "dir": r["d"], "kind": r["kind"], "real": wl(r), "real_pnl": money(r), "test": wl(s) if s else None,
+                     "test_pnl": money(s) if s else None, "same": bool(s) and wl(s) == wl(r), "matched": bool(s)})
+    for j, s in enumerate(S):
+        if j not in used and s["pnl"] is not None:
+            rows.append({"t": int(s["t"]), "dir": s["d"], "kind": s["kind"], "real": None, "real_pnl": None, "test": wl(s),
+                         "test_pnl": money(s), "same": False, "test_only": True})
+    rows.sort(key=lambda z: z["t"])
+    rm = round(sum(z["real_pnl"] for z in rows if not z.get("test_only")), 2)
+    return W[0][0], W[-1][1], rows, round(sum((z["test_pnl"] or 0) for z in rows), 2), "simulateur (le vrai robot rejoué)", rm
+
+
+def publish(acct, a, b, rows, test_money, engine, rm=None):
     real = [z for z in rows if not z.get("test_only")]
-    same = sum(1 for z in real if z["test"] is not None)
+    same = sum(1 for z in real if z.get("matched", z["test"] is not None))
     same_res = sum(1 for z in real if z["same"])
-    rm = real_money(acct, a, b)
+    rm = real_money(acct, a, b) if rm is None else rm
     ok = same == len(real) and same_res == len(real) and not any(z.get("test_only") for z in rows) and abs(test_money - rm) <= max(0.5, 0.01 * abs(rm))
     nm, note = NAMES.get(acct, (acct, ""))
     out = {"status": "verified" if ok else "verifying", "engine": engine, "account": nm, "account_note": note,
@@ -73,4 +111,9 @@ if __name__ == "__main__":
     if kind == "harness":
         publish(sys.argv[3], *from_harness(sys.argv[2], sys.argv[3]))
     else:
-        raise SystemExit("botsim mode: wired once the full real-bot replay has run (compare.py rows)")
+        # botsim <sim log> <acct> <start> <end>   or   botsim <log|start|end>+<log|start|end>... <acct>
+        if len(sys.argv) > 4:
+            parts = [(sys.argv[2], sys.argv[4], sys.argv[5])]
+        else:
+            parts = [tuple(p.split("|")) for p in sys.argv[2].split("+")]
+        publish(sys.argv[3], *from_botsim(parts, sys.argv[3]))

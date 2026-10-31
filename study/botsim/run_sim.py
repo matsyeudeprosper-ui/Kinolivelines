@@ -118,6 +118,14 @@ def build_sandbox(sb, acct, st0):
             shutil.copy2(os.path.join(LIVE, "robots", f), os.path.join(sb, "robots"))
     for f in ("owl_packages.json",):
         shutil.copy2(os.path.join(LIVE, f), sb)
+    if os.environ.get("BOTSIM_PKG"):              # 2026-10-31: "k=v,k=v" (JSON values) set on every package of the sandbox copy
+        _pp = os.path.join(sb, "owl_packages.json")
+        _pk = json.load(open(_pp, encoding="utf-8-sig"))
+        for _kv in os.environ["BOTSIM_PKG"].split(","):
+            _k, _v = _kv.split("=", 1)
+            for _p in _pk["packages"].values():
+                _p[_k] = json.loads(_v)
+        json.dump(_pk, open(_pp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if not os.environ.get("BOTSIM_NOFASTIDX"):    # 2026-10-26 (speed): exact patch of the sandbox copy only, see fastidx.py
         import fastidx
         _fp = os.path.join(sb, "owl_chart_feed.py")

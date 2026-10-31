@@ -12,8 +12,10 @@ import json, os, re, subprocess, sys, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 STUDY = os.path.dirname(HERE)
 ROOT = os.path.dirname(STUDY)
-OUT = os.path.join(HERE, "months_summary.json")
 PAR = int(os.environ.get("BOTSIM_PAR", "3"))
+# 2026-10-31: a variant run (BOTSIM_TAG + BOTSIM_PKG package dials, see run_sim.py) gets its own runs/ and summary
+TAG = os.environ.get("BOTSIM_TAG", "month")
+OUT = os.path.join(HERE, "months_summary.json" if TAG == "month" else "months_summary_%s.json" % TAG)
 
 
 def month_args(ym):
@@ -22,7 +24,7 @@ def month_args(ym):
     ny, nm = (y, m + 1) if m < 12 else (y + 1, 1)
     start, end = "%d-%02d-01T00:00:00" % (y, m), "%d-%02d-01T00:00:00" % (ny, nm)
     if ym >= "2026-10":                          # our own recording (exact); it ends today
-        end = time.strftime("%Y-%m-%dT00:00:00", time.gmtime())
+        end = os.environ.get("BOTSIM_OCT_END") or time.strftime("%Y-%m-%dT00:00:00", time.gmtime())   # 2026-10-31: same end as a run to compare with
         return start, end, []
     bars = "ticks_archive_BTCUSD/bars_%d-%02d.npz+ticks_archive_BTCUSD/bars_%d-%02d.npz" % (py, pm, y, m)
     return start, end, ["--bars", bars, "--ticks", "ticks_archive_BTCUSD"]
@@ -64,9 +66,9 @@ def main():
             ym = ready[0]
             todo.remove(ym)
             start, end, extra = month_args(ym)
-            tag = "month"
+            tag = TAG
             cmd = [sys.executable, os.path.join(HERE, "run_sim.py"), "--acct", "valere", "--start", start, "--end", end, "--tag", tag, "--fresh", "--balance", "200"] + extra
-            lf = open(os.path.join(HERE, "runs", "month_%s.out" % ym), "w")
+            lf = open(os.path.join(HERE, "runs", "%s_%s.out" % (tag, ym)), "w")
             running[ym] = (subprocess.Popen(cmd, cwd=ROOT, stdout=lf, stderr=subprocess.STDOUT), tag, time.time())
             print(time.strftime("%H:%M:%S"), "start", ym, start, "->", end, flush=True)
         for ym, (p, tag, t0) in list(running.items()):
