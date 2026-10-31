@@ -18235,6 +18235,20 @@ def _one_memory(user, c):
             L.append(_bb)
     except Exception:
         pass
+    try:                                               # 2026-10-31 (kino_depth): their mind, his learned gut, his story, their style
+        import kino_depth as _KDm
+        _lg2 = "en" if c.get("lang") == "en" else "fr"
+        _M2 = c.get("msgs") or []
+        _ls = max([float(m.get("t") or 0) for m in _M2 if m.get("role") == "user"] +
+                  [float((_PAGE_SEEN.get(u_) or {}).get("t") or 0) for u_ in (_person_uids(_person(uid)) or [uid])] or [0])
+        _un = [(float(m["t"]), str(m.get("text") or "")) for m in _M2 if float(m.get("t") or 0) > _ls and str(m.get("text") or "").strip()
+               and ((m.get("role") == "ai" and m.get("event")) or m.get("role") in ("result", "test", "card"))]
+        for _bk in (_KDm.their_mind_block(_person(uid), _un, _lg2), _KDm.block(_person(uid), _lg2),
+                    _KDm.style_block(_M2, int((time.time() - min([float(m.get("t") or time.time()) for m in _M2] or [time.time()])) / 86400), _lg2)):
+            if _bk:
+                L.append(_bk)
+    except Exception:
+        pass
     try:                                               # 2026-10-31: his inner life - attention, needs, hopes, trust, nature
         import kino_psyche as _KPm
         _pb = _KPm.block(_person(uid), uid, "en" if c.get("lang") == "en" else "fr")
@@ -19826,6 +19840,25 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             pass
     if str(event or "").startswith(AUTO_EV) and not any(k == "ordre" for k, _ in acts):
         say = ""                                       # 2026-10-26: watching a candle he chose not to act on - nothing to post
+    _sim = None
+    if say and len(say) >= 40 and _mdl != "haiku":
+        try:                                           # 2026-10-31 (kino_depth 1): he pictures how they will take it, before sending
+            import kino_depth as _KDs, kino_psyche as _KPr2
+            _rd2 = ((_KPr2._load().get("persons") or {}).get(_person(uid)) or {}).get("read") or {}
+            _sim = _KDs.simulate(W, "; ".join("%s: %s" % (k_, v_) for k_, v_ in _rd2.items() if k_ != "t" and v_),
+                                 _KO.transcript(c.get("msgs"), lang=lang), say, log=os.path.join(DIR, "robots", "kino_depth.log"))
+            # answering them: only when he pictures them taking it badly (they are waiting); his own messages: any risk he sees
+            if _sim and (float(_sim.get("valence") or 0) < (0.3 if event and str(_sim.get("risk") or "").strip() else -0.1)):
+                _KO._log(cid, "IMAGINE", "%s | %s" % (_sim.get("they_feel"), _sim.get("risk")))
+                r4 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
+                              model=_mdl, note=_KDs.sim_note(_sim, lang) + ("\n\nYOUR DRAFT: " if lang == "en" else "\n\nTON BROUILLON : ") + say[:1500])
+                if r4 is not None:
+                    say, acts, fil = r4["say"], r4["acts"] or acts, r4["fil"] or fil
+        except Exception as e:
+            try:
+                _KO._log(cid, "IMAGINE_ERROR", "%s %s" % (type(e).__name__, e))
+            except Exception:
+                pass
     try:                                               # an action that cannot happen goes back to him BEFORE his words go out
         _ta = [v for k, v in acts if k == "test"]
         _rn = str((c.get("robot") or {}).get("name") or "").lower()
@@ -19861,6 +19894,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     def put(cc):
         if say:
             _chat_msg(cc, "ai", text=say, chips=[], quick=True, one=True, event=bool(event), ekind=str(event or "")[:90])
+            try:                                       # 2026-10-31 (kino_depth 2): what kind of message went out, to learn from
+                import kino_depth as _KDl              # how they react to it
+                _KDl.sent(_person(uid), cid, time.time(), (_sim or {}).get("tags") or (["long"] if len(say) > 400 else []), _sim)
+            except Exception:
+                pass
         elif not event:
             for mm in reversed(cc.get("msgs") or []):
                 if mm.get("role") in ("user", "show", "image", "doc"):
@@ -21959,6 +21997,58 @@ def _exec_morning():
         _EXEC_BUSY["m"] = False
 
 
+def _kino_depth_night(u, person, c):
+    """2026-10-31: (6) incubation - his open questions, bets, hopes and unclear things mulled over at night; (7) weekly, his days
+    become the chapters of his story"""
+    import kino_depth as _KDn
+    W = _rc().W
+    lg = os.path.join(DIR, "robots", "kino_depth.log")
+    O = []
+    try:
+        import kino_belief as _KBo2
+        O += ["bet open: %s (%d %%)" % (b["text"], round(b["p"] * 100)) for b in (_KBo2._load().get("b") or [])
+              if b.get("uid") == person and b.get("status") == "open"][-6:]
+    except Exception:
+        pass
+    try:
+        import kino_psyche as _KPo2
+        _pp = ((_KPo2._load().get("persons") or {}).get(person) or {})
+        O += ["%s: %s" % ("hope" if h["val"] > 0 else "dread", h["what"]) for h in _pp.get("hopes") or []][-5:]
+    except Exception:
+        pass
+    try:
+        import kino_social as _KSo2
+        _sp = (_KSo2._load() or {}).get(person) or {}
+        O += ["not yet understood in his method: %s" % x for x in ((_sp.get("method") or {}).get("unclear") or [])][:4]
+    except Exception:
+        pass
+    try:
+        O.append("today in the conversation:\n" + __import__("kino_one").transcript([m for m in (c.get("msgs") or [])
+                                                                                  if time.time() - float(m.get("t") or 0) < 86400], n=40))
+    except Exception:
+        pass
+    _KDn.incubate(W, person, "\n".join(O), log=lg)
+    if _KDn.story_due(person):
+        H = []
+        try:
+            import kino_life as _KLs
+            H += ["%s journal: %s" % (time.strftime("%Y-%m-%d", time.gmtime(float(x.get("t") or 0))), x.get("text")) for x in _KLs.journal(u.get("id"), 60)]
+        except Exception:
+            pass
+        try:
+            import kino_episodes as _KEs
+            H += ["%s episode: %s (%s)" % (x.get("day"), x.get("what"), x.get("feel")) for x in ((_KEs._load().get(person) or {}).get("episodes") or [])[-60:]]
+        except Exception:
+            pass
+        try:
+            import kino_psyche as _KPs3
+            _dd = (((_KPs3._load().get("persons") or {}).get(person) or {}).get("days") or {})
+            H += ["%s feelings of the day: average %+.2f over %d moments" % (k, v["sum"] / max(1, v["n"]), v["n"]) for k, v in sorted(_dd.items())]
+        except Exception:
+            pass
+        _KDn.write_story(W, person, "\n".join(sorted(H)), log=lg)
+
+
 def _kino_tics_night():
     """2026-10-28 (owner: human replies): at night he rereads his own messages of the day and notices the phrases he keeps
     repeating - a person hearing themselves, not a filter: what he does with it is his"""
@@ -22132,6 +22222,10 @@ def _kino_night_mind():
                 try:                                  # 2026-10-31: the day he lived moves his temperament a tiny bit
                     import kino_psyche as _KPn
                     _KPn.night_drift(_p)
+                except Exception:
+                    pass
+                try:                                  # 2026-10-31 (kino_depth 6 + 7): sleeping on what is open; his life story
+                    _kino_depth_night(_u, _p, _ch[0])
                 except Exception:
                     pass
         except Exception:
@@ -22939,6 +23033,19 @@ def _urge_tick():
                 import kino_psyche as _KPst
                 for _nk in _KPst.tick(pm, ctx):
                     _KU.add(pm, "A NEED OF YOURS - %s" % _KPst.NEED_TEXT[_nk])
+                try:                                   # 2026-10-31 (kino_depth): silence teaches, threads come back, nights bring ideas
+                    import kino_depth as _KDt
+                    if int(now) % 600 < 60:
+                        _KDt.on_silence(pm, ctx["their_hour"])
+                    _af = _KDt.afterthought_due(pm, c, now)
+                    if _af:
+                        _KU.add(pm, "AN AFTERTHOUGHT - what you were pursuing a while ago is still on your mind: %s" % _af)
+                    if ctx["their_hour"] and 6 <= _local_hour(pm) <= 12:
+                        _ins = _KDt.morning_insight(pm)
+                        if _ins:
+                            _KU.add(pm, "A THOUGHT CAME TO YOU - overnight, sleeping on it: %s" % _ins["text"])
+                except Exception:
+                    pass
                 try:                                   # what he is waiting for: their open trade (hope/dread by its P&L)
                     _ndp = _jload(os.path.join(DIR, "nest_data", "%s.json" % uid), {}) or {}
                     for _op in (_ndp.get("open_list") or [])[:2]:

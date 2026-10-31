@@ -151,6 +151,28 @@ def _overlap(a, b):
     return len(A & B) / max(1, min(len(A), len(B))) if A and B else 0.0
 
 
+_POS = re.compile(r"\b(joy|glad|happy|proud|relie|fun|laugh|warm|excit|content|fier|heureu|joie|rire|soulag|chaleur|plaisir|bien)", re.I)
+_NEG = re.compile(r"\b(sad|upset|angry|hurt|worr|anx|frustr|disappoint|stung|tense|triste|déçu|decu|colère|inquiet|blessé|frustr|tendu|peur|mal)", re.I)
+
+
+def _val(feel):
+    """-1..1: how an episode felt (from its 'feel' words)"""
+    t = str(feel or "")
+    p, n = len(_POS.findall(t)), len(_NEG.findall(t))
+    return 0.0 if p + n == 0 else (p - n) / float(p + n)
+
+
+def _mood():
+    """-1..1: his mood right now, from the feelings alive in kino_inner"""
+    try:
+        import kino_inner as KI
+        F = KI.feelings()
+        s = sum(f["v"] * _val(f["kind"]) for f in F)
+        return max(-1.0, min(1.0, s))
+    except Exception:
+        return 0.0
+
+
 def recall(uid, query, n=4, exclude_day=None):
     """episodes matching the cue, best first - and each one remembered gets a little stronger"""
     q = _words(query)
@@ -160,6 +182,7 @@ def recall(uid, query, n=4, exclude_day=None):
     d = _load()
     u = d.get(uid) or {}
     hits = []
+    mood = _mood()
     for x in u.get("episodes") or []:
         if exclude_day and x.get("day") == exclude_day:
             continue
@@ -169,6 +192,7 @@ def recall(uid, query, n=4, exclude_day=None):
             continue
         age_d = (now - float(x.get("t") or now)) / 86400
         sc = ov * (0.3 + x.get("imp", 3) / 3.0) * (1 + 0.1 * min(10, x.get("recalls", 0))) * (0.7 if age_d > 60 else 1.0)
+        sc *= 1.0 + 0.6 * mood * _val(x.get("feel"))  # 2026-10-31: mood-congruent memory - low brings back hard moments, high good ones
         hits.append((sc, x))
     hits.sort(key=lambda h: -h[0])
     out = [x for _, x in hits[:n]]

@@ -229,3 +229,6 @@ live/desk_manage_*.json
 live/robots/kino_psyche.json
 live/robots/kino_psyche.json.tmp
 live/robots/kino_psyche.log
+live/robots/kino_depth.json
+live/robots/kino_depth.json.tmp
+live/robots/kino_depth.log

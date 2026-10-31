@@ -40,7 +40,8 @@ Read him RIGHT NOW. JSON only:
  "kino_apologized": "yes if Kino's last message apologised or owned a mistake, else no",
  "knows": "trading ideas/words he clearly masters, comma separated (empty if none showed)",
  "unfamiliar": "ideas/words he seems not to know or asked about, comma separated (empty if none)",
- "his_words": "his OWN expressions for things in his last message (his way of naming them), comma separated, max 4; empty if none"}
+ "his_words": "his OWN expressions for things in his last message (his way of naming them), comma separated, max 4; empty if none",
+ "assumes": "what his last message shows he takes as TRUE right now about his account, trades, robots or tests (in plain words); empty if nothing"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -97,6 +98,14 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         import kino_psyche as KPS
         _lt = next((m.get("text") for m in reversed(M) if m.get("role") == "user"), "")
         KPS.from_read(_person_of(uid), uid, j, _lt)
+    except Exception:
+        pass
+    try:                                               # 2026-10-31 (kino_depth): how his last message landed; what they believe
+        import kino_depth as KDP
+        _tl = max([float(m.get("t") or 0) for m in M if m.get("role") == "user"] or [time.time()])
+        KDP.on_reply(_person_of(uid), j, _tl)
+        if j.get("assumes"):
+            KDP.note_assumes(_person_of(uid), j.get("assumes"))
     except Exception:
         pass
     fj = " ".join(str(j.get("joke_fell_flat") or "").split())[:160]

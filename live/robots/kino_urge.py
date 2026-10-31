@@ -29,6 +29,7 @@ WEIGHTS = (
     ("SHARED EXPERIMENT", 0.6), ("WEEK RECAP", 0.5), ("NIGHT TEST RESULT", 0.5), ("DECISION LOOK BACK", 0.45),
     ("ROBOT REVIEW", 0.45), ("GESTURE", 0.4), ("REPLAY WEEK", 0.4), ("TESTS RESUMED", 0.3),
     ("A NEED OF YOURS", 0.45),           # 2026-10-31 kino_psyche: curiosity, competence, connection, autonomy building up
+    ("AN AFTERTHOUGHT", 0.55),           # 2026-10-31 kino_depth: an unfinished thread comes back (Zeigarnik)
 )
 
 
