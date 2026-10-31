@@ -73,7 +73,8 @@
    "next": "Battery + critic on pb_w_ch350_nf06_ny1316(q) and pb_w_ch350_fh05_ny1316q; watch 69 d first half (Aug-Sep) as it leaves the window; real 13-16 h pile when accounts resume.",
    "evidence": [
     "2026-10-30: real 13-16 h 41 tr 15 won -116.66 both halves lose; lab robot 12-17 h 14 tr 2 won -50.37 on 10-28/29. Replay trio+hs12-17:0.5 42 d +25.7 vs trio +6.0 (h -6.8/+26.5) hole 40.7 vs 56; 69 d +88.96 vs +91.80 (h -20.9/+19.9). Skip 12-17 on trio: 42 d +34.9 hole 29.7 (h -0.2/+27.4), 69 d +62.9 (h -59.5/+19.5): refusal too strong on the long window, half stake right.",
-    "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only."
+    "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only.",
+    "2026-10-31 12:00 veille: new closes entered 13-16 h 4 tr 3 won +0.64 per 0.01 (against, peu); 08-13 h 7 tr 1 won -9.62. One week, too few to move it."
    ]
   },
   {
@@ -108,7 +109,8 @@
     "2026-10-26 07:45 veille: FLIP after 509 min pause lost -4.21, but gap >3 h by kind: flips 31 tr 52% +8.21, all kinds 44 tr 48% -38.67 (night 17 tr 41% -15.83, day 27 tr -22.84). The long-pause loss is a BOS thing, not flips.",
     "2026-10-27: --by gap all kinds, 256 real tr: 15-30 min 35 tr 60% +10.75; 30-60 59 tr 58% +5.61; <15 77 tr 34% -75.29; 1-3 h 39 tr 36% -83.14 (h 50/18); >3 h 46 tr 48% -42.75. The good window is 15-60 min both sides bounded; pause too long loses too. Pile gap_cold opened, request gap_max.",
     "2026-10-28: after a loss: gap <15 44 tr 23% -63.28; 15-60 63 tr 57% -5.25; >60 35 tr 31% -77.91. After a win: <15 47% -10.5; 15-60 62% +23.5; >60 51% -43.6. Window 15-60 matters most after a loss. ch350+nf06+wait15 +63.3 (h +46.2/+26.8) hole 73.9 (no hole gain). Request loss_gap_size.",
-    "2026-10-29: lab robot 10-28/29: 19 tr +18.27; two biggest losses -5.37/-7.11 held 7-8 min, restarted minutes after a loss (catch-up chain). Real gap: <15 min 80 tr 34% -73.76, 15-60 97 tr ~+18, 1-3 h 39 tr -83.14. Unchanged (one new real trade)."
+    "2026-10-29: lab robot 10-28/29: 19 tr +18.27; two biggest losses -5.37/-7.11 held 7-8 min, restarted minutes after a loss (catch-up chain). Real gap: <15 min 80 tr 34% -73.76, 15-60 97 tr ~+18, 1-3 h 39 tr -83.14. Unchanged (one new real trade).",
+    "2026-10-31 12:00 veille: 34 new closes: gap 15-60 min 16 tr 11 won +12.43 per 0.01; <15 min 7 tr 2 won -0.69. Real gap 15-30 40 tr 62% +20.54 (h 64/62 agree), 30-60 62 tr 58% +15.23, <15 80 tr 34% -73.76 (h 37/31), 1-3 h 40 tr 38% -78.79. Holds."
    ],
    "next": "cont_wait when built; re-read on src=filtre once real_pool_split exists."
   },
@@ -131,7 +133,7 @@
   {
    "id": "slow_trade",
    "fr": "Un trade qui traîne entre 30 minutes et une heure est mal parti : il gagne peu et perd gros.",
-   "status": "renforce",
+   "status": "affaibli",
    "next": "trail_in_menu + time_exit.",
    "evidence": [
     "2026-10-19: real dur 30-60 min 20 tr 45% -38.33 PF 0.43, avg win 3.21 / loss -6.11, halves 44/45 agree; <15 76 tr -3.9, 15-30 26 tr +6.3, 1-3 h 22 tr -4.6, >3 h 9 tr -0.3 (avg win 7.41). Opened pile slow_30_60 and request time_exit.",
@@ -140,7 +142,8 @@
     "2026-10-26 07:45 veille: FLIP-BOS SELL (entry 06:25 Mon, pace 1.137, gap 509 min after a win, h1 i=0, dist 136) held 35 min, lost -4.21 as predicted. dur 30-60 min now 39 tr 44% -52.15 (h 46/42 agree, 13/26).",
     "2026-10-26: 08:03 BOS SELL (pace 1.219, gap 63 min after the 07:00 loss, h1 i=0, dist 351) held 33 min, lost -3.65 per 0.01: second slow loss in a row today. dur 30-60 now 40 tr 42% -63.10 PF 0.53 (h 46/41 agree). trail_prot 2 does not touch the 42 d money (+0.0 full).",
     "2026-10-28: real dur 30-60 41 tr 44% -60.82 PF 0.54 (h 41/46 agree). Other account 10-26/27 winners lasted 58-122 min with stops 142-347 pts.",
-    "2026-10-29: real dur 30-60 42 tr 45% -55.86 PF 0.58 (h 41/48). Lab robot biggest win +17.51 held 262 min."
+    "2026-10-29: real dur 30-60 42 tr 45% -55.86 PF 0.58 (h 41/48). Lab robot biggest win +17.51 held 262 min.",
+    "2026-10-31 12:00 veille: 34 closes since 10-26 08:00 (reference account 22, lab robot 11): held 30-60 min 8 tr 7 won +11.89 per 0.01 - against. Real dur 30-60 now 47 tr 51% -32.03 PF 0.76, halves 41%/57% (17/30) disagree (was 42 tr 45% -55.86 PF 0.58 on 10-29). The second half no longer says it."
    ]
   },
   {
@@ -171,7 +174,8 @@
     "2026-10-25 14:50 veille: 13:28 FLIP-BOS SELL, h1 same way, lost -4.48 as predicted (today's three losses all h1 same). Same 88 tr 33% -74.74 per 0.01 vs opp 99 tr 54% -1.39. Request h1_int_size remains the test.",
     "2026-10-25 16:00 veille: 14:56 FLIP-BOS BUY, h1 opposite, won +1.33 as predicted (quick after a loss, small). Opp 100 tr 54% -0.72 per 0.01 (h 62/46, second half fading) vs same 88 tr 33% -74.74 (h 34/32). The edge is mostly in avoiding 'same', not in 'opp' earning.",
     "2026-10-26 05:05 veille: three Sunday-evening BOS SELL, all h1 same way: 1 lost (-3.75, first after 385 min), 2 won fast and small (+2.85, +1.28) - prediction 1 of 3, but net ~0 per 0.01. Same 91 tr 34% -74.40 (h 33/35); same BOS 41 tr 34% (h 50/19, second half carries it). Still holds; the test is request h1_int_size.",
-    "2026-10-26: deduped across journals (117 real tr since 10-01, not 210 as counted on 10-25): h1 same 50 tr 34% -41.3 per 0.01; NEW m15 split: h1 same + m15 not same 33 tr 7 won (21%) -46.6 (h 9/40, 20/13 tr); h1 opp + m15 same 38 tr 63% +11.4 (h 67/60). h4 trend adds nothing (same 47% / opp 43%). Requested late_wave_size."
+    "2026-10-26: deduped across journals (117 real tr since 10-01, not 210 as counted on 10-25): h1 same 50 tr 34% -41.3 per 0.01; NEW m15 split: h1 same + m15 not same 33 tr 7 won (21%) -46.6 (h 9/40, 20/13 tr); h1 opp + m15 same 38 tr 63% +11.4 (h 67/60). h4 trend adds nothing (same 47% / opp 43%). Requested late_wave_size.",
+    "2026-10-31 12:00 veille: h1 internal = 0 on 33 of 34 closes since 10-26 (all 0 except one, 10-29 15:47 BUY h1 i=1 same way, lost -5.73 as predicted). The 0 bucket: 19 won of 34. No test possible this week. m15 trend reads -1 on nearly every trade since 10-08: capture may be stale (doubt)."
    ],
    "next": "Wait for h1_int_size / late_wave_size to be built; then test refusal and half stake."
   },
@@ -3512,6 +3516,16 @@
     "curve split before/after 10-20 on every run"
    ],
    "saw": "No new real trade since 10-26 pause. Battery filtered cards keep 11-18 trades vs 36-59 in harness: do not quote card money for pb ideas. Every brake still loses after 10-20 (-30 to -63); 13-16 h stake cut is the only lever that pays both before and after 10-20 on 42 d. 69 d first half (Aug-Sep) dislikes every daytime cut."
+  },
+  {
+   "t": "2026-10-31T12:00:25Z",
+   "looked": [
+    "wake_context (34 closes 10-26 08:00 to 10-30 09:06; twin noday 8 tr +29.86 unchanged)",
+    "new closes by account/hour/gap/dur/prev by hand",
+    "htf h1 i / m15 t by day since 10-06",
+    "scrutiny --by dur, --by gap"
+   ],
+   "saw": "34 closes 19 won +10.57 per 0.01 (reference account 22 tr +11.71, lab robot 11 tr +2.51). 30-60 min holds won 7 of 8: slow_trade halves now disagree (41/57). gap 15-60 11 of 16 won: rested_cont holds. 08-13 h 1 of 7. h1 internal 0 on 33/34: no h1 test this week. m15 t -1 since 10-08 looks stale. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
@@ -3588,6 +3602,7 @@
   "builder_unblock: 21 open requests, none built since 10-26.",
   "Twin noday (+29.86 on 8 trades): watch it.",
   "Real accounts paused by owner 10-26: wait for trades; then re-read the 13-16 h pile.",
-  "Capped ideas parked (no daily cap since 10-14)."
+  "Capped ideas parked (no daily cap since 10-14).",
+  "2026-10-31 veille: is htf_entry m15 trend stale? It reads -1 on almost every trade since 10-08 (h1 i stuck at 0 since 10-26). Check the capture before trusting late_wave_size / h1_int_size reads."
  ]
 }
