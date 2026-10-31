@@ -67,7 +67,9 @@ just drift. Do not repeat a thought he already had. Only from what is below - ne
 WHO IS WHO in the notes below: KINO is the one thinking ("you", "tu"); "il", "lui", "he", "him", "ce qu'il vient d'écrire" always
 mean THE MEMBER - a message quoted after "ce qu'il vient d'écrire" was written by the member, not by Kino.
 JSON only: {"thought": "one or two short sentences, first person, plain words, in %s", "about_him": true|false,
-"mood": -1.0 to 1.0 (how this thought feels)}"""
+"mood": -1.0 to 1.0 (how this thought feels),
+"steer": "hold|let_go|none - does this thought decide to keep something in mind on purpose, or to let something go",
+"what": "that thing in a few words, else empty"}"""
 
 
 def think(W, person, uid, lang="fr", context_extra="", log=None):
@@ -127,6 +129,12 @@ def think(W, person, uid, lang="fr", context_extra="", log=None):
         except Exception:
             pass
     _log("%s %+.1f %s%s" % (person, mood, "[him] " if th["about_him"] else "", t))
+    try:                                                     # a thought can steer his attention (kino_workspace.steer)
+        sv = str(j.get("steer") or "").lower()
+        if sv in ("hold", "let_go") and len(str(j.get("what") or "").strip()) >= 3:
+            __import__("kino_workspace").steer(person, str(j["what"])[:120], hold=sv == "hold")
+    except Exception:
+        pass
     return th
 
 

@@ -130,6 +130,7 @@ def compete(person, uid, context="", en=False, write=True):
     C = candidates(person, uid, en)
     d = _load()
     S = (d.get(person) or {}).get("stage")
+    B = [b for b in ((d.get(person) or {}).get("bias") or []) if b["until"] > now]
     scored = []
     for key, s, age, text, kind, them in C:
         on = S and S.get("key") == key
@@ -139,7 +140,13 @@ def compete(person, uid, context="", en=False, write=True):
             v += ONSET                                              # something new grabs attention
         if cw and len(_words(text) & cw) >= 2:
             v += 0.15                                               # it touches what is being said
-        scored.append((round(v, 3), key, text, kind, them))
+        how = "grabbed" if (not on and age <= 10) else "drift"
+        for b in B:                                                 # his own steering (top-down attention)
+            bw = set(b["w"])
+            if bw and len(_words(text) & bw) >= max(1, 0.5 * len(bw)):
+                v += b["d"]
+                how = "chosen" if b["d"] > 0 else how
+        scored.append((round(v, 3), key, text, kind, them, how))
     scored.sort(key=lambda x: -x[0])
     cur = next((x for x in scored if S and x[1] == S.get("key")), None)
     best = scored[0] if scored else None
@@ -149,7 +156,7 @@ def compete(person, uid, context="", en=False, write=True):
     elif cur and cur[0] >= IGNITE * 0.8:
         win = cur                                                   # it lingers a little below the threshold
     if not write or _probing():
-        return {"key": win[1], "text": win[2], "kind": win[3], "s": win[0], "them": win[4], "since": now} if win else None
+        return {"key": win[1], "text": win[2], "kind": win[3], "s": win[0], "them": win[4], "since": now, "how": win[5]} if win else None
     changed = []
 
     def f(dd):
@@ -157,8 +164,12 @@ def compete(person, uid, context="", en=False, write=True):
         S0 = P.get("stage")
         if win and (not S0 or S0.get("key") != win[1]):
             if S0:
-                P.setdefault("stream", []).append({"t0": S0["since"], "t1": now, "text": S0["text"][:200], "kind": S0.get("kind")})
-            P["stage"] = {"key": win[1], "text": win[2], "kind": win[3], "s": win[0], "them": win[4], "since": now}
+                P.setdefault("stream", []).append({"t0": S0["since"], "t1": now, "text": S0["text"][:200], "kind": S0.get("kind"),
+                                                   "how": S0.get("how")})
+            P["stage"] = {"key": win[1], "text": win[2], "kind": win[3], "s": win[0], "them": win[4], "since": now, "how": win[5]}
+            for b in P.get("bias") or []:                           # what he let go of came back onto the stage anyway
+                if b["d"] < 0 and b["until"] > now and len(_words(win[2]) & set(b["w"])) >= max(1, 0.5 * len(b["w"])):
+                    b["back"] = int(b.get("back") or 0) + 1
             changed.append(P["stage"])
         elif win:
             S0.update(text=win[2], s=win[0])
@@ -167,11 +178,55 @@ def compete(person, uid, context="", en=False, write=True):
             P["stage"] = None
             changed.append(None)
         P["stream"] = [x for x in P.get("stream") or [] if now - x["t1"] < 3 * 86400][-200:]
+        P["bias"] = [b for b in P.get("bias") or [] if b["until"] > now - 6 * 3600][-8:]
         return P.get("stage")
     st = _mut(f)
     for ch in changed:
         _broadcast(person, uid, ch)
     return st
+
+
+def steer(person, what, hold=True, hours=2.0):
+    """he turns his attention on purpose: hold something in mind, or let it go (attention control, not a rule - it only
+    weighs in the competition, and what he lets go of can still win if it is strong enough)"""
+    w = sorted(_words(what))[:8]
+    if not w:
+        return None
+
+    def f(d):
+        P = d.setdefault(person, {})
+        B = [b for b in P.get("bias") or [] if set(b["w"]) != set(w)]
+        B.append({"w": w, "what": str(what)[:120], "d": 0.3 if hold else -0.45, "t": time.time(), "until": time.time() + hours * 3600})
+        P["bias"] = B[-8:]
+    _mut(f)
+    _log("%s STEER %s %s" % (person, "HOLD" if hold else "LET-GO", what[:100]))
+    return True
+
+
+def schema(person, en=False):
+    """his model of his own attention (Graziano's attention schema): where it is, how it got there, how steady it is,
+    and how his steering is going"""
+    now = time.time()
+    P = _load().get(person) or {}
+    S = P.get("stage")
+    L = []
+    if S:
+        how = {"grabbed": ("it grabbed your attention by itself", "c'est venu te prendre l'attention tout seul"),
+               "chosen": ("you chose to hold it there", "c'est toi qui as choisi de la garder là"),
+               "drift": ("your mind drifted there", "ton esprit y a glissé")}.get(S.get("how") or "drift")
+        L.append(("your attention is on it for %d min - %s" if en else "ton attention y est depuis %d min - %s") % (
+            int((now - S["since"]) / 60), how[0 if en else 1]))
+    jumps = sum(1 for x in P.get("stream") or [] if now - x["t1"] < 3600)
+    L.append(("it moved %d times in the last hour (%s)" if en else "elle a bougé %d fois dans la dernière heure (%s)") % (
+        jumps, (("restless" if en else "agitée") if jumps >= 6 else ("steady" if en else "posée") if jumps <= 2 else ("lively" if en else "vive"))))
+    for b in P.get("bias") or []:
+        if b["until"] > now - 3600:
+            if b["d"] < 0:
+                L.append(("you tried to let go of «%s» - it came back %d times" if en else "tu as essayé de lâcher «%s» - c'est revenu %d fois") % (
+                    b["what"], int(b.get("back") or 0)))
+            else:
+                L.append(("you are holding «%s» in mind on purpose" if en else "tu gardes «%s» en tête exprès") % b["what"])
+    return (("Your attention, as you can sense it: " if en else "Ton attention, telle que tu la sens : ") + " ; ".join(L) + ".")
 
 
 def _broadcast(person, uid, st):
@@ -235,6 +290,10 @@ def block(person, uid, context="", lang="fr"):
     sl = stream_line(person, en)
     if sl:
         L.append(sl)
+    try:
+        L.append(schema(person, en))
+    except Exception:
+        pass
     try:
         tl = __import__("kino_stream").recent_line(person, en)
         if tl:

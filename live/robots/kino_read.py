@@ -69,8 +69,17 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     M = chat.get("msgs") or []
     if not any(m.get("role") == "user" for m in M[-3:]):
         return None
-    user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
-        cues or "-", "-" if local_hour is None else "%02dh" % local_hour, _transcript(M))
+    _kt = ""
+    try:                                               # 2026-10-31 (watch): his TRUE self-test scores were read as slips ("he
+        import kino_selfmodel as KSF                   # claimed a 1 out of 3 grade") - the intuition must know what is true about him
+        _P = KSF._P(KSF._load(), _person_of(uid))
+        _kt = " ".join(x for x in (KSF.tests_line(_P, True), KSF.growth_line(_P, True)) if x)[:1500]
+    except Exception:
+        pass
+    user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
+        cues or "-", "-" if local_hour is None else "%02dh" % local_hour,
+        ("TRUE FACTS ABOUT KINO HIMSELF (measured by the app - when Kino states these, it is NOT a slip): %s\n" % _kt) if _kt else "",
+        _transcript(M))
     try:
         j = W.ask_json(SYSTEM, user, models=("haiku", "sonnet"), timeout=40, log=log, warm=False)
     except Exception:

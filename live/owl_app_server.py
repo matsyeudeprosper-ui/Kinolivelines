@@ -20002,6 +20002,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _rules_set(uid, v)
             elif k == "suivi" and v:
                 _followup_add(uid, v)
+            elif k == "attention" and v:                 # 2026-10-31 (kino_workspace): he steers his own attention
+                _mat = re.match(r"\s*(garde|garder|hold|keep|l[aâ]che|l[aâ]cher|let\s*go|drop)\b\s*:?\s*(.*)$", v, re.I)
+                if _mat and _mat.group(2).strip():
+                    __import__("kino_workspace").steer(_person(uid), _mat.group(2).strip(),
+                                                       hold=_mat.group(1).lower() in ("garde", "garder", "hold", "keep"))
             elif k == "gestion" and v:                   # 2026-10-29: the desk manages positions itself (breakeven at half the TP)
                 _on = not re.search(r"\b(off|non|stop|arr[eê]t)\b", v, re.I)
                 _du = (_thread_user(cid, user) or user).get("id")
