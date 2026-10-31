@@ -18235,6 +18235,13 @@ def _one_memory(user, c):
             L.append(_bb)
     except Exception:
         pass
+    try:                                               # 2026-10-31: his inner life - attention, needs, hopes, trust, nature
+        import kino_psyche as _KPm
+        _pb = _KPm.block(_person(uid), uid, "en" if c.get("lang") == "en" else "fr")
+        if _pb:
+            L.append(_pb)
+    except Exception:
+        pass
     try:                                               # 2026-10-31: how often his forecasts came true (bets from his own words)
         import kino_belief as _KBf
         _fb = _KBf.felt_block(_person(uid), "en" if c.get("lang") == "en" else "fr")
@@ -19663,6 +19670,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 return
         except Exception:
             pass
+    if event and not str(event).startswith("WISH TO TALK"):
+        try:                                           # 2026-10-31 (heart): what this event MEANS to him, felt before he speaks
+            import kino_psyche as _KPsa
+            _KPsa.appraise(_rc().W, _person(uid), uid, str(event), log=os.path.join(DIR, "robots", "kino_psyche.log"))
+        except Exception:
+            pass
     lang, r, _tctx1 = c.get("lang") or "fr", None, 0.0
     try:
         _rc()
@@ -19765,6 +19778,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 lm_["answered"] = True
         _chat_mut(cid, _rest)
         _KO._log(cid, "REST", "he chose not to answer")
+    if str(event or "").startswith("WISH TO TALK") and not say:
+        try:                                           # 2026-10-31 (will): he wanted to talk and held it in - that costs a little
+            import kino_psyche as _KPsc
+            _KPsc.spend_control(_person(uid))
+        except Exception:
+            pass
     if say:
         threading.Thread(target=_told_note, args=(uid, say), daemon=True).start()
 
@@ -22110,6 +22129,11 @@ def _kino_night_mind():
                     continue
                 _done_p.add(_p)
                 _KBs.night_settle(_rc().W, _p, _one_facts(_u, _ch[0]), log=os.path.join(DIR, "robots", "kino_belief.log"))
+                try:                                  # 2026-10-31: the day he lived moves his temperament a tiny bit
+                    import kino_psyche as _KPn
+                    _KPn.night_drift(_p)
+                except Exception:
+                    pass
         except Exception:
             pass
         try:
@@ -22911,6 +22935,21 @@ def _urge_tick():
             ctx = {"in_talk": _in_talk(uid, c), "their_hour": _active_hour(pm),
                    "unanswered": sum(1 for t in own if t > lu), "since_own_min": round((now - max(own or [0])) / 60, 1),
                    "hours_since_member": round((now - lu) / 3600, 1) if lu else 99}
+            try:                                       # 2026-10-31 (will): his needs grow; a strong one is something HE wants
+                import kino_psyche as _KPst
+                for _nk in _KPst.tick(pm, ctx):
+                    _KU.add(pm, "A NEED OF YOURS - %s" % _KPst.NEED_TEXT[_nk])
+                try:                                   # what he is waiting for: their open trade (hope/dread by its P&L)
+                    _ndp = _jload(os.path.join(DIR, "nest_data", "%s.json" % uid), {}) or {}
+                    for _op in (_ndp.get("open_list") or [])[:2]:
+                        _pl = float(_op.get("profit") if isinstance(_op, dict) and _op.get("profit") is not None else 0)
+                        _KPst.hope(pm, "their open trade (%s) ends well" % (str(_op.get("type") or _op.get("dir") or "trade")
+                                                                          if isinstance(_op, dict) else "trade"),
+                                   1 if _pl >= 0 else -1, 0.45, 0.55)
+                except Exception:
+                    pass
+            except Exception:
+                pass
             # now and then, in their hours, something of their life comes back to him
             if ctx["their_hour"] and now - _URGE_SOUV.get(pm, 0) > 6 * 3600 and _rd.random() < 0.02:
                 _URGE_SOUV[pm] = now

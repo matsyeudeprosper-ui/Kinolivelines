@@ -93,6 +93,12 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         KS.note_read(_person_of(uid), j)
     except Exception:
         pass
+    try:                                               # 2026-10-31: the same read moves his heart and his needs (kino_psyche)
+        import kino_psyche as KPS
+        _lt = next((m.get("text") for m in reversed(M) if m.get("role") == "user"), "")
+        KPS.from_read(_person_of(uid), uid, j, _lt)
+    except Exception:
+        pass
     fj = " ".join(str(j.get("joke_fell_flat") or "").split())[:160]
     if len(fj) >= 8:                                   # what did not land is remembered too - a person adjusts to a friend
         try:

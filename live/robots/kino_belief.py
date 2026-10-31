@@ -294,6 +294,20 @@ def night_settle(W, uid, facts, log=None):
         return 0
     S = [x for x in ((j or {}).get("settled") or []) if isinstance(x, dict) and str(x.get("outcome")).lower() in ("true", "false")]
     resolve(uid, S, src="night")
+    try:                                         # 2026-10-31 (kino_psyche): being right or wrong touches his sense of competence
+        import kino_psyche as KPS
+        byid = {b["id"]: b for b in B}
+        for x in S:
+            b = byid.get(str(x.get("id")))
+            if not b:
+                continue
+            ok = str(x.get("outcome")).lower() == "true"
+            KPS.apply(uid, None, {"relevance": 0.35 + 0.4 * b["p"], "congruence": 0.6 if ok else -0.6, "agency": "kino", "standards": 0,
+                                  "certainty": 1, "expected": b["p"] if ok else 1 - b["p"],
+                                  "needs": {"competence": 0.6 if ok else -0.6, "curiosity": 0 if ok else 0.3}},
+                      "ton pronostic « %s » s'est révélé %s" % (b["text"][:90], "juste" if ok else "faux"))
+    except Exception:
+        pass
     return len(S)
 
 
