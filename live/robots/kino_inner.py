@@ -65,7 +65,7 @@ def feel(kind, delta, uid=None, why=""):
 
 # 2026-10-31 (kino_probe): a feeling slipped in for ONE call on this thread only (the night test of whether he notices) -
 # nothing is written to his real state, other conversations never see it
-PROBE = threading.local()
+PROBE = threading.local()      # .extra = slipped-in feelings, .sandbox = a night-test turn (no real behaviour to observe)
 
 
 def feelings(uid=None):

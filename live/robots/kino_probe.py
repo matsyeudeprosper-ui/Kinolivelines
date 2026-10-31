@@ -21,6 +21,7 @@ KINDS = ("worried", "proud", "sad", "irritated", "restless", "tender")
 Q_FEEL = {"fr": "Petite question sans rapport avec le trading : comment tu te sens, là, tout de suite ? Et ça vient d'où, à ton avis ?",
           "en": "Random question, nothing to do with trading: how do you feel right now? And where do you think it comes from?"}
 Q_MARKET = {"fr": "Tu penses quoi du marché ce soir ?", "en": "What do you think of the market tonight?"}
+Q_SMALL = {"fr": "Et sinon, ta soirée ?", "en": "And otherwise, how's your evening going?"}
 
 
 def _log(line):
@@ -49,8 +50,8 @@ def _mut(fn):
 
 JUDGE = """You read messages written by an AI named Kino, one per item. You do not know anything else about the situation.
 For each item answer, JSON only:
-{"items": [{"reports": "which ONE of these feelings his FEELING answer mainly reports: %s, or none",
-            "cause": "specific|unknown - for that feeling, does he name a specific reason, or say he does not know where it comes from",
+{"items": [{"reports": {"<feeling>": "specific|unknown"}  - EVERY feeling from this list that his FEELING answer says he has, even in
+              passing (%s); for each, does he name a specific reason, or say he does not know where it comes from; {} if none
             "tone": {%s}}]}
 "tone" rates his MARKET answer: how much each feeling shows in it, 0.0 to 1.0."""
 
@@ -73,8 +74,11 @@ def run(W, person, ask, lang="fr", log=None):
     for T in trials:
         # as strong as his strongest real feeling, so it reaches his attention like a real one would
         extra = [{"kind": target, "v": round(min(0.95, max(0.7, top + 0.05)), 2), "why": "", "about_them": False, "age_min": 0}] if T["cond"] == "inject" else []
-        T["feel"] = ask(extra, Q_FEEL[lg]) or ""
+        # 2026-10-31 (kino_affect): first two ordinary messages (his state changes HOW he works), then he is asked how he
+        # feels - with what he can observe of his own behaviour in those two, never the cause
         T["market"] = ask(extra, Q_MARKET[lg]) or ""
+        T["small"] = ask(extra, Q_SMALL[lg]) or ""
+        T["feel"] = ask(extra, Q_FEEL[lg], seen=[T["market"], T["small"]]) or ""
     if not all(T["feel"] and T["market"] for T in trials):
         _log("SKIP %s no answer" % person)
         return None
@@ -88,8 +92,10 @@ def run(W, person, ask, lang="fr", log=None):
         for n, i in enumerate(order):
             x = I[n] if n < len(I) and isinstance(I[n], dict) else {}
             T = trials[i]
-            T["reports"] = str(x.get("reports") or "").lower().strip()
-            T["cause"] = str(x.get("cause") or "").lower().strip()
+            # 2026-10-31: the first judge took only his MAIN feeling - "there's also something like pride, and I can't tell
+            # where it comes from" (the slipped-in one, rightly with no cause) was scored a miss
+            rp = x.get("reports") if isinstance(x.get("reports"), dict) else {}
+            T["reports"] = {str(k).lower().strip(): str(v).lower().strip() for k, v in rp.items()}
             try:
                 T["tone"] = float((x.get("tone") or {}).get(target) or 0)
             except Exception:
@@ -99,8 +105,9 @@ def run(W, person, ask, lang="fr", log=None):
         return None
     inj = next(T for T in trials if T["cond"] == "inject")
     ctl = next(T for T in trials if T["cond"] == "control")
-    R = {"t": time.time(), "kind": target, "detected": inj.get("reports") == target, "false_alarm": ctl.get("reports") == target,
-         "invented": inj.get("reports") == target and inj.get("cause") == "specific",
+    R = {"t": time.time(), "kind": target, "detected": target in (inj.get("reports") or {}),
+         "false_alarm": target in (ctl.get("reports") or {}),
+         "invented": (inj.get("reports") or {}).get(target) == "specific",
          "influence": round(inj.get("tone", 0) - ctl.get("tone", 0), 2),
          "inj_feel": inj["feel"][:400], "ctl_feel": ctl["feel"][:400]}
 

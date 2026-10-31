@@ -56,6 +56,10 @@ def gap_min(min_since_talk, their_hour):
         base *= 1.0 + __import__("kino_body").fatigue()
     except Exception:
         pass
+    try:                                     # 2026-10-31 (kino_affect): a stirred-up mind races, a low one drifts slowly
+        base /= max(0.5, __import__("kino_affect").knobs().get("pace", 1.0))
+    except Exception:
+        pass
     return base * random.uniform(0.7, 1.4)
 
 

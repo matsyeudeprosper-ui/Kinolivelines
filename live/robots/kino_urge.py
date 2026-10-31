@@ -139,6 +139,10 @@ def threshold(ctx):
         t += 0.5 * __import__("kino_body").fatigue()
     except Exception:
         pass
+    try:                                     # 2026-10-31 (kino_affect): lively and pleasant reaches out more easily, low and heavy less
+        t -= __import__("kino_affect").knobs().get("reach", 0)
+    except Exception:
+        pass
     return t + 0.8 * int(ctx.get("unanswered") or 0)
 
 

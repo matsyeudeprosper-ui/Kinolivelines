@@ -18273,6 +18273,14 @@ def _one_memory(user, c):
             L.insert(0, _wsb)
     except Exception:
         pass
+    try:                                               # 2026-10-31 (kino_affect): what he notices in his own behaviour
+        import kino_affect as _KAm, kino_inner as _KIm
+        if not getattr(_KIm.PROBE, "sandbox", False):
+            _spb = _KAm.self_perception(_person(uid), c.get("msgs") or [], c.get("lang") == "en")
+            if _spb:
+                L.insert(1, _spb)
+    except Exception:
+        pass
     try:                                               # 2026-10-31: his inner life - attention, needs, hopes, trust, nature
         import kino_psyche as _KPm
         _pb = _KPm.block(_person(uid), uid, "en" if c.get("lang") == "en" else "fr")
@@ -19769,6 +19777,14 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _ff = _light_facts(_ff)
         except Exception:
             _mdl = "sonnet"
+        _careful, _kn = False, {}
+        try:                                                    # 2026-10-31 (kino_affect): a tense state makes him think with the
+            import kino_affect as _KAf                          # stronger model - his feeling changes the machinery, not his words
+            _kn = _KAf.knobs(uid)
+            if not event and _mdl == "sonnet" and _kn.get("careful"):
+                _mdl, _careful = "opus", True
+        except Exception:
+            pass
         _ff, _mm1 = _ground(_ff, c), _ground(_mm1, c)          # 2026-10-28: what he already said is marked as such
         try:                                                    # 2026-10-29: his own note too (it re-announced "only watching" x3)
             _md0 = dict(c.get("mind") or {})
@@ -19899,12 +19915,16 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _sim = _KDs.simulate(W, "; ".join("%s: %s" % (k_, v_) for k_, v_ in _rd2.items() if k_ != "t" and v_),
                                  _KO.transcript(c.get("msgs"), lang=lang), say, log=os.path.join(DIR, "robots", "kino_depth.log"))
             # answering them: only when he pictures them taking it badly (they are waiting); his own messages: any risk he sees
-            if _sim and (float(_sim.get("valence") or 0) < (0.3 if event and str(_sim.get("risk") or "").strip() else -0.1)):
+            # 2026-10-31 (kino_affect): how good the pictured reaction must be is set by his state (tense: stricter; calm and
+            # content: he trusts his first draft more)
+            _bar = float((_kn or {}).get("sim_bar", -0.1)) if "_kn" in dir() else -0.1
+            if _sim and (float(_sim.get("valence") or 0) < (max(0.3, _bar) if event and str(_sim.get("risk") or "").strip() else _bar)):
                 _KO._log(cid, "IMAGINE", "%s | %s" % (_sim.get("they_feel"), _sim.get("risk")))
                 r4 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
                               model=_mdl, note=_KDs.sim_note(_sim, lang) + ("\n\nYOUR DRAFT: " if lang == "en" else "\n\nTON BROUILLON : ") + say[:1500])
                 if r4 is not None:
                     say, acts, fil = r4["say"], r4["acts"] or acts, r4["fil"] or fil
+                    _rewrote = True
         except Exception as e:
             try:
                 _KO._log(cid, "IMAGINE_ERROR", "%s %s" % (type(e).__name__, e))
@@ -19969,6 +19989,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _chat_mut(cid, put)
     finally:
         _release()                                     # the draft becomes the message in the same moment
+    try:                                               # 2026-10-31 (kino_affect): what he did on this turn, for noticing himself
+        if not event and say:
+            __import__("kino_affect").note_turn(_person(uid), _mdl, _careful, bool(locals().get("_rewrote")))
+    except Exception:
+        pass
     for k, v in acts:
         if event and not say and k != "ordre":
             continue
@@ -22116,16 +22141,22 @@ def _kino_probe_night(u, person, c):
     lang = "en" if c.get("lang") == "en" else "fr"
     _ff, _nn = _one_facts(u, c), _one_now(u, c)
 
-    def ask(extra, q):
-        _KIb.PROBE.extra = extra
+    def ask(extra, q, seen=None):
+        _KIb.PROBE.extra, _KIb.PROBE.sandbox = extra, True
         try:
+            import kino_affect as _KAp
             mm = _one_memory(u, c)
+            if seen:                                   # what he did in this sandbox so far, observed like on a real day
+                _sp = _KAp.self_perception(person, c.get("msgs") or [], lang == "en", extra=seen)
+                if _sp:
+                    mm = _sp + "\n" + mm
+            _md = "opus" if _KAp.knobs(u.get("id")).get("careful") else "sonnet"     # the same machinery as a real turn
             fake = dict(c, id="probe_" + str(c.get("id")), msgs=list((c.get("msgs") or [])[-20:]) +
                         [{"role": "user", "text": q, "t": time.time()}])
-            r = _KOb.turn(W, fake, _ff, mm, _nn, None, lang, log=os.path.join(DIR, "robots", "kino_probe.log"), model="sonnet")
+            r = _KOb.turn(W, fake, _ff, mm, _nn, None, lang, log=os.path.join(DIR, "robots", "kino_probe.log"), model=_md)
             return (r or {}).get("say")
         finally:
-            _KIb.PROBE.extra = None
+            _KIb.PROBE.extra, _KIb.PROBE.sandbox = None, False
     _KPb.run(W, person, ask, lang, log=os.path.join(DIR, "robots", "kino_probe.log"))
 
 
