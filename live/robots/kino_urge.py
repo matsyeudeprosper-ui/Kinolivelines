@@ -135,6 +135,10 @@ def threshold(ctx):
         t = 1.0
     else:
         t = 2.5
+    try:                                     # 2026-10-31 (kino_body): drained, he needs more of a reason to reach out
+        t += 0.5 * __import__("kino_body").fatigue()
+    except Exception:
+        pass
     return t + 0.8 * int(ctx.get("unanswered") or 0)
 
 

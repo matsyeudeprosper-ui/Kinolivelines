@@ -52,6 +52,10 @@ def _w(t):
 def gap_min(min_since_talk, their_hour):
     """how long until the next thought comes - his rhythm (with some randomness, like a mind)"""
     base = 12 if min_since_talk < 60 else 30 if their_hour else 70
+    try:                                     # 2026-10-31 (kino_body): a drained mind wanders more slowly
+        base *= 1.0 + __import__("kino_body").fatigue()
+    except Exception:
+        pass
     return base * random.uniform(0.7, 1.4)
 
 

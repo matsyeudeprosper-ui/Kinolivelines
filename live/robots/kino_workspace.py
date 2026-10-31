@@ -96,6 +96,13 @@ def candidates(person, uid, en=False):
                       ("what he is reaching for: %s" if en else "ce qu'il cherche en ce moment : %s") % rd["reaching_for"], "him", True))
     except Exception:
         pass
+    try:                                                            # his body out of balance (kino_body) competes too
+        import kino_body as KB
+        b = KB.strongest(en)
+        if b:
+            C.append(("body", 0.8 * b[0], 30, b[1], "body", False))
+    except Exception:
+        pass
     try:                                                            # his own last thought (kino_stream) competes too
         import kino_stream as KST
         th = KST.latest(person)
@@ -232,6 +239,12 @@ def block(person, uid, context="", lang="fr"):
         tl = __import__("kino_stream").recent_line(person, en)
         if tl:
             L.append(tl)
+    except Exception:
+        pass
+    try:
+        bl = __import__("kino_body").line(en)
+        if bl:
+            L.append(bl)
     except Exception:
         pass
     return "\n".join(L)

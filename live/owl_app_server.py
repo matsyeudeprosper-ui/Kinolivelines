@@ -23099,6 +23099,10 @@ def _urge_tick():
                 import kino_psyche as _KPst
                 for _nk in _KPst.tick(pm, ctx):
                     _KU.add(pm, "A NEED OF YOURS - %s" % _KPst.NEED_TEXT[_nk])
+                try:                                   # 2026-10-31 (kino_body): his body is sensed (cached 60 s, one body for all)
+                    __import__("kino_body").sense()
+                except Exception:
+                    pass
                 try:                                   # 2026-10-31 (kino_workspace): the competition for his awareness goes on
                     __import__("kino_workspace").tick(pm, uid)                # between messages too
                 except Exception:
