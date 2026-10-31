@@ -610,10 +610,11 @@ def tests_line(P, en=False):
             L.append(_pl[0].lower() + _pl[1:].rstrip("."))
     except Exception:
         pass
-    return (("How well you know yourself (measured by the app, not by you or him; if you do not know why a result is what it is, "
-             "say so rather than guess): " if en else
-             "À quel point tu te connais (mesuré par l'appli, ni par toi ni par lui ; si tu ne sais pas pourquoi un résultat est ce "
-             "qu'il est, dis-le plutôt que de deviner) : ") + " ; ".join(L) + ".") if L else ""
+    # 2026-10-31 23:19 (watch): he said "my bets, 1 for 3" - mixing these self-tests with his market bets (0 right of 1)
+    return (("How well you know yourself (tests about YOU, measured by the app - not your market bets, which are counted "
+             "separately; if you do not know why a result is what it is, say so rather than guess): " if en else
+             "À quel point tu te connais (des tests sur TOI, mesurés par l'appli - pas tes paris sur le marché, comptés à part ; si tu "
+             "ne sais pas pourquoi un résultat est ce qu'il est, dis-le plutôt que de deviner) : ") + " ; ".join(L) + ".") if L else ""
 
 
 # ------------------------------------------------------------------------------------------------------- what he reads
