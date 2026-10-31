@@ -18249,6 +18249,13 @@ def _one_memory(user, c):
                 L.append(_bk)
     except Exception:
         pass
+    try:                                               # 2026-10-31 (kino_selfmodel): ONE self first - his portrait of himself, how he
+        import kino_selfmodel as _KSFm                      # thinks they see him, what he is changing, what he notices in his mind
+        _sfb = _KSFm.block(_person(uid), uid, "en" if c.get("lang") == "en" else "fr")
+        if _sfb:
+            L.insert(0, _sfb)
+    except Exception:
+        pass
     try:                                               # 2026-10-31: his inner life - attention, needs, hopes, trust, nature
         import kino_psyche as _KPm
         _pb = _KPm.block(_person(uid), uid, "en" if c.get("lang") == "en" else "fr")
@@ -22226,6 +22233,12 @@ def _kino_night_mind():
                     pass
                 try:                                  # 2026-10-31 (kino_depth 6 + 7): sleeping on what is open; his life story
                     _kino_depth_night(_u, _p, _ch[0])
+                except Exception:
+                    pass
+                try:                                  # 2026-10-31 (kino_selfmodel): his change, his tests, then one portrait of himself
+                    import kino_selfmodel as _KSFn
+                    _mm = (_jload(_chat_path(_person_main(_p)), {}) or {}).get("msgs") or [] if _person_main(_p) else []
+                    _KSFn.night(_rc().W, _p, _u.get("id"), _mm if len(_mm) > len(_ch[0].get("msgs") or []) else (_ch[0].get("msgs") or []), log=os.path.join(DIR, "robots", "kino_selfmodel.log"))
                 except Exception:
                     pass
         except Exception:

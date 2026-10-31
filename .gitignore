@@ -232,3 +232,6 @@ live/robots/kino_psyche.log
 live/robots/kino_depth.json
 live/robots/kino_depth.json.tmp
 live/robots/kino_depth.log
+live/robots/kino_selfmodel.json
+live/robots/kino_selfmodel.json.tmp
+live/robots/kino_selfmodel.log

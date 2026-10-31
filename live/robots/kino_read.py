@@ -41,7 +41,10 @@ Read him RIGHT NOW. JSON only:
  "knows": "trading ideas/words he clearly masters, comma separated (empty if none showed)",
  "unfamiliar": "ideas/words he seems not to know or asked about, comma separated (empty if none)",
  "his_words": "his OWN expressions for things in his last message (his way of naming them), comma separated, max 4; empty if none",
- "assumes": "what his last message shows he takes as TRUE right now about his account, trades, robots or tests (in plain words); empty if nothing"}
+ "assumes": "what his last message shows he takes as TRUE right now about his account, trades, robots or tests (in plain words); empty if nothing",
+ "of_kino": "what his last message shows he THINKS or FEELS ABOUT KINO himself (trusts his calls, doubts him, finds him reliable, likes him, is annoyed by him...), plain words; empty if it shows nothing about Kino",
+ "of_kino_aspect": "competence|reliability|warmth - which side of Kino that is about; empty if nothing",
+ "of_kino_val": -1.0 to 1.0 (how badly or well he sees Kino on that side; 0 if nothing)}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -106,6 +109,11 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         KDP.on_reply(_person_of(uid), j, _tl)
         if j.get("assumes"):
             KDP.note_assumes(_person_of(uid), j.get("assumes"))
+    except Exception:
+        pass
+    try:                                               # 2026-10-31 (kino_selfmodel 2): what he seems to think of Kino
+        import kino_selfmodel as KSF
+        KSF.on_read(_person_of(uid), uid, j)
     except Exception:
         pass
     fj = " ".join(str(j.get("joke_fell_flat") or "").split())[:160]

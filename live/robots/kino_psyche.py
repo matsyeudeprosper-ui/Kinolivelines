@@ -391,6 +391,11 @@ def block(person, uid=None, lang="fr"):
     cand.sort(key=lambda x: -x[0])
     spot = cand[:3]
     rest = cand[3:6]
+    try:                                                        # kino_selfmodel 4: the observer remembers what was in focus
+        import kino_selfmodel as KSF
+        KSF.note_attention(person, [t for _, k, t in spot if k != "him"])
+    except Exception:
+        pass
     L = []
     if spot:
         L.append(("IN YOUR ATTENTION RIGHT NOW (the few things that stand out; the rest is background): " if en else
