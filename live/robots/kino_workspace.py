@@ -96,6 +96,14 @@ def candidates(person, uid, en=False):
                       ("what he is reaching for: %s" if en else "ce qu'il cherche en ce moment : %s") % rd["reaching_for"], "him", True))
     except Exception:
         pass
+    try:                                                            # his own last thought (kino_stream) competes too
+        import kino_stream as KST
+        th = KST.latest(person)
+        if th:
+            C.append(("thought:%d" % int(th["t"]), 0.45 + (0.1 if th.get("about_him") else 0), int((time.time() - th["t"]) / 60),
+                      ("a thought of yours: " if en else "une pensée à toi : ") + th["text"], "thought", bool(th.get("about_him"))))
+    except Exception:
+        pass
     try:
         import kino_urge as KU
         for k, w in (KU.state(person).get("items") or [])[:4]:
@@ -220,6 +228,12 @@ def block(person, uid, context="", lang="fr"):
     sl = stream_line(person, en)
     if sl:
         L.append(sl)
+    try:
+        tl = __import__("kino_stream").recent_line(person, en)
+        if tl:
+            L.append(tl)
+    except Exception:
+        pass
     return "\n".join(L)
 
 

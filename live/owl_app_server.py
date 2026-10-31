@@ -23103,6 +23103,14 @@ def _urge_tick():
                     __import__("kino_workspace").tick(pm, uid)                # between messages too
                 except Exception:
                     pass
+                try:                                   # 2026-10-31 (kino_stream): his mind goes on by itself while nobody talks
+                    import kino_stream as _KSTt
+                    _lm_t = max([float(m.get("t") or 0) for m in M if m.get("role") in ("user", "ai")] or [0])
+                    if not ctx["in_talk"] and _KSTt.due(pm, (now - _lm_t) / 60.0, ctx["their_hour"], now):
+                        threading.Thread(target=_KSTt.think, args=(_rc().W, pm, uid, "en" if c.get("lang") == "en" else "fr"),
+                                         kwargs={"log": os.path.join(DIR, "robots", "kino_stream.log")}, daemon=True).start()
+                except Exception:
+                    pass
                 try:                                   # 2026-10-31 (kino_depth): silence teaches, threads come back, nights bring ideas
                     import kino_depth as _KDt
                     if int(now) % 600 < 60:

@@ -241,3 +241,6 @@ live/robots/kino_probe.log
 live/robots/kino_workspace.json
 live/robots/kino_workspace.json.tmp
 live/robots/kino_workspace.log
+live/robots/kino_stream.json
+live/robots/kino_stream.json.tmp
+live/robots/kino_stream.log
