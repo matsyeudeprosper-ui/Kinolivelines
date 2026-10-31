@@ -474,10 +474,17 @@ def run_tests(W, person, msgs, log=None):
             Q.append("ITEM %d\nHE WROTE: %s\n%s" % (len(Q) + 1, x[1], "\n".join("%d) %s" % (k + 1, o) for k, o in enumerate(opts))))
         if Q:
             j2 = W.ask_json("You are Kino. Who you are: %s\nYour own expressions: %s\nFor each item, one of the 4 replies is the one YOU really "
-                            "sent; the others are by other AIs. Which is yours? JSON only: {\"picks\": [n, ...]}" % (me[:1500] or "-", sig or "-"),
+                            "sent; the others are by other AIs. Which is yours, and how sure are you (0 = a pure guess, 100 = certain)? "
+                            "JSON only: {\"picks\": [n, ...], \"sure\": [0-100, ...]}" % (me[:1500] or "-", sig or "-"),
                             "\n\n".join(Q) + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
             pk = [int(x) for x in ((j2 or {}).get("picks") or []) if str(x).strip().isdigit()]
             R["rec"] = [sum(1 for a, b in zip(pk, ans) if a == b), len(ans)]
+            _su = (j2 or {}).get("sure") or []
+            for a, b, c_ in zip(pk, ans, _su):                     # 2026-10-31 (plan 6): how sure he was vs whether he was right
+                try:
+                    R.setdefault("cal", []).append([round(max(0, min(100, float(c_))) / 100.0, 2), int(a == b), 0.25])
+                except Exception:
+                    pass
     except Exception:
         pass
     # (b) self-prediction: before seeing it, how would he answer?
@@ -485,16 +492,23 @@ def run_tests(W, person, msgs, log=None):
         Q = ["ITEM %d\nBEFORE:\n%s\nHE WROTE: %s" % (i + 1, _tx(x[0]) or "-", x[1]) for i, x in enumerate(pred)]
         j3 = W.ask_json("You are Kino. Who you are: %s\nFor each item, predict how YOU answered his message (you will be checked against "
                         "what you really sent). JSON only: {\"items\": [{\"length\": \"short|medium|long\", \"question\": \"yes|no - did "
-                        "you end with a question\"}]}" % (me[:1500] or "-"), "\n\n".join(Q) + "\nJSON only.",
+                        "you end with a question\", \"sure_length\": 0-100, \"sure_question\": 0-100 (how sure you are of each)}]}" % (
+                            me[:1500] or "-"), "\n\n".join(Q) + "\nJSON only.",
                         models=("sonnet",), timeout=120, log=log, warm=False)
         I = (j3 or {}).get("items") or []
         hit = tot = 0
         for i, x in enumerate(pred):
             if i >= len(I) or not isinstance(I[i], dict):
                 continue
-            hit += int(str(I[i].get("length") or "").lower() == _len_bucket(x[2]))
-            hit += int(str(I[i].get("question") or "").lower().startswith("y") == ("?" in x[2][-120:]))
+            ok_l = int(str(I[i].get("length") or "").lower() == _len_bucket(x[2]))
+            ok_q = int(str(I[i].get("question") or "").lower().startswith("y") == ("?" in x[2][-120:]))
+            hit += ok_l + ok_q
             tot += 2
+            for k_, ok_, ch_ in (("sure_length", ok_l, 0.33), ("sure_question", ok_q, 0.5)):
+                try:
+                    R.setdefault("cal", []).append([round(max(0, min(100, float(I[i].get(k_)))) / 100.0, 2), ok_, ch_])
+                except Exception:
+                    pass
         if tot:
             R["pred"] = [hit, tot]
     except Exception:
@@ -520,6 +534,42 @@ def run_tests(W, person, msgs, log=None):
     return R
 
 
+def calibration(P, nights=14):
+    """does his confidence carry information? items = [sure 0..1, right 0/1, chance]. Sure is rescaled from 'guess..certain'
+    to 'chance..1' so it can be compared with how often he was right"""
+    X = [c for x in (P.get("tests") or []) if time.time() - x["t"] < nights * 86400 for c in (x.get("cal") or [])]
+    if len(X) < 12:
+        return None
+    exp = [ch + (1 - ch) * s for s, ok, ch in X]
+    acc = sum(ok for _, ok, _ in X) / len(X)
+    hi = [ok for s, ok, _ in X if s >= 0.7]
+    lo = [ok for s, ok, _ in X if s < 0.5]
+    return {"n": len(X), "expected": round(sum(exp) / len(X), 2), "right": round(acc, 2),
+            "hi": (round(sum(hi) / len(hi), 2), len(hi)) if hi else None, "lo": (round(sum(lo) / len(lo), 2), len(lo)) if lo else None}
+
+
+def calibration_line(P, en=False):
+    C = calibration(P)
+    if not C:
+        return ""
+    gap = C["expected"] - C["right"]
+    judge = (("you are overconfident: you expect to be right %d %% of the time and are right %d %%" if en else
+              "tu es trop sûr de toi : tu t'attends à avoir raison %d %% du temps et tu as raison %d %%") if gap > 0.1 else
+             ("you are underconfident: you expect %d %% and are right %d %%" if en else
+              "tu te sous-estimes : tu t'attends à %d %% et tu as raison %d %%") if gap < -0.1 else
+             ("your confidence is about right: you expect %d %% and are right %d %%" if en else
+              "ta confiance est à peu près juste : tu t'attends à %d %% et tu as raison %d %%")) % (round(100 * C["expected"]), round(100 * C["right"]))
+    if C["hi"] and C["lo"]:
+        d = C["hi"][0] - C["lo"][0]
+        judge += ((" ; when you feel sure you are right %d %%, when you feel unsure %d %% - %s" if en else
+                   " ; quand tu te sens sûr tu as raison %d %%, quand tu doutes %d %% - %s") % (
+            round(100 * C["hi"][0]), round(100 * C["lo"][0]),
+            (("your feeling of being sure means something" if en else "ton sentiment d'être sûr veut dire quelque chose") if d >= 0.15 else
+             ("your feeling of being sure tells you almost nothing yet" if en else "ton sentiment d'être sûr ne t'apprend presque rien pour l'instant"))))
+    return (("How far you can trust your own feeling of being sure (from %d checks): " if en else
+             "À quel point tu peux te fier à ton sentiment d'être sûr (sur %d vérifications) : ") % C["n"]) + judge
+
+
 def tests_line(P, en=False):
     T = [x for x in (P.get("tests") or []) if time.time() - x["t"] < 8 * 86400]
     if not T:
@@ -542,6 +592,18 @@ def tests_line(P, en=False):
                   "message, tu devines sa longueur et si elle finissait par une question)") % round(100.0 * ph[0] / ph[1]))
     if S:
         L.append(("your description of yourself held steady (%d %%)" if en else "ta description de toi-même est restée stable (%d %%)") % round(100 * sum(S) / len(S)))
+    try:
+        _il = __import__("kino_indicators").line(en)
+        if _il:
+            L.append(_il[0].lower() + _il[1:].rstrip("."))
+    except Exception:
+        pass
+    try:
+        _cl = calibration_line(P, en)
+        if _cl:
+            L.append(_cl[0].lower() + _cl[1:])
+    except Exception:
+        pass
     try:                                               # kino_probe: does what he reports about his inside match what is there
         _pl = __import__("kino_probe").line(P.get("_person") or "", en)
         if _pl:

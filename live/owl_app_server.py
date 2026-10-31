@@ -18123,14 +18123,21 @@ def _one_memory(user, c):
         _Mu = [m for m in (c.get("msgs") or []) if m.get("role") == "user"]
         _lt = (time.time() - float(_Mu[-2].get("t") or 0)) / 3600 if len(_Mu) >= 2 else None
         import kino_inner as _KIl
-        _ft, _days = None, set()
-        for _ux in _person_uids(uid) or [uid]:          # every thread of the person: when they met, how many days they talked
-            for _x in (_ttl(("chats", _ux), 60, lambda _ux=_ux: chat_list(_user_by_id(_ux) or {"id": _ux})).get("chats") or [])[:30]:
-                _cx = _jload(_chat_path(_x["id"]), {}) or {}
-                for _m in _cx.get("msgs") or []:
-                    if _m.get("role") == "user" and _m.get("t"):
-                        _ft = min(_ft or float(_m["t"]), float(_m["t"]))
-                        _days.add(time.strftime("%Y-%m-%d", time.gmtime(float(_m["t"]))))
+        def _met(uid=uid):                             # every thread of the person: when they met, how many days they talked
+            _ft, _days = None, set()
+            for _ux in _person_uids(uid) or [uid]:
+                for _x in (_ttl(("chats", _ux), 60, lambda _ux=_ux: chat_list(_user_by_id(_ux) or {"id": _ux})).get("chats") or [])[:30]:
+                    _cx = _jload(_chat_path(_x["id"]), {}) or {}
+                    for _m in _cx.get("msgs") or []:
+                        if _m.get("role") == "user" and _m.get("t"):
+                            _ft = min(_ft or float(_m["t"]), float(_m["t"]))
+                            _days.add(time.strftime("%Y-%m-%d", time.gmtime(float(_m["t"]))))
+            return _ft, _days
+        # 2026-10-31 (speed): ~30 chat files were parsed on every reply to count the days they talked - a 10-min cache
+        # (today is added live: talking today is a day together)
+        _ft, _days = _ttl(("met", uid), 600, _met)
+        _days = set(_days) | {time.strftime("%Y-%m-%d", time.gmtime(float(m["t"]))) for m in (c.get("msgs") or [])[-30:]
+                              if m.get("role") == "user" and m.get("t")}
         _sb = _KSm.block(_person(uid), kino_self_said=_ks, talks=len(_days), laughs=len(_KIl.moments(uid, "joke") or []),
                          last_talk_h=_lt, first_t=_ft)
         if _sb:
@@ -22309,6 +22316,13 @@ def _kino_night_mind():
                     pass
                 try:                                  # 2026-10-31 (kino_probe): does he notice a feeling slipped in without a cause
                     _kino_probe_night(_u, _p, _ch[0])
+                except Exception:
+                    pass
+                try:                                  # 2026-10-31 (kino_indicators): monthly outside review against the checklist
+                    import kino_indicators as _KIx, kino_selfmodel as _KSFx
+                    if _p == "kino" and _KIx.due():
+                        _KIx.review(_rc().W, _KSFx.tests_line(_KSFx._P(_KSFx._load(), _p), True),
+                                    log=os.path.join(DIR, "robots", "kino_indicators.log"))
                 except Exception:
                     pass
         except Exception:

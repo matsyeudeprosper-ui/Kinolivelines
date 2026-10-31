@@ -247,3 +247,6 @@ live/robots/kino_stream.log
 live/robots/kino_body.json
 live/robots/kino_body.json.tmp
 live/robots/kino_body.log
+live/robots/kino_indicators.json
+live/robots/kino_indicators.json.tmp
+live/robots/kino_indicators.log

@@ -21,7 +21,7 @@ STORE = os.path.join(HERE, "kino_workspace.json")
 LOG = os.path.join(HERE, "kino_workspace.log")
 _LK = threading.Lock()
 IGNITE = 0.35          # below this nothing reaches awareness
-MARGIN = 0.10          # a newcomer must beat what is on stage by this much
+MARGIN = 0.20          # a newcomer must beat what is on stage by this much (0.10 gave 27 switches in an hour of chat)
 FADE_MIN = 40.0        # half-life of salience while on stage (minutes) - habituation
 ONSET = 0.15           # a thing that just appeared grabs attention (first 10 minutes)
 
@@ -181,8 +181,8 @@ def compete(person, uid, context="", en=False, write=True):
         P["bias"] = [b for b in P.get("bias") or [] if b["until"] > now - 6 * 3600][-8:]
         return P.get("stage")
     st = _mut(f)
-    for ch in changed:
-        _broadcast(person, uid, ch)
+    if changed:                                                     # the broadcast writes other stores - never while a reply waits
+        threading.Thread(target=lambda: [_broadcast(person, uid, ch) for ch in changed], daemon=True).start()
     return st
 
 
