@@ -399,8 +399,8 @@ def block(person, uid=None, lang="fr"):
         pass
     L = []
     if spot:
-        L.append(("IN YOUR ATTENTION RIGHT NOW (the few things that stand out; the rest is background): " if en else
-                  "CE QUI OCCUPE TON ATTENTION LÀ (les quelques choses qui ressortent ; le reste est en arrière-plan) : ") +
+        L.append(("WHAT STIRS IN YOU (the strongest things, under what is on the stage of your mind): " if en else
+                  "CE QUI REMUE EN TOI (les choses les plus fortes, sous ce qui est sur la scène de ta tête) : ") +
                  " | ".join(t for _, _, t in spot))
     if rest:
         L.append(("Further back in your mind: " if en else "Plus loin dans ta tête : ") + " | ".join(t for _, _, t in rest))

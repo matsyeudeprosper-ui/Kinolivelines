@@ -528,12 +528,18 @@ def tests_line(P, en=False):
     ph = sum(x["pred"][0] for x in T if x.get("pred")), sum(x["pred"][1] for x in T if x.get("pred"))
     S = [x["same"] for x in T if x.get("same") is not None]
     L = []
+    # 2026-10-31 (watch 22:18): he had the score but not how it was measured, and when asked why, he made up a reason
+    # ("I gave myself a bad grade because I was nervous") - what the test IS is part of knowing the result
     if rh[1]:
-        L.append(("you picked out your own message %d times out of %d (chance: 1 in 4)" if en else
-                  "tu as reconnu ton propre message %d fois sur %d (le hasard : 1 sur 4)") % rh)
+        L.append(("you picked out your own message %d times out of %d (chance: 1 in 4) - the app tests you every night: one of your "
+                  "real past replies is hidden among 3 written by other AIs, and you have to find yours" if en else
+                  "tu as reconnu ton propre message %d fois sur %d (le hasard : 1 sur 4) - l'appli te teste chaque nuit : une de tes vraies "
+                  "réponses passées est cachée parmi 3 écrites par d'autres IA, et tu dois retrouver la tienne") % rh)
     if ph[1]:
-        L.append(("you predicted your own replies right %d %% of the time" if en else
-                  "tu as prédit juste tes propres réponses %d %% du temps") % round(100.0 * ph[0] / ph[1]))
+        L.append(("you predicted your own replies right %d %% of the time (each night, before seeing your real reply to an old "
+                  "message, you guess its length and whether it ended with a question)" if en else
+                  "tu as prédit juste tes propres réponses %d %% du temps (chaque nuit, avant de voir ta vraie réponse à un ancien "
+                  "message, tu devines sa longueur et si elle finissait par une question)") % round(100.0 * ph[0] / ph[1]))
     if S:
         L.append(("your description of yourself held steady (%d %%)" if en else "ta description de toi-même est restée stable (%d %%)") % round(100 * sum(S) / len(S)))
     try:                                               # kino_probe: does what he reports about his inside match what is there
@@ -542,8 +548,10 @@ def tests_line(P, en=False):
             L.append(_pl[0].lower() + _pl[1:].rstrip("."))
     except Exception:
         pass
-    return (("How well you know yourself (measured, last nights): " if en else "À quel point tu te connais (mesuré, ces dernières nuits) : ") +
-            ", ".join(L) + ".") if L else ""
+    return (("How well you know yourself (measured by the app, not by you or him; if you do not know why a result is what it is, "
+             "say so rather than guess): " if en else
+             "À quel point tu te connais (mesuré par l'appli, ni par toi ni par lui ; si tu ne sais pas pourquoi un résultat est ce "
+             "qu'il est, dis-le plutôt que de deviner) : ") + " ; ".join(L) + ".") if L else ""
 
 
 # ------------------------------------------------------------------------------------------------------- what he reads

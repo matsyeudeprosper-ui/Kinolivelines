@@ -18256,6 +18256,14 @@ def _one_memory(user, c):
             L.insert(0, _sfb)
     except Exception:
         pass
+    try:                                               # 2026-10-31 (kino_workspace): the ONE thing he is aware of now, before all
+        import kino_workspace as _KWm                  # else - what won the competition inside him, broadcast to his words
+        _wsb = _KWm.block(_person(uid), uid, " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-4:]
+                                                      if m.get("role") in ("user", "ai")), "en" if c.get("lang") == "en" else "fr")
+        if _wsb:
+            L.insert(0, _wsb)
+    except Exception:
+        pass
     try:                                               # 2026-10-31: his inner life - attention, needs, hopes, trust, nature
         import kino_psyche as _KPm
         _pb = _KPm.block(_person(uid), uid, "en" if c.get("lang") == "en" else "fr")
@@ -18319,6 +18327,10 @@ def _one_memory(user, c):
         import kino_episodes as _KEo
         Mm = [x for x in c.get("msgs") or [] if x.get("role") in ("user", "ai") and x.get("text")]
         cue = " ".join(str(x["text"]) for x in Mm[-4:])
+        try:                                           # 2026-10-31 (kino_workspace): what is on the stage of his mind brings its
+            cue += " " + __import__("kino_workspace").cue(_person(uid))    # own memories back too
+        except Exception:
+            pass
         # 2026-10-28 (engine 5): one person, all his logins - the shared moments of every thread come back
         E, _seen_e = [], set()
         for _ux in _person_uids(uid) or [uid]:
@@ -23087,6 +23099,10 @@ def _urge_tick():
                 import kino_psyche as _KPst
                 for _nk in _KPst.tick(pm, ctx):
                     _KU.add(pm, "A NEED OF YOURS - %s" % _KPst.NEED_TEXT[_nk])
+                try:                                   # 2026-10-31 (kino_workspace): the competition for his awareness goes on
+                    __import__("kino_workspace").tick(pm, uid)                # between messages too
+                except Exception:
+                    pass
                 try:                                   # 2026-10-31 (kino_depth): silence teaches, threads come back, nights bring ideas
                     import kino_depth as _KDt
                     if int(now) % 600 < 60:
