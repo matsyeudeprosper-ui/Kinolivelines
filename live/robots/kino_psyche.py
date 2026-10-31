@@ -392,8 +392,9 @@ def block(person, uid=None, lang="fr"):
     spot = cand[:3]
     rest = cand[3:6]
     try:                                                        # kino_selfmodel 4: the observer remembers what was in focus
-        import kino_selfmodel as KSF
-        KSF.note_attention(person, [t for _, k, t in spot if k != "him"])
+        import kino_selfmodel as KSF, kino_inner as KI0           # (not during the night probe: a slipped-in feeling is not his)
+        if not getattr(KI0.PROBE, "extra", None):
+            KSF.note_attention(person, [t for _, k, t in spot if k != "him"])
     except Exception:
         pass
     L = []

@@ -63,10 +63,15 @@ def feel(kind, delta, uid=None, why=""):
     _mut(f)
 
 
+# 2026-10-31 (kino_probe): a feeling slipped in for ONE call on this thread only (the night test of whether he notices) -
+# nothing is written to his real state, other conversations never see it
+PROBE = threading.local()
+
+
 def feelings(uid=None):
     """the feelings that are alive now (> 0.15), Kino's own + the ones about this member"""
     d = _load()
-    out = []
+    out = [dict(x) for x in (getattr(PROBE, "extra", None) or [])]
     for key, x in (d.get("feel") or {}).items():
         kind, _, who = key.partition(":")
         if who and who != uid:

@@ -70,6 +70,7 @@ def _mut(fn):
 
 def _P(d, person):
     P = d.setdefault(person, {})
+    P["_person"] = person
     P.setdefault("regard", {k: {"v": 0.6, "n": 0} for k in ASPECTS})
     P.setdefault("regard_ev", [])
     P.setdefault("att", [])
@@ -535,6 +536,12 @@ def tests_line(P, en=False):
                   "tu as prédit juste tes propres réponses %d %% du temps") % round(100.0 * ph[0] / ph[1]))
     if S:
         L.append(("your description of yourself held steady (%d %%)" if en else "ta description de toi-même est restée stable (%d %%)") % round(100 * sum(S) / len(S)))
+    try:                                               # kino_probe: does what he reports about his inside match what is there
+        _pl = __import__("kino_probe").line(P.get("_person") or "", en)
+        if _pl:
+            L.append(_pl[0].lower() + _pl[1:].rstrip("."))
+    except Exception:
+        pass
     return (("How well you know yourself (measured, last nights): " if en else "À quel point tu te connais (mesuré, ces dernières nuits) : ") +
             ", ".join(L) + ".") if L else ""
 

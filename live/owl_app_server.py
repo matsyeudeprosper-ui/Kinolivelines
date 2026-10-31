@@ -22072,6 +22072,27 @@ def _kino_depth_night(u, person, c):
         _KDn.write_story(W, person, "\n".join(sorted(H)), log=lg)
 
 
+def _kino_probe_night(u, person, c):
+    """2026-10-31 (owner: test the limit of the consciousness concept): the real one mind, with his real facts and memory, answers
+    in a sandbox copy of the conversation while a feeling is slipped in for that call only (kino_inner.PROBE, this thread)"""
+    W = _rc().W
+    import kino_probe as _KPb, kino_inner as _KIb, kino_one as _KOb
+    lang = "en" if c.get("lang") == "en" else "fr"
+    _ff, _nn = _one_facts(u, c), _one_now(u, c)
+
+    def ask(extra, q):
+        _KIb.PROBE.extra = extra
+        try:
+            mm = _one_memory(u, c)
+            fake = dict(c, id="probe_" + str(c.get("id")), msgs=list((c.get("msgs") or [])[-20:]) +
+                        [{"role": "user", "text": q, "t": time.time()}])
+            r = _KOb.turn(W, fake, _ff, mm, _nn, None, lang, log=os.path.join(DIR, "robots", "kino_probe.log"), model="sonnet")
+            return (r or {}).get("say")
+        finally:
+            _KIb.PROBE.extra = None
+    _KPb.run(W, person, ask, lang, log=os.path.join(DIR, "robots", "kino_probe.log"))
+
+
 def _kino_tics_night():
     """2026-10-28 (owner: human replies): at night he rereads his own messages of the day and notices the phrases he keeps
     repeating - a person hearing themselves, not a filter: what he does with it is his"""
@@ -22255,6 +22276,10 @@ def _kino_night_mind():
                     import kino_selfmodel as _KSFn
                     _mm = (_jload(_chat_path(_person_main(_p)), {}) or {}).get("msgs") or [] if _person_main(_p) else []
                     _KSFn.night(_rc().W, _p, _u.get("id"), _mm if len(_mm) > len(_ch[0].get("msgs") or []) else (_ch[0].get("msgs") or []), log=os.path.join(DIR, "robots", "kino_selfmodel.log"))
+                except Exception:
+                    pass
+                try:                                  # 2026-10-31 (kino_probe): does he notice a feeling slipped in without a cause
+                    _kino_probe_night(_u, _p, _ch[0])
                 except Exception:
                     pass
         except Exception:
