@@ -1,84 +1,84 @@
 {
- "date": "2026-10-25",
- "fr": "**Ce soir : ne pas courir après un prix qui a déjà filé dans notre sens. Avec le frein des 450 points et moitié moins après une perte, le robot filtré finit enfin au-dessus de zéro sur 42 jours.**\n\n**Les verdicts.** La batterie touche encore la limite de perte de 60 $ (2 mieux sur les deux moitiés, 14 un peu mieux, 19 non) et dit peu. Mes 17 essais sont contre le robot filtré (-61 $, trou de 57). Pas d'entrée après 450 points : +40 $. En plus, refuser quand la dernière heure a déjà couru 250, 300 ou 350 points dans notre sens : +59, +52, +54 $, mieux sur les deux moitiés aux trois réglages. Le trio avec moitié moins après une perte : +63 $ (+50 et +31), trou de 43 ; 69 jours +31 $, mais leur première moitié perd 30 $ ; vrais trades +21 $ (23 trades, trop peu).\n\n**Ce que je crois.** Plus fort : pas d'entrée après une grosse heure. Nouveau : quand la petite tendance de l'heure va déjà dans notre sens, on arrive trop tard. Plus faible : miser moins le jour ; moitié moins sur TOUS les trades fait mieux (+31 $, trou de 28 contre +24 $, trou de 41) : pas une vraie cause.\n\n**Ce que les trades apprennent.** 232 vrais trades, 46 % gagnés, -149 $. Quand la petite tendance de l'heure va déjà dans le sens du trade : 87 trades, 33 % gagnés sur chaque moitié, -73 $ pour 0,01 lot ; les 123 autres, 53 %, +11 $. Vrai le jour et la nuit. 3 seulement des 25 plus beaux gains en font partie. Pas de nouvelle pile : ce fait n'existe pas encore dans les piles ; je le demande.\n\n**Je propose.** Le trio à 350 points, ses voisins à 300 et 250, le frein seul (hors des sentiers : approcher la tendance de l'heure avec ce que le test sait), et une ceinture : moitié moins partout pendant la mauvaise passe.\n\n**Je demande.** Que le test et les piles connaissent la petite tendance de l'heure. Le constructeur reste bloqué.",
- "en": "**Tonight: do not chase a price that already ran our way. With the 450-point brake and half stake after a loss, the filtered robot finally ends above zero over 42 days.**\n\n**The verdicts.** The battery still hits the $60 loss limit (2 better on both halves, 14 a little better, 19 no) and says little. My 17 runs are against the filtered robot (-$61, hole of 57). No entry after 450 points: +$40. Also refusing when the last hour already ran 250, 300 or 350 points our way: +$59, +52, +54, better on both halves at all three settings. The trio with half stake after a loss: +$63 (+50 and +31), hole of 43; 69 days +$31, but their first half loses $30; real trades +$21 (23 trades, too few).\n\n**What I believe.** Stronger: no entry after a big hour. New: when the hour's small trend already points our way, we arrive too late. Weaker: staking less by day. Half stake on ALL trades does better (+$31, hole 28) than by day alone (+$24, hole 41): it was \"bet less during the bad spell\", not a real cause.\n\n**What the trades teach.** 232 real trades, 46 % won, -$149; since yesterday, 13 trades, 2 won. When the one-hour chart's small trend already points the trade's way: 87 trades, 33 % won in each half, -$73 per 0.01 lot; the other 123, 53 %, +$11. True by day and night, before and after the filter. Only 3 of the 25 best wins belong to it. No new pile: this fact does not exist in the piles yet; I ask for it.\n\n**I propose.** The trio at 350 points, its neighbours at 300 and 250, the brake alone (out of the box: approaching the hour's trend with what the test knows), and a belt: half stake everywhere during the bad spell.\n\n**I ask.** That the test and the piles learn the hour's small trend. The builder is still blocked.",
+ "date": "2026-10-31",
+ "fr": "**Ce soir : miser moins de 13 h à 17 h UTC, sans refuser aucun trade, coupe le plus gros trou presque de moitié, et un quart de mise fait mieux qu'une moitié.**\n\n**Les verdicts.** 15 mieux sur les deux moitiés, 17 un peu mieux, 5 non. Mais le robot sans filtre finit à -68 $ : ces lettres le comparent à un robot qui perd, elles disent peu de chose. Le critique bloque « rien de 12 h à 17 h » et « pas de trade le jour » : face aux deux freins seuls, le gain venait de la seule fin octobre. Il doute de la demi-mise de 12 h à 17 h avec les stops larges, pour la même raison. Il a raison sur la forme. Et les cartes des idées filtrées montrent 11 à 18 trades là où le même réglage lancé seul en garde 36 à 59 : je le demande ci-dessous.\n\n**Ce que je crois.** Plus fort : l'ouverture de New York, mais resserrée à 13 h - 17 h, les heures exactes de la pile des vrais trades. Face aux deux freins seuls, sur 42 jours : moitié de mise +30 $ (+4 et +28), quart de mise +46 $ (+6 et +43). Les voisins 12 h - 16 h et 14 h - 18 h font moins bien. Prudence : sur 69 jours, la première moitié (août-septembre) perd 18 à 27 $. Le trou, lui, baisse partout : 70, puis 50, puis 41. Plus fort aussi : les stops larges (+30 $ sur 42 jours, +22 $ sur 69). Plus faible : miser moins le jour après une perte (-20 $ face aux freins seuls). Le test ne voit pas ce que montrent les vrais trades.\n\n**Ce que les trades apprennent.** Aucun nouveau vrai trade : les comptes sont en pause, il y en a toujours 273. Le jumeau « pas de trade le jour » reste à +30 $ en 8 trades (trop peu de trades).\n\nPas de nouvelle pile : aucune donnée réelle nouvelle depuis hier ; la pile « ouverture de New York », ouverte hier, a déjà mérité une question du labo, et j'y réponds ce soir.\n\n**Je propose.** Hors des sentiers : tout garder, mais miser moitié moins sur les changements de sens en marché nerveux et un quart de 13 h à 17 h. +47 $ face aux deux freins seuls (+5 et +44), trou de 37 au lieu de 70, sur les deux fenêtres. Aussi : moitié et quart de mise de 13 h à 17 h avec deux freins, stops larges et pas de course, et cette paire avec la demi-mise de 13 h à 17 h (mieux sur les deux moitiés cette fois).\n\n**Je demande.** Que le test de la nuit retrouve les mêmes trades filtrés que mes essais.",
+ "en": "**Tonight: betting less from 13:00 to 17:00 UTC, without refusing a single trade, cuts the biggest hole almost in half, and a quarter stake beats a half.**\n\n**The verdicts.** 15 better on both halves, 17 a little better, 5 no. But the unfiltered robot ends at -$68: those letters compare ideas to a robot that loses, so they say little. The critic blocks \"nothing from 12:00 to 17:00\" and \"no daytime trading\": against the two brakes alone, the gain came from late October only. It doubts the half stake from 12:00 to 17:00 with wide stops, for the same reason. It is right about the shape. And the cards of the filtered ideas show 11 to 18 trades where the same setting run alone keeps 36 to 59: I ask about it below.\n\n**What I believe.** Stronger: the New York open, but narrowed to 13:00-17:00, the exact hours of the real-trade pile. Against the two brakes alone, over 42 days: half stake +$30 (+4 and +28), quarter stake +$46 (+6 and +43). The neighbours 12:00-16:00 and 14:00-18:00 do worse. Caution: over 69 days the first half (August-September) loses $18 to $27. The hole shrinks everywhere: 70, then 50, then 41. Also stronger: wide stops (+$30 over 42 days, +$22 over 69). Weaker: betting less by day after a loss (-$20 against the brakes alone). The test does not see what the real trades show.\n\n**What the trades teach.** No new real trade: the accounts are paused, still 273. The \"no daytime trading\" twin stays at +$30 in 8 trades (too few trades).\n\nNo new pile: no new real data since yesterday; the \"New York open\" pile, opened yesterday, already earned a question from the lab, and I answer it tonight.\n\n**I propose.** Out of the box: keep every trade, but bet half on changes of direction in a nervous market and a quarter from 13:00 to 17:00. +$47 against the two brakes alone (+5 and +44), hole 37 instead of 70, on both windows. Also: half and quarter stake from 13:00 to 17:00 with two brakes, wide stops plus no chasing, and that pair with the half stake from 13:00 to 17:00 (better on both halves this time).\n\n**I ask.** That the nightly test finds the same filtered trades as my own runs.",
  "proposals": [
-  "pb_ext450_fl05_chase350",
-  "pb_ext450_chase350",
-  "pb_ext450_fl05_chase300",
-  "pb_ext450_chase250",
-  "pb_ext450_all05"
+  "pb_w_ch350_nf06_ny1316",
+  "pb_w_ch350_nf06_ny1316q",
+  "pb_w_ch350_fh05_ny1316q",
+  "pb_w_ch350_cost5",
+  "pb_w_ch350_cost5_ny1316"
  ],
- "headline_fr": "Ne pas courir après un prix qui a déjà filé dans notre sens : le robot filtré finit enfin au-dessus de zéro sur 42 jours.",
- "headline_en": "Do not chase a price that already ran our way: the filtered robot finally ends above zero over 42 days.",
+ "headline_fr": "Miser moins de 13 h à 17 h, sans refuser de trade, coupe le plus gros trou presque de moitié.",
+ "headline_en": "Betting less from 13:00 to 17:00, without refusing a trade, cuts the biggest hole almost in half.",
  "beliefs": [
   {
-   "fr": "Ne pas entrer après une heure qui a déjà beaucoup bougé rapporte, avec le filtre des comptes.",
-   "en": "Not entering after an hour that already moved a lot pays, with the accounts' filter.",
-   "evidence": "Ce soir : +40 $ sur 42 jours (mieux sur les deux moitiés), +32 $ sur 69 jours, +14 $ sur les vrais trades."
+   "fr": "Ne pas entrer quand le prix a déjà beaucoup couru dans le sens du trade.",
+   "en": "Do not enter when the price has already run far the trade's way.",
+   "evidence": "Avec le plancher de marché endormi : +55 $ face au filtre seul sur 42 jours, +33 $ sur 69 jours, mieux sur les deux moitiés les deux fois. Mais le robot perd encore depuis le 20 octobre."
   },
   {
-   "fr": "Quand la petite tendance de l'heure va déjà dans notre sens, le robot arrive trop tard et perd.",
-   "en": "When the hour's small trend already points our way, the robot arrives too late and loses.",
-   "evidence": "87 vrais trades, un sur trois gagnés sur chaque moitié, contre 53 % pour les autres ; 3 des 25 plus beaux gains seulement."
+   "fr": "Les trades au stop large portent le robot ; les stops trop serrés rapportent peu.",
+   "en": "Wide-stop trades carry the robot; too-tight stops earn little.",
+   "evidence": "Refuser les stops trop serrés avec « pas de course » : +30 $ sur 42 jours, +22 $ sur 69, face aux deux freins seuls. Peu de trades dans la première moitié (11)."
   },
   {
-   "fr": "Ne pas entrer quand la dernière heure a déjà couru 250 à 350 points dans notre sens aide en plus du frein des 450 points.",
-   "en": "Not entering when the last hour already ran 250 to 350 points our way helps on top of the 450-point brake.",
-   "evidence": "Trois réglages voisins, tous mieux sur les deux moitiés : +59, +52, +54 $ au lieu de +40."
+   "fr": "De 13 h à 17 h UTC, à l'ouverture de New York, le robot perd : y miser moins aide.",
+   "en": "From 13:00 to 17:00 UTC, at the New York open, the robot loses: betting less there helps.",
+   "evidence": "Vrais trades : 15 gagnés sur 41, -117 $. Test : un quart de mise fait +46 $ sur 42 jours, trou de 41 au lieu de 70. Sur 69 jours, l'été coûte 27 $."
   },
   {
-   "fr": "Le jour, juste après une perte, le robot court après son argent et perd.",
-   "en": "By day, right after a loss, the robot chases its money and loses.",
-   "evidence": "Le jour : 82 trades, -108 $, dont 96 % juste après une perte."
+   "fr": "Quand le marché est presque endormi, mieux vaut ne pas entrer (sur le robot filtré).",
+   "en": "When the market is almost asleep, better not to enter (on the filtered robot).",
+   "evidence": "Aide surtout en compagnie de « pas de course » ; seul, à peine mieux que le filtre sur 69 jours."
   },
   {
-   "fr": "Miser moins le jour n'est pas une vraie cause : miser moins partout fait mieux pendant que le robot perd.",
-   "en": "Staking less by day is not a real cause: staking less everywhere does better while the robot loses.",
-   "evidence": "Moitié moins partout : +31 $, trou de 28 ; moitié moins le jour seulement : +24 $, trou de 41."
+   "fr": "Les changements de sens pris en marché nerveux, ou juste après une perte, méritent une mise plus petite.",
+   "en": "Changes of direction taken in a nervous market, or right after a loss, deserve a smaller stake.",
+   "evidence": "Moitié de mise en marché nerveux : +15 $ et trou de 53 au lieu de 70 sur 42 jours ; première moitié pareille."
   },
   {
-   "fr": "Miser moitié moins sur un changement de sens juste après une perte réduit le trou sans coûter d'argent.",
-   "en": "Staking half on a change of direction right after a loss shrinks the hole without costing money.",
-   "evidence": "Avec le frein des 450 points : même argent, trou de 43 au lieu de 57 ; +24 $ sur les vrais trades (25 trades, trop peu)."
+   "fr": "Un trade qui traîne entre 30 minutes et une heure est mal parti.",
+   "en": "A trade that drags between 30 minutes and an hour is off to a bad start.",
+   "evidence": "Vrais trades : 42 trades, 45 % gagnés, -56 $. J'attends un réglage qui ferme un trade qui traîne pour le tester."
   }
  ],
  "sections": [
   {
    "title_fr": "Ce soir",
    "title_en": "Tonight",
-   "fr": "Une idée simple : ne pas courir après un prix qui a déjà filé dans notre sens. Avec le frein des 450 points et moitié moins après une perte, le robot filtré des comptes finit enfin au-dessus de zéro sur 42 jours : +2 $ au lieu de -61 $, trou de 43 au lieu de 57.",
-   "en": "A simple idea: do not chase a price that already ran our way. With the 450-point brake and half stake after a loss, the accounts' filtered robot finally ends above zero over 42 days: +$2 instead of -$61, hole of 43 instead of 57."
+   "fr": "Miser moins de 13 h à 17 h UTC, à l'ouverture de New York, sans refuser aucun trade, coupe le plus gros trou presque de moitié. Un quart de mise fait mieux qu'une moitié, qui fait mieux que rien changer. C'est ma piste la plus solide ce soir.",
+   "en": "Betting less from 13:00 to 17:00 UTC, at the New York open, without refusing a single trade, cuts the biggest hole almost in half. A quarter stake beats a half, which beats changing nothing. That is my firmest lead tonight."
   },
   {
    "title_fr": "Les verdicts",
    "title_en": "The verdicts",
-   "fr": "La batterie touche encore la limite de perte de 60 $ et dit peu. Contre le robot filtré : refuser après 250, 300 ou 350 points dans notre sens gagne aux trois réglages, mieux sur les deux moitiés. Sur 69 jours +31 $, mais la première moitié de ces 69 jours perd 30 $. Vrais trades +21 $ (23 trades, trop peu).",
-   "en": "The battery still hits the $60 loss limit and says little. Against the filtered robot: refusing after 250, 300 or 350 points our way wins at all three settings, better on both halves. Over 69 days +$31, but the first half of those 69 days loses $30. Real trades +$21 (23 trades, too few)."
+   "fr": "15 mieux sur les deux moitiés, 17 un peu mieux, 5 non, mais face à un robot sans filtre qui perd 68 $ : cela dit peu. Le critique bloque « rien de 12 h à 17 h » et « pas de trade le jour » : leur gain venait de la seule fin octobre. Il a raison. J'ai resserré l'idée.",
+   "en": "15 better on both halves, 17 a little better, 5 no, but against an unfiltered robot that loses $68: that says little. The critic blocks 'nothing from 12:00 to 17:00' and 'no daytime trading': their gain came from late October only. It is right. I narrowed the idea."
   },
   {
    "title_fr": "Ce que les trades apprennent",
    "title_en": "What the trades teach",
-   "fr": "232 vrais trades, 46 % gagnés, -149 $. Quand la petite tendance de l'heure va déjà dans le sens du trade : 87 trades, un sur trois gagnés, sur chaque moitié, le jour comme la nuit. Les autres : 53 % gagnés. 3 seulement des 25 plus beaux gains en font partie.",
-   "en": "232 real trades, 46 % won, -$149. When the hour's small trend already points the trade's way: 87 trades, one in three won, in each half, by day and by night. The rest: 53 % won. Only 3 of the 25 best wins belong to it."
+   "fr": "Aucun nouveau vrai trade : les comptes sont en pause, toujours 273. De 13 h à 17 h, ils gagnent 15 fois sur 41 et perdent 117 $. Le jumeau « pas de trade le jour » reste à +30 $ en 8 trades, trop peu de trades. Pas de nouvelle pile ce soir : rien de neuf à compter.",
+   "en": "No new real trade: the accounts are paused, still 273. From 13:00 to 17:00 they win 15 times out of 41 and lose $117. The 'no daytime trading' twin stays at +$30 in 8 trades, too few trades. No new pile tonight: nothing new to count."
   },
   {
    "title_fr": "Ce que je crois",
    "title_en": "What I believe",
-   "fr": "Plus fort : ne pas entrer après une grosse heure. Nouveau : on arrive trop tard quand l'heure va déjà dans notre sens. Plus faible : miser moins le jour. Miser moitié moins sur tous les trades fait mieux que le jour seul : c'était « miser moins pendant la mauvaise passe », pas une vraie cause.",
-   "en": "Stronger: no entry after a big hour. New: we arrive too late when the hour already points our way. Weaker: staking less by day. Half stake on every trade beats the day alone: it was 'bet less during the bad spell', not a real cause."
+   "fr": "Plus fort : ne pas courir après le prix, refuser les stops trop serrés, miser moins de 13 h à 17 h (le trou passe de 70 à 41). Prudence : sur 69 jours, l'été n'aime pas cette mise réduite. Plus faible : miser moins le jour après une perte coûte 20 $ dans le test.",
+   "en": "Stronger: not chasing the price, refusing too-tight stops, betting less from 13:00 to 17:00 (the hole goes from 70 to 41). Caution: over 69 days, the summer dislikes that smaller stake. Weaker: betting less by day after a loss costs $20 in the test."
   },
   {
    "title_fr": "Ce que je propose",
    "title_en": "What I propose",
-   "fr": "Le frein « déjà couru 350 points dans notre sens » avec les 450 points et moitié moins après une perte ; ses voisins à 300 et 250 ; le frein seul ; et une ceinture : moitié moins sur chaque trade pendant la mauvaise passe, trou de 28 au lieu de 57.",
-   "en": "The 'already ran 350 points our way' brake with the 450 points and half stake after a loss; its neighbours at 300 and 250; the brake alone; and a belt: half stake on every trade during the bad spell, hole of 28 instead of 57."
+   "fr": "Hors des sentiers : tout garder, mais miser moitié moins sur les changements de sens en marché nerveux et un quart de 13 h à 17 h. +47 $ sur 42 jours, mieux sur les deux moitiés, trou de 37 au lieu de 70. Aussi : moitié ou quart de 13 h à 17 h, et les stops larges avec ou sans demi-mise.",
+   "en": "Out of the box: keep every trade, but bet half on changes of direction in a nervous market and a quarter from 13:00 to 17:00. +$47 over 42 days, better on both halves, hole 37 instead of 70. Also: half or quarter from 13:00 to 17:00, and wide stops with or without the half stake."
   },
   {
    "title_fr": "Ce que je demande",
    "title_en": "What I ask",
-   "fr": "Que le test et les piles connaissent la petite tendance du graphique d'une heure, pour essayer une demi-mise ou un refus quand elle va déjà dans notre sens. Le constructeur reste bloqué : 19 demandes attendent.",
-   "en": "That the test and the piles learn the one-hour chart's small trend, to try a half stake or a refusal when it already points our way. The builder is still blocked: 19 requests wait."
+   "fr": "Les cartes des idées filtrées montrent 11 à 18 trades, alors que le même réglage lancé seul en garde 36 à 59. Je demande que le test de la nuit retrouve les mêmes trades que mes essais, sinon on juge sur des nombres qu'on ne sait pas refaire.",
+   "en": "The cards of the filtered ideas show 11 to 18 trades, while the same setting run alone keeps 36 to 59. I ask that the nightly test finds the same trades as my own runs, otherwise we judge on numbers nobody can redo."
   }
  ]
 }

@@ -453,6 +453,322 @@
     "real gap: --drag auto uncharged (no measured gap on 30 trades yet); --drag 1 variant -513.43 vs uncharged deployed -172.26 - harness charges the variant only, uneven; trade count unchanged (256 vs 255), so it does not win by trading more",
     "runs: 6 (size_hot 0.5, 0.25, 0.75, 0.5 drag auto, 0.5 drag 1, hour-size 0-24:0.5 control)"
    ]
+  },
+  {
+   "id": "debtnerv",
+   "date": "2026-10-26",
+   "verdict": "bloque",
+   "fr": "Ces réglages ont eu leur jumeau : il a perdu son duel le 24/10. Depuis, son gain fond nuit après nuit (+85 $ le 19/10, −30 $ ce soir) et son plus gros trou se creuse (33 à 107 $). En seconde moitié, il prend les mêmes trades que « rien quand le marché est nerveux ». Pour changer d'avis : 30 nouveaux vrais trades où il bat les règles.",
+   "en": "These same settings already had their twin: it lost its duel on 10-24, two days ago. Nothing new since: night after night its gain melts (+$85 on 10-19, −$30 tonight) and its biggest hole deepens ($33 to $107). In the second half it takes exactly the same trades as 'nothing when the market is nervous'. To change my mind: 30 new real trades where it beats the rules in place.",
+   "checks": [
+    "data moves between runs (window sliding): harness deployed -198.98 / -185.80 (257-258 trades), idea -53.48 / -40.29 (160-161 trades, 188 refused), hole 205.88 -> 111.60, verdict A; context battery +41.99, hole 126.75 -> 107.08",
+    "dose: on/off switch, no dial. Neighbours used instead: plain nervous gate (--nerv-gate) -65.38 vs idea -40.29 on the same base -185.80 (hole 111.60 both); half stake when nervous (--size-hot 0.5) -156.51 vs -198.98, hole 183.77 - same sign on all three, so the nervous filter is not noise, but the red-account part adds little",
+    "halves: harness h1 2.27 -> 44.76 (+42), h2 -203.42 -> -113.84 (+90); battery h1 +23, h2 +0.8 - carried by h1 in the battery, by h2 in the harness. Shapes: byref base and capped (valere) rows identical (+41.99 / -19.67) - no independent capped result",
+    "long window: 69 d +68.39, hole 94 smaller, verdict B (h1 -65.57 / h2 +132.9) - first half a loss; on 10-19 the same window was -57, so the sign flips between nights",
+    "real trades: +110.53, hole 84.73 smaller on 119 real trades (60 refused) - the strongest point for it",
+    "concentration: tonight the gain is spread (harness +145 over 97 fewer trades, no single trade > 40); the 2026-09-24 -39.16 loss still avoided, as in the 10-19 critique",
+    "past: twin with identical cfg started 2026-10-20, reached 30 trades 10-24, stopped 10-24 reason duel_lost; critique 10-19 'doute' (69 d loss, one -39 trade). History net 62,56,67,35,85,37,4,46,-9,-37,-38,-30 and hole 33 -> 107: decaying every night since the twin began",
+    "mechanism: 'nervous market = breakouts fail more' is plausible (registry nerv: 37% wins above normal pace vs 64% below), but why being in the red should matter is not shown - the robot is in the red almost all of h2, so the condition rarely bites",
+    "overlap: h2 identical to the plain nervous gate (-113.84, 112 trades, 122 refused, both runs); full run same hole 111.60 - it is 'nerv' (registry: deployed) wearing new clothes; nervgate and hothalf critiques say the same",
+    "real gap: --drag auto uncharged (cfg drag None, no measured gap yet); --drag 1 idea -337.81 (151 trades, 203 refused, verdict C) vs uncharged deployed -198.98 - harness charges the variant only, uneven; the idea trades less, so it does not win by trading more",
+    "runs: 5 (debt-nerv-gate, nerv-gate, debt-nerv-gate drag auto, size-hot 0.5, debt-nerv-gate drag 1)"
+   ]
+  },
+  {
+   "id": "k3",
+   "date": "2026-10-26",
+   "verdict": "bloque",
+   "fr": "Même verdict que le 02/10. Ce soir il gagne 10 $ en 42 jours, à peine un trade de rattrapage, après onze nuits à non. Rejoué sur les règles en place, il perd 40 $ ; à quatre pertes, 46 $. Sur 69 jours il perd 61 $. Il mise juste plus pendant les séries perdantes. Pour changer d'avis : un gain sur 69 jours, plusieurs nuits de suite.",
+   "en": "Same verdict as on 10-02. Tonight it gains $10 in 42 days, barely more than one catch-up trade, after eleven nights of no. Replayed on the rules in place it loses $40; at four losses in a row, $46. Over 69 days it loses $61. It only bets more during losing streaks. To change my mind: a gain over 69 days, several nights running.",
+   "checks": [
+    "dose: one step below (2 losses) is the deployed rule itself. Harness (deployed, no safety nets, base -198.98 / hole 205.88, 257 trades): 3 losses -238.63 / hole 241.25 (-39.65); 4 losses -244.97 / hole 250.35 (-45.99). Battery +9.74 is the only positive number; neighbours in the harness lose more the higher the dose",
+    "halves: battery h1 +3.20 / h2 +2.07 (tiny on both). Harness h1 2.27 -> -2.01 (-4.28), h2 -203.42 -> -232.02 (-28.60): worse on both, mostly in the bad second half",
+    "shapes: byref base and capped (account 1 shape) rows identical (+9.74 / hole -6.54) - no independent capped result",
+    "long window: 69 d -60.60 vs rules in place, both halves negative (-24.90 / -47.65), hole +35.37 - a loss, not just weaker (was -29.09 on 10-02: getting worse)",
+    "real trades: +13.06, hole -2.59 on 97 real trades (21 blocked) - the only point for it, small",
+    "concentration: +9.74 total ~ one or two catch-up trades; harness ledger shows single trades moved by 7-9 $ (2.99 -> 10.40, -11.28 -> -19.85, -4.62 -> -8.19)",
+    "past: critique 2026-10-02 bloque (same reasons). History C eleven nights 10-13..10-25 (net 76.59 down to -62.96, hole 69 -> 120), A tonight only on a +9.74 margin. Not archived, no twin",
+    "mechanism: a bigger stake after the second loss in a row pays only if the next trade wins more often than usual - nothing shows that; it adds size exactly in losing streaks (martingale-like)",
+    "overlap / real gap: same trades as the deployed rule (257 vs 257 harness, 219 vs 222 battery, same win rate) - pure sizing; drag per trade hits base and idea alike, so not run (it does not win by trading more)",
+    "runs: 2 (k-streak 3, k-streak 4)"
+   ]
+  },
+  {
+   "id": "rr06",
+   "date": "2026-10-26",
+   "verdict": "bloque",
+   "fr": "Ce soir il gagne 9 $ en 42 jours, moins qu'un seul trade, et seulement sur le compte avec plafond de gain par jour. Sans plafond il perd 23 $ et le plus gros trou grandit de 44 $. Viser 0,5 fois gagne, 0,7 fois perd. Sur 69 jours il perd 80 $. Pour changer d'avis : un gain avec et sans plafond, et sur 69 jours.",
+   "en": "Tonight it gains $9 in 42 days, less than one single trade, and only on the account with a daily cap. Without the cap it loses $23 and the biggest hole grows by $44. Aiming for 0.5 times wins, 0.7 times loses. Over 69 days it loses $80. To change my mind: a gain with and without the cap, and over 69 days.",
+   "checks": [
+    "dose (harness, no-cap shape, base -198.98 / hole 205.88, 257 trades): rr 0.5 -172.45 / hole 213.76 (+26.53); rr 0.6 -221.63 / hole 249.85 (-22.65, hole +43.97); rr 0.7 -233.87 / hole 232.53 (-34.89). Sign flips between 0.5 and 0.6: noise, not a rule",
+    "halves: battery (capped shape) h1 +12.81 / h2 +1.45, carried by h1. Harness no-cap: h1 2.27 -> 19.25 (+16.98), h2 -203.42 -> -240.67 (-37.25): gain only in the first half, a loss in the bad second half",
+    "shapes: battery +8.78 / hole +0.31 is the capped shape only; the no-cap shape loses 22.65 and the hole deepens 44 - one shape carries it",
+    "long window: 69 d -80.47 vs rules in place, hole +43.97 (h1 -83.2 / h2 +16.04) - a loss, not just weaker",
+    "real trades: +65.31, hole -43.61 on 104 real trades (15 blocked) - the one real point for it",
+    "concentration: +8.78 is under one single trade (base ledger has -22.32, +19.94, +17.22); win-rate 53.2 -> 60.7 but small wins",
+    "past: history C nine nights 10-14..10-23 (net +45.94 down to -68.34), B 10-24/25, A tonight on +8.78 only. Old twin rr06 retired by owner (pre-correction engine, +0.56 on 16 trades, not evidence). half_tp (B, candidate) and twin_06 (forward) already test aiming smaller",
+    "mechanism: a nearer target turns more trades into small wins before they reverse - plausible, but it also cuts the big winners that pay for losses; nothing shows the trade-off favours us beyond one shape",
+    "overlap: same family and same trades cut another way as half_tp / twin_06, which is already running forward - a second twin would count the same question twice",
+    "real gap: --drag auto: base -181.83 vs idea -192.72 (-10.89, hole 249.85 vs 205.88); --drag 1: idea -651.46 (base not charged in that run, indicative only). It trades a few more times (229 vs 222 battery, 271 vs 255 harness) and does not survive the gap",
+    "runs: 5 (rr 0.5, 0.6, 0.7, 0.6 drag auto, 0.6 drag 1)"
+   ]
+  },
+  {
+   "id": "noday",
+   "date": "2026-10-27",
+   "verdict": "doute",
+   "fr": "Depuis le 19/10, ça tient mieux : couper 9–15 h, 8–16 h ou 7–17 h gagne à chaque fois, sur les deux moitiés, et les vrais trades gagnent 63 $. Mais le bon vient de l'après-midi (12–16 h) ; le matin seul perd sur la première moitié. Mon inquiétude : sur 69 jours la première moitié perd 93 $, et avec les protections le gain par moitié est presque nul.",
+   "en": "It holds better than on 10-19: cutting 9–15, 8–16 or 7–17 UTC wins every time, in both halves, and the real trades gain $63. But the good comes from the afternoon (12–16); the morning alone loses in the first half. What worries me: over 69 days the first half loses $93, and with the safety nets on the gain per half is almost zero.",
+   "checks": [
+    "data moved since the battery (harness deployed, no safety nets: -204.87 / hole 219.74 / 254 tr; base h1 9.46 on the first run, -4.09 on the next ones - window sliding); read diffs, not levels",
+    "dose: 09-15 +113.21 (hole 99.53, 179 tr); 08-16 +123.48 (hole 112.04, 167 tr); 07-17 +126.55 (hole 85.73, 152 tr) - no sign flip, a plateau, all A. On 10-19 the same three gave +5.7 / +0.45 / -8.2: tonight's plateau is new and sits in the bad last three weeks",
+    "split: 12-16 alone +105.22 (h1 +49.48 / h2 +48.08, hole 150.45); 08-12 alone +10.49 (h1 -29.82 / h2 +39.86, B). Same as 10-19: the afternoon carries it, the morning is a passenger that loses in the first half",
+    "halves (harness 08-16): h1 +18.5 to +32.1, h2 +77.1 - both up, second half carries most. Battery with safety nets: h1 45.65 vs 38.61 (+7.04), h2 -60.41 vs -60.62 (+0.21) - the +38.78 full gain is mostly path, not per-half edge",
+    "shapes: byref base and capped (valere) rows identical (+38.78 / hole -29.41) - no independent capped result",
+    "long window: 69 d +11.41, hole 107.7 smaller, verdict B, but h1 -92.70 / h2 +94.23 - halves of opposite sign; was -29.92 on 10-19. The 10-19 ask (afternoon alone winning over 69 days) is not tested: the harness has no long window",
+    "real trades: +62.95, hole 63.44 smaller on 120 real trades (59 blocked) - the strongest point for it, up from +31.99 on 10-19",
+    "concentration: the base's -39.16 trade (09-24) is avoided (idea worst -21.19) - about a third of the harness gain; the rest spread over 87 fewer trades, no other single trade > 20. But the idea also lost ~-104 from 10-22 to 10-27 (base ~-123): the night hours bleed in the recent crash too",
+    "past: critique 2026-10-19 bloque (money sign flipped between neighbours, 69 d -30). History: battery net slid 80.93 (10-14) -> -26.40 tonight, hole 17 -> 78; verdicts B/A/C mixed. Same family as rejected wait / weekend / one_day; no twin, not archived",
+    "mechanism: plausible for 12-16 UTC (US open spikes run through tight stops on BTC); none given for 08-12 - half the window",
+    "overlap: 'awake' (deployed) and 'storm' already brake on quiet/wild markets; this cuts by clock instead - partly the same chop, but the -39.16 trade and the afternoon losses are not caught by them",
+    "real gap: --drag auto uncharged (cfg drag None) -> same +123.48; --drag 1 charges the variant only (-358.19 vs uncharged base -204.87); under the same dollar base ~-458.9 (254 tr) vs idea -358.2 (164 tr) -> idea ~+100, it trades less, survives the dollar",
+    "runs: 7 (08-16, 09-15, 07-17, 12-16, 08-12, 08-16 drag auto, 08-16 drag 1)"
+   ]
+  },
+  {
+   "id": "pb_s_hb14",
+   "date": "2026-10-28",
+   "verdict": "bloque",
+   "fr": "Le nouveau frein (fermer une tranche de journée qui perd) n'ajoute rien : les quatre freins seuls font pareil. Sur 14 jours il coûte 5 $, sur 7 ou 21 jours il en gagne 5 : du bruit. Le gain vient de trader six fois moins. Sur 69 jours : rien. Pour changer d'avis : ce frein gagnant à 7, 14 et 21 jours, sur les deux moitiés.",
+   "en": "The new brake (closing a part of the day that loses) adds nothing: the four brakes alone do the same. At 14 days it costs $5, at 7 or 21 days it gains $5: noise. The gain comes from trading six times less in a losing month. Over 69 days: nothing. To change my mind: this brake winning at 7, 14 and 21 days, in both halves.",
+   "checks": [
+    "harness (deployed rules, no safety nets: base -150.05 / hole 219.74 / 263 tr; battery base -63.27 differs) - read diffs between the idea's own doses, not levels",
+    "dose (the new dial, on top of the four brakes): off -1.77 / hole 54.24 / 59 tr; 7 d +3.03 / 45.73 / 48 tr; 14 d -7.27 / 56.03 / 44 tr; 21 d +3.96 / 39.45 / 35 tr. Marginal effect of the hour brake +4.8 / -5.5 / +5.7: sign flips between neighbours and the proposed dose is the worst one - noise. The chercheur's own text says 'less than without this rule'",
+    "halves: battery h1 +5.40 (15.22 vs 9.82) / h2 +75.56 (8.53 vs -67.03) - the second half carries it. Harness at 14: h1 1.5 vs base 28.51 (-27) / h2 -29.7 vs -161.17 - it gives up the good half to dodge the bad one",
+    "shapes: byref base and capped rows identical (+75.76 / hole -61.25) - no independent capped result",
+    "long window: 69 d diff -1.27, hole 163.71 smaller, but h1 -130.42 / h2 +136.79 - opposite signs, no gain in money",
+    "real trades: +64.37, hole 67.64 smaller on 120 real trades (100 blocked), but the 20 kept still lose 40.92 - avoidance, not an edge",
+    "concentration: not one trade - the idea keeps 43 of 194 trades (390 blocked); the gain comes from ~150 fewer trades in a losing stretch: trading less, not trading better",
+    "past: first night (history A only on 10-28); pretest 10-27 +52.71, tonight +75.76; no twin, not archived; same family as wait / weekend / one_day (rejected) and sunday (halves flip) - cutting by the clock has failed here before",
+    "mechanism: 'a block of hours that lost over 14 days will keep losing' - no reason given why the hour of day holds for two weeks on BTC; 14 days in one block is often 5-10 trades, a coin-flip sample",
+    "overlap: with the hour brake adding nothing, the twin would be the four brakes (pb gate trend, ext 450, chase 350, nerv floor 0.7, flip loss 0.5, rr 0.8) under a new name",
+    "real gap: --drag auto uncharged (cfg drag None) -> -7.27, same as raw; --drag 1: idea -49.04 (42 tr) vs base ~-413 under the same dollar (263 tr) - survives because it trades little, which credits the four brakes, not this one",
+    "runs: 6 completed (hb 14, 0, 7, 21, 14 drag auto, 14 drag 1) + 1 hb 0 run stopped early by mistake (no result used)"
+   ]
+  },
+  {
+   "id": "pb_s_early2",
+   "date": "2026-10-28",
+   "verdict": "bloque",
+   "fr": "La demi-mise au début d'un mouvement n'ajoute rien de propre : miser moitié moins sur TOUS les trades gagne autant (+3 $ contre +2 $) avec un trou plus petit (27 $ contre 45 $). À un quart, la moitié ou trois quarts, le gain change de signe : du bruit. Ce matin, la deuxième moitié perd 31 $. Pour changer d'avis : battre la demi-mise partout, dans les deux moitiés et sur 69 jours.",
+   "en": "Half the stake early in a move adds nothing of its own: betting half on EVERY trade earns as much (+$3 vs +$2) with a smaller hole ($27 vs $45). At a quarter, half or three quarters the gain flips sign: noise. This morning the second half loses $31. To change my mind: beating half-on-every-trade, in both halves and over 69 days.",
+   "checks": [
+    "reproduce (harness, 41.7 d, vs rules in place): net +2.20, hole 44.61, 58 trades; halves +4.07 / -30.79. Pretest +33/+41 and context h2 +0.05 do not reproduce",
+    "dose vs four brakes alone (size 1.0): -1.77, hole 54.24 -> idea adds only +4 $ and -9.6 hole",
+    "neighbours: size 0.25 -1.37 (hole 39.79), 0.75 +1.68 (hole 49.43); max 1 move +10.33 (hole 44.14). Money flips sign around the dose; hole shrinks monotonically with stake = just betting less",
+    "control: half stake on every trade (hour-size 0-24:0.5) +2.67, hole 27.12, h2 -16.86 -> beats the idea on all three; the early-move targeting has no edge",
+    "halves: every setting loses 29-35 $ in the second half; gain vs rules in place (+68) comes from the four brakes cutting 262 -> 58 trades, already judged in pb_s_hb14",
+    "shapes: byref base and valere identical (+67.93 / -67.7) - no shape difference, nothing specific to the early-move rule",
+    "long window 69 d: diff +42 but first half -110.49 vs +143 second - one stretch carries it; real trades: 25 trades, net -38.07 (better than rules in place by +67, still a loss)",
+    "concentration: full net +2.20 is smaller than one trade (+19.91) - one trade decides the sign",
+    "real gap: drag auto not yet measured (None); at 1 $/trade the idea loses 65.60 (h2 -82.60)",
+    "mechanism: no stated reason why entries after 1-2 big moves are worse; the only effect seen is smaller size -> smaller hole",
+    "overlap: same trades as the four brakes (pb_s_hb14, bloque 10-28), resized; no twin, not archived"
+   ]
+  },
+  {
+   "id": "pb_t_ch350_nf06_cost5",
+   "date": "2026-10-29",
+   "verdict": "doute",
+   "fr": "Refuser les stops très serrés aide vraiment les deux autres freins : sans cette règle ils gagnent 3 $, avec elle 32 $ ; à 3 % pareil, à 7 % presque rien. Elle tient même à 1 $ de frais par trade. Mon inquiétude : il ne reste que 37 trades en 42 jours, la deuxième moitié perd encore, et les vrais trades perdent 38 $.",
+   "en": "Refusing very tight stops really helps the two other brakes: without this rule they earn $3 in 42 days, with it $32; at 3% the same, at 7% almost nothing. It holds even at $1 of cost per trade. What worries me: only 37 trades are left in 42 days, the second half still loses, and on the real trades the robot still loses $38.",
+   "checks": [
+    "harness 2026-10-29 ~10:40-11:00 (deployed rules, no filter: -185.44 / hole 219.74 / 263 tr); idea reproduces +31.85 / hole 58.31 / 37 tr (context +14.87 / 35 tr - a bar moved); read diffs, not levels",
+    "parent = same two brakes without the stop rule (cost 0): +3.07 / hole 70.15 / 61 tr, h1 +51.50 / h2 -48.43 - the real comparison",
+    "dose vs parent: cost3 +29.83 (+26.8, hole 43.39, 20 tr); cost5 +31.85 (+28.8, hole 58.31, 37 tr); cost7 +5.65 (+2.6, hole 69.79, 53 tr). No sign flip; plateau 3-5, fades by 7",
+    "halves vs parent: h1 -8.4 / -0.4 / -13.0, h2 +35.2 / +29.2 / +15.6 (cost 3/5/7) - unlike the 10-20 siblings, here the rule earns in the second half; but the idea itself still loses h2 at every dose (-13 / -19 / -33), and h2 moved -19.24 -> -3.15 between two runs minutes apart (new bar): small sample, unstable",
+    "shapes: context byref base and capped (valere) rows identical (+75.16 / -55.74) - no independent capped result",
+    "long window (context): 69 d +75.0 vs rules in place, but h1 -75.37 / h2 +171.21, hole 161 deeper (B) - one half loses, a caution",
+    "real trades (context): 19 kept of 120, +67.07 vs real but net still -38.22, hole 65 - better than the rules in place, still a loss, too few to lean on",
+    "concentration: +28.8 vs parent ~ 1.5 top trades (variant winners 18.80, 17.30, 11.49); 24 refused trades net about -29 together - spread, not one trade, but 12 trades in h1 at 83% wins is a thin base",
+    "past: every solo cost_max dose (3/4/5/6/8 %) C on 2026-09-29 (unfiltered robot); pb_choch_ext500_cost175 and pb_ext450_cost175 doute 10-20 (hole cut real, money h1-only); sibling pb_t_ch350_fl05_nf06 A same night; history A x1; no twin, not archived",
+    "mechanism: real - the 7-point spread is a big share of a tight stop and almost nothing on a wide one; tight stops get clipped by noise. Plain and stated before the numbers",
+    "overlap: same stop rule as the two 10-20 cost175 ideas, now on the chase350 + sleepy-market pair instead of ext450/ext500 - an old rule on a new parent, not a new idea",
+    "real gap: --drag auto uncharged (cfg drag None, no measured gap on 30 trades yet) -> +31.85; --drag 1 idea -15.65 / hole 75.10 / 37 tr vs parent at the same dollar -86.71 / hole 117.90 / 59 tr -> rule +71 under the dollar: it trades less, survives (but the idea itself turns negative at $1)",
+    "runs: 7 (cost 5, 0, 3, 7; cost 5 drag 1; cost 0 drag 1; cost 5 drag auto)"
+   ]
+  },
+  {
+   "id": "pb_t_ch350_fl05_nf06",
+   "date": "2026-10-29",
+   "verdict": "doute",
+   "fr": "Je n'ai pas réussi à le casser sur 42 jours : les réglages voisins gagnent tous, les deux moitiés aussi, et le gain tient à 1 $ par trade. Ce qui m'inquiète : sur 69 jours, la première moitié perd 80 $ face au filtre seul, et ce trou grandit nuit après nuit (42, 51, puis 80). Et le robot perd encore en ce moment : il perd juste moins.",
+   "en": "I could not break it over 42 days: every neighbouring setting gains, both halves gain, and the gain holds at $1 a trade. What worries me: over 69 days the first half loses $80 against the filter alone, and that hole grows night after night (42, 51, now 80). And the robot still loses right now; it just loses less.",
+   "checks": [
+    "dose (all at --drag 1 vs filter alone -166.01 / hole 169.95): idea -69.72 / hole 98.33 (+96); chase 300 -64.73 (+101), chase 400 -93.38 (+73); sleepy floor 0.5 -80.75 (+85); flip stake 0.25 -59.08 (+107). No sign flip on any dial - a plateau, not a spike",
+    "halves: tonight raw +12.3 first half / +39.1 second half (vs pretest +39.5/+29.4 - the weight swapped halves in one night). At $1: +46.6 / +46.8. Both carry",
+    "shapes: uncapped and capped give the same diff (+72.28 / hole -68.48) - the cap never bites, so the second shape adds no evidence",
+    "long window 69 d: +59.7 overall but first half -80.0 vs filter, worse each night (-41.6 on 10-26, -51.0, now -80.0); all the 69 d money is the recent half (+157.1). A real loss in the older weeks, not just weaker",
+    "real trades: +63.95 vs filter on 26 kept trades (94 blocked), but still -41.34 net - it loses less, it does not win",
+    "concentration: biggest variant trade 18.77; gain +72 raw / +96 at $1 is several big trades, not one or two",
+    "past: chase and sleepy floor were each rejected on the raw base (chase jagged 400-1000, floor monotone worse); reopened only on the filtered base on 10-25/26, where a 3-night plateau held. No twin, not archived",
+    "mechanism: plausible - no buying after a 350-point run already in the trade's way (late entry), no trading a sleeping market where the target is far, half stake on the flip right after a loss (real flips after a loss 35% won). But in a losing stretch any brake that trades less looks good (memoire caution 10-24)",
+    "overlap: the chase makes ext450 inert (same trades as e450+ch350+fl05+nf06); this is the old e450 quartet minus a dead dial, not a new idea",
+    "real gap: --drag auto not applied (cfg drag None, no measured gap on 30 trades) -> uncharged +13.4 / hole 56.02 tonight; --drag 1 gain grows (+96) because it trades 59 vs 65 moves and halves some stakes - survives the dollar, yet the idea alone is -69.72 at $1",
+    "runs: 7 (idea drag auto; idea, ch300, ch400, nf0.5, fl0.25, filter alone at drag 1)"
+   ]
+  },
+  {
+   "id": "pb_t_ch350_nf06_wait15",
+   "date": "2026-10-29",
+   "verdict": "doute",
+   "fr": "Presque tout le gain vient des deux freins déjà jugés. La pause seule ajoute 9 $ en 42 jours, moins qu'un seul bon trade (20 $). Les réglages voisins vont dans le même sens, elle tient à 1 $ par trade, et le plus gros trou grandit à peine (74 au lieu de 70). Mon inquiétude : des pauses de 30 et 60 minutes ont déjà été rejetées, et le robot perd encore.",
+   "en": "Almost all the gain comes from the two brakes already judged. The pause alone adds $9 over 42 days, less than one good trade ($20). Neighbouring settings agree, it holds at $1 a trade, and the biggest hole barely grows (74 instead of 70). What worries me: 30- and 60-minute pauses were already rejected, and the robot still loses.",
+   "checks": [
+    "harness 2026-10-29 (deployed rules, no filter: -174.35 / hole 219.74 / 270 tr); idea reproduces +9.97 / hole 73.88 / 54 tr (context +2.82 / 53 tr - a bar moved); read diffs, not levels",
+    "parent = same two brakes, no pause: +0.48 / hole 70.15 / 60 tr - the real comparison; the +63 vs the rules in place is the brakes (pb_t_ch350_fl05_nf06 family, doute), not the pause",
+    "dose vs parent: wait 10 +3.6 (hole 69.16, 57 tr); wait 15 +9.5 (hole 73.88, 54 tr); wait 20 +8.6 (hole 74.79, 54 tr). No sign flip, but a small slope; the hole grows +4",
+    "halves vs parent: h1 +0.45 (17 vs 19 tr, same top trades), h2 +9.0 - the pause only acts in the second half, where the idea still loses (-19.80)",
+    "shapes: context byref base and capped (valere) identical (+63.11 / -51.66) - the cap never bites, no independent capped result",
+    "long window (context) 69 d: +61.22 vs rules in place but h1 -67.78 / h2 +152.39, hole 146 deeper (B) - a real loss in the older weeks, carried by the brakes",
+    "real trades (context): 29 kept of 120, +74.31 vs real, but net still -30.98, hole 77.62",
+    "concentration: pause gain +9.5 < one trade (19.91); only 6 trades removed vs parent - two of them decide the sign",
+    "past: 'wait' 30/60 min rejected C (-106/-107) on the raw robot; no twin, not archived; history A x1 (first night)",
+    "mechanism: plausible - real trades restarted under 15 min after the last won 1 in 3 (80 trades, -74 $), a rushed re-entry; but in the replay it touches only 6 trades",
+    "overlap: the brakes pair + an old rejected rule at a smaller dose; new clothes for the pause",
+    "real gap: --drag auto uncharged (drag 0 in the context cfg); --drag 1 idea -65.04 / hole 110.98 / 53 tr vs parent -88.30 / hole 117.90 / 58 tr -> pause +23 under the dollar (it trades less); the idea alone is still negative at $1",
+    "runs: 6 (wait 15, 0, 10, 20; wait 15 and 0 at drag 1)"
+   ]
+  },
+  {
+   "id": "pb_u_ch500_fl05_nf06",
+   "date": "2026-10-30",
+   "verdict": "doute",
+   "fr": "Je n'ai pas réussi à le casser face au filtre seul : les réglages voisins (400, 600) gagnent aussi, et le gain tient à 1 $ par trade. Ce qui m'inquiète : c'est la même idée que les trois freins à 350 points, en plus large, et ce soir elle fait moins bien qu'eux. Il perd encore 45 $ ces trois dernières semaines : il perd moins, sans gagner.",
+   "en": "I could not break it against the filter alone: the neighbouring settings (400, 600) gain too, and the gain holds at $1 a trade. What worries me: it is the same idea as the three brakes at 350 points, only looser, and tonight it does worse than they do. The robot still loses $45 over the last three weeks: it loses less, it does not win.",
+   "checks": [
+    "harness 2026-10-30 (rules in place, no filter: -152.98 / hole 225.89 / 272 tr); idea reproduces -5.95 / hole 52.91 / 65 tr (context -9.87 / 66 tr - a bar moved); filter alone -88.84 / hole 88.84 / 65 tr -> +82.9 vs the filter, hole -35.9",
+    "dose vs filter alone: chase 400 -20.04 (+68.8, hole 56.11); 500 -5.95 (+82.9); 600 -23.68 (+65.2, hole 57.98). No sign flip, but 500 is a small peak; the sister at 350 does +6.00 / hole 56.02 / 57 tr tonight - better than this one",
+    "halves: idea +39.20 first half / -45.15 second half (filter alone -14.23 / -71.23) -> +53.4 / +26.1 vs the filter, both carry; but in the recent half the idea itself loses, 44 trades, 41% won",
+    "shapes: context byref uncapped and capped identical (+50.29 / -9.54) - the cap never bites, no independent capped evidence",
+    "long window 69 d (context): +29.95 vs rules in place, hole 166.83 smaller, but h1 -71.82 / h2 +92.54 - a loss in the older weeks, same pattern as the 350 sister",
+    "real trades (context): 30 kept of 120, +66.58 vs real, hole 62.72 smaller, but net still -38.71",
+    "concentration: first-half +39.20 rests on two trades (+19.91, +18.80); the gain vs the filter (+83) is spread over many removed losers, not one or two",
+    "past: chase and sleepy floor rejected on the raw robot, reopened on the filtered base; sister pb_t_ch350_fl05_nf06 already doute 2026-10-29 for its 69-day first half; history A x1 (first night); no twin, not archived",
+    "mechanism: plausible - no entry after a 500-point run in the last hour (late, tired move), half stake on the flip right after a loss, no trading a sleeping market; but in a losing stretch any brake that trades less looks good",
+    "overlap: same three brakes as pb_t_ch350_fl05_nf06 with only the chase loosened 350 -> 500 (8 more trades kept); new clothes, not a new idea",
+    "real gap: --drag auto uncharged (drag None, no measured gap yet) -> -5.95; --drag 1 idea -94.69 / hole 102.24 / 63 tr vs filter alone -195.84 / hole 195.84 -> +101 under the dollar; survives relative, but the idea alone is -95 at $1",
+    "runs: 8 (idea; filter alone; chase 400, 600; idea drag 1, drag auto; filter drag 1; chase 350)"
+   ]
+  },
+  {
+   "id": "pb_u_ch300_fl05_nf06",
+   "date": "2026-10-30",
+   "verdict": "doute",
+   "fr": "Je n'ai pas réussi à le casser face au filtre seul : 200 et 400 points gagnent aussi, les deux moitiés aussi. Ce qui m'inquiète : c'est la troisième version des mêmes trois freins (350, 500, maintenant 300), avec les mêmes vrais trades gardés. Et le robot perd encore : 35 $ sur les trois dernières semaines, 55 $ depuis le 20 octobre. Il perd moins, il ne gagne pas.",
+   "en": "I could not break it against the filter alone: 200 and 400 points gain too, and both halves gain. What worries me: this is the third version of the same three brakes (350, 500, now 300), keeping exactly the same real trades. And the robot still loses: $35 over the last three weeks, $55 since 20 October. It loses less; it does not win.",
+   "checks": [
+    "harness 2026-10-30 (rules in place, no filter: -150.74 / hole 225.89 / 271 tr); idea reproduces +5.04 / hole 56.02 / 52 tr (context -15.05 - a bar moved); filter alone -61.58 / hole 78.43 / 65 tr -> +66.6 vs the filter, hole -22.4",
+    "dose vs filter alone: chase 200 +7.18 (+68.8, hole 54.00, 45 tr); 300 +5.04 (+66.6); 400 -18.20 (+43.4, hole 56.11); the two other brakes without chase -45.61 (+16.0). No sign flip; tighter is a little better, 400 already weaker - a slope, not a spike",
+    "halves: idea +39.81 first half (12 tr, 83% won) / -34.77 second half (40 tr, 40% won); filter alone +9.65 / -71.23 -> +30.2 / +36.5 vs the filter, both carry. But the idea itself lost 54.5 from 10-20 to 10-27",
+    "shapes: context byref uncapped and capped identical (+45.11 / -13.94) - the cap never bites, no independent capped evidence (same as the 350 and 500 sisters)",
+    "long window 69 d (context): +20.78 vs rules in place (B), h1 -68.6 / h2 +80.16 - the older weeks lose, same pattern as both sisters; weaker than the 500 sister (+29.95)",
+    "real trades (context): 26 kept of 120, +63.95 vs real, net -41.34, hole 61.71 - IDENTICAL to the 350 sister's real numbers: on the real trades 300 and 350 are the same rule",
+    "concentration: idea's own +5.04 rests on two trades (+18.80, +17.30; without them -31); the gain vs the filter is spread over many removed losers (346-362 entries refused), not one or two",
+    "past: chase and sleepy floor rejected on the raw robot, reopened on the filtered base; sisters pb_t_ch350_fl05_nf06 (10-29) and pb_u_ch500_fl05_nf06 (10-30) both doute; history A x1 (first night); no twin, not archived",
+    "mechanism: plausible - no entry after a 300-point run the trade's way in the last hour (late entry), half stake on a change of direction right after a loss, no trading a sleeping market; but in a losing stretch any brake that trades less looks good",
+    "overlap: same three brakes as the 350 and 500 sisters, chase tightened 350 -> 300 (5 fewer trades over 42 d, same real trades); new clothes. If a sister already has a twin, this one should not get a second",
+    "real gap: --drag auto uncharged (drag None, no measured gap on 30 trades yet) -> +5.04; --drag 1 idea -68.58 / hole 95.99 / 51 tr (h1 +25.31, h2 -93.89) vs rules in place -150.74 -> still better relative, but the idea alone is -69 at $1",
+    "runs: 8 (idea; chase 0, 200, 400; idea drag auto, drag 1; filter alone)"
+   ]
+  },
+  {
+   "id": "pb_u_ch350_nf06_dn",
+   "date": "2026-10-30",
+   "verdict": "bloque",
+   "fr": "Ce soir le robot perd encore 5 $ en 42 jours et garde un trade sur huit. Le frein ajouté (rien après une perte quand le marché est nerveux) a déjà eu son jumeau : il a perdu son duel le 24/10. Sur 69 jours l'idée perd 27 $, alors que les deux autres freins seuls gagnaient. Pour changer d'avis : battre ces deux freins seuls sur 69 jours.",
+   "en": "Tonight the robot still loses $5 over 42 days and keeps only one trade in eight. The added brake (nothing when behind after a loss and the market is nervous) already had its twin: it lost its duel on 10-24. Over 69 days the idea loses $27, while the two other brakes alone gained. To change my mind: beating those two brakes alone over 69 days.",
+   "checks": [
+    "harness 2026-10-30 ~11:00 (rules in place, no filter: -155.41 / hole 228.06 / 270 tr); idea -5.37 / hole 41.20 / 33 tr, 413 entries refused (context -31.52 / 28 tr hours earlier - a 26 $ swing from new bars); read diffs, not levels",
+    "dose vs rules in place: chase 300 -11.32 (+144, 29 tr); 400 -1.56 (+154, 35 tr); sleepy floor 0.5 -10.26 (+145, hole 46.09); 0.7 -7.46 (+148, hole 39.42). No sign flip - but every neighbour keeps 29-36 trades of 270: the plateau is 'barely trade', not a rule",
+    "parent (not rerun - run budget): the same chase 350 + sleepy floor 0.6 without this brake did +3.07 / hole 70.15 / 61 tr (cost5 critique 10-29) and +0.48 / 60 tr (wait15 critique 10-29); tonight's idea -5.37 / 33 tr -> the added brake halves the trades and cuts the hole ~29, adds no money. The chercheur's own text says 'without the half stake, to be checked'",
+    "halves vs rules in place: h1 +69.7 (15.52, 11 tr, 82% won) / h2 +61.4 (-20.41, 23 tr, 39% won) - both carry vs the rules, but the idea itself loses the recent half",
+    "shapes: context byref uncapped and capped identical (+28.64 / -26.36) - the cap never bites, no independent capped evidence",
+    "long window 69 d (context): -26.62 vs rules in place, hole 178.54 deeper, verdict C (h1 -98.84 / h2 +67.0) - a loss, where the sisters without this brake gained (+20 to +75)",
+    "real trades (context): 14 kept of 120, +78.22 vs real, hole 99.71 smaller, but net still -27.07 - avoidance on 14 trades, too few to lean on",
+    "concentration: top variant trade +17.30 (h2); the gain vs the rules is ~237 fewer trades in a losing month, not one or two trades - trading less, not trading better",
+    "past: debtnerv (same brake) twin started 10-20, lost its duel 10-24; critique 10-26 bloque (gain melted +85 -> -30, hole 33 -> 107); nervgate doute 10-22 (69 d loss). Sisters pb_t_ch350_fl05_nf06, pb_u_ch500/ch300_fl05_nf06 all doute. History A x1 (first night); no twin, not archived",
+    "mechanism: 'nervous market = breakouts fail' is plausible (registry nerv), but why being behind after a loss should matter was never shown; with hole-based counting the robot is behind nearly always, so it acts as a near-blanket nervous gate",
+    "overlap: the chase 350 + sleepy floor pair (doubted three times) plus debtnerv (blocked 10-26) - two judged ideas stacked, nothing new",
+    "real gap: --drag auto uncharged (drag None, no measured gap on 30 trades yet) -> -5.37; --drag 1 idea -54.69 / hole 62.66 / 31 tr (h2 -58.41) vs rules in place uncharged -155.41 (~-425 under the same dollar) - survives relative because it trades little; the idea alone is -55 at $1",
+    "runs: 9 harness calls (idea run twice by mistake, same result; chase 300, 400; floor 0.5, 0.7; idea drag 1, drag auto) - one over the budget of eight"
+   ]
+  },
+  {
+   "id": "pb_v_ch350_nf06_skipny",
+   "date": "2026-10-31",
+   "verdict": "bloque",
+   "fr": "Comparé aux deux freins seuls, ne rien prendre de 12 h à 17 h ne rapporte que +17 $ ce soir, moins qu'un seul gros trade, et seulement grâce à la mauvaise semaine de fin octobre : la première moitié fait 17 $ de moins. Sur 69 jours, 29 $ de moins que les freins seuls. Pour changer d'avis : battre les freins seuls sur 69 jours et sur les deux moitiés.",
+   "en": "Against the two brakes alone, taking nothing from 12:00 to 17:00 adds only +$17 tonight, less than one big trade, and only thanks to the bad week at the end of October: the first half is $17 worse. Over 69 days, $29 less than the brakes alone. To change my mind: beat the brakes alone over 69 days and on both halves.",
+   "checks": [
+    "reference: the fair comparison is the brakes alone (trend filter + chase 350 + pace floor 0.6), not the bare rules - the +108 vs base is mostly the brakes. Harness brakes alone: -1.07, 59 trades, hole 70.15 (h1 +47.36 / h2 -48.68)",
+    "reproduction: harness tonight gives the idea +16.13, 45 trades, hole 46.04 (h1 +30.71 / h2 -15.57) - not the battery +40.31 / 41 trades / hole 21.46 / h2 +6.49. Card numbers do not reproduce",
+    "dose: skip 13-15 +28.20 (h1 +53.16 / h2 -25.21); 12-16 +16.13; 11-17 +43.01 (h1 +48.39 / h2 -5.38). All above brakes alone, no sign flip - but no slope either, the chosen dose is the weakest of the three",
+    "halves: vs brakes alone, 12-16 is h1 -16.65, h2 +33.11 - carried by the second half only (the 23-27 Oct losing run); 13-15 the reverse. Halves disagree between neighbours",
+    "shapes: both reference shapes give the same diff (+108.36 / hole -105.29) - this replay has no daily cap, so shape tells nothing here",
+    "concentration: incremental gain +17 vs biggest single trades ~17-20 in the ledger - the whole edge is about one trade",
+    "long window: 69 days diff +1.28 vs base, h1 -98.9 / h2 +84.3; chercheur says -29 vs brakes alone - a loss against the fair reference",
+    "real trades: 20 of 120 kept, net -12.84; +92 vs base, but not measured vs brakes alone",
+    "overlap: hour skip alone (no chase/pace brake) gives -1.15, 57 trades - the skip and the brakes cut largely the same trades; the brakes add +17 on top",
+    "drag: auto not yet resolved (raw). At $1/trade idea -52.41 (h2 -66.61) vs brakes alone -88.85 - the relative edge survives because it trades less, but the robot itself loses",
+    "mechanism: plausible (US open = spread spikes and whipsaws for a BOS entry) - but the registry has no prior hour-skip win, and sunday/weekend cuts were noise or losers",
+    "runs used: 8"
+   ]
+  },
+  {
+   "id": "pb_v_ch350_cost5_ny05",
+   "date": "2026-10-31",
+   "verdict": "doute",
+   "fr": "Les deux freins (pas de stop trop serré, pas de course) tiennent à chaque réglage voisin, même à 1 $ par trade. Mon souci : la demi-mise de 12 h à 17 h ajoute 25 $, un gros trade (19 $), tout venant de fin octobre ; la première moitié fait 1 $ de moins. C'est la moitié d'une idée bloquée. Sur les vrais trades, le robot perd 18 $.",
+   "en": "The two brakes (no too-tight stop, no chasing) hold at every neighbouring setting, even at $1 a trade. What worries me: the half stake from 12:00 to 17:00 adds $25 in 42 days, barely more than one big trade ($19), and all of it comes from late October; the first half is $1 worse. It is half of yesterday's blocked idea. On the real trades the robot still loses $18.",
+   "checks": [
+    "reproduction: harness tonight gives the idea +53.81, 36 trades, hole 40.01 (h1 +47.25 / h2 +6.55), base -111.69 / 275 trades - not the card's +35.10 / base -68.05 (214 trades). Trade count and hole match; the money and the base do not reproduce",
+    "fair reference: same brakes (trend filter + chase 350 + cost 5) without the half stake: +29.26, 36 trades, hole 58.31 (h1 +48.50 / h2 -19.24). Half stake adds +24.55 and cuts the hole 58 -> 40",
+    "halves: vs brakes alone, the half stake is h1 -1.25, h2 +25.79 - carried entirely by the second half (the 23-27 Oct losing run), same pattern as pb_v_ch350_nf06_skipny blocked earlier tonight",
+    "dose cost: 4% +47.55 / 29 tr / hole 39.02 (h2 +1.56); 5% +53.81; 6% +51.46 / 48 tr / hole 44.22 (h2 -2.62). No sign flip vs base; h2 near zero at every setting",
+    "dose chase: 300 +33.93 / 32 tr (h1 +27.37 / h2 +6.55); 350 +53.81; 400 +47.82 / 36 tr (h2 +3.45). No sign flip, 350 is the peak",
+    "half-stake dose not run (budget); the 0.0 end of that dial is the 12-16 skip, which lost -29 vs brakes alone over 69 days (skipny critique)",
+    "shapes: this replay has no daily cap; byref base and capped account give identical diffs (+103.15 / -85.91) - shape tells nothing",
+    "concentration: top two trades 18.80 + 17.30 = 36.10 of 53.81 net; the half-stake increment (+24.55) is about one big trade",
+    "long window (card): 69 days diff +35.21 vs base, h1 -72.75 / h2 +92.08; the +59 vs filter alone in the chercheur's reason is for the brakes, not the half stake - no 69-day evidence for the half stake itself",
+    "real trades (card): 19 of 120 kept, net -18.03; +87 vs base but the robot still loses",
+    "drag: auto unresolved (came back raw, drag None). At $1/trade: +14.06, hole 52.94, h1 +36.25 / h2 -22.20 - survives overall because it trades little (36), but the second half loses",
+    "mechanism: plausible (US open = wide spreads and whipsaws for a BOS entry; a smaller stake there limits the damage) - but no prior hour-sizing win in the registry",
+    "overlap: the brakes are the pb_t_ch350_nf06_cost5 / pb_ext450_cost175 family again (doubted three times); the half stake is a soft version of skipny (blocked). Old pieces recombined",
+    "runs used: 8 (idea, cost 4/6, chase 300/400, drag auto, brakes alone, drag 1)"
+   ]
+  },
+  {
+   "id": "pb_v_ch350_nf06_noday",
+   "date": "2026-10-31",
+   "verdict": "bloque",
+   "fr": "Face aux deux freins seuls, ne pas trader de 8 h à 16 h n'ajoute que 9 $ ce soir, moins que le plus gros trade (17 $). La première moitié fait 23 $ de moins : tout le gain vient de la mauvaise fin octobre. Sur 69 jours, il perd face aux règles actuelles. Pour changer d'avis : battre les freins seuls sur 69 jours et sur les deux moitiés.",
+   "en": "Against the two brakes alone, no trading from 08:00 to 16:00 adds only $9 tonight, less than the biggest single trade ($17). The first half is $23 worse: all the gain comes from the bad end of October. Over 69 days it loses against the current rules. To change my mind: beat the brakes alone over 69 days and on both halves.",
+   "checks": [
+    "reference: fair comparison is the brakes alone (trend filter + chase 350 + pace floor 0.6). Harness brakes alone: -1.07, 59 tr, hole 70.15 (h1 +47.36 / h2 -48.68)",
+    "reproduction: harness idea 08-16 = +8.22, 34 tr, hole 49.04 (h1 +24.24 / h2 -16.03) - card says +25.48 / hole 35.89 / h2 -0.68. Card does not reproduce. Note: '--skip-hours 8-15' parses as 8..14 (end excluded) - gave +8.39 / 37 tr; use an explicit list",
+    "dose: 09-15 +23.62 (h1 +33.25 / h2 -11.59, hole 47.1); 08-16 +8.22; 07-17 +24.41 (h1 +35.25 / h2 -10.84, hole 35.46). All above brakes alone, no sign flip - but the chosen dose is the weakest of the three, no slope",
+    "halves: vs brakes alone, 08-16 is h1 -23.12 / h2 +32.65; 09-15 h1 -14.11 / h2 +37.09; 07-17 h1 -12.11 / h2 +37.84. Every dose loses in the first half - carried only by the second half (23-27 Oct losing run). Same pattern as skipny (bloque tonight)",
+    "shapes: card byref base and capped rows identical (+93.53 / -90.86) - this replay has no daily cap, shape tells nothing",
+    "concentration: incremental gain +9.29 vs biggest single trade +17.30 (and biggest loss -21.19) in the idea's own ledger - the whole edge is under one trade; without the +17.30 the idea is net -9.08",
+    "long window (card): 69 days diff -15.85 vs base, verdict C, h1 -91.52 / h2 +59.19 - a loss, halves of opposite sign; the chercheur's own reason says 'about the same as the filter alone'",
+    "real trades (card): 15 of 120 kept, net -0.16; +105 vs base, but that is mostly the brakes, not measured vs brakes alone",
+    "drag: auto unresolved (cfg drag None, raw). At $1/trade: idea -34.78, hole 66.54 (h1 +9.74 / h2 -44.53) - the robot itself loses; relative edge vs brakes alone survives only because it trades less (34 vs 59)",
+    "past: noday bloque 2026-10-19 (sign flip between neighbours, 69 d -30), doute 2026-10-27 (69 d h1 -93 / h2 +94); skipny (12-17 slice of this window, same brakes) bloque tonight for the same reason. Rejected wait / weekend / one_day in the same family",
+    "mechanism: plausible for the US-open afternoon (spikes through tight stops); none for 08-12, half the window - earlier critiques found the morning cut a passenger that loses in the first half",
+    "overlap: old 'noday' wearing the brakes; skipny is a sub-window. Twin 'no day' +30 in 8 trades since 10-28 - 3 days, too few to count",
+    "runs used: 8 (08-14 by parse slip, 08-16, brakes alone, 09-15, 07-17, 08-16 drag auto, brakes alone drag auto, 08-16 drag 1)"
+   ]
   }
  ]
 }

@@ -14,27 +14,172 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-26T07:45:35Z",
+ "updated": "2026-10-31",
  "hypotheses": [
+  {
+   "id": "no_chase",
+   "fr": "Ne pas entrer quand le prix a déjà beaucoup couru dans le sens du trade.",
+   "status": "renforce",
+   "evidence": [
+    "2026-10-05: chase_pts built 10-04. 42 d uncapped / capped: 400 C -9.8 / C -61.3; 500 A +8.5 (hole 50->36) / C -6.4; 700 C -1.2 / B +5.2; 1000 C -11.5 / C -1.6. Jagged between neighbours, never A on both. In company: rr1.0+bul4+chase500 A +20.3 / C -30.9; rr1.0+nosun+chase500 B / C -19.4; rr0.9+bul4+chase500 C / C. Noise, not a cause.",
+    "2026-10-25: REOPENED with new evidence (filter base, not raw): filter+ext450+chase 250/300/350 A +58.8/+52.0/+54.3 (h1 +41.5/+41.5/+51.6, h2 +10.3/+2.4/+21.6), 400 inert (+40.1 = ext450). Smooth plateau. 69 d chase300 B +27.1 (h1 -24.9); real +12.6 (23 tr). Proxy for h1_internal_late.",
+    "2026-10-26: plateau cracked on a new night: e450+ch350 B +54.3 (h2 -10.5), trio ch300 B +65.2 (h2 -16.1), trio ch350 A +65.0 but h2 only +3.3 (was +31.0). The sleepy floor without chase (e450+fl05+nf07) has a better h2 (+27.2). trail_prot 2 on top: h2 +3.2, 69 d -8 (neutral).",
+    "2026-10-28: ch350+fl05+nf06 identical to e450+ch350+fl05+nf06 (+62.2): chase makes ext450 inert. Without fl05 (e450+ch350+nf06) +49.6 hole 70. Chase is the active brake.",
+    "2026-10-29: 69 d weekly, fl05+nf06 + chase 0/300/350/400/450/500/600/800 = +46.9/81.7/77.2/59.2/76.9/95.6/79.3/35.5 (filter alone +36.7). Plateau 300-600 on 69 d; 42 d ch300 +60.0 (h +28.6/+28.0), ch500 +52.4 (h +31.4/+21.1) vs filter. Only bad week wk36 (Aug31-Sep6, +2667 pts up): -38.4 trio vs filter; wk39 (also up +3294) +50.5. Answers the critic doubt on 69 d first half (my plain halves: +16.5/+35.0 vs filter, no drag).",
+    "2026-10-30: 69 d (window now wk34-44) trio ch350+fl05+nf06 +91.80 vs filter +47.83 (h +14.9/+38.8) hole 56 vs 79.5; with drag 1 $/tr trio +10.04 vs filter -115.90 (h +55.1/+69.3). Critic's 69 d h1 -80 NOT reproduced in either setup. 42 d trio +6.0 vs filter -61.58 (h +33.1/+34.5).",
+    "2026-10-31: tonight's bars, 42 d filter -55.73 hole 78.4 / brakes ch350+nf06 -1.07 hole 70.2 (+54.7, h +31.9/+23.5); 69 d filter +44.98 / brakes +78.29 (+33.3, h +17.2/+28.1). Still -62.6 after 10-20: critic's 'loses less, does not win' stands for the recent weeks."
+   ],
+   "next": "Battery + critic on ch300/ch500 trio; build chase_size (stake instead of refusal) to rescue wk36."
+  },
+  {
+   "id": "sleepy_market",
+   "fr": "Marché très endormi (allure sous 0,6-0,8) : sur le robot filtré, ne pas entrer aide ; sur le robot sans filtre, non.",
+   "status": "renforce",
+   "evidence": [
+    "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit",
+    "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor.",
+    "2026-10-04 veille: two trades at pace 0.93/0.91: +1.30 and -11.56. Bucket 0.8-1.0 now 10 tr 80% but +4.95 net - its edge is thin in money. <0.8 unchanged (6 tr).",
+    "2026-10-06 veille: one more real <0.8 trade, FLIP-BOS BUY lost -3.11 (pace 0.743, closed 00:30 UTC). Bucket <0.8 now 7 tr 29% -21.96 PF 0.15. Still contradicted by the engine (nerv_floor C on all floors); curiosity only.",
+    "2026-10-05: nerv_floor built (10-04). 42 d both shapes: 0.6 C -3.6 / C -9.6; 0.7 C -14.3 / C -12.2; 0.8 C -29.4 (hole 50->57) / C -20.3. Monotonic: the higher the floor, the worse. The engine's sleepy trades make money; the 6 real ones (33%) are a small sample. Rejected by numbers.",
+    "2026-10-09 05:00 veille: real <0.8 bucket grew 7 -> 17 tr, 29% -21.68 PF 0.43, halves 33%/27% (agree). Most of the growth is calm reversals around 22-02 h, tangled with flip and late_night. Engine nerv_floor C on every floor (10-05); dial closed, curiosity only.",
+    "2026-10-26: REOPENED on new evidence (filtered base, not raw): e450+ch350+fl05 + nerv_floor 0.6/0.65/0.7/0.8 A +70.5/+72.3/+73.5/+67.9 (h2 +10.7/+12.5/+13.1/+6.0, hole 70->50/48/48/36): smooth plateau. e450+nf07 A +42.5 (h +31.5/+24.1) vs e450 alone h2 +11.4; e450+fl05+nf07 A +62.5 (h +35.0/+27.2). 69 d quartet B +23.9 (h1 -51.0), trio B +22.3 (h1 -41.6). Real +26.2 / +28.7 (25-27 tr). Real deduped since 10-10 under 0.7: only 7 tr +0.6 (trop peu).",
+    "2026-10-27: second night of the plateau vs official filter (base -46.26 hole 71.85 66 tr; h1 hole 42): e450+ch350+fl05 + nerv_floor 0.6/0.7/0.8 = +63.3/+61.3/+49.6, h +42.2/+37.4, +38.3/+39.2, +38.3/+27.5, hole 56/54/47. Plateau holds a second night. Real: no new trades (accounts paused).",
+    "2026-10-28: third night vs filter alone (-56.03 hole 73.36 67 tr): ch350+fl05 + nf 0.6/0.7/0.8 = +62.2/+54.3/+48.5 (h +39.5/+29.4, +29.7/+31.2, +35.6/+19.6), holes 56/54/47. Plateau holds three nights.",
+    "2026-10-29: fourth night A in battery (fl05_nf08 +51.35, trio +72.28 vs raw). 69 d nf06 alone +41.56 vs filter +36.67: helps mostly in company.",
+    "2026-10-31: drop-one: ch350 + 13-16 half without the floor 42 d +24.06 hole 55.4 vs with floor +28.95 hole 50.5: the floor adds ~5 and a smaller hole. Kept as passenger only."
+   ],
+   "next": "Battery + critic on pb_e450_fl05_nf07 / quartet; watch real <0.7 since filter reach 30."
+  },
+  {
+   "id": "flip_loss_stake",
+   "fr": "Miser moins sur un changement de sens pris juste après une perte aide les comptes avec plafond.",
+   "status": "renforce",
+   "evidence": [
+    "2026-10-11: flip_loss_size built 10-10. 0.75: capped A +16.5 (h +7.1/+9.4), uncapped B -3.2 (h -5.1/-6.2) hole 57->55; 0.5: capped A +11.8, uncapped C -20.4. With ext400+cw25 it adds nothing on capped (+87.7 vs +87.3).",
+    "2026-10-16: capped shape gone; filter + ext500 + flip-after-loss 0.75 A +70.9 vs ext500 alone +73.5: adds nothing.",
+    "2026-10-25: on filter+ext450: flip_loss 0.5 same money (+38.5 vs +39.7), hole 56.5->43.3; with chase350 A +63.5 hole 43.3; 69 d (with chase300) +30.7; real +21.3 (23 tr). Hole part holds on the filter.",
+    "2026-10-26: on filter+ext450+ch350: without fl05 h2 -10.5 (B), with fl05 h2 +3.3 (A), hole 70->56; with nf07 hole 48. 69 d trio +27.7 vs pair +21.4; real +24.3 vs +12.6 (27 tr). It carries the second half and the hole.",
+    "2026-10-27: e450+fl05+nf07 without chase +36.4 hole 54.2; with chase350 +61.3 hole 54.2 (h +38.3/+39.2). Chase carries the money, fl05 the hole.",
+    "2026-10-28: with vs without fl05 (ch350+nf06): hole 56 vs 70, money +62 vs +50. Carries the hole again.",
+    "2026-10-29: 69 d fl05 alone hole 64.3 vs filter 74.4, net +41.4 vs +36.7. Carries the hole on the long window too."
+   ],
+   "next": "Parked."
+  },
+  {
+   "id": "ny_open",
+   "fr": "Les trades pris à l'ouverture de New York (12 h - 17 h UTC) perdent ; les miser à moitié garde le gain et réduit le trou.",
+   "en": "Trades taken around the New York open (12:00-17:00 UTC) lose; betting half there keeps the gain and cuts the hole.",
+   "status": "renforce",
+   "next": "Battery + critic on pb_w_ch350_nf06_ny1316(q) and pb_w_ch350_fh05_ny1316q; watch 69 d first half (Aug-Sep) as it leaves the window; real 13-16 h pile when accounts resume.",
+   "evidence": [
+    "2026-10-30: real 13-16 h 41 tr 15 won -116.66 both halves lose; lab robot 12-17 h 14 tr 2 won -50.37 on 10-28/29. Replay trio+hs12-17:0.5 42 d +25.7 vs trio +6.0 (h -6.8/+26.5) hole 40.7 vs 56; 69 d +88.96 vs +91.80 (h -20.9/+19.9). Skip 12-17 on trio: 42 d +34.9 hole 29.7 (h -0.2/+27.4), 69 d +62.9 (h -59.5/+19.5): refusal too strong on the long window, half stake right.",
+    "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only."
+   ]
+  },
+  {
+   "id": "wide_stops_carry",
+   "fr": "Les trades au stop large (300 points et plus) portent le robot ; les stops serrés rapportent peu.",
+   "status": "renforce",
+   "next": "Battery + critic on pb_w_ch350_cost5 / pb_w_ch350_cost5_ny1316; tight_stop_size request (stake not refusal).",
+   "evidence": [
+    "2026-10-19: trace soft+ext500: stop>=300 22 tr 77% +108.9; <300 120 tr 56% +21.7. cost_max on soft+ext500: 2.5 C -39.5 (29 tr), 3 C -26.5 (37 tr), 4 B +36.1 (h +85.7/-19.6, 57 tr, hole 57->11). Jagged between neighbours; h2 negative. official+ext450+cost3 B +0.4 (18 tr, hole 15->9).",
+    "2026-10-20: critic doute confirmed: on S, cost_max 3.5 B +3.1 (h +60.9/-37.8), 4.5 B +15.8 (h +59.1/-28.7), cost4+fh0.75 B +21.9 (h2 -27.2). Hole 57->11 at every setting, h2 always negative. Money part weakened, hole part holds.",
+    "2026-10-24: top 25 real wins median stop 308 pts vs 168 all; this morning 7 small losses with stops 26-81 pts, calm 0.52-0.77. Hole part holds; tight_stop_size still unbuilt.",
+    "2026-10-28: test: ch350+nf06 + cost_max 3/4/5 = +85.9/+79.2/+79.6, both halves, but 20/29/35 tr (h1 6-7 tr); cost4 alone +23.8 (h1 -4.3). REAL disagrees: stops >=175 117 tr 47% -128.23, <175 147 tr 46% -40.97 (raw $). By band: 250-400 46 tr 57% +3.71 only positive; 150-250 79 tr -90.69; >=400 13 tr -50.68. Test-vs-real split.",
+    "2026-10-30: 69 d ch350+nf06+cost5 +107.09 vs filter +47.83 (h +19.6/+44.3) hole 58.3 vs 79.5, 63 tr (33/33 per half: answers the thin-sample doubt); vs ch350+nf06 alone +22.4 (h -1.1/+16.2). Week 43 still -45.",
+    "2026-10-31: ch350+cost5 vs brakes ch350+nf06: 42 d +29.26 vs -1.07 hole 58.3 vs 70.2 (h +1.1/+29.4, 11/25 tr); 69 d +100.74 vs +78.29 (h -1.1/+23.6, 32/31 tr). Halves agree in money only weakly; proposed pb_w_ch350_cost5. +13-16 half: +56.69 hole 40.0 (h +1.6/+25.8 vs ch350+cost5)."
+   ]
+  },
+  {
+   "id": "rested_cont",
+   "fr": "Un trade de plus dans le même sens gagne surtout quand le robot a fait une pause avant (15 min - 3 h) ; repris en moins de 15 minutes, il perd.",
+   "status": "renforce",
+   "evidence": [
+    "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait.",
+    "2026-10-15 12:00 veille: --by gap (all kinds) 135 tr: <15 min 35 tr 37% -47.06 (h 37/38); 15-30 14 tr 64% +4.21; 30-60 30 tr 63% +37.45 PF 1.79 (h 62/65); 1-3 h 24 tr 50% +3.32; >3 h 31 tr 48% -38.16 PF 0.51 (h 47/50 agree). The rest helps only up to ~1 h; a long pause (first trade of a session) loses too - an inverted U, not 'more rest is better'. Overlaps day_count's first trade (1st 48 tr 62% but net +5)? Check >3 h by kind/day.",
+    "2026-10-16 04:00 veille: cont by hour: early night 02-06 h 15 tr 14 won +58.81 vs afternoon 13-16 h 10 tr 2 won -56.13 (peu). The day/night split of cont may explain more than the pause; check at night whether cont_rested holds by day only.",
+    "2026-10-16: gap x kind x day/night (BTC only, all sources): BOS night 15-60 min 11 tr 100% +53.07; BOS day <15 17 tr 35% -30.23; BOS day >3 h 8 tr 38% -34.73; FLIP day <15 10 tr 10% -17.49. Top-20 wins: 15 BOS, 11 at gap 15-60. Filter + wait10 C.",
+    "2026-10-19: engine trace soft+ext500 (142 tr): same-way 15-180 min 29 tr 76% +123.0; <15 22 tr 41% -16.0; >3 h 23 tr 48% -15.3; flips 15-180 28 tr 71% +46.6. Real pile reached a verifier (31 tr 68% +54.31); inside it night 00-06 16 tr +55.3, day 15 tr ~-1. wait 15 (both kinds) C -31.3: needs the same-way-only dial (cont_wait). Ask answered.",
+    "2026-10-20: real gap <15 min 42 tr 38% -44.54 (h 30/47 agree); gap 30-60 33 tr 64% +38.59 (h 63/64 agree). Real side keeps saying it; engine side (wait dials on filter) still C. cont_wait request still open.",
+    "2026-10-23: --by gap all kinds: <15 min 54 tr 39% -40.61; 15-30 26 tr 62% +10.10; 30-60 42 tr 57% +11.28 (halves 62/52, disagree); 1-3 h 33 tr 39% -53.23; >3 h 39 tr -28.75. Small edge at 15-60 min, the loss at 1-3 h is new weight.",
+    "2026-10-24: real gap <15 min 65 tr 34% -68.95 (h 33/34), 15-30 31 tr 61% +12.19, 30-60 49 tr 55% -0.45, 1-3 h 35 tr 37% -65.05. Engine official wait15 C -15.8 again.",
+    "2026-10-25 12:00 veille: 06:52 BOS SELL gap 66 min lost -3.97 against the hypothesis; h1 internal was same way. Rested BOS (15-180) split by h1: same 21 tr 33% -21.82, opp 25 tr 68% +21.43: the rest helps only when the hour chart's small trend is not already the trade's way (peu, wait for 30 each).",
+    "2026-10-26 05:05 veille: Sunday 21:25 BOS after 385 min pause (session open) lost -3.75 - the >3 h arm of the inverted U again; 16 min and 10 min follow-ups won small.",
+    "2026-10-26 07:45 veille: FLIP after 509 min pause lost -4.21, but gap >3 h by kind: flips 31 tr 52% +8.21, all kinds 44 tr 48% -38.67 (night 17 tr 41% -15.83, day 27 tr -22.84). The long-pause loss is a BOS thing, not flips.",
+    "2026-10-27: --by gap all kinds, 256 real tr: 15-30 min 35 tr 60% +10.75; 30-60 59 tr 58% +5.61; <15 77 tr 34% -75.29; 1-3 h 39 tr 36% -83.14 (h 50/18); >3 h 46 tr 48% -42.75. The good window is 15-60 min both sides bounded; pause too long loses too. Pile gap_cold opened, request gap_max.",
+    "2026-10-28: after a loss: gap <15 44 tr 23% -63.28; 15-60 63 tr 57% -5.25; >60 35 tr 31% -77.91. After a win: <15 47% -10.5; 15-60 62% +23.5; >60 51% -43.6. Window 15-60 matters most after a loss. ch350+nf06+wait15 +63.3 (h +46.2/+26.8) hole 73.9 (no hole gain). Request loss_gap_size.",
+    "2026-10-29: lab robot 10-28/29: 19 tr +18.27; two biggest losses -5.37/-7.11 held 7-8 min, restarted minutes after a loss (catch-up chain). Real gap: <15 min 80 tr 34% -73.76, 15-60 97 tr ~+18, 1-3 h 39 tr -83.14. Unchanged (one new real trade)."
+   ],
+   "next": "cont_wait when built; re-read on src=filtre once real_pool_split exists."
+  },
+  {
+   "id": "pb_filter_works",
+   "fr": "Le filtre du sens du repli (comptes réels depuis le 10-10) écarte surtout des trades perdants.",
+   "status": "affaibli",
+   "next": "real_pool_split + battery_live_base requests; watch refused vs kept on the reference account to 30 kept trades.",
+   "evidence": [
+    "2026-10-16: reference account (unfiltered), same lot, since 10-10: refused-by-filter 31 tr 48% -23.22 per 0.01 (h -1.35/-21.87); kept 19 tr 68% +8.77 (h +3.59/+5.18). Wealth since 10-10: filtered accounts +12.66..+46.14 each, reference -28.92 on 50 (since 10-15: -34.49 on 8). Harness 42 d: trend filter +41.68 hole 51.81 vs raw +16.67 hole 82.16 (B, h -32.8/+45.9); but only 55 trades vs live ~4.5/day.",
+    "2026-10-16 12:00 veille: night FLIP-BOS BUY -8.39 (entry 05:01, held 5 h, stop 411 pts) taken by the reference account only; filtered accounts refused it. One more refused loss.",
+    "2026-10-17: wealth since 10-10: filtered accounts all positive (account 5 +55.0 on 25, account 1 +52.3 on 28, account 4 +40.1 on 28, account 3 +29.2 on 25, account 2 +12.7 on 7, demo +22.8 on 20); reference u477508138 -16.09 on 51 (since 10-14 -27.98 on 15, 7 won). Filtered pool deduped 22 tr 15 won +9.21 per 0.01. Harness trend filter today 55 tr +34.40 hole 51.81 (h -9.24/+40.07).",
+    "2026-10-19: only 3 filtered trades since 10-17 (Sun sell +, Sun sell -, Mon buy: won on accounts 3/4 closed ~55 min, lost on 1/5/demo closed 94 min - same entry, exit decided). Reference 12 tr +12.32. No new verdict.",
+    "2026-10-20: filtered pool since 10-10 deduped 25 tr +2.62 per 0.01 vs reference 69 tr -8.34. Mon 10-19 two losses on all filtered accounts (94 and 54 min), no filtered trade since. Thinner but holds.",
+    "2026-10-24: wealth since 10-20 (per 0.01): filtered accounts ~23 tr 7 won -11..-19 (about -0.59/trade), reference account 61 tr 20 won -51.03 (-0.84/trade). Since 10-10 filtered ~0, reference -60.9. Still better than no filter, no longer positive. Replay official filter 42 d: -67.21 on 55 tr.",
+    "2026-10-26: real accounts since 10-24: kino ledger 14 closes 2 won; real replay base 35 tr -65.77 since journal start. Owner paused real accounts 10-26. Thin filter, still losing.",
+    "2026-10-29: last two weeks lose with or without brakes on 69 d (wk43 trio -36.2, wk44 -16.7; filter -49.4/-16.8). Brakes lose less, do not win."
+   ]
+  },
+  {
+   "id": "slow_trade",
+   "fr": "Un trade qui traîne entre 30 minutes et une heure est mal parti : il gagne peu et perd gros.",
+   "status": "renforce",
+   "next": "trail_in_menu + time_exit.",
+   "evidence": [
+    "2026-10-19: real dur 30-60 min 20 tr 45% -38.33 PF 0.43, avg win 3.21 / loss -6.11, halves 44/45 agree; <15 76 tr -3.9, 15-30 26 tr +6.3, 1-3 h 22 tr -4.6, >3 h 9 tr -0.3 (avg win 7.41). Opened pile slow_30_60 and request time_exit.",
+    "2026-10-20: pile slow_30_60 now 22 tr 41% -48.75 (h 44/38 agree, h1n 9). Mon 13:30 loss after 54 min on every filtered account added to it.",
+    "2026-10-24: trail_prot 2 (stop follows protected level past entry, owner dial 10-01, not in grammar) vs official: B +40.6 (h +49.1/0), long B +13.8, real +43.3 on 34 tr. Requested trail_in_menu.",
+    "2026-10-26 07:45 veille: FLIP-BOS SELL (entry 06:25 Mon, pace 1.137, gap 509 min after a win, h1 i=0, dist 136) held 35 min, lost -4.21 as predicted. dur 30-60 min now 39 tr 44% -52.15 (h 46/42 agree, 13/26).",
+    "2026-10-26: 08:03 BOS SELL (pace 1.219, gap 63 min after the 07:00 loss, h1 i=0, dist 351) held 33 min, lost -3.65 per 0.01: second slow loss in a row today. dur 30-60 now 40 tr 42% -63.10 PF 0.53 (h 46/41 agree). trail_prot 2 does not touch the 42 d money (+0.0 full).",
+    "2026-10-28: real dur 30-60 41 tr 44% -60.82 PF 0.54 (h 41/46 agree). Other account 10-26/27 winners lasted 58-122 min with stops 142-347 pts.",
+    "2026-10-29: real dur 30-60 42 tr 45% -55.86 PF 0.58 (h 41/48). Lab robot biggest win +17.51 held 262 min."
+   ]
+  },
   {
    "id": "ext_with_filter",
    "fr": "Avec le filtre, ne pas entrer après une heure qui a déjà bougé de 400-600 points rapporte.",
-   "status": "renforce",
-   "next": "Battery verdict on pb_ext450_flipl05; critic on concentration (base h1 only 14 trades).",
+   "status": "affaibli",
+   "next": "Battery + critic on the nf07 quartet; find the 69 d first-half weeks that hate every brake.",
    "evidence": [
     "2026-10-16: vs trend-filter base (55 tr +41.68 hole 51.81): ext400 A +55.4, ext500 A +73.5 (h +40.3/+22.7, hole 15.2), ext600 B +50.8 (h2 0). choch filter (162 tr) +ext500 A +74.3 (h +36.3/+37.4, hole 93.7->57.4). rr1.0+filter +ext500 A +84.6. 69 d B +73.5 (h1 0 / h2 +73.5, hole 51.8->20.3). Real entries +21.9 (13 of 91 kept). Trace: removes -39.16 (09-22 15:44), +3.42, -6.52; adds 6 trades +19.31: about half the gain is one avoided loss.",
     "2026-10-17: plateau: trend filter ext450 A +57.9 (h +36.0/+11.4), ext500 A +73.5, ext550 B +50.8 (h2 0); choch filter ext400 A +55.2 (h +32.6/+30.4), ext500 A +74.3 (h +36.3/+37.5), ext600 A +46.1 (h +40.3/+10.3). 69 d choch+ext500 A +84.2 (h +9.9/+73.2) hole 93.7->57.4. Trace choch: removes -39.16 and 12 more losses (sum -116.5) + 6 wins (+22.1), adds 22 trades (-20.1); without the -39.16 gain ~+35 = answers critic concentration. Real view choch+ext500 +34.52 on 43 vs choch +29.21 on 48 (+5.3, small). Battery (vs raw base) pb_ext500 B, pb_choch_ext500 B, both h1 negative only because the raw base is the reference.",
     "2026-10-19: answers critic pb_ext450 doute: 69 d vs OFFICIAL FILTER ALONE (not raw): trend +166.84 hole 51.81 -> trend+ext450 +220.54 hole 20.31, B (h -4.26/+39.68). The -115 h1 the critic saw is filter-vs-raw. 42 d trend+ext450 A +57.9 (h +40.3/+16.3). Battery pb_ext450 A vs raw.",
     "2026-10-20: S = choch+ext500 base tonight 150 tr +128.92 hole 57.4 (h -0.24/+114.46); 69 d +253.76 on 252 tr. Used as base for every run.",
     "2026-10-24: vs OFFICIAL filter (trend, raw, 41.7 d, base -67.21 hole 60.65 55 tr): ext450 A +61.3 (h +40.3/+11.4), long 69 d B +53.7, real +14.4. ext450+flip_loss 0.5 A +61.4 hole 36.9 (vs ext450 alone B, same money, hole 50->37), long B +41.1, real +23.8.",
-    "2026-10-25: vs official filter (CLI view, base -61.30 hole 56.52 55 tr, h1 12 tr): ext450 A +39.7 (h +40.3/+11.4); 69 d B +32.5 (h1 -25.5); real +14.4 (25 tr). Third night A on the filter."
+    "2026-10-25: vs official filter (CLI view, base -61.30 hole 56.52 55 tr, h1 12 tr): ext450 A +39.7 (h +40.3/+11.4); 69 d B +32.5 (h1 -25.5); real +14.4 (25 tr). Third night A on the filter.",
+    "2026-10-26: vs official filter (base -70.30 hole 70.38 58 tr, h1 -36.44 on 13 tr / h2 -19.16 on 56): ext450 A +39.7 (h +35.4/+11.4) hole unchanged; 69 d B +32.4 (h1 -25.5); real +14.4 (29 tr). Fourth night A on the filter.",
+    "2026-10-27: vs official filter ext450 alone +25.5 (h +34.8/+8.2) hole 71.9->75.0; second half thin again. Fifth night A on the filter, but money mostly from the other brakes now.",
+    "2026-10-28: ext450 alone +28.5 (h +35.4/+8.7) hole 76.6; inert once chase 350 is there. Its money belongs to chase now."
    ]
+  },
+  {
+   "id": "h1_internal_late",
+   "status": "renforce",
+   "fr": "Quand la petite tendance interne du graphique d'une heure va déjà dans le sens du trade, le robot arrive trop tard et perd.",
+   "en": "When the one-hour chart's internal small trend already points the trade's way, the robot arrives too late and loses.",
+   "evidence": [
+    "2026-10-25: real htf_entry (captured at entry), 210 tr: h1 int same 87 tr 33% per0.01 -73.25 avgW 1.28 (halves 33/33); 0 25 tr 52% +11.2; opposite 98 tr 54% +0.05. Holds by day (28% vs 49%) and night (41% vs 60%), before 10-10 (31 vs 58) and after (34 vs 51), flips (34 vs 52) and BOS (31 vs 55), after a loss (26 vs 48). Top 25 wins: 3 same, 14 opp, 8 zero. m15 internal the OTHER way (same 57% vs opp 31%). Not in engine nor piles: requested h1_int_size.",
+    "2026-10-25 12:00 veille: 06:52 BOS SELL rested 66 min after a win, h1 same way: lost -3.97 as predicted. Inside rested BOS (15-180 min): same 21 tr 33% -21.82 vs opp 25 tr 68% +21.43 - it may explain rested_cont's misses (peu).",
+    "2026-10-25 14:50 veille: 13:28 FLIP-BOS SELL, h1 same way, lost -4.48 as predicted (today's three losses all h1 same). Same 88 tr 33% -74.74 per 0.01 vs opp 99 tr 54% -1.39. Request h1_int_size remains the test.",
+    "2026-10-25 16:00 veille: 14:56 FLIP-BOS BUY, h1 opposite, won +1.33 as predicted (quick after a loss, small). Opp 100 tr 54% -0.72 per 0.01 (h 62/46, second half fading) vs same 88 tr 33% -74.74 (h 34/32). The edge is mostly in avoiding 'same', not in 'opp' earning.",
+    "2026-10-26 05:05 veille: three Sunday-evening BOS SELL, all h1 same way: 1 lost (-3.75, first after 385 min), 2 won fast and small (+2.85, +1.28) - prediction 1 of 3, but net ~0 per 0.01. Same 91 tr 34% -74.40 (h 33/35); same BOS 41 tr 34% (h 50/19, second half carries it). Still holds; the test is request h1_int_size.",
+    "2026-10-26: deduped across journals (117 real tr since 10-01, not 210 as counted on 10-25): h1 same 50 tr 34% -41.3 per 0.01; NEW m15 split: h1 same + m15 not same 33 tr 7 won (21%) -46.6 (h 9/40, 20/13 tr); h1 opp + m15 same 38 tr 63% +11.4 (h 67/60). h4 trend adds nothing (same 47% / opp 43%). Requested late_wave_size."
+   ],
+   "next": "Wait for h1_int_size / late_wave_size to be built; then test refusal and half stake."
   },
   {
    "id": "day_loss_chase",
    "fr": "Le jour, juste après une perte, le robot court après son argent et perd ; la nuit, non.",
-   "status": "renforce",
-   "next": "loss_wait_day: requests.json says built but harness --help has no such flag - check at night; if it exists, test it on 08-16 h only (the evening after a loss wins, 29 tr 59%).",
+   "status": "affaibli",
+   "next": "Keep as a real-trade pile; no more day_loss_size money proposals unless real_pool_split shows it.",
    "evidence": [
     "2026-10-26 06:30 veille (labo ask day_after_loss): pile 86 tr 38% vs 51% -138.16 PF 0.45 (h 37/40 agree). By hour: 08-16 h 57 tr 16 won (28%) -158.29 (13 h 7 tr 0 won -48.93; 16 h 9 tr 1 won -48.45); 17-23 h 29 tr 17 won (59%) +20.13 (peu). <15 min 47 tr 36% -55.66; 1.0-1.3 26 tr 31% -66.67; calm <0.8 16 tr +7.03. The chase is 08-16 h, not the evening. Answered, no proposal.",
     "2026-10-12: day_after_loss 39 tr 36% vs 57% -51.38 PF 0.49 (h 39/33); night after a loss 15 tr 67% +15.69. Europe after loss 18 tr 33% -36.0; US after loss 21 tr 38% -15.4.",
@@ -53,17 +198,23 @@
     "2026-10-24: real: after a loss restart <15 min 35 tr 23% -56.49 (h 15/27 agree), >=15 min 82 tr 45% -64.43; after a win <15 min 30 tr -12.46. Inside: flips 21 tr 14% -51.74, day 25 tr -58.23, night 10 tr +1.74. Filtered account 4 since 10-10: after loss <15 12 tr 2 won -5.75/0.01 vs >60 12 tr 8 won +3.17. Engine official: flip_loss 0.5 B +14.3 (h1 -0.2); wait15 C -15.8. Pile loss_quick15 opened.",
     "2026-10-24 12:00 veille: BOS SELL -2.36 (closed 10:01, pace 0.89) restarted quick after the 09:29 loss, as predicted. Pile loss_quick15 36 tr 22% vs 51% -58.85 PF 0.39 (h 13/29 agree); inside <15 min held 23 tr 17% -44.76.",
     "2026-10-24 13:30 veille: FLIP-BOS BUY +2.63 (closed 12:47, pace 0.99) by day after the 10:01 loss, restarted hours later (not quick) - won; fits 'the hurry, not the loss'. Pile loss_quick15 unchanged 36 tr 22% vs 51% -58.85 PF 0.39 (h 12/30, both lose); inside held <15 min 23 tr 17% -44.76; every pace band loses (calm <0.8 8 tr 0 won). Answered labo ask loss_quick15: no rule (wait15 C on official), waiting for loss_wait_day.",
-    "2026-10-25 06:30 veille (labo ask europe): europe 08-16 h 82 tr 40% -108.41 PF 0.53 (h 42/38); inside after a loss 45 tr 31% vs 51% -103.82 PF 0.32 (h 33/29 agree), after a win 36 tr 50% -12.39. 96% of the day's loss sits after a loss. Answered: no rule, loss_wait_day still open."
+    "2026-10-25 06:30 veille (labo ask europe): europe 08-16 h 82 tr 40% -108.41 PF 0.53 (h 42/38); inside after a loss 45 tr 31% vs 51% -103.82 PF 0.32 (h 33/29 agree), after a win 36 tr 50% -12.39. 96% of the day's loss sits after a loss. Answered: no rule, loss_wait_day still open.",
+    "2026-10-26: 08:03 trade by day 63 min after a loss lost -3.65 (not quick). Trade after 2 losses in a row: 30 tr 27% -57.13 (pile field missing, pile_field_streak still open). day_after_loss pile 87 tr 38% -149.11 (h 37/39).",
+    "2026-10-31: replay day_loss_size 0.5 on brakes ch350+nf06 42 d -21.47 vs -1.07 (h -14.6/-3.6), hole 65.9 vs 70.2; on ch350+cost5 +18.96 vs +29.26 hole 44.9 vs 58.3. The test says the day-after-loss trades are not where the money leaks; the real journal says they are (87 tr -149). Hole belt at best."
    ]
   },
   {
    "id": "day_size_rule",
    "fr": "Garder les trades de jour mais miser moins de 8 h a minuit vaut mieux que ne plus trader le jour.",
-   "status": "affaibli",
+   "status": "en test",
    "next": "Battery + critic on pb_day025_flipl05 / pb_day05_flipl05; control = the same stake cut on ALL trades (critic hothalf objection).",
    "evidence": [
     "2026-10-24: vs official filter: day 0.25 A +36.5, 0.5 A +31.2; with flip_loss 0.5: 0.75 A +25.4, 0.5 A +40.6 (h +25.1/+12.4) hole 32.9, 0.25 A +43.3 (h +37.8/+7.5) hole 24.3. Monotone ladder. Long 69 d C (0.5 -40.6, 0.25 alone -66.5). Real +15.4 (31 tr). With ext450 it subtracts (-13.2 vs ext450). Caution: the robot loses in this window, so any stake cut looks good.",
-    "2026-10-25: CONTROL: all trades 0.5 A +30.65 hole 28.3 (h +22.6/+19.0) beats day 0.5 A +23.8 hole 41.4 (h +21.3/+3.5). The day cut is just betting less while the robot loses (critic hothalf right). Not a cause."
+    "2026-10-25: CONTROL: all trades 0.5 A +30.65 hole 28.3 (h +22.6/+19.0) beats day 0.5 A +23.8 hole 41.4 (h +21.3/+3.5). The day cut is just betting less while the robot loses (critic hothalf right). Not a cause.",
+    "2026-10-27: day_loss_size 0.5 on the four brakes: +34.2 (h +34/+8) vs +61.3 without: subtracts. Not a cause (consistent with control of 10-25).",
+    "2026-10-28: critic on pb_s_early2: half stake on ALL trades beats early-move half. My control tonight: half on all (filter) +28.0 hole 36.7; trio +62.2 beats it on money, not on hole.",
+    "2026-10-30: targeted half stake 12-17 UTC beats half on every hour: ch350+nf06+hs12-17:0.5 42 d +19.32 hole 47.9 vs hsALL -3.46 hole 35.1 (+22.8, h +14.6/+8.2). vs filter +80.9 (h +25.7/+55.2). 69 d +75.73 vs filter +47.83 (h -12.8/+53.9), vs ch350+nf06 -8.9. Window matters, not the day as a whole.",
+    "2026-10-31: the window shrinks further: 13-16 h beats 12-17 h and both neighbours on 42 d; see ny_open. Proposed half and quarter."
    ]
   },
   {
@@ -109,65 +260,10 @@
     "2026-10-24: asia pile 84 tr 56% +29.31 (h 67/45, fading); europe 79 tr 39% -110.19, us 57 tr -62.33. Engine official noday A +48.5 but 24 tr only; day stake 0.25 long 69 d C -66.5: the day used to earn.",
     "2026-10-24 12:00 veille: morning 07:57-10:01 4 tr 1 won ~-3.05 (3 BOS lost small, FLIP SELL +3.78). cont_day 56 tr 39% vs 48% -83.83 PF 0.54 (h 39/39 agree); 1.3-1.85 14 tr -56.27, after a loss 27 tr -66.47. Day leak intact, small today.",
     "2026-10-25 05:00 veille: 5 night closes 00:26-02:15, 1 won ~-3.92 (4 FLIP-BOS, 1 BOS BUY -2.99; paces 0.73-1.02). asia 89 tr 54% +25.39 PF 1.16 (h 67/43, fading); calm <0.8 26 tr 42% -23.43 (h 64/27), was 22 tr -18.79; 0.8-1.0 28 tr -4.59; >=1.0 35 tr ~+53.4. 00 h 16 tr 38% -20.43. The calm night keeps losing, as hinted (peu).",
-    "2026-10-25 06:30 veille: two calm night closes: BOS BUY -5.56 (05:33, 0.769), FLIP-BOS SELL +3.90 (05:46, 0.537). asia 91 tr 54% +23.73 PF 1.14 (h 67/43); calm <0.8 28 tr 43% -25.09 (h 64/29); 1.0-1.3 18 tr +42.55. europe 82 tr 40% -108.41 (h 42/38), of which after a loss 45 tr -103.82: the day leak is the after-loss leak (see day_loss_chase)."
+    "2026-10-25 06:30 veille: two calm night closes: BOS BUY -5.56 (05:33, 0.769), FLIP-BOS SELL +3.90 (05:46, 0.537). asia 91 tr 54% +23.73 PF 1.14 (h 67/43); calm <0.8 28 tr 43% -25.09 (h 64/29); 1.0-1.3 18 tr +42.55. europe 82 tr 40% -108.41 (h 42/38), of which after a loss 45 tr -103.82: the day leak is the after-loss leak (see day_loss_chase).",
+    "2026-10-30: lab robot 10-28/29 by close block: night 0-8 6 tr 6 won +9.71; 8-12 4 tr -0.29; 12-17 14 tr 2 won -50.37; 17-24 14 tr +3.62 (10-28 +23.8, 10-29 -20.2). Real journal 273 tr: 13-16 h 41 tr 15 won -116.66 (h 5/17, 10/24); 17-18 h 25 tr 16 won +30.82."
    ],
    "next": "Watch asia second half; nervous vs calm night split."
-  },
-  {
-   "id": "pb_filter_works",
-   "fr": "Le filtre du sens du repli (comptes réels depuis le 10-10) écarte surtout des trades perdants.",
-   "status": "affaibli",
-   "next": "real_pool_split + battery_live_base requests; watch refused vs kept on the reference account to 30 kept trades.",
-   "evidence": [
-    "2026-10-16: reference account (unfiltered), same lot, since 10-10: refused-by-filter 31 tr 48% -23.22 per 0.01 (h -1.35/-21.87); kept 19 tr 68% +8.77 (h +3.59/+5.18). Wealth since 10-10: filtered accounts +12.66..+46.14 each, reference -28.92 on 50 (since 10-15: -34.49 on 8). Harness 42 d: trend filter +41.68 hole 51.81 vs raw +16.67 hole 82.16 (B, h -32.8/+45.9); but only 55 trades vs live ~4.5/day.",
-    "2026-10-16 12:00 veille: night FLIP-BOS BUY -8.39 (entry 05:01, held 5 h, stop 411 pts) taken by the reference account only; filtered accounts refused it. One more refused loss.",
-    "2026-10-17: wealth since 10-10: filtered accounts all positive (account 5 +55.0 on 25, account 1 +52.3 on 28, account 4 +40.1 on 28, account 3 +29.2 on 25, account 2 +12.7 on 7, demo +22.8 on 20); reference u477508138 -16.09 on 51 (since 10-14 -27.98 on 15, 7 won). Filtered pool deduped 22 tr 15 won +9.21 per 0.01. Harness trend filter today 55 tr +34.40 hole 51.81 (h -9.24/+40.07).",
-    "2026-10-19: only 3 filtered trades since 10-17 (Sun sell +, Sun sell -, Mon buy: won on accounts 3/4 closed ~55 min, lost on 1/5/demo closed 94 min - same entry, exit decided). Reference 12 tr +12.32. No new verdict.",
-    "2026-10-20: filtered pool since 10-10 deduped 25 tr +2.62 per 0.01 vs reference 69 tr -8.34. Mon 10-19 two losses on all filtered accounts (94 and 54 min), no filtered trade since. Thinner but holds.",
-    "2026-10-24: wealth since 10-20 (per 0.01): filtered accounts ~23 tr 7 won -11..-19 (about -0.59/trade), reference account 61 tr 20 won -51.03 (-0.84/trade). Since 10-10 filtered ~0, reference -60.9. Still better than no filter, no longer positive. Replay official filter 42 d: -67.21 on 55 tr."
-   ]
-  },
-  {
-   "id": "wide_stops_carry",
-   "fr": "Les trades au stop large (300 points et plus) portent le robot ; les stops serrés rapportent peu.",
-   "status": "affaibli",
-   "next": "belt only (pb_choch_ext500_cost4_fh075); tight_stop_size request would test stake not refusal.",
-   "evidence": [
-    "2026-10-19: trace soft+ext500: stop>=300 22 tr 77% +108.9; <300 120 tr 56% +21.7. cost_max on soft+ext500: 2.5 C -39.5 (29 tr), 3 C -26.5 (37 tr), 4 B +36.1 (h +85.7/-19.6, 57 tr, hole 57->11). Jagged between neighbours; h2 negative. official+ext450+cost3 B +0.4 (18 tr, hole 15->9).",
-    "2026-10-20: critic doute confirmed: on S, cost_max 3.5 B +3.1 (h +60.9/-37.8), 4.5 B +15.8 (h +59.1/-28.7), cost4+fh0.75 B +21.9 (h2 -27.2). Hole 57->11 at every setting, h2 always negative. Money part weakened, hole part holds.",
-    "2026-10-24: top 25 real wins median stop 308 pts vs 168 all; this morning 7 small losses with stops 26-81 pts, calm 0.52-0.77. Hole part holds; tight_stop_size still unbuilt."
-   ]
-  },
-  {
-   "id": "slow_trade",
-   "fr": "Un trade qui traîne entre 30 minutes et une heure est mal parti : il gagne peu et perd gros.",
-   "status": "renforce",
-   "next": "trail_in_menu + time_exit.",
-   "evidence": [
-    "2026-10-19: real dur 30-60 min 20 tr 45% -38.33 PF 0.43, avg win 3.21 / loss -6.11, halves 44/45 agree; <15 76 tr -3.9, 15-30 26 tr +6.3, 1-3 h 22 tr -4.6, >3 h 9 tr -0.3 (avg win 7.41). Opened pile slow_30_60 and request time_exit.",
-    "2026-10-20: pile slow_30_60 now 22 tr 41% -48.75 (h 44/38 agree, h1n 9). Mon 13:30 loss after 54 min on every filtered account added to it.",
-    "2026-10-24: trail_prot 2 (stop follows protected level past entry, owner dial 10-01, not in grammar) vs official: B +40.6 (h +49.1/0), long B +13.8, real +43.3 on 34 tr. Requested trail_in_menu.",
-    "2026-10-26 07:45 veille: FLIP-BOS SELL (entry 06:25 Mon, pace 1.137, gap 509 min after a win, h1 i=0, dist 136) held 35 min, lost -4.21 as predicted. dur 30-60 min now 39 tr 44% -52.15 (h 46/42 agree, 13/26)."
-   ]
-  },
-  {
-   "id": "rested_cont",
-   "fr": "Un trade de plus dans le même sens gagne surtout quand le robot a fait une pause avant (15 min - 3 h) ; repris en moins de 15 minutes, il perd.",
-   "status": "renforce",
-   "evidence": [
-    "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait.",
-    "2026-10-15 12:00 veille: --by gap (all kinds) 135 tr: <15 min 35 tr 37% -47.06 (h 37/38); 15-30 14 tr 64% +4.21; 30-60 30 tr 63% +37.45 PF 1.79 (h 62/65); 1-3 h 24 tr 50% +3.32; >3 h 31 tr 48% -38.16 PF 0.51 (h 47/50 agree). The rest helps only up to ~1 h; a long pause (first trade of a session) loses too - an inverted U, not 'more rest is better'. Overlaps day_count's first trade (1st 48 tr 62% but net +5)? Check >3 h by kind/day.",
-    "2026-10-16 04:00 veille: cont by hour: early night 02-06 h 15 tr 14 won +58.81 vs afternoon 13-16 h 10 tr 2 won -56.13 (peu). The day/night split of cont may explain more than the pause; check at night whether cont_rested holds by day only.",
-    "2026-10-16: gap x kind x day/night (BTC only, all sources): BOS night 15-60 min 11 tr 100% +53.07; BOS day <15 17 tr 35% -30.23; BOS day >3 h 8 tr 38% -34.73; FLIP day <15 10 tr 10% -17.49. Top-20 wins: 15 BOS, 11 at gap 15-60. Filter + wait10 C.",
-    "2026-10-19: engine trace soft+ext500 (142 tr): same-way 15-180 min 29 tr 76% +123.0; <15 22 tr 41% -16.0; >3 h 23 tr 48% -15.3; flips 15-180 28 tr 71% +46.6. Real pile reached a verifier (31 tr 68% +54.31); inside it night 00-06 16 tr +55.3, day 15 tr ~-1. wait 15 (both kinds) C -31.3: needs the same-way-only dial (cont_wait). Ask answered.",
-    "2026-10-20: real gap <15 min 42 tr 38% -44.54 (h 30/47 agree); gap 30-60 33 tr 64% +38.59 (h 63/64 agree). Real side keeps saying it; engine side (wait dials on filter) still C. cont_wait request still open.",
-    "2026-10-23: --by gap all kinds: <15 min 54 tr 39% -40.61; 15-30 26 tr 62% +10.10; 30-60 42 tr 57% +11.28 (halves 62/52, disagree); 1-3 h 33 tr 39% -53.23; >3 h 39 tr -28.75. Small edge at 15-60 min, the loss at 1-3 h is new weight.",
-    "2026-10-24: real gap <15 min 65 tr 34% -68.95 (h 33/34), 15-30 31 tr 61% +12.19, 30-60 49 tr 55% -0.45, 1-3 h 35 tr 37% -65.05. Engine official wait15 C -15.8 again.",
-    "2026-10-25 12:00 veille: 06:52 BOS SELL gap 66 min lost -3.97 against the hypothesis; h1 internal was same way. Rested BOS (15-180) split by h1: same 21 tr 33% -21.82, opp 25 tr 68% +21.43: the rest helps only when the hour chart's small trend is not already the trade's way (peu, wait for 30 each).",
-    "2026-10-26 05:05 veille: Sunday 21:25 BOS after 385 min pause (session open) lost -3.75 - the >3 h arm of the inverted U again; 16 min and 10 min follow-ups won small.",
-    "2026-10-26 07:45 veille: FLIP after 509 min pause lost -4.21, but gap >3 h by kind: flips 31 tr 52% +8.21, all kinds 44 tr 48% -38.67 (night 17 tr 41% -15.83, day 27 tr -22.84). The long-pause loss is a BOS thing, not flips."
-   ],
-   "next": "cont_wait when built; re-read on src=filtre once real_pool_split exists."
   },
   {
    "id": "test_vs_live_drift",
@@ -182,9 +278,12 @@
     "2026-10-16: test filter keeps 55 trades in 42 d (1.3/day) vs live 4.5/day; on 91 real entries it keeps 15 (blocks 75). choch mode 162 trades (3.9/day) is closer to the live pace.",
     "2026-10-17: choch filter 155 trades in 42 d (3.7/day) vs live ~4.5/day; trend 55 (1.3/day); strict+ext500 116 tr, C -17.0 vs trend+ext500. Drag per_trade +0.469 on 72 (real better than test), charged 0. Filtered account 4: only 2 trades 10-15..10-17.",
     "2026-10-20: S takes 150 tr in 42 d (3.6/day); filtered live 25 trades since 10-10 (~2.5/day, deduped). Drag frozen at 72 trades since 10-15: the like-for-like match finds no new pairs since the filter.",
-    "2026-10-24: replay official filter takes 55 tr in 41.7 d (1.3/day, h1 only 14) vs parity live 3.79 entries/day (all accounts). pb_gate_parity still open; constructor blocked."
+    "2026-10-24: replay official filter takes 55 tr in 41.7 d (1.3/day, h1 only 14) vs parity live 3.79 entries/day (all accounts). pb_gate_parity still open; constructor blocked.",
+    "2026-10-26: replay official filter 58 tr in 41.7 d (1.4/day); drag now usable 0.511 $/trade on 91 tr (battery still charged 0 in auto.json). All tonight's gains (+40..+73 on ~55 tr, >1 $/trade) are above the gap.",
+    "2026-10-30: raw battery base (kill line) dies on 09-22 after 29 trades (-60.16) in the 42 d window: 21 C / 7 = / 4 B / 3 A are mostly 'who dies later'. Raw battery verdicts tonight are noise; read filter-vs-filter.",
+    "2026-10-31: battery cards of filtered ideas show 11-18 trades (blocked ~190) where harness/runner gives 36-59 for the same cfg; critic flags 'card numbers do not reproduce' on three ideas. Requested battery_pb_reproduce."
    ],
-   "next": "pb_gate_parity (open since 10-12; constructeur skipped it 10-15: files already modified)."
+   "next": "battery_pb_reproduce + pb_gate_parity."
   },
   {
    "id": "capped_slow_small",
@@ -205,7 +304,7 @@
   {
    "id": "flip_nervous",
    "fr": "Les changements de sens en marché nerveux ne rapportent rien ; ceux en marché calme portent le robot.",
-   "status": "en test",
+   "status": "renforce",
    "evidence": [
     "2026-10-04: engine trace (base package, 42 d): flip nervous 66 tr 54.5% +0.35 (h1 +25.2, h2 -24.9); flip calm 55 tr 76.4% +82.0; cont nervous 72 tr 56.9% +20.3; cont calm 55 tr 56.4% +34.7. Real (in times-the-risk): FLIP nervous 13 tr 31% -6.2 R (h1 -5.7, h2 -0.5); FLIP calm 8 tr 62% +0.8 R. nerv_gate (refuse all nervous) is C and only_kind kills the structure, so asked for a size-only dial (flip_hot_size). Pile flip_hot opened.",
     "2026-10-04 veille: one more nervous FLIP lost (-2.21, pace 1.52); two BOS won (+3.45, +3.81). Pile flip_hot 13 tr 31% -9.45 $, h2 3/6. Still a hint.",
@@ -262,9 +361,10 @@
     "2026-10-23 19:35 veille: FLIP-BOS 109 tr 44% -89.71 (h 43/45 agree) vs BOS 91 tr 53% -18.21 (h 56/50). Kind split keeps its sign; no new flip since 13:45.",
     "2026-10-24 15:00 veille: day FLIP-BOS SELL +1.51 (closed 14:14, pace 0.689 calm) won. flip_day 82 tr 41% vs 50% -89.42 PF 0.55 (h 34/50); inside by pace: calm <0.8 16 tr 38% -0.20 (avg loss -1.54), 0.8-1.0 21 tr -16.93, nervous 1.0-1.3 23 tr 30% -63.33, 1.3-1.85 22 tr -8.96. The day flip leak sits at 1.0-1.3; calm day flips lose small (peu per band).",
     "2026-10-24 19:00 veille: day FLIP-BOS BUY +2.03 (closed 18:56, pace 1.215 nervous, after the 14:14 win, hours later) won against the leak band. flip_day 83 tr 42% -87.39 PF 0.56 (h 34/51); nervous 1.0-1.3 24 tr 33% -61.30 (avg loss -5.44 vs win 3.22); after a loss 55 tr -68.52 vs after a win 28 tr -18.87; 18 h 5 tr 4 won +6.60 (peu). Twin nervgate stayed at 25 tr -42.11: it refused this winner. One win, the band still loses (peu).",
-    "2026-10-25 13:30 veille: day FLIP-BOS BUY -2.87 (closed 12:25, pace 0.931, after the 07:40 BOS loss, hours later = not quick). flip_day 84 tr 42% vs 48% -90.26 PF 0.55 (h 36/49); 0.8-1.0 22 tr 45% -19.80 (h 62/36, second half worse); 1.0-1.3 24 tr -61.30 unchanged; 12-13 h 14 tr 3 won -48.52, 16 h 6 tr 0 won -41.99 (peu per hour). As flip_day predicts; neutral for the nervous/calm split. Twins empty."
+    "2026-10-25 13:30 veille: day FLIP-BOS BUY -2.87 (closed 12:25, pace 0.931, after the 07:40 BOS loss, hours later = not quick). flip_day 84 tr 42% vs 48% -90.26 PF 0.55 (h 36/49); 0.8-1.0 22 tr 45% -19.80 (h 62/36, second half worse); 1.0-1.3 24 tr -61.30 unchanged; 12-13 h 14 tr 3 won -48.52, 16 h 6 tr 0 won -41.99 (peu per hour). As flip_day predicts; neutral for the nervous/calm split. Twins empty.",
+    "2026-10-31: flip_hot_size 0.5 on brakes 42 d +13.68 vs -1.07 (h -1.1/+16.0) hole 52.6 vs 70.2. With ch350 + 13-16 quarter (no floor): 42 d +45.97 hole 37.2 (h +4.7/+44.4 vs brakes), 69 d +94.53 hole 37.2 (h -28.7/+44.9 vs brakes). Proposed pb_w_ch350_fh05_ny1316q (stake rules instead of refusals)."
    ],
-   "next": "battery verdict pb_choch_ext500_fh05; watch the filtered real split grow."
+   "next": "Battery + critic on pb_w_ch350_fh05_ny1316q."
   },
   {
    "id": "day_count",
@@ -339,17 +439,6 @@
     "2026-10-20: on S: first_move 0.5 C -7.6, 0.75 B -2.4; official+fm0.5 C -1.6. Filtered real move 4+ 3 tr 0 won, move 2-3 17 tr +9.97 (trop peu). The stake dial does not capture it on the filter."
    ],
    "next": "early_moves_size + pile field move requested."
-  },
-  {
-   "id": "flip_loss_stake",
-   "fr": "Miser moins sur un changement de sens pris juste après une perte aide les comptes avec plafond.",
-   "status": "en test",
-   "evidence": [
-    "2026-10-11: flip_loss_size built 10-10. 0.75: capped A +16.5 (h +7.1/+9.4), uncapped B -3.2 (h -5.1/-6.2) hole 57->55; 0.5: capped A +11.8, uncapped C -20.4. With ext400+cw25 it adds nothing on capped (+87.7 vs +87.3).",
-    "2026-10-16: capped shape gone; filter + ext500 + flip-after-loss 0.75 A +70.9 vs ext500 alone +73.5: adds nothing.",
-    "2026-10-25: on filter+ext450: flip_loss 0.5 same money (+38.5 vs +39.7), hole 56.5->43.3; with chase350 A +63.5 hole 43.3; 69 d (with chase300) +30.7; real +21.3 (23 tr). Hole part holds on the filter."
-   ],
-   "next": "Parked."
   },
   {
    "id": "target_10_nosun",
@@ -439,7 +528,7 @@
   {
    "id": "bul4_with_target",
    "fr": "Un quatrième trade de rattrapage paie quand on vise un peu plus haut (0,85-0,9).",
-   "status": "en test",
+   "status": "affaibli",
    "evidence": [
     "2026-10-03: raw rr0.9+bullets4 A +121.6, halves +84.4/+48.4, hole 77.8. rr0.85+bullets4 A +58.7 (+34/+24.7), hole 80.5. bul4 alone battery C (-0.24) tonight, B four nights before. k3_bul4 battery B (+21.6, capped '=').",
     "2026-10-04: battery rr09_bul4 B (+40.7 / -4.2), rr085_bul4 C (-6.9). Fourth catch-up adds +6 to rr0.9 (34.6->40.7) and +4.4 to rr1.0_nosun (46.3->50.7); bullets 5 = bullets 4 (+41.2, the fifth is never used). It is a small add-on, the target carries the gain.",
@@ -448,7 +537,9 @@
     "2026-10-08: battery bul4 alone A (+2.9 / +1.5), long C (+37.7 but hole +5.4), real -0.85 on 50. Critic: doute (pure sizing, gain grows with the hole). I agree: not pushed.",
     "2026-10-09: battery bul4 = (+0.2 / +1.9), bul2 A on both (+3.7 / +6.8, long C -43). Tiny; not pushed.",
     "2026-10-19: soft+ext500 bullets 4 C +21.4 (h -4.2/+27.6, hole 57->67): near miss, proposed pb_choch_ext500_bul4 as rescue.",
-    "2026-10-20: critic doute 10-20 (gain grows only with the hole); twin bul4 started 10-20, -1.32 on 2 tr."
+    "2026-10-20: critic doute 10-20 (gain grows only with the hole); twin bul4 started 10-20, -1.32 on 2 tr.",
+    "2026-10-26: twin bul4 stopped duel_lost 10-24; on filter+e450+ch350 bullets 4 C +8.0 vs pair (h2 +6.7 but hole 70->76). The gain only comes with a deeper hole, as the critic said.",
+    "2026-10-30: the other way, fewer catch-up trades on the trio: bullets 2 42 d +4.13 vs +6.0, 69 d +80.46 vs +91.80, hole 50.4 vs 56. Fewer catch-ups cost money, barely cut the hole."
    ],
    "next": "Keep only as a passenger on the target ideas; do not propose alone."
   },
@@ -466,20 +557,6 @@
     "2026-10-09: battery C (-0.5 / +0.5), long C -40.3. Block stands."
    ],
    "next": "Do not re-propose k3 alone. Keep watching k3_rr09 long window only as a side view."
-  },
-  {
-   "id": "sleepy_market",
-   "fr": "Marché très endormi (allure sous 0,8) : le robot y perd plus qu'ailleurs.",
-   "status": "rejete",
-   "evidence": [
-    "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit",
-    "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor.",
-    "2026-10-04 veille: two trades at pace 0.93/0.91: +1.30 and -11.56. Bucket 0.8-1.0 now 10 tr 80% but +4.95 net - its edge is thin in money. <0.8 unchanged (6 tr).",
-    "2026-10-06 veille: one more real <0.8 trade, FLIP-BOS BUY lost -3.11 (pace 0.743, closed 00:30 UTC). Bucket <0.8 now 7 tr 29% -21.96 PF 0.15. Still contradicted by the engine (nerv_floor C on all floors); curiosity only.",
-    "2026-10-05: nerv_floor built (10-04). 42 d both shapes: 0.6 C -3.6 / C -9.6; 0.7 C -14.3 / C -12.2; 0.8 C -29.4 (hole 50->57) / C -20.3. Monotonic: the higher the floor, the worse. The engine's sleepy trades make money; the 6 real ones (33%) are a small sample. Rejected by numbers.",
-    "2026-10-09 05:00 veille: real <0.8 bucket grew 7 -> 17 tr, 29% -21.68 PF 0.43, halves 33%/27% (agree). Most of the growth is calm reversals around 22-02 h, tangled with flip and late_night. Engine nerv_floor C on every floor (10-05); dial closed, curiosity only."
-   ],
-   "next": "Closed as a dial. Watch the real <0.8 bucket only as a curiosity (6 tr)."
   },
   {
    "id": "halves_shift",
@@ -505,16 +582,6 @@
     "2026-10-10 18h: ask quick - restart <30 min after a WIN 13 tr 62% +7.53; after a LOSS 19 tr 26% -33.77 (halves agree). The pause belongs after a loss, not after a win."
    ],
    "next": "Closed. Do not propose wait_win."
-  },
-  {
-   "id": "no_chase",
-   "fr": "Ne pas entrer quand le prix a déjà beaucoup couru dans le sens du trade.",
-   "status": "en test",
-   "evidence": [
-    "2026-10-05: chase_pts built 10-04. 42 d uncapped / capped: 400 C -9.8 / C -61.3; 500 A +8.5 (hole 50->36) / C -6.4; 700 C -1.2 / B +5.2; 1000 C -11.5 / C -1.6. Jagged between neighbours, never A on both. In company: rr1.0+bul4+chase500 A +20.3 / C -30.9; rr1.0+nosun+chase500 B / C -19.4; rr0.9+bul4+chase500 C / C. Noise, not a cause.",
-    "2026-10-25: REOPENED with new evidence (filter base, not raw): filter+ext450+chase 250/300/350 A +58.8/+52.0/+54.3 (h1 +41.5/+41.5/+51.6, h2 +10.3/+2.4/+21.6), 400 inert (+40.1 = ext450). Smooth plateau. 69 d chase300 B +27.1 (h1 -24.9); real +12.6 (23 tr). Proxy for h1_internal_late."
-   ],
-   "next": "Closed as a profit idea. Kept only inside a belt (hot075_chase500)."
   },
   {
    "id": "buys_vs_sells",
@@ -547,7 +614,9 @@
     "2026-10-10: real day after a loss 39 tr 31% -62.39 (halves 32%/30%), night after a loss 13 tr 77% +24.19: the loss after a pause/loss is a day thing, not a pause thing.",
     "2026-10-15: BOS after >=180 min 6 tr 33% -20.71; all trades gap>3 h 30 tr 50% -36.37 (day 21 tr -28.16). The sweet spot is 15 min - 3 h; a very long pause does not help.",
     "2026-10-16: answered the open question: the >3 h loss is a day thing (BOS day -34.73, FLIP day -10.19; FLIP night +0.82). Top-20 losses: 7 at gap >3 h.",
-    "2026-10-19: engine trace: same-way after >3 h 23 tr -15.3, changes of direction >3 h 33 tr -0.8."
+    "2026-10-19: engine trace: same-way after >3 h 23 tr -15.3, changes of direction >3 h 33 tr -0.8.",
+    "2026-10-28: gap_cold pile 86 tr 43% -121.52 (h 49/33); after a loss inside it 35 tr 31% -77.91 (h 41/22); after a win 51 tr 51% -43.61.",
+    "2026-10-29: no new real data (accounts paused); 1-3 h still 39 tr 36% -83.14."
    ],
    "next": "Request-worthy only after real_pool_split (much of it may be reference trades)."
   },
@@ -592,17 +661,39 @@
    ]
   },
   {
-   "id": "h1_internal_late",
-   "status": "nouveau",
-   "fr": "Quand la petite tendance interne du graphique d'une heure va déjà dans le sens du trade, le robot arrive trop tard et perd.",
-   "en": "When the one-hour chart's internal small trend already points the trade's way, the robot arrives too late and loses.",
+   "id": "early_move_half",
+   "status": "rejete",
+   "fr": "Miser moitié moins au début d'un mouvement est une vraie cause.",
    "evidence": [
-    "2026-10-25: real htf_entry (captured at entry), 210 tr: h1 int same 87 tr 33% per0.01 -73.25 avgW 1.28 (halves 33/33); 0 25 tr 52% +11.2; opposite 98 tr 54% +0.05. Holds by day (28% vs 49%) and night (41% vs 60%), before 10-10 (31 vs 58) and after (34 vs 51), flips (34 vs 52) and BOS (31 vs 55), after a loss (26 vs 48). Top 25 wins: 3 same, 14 opp, 8 zero. m15 internal the OTHER way (same 57% vs opp 31%). Not in engine nor piles: requested h1_int_size.",
-    "2026-10-25 12:00 veille: 06:52 BOS SELL rested 66 min after a win, h1 same way: lost -3.97 as predicted. Inside rested BOS (15-180 min): same 21 tr 33% -21.82 vs opp 25 tr 68% +21.43 - it may explain rested_cont's misses (peu).",
-    "2026-10-25 14:50 veille: 13:28 FLIP-BOS SELL, h1 same way, lost -4.48 as predicted (today's three losses all h1 same). Same 88 tr 33% -74.74 per 0.01 vs opp 99 tr 54% -1.39. Request h1_int_size remains the test.",
-    "2026-10-25 16:00 veille: 14:56 FLIP-BOS BUY, h1 opposite, won +1.33 as predicted (quick after a loss, small). Opp 100 tr 54% -0.72 per 0.01 (h 62/46, second half fading) vs same 88 tr 33% -74.74 (h 34/32). The edge is mostly in avoiding 'same', not in 'opp' earning.",
-    "2026-10-26 05:05 veille: three Sunday-evening BOS SELL, all h1 same way: 1 lost (-3.75, first after 385 min), 2 won fast and small (+2.85, +1.28) - prediction 1 of 3, but net ~0 per 0.01. Same 91 tr 34% -74.40 (h 33/35); same BOS 41 tr 34% (h 50/19, second half carries it). Still holds; the test is request h1_int_size."
+    "2026-10-28: critic bloque pb_s_early2: half on every trade earns as much with a smaller hole; 0.25/0.5/0.75 flip sign; h2 -30.8 on the critic's run. Withdrawn."
    ]
+  },
+  {
+   "id": "hour_brake",
+   "status": "rejete",
+   "fr": "Fermer une tranche de journée qui perd depuis deux semaines aide.",
+   "evidence": [
+    "2026-10-28: critic bloque pb_s_hb14: marginal +4.8/-5.5/+5.7 at 7/14/21 days on the quartet, sign flips, gain from trading fewer trades. Battery long B -1.3. Withdrawn."
+   ]
+  },
+  {
+   "id": "debtnerv_with_brakes",
+   "fr": "Ajouter au trio le frein « rien quand on est apres une perte et que le marche s agite » (le meilleur sur les vrais trades) reduit le trou.",
+   "status": "rejete",
+   "next": "Battery on pb_u_ch350_nf06_dn (three keys, untested without fl05).",
+   "evidence": [
+    "2026-10-29: 42 d ch350+fl05+nf06+debt_nerv -2.98 (h 19.30/-5.95) vs filter -49.11 (h 17.05/-41.79): +46.1, hole 41.45 vs 73.36, 34 tr (12/33). 69 d +30.96 vs filter +36.67, hole 41.45 vs 74.43, 56 tr. A belt: less money than trio, much smaller hole. Battery debtnerv raw: B, real +117.17 on 120.",
+    "2026-10-30: critic's bar (beat the two brakes alone on 69 d) not met: ch350+nf06 +84.64 vs +debt_nerv +48.93 (-35.7, h -32.3/-18.7), 59 tr; hole 41.2 vs 70.2. A belt only; twin debtnerv already lost its duel 10-24. Withdrawn as a money idea."
+   ]
+  },
+  {
+   "id": "stake_not_refusal",
+   "status": "nouveau",
+   "fr": "Miser moins aux endroits connus pour perdre vaut mieux que refuser ces trades : le trou baisse autant, l'argent reste.",
+   "evidence": [
+    "2026-10-31: 13-16 h on brakes: skip (critic run 12-16) -29 vs brakes on 69 d; half +10.8, quarter +16.7 on 69 d. ch350 + nervous-flip half + 13-16 quarter: hole 37 vs 70 on both windows, 42 d +47 vs brakes. Refusals win the short window and lose the long one; stake cuts keep the long one closer."
+   ],
+   "next": "Battery + critic on pb_w_ch350_fh05_ny1316q; chase_size / tight_stop_size requests would extend it to the two refusal brakes."
   }
  ],
  "tried": [
@@ -1930,6 +2021,226 @@
    "d": "2026-10-25",
    "run": "proposed",
    "res": "pb_ext450_fl05_chase350, pb_ext450_chase350 (out of box, h1_internal proxy), pb_ext450_fl05_chase300, pb_ext450_chase250, pb_ext450_all05 (belt); request h1_int_size; no new pile"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "official filter base 41.7 d",
+   "res": "-70.30 hole 70.38 58 tr (h1 -36.44 on 13 tr / h2 -19.16 on 56)"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "official + ext450 / e450+fl05+ch350 / e450+fl05+ch300 / e450+ch350",
+   "res": "A +39.7 (h +35.4/+11.4) / A +65.0 (h +38.4/+3.3) hole 55.6 / B +65.2 (h2 -16.1) / B +54.3 (h2 -10.5)"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "official + e450+ch350 + trail_prot 2 / + fl05 + trail_prot 2",
+   "res": "B +54.3 (h2 -7.3) / A +65.0 (h2 +6.5): trail neutral on money"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "official + e450+ch350 + bullets 4",
+   "res": "C +62.3 vs base, hole 70->76 (vs pair +8 with deeper hole)"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "official + e450+ch350 + nf07 / + fl05 + nf 0.6/0.65/0.7/0.8",
+   "res": "B +62.1 / A +70.5 / A +72.3 / A +73.5 (h +39.5/+13.1) hole 48.3 / A +67.9 hole 36.1"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "official + e450+nf07 / e450+fl05+nf07",
+   "res": "A +42.5 (h +31.5/+24.1) hole 63.7 / A +62.5 (h +35.0/+27.2) hole 48.3"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "69 d + real: base / e450 / trio ch350 / e450+ch350 / +tp2 / quartet nf07 / e450+fl05+nf07",
+   "res": "base +77.44 109 tr, real 35 tr -65.77 / B +32.4 r+14.4 / B +27.7 (h1 -43.7) r+24.3 / B +21.4 r+12.6 / B +13.6 r+12.6 / B +23.9 (h1 -51.0) r+26.2 / B +22.3 (h1 -41.6) r+28.7"
+  },
+  {
+   "d": "2026-10-26",
+   "run": "proposed",
+   "res": "pb_e450_ch350_fl05_nf07, pb_e450_fl05_nf07 (out of box: rejected raw dial revived), pb_e450_ch350_fl05_nf08 (hole belt), pb_e450_ch350_fl05_nf06, pb_e450_nf07; request late_wave_size; no new pile"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "official filter alone (reference)",
+   "res": "-46.26, hole 71.85, 66 tr (h1 hole 42.4)"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "official + e450",
+   "res": "+25.5 (h +34.8/+8.2) hole 75.0"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "official + e450+ch350+fl05 + nf 0.6/0.7/0.8",
+   "res": "A +63.3 / +61.3 / +49.6; holes 56.0/54.2/46.9; second night of the plateau"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "official + e450+fl05+nf07 (no chase)",
+   "res": "+36.4 hole 54.2 (chase worth ~25)"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "quartet + day_loss_size 0.5",
+   "res": "+34.2 (h +34/+8): subtracts"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "quartet + hour_brake 14",
+   "res": "+52.7 (h +38.3/+30.6) 44 tr hole 56: proposed pb_s_hb14"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "quartet + early_moves 0.5 max 2",
+   "res": "+57.3 (h +33.1/+41.1) hole 44.6: proposed pb_s_early2"
+  },
+  {
+   "d": "2026-10-27",
+   "run": "proposed",
+   "res": "pb_s_early2, pb_s_hb14; request gap_max; pile gap_cold"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "filter alone (reference)",
+   "res": "-56.03 hole 73.36 67 tr, halves -27.6/-66.16"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "quartet e450+ch350+fl05 + nf 0.7/0.6/0.8",
+   "res": "+54.3/+62.2/+48.5 vs filter, all both halves; holes 54/56/47"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "e450+fl05+nf07 / e450 alone",
+   "res": "+35.5 (h +31.2/+25.3) / +28.5 (h +35.4/+8.7) hole 76.6"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "half on all (control) / quartet nf06 + half on all",
+   "res": "+28.0 hole 36.7 / +59.7 (h +33.6/+48.4) hole 28.0"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "ch350+fl05+nf06 / e450+ch350+nf06",
+   "res": "+62.2 identical to quartet / +49.6 hole 70.2"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "ch350+nf06 + cost 3/4/5; cost4 alone",
+   "res": "+85.9 (20 tr) / +79.2 (29) / +79.6 (35), both halves; cost4 alone +23.8 (h1 -4.3)"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "ch350+nf06+wait15 / +half on all / ch350+fl05+nf08",
+   "res": "+63.3 hole 73.9 / +49.9 hole 35.1 / +42.6 hole 46.9"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "--drag auto on trio and cost5",
+   "res": "about -0.1 $/trade (6 $ each); proof gap now real better than test (+0.511/tr, 91 tr)"
+  },
+  {
+   "d": "2026-10-28",
+   "run": "proposed",
+   "res": "pb_t_ch350_fl05_nf06, pb_t_ch350_nf06_cost5 (out of box), pb_t_ch350_nf06_wait15, pb_t_ch350_fl05_nf08, pb_t_ch350_nf06_half (belt); request loss_gap_size; no new pile; pb_s_early2 / pb_s_hb14 withdrawn after critic"
+  },
+  {
+   "d": "2026-10-29",
+   "run": "69 d weekly: filter / trio ch350+fl05+nf06 / ch350 / nf06 / fl05",
+   "res": "+36.67 / +77.17 hole 56 / +65.12 / +41.56 / +41.41; trio-filter by ISO week: 35 +8.5, 36 -38.4, 37 -3.7, 38 -0.4, 39 +50.5, 41 -5.5, 42 +16.1, 43 +13.2, 44 +0.1"
+  },
+  {
+   "d": "2026-10-29",
+   "run": "69 d fl05+nf06 + chase 0/300/350/400/450/500/600/800",
+   "res": "+46.9/81.7/77.2/59.2/76.9/95.6/79.3/35.5; h2 -20.5/2.4/-2.1/-20.1/-20.5/-6.0/-20.5/-20.5"
+  },
+  {
+   "d": "2026-10-29",
+   "run": "42 d trio ch300 / ch500 / ch350+debt_nerv (with fl05) vs filter -49.11",
+   "res": "+10.89 (h 45.66/-13.79, 54 tr) / +3.29 (h 48.45/-20.74, 67 tr) / -2.98 (h 19.30/-5.95, hole 41.45, 34 tr); drag auto = identical (charged 0)"
+  },
+  {
+   "d": "2026-10-29",
+   "run": "proposed",
+   "res": "pb_u_ch300_fl05_nf06, pb_u_ch500_fl05_nf06, pb_u_ch350_nf06_dn (out of box, three keys, no pretest: my run had fl05 too); request chase_size; no new pile"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "42 d / 69 d filter alone",
+   "res": "-61.58 hole 78.43 65 tr (h 9.65/-71.23) / +47.83 hole 79.5 114 tr (h 75.52/-31.43)"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "trio ch350+fl05+nf06 42/69 d; drag 1 filter/trio 69 d",
+   "res": "+6.0 hole 56 (h 42.71/-36.71) / +91.80 (h 90.46/7.36); drag1 filter -115.90, trio +10.04 (h 68.25/-72.75)"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "69 d ch350+nf06 / +debt_nerv",
+   "res": "+84.64 hole 70.15 (h 96.22/-3.35) / +48.93 hole 41.2 59 tr (h 63.97/-22.08)"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "trio + skip 8-16 (noday) 42/69 d",
+   "res": "+18.55 hole 42.2 33 tr (h 27.75/-9.21) / +46.13 (h 35.5/10.87)"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "trio + half 12-17 42/69 d; trio + skip 12-17 42/69 d",
+   "res": "+25.7 hole 40.7 / +88.96; skip +34.89 hole 29.7 39 tr / +62.86 73 tr"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "69 d ch350+nf06+cost5; trio bullets 2 42/69 d",
+   "res": "+107.09 hole 58.3 63 tr (h 95.12/12.82); bul2 +4.13 / +80.46 hole 50.4"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "ch350+nf06+half 12-17 42/69 d; control half on all hours 42 d",
+   "res": "+19.32 hole 47.9 (h 35.34/-16.02) / +75.73 (h 62.7/22.49); control -3.46 hole 35.1 (h 20.75/-24.21)"
+  },
+  {
+   "d": "2026-10-30",
+   "run": "proposed",
+   "res": "pb_v_ch350_nf06_ny05 (out of box, pretest), pb_v_ch350_fl05_ny05, pb_v_ch350_nf06_skipny, pb_v_ch350_cost5_ny05, pb_v_ch350_nf06_noday; pile ny_open (13-16 h); no new request (20 open, builder idle since 10-26); pb_u_ch350_nf06_dn withdrawn"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "42 d filter / brakes ch350+nf06 (refs)",
+   "res": "-55.73 hole 78.43 67 tr (h 15.5/-72.22) / -1.07 hole 70.15 59 tr (h 47.36/-48.68)"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "42 d ch350+cost5; brakes+day_loss 0.5; brakes+flip_hot 0.5",
+   "res": "+29.26 hole 58.31 36 tr (h 48.5/-19.24) ; -21.47 hole 65.9 ; +13.68 hole 52.55 (h 46.29/-32.73)"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "42 d brakes+13-16 h 0.5 / 0.25; neighbours 12-15, 14-17 at 0.5; ch350+13-16 0.5 (no floor)",
+   "res": "+28.95 hole 50.5 (h 51.15/-20.27) / +44.55 hole 40.67 (h 53.04/-6.07); +18.26 (h 39.03/-20.91), +14.13 (h 48.43/-32.37); +24.06 hole 55.39"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "42 d ch350+cost5+day_loss 0.5; brakes+risk_max 12",
+   "res": "+18.96 hole 44.87; identical to brakes (inert)"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "69 d filter / brakes / brakes+13-16 0.5 / 0.25 / ch350+cost5",
+   "res": "+44.98 hole 79.5 / +78.29 hole 70.15 (h 89.87/-15.98) / +89.12 hole 50.5 (h 72.31/12.4) / +95.02 hole 40.67 (h 63.42/27.2) / +100.74 hole 58.31 62 tr (h 88.77/7.57)"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "ch350+flip_hot 0.5+13-16 0.25 42/69 d; ch350+cost5+13-16 0.5 42 d",
+   "res": "+45.97 hole 37.2 (h 52.02/-4.25) / +94.53 hole 37.2 (h 61.2/28.92); +56.69 hole 40.01 (h 50.13/6.55)"
+  },
+  {
+   "d": "2026-10-31",
+   "run": "proposed",
+   "res": "pb_w_ch350_nf06_ny1316 (ask ny_open), pb_w_ch350_nf06_ny1316q, pb_w_ch350_fh05_ny1316q (out of box), pb_w_ch350_cost5, pb_w_ch350_cost5_ny1316; request battery_pb_reproduce; no new pile"
   }
  ],
  "scrutiny_log": [
@@ -3164,6 +3475,43 @@
    "t": "2026-10-26T07:45:35Z",
    "look": "veille (1 close 07:00): wake_context, last 5 trades by hand (htf_entry), gap>3h by kind/day-night, dur 30-60, asia pace 1.0-1.3",
    "saw": "FLIP-BOS SELL -4.21 (06:25-07:00, pace 1.137, gap 509 min after a win, h1 i=0 neutral so h1_internal_late silent). slow_trade predicted it (35 min): dur 30-60 39 tr 44% -52.15 (h 46/42). gap>3h 44 tr 48% -38.67 but flips 31 tr 52% +8.21: pause not the cause for flips. asia pace 1.0-1.3 20 tr 45% +34.37 (h 56/36), was 18 tr +42.55 (peu). Twins empty, labo empty, no ask. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-26T11:30:00Z",
+   "look": "night: battery (raw, kill line), critiques (debtnerv/k3/rr06 bloque), twins (none running, 5 duel_lost), wealth since 10-25, last journal row by hand, htf_entry deduped across 6 journals (h4 t/i, h1 t, m15 i, h1i x h4t, h1i x m15i, agree), scrutiny --mm/--by dur/prev/nerv/--streaks, real nerv bands split at 10-10",
+   "saw": "One new real trade (08:03 BOS SELL, 33 min, -3.65). Deduped htf: 117 tr; h4 trend no effect; h1 same & m15 not same 33 tr 21% -46.6, h1 opp & m15 same 38 tr 63% +11.4. After 2 losses 30 tr 27% -57. Real <0.7 pace since filter 7 tr (trop peu). Money: 241 tr 46% -175, 94% of trades taken while in the red."
+  },
+  {
+   "d": "2026-10-27",
+   "looked": "--by prev, gap, kind, dayn on 256 real trades (no new trade: accounts paused)",
+   "saw": "gap 15-60 min wins (94 tr 59% +16), <15 and >1 h lose (162 tr -202); 1st trade of day 85 tr -61 (h 63/36); 2nd of day +28; 5th+ -130"
+  },
+  {
+   "d": "2026-10-28",
+   "looked": "battery (raw, kill line), critiques early2/hb14 bloque + noday doute (twin started 10-28), new trades of the lab robot and another account 10-26/27, scrutiny --by gap/kind/dur/dist, --pile gap_cold, prev x gap by hand, real stops >=175 vs <175",
+   "saw": "Other account 21 tr +13.21 (winners long and wide). prev x gap: after a loss only 15-60 min is flat, <15 and >60 lose. Stops 150-250 is the leak (-90.69), 250-400 the only positive band. Real disagrees with the tight-stop refusal."
+  },
+  {
+   "d": "2026-10-29",
+   "looked": "battery (4 A / 4 B / 29 C raw), critiques trio/cost5/wait15 doute, 69 d by ISO week, price of wk36/wk39, lab robot wealth 19 tr, scrutiny --by dur/gap/prev, piles list",
+   "saw": "Chase cost lives in one week (wk36); plateau 300-600 on both windows. Last two weeks lose regardless of brakes. Lab robot quick losses after a loss, long winner. Builder idle: 15 open requests, none built since 10-26."
+  },
+  {
+   "d": "2026-10-30",
+   "looked": "battery (raw base dies on kill line 09-22), critiques (dn bloque, ch300/ch500 doute), twin noday (+29.86 on 8 tr), wealth: lab robot 38 tr 10-28/29 by time block, another account 9 tr +25.39 (winners held 41-93 min, losers 12-30), scrutiny --by prev/hour, 13-16 h by prev and halves",
+   "saw": "Daytime leak sits at 12-17 UTC (New York open): real 41 tr -117, lab robot 14 tr -50; 17-18 h wins. After a loss inside 13-16 h 26 tr 8 won -93.6. Accounts still paused except the lab robot and two others."
+  },
+  {
+   "t": "2026-10-31T10:30:00Z",
+   "looked": [
+    "auto.json (15 A / 17 B / 5 C vs raw base -68.05)",
+    "critiques 10-31 (skipny bloque, noday bloque, cost5_ny05 doute)",
+    "asks (labo ny_open)",
+    "twin noday",
+    "scrutiny --by hour (no new real trade, 273)",
+    "curve split before/after 10-20 on every run"
+   ],
+   "saw": "No new real trade since 10-26 pause. Battery filtered cards keep 11-18 trades vs 36-59 in harness: do not quote card money for pb ideas. Every brake still loses after 10-20 (-30 to -63); 13-16 h stake cut is the only lever that pays both before and after 10-20 on 42 d. 69 d first half (Aug-Sep) dislikes every daytime cut."
   }
  ],
  "lessons": [
@@ -3218,18 +3566,28 @@
   "2026-10-24: in a losing window any stake cut looks better on both halves (critic hothalf). A size rule on a slice must beat the same cut on all trades before it is a cause.",
   "2026-10-24: night sessions of 10-21 to 10-23 did not run as chercheur (log: fallback model rc 1); the constructor is reverted for files written by other programs. Check chercheur.log first when notes are missing.",
   "2026-10-25: scrutiny --by htf prints raw JSON (useless): parse htf_entry by hand (json, h1.i times trade dir). It is captured AT ENTRY (open_ctx), so it is a fair pre-trade fact.",
-  "2026-10-25: a dial rejected on the raw robot can be alive on the filtered one (chase_pts: C/jagged raw 10-05, smooth A plateau with filter+ext450 tonight). Re-test old dials on the current base before quoting the old verdict."
+  "2026-10-25: a dial rejected on the raw robot can be alive on the filtered one (chase_pts: C/jagged raw 10-05, smooth A plateau with filter+ext450 tonight). Re-test old dials on the current base before quoting the old verdict.",
+  "2026-10-26: htf_entry counts must be deduped across journals by (entry minute, direction): 117 real trades since 10-01, not the 210 I counted on 10-25. Proportions held (h1 same about one in three) but absolute dollars halve.",
+  "2026-10-26: a plateau seen one night can crack the next as the window slides (chase 250-350 all A on 10-25, two of three B tonight). Ask for two nights of a plateau before calling it a cause.",
+  "2026-10-27: harness --pb-gate 1 compares the variant (filtered) against the RAW base; the right reference is the filter alone run (here -46.26): subtract it, and recompute halves against the filter's own halves.",
+  "2026-10-28: a brake can be made inert by another (ext450 identical with or without once chase 350 is on). Before proposing a combination, drop each key once: if nothing moves, drop it and stay within three keys.",
+  "2026-10-28: cost_max on the filtered robot leaves 20-35 trades with 6-7 in the first half: halves agreeing on 6 trades is not evidence. Quote trade counts per half for any refusal dial that cuts more than half the trades.",
+  "2026-10-29: the critic reports 69 d first half -80 vs filter for the trio; my direct simulate (no drag, plain halves) gives +16.5. Different setup (drag 1, or battery safety nets). Quote which one, and use the weekly curve split (simulate()[\"curve\"] by ISO week) to find where a brake pays or costs.",
+  "2026-10-29: when a run includes a key I later drop from a proposal, drop the pretest too. Count every simulate config as one of the 20 runs.",
+  "2026-10-30: when the raw base hits the kill line early (09-22 tonight, 29 trades), the raw battery compares variants to a dead robot: '=' and C mostly mean 'also died'. Read filtered ideas against the filter alone, never against the raw base.",
+  "2026-10-30: a refusal over a window (skip 12-17) and a half stake on the same window agree on 42 d but split on 69 d (-29 vs -3 against the brakes alone). When a refusal wins on the short window, always run its half-stake twin on the long one.",
+  "2026-10-31: the battery's cards for pb-gate ideas do not reproduce (11-18 trades vs 36-59 in harness for the same cfg). Quote my own runner / harness for filtered ideas, and judge them against the brakes alone, as the critic does.",
+  "2026-10-31: split every run's curve before/after 10-20: an idea whose gain sits only after 10-20 is the late-October losing run, not a cause (critic's test). 13-16 h passed it on 42 d (pre +8.4 half / +13.1 quarter), failed it on 69 d (pre -10.8 / -15.8)."
  ],
  "open": [
-  "Build/request h1_int_size: refusal or half stake when the H1 internal trend points the trade way (strongest real fact).",
-  "Battery + critic on pb_ext450_fl05_chase350 and neighbours (base h1 has 12 trades only).",
-  "Check overlap: how many h1-internal-same trades did chase 350 remove in the engine (TRACE)?",
-  "Long window h1 negative for every ext450 variant (-25..-33): find which weeks.",
-  "builder_unblock: 19 requests waiting; loss_wait_day, time_exit, tight_stop_size, trail_in_menu.",
-  "Pile loss_quick15 to watch.",
-  "pb_gate_parity: replay filter 1.3 a day vs live.",
-  "Night fading: nervous vs calm night split.",
-  "Buys vs sells: wait for a falling week.",
+  "Battery + critic on pb_w_* (13-16 h half/quarter, stake-not-refusal trio, ch350+cost5).",
+  "battery_pb_reproduce: cards of filtered ideas keep 11-18 trades vs 36-59 in harness.",
+  "69 d first half (Aug-Sep) dislikes every daytime cut: watch it as it leaves the window.",
+  "Every brake still loses after 10-20: nothing found that wins in late October.",
+  "Build chase_size, tight_stop_size, time_exit (stake instead of refusal; close a dragging trade).",
+  "builder_unblock: 21 open requests, none built since 10-26.",
+  "Twin noday (+29.86 on 8 trades): watch it.",
+  "Real accounts paused by owner 10-26: wait for trades; then re-read the 13-16 h pile.",
   "Capped ideas parked (no daily cap since 10-14)."
  ]
 }

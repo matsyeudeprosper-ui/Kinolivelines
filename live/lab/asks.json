@@ -269,6 +269,17 @@
    "answered": "2026-10-26T06:30:20Z",
    "answer_fr": "Vrai, et ça grossit : quatre-vingt-six trades le jour juste après une perte, un peu moins de quatre sur dix gagnés contre un sur deux pour les autres, environ moins cent trente-huit dollars, les deux moitiés d'accord (37 % puis 40 %). Mais le trou n'est pas tout le jour : de 8 h à 16 h, cinquante-sept trades, à peine trois sur dix gagnés, environ moins cent cinquante-huit ; 13 h et 16 h sont les pires (seize trades, un gagné). Le soir, de 17 h à minuit, après une perte, le robot gagne six fois sur dix (vingt-neuf trades, environ plus vingt). La moitié repart en moins d'un quart d'heure et perd environ cinquante-six dollars. C'est la hâte après une perte en journée. Le moteur n'a toujours pas de pause après une perte limitée au jour, et couper des heures entières a déjà coûté au test : pas de proposition, j'attends ce réglage.",
    "answer_en": "True, and growing: eighty-six trades by day right after a loss, a bit under four in ten won against one in two for the rest, about minus a hundred and thirty-eight dollars, both halves agree (37% then 40%). But the hole is not the whole day: from 8 to 16 h, fifty-seven trades, barely three in ten won, about minus a hundred and fifty-eight; 1 pm and 4 pm are worst (sixteen trades, one won). In the evening, 17 h to midnight, after a loss the robot wins six in ten (twenty-nine trades, about plus twenty). Half restart within a quarter hour and lose about fifty-six dollars. It is the hurry after a loss in the daytime. The engine still has no daytime-only pause after a loss, and cutting whole hours already cost in the test: no proposal, I am waiting for that dial."
+  },
+  {
+   "id": "ask_1793439914_ny_open",
+   "seed": "ny_open",
+   "seed_fr": "Trades pris entre 13 h et 17 h UTC, quand New York ouvre",
+   "seed_en": "Trades taken between 13:00 and 17:00 UTC, as New York opens",
+   "by": "labo",
+   "date": "2026-10-31",
+   "note": "41 trades, 37 % gagnés contre 49 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "proposed",
+   "proposal": "pb_w_ch350_nf06_ny1316"
   }
  ]
 }

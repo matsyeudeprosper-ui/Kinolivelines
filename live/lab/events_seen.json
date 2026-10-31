@@ -35,7 +35,12 @@
   "flip_hours_size",
   "builder_unblock",
   "trail_in_menu",
-  "h1_int_size"
+  "h1_int_size",
+  "late_wave_size",
+  "gap_max",
+  "loss_gap_size",
+  "chase_size",
+  "battery_pb_reproduce"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -56,6 +61,7 @@
   "ask_1792749605_gap_30_60",
   "ask_1792783843_flip_day",
   "ask_1792843213_loss_quick15",
-  "ask_1792904411_europe"
+  "ask_1792904411_europe",
+  "ask_1792990818_day_after_loss"
  ]
 }

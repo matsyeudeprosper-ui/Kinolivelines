@@ -420,6 +420,40 @@
      "value": 15
     }
    ]
+  },
+  {
+   "id": "gap_cold",
+   "title_fr": "Trades pris plus d'une heure après le précédent",
+   "title_en": "Trades taken more than an hour after the previous one",
+   "by": "chercheur",
+   "date": "2026-10-27",
+   "status": "open",
+   "why_fr": "Les trades pris 15 à 60 minutes après le précédent gagnent (94 trades, 59 %, +16 $), mais ceux repris entre 1 h et 3 h (39 trades, 36 %, -83 $) ou après plus de 3 h (46 trades, -43 $) perdent. Une pause trop longue ne sert pas : le marché a changé. Cette pile compte tous les trades repris après plus d'une heure.",
+   "why_en": "Trades taken 15 to 60 minutes after the previous one win (94 trades, 59 %, +$16), but those restarted after 1 to 3 hours (39 trades, 36 %, -$83) or after more than 3 hours (46 trades, -$43) lose. A pause that is too long does not help: the market has moved on. This pile counts every trade restarted after more than an hour.",
+   "where": [
+    {
+     "field": "gap_min",
+     "op": ">",
+     "value": 60
+    }
+   ]
+  },
+  {
+   "id": "ny_open",
+   "title_fr": "Trades pris entre 13 h et 17 h UTC, quand New York ouvre",
+   "title_en": "Trades taken between 13:00 and 17:00 UTC, as New York opens",
+   "by": "chercheur",
+   "date": "2026-10-30",
+   "status": "open",
+   "why_fr": "La Bourse de New York ouvre à 13 h 30 UTC. Les vrais trades pris de 13 h à 16 h 59 n'en gagnent que 15 sur 41 et perdent 117 $ ; les deux moitiés perdent (5 sur 17, puis 10 sur 24). Juste après, à 17-18 h, 16 sur 25 gagnent, +31 $. Le robot du labo a encore perdu à ces heures le 29/10. Cette pile dira si l'ouverture de New York est la vraie cause de la fuite de journée.",
+   "why_en": "The New York stock market opens at 13:30 UTC. Real trades taken from 13:00 to 16:59 win only 15 of 41 and lose $117; both halves lose (5 of 17, then 10 of 24). Right after, at 17-18 h, 16 of 25 win, +$31. The lab's robot lost again at those hours on 10-29. This pile will tell whether the New York open is the real cause of the daytime leak.",
+   "where": [
+    {
+     "field": "hour",
+     "op": "between",
+     "value": [13, 16]
+    }
+   ]
   }
  ]
 }

@@ -99,7 +99,8 @@
     "b": 0.8
    },
    "built_date": "2026-10-04",
-   "built_commit": "1acdfa5"
+   "built_commit": "1acdfa5",
+   "c_nights": 0
   },
   {
    "id": "flip_hot_size",
@@ -293,7 +294,8 @@
     "b": 14
    },
    "build_attempts": 1,
-   "build_error": "périmètre : study/proof_autorun.lock"
+   "build_error": "périmètre : study/proof_autorun.lock",
+   "c_nights": 0
   },
   {
    "id": "early_moves_size",
@@ -395,7 +397,8 @@
     "b": 14
    },
    "built_date": "2026-10-26",
-   "built_commit": "4261a69"
+   "built_commit": "4261a69",
+   "c_nights": 0
   },
   {
    "id": "day_loss_size",
@@ -406,7 +409,15 @@
    "what_en": "When the previous trade lost AND the entry is between 08:00 and midnight UTC, multiply the stake by X (0.25 to 1.0), catch-up trades included; the trade is still taken. At night (00-08 UTC), nothing changes. 1.0 = off (default, nothing changes).",
    "why_fr": "La plus grosse fuite des vrais trades : le jour juste après une perte, 43 trades, 37 % gagnés, -50 $, les deux moitiés d'accord ; la nuit après une perte, deux sur trois gagnent. Une pause (demandée hier) coupe aussi les bons trades ; une mise plus petite garde le trade et réduit la casse. Les réglages de mise ont mieux marché que les coupures dans tous mes essais.",
    "why_en": "The biggest leak in the real trades: by day right after a loss, 43 trades, 37 % won, -$50, both halves agree; at night after a loss, two in three win. A pause (asked yesterday) also cuts the good trades; a smaller stake keeps the trade and limits the damage. Stake settings have done better than cuts in all my runs.",
-   "status": "open"
+   "status": "built",
+   "key": "day_loss_size",
+   "built_note_fr": "Le robot peut maintenant être testé avec une mise plus petite sur un trade pris de jour (8 h à minuit UTC) juste après une perte, ses trades de rattrapage compris ; la nuit ne change pas. Rien ne change sur les comptes tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The robot can now be tested with a smaller stake on a trade taken by day (08:00 to midnight UTC) right after a loss, its catch-up trades included; nights do not change. Nothing changes on the accounts until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--day-loss-size",
+    "a": 1.0,
+    "b": 0.25
+   }
   },
   {
    "id": "capped_only_verdict",
@@ -593,6 +604,50 @@
    "what_en": "A complement to the 10-25 request on the hour's small trend. A setting late_wave_size (0 to 1.0; default 1.0 = nothing changes): when, at entry, the internal small trend of the one-hour chart points the trade's way AND the 15-minute chart's does NOT (opposite or none), the stake is multiplied by X; 0 = the trade is not taken. Both trends rebuilt from one-minute candles, like the robot's higher-timeframe feed. For the piles, two facts h1_int and m15_int (1 same way, 0 none, -1 opposite) read from the journal's htf_entry column.",
    "why_fr": "Sur 117 vrais trades comptés une seule fois : quand l'heure va dans notre sens mais pas le quart d'heure, 33 trades, 7 gagnés seulement, -47 $ pour 0,01 lot. Quand l'heure est contre nous et le quart d'heure avec nous : 38 trades, 63 % gagnés, +11 $, les deux moitiés d'accord. On entre à la fin d'une vague. J'attends qu'un refus fasse mieux sur les deux moitiés.",
    "why_en": "Over 117 real trades counted once: when the hour points our way but the quarter-hour does not, 33 trades, only 7 won, -$47 per 0.01 lot. When the hour is against us and the quarter-hour with us: 38 trades, 63 % won, +$11, both halves agree. We enter at the end of a wave. I expect a refusal to do better on both halves.",
+   "status": "open"
+  },
+  {
+   "id": "gap_max",
+   "date": "2026-10-27",
+   "title_fr": "Ne pas reprendre un trade après une trop longue pause",
+   "title_en": "Do not restart a trade after too long a pause",
+   "what_fr": "Réglage gap_max (minutes, 0 = désactivé, plage 60-360) : aucune entrée si le trade précédent s'est fermé il y a plus de X minutes. Combiné à wait_min (15), il garde la fenêtre « 15 à 60 minutes ».",
+   "what_en": "Setting gap_max (minutes, 0 = off, range 60-360): no entry if the previous trade closed more than X minutes ago. With wait_min (15) it keeps the '15 to 60 minutes' window.",
+   "why_fr": "Sur les vrais trades, repris 15 à 60 minutes après le précédent : 94 trades, 59 % gagnés, +16 $. Repris après plus d'une heure : 85 trades, -126 $ (1 à 3 h : 36 %, -83 $). Le test sait attendre un minimum mais pas refuser un maximum.",
+   "why_en": "On the real trades, restarted 15 to 60 minutes after the previous one: 94 trades, 59 % won, +$16. Restarted after more than an hour: 85 trades, -$126 (1 to 3 h: 36 %, -$83). The test can wait a minimum but cannot refuse a maximum.",
+   "status": "open"
+  },
+  {
+   "id": "loss_gap_size",
+   "date": "2026-10-28",
+   "title_fr": "Miser moins sur un trade repris trop vite ou trop tard après une perte",
+   "title_en": "Bet less on a trade restarted too fast or too late after a loss",
+   "what_fr": "Quand le trade précédent a perdu et que le nouveau trade entre moins de A minutes ou plus de B minutes après sa fermeture, la mise (et ses trades de rattrapage) est multipliée par X. Entre A et B, rien ne change ; après un gain, rien ne change ; le trade est toujours pris. Réglages : A 0-60 (15 par défaut), B 30-360 (60 par défaut), X 0,25-1,0 ; X = 1,0 = éteint.",
+   "what_en": "When the previous trade lost and the new trade enters less than A minutes or more than B minutes after it closed, the stake (and its catch-up trades) is multiplied by X. Between A and B nothing changes; after a win nothing changes; the trade is always taken. Settings: A 0-60 (default 15), B 30-360 (default 60), X 0.25-1.0; X = 1.0 = off.",
+   "why_fr": "Sur 264 vrais trades, après une perte : repris en moins de 15 minutes, 44 trades, 23 % gagnés, -63 $ ; repris 15 à 60 minutes après, 63 trades, 57 %, presque à zéro ; repris plus d'une heure après, 35 trades, 31 %, -78 $. Après un gain, l'écart est bien plus petit. Je m'attends à un trou plus petit sans perdre d'argent.",
+   "why_en": "On 264 real trades, after a loss: restarted under 15 minutes, 44 trades, 23 % won, -$63; restarted 15 to 60 minutes later, 63 trades, 57 %, about flat; restarted more than an hour later, 35 trades, 31 %, -$78. After a win the gap is much smaller. I expect a smaller hole without losing money.",
+   "status": "open"
+  },
+  {
+   "id": "chase_size",
+   "date": "2026-10-29",
+   "title_fr": "Miser moins, au lieu de refuser, quand le prix a déjà couru",
+   "title_en": "Bet less, instead of refusing, when the price already ran",
+   "what_fr": "Réglage chase_size (0,25-1,0 ; 1,0 = éteint) : quand l'heure passée a déjà bougé de plus de chase_pts points dans le sens du trade, le trade est quand même pris, avec la mise (et ses trades de rattrapage) multipliée par X, au lieu d'être refusé. Avec chase_pts = 0, rien ne change.",
+   "what_en": "Setting chase_size (0.25-1.0; 1.0 = off): when the last hour already moved more than chase_pts points the trade's way, the trade is still taken, with the stake (and its catch-up trades) multiplied by X, instead of being refused. With chase_pts = 0 nothing changes.",
+   "why_fr": "Sur 69 jours, « pas de course » gagne sur toutes les semaines sauf une, fin août (-38 $ à 350 points), où le marché montait fort et où les trades refusés gagnaient. Miser moitié moins garderait une part de ces gagnants tout en gardant presque tout le frein. Je m'attends à moins d'argent perdu cette semaine-là, sans perdre le reste.",
+   "why_en": "Over 69 days, 'no chasing' wins in every week but one, late August (-$38 at 350 points), when the market rose hard and the refused trades won. Half the stake would keep part of those winners while keeping most of the brake. I expect less money lost in that week, without losing the rest.",
+   "status": "open"
+  },
+  {
+   "id": "battery_pb_reproduce",
+   "date": "2026-10-31",
+   "title_fr": "Que le test de la nuit retrouve les mêmes trades filtrés que mes essais",
+   "title_en": "Make the nightly test find the same filtered trades as my own runs",
+   "what_fr": "Pour chaque idée qui garde le filtre du sens du repli, le test de la nuit doit écrire, à côté de son verdict, le nombre de trades et l'argent que donne le même réglage lancé seul (harness.py), et signaler tout écart de plus de 10 % des trades. Rien ne change dans les verdicts eux-mêmes.",
+   "what_en": "For every idea that keeps the pullback-direction filter, the nightly test must write, beside its verdict, the trade count and money the same setting gives when run alone (harness.py), and flag any gap over 10 % of the trades. Nothing changes in the verdicts themselves.",
+   "why_fr": "Ce soir, la carte de « deux freins et demi-mise de 12 h à 17 h » montre 18 trades ; le même réglage lancé seul en garde 59, et le critique écrit trois fois « les chiffres de la carte ne se retrouvent pas ». Tant que les deux ne se retrouvent pas, on juge des idées sur des nombres qu'on ne sait pas refaire.",
+   "why_en": "Tonight the card of 'two brakes and half stake 12:00-17:00' shows 18 trades; the same setting run alone keeps 59, and the critic writes three times 'the card numbers do not reproduce'. Until the two agree, we judge ideas on numbers nobody can redo.",
    "status": "open"
   }
  ]
