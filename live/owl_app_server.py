@@ -1,4 +1,4 @@
-﻿"""OwlNest v3 - MULTI-USER French PWA (2026-09-01).
+"""OwlNest v3 - MULTI-USER French PWA (2026-09-01).
 
 Users live in owl_nest_users.json; per-user stats are computed by
 owl_nest_worker.py processes (kept alive by owl_nest_manager.py) into
@@ -15986,8 +15986,36 @@ def _deed_do(cid, uid, todo):
         pass
 
 
+_PIECES_C = {}        # 2026-10-31 (Kino speed): uid -> (registry mtime, t, pieces)
+_TTL_C = {}
+
+
+def _ttl(key, sec, fn):
+    """2026-10-31 (Kino speed): a value kept for `sec` seconds - for slow reads in his reply preparation"""
+    x = _TTL_C.get(key)
+    if x and time.time() - x[0] < sec:
+        return x[1]
+    v = fn()
+    _TTL_C[key] = (time.time(), v)
+    if len(_TTL_C) > 500:
+        _TTL_C.clear()
+    return v
+
+
 def _chat_pieces(user):
-    return builder_payload(user, is_admin(user)).get("pieces") or []
+    """the building pieces this member can use. 2026-10-31: kept until the robot registry changes (max 5 min) - rebuilt on
+    every Kino reply it cost ~1 s, twice (the check signature reads it too), and Kino's prep went from 1-3 s to 8-15 s"""
+    try:
+        mt = os.path.getmtime(ROBOT_REG)
+    except Exception:
+        mt = 0
+    k = (user.get("id"), bool(is_admin(user)))
+    x = _PIECES_C.get(k)
+    if x and x[0] == mt and time.time() - x[1] < 300:
+        return x[2]
+    p = builder_payload(user, is_admin(user)).get("pieces") or []
+    _PIECES_C[k] = (mt, time.time(), p)
+    return p
 
 
 def kino_pitch(user):
@@ -17823,7 +17851,7 @@ def _one_facts(user, c):
     except Exception:
         _lb, _lv, _bk = None, None, None
     try:
-        st = _state_data(uid, c)
+        st = _ttl(("state", uid, c.get("id")), 20, lambda: _state_data(uid, c))     # 2026-10-31 speed: 0.6 s, not per reply
     except Exception:
         st = {"robots": [], "account": {}}
     acc = st.get("account") or {}
@@ -17978,6 +18006,60 @@ def _one_facts(user, c):
     return "\n".join(L)
 
 
+LOOKUP_SYS = ("You look things up for Kino in the DATA below (an AI friend who trades with the member). Answer his QUESTION from the "
+              "DATA only: exact figures, dates (UTC) and names as written there, a few short lines. If the answer is not in the "
+              "DATA, say exactly what is missing. No advice, no opinion.")
+
+
+def _kino_lookup(user, c, q):
+    """2026-10-31 (owner: "do all", item 5 - real tools): his '#regarde <question>' - everything the app knows about this
+    member, unfiltered (his reply sees a focused, trimmed view), searched for the answer; he then writes his message with it"""
+    uid = user.get("id")
+    D = []
+    try:
+        D.append("FACTS:\n" + _one_facts(user, c))
+    except Exception:
+        pass
+    try:
+        D.append("ROBOTS STATE:\n" + json.dumps(_state_data(uid, c), ensure_ascii=False, default=str)[:30000])
+    except Exception:
+        pass
+    for u_ in [uid] + [x for x in (_person_uids(_person(uid)) or []) if x != uid]:
+        try:
+            nd = json.load(open(os.path.join(DIR, "nest_data", "%s.json" % u_), encoding="utf-8"))
+            D.append("ACCOUNT %s: %s" % (u_, json.dumps({k: nd.get(k) for k in ("name", "real", "balance", "equity", "today", "week", "month",
+                                                                               "open_list", "days", "month_stats", "since_start", "trades")},
+                                                      ensure_ascii=False, default=str)[:12000]))
+        except Exception:
+            pass
+        try:
+            w_ = json.load(open(os.path.join(DIR, "nest_data", "%s.wealth.json" % u_), encoding="utf-8"))
+            D.append("CLOSED TRADES %s (utc time, profit $, lot, dir 1=buy -1=sell, minutes, market):\n" % u_ + "\n".join(
+                "%s %+.2f %s %s %s %s" % (time.strftime("%Y-%m-%d %H:%M", time.gmtime(float(x[0]))), float(x[1]), x[2], x[3],
+                                          x[4] if len(x) > 4 else "", x[5] if len(x) > 5 else "") for x in (w_.get("trades") or [])[-300:]))
+        except Exception:
+            pass
+    try:
+        _ld = os.path.join(os.path.dirname(DIR), "study", "luck")
+        L_ = []
+        for p_ in os.listdir(_ld):
+            if p_.endswith(".status.json"):
+                lk = json.load(open(os.path.join(_ld, p_), encoding="utf-8"))
+                L_.append("%s@%s %s %s/%s draws, %s as good%s" % (lk.get("rid"), lk.get("sym"), lk.get("state"), lk.get("n"), lk.get("max"),
+                                                                 lk.get("beats"), _luck_detail(lk)))
+        D.append("LUCK TESTS:\n" + "\n".join(L_))
+    except Exception:
+        pass
+    txt = "\n\n".join(D)[:90000]
+    try:
+        _rc()
+        a = _rc().W.ask_text(LOOKUP_SYS, "QUESTION: %s\n\nDATA:\n%s" % (q[:400], txt), model="sonnet", timeout=60,
+                             log=os.path.join(CHAT_DIR, c.get("id", "x") + ".log"), warm=True)
+    except Exception:
+        a = None
+    return " ".join(str(a or "").split())[:1500]
+
+
 def _weekday_line(user):
     """2026-10-31 (his wish: "classer les trades réels du compte par jour de la semaine"): his real account's closed trades
     of the last 60 days by UTC weekday (nest_data/<uid>.wealth.json rows [t, pnl, lot, dir, ..., sym]). Raw counts - with
@@ -18041,7 +18123,7 @@ def _one_memory(user, c):
         import kino_inner as _KIl
         _ft, _days = None, set()
         for _ux in _person_uids(uid) or [uid]:          # every thread of the person: when they met, how many days they talked
-            for _x in (chat_list(_user_by_id(_ux) or {"id": _ux}).get("chats") or [])[:30]:
+            for _x in (_ttl(("chats", _ux), 60, lambda _ux=_ux: chat_list(_user_by_id(_ux) or {"id": _ux})).get("chats") or [])[:30]:
                 _cx = _jload(_chat_path(_x["id"]), {}) or {}
                 for _m in _cx.get("msgs") or []:
                     if _m.get("role") == "user" and _m.get("t"):
@@ -19335,16 +19417,18 @@ ONE_BLIND = os.path.join(DIR, "robots", "one_blind.json")
 ONE_VOTES = os.path.join(DIR, "robots", "one_blind_votes.json")
 
 
-def _blind_cases(uid, n=14, days=3):
-    """the owner's real messages of the last days that got an old-Kino reply within 3 min"""
+def _blind_cases(uid, n=14, days=3, one=False):
+    """the owner's real messages of the last days that got an old-Kino reply within 3 min (one=True: replies of the one mind,
+    on all the logins of the person - for the Sonnet vs Opus test)"""
     import glob as _g
     out = []
+    uids = set(_person_uids(uid)) | {uid} if one else {uid}
     for pth in _g.glob(os.path.join(CHAT_DIR, "*.json")):
         try:
             c = json.load(open(pth, encoding="utf-8"))
         except Exception:
             continue
-        if c.get("uid") != uid or c.get("brain") == "one":
+        if c.get("uid") not in uids or (c.get("brain") == "one") != bool(one):
             continue
         M = c.get("msgs") or []
         for i, m in enumerate(M):
@@ -19366,7 +19450,9 @@ def _blind_cases(uid, n=14, days=3):
     return picked
 
 
-def _blind_build(user):
+def _blind_build(user, mode="one"):
+    """mode 'one': old Kino vs the one mind (2026-10-25). mode 'model' (2026-10-31): the one mind on Sonnet ("old" slot) vs
+    on Opus ("new" slot), same facts and memory, on his real messages - his pick sets the default brain (blind_vote)"""
     import random as _r
     _rc()
     import kino_one as _KO
@@ -19374,33 +19460,48 @@ def _blind_build(user):
     W.set_brain(None)
     W.member_turn(True)
     cases = []
-    for t, cid, i, m, old in _blind_cases(user.get("id")):
+    for t, cid, i, m, old in _blind_cases(user.get("id"), one=(mode == "model")):
         try:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
             ct = dict(c, msgs=(c.get("msgs") or [])[:i + 1], mind=None)
             now = "%s UTC (le moment de ce message)" % time.strftime("%d/%m %H:%M", time.gmtime(t))
-            r = _KO.turn(W, ct, _one_facts(user, ct), _one_memory(user, ct), now, None, "fr", check=_KO.unknown_figures)
+            _lg = "en" if c.get("lang") == "en" else "fr"
+            _f1, _m1 = _one_facts(user, ct), _one_memory(user, ct)
+            r = _KO.turn(W, ct, _f1, _m1, now, None, _lg, check=_KO.unknown_figures, model="opus" if mode == "model" else "sonnet")
             if not r or not r.get("say"):
                 continue
+            if mode == "model":
+                r0 = _KO.turn(W, ct, _f1, _m1, now, None, _lg, check=_KO.unknown_figures, model="sonnet")
+                if not r0 or not r0.get("say"):
+                    continue
+                old = {"text": r0["say"]}
             ctx = [{"who": "lui" if x.get("role") == "user" else "kino", "text": str(x.get("text") or "")[:300]}
                    for x in (c.get("msgs") or [])[max(0, i - 3):i] if x.get("role") in ("user", "ai") and str(x.get("text") or "").strip()]
             cases.append({"id": "%s_%d" % (cid, i), "t": t, "ctx": ctx, "msg": str(m.get("text"))[:600], "old": str(old.get("text"))[:1200],
                           "new": r["say"][:1200], "new_first": r.get("first"), "new_is": _r.choice(["A", "B"])})
-            json.dump({"made": time.time(), "state": "building", "cases": cases}, open(ONE_BLIND, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            json.dump({"made": time.time(), "state": "building", "mode": mode, "cases": cases}, open(ONE_BLIND, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         except Exception as e:
             try:
                 open(os.path.join(DIR, "robots", "kino_one.log"), "a", encoding="utf-8").write("%s BLIND_ERROR %s %s\n" % (time.strftime("%m-%d %H:%M:%S"), cid, e))
             except Exception:
                 pass
-    json.dump({"made": time.time(), "state": "ready", "cases": cases}, open(ONE_BLIND, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    json.dump({"made": time.time(), "state": "ready", "mode": mode, "cases": cases}, open(ONE_BLIND, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
 def blind_build(user, body):
     if not is_admin(user):
         return {"ok": False, "err": "admin"}
-    json.dump({"made": time.time(), "state": "building", "cases": []}, open(ONE_BLIND, "w", encoding="utf-8"))
-    threading.Thread(target=_blind_build, args=(user,), daemon=True).start()
+    mode = "one" if body.get("mode") == "one" else "model"     # 2026-10-31: the default test is now Sonnet vs Opus
+    json.dump({"made": time.time(), "state": "building", "mode": mode, "cases": []}, open(ONE_BLIND, "w", encoding="utf-8"))
+    threading.Thread(target=_blind_build, args=(user, mode), daemon=True).start()
     return {"ok": True}
+
+
+KINO_MODEL = os.path.join(DIR, "robots", "kino_model.json")      # 2026-10-31: {"member": "sonnet"|"opus"} - set by the blind test
+
+
+def _kino_member_model():
+    return "opus" if (_jload(KINO_MODEL, {}) or {}).get("member") == "opus" else "sonnet"
 
 
 def blind_get(user, body):
@@ -19417,7 +19518,10 @@ def blind_get(user, body):
     done = [o for o in out if o["vote"]]
     score = {"new": sum(1 for o in done if o["vote"] == o["new_is"]), "old": sum(1 for o in done if o["vote"] in ("A", "B") and o["vote"] != o["new_is"]),
              "same": sum(1 for o in done if o["vote"] == "same"), "n": len(out)}
-    return {"ok": True, "state": B.get("state") or "none", "cases": out, "score": score}
+    mode = B.get("mode") or "one"
+    return {"ok": True, "state": B.get("state") or "none", "cases": out, "score": score, "mode": mode,
+            "labels": {"new": "Opus", "old": "Sonnet"} if mode == "model" else {"new": "le nouveau Kino", "old": "l'ancien"},
+            "member_model": _kino_member_model()}
 
 
 def blind_vote(user, body):
@@ -19429,7 +19533,16 @@ def blind_vote(user, body):
     V = _jload(ONE_VOTES, {}) or {}
     V[pid] = {"pick": pick, "t": time.time(), "note": str(body.get("note") or "")[:300]}
     json.dump(V, open(ONE_VOTES, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    return blind_get(user, body)
+    g = blind_get(user, body)
+    try:                                             # 2026-10-31: the model test decides his default brain once all are voted
+        sc = g.get("score") or {}
+        if g.get("mode") == "model" and g.get("state") == "ready" and sc.get("n") and sc["new"] + sc["old"] + sc["same"] >= sc["n"]:
+            pick_m = "opus" if sc["new"] > sc["old"] else "sonnet"
+            json.dump({"member": pick_m, "t": time.time(), "score": sc}, open(KINO_MODEL, "w", encoding="utf-8"))
+            g["member_model"] = pick_m
+    except Exception:
+        pass
+    return g
 
 
 def _one_now(user, c):
@@ -19580,7 +19693,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _tctx1 = time.time() - _tc0
         # 2026-10-27 (owner: profitable plans): small talk ("ok", "merci", a thumb) after a message that asked nothing is
         # answered by the small model with the light facts (no chart levels, news, inner life) - about 10x cheaper
-        _mdl = "sonnet"
+        _mdl = _kino_member_model()                 # 2026-10-31: Sonnet unless the owner's blind test picked Opus
         try:
             _M1 = c.get("msgs") or []
             _lu2 = next((x for x in reversed(_M1) if x.get("role") == "user"), None)
@@ -19623,6 +19736,26 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _chat_oops(cid, en, RuntimeError("one mind: no answer"), retry=lambda: _chat_quick(cid, user, event, notify, important))
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
+    try:                                               # 2026-10-31 (item 5): he looked something up - the answer, then his message
+        _lk = [v for k, v in acts if k == "regarde" and v][:2]
+        if _lk:
+            _CHAT_ACT[cid] = "🔎 regarde…" if lang != "en" else "🔎 looking it up…"
+            _found = [(q_, _kino_lookup(user, c, q_)) for q_ in _lk]
+            _KO._log(cid, "LOOKUP", " | ".join("%s -> %s" % (q_[:80], a_[:160]) for q_, a_ in _found))
+            r3 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
+                          model=_mdl, note=("WHAT YOU FOUND WHEN YOU LOOKED: %s. Your draft was: « %s ». Now write your real message with it "
+                                            "(no new #regarde for the same thing)." if lang == "en" else
+                                            "CE QUE TU AS TROUVÉ EN REGARDANT : %s. Ton brouillon était : « %s ». Écris maintenant ton vrai "
+                                            "message avec ça (pas de nouveau #regarde pour la même chose).") % (
+                              " ; ".join("« %s » : %s" % (q_, a_ or "rien trouvé") for q_, a_ in _found), say[:400]))
+            if r3 and (r3.get("say") or r3.get("acts")):
+                say, acts, fil = r3["say"], [x for x in r3["acts"] if x[0] != "regarde"], r3["fil"] or fil
+            _CHAT_ACT.pop(cid, None)
+    except Exception as e:
+        try:
+            _KO._log(cid, "LOOKUP_ERROR", "%s %s" % (type(e).__name__, e))
+        except Exception:
+            pass
     if not event and not say:
         # 2026-10-28 (engine 6): he chose to let it rest ("ok", "thx", a goodnight) - a real choice, so the missed-reply
         # watchdog must not wake him up again 75 s later as if he had crashed
@@ -24485,6 +24618,30 @@ def _docx_text(b):
     return html.unescape(re.sub(r"\n{3,}", "\n\n", x)).strip()
 
 
+def _pdf_note(cid, fn):
+    """2026-10-31 (owner list item 6): a PDF is seen as an attachment only on the turn that answers it; this reads it once and
+    keeps a summary on the message (m["seen"]) so later turns still know what was in it"""
+    try:
+        import base64
+        b64 = base64.b64encode(open(os.path.join(CHAT_IMG, fn), "rb").read()).decode()
+        _rc()
+        a = _rc().W.ask_text("You summarise a document a member sent to Kino, for Kino's memory: what it is, its main points, every rule "
+                             "and figure that matters, 4-8 short sentences, in the document's language.",
+                             [{"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}},
+                              {"type": "text", "text": "Summary:"}], model="sonnet", timeout=120,
+                             log=os.path.join(CHAT_DIR, cid + ".log"), warm=False)
+        a = " ".join(str(a or "").split())[:2500]
+        if a:
+            def put(cc):
+                for m in reversed(cc.get("msgs") or []):
+                    if m.get("role") == "doc" and m.get("file") == fn:
+                        m["seen"] = a
+                        return True
+            _chat_mut(cid, put)
+    except Exception:
+        pass
+
+
 def chat_doc(user, body):
     """2026-10-20 (owner: "if I upload my strategy as a Word doc or PDF, can you turn it into a robot?"): the member sends a
     document - PDF (read by the model itself, scanned pages too), Word .docx or plain text - and Kino reads it like a message"""
@@ -24535,6 +24692,8 @@ def chat_doc(user, body):
     note = str(body.get("note") or "").strip()[:600]
     _CHAT_Q[c["id"]] = _CHAT_Q.get(c["id"], 0) + 1
     _chat_mut(c["id"], lambda c: _chat_msg(c, "doc", file=fn, name=name, kind=kind, size=len(b), text=(text or "")[:60000], note=note))
+    if kind == "pdf":                                # 2026-10-31: what the PDF says, kept for the turns after the first one
+        threading.Thread(target=_pdf_note, args=(c["id"], fn), daemon=True).start()
     threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
     return {"ok": True}
 
@@ -26482,6 +26641,39 @@ LIVE_CALLS = os.path.join(DIR, "robots", "live_calls.json")
 LIVE_PRICE_MIN = 0.05            # gpt-live-1, OpenAI price list (2026-10-20)
 
 
+def _live_instructions_one(user, c):
+    """2026-10-31 (owner: "do all" - calls through the one mind): on a call the voice is the SAME person as in the chat - his
+    own SELF, the same facts and memory - instead of the 35k-character call rulebook (banned phrases, NEVERs). Only what a
+    phone changes is added: spoken short turns, no '#' lines (acting or checking goes to his brain by delegation)."""
+    _rc()
+    import kino_one as _KOl
+    en = c.get("lang") == "en"
+    lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
+    try:
+        ff = _light_facts(_one_facts(user, c))
+    except Exception:
+        ff = ""
+    try:
+        import kino_social as _KSl
+        mm = _KSl.memfocus(_one_memory(user, c), str(lu.get("text") or ""))
+    except Exception:
+        try:
+            mm = _one_memory(user, c)
+        except Exception:
+            mm = ""
+    phone = ("ON THE PHONE NOW. You are speaking, not writing: one to three spoken sentences at a time, the way you talk on a "
+             "call; they can cut in. Numbers said as words. You write no '#' lines here - when something has to be DONE or a figure "
+             "is not in what you know, you hand it to your brain (delegation) and say the answer when it comes back.") if en else (
+             "AU TÉLÉPHONE, LÀ. Tu parles, tu n'écris pas : une à trois phrases à la fois, comme on parle au téléphone ; il peut te "
+             "couper. Les chiffres se disent en mots. Ici tu n'écris pas de lignes « # » : quand il faut FAIRE quelque chose, ou "
+             "qu'un chiffre n'est pas dans ce que tu sais, tu le passes à ton cerveau (délégation) et tu dis la réponse quand elle "
+             "revient.")
+    return "\n\n".join(x for x in (_KOl.system("en" if en else "fr"), phone,
+                                   ("WHAT YOU KNOW RIGHT NOW:\n" if en else "CE QUE TU SAIS, LÀ :\n") + ff[:8000],
+                                   ("YOUR MEMORY OF THEM AND OF YOUR DAY:\n" if en else "TA MÉMOIRE DE LUI ET DE TA JOURNÉE :\n") + mm[:16000])
+                       if x.strip())
+
+
 def _live_instructions(user, c):
     fr = c.get("lang") != "en"
     nm = (user.get("name") or user.get("display") or "").split(" ")[0]
@@ -27017,7 +27209,7 @@ def live_session(user, body):
         cf = json.load(open(TTS_CONF, encoding="utf-8"))
     except Exception:
         cf = {}
-    _ins = _live_instructions(user, c)
+    _ins = _live_instructions_one(user, c) if c.get("brain") == "one" else _live_instructions(user, c)
     if c.get("brain") == "openai":                   # 2026-10-24 (seamless prototype): the back of the head works while you speak
         _ins += ("\n\nKINO-O SEAMLESS MODE. During this call, PREPARED ANSWERS arrive in your instructions every few seconds: the questions "
                  "likely to come next, already answered from the real data. When the member asks one of them (or close to it), answer AT "

@@ -78,6 +78,8 @@ une pensée, une envie. Si ce n'est pas le cas, réponds seulement : …
 Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne par action, si tu en fais une :
 #test <nom exact du robot>      lance le test de ce robot sur les prix passés
 #test <nom> sans vérifier       le lance même sans la vérification des moments - seulement si vous êtes d'accord tous les deux
+#regarde <ta question>          tu vas voir toi-même dans toutes les données (son compte, ses trades, les tests, les tests
+                                de chance, les robots) avant d'envoyer : ton message attend la réponse, puis tu l'écris avec
 #annule <nom du robot>          retire un test ou un test de chance en file pour ce robot, même un robot abandonné
                                 (s'il change d'avis, tu peux vraiment l'arrêter ; un test déjà en cours finit seul)
 #chance                         lance le test de chance du robot de cette conversation
@@ -168,16 +170,21 @@ def transcript(msgs, n=40, lang="fr"):
             L.append("[%s] %s : %s" % (_hm(m.get("t")), me, tx))
             if m.get("mreact"):                       # 2026-10-27 (owner: "does he see an emoji given to his message?")
                 L.append("   (%s : %s)" % ("they reacted to it" if lang == "en" else "il a réagi à ce message", m["mreact"]))
-        elif r == "image":
-            L.append("[%s] %s : (%s)" % (_hm(m.get("t")), them, "an image" if lang == "en" else "une image"))
+        elif r == "image":                        # 2026-10-31: the close reading of the screenshot (m["read"]) is remembered
+            rd = m.get("read") if isinstance(m.get("read"), dict) else {}
+            rds = "; ".join("%s: %s" % (k, str(v)[:200]) for k, v in rd.items() if v not in (None, "", [], {}) and k != "broker_market")[:900]
+            L.append("[%s] %s : (%s%s%s)" % (_hm(m.get("t")), them, "an image" if lang == "en" else "une image",
+                                             (" - " + tx[:300]) if tx else "",
+                                             ("\n   " + ("WHAT YOU SAW IN IT: " if lang == "en" else "CE QUE TU Y AS VU : ") + rds) if rds else ""))
         elif r == "doc":                          # 2026-10-31 (his wish "could not confirm Word/PDF can be read"): he saw only
             body = " ".join(tx.split())           # "(un document)" - now its name, their note and, for Word/text, what it says
             L.append("[%s] %s : (%s « %s »%s)%s" % (
                 _hm(m.get("t")), them, "a document" if lang == "en" else "un document", m.get("name") or "?",
                 (" - " + str(m.get("note"))[:300]) if m.get("note") else "",
                 ("\n   " + ("WHAT IT SAYS: " if lang == "en" else "CE QU'IL DIT : ") + body[:6000] + (" …" if len(body) > 6000 else ""))
-                if body else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
-                              "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
+                if body else ("\n   " + ("WHAT IT SAYS (your summary): " if lang == "en" else "CE QU'IL DIT (ton résumé) : ") + str(m["seen"]))
+                if m.get("seen") else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
+                                       "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
         elif r in ("test", "sys", "result", "card") and tx:
             L.append("[%s] (%s)" % (_hm(m.get("t")), tx[:240]))
     return "\n".join(L)
@@ -249,6 +256,8 @@ def parse(raw, partial=False):
             acts.append(("annule", v))
         elif k in ("order",):
             acts.append(("ordre", v))
+        elif k in ("look", "check", "verifie", "vérifie"):
+            acts.append(("regarde", v))
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)
@@ -314,7 +323,7 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
             except Exception:
                 pass
     try:
-        W.pin(sysp, "sonnet")                 # his process stays warm whatever else the app runs
+        W.pin(sysp, "opus" if model == "opus" else "sonnet")      # his process stays warm whatever else the app runs
     except Exception:
         pass
     msg = user

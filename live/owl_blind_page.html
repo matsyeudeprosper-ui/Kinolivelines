@@ -53,7 +53,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 async function post(a,b){try{const r=await fetch(BASE+a,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});return await r.json();}catch(e){return{ok:false,err:'net'};}}
 const S={d:null,i:0,timer:null};
 async function load(){const j=await post('blind_get');if(!j.ok){$('app').innerHTML='<div class="card empty">Réservé au propriétaire.</div>';return;}
- S.d=j;if(j.state==='building'&&!(j.cases||[]).length){$('app').innerHTML='<div class="card empty"><div class="spin"></div>Le nouveau Kino répond à tes vrais messages… ('+(j.cases||[]).length+' prêts)</div>';clearTimeout(S.timer);S.timer=setTimeout(load,5000);return;}
+ S.d=j;if(j.state==='building'&&!(j.cases||[]).length){$('app').innerHTML='<div class="card empty"><div class="spin"></div>'+(S.d&&S.d.mode==='model'?'Kino répond deux fois (Sonnet et Opus) à tes vrais messages… (':'Le nouveau Kino répond à tes vrais messages… (')+''+(j.cases||[]).length+' prêts)</div>';clearTimeout(S.timer);S.timer=setTimeout(load,5000);return;}
  if(!(j.cases||[]).length){render();return;}
  const first=j.cases.findIndex(c=>!c.vote);S.i=first<0?j.cases.length:first;render();
  if(j.state==='building'){clearTimeout(S.timer);S.timer=setTimeout(async()=>{const k=await post('blind_get');if(k.ok){S.d=k;render();}},8000);}}
@@ -61,7 +61,7 @@ function render(){const d=S.d,C=d.cases||[];
  if(!C.length){$('app').innerHTML='<div class="card intro">Aucun test pour l’instant.<div class="nav" style="grid-template-columns:1fr"><button class="btn pri" id="mk">Préparer un test</button></div></div>';$('mk').onclick=build;return;}
  if(S.i>=C.length){return renderEnd();}
  const x=C[S.i],done=C.filter(c=>c.vote).length;
- $('app').innerHTML=(S.i===0&&!done?'<div class="card intro">Voici tes vrais messages des derniers jours. Pour chacun, deux réponses de Kino : l’ancienne, et celle du nouveau Kino. Tu ne sais pas laquelle est laquelle. Touche celle qui sonne le plus comme une vraie personne.</div>':'')+
+ $('app').innerHTML=(S.i===0&&!done?'<div class="card intro">Voici tes vrais messages des derniers jours. Pour chacun, deux réponses de Kino'+(d.mode==='model'?', le même Kino avec deux cerveaux (Sonnet, Opus)':' : l’ancienne, et celle du nouveau Kino')+'. Tu ne sais pas laquelle est laquelle. Touche celle qui sonne le plus comme une vraie personne.</div>':'')+
   '<div class="prog"><span>Message '+(S.i+1)+' sur '+C.length+(d.state==='building'?' (d’autres arrivent)':'')+'</span><span>'+done+' choisis</span></div><div class="bar"><i style="width:'+(100*done/C.length).toFixed(0)+'%"></i></div>'+
   '<div class="card">'+(x.ctx.length?'<div class="ctx">'+x.ctx.map(c=>'<div>'+(c.who==='lui'?'Toi':'Kino')+' : '+esc(c.text)+'</div>').join('')+'</div>':'')+
   '<div class="me">'+esc(x.msg)+'</div><div class="lbl">Les deux réponses</div>'+
@@ -71,10 +71,10 @@ function render(){const d=S.d,C=d.cases||[];
  $('app').querySelectorAll('[data-k]').forEach(b=>b.onclick=async()=>{const j=await post('blind_vote',{id:x.id,pick:b.dataset.k});if(j.ok){S.d=j;setTimeout(()=>{S.i++;render();window.scrollTo({top:0,behavior:'smooth'});},250);render();}});
  $('prev').onclick=()=>{S.i=Math.max(0,S.i-1);render();};$('next').onclick=()=>{S.i++;render();};}
 function renderEnd(){const d=S.d,sc=d.score,C=d.cases;
- $('app').innerHTML='<div class="card res"><div class="sub">Le nouveau Kino a été choisi</div><div class="big">'+sc.new+' / '+(sc.new+sc.old+sc.same)+'</div><div class="sub">L’ancien : '+sc.old+' · pareil : '+sc.same+'</div>'+
+ $('app').innerHTML='<div class="card res"><div class="sub">'+(d.mode==='model'?'Opus a été choisi':'Le nouveau Kino a été choisi')+'</div><div class="big">'+sc.new+' / '+(sc.new+sc.old+sc.same)+'</div><div class="sub">'+(d.mode==='model'?'Sonnet':'L’ancien')+' : '+sc.old+' · pareil : '+sc.same+(d.mode==='model'?'<br>Cerveau de Kino maintenant : <b>'+(d.member_model==='opus'?'Opus':'Sonnet')+'</b>':'')+'</div>'+
   '<div class="nav"><button class="btn" id="again">Revoir</button><button class="btn pri" id="mk">Nouveau test</button></div></div>'+
-  C.filter(c=>c.vote).map(c=>'<div class="card rev"><div class="me">'+esc(c.msg)+'</div>'+['A','B'].map(k=>'<div class="opt'+(c.vote===k?' on':'')+'"><span class="k">'+k+'</span>'+esc(c[k])+'<span class="tag '+(c.new_is===k?'n':'o')+'">'+(c.new_is===k?'nouveau':'ancien')+'</span></div>').join('')+'</div>').join('');
+  C.filter(c=>c.vote).map(c=>'<div class="card rev"><div class="me">'+esc(c.msg)+'</div>'+['A','B'].map(k=>'<div class="opt'+(c.vote===k?' on':'')+'"><span class="k">'+k+'</span>'+esc(c[k])+'<span class="tag '+(c.new_is===k?'n':'o')+'">'+(c.new_is===k?(d.mode==='model'?'Opus':'nouveau'):(d.mode==='model'?'Sonnet':'ancien'))+'</span></div>').join('')+'</div>').join('');
  $('again').onclick=()=>{S.i=0;render();};$('mk').onclick=build;}
-async function build(){if(!confirm('Préparer un nouveau test ? Le nouveau Kino va répondre à tes derniers vrais messages (rien n’est envoyé).'))return;await post('blind_build');setTimeout(load,1500);}
+async function build(){if(!confirm('Préparer un nouveau test ? Kino va répondre deux fois à tes derniers vrais messages, avec Sonnet et avec Opus (rien n’est envoyé). Ton choix décide de son cerveau.'))return;await post('blind_build');setTimeout(load,1500);}
 load();
 </script></body></html>
