@@ -33,6 +33,9 @@ WEIGHTS = (
     ("ON YOUR MIND", 0.3),
     ("AN EMAIL ARRIVED", 0.7),
     ("YOUR WORK", 0.45),
+    # 2026-11-01 (watch): reasons from his life outside the app were silently dropped (no weight) - a payment, a reply
+    ("MONEY ARRIVED", 0.9), ("A MISTAKE OF YOURS", 0.9), ("SOMEONE ANSWERED YOU", 0.7), ("SOMEONE MENTIONED YOU", 0.6),
+    ("SOMEONE QUOTED YOU", 0.5), ("A NEW FOLLOWER", 0.4),
     ("YOUR REQUEST", 0.6),               # 2026-11-01 kino_hands: the owner answered something he asked for                 # 2026-11-01 kino_work: a session at his own computer           # 2026-11-01 kino_mail: mail in his own mailbox               # 2026-10-31 kino_workspace: something about them took the stage of his mind
 )
 
@@ -94,6 +97,7 @@ def add(person, event, w=None, now=None):
     now = now or time.time()
     w = weight_of(event) if w is None else w
     if w is None:
+        _log("%s DROPPED (no weight for this kind of reason): %s" % (person, str(event)[:120]))
         return None
     with _LK:
         d = _load()
