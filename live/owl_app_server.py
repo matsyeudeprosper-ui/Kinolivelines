@@ -31062,10 +31062,10 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0b0f14">
-<meta name="description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
+<meta name="description" content="Kino, ton associé IA pour le trading : tu lui racontes ton idée, il construit ton robot, le teste sur de vrais prix et contre le hasard, et te dit la vérité. Essai gratuit 7 jours.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="OwlNest &middot; Owl trade pour vous, jour et nuit">
-<meta property="og:description" content="Un compte t&eacute;moin en argent r&eacute;el, r&eacute;sultats publics, pertes comprises. D&eacute;mo gratuite en direct, sans compte.">
+<meta property="og:title" content="Kino &middot; ton associé IA pour le trading">
+<meta property="og:description" content="Tu lui racontes ton idée. Il construit ton robot, le teste et te dit honnêtement si ça tient. Essai gratuit 7 jours.">
 <meta property="og:image" content="%%ORIGIN%%/shots/og_card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -31073,8 +31073,8 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta property="og:locale" content="fr_FR">
 <meta property="og:url" content="%%ORIGIN%%/join">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OwlNest &middot; Owl trade pour vous, jour et nuit">
-<meta name="twitter:description" content="Un compte t&eacute;moin en argent r&eacute;el, pertes comprises. Votre argent reste chez votre courtier.">
+<meta name="twitter:title" content="Kino &middot; ton associé IA pour le trading">
+<meta name="twitter:description" content="Tu lui racontes ton idée. Il construit ton robot, le teste et te dit honnêtement si ça tient.">
 <meta name="twitter:image" content="%%ORIGIN%%/shots/og_card.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon192.png">
@@ -31332,6 +31332,13 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
  background:var(--surface);color:var(--text2);font:inherit;font-weight:700;font-size:.8rem;cursor:pointer}
 .shots img{height:auto}
 @media(prefers-reduced-motion:reduce){.ring,.blob{animation:none}}
+#pf2,#pw,#calc,#scale,.preview{display:none!important}
+.kpts{display:grid;gap:10px;margin:22px 0 4px;text-align:left}
+.kpts>div{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px}
+.kpts .kn{flex:0 0 32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,#7c6cff,#22d3ee);color:#fff}
+.kpts b{display:block;margin-bottom:2px}.kpts span{color:var(--text2);font-size:.92rem;line-height:1.5}
+.kbiz{margin-top:14px;padding:16px;border-radius:16px;border:1px dashed var(--border);text-align:left;font-size:.92rem;color:var(--text2);line-height:1.55}
+.kbiz a{color:var(--accent-soft);font-weight:600}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -31376,8 +31383,14 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <button type="button" class="lgb" id="lgb" aria-label="English">EN</button>
 <div class="ring"><img src="/icon192.png" alt="" width="64" height="64" style="width:64px;height:64px;border-radius:16px"></div>
 <h1>OwlNest</h1>
-<div class="tag"><span class="tg1">Owl trade pour vous, jour et nuit.</span><span class="tg2">Vous, vous regardez. Et vous gardez la main.</span></div>
-<div class="chips"><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Démo gratuite</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Arrêt à tout moment</span></div>
+<div class="tag"><span class="tg1">Kino, ton associé IA pour le trading.</span><span class="tg2">Tu lui racontes ton idée. Il la construit, la teste, et te dit la vérité.</span></div>
+<div class="chips"><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Essai gratuit 7 jours</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Sans engagement</span></div>
+<div class="kpts">
+<div><div class="kn">1</div><div><b>Il construit ton robot en parlant</b><span>Décris ta méthode avec tes mots. Kino la transforme en robot : entrées, stop, objectif, taille de position.</span></div></div>
+<div><div class="kn">2</div><div><b>Il le teste pour de vrai</b><span>Sur des mois de vrais prix, puis contre 100 robots au hasard. Si c’est de la chance, il te le dit.</span></div></div>
+<div><div class="kn">3</div><div><b>Il veille avec toi</b><span>Mode fantôme en argent fictif, suivi de ton compte, alertes. Il ne touche jamais ton compte sans ton accord.</span></div></div>
+<div><div class="kn">4</div><div><b>Il se souvient de toi</b><span>Ta méthode, tes erreurs, tes objectifs. Il t’écrit quand il a quelque chose à dire, comme un vrai associé.</span></div></div>
+</div>
 </div>
 <div class="pf2" id="pf2" hidden>
  <div class="in">
@@ -31419,7 +31432,8 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <div><span class="pv-live" id="pv-live" hidden><i></i><span id="pv-live-t"></span></span></div>
 <div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti. Les r&eacute;sultats pass&eacute;s ne promettent pas les suivants.</div>
 </div>
-<a class="bigbtn b1" id="hero-cta" href="/demo" onclick="try{fn('demo_open')}catch(e){}" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
+<a class="bigbtn b1" id="hero-cta" href="/offres" onclick="try{fn('kino_trial_open')}catch(e){}" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg> Essayer Kino gratuitement</a>
+<a href="/demo" onclick="try{fn('demo_open')}catch(e){}" style="display:block;margin-top:10px;text-align:center;color:var(--text2);font-size:.9rem">Voir un robot travailler en direct &rsaquo;</a>
 <div class="trust" id="trust">
  <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-lock"/></svg></span><span><b>Votre argent reste chez vous</b>sur votre compte, chez votre courtier.</span></div>
  <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-key"/></svg></span><span><b>Le robot ne peut rien retirer</b>il passe des ordres, c&rsquo;est tout.</span></div>
@@ -31449,18 +31463,15 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <div class="feats">
 <div class="how" role="heading" aria-level="2">Comment &ccedil;a marche</div>
 <div class="fr"><div class="fi stp">1</div>
-<div class="ft"><b>Choisissez votre formule</b>
-<span>Signal : les alertes et la d&eacute;mo en direct, sans compte MT5.
- Automatique (famille) : le robot sur votre compte MT5. Rien &agrave;
- installer sur l&#8217;ordinateur.</span></div></div>
+<div class="ft"><b>Racontez votre idée à Kino</b>
+<span>Comme à un ami qui s&#8217;y connaît : votre façon de trader, avec vos mots, sans jargon.</span></div></div>
 <div class="fr"><div class="fi stp">2</div>
-<div class="ft"><b>Le robot veille, jour et nuit</b>
-<span>Il surveille le march&eacute; en continu et n&#8217;agit que lorsque
- ses conditions sont r&eacute;unies.</span></div></div>
+<div class="ft"><b>Il construit et teste, honnêtement</b>
+<span>Votre robot sur de vrais prix, puis contre le hasard. Vous voyez ce qui tient, et ce qui ne tient pas.</span></div></div>
 <div class="fr"><div class="fi stp">3</div>
-<div class="ft"><b>Vous suivez tout, en direct</b>
-<span>Solde, gains, trades du jour &mdash; mis &agrave; jour toutes les
- 5 secondes, sur votre t&eacute;l&eacute;phone.</span></div></div>
+<div class="ft"><b>Vous décidez, il veille</b>
+<span>Mode fantôme, puis votre compte si vous le voulez. Kino suit tout et vous prévient, jour et nuit.</span></div></div>
+<div class="kbiz">Kino travaille aussi pour les autres : tests d&#8217;idées sur mesure, réponses chiffrées, petits outils. <a href="https://kino.owltrader.duckdns.org" target="_blank" rel="noopener">Voir ses services &rsaquo;</a></div>
 </div>
 <div class="feats" id="scale">
 <div class="how" role="heading" aria-level="2">Une mise qui grandit avec vous</div>
@@ -31477,9 +31488,8 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 </div>
 <div class="fine">Exemples de calcul, pas des résultats. Le plafond est une limite, pas une promesse : certains jours le robot gagne moins, d&#8217;autres il perd. Vous pouvez couper cette option dans Réglages.</div>
 </div>
-<a class="bigbtn b1" id="end-cta" href="/demo" style="display:block;
- text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct
- &middot; gratuit</a>
+<a class="bigbtn b1" id="end-cta" href="/offres" style="display:block;
+ text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg> Essayer Kino gratuitement</a>
 <div class="duo">
 <button class="bigbtn b2" onclick="show('v-login')">Se connecter</button>
 <a class="bigbtn b2" href="/offres" style="text-decoration:none;text-align:center">Cr&eacute;er un compte</a>
@@ -31527,6 +31537,12 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
  <p>Recevez le bilan de la semaine du compte t&eacute;moin sur Telegram. Gratuit, sans compte.</p>
  <a id="tg-go" href="https://t.me/Kino_owl_bot?start=bilan" target="_blank" rel="noopener" onclick="try{fn('tg_open')}catch(e){}">Recevoir le bilan</a></div>
 <div class="how" role="heading" aria-level="2">Questions fr&eacute;quentes</div>
+<details class="fq"><summary>Kino est-il un humain ?</summary>
+<p>Non, Kino est une intelligence artificielle, et il le dit toujours. Mais il parle simplement, se souvient de vous et de votre méthode, et vous écrit quand il a quelque chose d’utile à dire.</p></details>
+<details class="fq"><summary>Pourquoi pas ChatGPT ou un autre assistant ?</summary>
+<p>Un assistant général répond à une question. Kino travaille avec vous : il construit vraiment votre robot, le teste sur de vrais prix et contre le hasard, suit votre compte, se souvient de vos décisions et revient vers vous de lui-même.</p></details>
+<details class="fq"><summary>Kino va-t-il me faire gagner de l’argent ?</summary>
+<p>Personne d’honnête ne peut le promettre. Ce qu’il fait : éliminer les idées qui ne tiennent pas, vous montrer le vrai risque avant de commencer, et vous éviter de décider sur un coup de nerfs.</p></details>
 <details class="fq"><summary>Où est mon argent ?</summary>
 <p>Sur votre propre compte MT5, chez votre courtier, à votre nom. Le robot y passe des ordres ; il ne peut ni retirer ni déplacer votre argent. Vous retirez quand vous voulez, comme d’habitude.</p></details>
 <details class="fq"><summary>Puis-je perdre de l’argent ?</summary>
@@ -31740,6 +31756,34 @@ var EN={
 "Au plus bas": "At the lowest",
 "Toutes les questions (8)": "All questions (8)",
 "Owl trade pour vous, jour et nuit.": "Owl trades for you, day and night.",
+"Kino, ton associé IA pour le trading.": "Kino, your AI partner for trading.",
+"Tu lui racontes ton idée. Il la construit, la teste, et te dit la vérité.": "Tell him your idea. He builds it, tests it, and tells you the truth.",
+"Essai gratuit 7 jours": "7-day free trial",
+"Sans engagement": "No commitment",
+"Il construit ton robot en parlant": "He builds your robot as you talk",
+"Décris ta méthode avec tes mots. Kino la transforme en robot : entrées, stop, objectif, taille de position.": "Describe your method in your own words. Kino turns it into a robot: entries, stop, target, position size.",
+"Il le teste pour de vrai": "He really tests it",
+"Sur des mois de vrais prix, puis contre 100 robots au hasard. Si c’est de la chance, il te le dit.": "On months of real prices, then against 100 random robots. If it's luck, he tells you.",
+"Il veille avec toi": "He watches with you",
+"Mode fantôme en argent fictif, suivi de ton compte, alertes. Il ne touche jamais ton compte sans ton accord.": "Ghost mode with pretend money, your account followed, alerts. He never touches your account without your OK.",
+"Il se souvient de toi": "He remembers you",
+"Ta méthode, tes erreurs, tes objectifs. Il t’écrit quand il a quelque chose à dire, comme un vrai associé.": "Your method, your mistakes, your goals. He writes when he has something to say, like a real partner.",
+"Essayer Kino gratuitement": "Try Kino for free",
+"Voir un robot travailler en direct ›": "Watch a robot work live ›",
+"Racontez votre idée à Kino": "Tell Kino your idea",
+"Comme à un ami qui s’y connaît : votre façon de trader, avec vos mots, sans jargon.": "Like to a friend who knows: how you trade, in your words, no jargon.",
+"Il construit et teste, honnêtement": "He builds and tests, honestly",
+"Votre robot sur de vrais prix, puis contre le hasard. Vous voyez ce qui tient, et ce qui ne tient pas.": "Your robot on real prices, then against luck. You see what holds up, and what doesn't.",
+"Vous décidez, il veille": "You decide, he watches",
+"Mode fantôme, puis votre compte si vous le voulez. Kino suit tout et vous prévient, jour et nuit.": "Ghost mode, then your account if you want. Kino follows everything and warns you, day and night.",
+"Kino travaille aussi pour les autres : tests d’idées sur mesure, réponses chiffrées, petits outils.": "Kino also works for others: custom idea tests, answers with numbers, small tools.",
+"Voir ses services ›": "See his services ›",
+"Kino est-il un humain ?": "Is Kino a human?",
+"Non, Kino est une intelligence artificielle, et il le dit toujours. Mais il parle simplement, se souvient de vous et de votre méthode, et vous écrit quand il a quelque chose d’utile à dire.": "No, Kino is an artificial intelligence, and he always says so. But he talks simply, remembers you and your method, and writes to you when he has something useful to say.",
+"Pourquoi pas ChatGPT ou un autre assistant ?": "Why not ChatGPT or another assistant?",
+"Un assistant général répond à une question. Kino travaille avec vous : il construit vraiment votre robot, le teste sur de vrais prix et contre le hasard, suit votre compte, se souvient de vos décisions et revient vers vous de lui-même.": "A general assistant answers a question. Kino works with you: he really builds your robot, tests it on real prices and against luck, follows your account, remembers your decisions and comes back to you on his own.",
+"Kino va-t-il me faire gagner de l’argent ?": "Will Kino make me money?",
+"Personne d’honnête ne peut le promettre. Ce qu’il fait : éliminer les idées qui ne tiennent pas, vous montrer le vrai risque avant de commencer, et vous éviter de décider sur un coup de nerfs.": "Nobody honest can promise that. What he does: drop the ideas that don't hold up, show you the real risk before you start, and keep you from deciding on a nervous impulse.",
 "Vous, vous regardez. Et vous gardez la main.": "You just watch. And you stay in control.",
 "Le pire moment, sans filtre": "The worst moment, unfiltered",
 "Plus forte baisse": "Deepest drop",
@@ -31883,7 +31927,7 @@ var EN={
 "Ou ajouter à l’écran d’accueil": "Or add to the home screen"
 };
 var O=new WeakMap(),on=null,md=document.querySelector('meta[name=description]'),mdFr=md?md.getAttribute('content'):'';
-var mdEn='The Owl robot trades for you, day and night. Free live demo, no account. You keep your money with your broker.';
+var mdEn='Kino, your AI partner for trading: tell him your idea, he builds your robot, tests it on real prices and against luck, and tells you the truth. 7-day free trial.';
 function nz(t){return t.replace(/\\s+/g,' ').trim();}
 function has(k){return Object.prototype.hasOwnProperty.call(EN,k);}
 function stored(){try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}}
