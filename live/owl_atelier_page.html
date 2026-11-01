@@ -558,6 +558,7 @@ function msgHTML(m,i,last){
  if(m.role==='deleted')return '<div class="m me"><div class="bub del">🚫 '+T('Message supprimé','Message deleted')+'</div></div>';
  if(m.role==='away')return awayHTML(m);
  if(m.role==='ideacard')return ideaCardHTML(m.card||{},i);
+ if(m.role==='kreq')return kreqHTML(m,i);
  if(m.role==='change')return changeHTML(m,i);
  if(m.role==='card')return '<div class="att kcw">'+cardShell(m.kind,m.args||{},'m'+i)+'</div>';
  if(m.role==='setting'){applySetting(m);return '<div class="sys"><span>⚙️ '+esc(settingText(m.setting||{}))+'</span></div>';}
@@ -1414,6 +1415,20 @@ function todayChip(){todayDismiss();addCard('account',{title:'☀️ '+T('Ta jou
 function planSh(){const R=C&&C.research;if(!R)return;const ic={done:'✓',dropped:'✗',doing:'⏳',todo:'○'};
  shOpen('<h4>🔬 '+esc(R.goal)+'</h4><p class="sub">'+(R.done?T('Recherche terminée.','Research done.'):T('Kino avance tout seul, une étape à la fois, et t’écrit une ligne par trouvaille.','Kino moves on his own, one step at a time, and writes you one line per finding.'))+'</p>'+
   (R.steps||[]).map(x=>'<div class="pls '+(x.state||'todo')+'"><b>'+(ic[x.state]||'○')+'</b><span>'+esc(x.text)+(x.note?'<small> · '+esc(x.note)+'</small>':'')+'</span></div>').join(''));}
+/* 2026-11-01 (Kino's world, phase 3): something Kino asks for outside his own world - only the owner answers */
+function kreqHTML(m,i){const r=m.req||{},st=m.status||'waiting',em=r.kind==='email';let cmd='';
+ if(r.command){try{const e=JSON.parse(r.command);cmd=em?(T('À : ','To: ')+(e.to||'')+'\n'+T('Sujet : ','Subject: ')+(e.subject||'')+'\n\n'+(e.body||'')):r.command;}catch(x){cmd=r.command;}}
+ const done=st!=='waiting';
+ return '<div class="m ai"><div class="bub kreq" style="border:1px solid var(--line,#334);border-radius:14px;padding:12px 14px;max-width:520px">'+
+  '<div style="font-weight:600;margin-bottom:4px">'+(em?'✉️ ':'🔐 ')+T('Kino demande : ','Kino asks: ')+esc(r.what||'')+'</div>'+
+  (r.why?'<div style="opacity:.8;font-size:.92em;margin-bottom:6px">'+esc(r.why)+'</div>':'')+
+  (cmd?'<pre style="white-space:pre-wrap;font-size:.82em;opacity:.85;max-height:220px;overflow:auto;margin:6px 0;padding:8px;border-radius:8px;background:rgba(127,127,127,.12)">'+esc(cmd)+'</pre>':'')+
+  (done?'<div style="font-size:.9em;margin-top:6px">'+(st==='approved'?'✅ '+T('Accepté','Approved'):'❌ '+T('Refusé','Refused'))+(m.result?' · '+esc(String(m.result).slice(0,160)):'')+'</div>':
+   (C&&C.admin?'<div style="display:flex;gap:8px;margin-top:8px"><button class="btn pri" onclick="kreqDo(\''+esc(r.id||'')+'\',1,this)">✅ '+T('Accepter','Approve')+'</button>'+
+    '<button class="btn" onclick="kreqDo(\''+esc(r.id||'')+'\',0,this)">❌ '+T('Refuser','Refuse')+'</button></div>':
+    '<div style="font-size:.9em;opacity:.7;margin-top:6px">'+T('En attente de réponse','Waiting for an answer')+'</div>'))+
+  '</div></div>';}
+async function kreqDo(id,yes,b){try{if(b)b.disabled=true;const j=await post('kino_req',{id:id,yes:yes?1:0});if(!j||!j.ok)toast(T('Pas possible','Not possible'));}catch(e){}load(CID,true);}
 function movedHTML(m,i){const last=((C&&C.msgs)||[]).length-1===i;
  if(last&&Date.now()/1000-(m.t||0)<120){try{const k='kmv'+m.cid;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');setTimeout(()=>openChat(m.cid),1200);}}catch(e){}}
  return '<div class="att"><div class="mvd"><span>➡️</span><span><b>'+T('Nouveau robot, nouvelle conversation','New robot, new conversation')+'</b><small>'+esc(m.title||'')+'</small></span><button onclick="openChat(\''+esc(m.cid)+'\')">'+T('Ouvrir','Open')+' ›</button></div></div>';}

@@ -32,7 +32,8 @@ WEIGHTS = (
     ("AN AFTERTHOUGHT", 0.55),           # 2026-10-31 kino_depth: an unfinished thread comes back (Zeigarnik)
     ("ON YOUR MIND", 0.3),
     ("AN EMAIL ARRIVED", 0.7),
-    ("YOUR WORK", 0.45),                 # 2026-11-01 kino_work: a session at his own computer           # 2026-11-01 kino_mail: mail in his own mailbox               # 2026-10-31 kino_workspace: something about them took the stage of his mind
+    ("YOUR WORK", 0.45),
+    ("YOUR REQUEST", 0.6),               # 2026-11-01 kino_hands: the owner answered something he asked for                 # 2026-11-01 kino_work: a session at his own computer           # 2026-11-01 kino_mail: mail in his own mailbox               # 2026-10-31 kino_workspace: something about them took the stage of his mind
 )
 
 

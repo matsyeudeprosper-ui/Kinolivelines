@@ -19,6 +19,7 @@ SECRET = r"C:\ProgramData\kino_secret\pw.txt"
 LOG = os.path.join(HERE, "kino_hands.log")
 REQ = os.path.join(HERE, "kino_requests.json")
 _LK = threading.Lock()
+ON_REQUEST = None               # set by the app: posts the request as an approve card in the owner's conversation
 LOGON_WITH_PROFILE = 0x1
 CREATE_NO_WINDOW = 0x08000000
 IDLE_PRIORITY = 0x00000040      # his work never takes the processor from the bots
@@ -131,6 +132,11 @@ def request(what, why, command="", kind="admin"):
         R.append(r)
         _rsave(R[-200:])
     _log("REQUEST %s %s | %s" % (r["id"], r["what"], r["command"][:200]))
+    try:
+        if ON_REQUEST:
+            ON_REQUEST(r)
+    except Exception as e:
+        _log("ON_REQUEST error %s" % e)
     return r
 
 

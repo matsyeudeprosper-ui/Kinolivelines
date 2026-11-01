@@ -20064,10 +20064,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 if len(_pm) == 3 and "@" in _pm[0]:
                     _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation")
                     _KO._log(cid, "EMAIL", "%s -> %s" % (_pm[0], _rm))
-                    if not _rm.get("sent") and _rm.get("request"):
-                        _chat_mut(cid, lambda cc, _a=_pm[0]: _chat_msg(cc, "sys", text=(
-                            "✉️ Kino wants to write to %s - it waits for your OK." % _a if en else
-                            "✉️ Kino veut écrire à %s - ça attend ton accord." % _a)))
+                    # (an email to someone new becomes an approve card through kino_hands.ON_REQUEST)
             elif k == "attention" and v:                 # 2026-10-31 (kino_workspace): he steers his own attention
                 _mat = re.match(r"\s*(garde|garder|hold|keep|l[aâ]che|l[aâ]cher|let\s*go|drop)\b\s*:?\s*(.*)$", v, re.I)
                 if _mat and _mat.group(2).strip():
@@ -23190,6 +23187,10 @@ def _urge_tick():
                     __import__("kino_body").sense()
                 except Exception:
                     pass
+                try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
+                    __import__("kino_hands").ON_REQUEST = _kino_req_card
+                except Exception:
+                    pass
                 try:                                   # 2026-11-01 (kino_work): he sits down at his own computer when he feels like it
                     import kino_work as _KWk
                     if pm == "kino" and _KWk.due(pm, ctx, now):
@@ -26278,6 +26279,43 @@ def _luck_detail(lk):
                                               ", ".join("%+.0f" % v for v in nets[:25]) + (" …" if n > 25 else ""), why))
     except Exception:
         return ""
+
+
+def _kino_req_card(r):
+    """2026-11-01 (Kino's world, phase 3): something he asks for outside his world appears in the owner's conversation as a card
+    with Approve / Refuse - only an admin can answer it"""
+    cid = _person_main("kino")
+    if not cid:
+        return
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "kreq", req={k: r.get(k) for k in ("id", "what", "why", "command", "kind")}, status="waiting"))
+
+
+def kino_req(user, body):
+    """the owner's answer to one of Kino's requests"""
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    import kino_hands as _KHr
+    rid, yes = str(body.get("id") or ""), bool(body.get("yes"))
+    r = _KHr.decide(rid, yes, by=user.get("id"))
+    if not r:
+        return {"ok": False, "err": "gone"}
+    r2 = next((x for x in _KHr.requests() if x["id"] == rid), r)
+    cid = _person_main("kino")
+    if cid:
+        def _upd(cc):
+            for m in cc.get("msgs") or []:
+                if m.get("role") == "kreq" and (m.get("req") or {}).get("id") == rid:
+                    m["status"] = r2.get("status")
+                    m["result"] = str(r2.get("result") or "")[:300]
+        _chat_mut(cid, _upd)
+    try:
+        import kino_urge as _KUr, kino_work as _KWr
+        _KUr.add("kino", "YOUR REQUEST - he %s what you asked for (%s)%s" % (
+            "approved" if yes else "refused", r2.get("what"), (": result " + str(r2.get("result"))[:200]) if r2.get("result") else ""))
+        _KWr.diary("My request \"%s\" was %s." % (r2.get("what"), "approved" if yes else "refused"))
+    except Exception:
+        pass
+    return {"ok": True, "status": r2.get("status"), "result": str(r2.get("result") or "")[:300]}
 
 
 def chat_luck_cancel(user, body):
@@ -33701,7 +33739,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
             return
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
-        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
+        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm", "kino_req",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
@@ -33734,7 +33772,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish,
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
