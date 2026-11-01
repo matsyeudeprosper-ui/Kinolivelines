@@ -302,6 +302,27 @@ Recovery: only the existing pieces. MONEY: an existing money piece ("simple" for
     "min(0.04, 0.01 + 0.01 * losses_since_peak)"   +0.01 after each loss, 0.04 at most, back to 0.01 at a new high
     "0.02 if loss_streak >= 2 else 0.01"            "floor(balance / 100) * 0.01"   (0.01 per 100 $)
   A sizing rule CAN ALWAYS be coded this way - never tell a member it cannot.
+RULES ON THE LAST TRADE'S RESULT (2026-11-01: a different target, side or trigger after a loss / a stop-out) - ALWAYS
+  buildable, never tell a member it cannot:
+  TARGET FORMULA: the exit's "target" may be a formula string instead of a number, read at each signal over the robot's
+    own closed trades: "2 if last_hit_sl else 1" (2R right after a stop-out, else 1R)   "1.5 if loss_streak >= 2 else 1"
+    names: the LOTFORMULA names + last_dir (+1 the last trade was a buy, -1 a sell, 0 before any) + last_hit_sl (1 when
+    the last trade closed on its stop-loss, else 0); the value is in R, kept within 0.3..5. The LOT FORMULA may read
+    last_dir / last_hit_sl too ("0.02 if last_hit_sl else 0.01").
+  AFTER A STOP-OUT: the robot's "after_loss" = the ONE trade right after a normal trade closed on its stop with a loss:
+    {"entry": SLOT  its trigger: {"rule": {"event": "any"}} = the next structure break (BOS or CHoCH, at the close) - the
+                    usual meaning of a member's "when price breaks structure (BOS)"; {"event": "bos"} = only a break that
+                    continues the trend; {"event": "choch"}; or a formula entry,
+     "stop": SLOT | null   null = the robot's own stop; {"use": "point-protege"} = the protected point of that break,
+     "direction": "reverse" (a buy after a stopped sell) | "same" | "any",
+     "target": number in R | TARGET FORMULA | null (null = the robot's own target),
+     "on": "sl" (closed on its stop with a loss - default) | "loss" (any losing close),
+     "expire_min": null | 5..10080   give up waiting after N minutes (null = wait for the trigger)}
+    While it waits the normal entry is off; once that trade closes (won or lost) the robot is back to its normal rule.
+    It runs in the TEST and on a member's DESK; not yet on an account bot (say so if they want it plugged there).
+    e.g. "1:1 normally; if it hits the stop, immediately the reverse trade on the next BOS at 1:2" = exit target 1 and
+    "after_loss": {"entry": {"rule": {"event": "any"}}, "stop": {"use": "point-protege"}, "direction": "reverse", "target": 2}.
+  The "recovery" slot is something else (which follow-on breaks the Owl's money may take while in debt) - keep it as is.
 
 CHARTS - you and the member can SHOW things, like two traders looking at one screen:
 - The member can mark a chart (buy / sell / stop / exit / line). You get the marks and the NUMBERS at the marked
@@ -519,7 +540,8 @@ THE FULL JSON (BUILD mode) - ONE JSON OBJECT AND NOTHING ELSE:
  "chips": ["quick answer", ...] (0 to 4),
  "robot": null when nothing changes, else the WHOLE robot:
    {"name": "short name (max 30 chars)", "market": "SYMBOL from the list", "entry": SLOT, "filters": [SLOT, ...],
-    "stop": SLOT, "exit": SLOT, "recovery": SLOT, "money": SLOT},
+    "stop": SLOT, "exit": SLOT, "recovery": SLOT, "money": SLOT, "after_loss": null or AFTERLOSS (see RULES ON THE LAST
+    TRADE'S RESULT; leave it out to keep the robot's current one, null removes it)},
  "made": [{"slot": "entry|filters|stop|exit", "name": "...", "plain": "what it does, one casual sentence"}] for the
    NEW pieces you wrote this turn (empty list otherwise),
  "understood": "the strategy so far in one plain sentence",
@@ -1515,6 +1537,36 @@ def clean(raw, pieces, owl, prev, markets=None):
     else:
         F = (prev or {}).get("filters") or [{"use": f} for f in owl.get("filters") or []]
     out["filters"] = F
+    # 2026-11-01 (owner: "if that trade hits its stop-loss, take the reverse trade on the next BOS at 1:2"): the trade
+    # right after a stop-out (robots/robot_after.py). Left out = the robot keeps its current one; null = none.
+    al = rb.get("after_loss", "-")
+    if al == "-":
+        if (prev or {}).get("after_loss"):
+            out["after_loss"] = prev["after_loss"]
+    elif isinstance(al, dict):
+        import robot_after as _RAc
+        en = one("after_loss entry", al.get("entry"), "entry")
+        st = one("after_loss stop", al.get("stop"), "stop") if al.get("stop") else None
+
+        def _rule(s, typ):
+            if not s:
+                return None
+            if s.get("rule"):
+                return s["rule"]
+            pc = P.get(s.get("use")) or {}
+            if pc.get("rule"):
+                return pc["rule"]
+            if typ == "entry":
+                return {"event": "any"}
+            return {"kind": "protected", "buffer": 0.0} if (pc.get("engine") or {}).get("stop") == "protected" else None
+        if en and (st or not al.get("stop")):
+            ok, cl = _RAc.validate({"entry": _rule(en, "entry"), "stop": _rule(st, "stop"), "direction": al.get("direction"),
+                                    "target": al.get("target"), "on": al.get("on"), "expire_min": al.get("expire_min")}, D.validate)
+            if ok:
+                out["after_loss"] = {"entry": en, "stop": st, "direction": cl["direction"], "target": cl["target"], "on": cl["on"],
+                                     "expire_min": cl["expire_min"]}
+            else:
+                probs.append(cl)
     if out["entry"].get("rule", {}).get("event") == "formula":
         st = out["stop"]
         rule = st.get("rule") or (P.get(st.get("use")) or {}).get("rule") or {}
@@ -1553,6 +1605,13 @@ def view(robot, pieces):
     for slot in ONE:
         v[slot] = show(robot.get(slot), slot)
     v["filters"] = [show(f, "filter") for f in robot.get("filters") or []]
+    al = robot.get("after_loss")
+    if isinstance(al, dict) and al.get("entry"):         # 2026-11-01: the trade after a stop-out (robots/robot_after.py)
+        import robot_after as _RAv
+        e = show(al["entry"], "entry")
+        fr, en = _RAv.describe(al, (e or {}).get("rule"))
+        v["after_loss"] = {"entry": e, "stop": show(al.get("stop"), "stop"), "direction": al.get("direction"), "target": al.get("target"),
+                           "on": al.get("on"), "expire_min": al.get("expire_min"), "plain_fr": fr, "plain_en": en}
     return v
 
 

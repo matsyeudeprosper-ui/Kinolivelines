@@ -148,6 +148,15 @@ def validate(kind, rule):
         return False, "stop"
     # exit
     t, c, tm, be = rule.get("target"), bool(rule.get("choch")), rule.get("time_min"), rule.get("breakeven_at")
+    t_fx = None
+    if isinstance(t, str):
+        # 2026-11-01 (owner: "1:1 normally, 1:2 after a stop-out"): the target may be a FORMULA over the robot's own
+        # closed trades (robots/robot_after.py, robot_lot's language), read at each signal - "2 if last_hit_sl else 1"
+        import robot_after as _RA
+        ok_t, t_fx = _RA.check_target(t)
+        if not ok_t:
+            return False, "target_formula"
+        t = None
     if not (_num(t, 0.3, 5, True) and _num(tm, 5, 1440, True) and _num(be, 0.2, 3, True)):
         return False, "exit_range"
     oa, cb = _formula(rule.get("close_buy")); ob, cs = _formula(rule.get("close_sell"))
@@ -164,11 +173,11 @@ def validate(kind, rule):
         if not isinstance(lvs, dict) or not _num(lvs.get("min_r"), 0.3, 5):
             return False, "levels"
         t = float(lvs["min_r"]) if t is None else t
-    if t is None and not c and tm is None and cb is None and cs is None and tr is None:
+    if t is None and t_fx is None and not c and tm is None and cb is None and cs is None and tr is None:
         return False, "exit_none"
     if be is not None and t is not None and float(be) >= float(t):
         return False, "breakeven"
-    out = {"target": None if t is None else round(float(t), 2), "choch": c, "time_min": None if tm is None else int(tm),
+    out = {"target": t_fx if t_fx is not None else (None if t is None else round(float(t), 2)), "choch": c, "time_min": None if tm is None else int(tm),
            "breakeven_at": None if be is None else round(float(be), 2)}
     # 2026-10-29 (owner: "half is just midway between entry and TP"): breakeven as a share of the way to the ACTUAL target
     # (a structure level too), not a fixed R - 0.5 = the stop goes to the entry once price is halfway to the target
@@ -176,7 +185,7 @@ def validate(kind, rule):
     if bf is not None:
         if not _num(bf, 0.1, 0.95):
             return False, "breakeven_frac"
-        if t is None and lvs is None:
+        if t is None and lvs is None and t_fx is None:
             return False, "breakeven_frac_needs_target"
         out["breakeven_frac"] = round(float(bf), 2)
     if cb is not None or cs is not None:
@@ -270,6 +279,8 @@ def describe(kind, rule):
         _m = _f(rule["levels"]["min_r"])
         fr.append("sur le prochain niveau de structure (CHoCH, BOS, dernier BOS) à au moins %s fois le risque, sinon à %s fois le risque" % (_m[1], _m[1]))
         en.append("on the next structure level (CHoCH, BOS, last BOS) at least %s times the risk away, else at %s times the risk" % (_m[0], _m[0]))
+    elif isinstance(rule.get("target"), str):      # 2026-11-01: a target formula over the robot's own trades
+        fr.append("à « %s » fois le risque (selon les derniers trades)" % rule["target"]); en.append("at '%s' times the risk (from the last trades)" % rule["target"])
     elif rule.get("target") is not None:
         fr.append("à %s fois le risque" % _f(rule["target"])[1]); en.append("at %s times the risk" % _f(rule["target"])[0])
     if rule.get("choch"):

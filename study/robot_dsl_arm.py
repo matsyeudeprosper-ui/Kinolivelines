@@ -14,6 +14,13 @@ a formula stop gives the stop price at that candle (a stop on the wrong side or 
 closes the trade at the close of the first candle where it is true. The formulas are computed once per arm over
 the whole bar array (E.R, re-pointed by market packs), with the eyes' facts from the opportunity stream.
 A formula ENTRY is not handled here: robot_runner.robot_opps() turns it into the robot's own opportunity stream.
+
+2026-11-01 (owner: "if that trade hits its stop-loss, immediately take the reverse trade on the next BOS, 1:2"): rules on
+the LAST TRADE'S RESULT (live/robots/robot_after.py, the same functions the member's desk calls) - a TARGET FORMULA
+(exit.target = "2 if last_hit_sl else 1") read at each signal with the arm's own closed trades, and the AFTER-LOSS
+trade (dsl["after_loss"]): right after a normal trade closed on its stop with a loss, only the after-loss trigger on
+its side may open the next trade (from a candle that closed after the stop), with its stop and target, the recovery
+allowance not asked; when it closes, back to normal. A robot with neither is untouched (signal -> _signal as before).
 """
 import os, sys, math
 import numpy as np
@@ -21,9 +28,13 @@ import tick_engine as E
 from robot_choch_exit import RobotArm, FAR
 sys.path.insert(0, os.path.join(r"C:\Projects\KinoliveLines\live", "robots"))
 import robot_expr as X
+import robot_after as RA
+import robot_lot as RLOT
 
 
 class DslArm(RobotArm):
+    al = t_fx = hist = None          # 2026-11-01: class defaults too - live/robots/test_robot_live.py builds bare arms
+    _al_now = False
     def __init__(self, name, cfg, bars, S, dsl=None, **kw):
         opps = kw.pop("opps", None)              # the eyes' breaks, for formulas that read them
         dsl = dsl or {}
@@ -47,6 +58,14 @@ class DslArm(RobotArm):
             except Exception:
                 self._lv = None
         self.lmt = None                          # 2026-10-22: a waiting limit / stop order of the entry piece
+        # 2026-11-01: the last trade's result (robot_after) - None / no history for every robot without the new fields
+        _tg = (dsl.get("exit") or {}).get("target")
+        self.al = dsl.get("after_loss") or None
+        self.t_fx = _tg if RA.is_formula(_tg) else None
+        self.hist = RLOT.History(self.bal) if (self.al or self.t_fx) else None
+        self._al_now = False
+        if self.hist is not None:
+            self.n.update({"al_trades": 0, "al_wait_skip": 0})
         if self._uses_formulas():
             self._prepare(opps, S)
 
@@ -67,7 +86,8 @@ class DslArm(RobotArm):
 
     def _uses_formulas(self):
         d = self.dsl
-        return any(f.get("kind") == "formula" for f in d.get("filters") or []) or (d.get("stop") or {}).get("kind") == "formula"             or bool((d.get("exit") or {}).get("close_buy") or (d.get("exit") or {}).get("close_sell"))             or bool((d.get("entry") or {}).get("order"))
+        return any(f.get("kind") == "formula" for f in d.get("filters") or []) or (d.get("stop") or {}).get("kind") == "formula"             or bool((d.get("exit") or {}).get("close_buy") or (d.get("exit") or {}).get("close_sell"))             or bool((d.get("entry") or {}).get("order")) \
+            or bool((d.get("after_loss") or {}).get("stop") and d["after_loss"]["stop"].get("kind") == "formula")
 
     def _prepare(self, opps, S):
         """every formula of this robot computed once over the bar array"""
@@ -79,6 +99,9 @@ class DslArm(RobotArm):
         st = self.dsl.get("stop") or {}
         if st.get("kind") == "formula":
             self._fx["stop"] = (V(st.get("buy")), V(st.get("sell")))
+        ast_ = (self.dsl.get("after_loss") or {}).get("stop") or {}
+        if ast_.get("kind") == "formula":                # 2026-11-01: the after-loss trade's own formula stop
+            self._fx["al_stop"] = (V(ast_.get("buy")), V(ast_.get("sell")))
         od = (self.dsl.get("entry") or {}).get("order")
         if od:
             self._fx["order"] = (V(od.get("buy")), V(od.get("sell")))
@@ -89,13 +112,15 @@ class DslArm(RobotArm):
 
     # ---- entry + stop
     def _entry_ok(self, o):
-        en = self.dsl.get("entry")
+        en = self.al["entry"] if self._al_now else self.dsl.get("entry")      # 2026-11-01: the after-loss trigger
         if not en or en.get("event") in ("any", "formula"):     # a formula entry made its own stream (robot_opps)
             return True
         return bool(o["flip"]) if en["event"] == "choch" else not o["flip"]
 
     def _with_stop(self, o):
-        st = self.dsl.get("stop")
+        st = self.dsl.get("stop"); fk = "stop"
+        if self._al_now and self.al.get("stop"):          # 2026-11-01: the after-loss trade's own stop
+            st = self.al["stop"]; fk = "al_stop"
         if not st:
             return o
         d = o["d"]; o2 = dict(o)
@@ -108,7 +133,7 @@ class DslArm(RobotArm):
         elif st["kind"] == "fixed":
             o2["slp"] = float(o["cl"]) - d * float(st["points"])
         elif st["kind"] == "formula":
-            arr = self._fx["stop"][0 if d == 1 else 1]
+            arr = self._fx[fk][0 if d == 1 else 1]
             px = float(arr[int(o["i"])]) if arr is not None else float("nan")
             if px != px or d * (float(o["cl"]) - px) <= 0:
                 return None                          # unknown, or on the wrong side of the entry: no trade
@@ -116,6 +141,65 @@ class DslArm(RobotArm):
         return o2
 
     def signal(self, o, k, TM, BID, ASK):
+        if self.hist is None:                    # every robot without a target formula / after-loss block: as before
+            return self._signal(o, k, TM, BID, ASK)
+        return self._signal_hist(o, k, TM, BID, ASK)
+
+    def _signal_hist(self, o, k, TM, BID, ASK):
+        """2026-11-01: the robot reads its last closed trade (robot_after.pending - the desk calls the same function).
+        o["src"] (robot_runner.robot_stream, only for an after_loss robot): "main" = the robot's normal entry stream,
+        "eyes" = the eyes' breaks added for the after-loss trigger, "al" = the after-loss formula's own stream"""
+        src = o.get("src")
+        fx_main = (self.dsl.get("entry") or {}).get("event") == "formula"
+        last = self.hist.last_trade
+        want = RA.pending(self.al, last, now=o["t"] + 60) if self.al else None
+        V = self.hist.names(self.bal + self.run)
+        if want is None:                         # normal mode: the robot's own entry, its target (a formula: read now)
+            if src not in (None, "main"):
+                return
+            rr = RA.target_r(self.t_fx, V, default=self.rr) if self.t_fx else None
+            return self._go(o, k, TM, BID, ASK, rr, False)
+        en = self.al["entry"]
+        if en.get("event") == "formula":
+            mine = src == "al"
+        else:
+            mine = src == "eyes" or (src in (None, "main") and not fx_main)
+        if not mine or (want and o["d"] != want) or (o["t"] + 60 < float(last.get("tc") or 0)):
+            self.n["al_wait_skip"] += 1          # not the trigger, not its side, or a candle closed before the stop-out
+            return
+        tg = self.al.get("target") if self.al.get("target") is not None else self.t_fx
+        rr = RA.target_r(tg, V, default=self.rr) if tg is not None else None
+        dg = self.c.get("debt_gate", "-")
+        self._al_now = True; self.c["debt_gate"] = 0       # the member's own rule: no recovery allowance to ask
+        try:
+            return self._go(o, k, TM, BID, ASK, rr, True)
+        finally:
+            self._al_now = False
+            if dg == "-":
+                self.c.pop("debt_gate", None)
+            else:
+                self.c["debt_gate"] = dg
+
+    def _go(self, o, k, TM, BID, ASK, rr, al):
+        """the ordinary signal with this trade's own target rr (None = the robot's) - stamped on the setup for the fill"""
+        n0, l0, rr0 = self.n["orders"], self.lmt, self.rr
+        if rr is not None:
+            self.rr = float(rr)
+        try:
+            r = self._signal(o, k, TM, BID, ASK)
+        finally:
+            self.rr = rr0
+        s = None
+        if self.order is not None and self.n["orders"] > n0 and self.order.get("kind") == "main":
+            s = self.order["setup"]
+        elif self.lmt is not None and self.lmt is not l0:
+            s = self.lmt["s"]
+        if s is not None:
+            s["rr"] = float(rr) if rr is not None else None
+            s["al"] = bool(al)
+        return r
+
+    def _signal(self, o, k, TM, BID, ASK):
         if self.lmt is not None and self._entry_ok(o):          # one order at a time, like one position
             self.n["signals"] += 1; self.n["skipped_pending"] += 1; return
         if self._entry_ok(o):
@@ -124,7 +208,7 @@ class DslArm(RobotArm):
                 self.n["dsl_stop_bad"] += 1; return
             n0 = self.n["orders"]
             r = RobotArm.signal(self, o2, k, TM, BID, ASK)
-            if (self.dsl.get("entry") or {}).get("order") and self.order is not None and self.n["orders"] > n0 and self.order["kind"] == "main":
+            if (self.dsl.get("entry") or {}).get("order") and self.order is not None and self.n["orders"] > n0 and self.order["kind"] == "main"                     and not self._al_now:                # 2026-11-01: the after-loss trade enters at the close, its own trigger
                 self._to_pending(o2, k, TM, BID, ASK)
             return r
         self.n["dsl_entry_skip"] += 1
@@ -184,6 +268,13 @@ class DslArm(RobotArm):
             w = rec["pnl"] > 0
             if w != bool(win):
                 rec["win"] = w; self.wins += 1 if w else -1; self.streak = 0 if w else self.streak + 1
+        if self.hist is not None:                # 2026-11-01: what the next trade's target / the after-loss rule reads
+            rec = self.trades[-1]; d = p["d"]
+            hit = d * (xq - p["sl"]) <= 0       # closed at (or through) its stop - the engine's stop barrier
+            self.hist.add(rec["pnl"], d=d, hit_sl=hit, al=bool(p.get("al")), t=t_ms / 1000.0)
+            rec["hit_sl"] = bool(hit)
+            if p.get("al"):
+                rec["al"] = True; self.n["al_trades"] += 1
 
     # ---- filters, at the live bot's weather position
     def late_gates(self, o, debt_now):
@@ -211,10 +302,18 @@ class DslArm(RobotArm):
 
     # ---- exit: no target, time limit, breakeven
     def size_at_fill(self, setup, fill_px, frozen):
-        pos = super().size_at_fill(setup, fill_px, frozen)
+        rr0 = self.rr
+        if setup.get("rr") is not None:          # 2026-11-01: this trade's own target (a target formula / the after-loss trade)
+            self.rr = float(setup["rr"])
+        try:
+            pos = super().size_at_fill(setup, fill_px, frozen)
+        finally:
+            self.rr = rr0
         ex = self.dsl.get("exit")
-        if pos is not None and ex is not None and ex.get("target") is None:
+        if pos is not None and ex is not None and ex.get("target") is None and setup.get("rr") is None:
             pos["tp"] = pos["e"] + pos["d"] * FAR
+        if pos is not None and setup.get("al"):
+            pos["al"] = True
         return pos
 
     def tick(self, k, TM, BID, ASK, gap_in):

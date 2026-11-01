@@ -29,8 +29,10 @@ KIND_EVENT = {"FLIP-BOS": "choch", "BOS": "bos", "TOUCH": "bos", "INT": "bos"}
 def uses_formulas(rules):
     r = rules or {}
     ex = r.get("exit") or {}
+    al = r.get("after_loss") or {}      # 2026-11-01: the after-loss trade's own trigger / stop (robots/robot_after.py)
     return (r.get("entry") or {}).get("event") == "formula" or (r.get("stop") or {}).get("kind") == "formula" \
-        or any(f.get("kind") == "formula" for f in r.get("filters") or []) or bool(ex.get("close_buy") or ex.get("close_sell"))
+        or any(f.get("kind") == "formula" for f in r.get("filters") or []) or bool(ex.get("close_buy") or ex.get("close_sell")) \
+        or (al.get("entry") or {}).get("event") == "formula" or (al.get("stop") or {}).get("kind") == "formula"
 
 
 class Candles:
@@ -189,8 +191,9 @@ def level_target(d, e, dist, levels, min_r):
     return min(c, key=lambda x: d * (x - base)) if c else base
 
 
-def tp_for(rules, d, e, dist, rr, levels=None):
-    """the target price; 0 = no target order (MT5: no TP)"""
+def tp_for(rules, d, e, dist, rr, levels=None, V=None):
+    """the target price; 0 = no target order (MT5: no TP). V = the robot's own history names (robot_lot.History.names)
+    for a target formula (2026-11-01, robots/robot_after.py); without it the formula reads 'before any trade'"""
     ex = (rules or {}).get("exit")
     if not ex:
         return e + d * rr * dist
@@ -198,7 +201,11 @@ def tp_for(rules, d, e, dist, rr, levels=None):
         return level_target(d, e, dist, levels, ex["levels"]["min_r"])
     if ex.get("target") is None:
         return 0.0
-    return e + d * float(ex["target"]) * dist
+    t = ex["target"]
+    if isinstance(t, str):
+        import robot_after as _RA
+        t = _RA.target_r(t, V, default=rr)
+    return e + d * float(t) * dist
 
 
 def manage(rules, d, e, sl, opened_at, now, price, choch_against, be_done, tp=None):

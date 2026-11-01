@@ -901,6 +901,24 @@ def _robot_close(p, why):
         push("Robot de Kino", f"Trade ferme ({why}), {p.profit:+.2f} $")
 
 
+def _robot_history(cfg):
+    """2026-11-01 (owner: "if that trade hits its stop-loss, take the reverse trade, 1:2"): the robot's own closed trades
+    since it started here, with what robots/robot_after.py reads - each trade's side (its IN deal), whether the broker
+    closed it on its stop-loss (DEAL_REASON_SL) and whether it was the after-loss trade (its order comment KL-KROBOT-AL)"""
+    import robot_lot as RLOT
+    H = RLOT.History(0.0)
+    t0 = float(cfg.get("t") or 0)
+    ds = mt5.history_deals_get(datetime.utcfromtimestamp(t0) - timedelta(hours=3), datetime.utcnow() + timedelta(days=1)) or []
+    ins = {x.position_id: x for x in ds if x.magic == ROBOT_MAGIC and x.entry == mt5.DEAL_ENTRY_IN}
+    for x in sorted(ds, key=lambda x: x.time_msc):
+        if x.magic == ROBOT_MAGIC and x.entry == mt5.DEAL_ENTRY_OUT and x.time_msc / 1000.0 >= t0 - 60:
+            i = ins.get(x.position_id)
+            d = (1 if i.type == mt5.DEAL_TYPE_BUY else -1) if i is not None else (-1 if x.type == mt5.DEAL_TYPE_BUY else 1)
+            H.add(x.profit + x.commission + x.swap, d=d, hit_sl=x.reason == mt5.DEAL_REASON_SL,
+                  al=bool(i is not None and "KL-KROBOT-AL" in (i.comment or "")), t=x.time_msc / 1000.0)
+    return H
+
+
 def robot_tick(bar, sig, prev_trend, eng):
     """one closed candle for the robot: manage its open trade, else maybe enter. Never touches hand trades."""
     cfg = _robot_cfg()
@@ -947,6 +965,23 @@ def robot_tick(bar, sig, prev_trend, eng):
                 say(f"ROBOT stop a l'entree #{p.ticket}")
     if mine:
         return
+    # 2026-11-01 (owner): rules on the robot's LAST TRADE (robots/robot_after.py - the bench's DslArm calls the same
+    # functions): a target formula reads its history; right after a normal trade closed on its stop with a loss, the
+    # after-loss rules (trigger, side, stop, target) replace the normal ones for ONE trade. Robots without them: no change.
+    import robot_after as RA
+    RV, want = None, None
+    if RA.uses(rules):
+        try:
+            RH = _robot_history(cfg)
+            _ai = mt5.account_info()
+            RV = RH.names(_ai.balance if _ai else None)
+            RV["start_balance"] = (_ai.balance - RH.net) if _ai else 0.0
+            want = RA.pending(rules.get("after_loss"), RH.last_trade, now=time.time())
+        except Exception as _he:
+            say(f"ROBOT historique illisible ({type(_he).__name__}: {_he}) - pas de trade sur cette bougie")
+            return
+        if want is not None:
+            rules = RA.rules_for(rules, rules["after_loss"])
     sgn = None
     if (rules.get("entry") or {}).get("event") == "formula":
         sgn = RL.formula_entry(rules, C)
@@ -957,6 +992,8 @@ def robot_tick(bar, sig, prev_trend, eng):
         return
     d, slp = int(sgn[0]), float(sgn[1])
     ok, why = RL.entry_ok(rules, kind)
+    if ok and want:                                    # the after-loss trade: only on its side
+        ok, why = (d == want), "apres un stop: seulement " + ("l'achat" if want == 1 else "la vente")
     cj = {}
     try:
         cj = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8"))
@@ -982,7 +1019,7 @@ def robot_tick(bar, sig, prev_trend, eng):
             lvl += [q.get("next_bos"), q.get("invalid"), q.get("flip_bos")] + [m[1] for m in (q.get("marks") or [])[-12:]]
     except Exception:
         pass
-    tp = RL.tp_for(rules, d, px, abs(px - sl), float(cfg.get("rr") or B.RR), levels=[x for x in lvl if x])
+    tp = RL.tp_for(rules, d, px, abs(px - sl), float(cfg.get("rr") or B.RR), levels=[x for x in lvl if x], V=RV)
     lot = _norm_lot(cfg["lot"])
     if cfg.get("lot_rule"):                        # the robot's sizing rule over ITS OWN closed trades since it started here
         try:
@@ -1002,11 +1039,13 @@ def robot_tick(bar, sig, prev_trend, eng):
     r = mt5.order_send({"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lot,
                         "type": mt5.ORDER_TYPE_BUY if d == 1 else mt5.ORDER_TYPE_SELL, "price": px,
                         "sl": round(sl, 2), "tp": round(tp, 2) if tp else 0.0, "deviation": 200, "magic": ROBOT_MAGIC,
-                        "comment": "KL-KROBOT", "type_time": mt5.ORDER_TIME_GTC, "type_filling": mt5.ORDER_FILLING_IOC})
+                        "comment": "KL-KROBOT-AL" if want is not None else "KL-KROBOT",      # -AL: the after-loss trade (_robot_history)
+                        "type_time": mt5.ORDER_TIME_GTC, "type_filling": mt5.ORDER_FILLING_IOC})
     if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
         say(f"ROBOT ordre refuse par le broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}")
         return
-    say(f"ROBOT {cfg.get('name')}: {'ACHAT' if d == 1 else 'VENTE'} {lot} @ {r.price:.2f} SL {sl:.2f} TP {tp:.2f}")
+    say(f"ROBOT {cfg.get('name')}: {'ACHAT' if d == 1 else 'VENTE'} {lot} @ {r.price:.2f} SL {sl:.2f} TP {tp:.2f}"
+        + (" (trade apres un stop)" if want is not None else ""))
     push("Robot de Kino", f"{'Achat' if d == 1 else 'Vente'} {lot} lot a {r.price:.0f}")
 
 

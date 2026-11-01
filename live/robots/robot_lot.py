@@ -13,6 +13,9 @@ Used the same way by the bench (live/lab/harness.py), the member's desk (owl_man
               net peak drawdown        the robot's realised P&L, its best, and peak - net (>= 0)
               balance start_balance    the account now / at the start
               last_pnl                 the last closed trade's P&L (0 before the first)
+              last_dir last_hit_sl     2026-11-01: the last closed trade's side (+1 buy / -1 sell, 0 before the first) and
+                                       1 when it closed on its stop-loss, else 0 (robots/robot_after.py: targets and the
+                                       after-loss trade read them too)
     functions min max abs round floor  (round/floor to whole numbers; use them with * and /)
     operators + - * /  < <= > >= == !=  and or not  ( )   and   A if CONDITION else B
 The value is a lot: floored to the 0.01 step, at least 0.01, at most 5.
@@ -21,7 +24,7 @@ import ast
 import math
 
 NAMES = ("losses_since_peak", "loss_streak", "win_streak", "trades", "wins", "losses", "net", "peak", "drawdown",
-         "balance", "start_balance", "last_pnl")
+         "balance", "start_balance", "last_pnl", "last_dir", "last_hit_sl")
 FUNCS = {"min": (2, 4), "max": (2, 4), "abs": (1, 1), "round": (1, 1), "floor": (1, 1)}
 MAX_LEN, MAX_NODES = 300, 60
 _OPS = (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.USub, ast.UAdd, ast.Not, ast.And, ast.Or,
@@ -141,11 +144,19 @@ class History:
         self.net = self.peak = 0.0
         self.since_peak = 0
         self.last = 0.0
+        self.last_dir = 0
+        self.last_hit_sl = 0
+        self.last_trade = None         # 2026-11-01: {"d", "hit_sl", "pnl", "al", "tc"} of the last close (robot_after.pending)
 
-    def add(self, pnl):
+    def add(self, pnl, d=0, hit_sl=False, al=False, t=None):
+        """one closed trade; d / hit_sl / al / t (its side, closed on its stop, was it the after-loss trade, close time s)
+        are only known to the callers that need them (robot_after) - the defaults keep every older caller as it was"""
         pnl = float(pnl)
         self.trades += 1
         self.last = pnl
+        self.last_dir = int(d or 0)
+        self.last_hit_sl = 1 if hit_sl else 0
+        self.last_trade = {"d": self.last_dir, "hit_sl": bool(hit_sl), "pnl": pnl, "al": bool(al), "tc": t}
         self.net += pnl
         if pnl > 0:
             self.wins += 1
@@ -164,7 +175,7 @@ class History:
         return {"losses_since_peak": self.since_peak, "loss_streak": self.loss_streak, "win_streak": self.win_streak,
                 "trades": self.trades, "wins": self.wins, "losses": self.losses, "net": self.net, "peak": self.peak,
                 "drawdown": max(0.0, self.peak - self.net), "balance": float(balance if balance is not None else self.start + self.net),
-                "start_balance": self.start, "last_pnl": self.last}
+                "start_balance": self.start, "last_pnl": self.last, "last_dir": self.last_dir, "last_hit_sl": self.last_hit_sl}
 
 
 if __name__ == "__main__":

@@ -8,6 +8,8 @@ import numpy as np
 
 import robot_demo as RD
 import robot_expr as X
+import robot_after as RA
+import robot_lot as RLOT
 
 CACHE = RD.CACHE
 MAX_TRADE_MIN = 1440
@@ -68,6 +70,31 @@ def advance(g, rules, rr=0.8):
     ex = rules.get("exit") or {}
     tgt = ex.get("target", rr) if ex else rr
     xs_b, xs_s = ex.get("close_buy"), ex.get("close_sell")
+    # 2026-11-01: a robot whose next trade depends on its last one (robots/robot_after.py): its after-loss trigger
+    al = rules.get("after_loss")
+    ra = RA.rules_for(rules, al) if al else None
+    sig_al = {i: (d, slp) for i, d, slp in RD._signals(ra, R, eyes, B)} if ra else {}
+    hist = RA.uses(rules)
+
+    def _pick(j):
+        """(d, protected point, rules, target in R, after-loss?) this candle trades by, or None"""
+        if not hist:
+            return (sig[j][0], sig[j][1], rules, tgt, False) if j in sig else None
+        H = RLOT.History(0.0)
+        for t in g.get("trades") or []:
+            H.add(t["r"], d=t["d"], hit_sl=t["why"] in ("stop", "be"), al=bool(t.get("al")), t=t["t_out"])
+        want = RA.pending(al, H.last_trade, now=int(T[j]) + 60) if al else None
+        if want is None:
+            if j not in sig:
+                return None
+            ru, (d, slp) = rules, sig[j]
+        else:
+            if j not in sig_al or (want and sig_al[j][0] != want):
+                return None
+            ru, (d, slp) = ra, sig_al[j]
+        e2 = ru.get("exit") or {}
+        t2 = e2.get("target", rr) if e2 else rr
+        return d, slp, ru, (RA.target_r(t2, H.names(), default=rr) if RA.is_formula(t2) else t2), want is not None
     out = []
     for j in new:
         j = int(j)
@@ -99,20 +126,24 @@ def advance(g, rules, rr=0.8):
             if why:
                 r = round(d * (xp - o["e"]) / o["risk"], 2)
                 tr = {"t_in": o["t_in"], "t_out": int(T[j]), "d": d, "e": round(o["e"] / k, 5), "x": round(xp / k, 5), "why": why, "r": r}
+                if o.get("al"):
+                    tr["al"] = True
                 g.setdefault("trades", []).append(tr)
                 g["trades"] = g["trades"][-200:]
                 g["open"] = None
                 out.append(dict(tr, kind="closed"))
-        elif j in sig:
-            d, slp = sig[j]
-            if RD._ok_filters(rules, j, d, R, B, cache):
-                sl = RD._stop(rules, j, d, slp, R, B, cache)
+        elif (j in sig or j in sig_al) and _pick(j):
+            d, slp, ru, tg, is_al = _pick(j)
+            if RD._ok_filters(ru, j, d, R, B, cache):
+                sl = RD._stop(ru, j, d, slp, R, B, cache)
                 if sl == sl and d * (c - sl) > 0:
                     risk = abs(c - sl)
-                    g["open"] = {"t_in": int(T[j]), "d": d, "e": c, "sl": sl, "tp": (c + d * float(tgt) * risk) if tgt else None,
+                    g["open"] = {"t_in": int(T[j]), "d": d, "e": c, "sl": sl, "tp": (c + d * float(tg) * risk) if tg else None,
                                  "risk": risk, "e_show": round(c / k, 5), "sl_show": round(sl / k, 5)}
+                    if is_al:
+                        g["open"]["al"] = True
                     out.append({"kind": "opened", "t_in": int(T[j]), "d": d, "e": round(c / k, 5), "sl": round(sl / k, 5),
-                                "tp": round((c + d * float(tgt) * risk) / k, 5) if tgt else None})
+                                "tp": round((c + d * float(tg) * risk) / k, 5) if tg else None})
         g["last_t"] = int(T[j])
     return out
 

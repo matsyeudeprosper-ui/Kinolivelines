@@ -46,8 +46,12 @@ def arm_for(name, parts, bars, S, pieces=None, opps=None):
         if parts.get(k) and rule(parts[k]) is not None:
             dsl[k] = rule(parts[k])
     ex = eng(parts.get("exit") or "objectif-08r")
-    if "exit" in dsl and dsl["exit"].get("target") is not None:
-        ex = {"rr": dsl["exit"]["target"]}
+    if "exit" in dsl and dsl["exit"].get("target") is not None and not isinstance(dsl["exit"]["target"], str):
+        ex = {"rr": dsl["exit"]["target"]}        # 2026-11-01: a target FORMULA is read per trade by DslArm (robot_after)
+    import robot_after as RA
+    _al = RA.from_parts(parts.get("after_loss"), P)  # 2026-11-01: the after-loss trade, piece ids -> rules
+    if _al:
+        dsl["after_loss"] = _al
     pkg = parts.get("money") or "base"
     cfg_b = H.package_cfg(pkg, {"balance": BAL}); cfg_b.update({"scale_lot": 1, "scale_daily": 1})
     if ex.get("rr"):
@@ -126,9 +130,30 @@ def robot_opps(parts, pieces, opps, S, bars):
     return out, S2
 
 
+def robot_stream(parts, pieces, opps, S, bars):
+    """2026-11-01: the robot's signal stream - robot_opps() itself (the same object) for every robot without an
+    after_loss block. With one, the after-loss trigger must reach the arm too: every signal is tagged ("src") - "main"
+    = the robot's normal entry stream, "eyes" = the eyes' breaks added for an eyes trigger when the normal entry is a
+    formula, "al" = the trigger's own formula stream - and DslArm takes each in its mode (robot_after.pending)."""
+    ro, rS = robot_opps(parts, pieces, opps, S, bars)
+    al = parts.get("after_loss")
+    if not isinstance(al, dict) or not al.get("entry"):
+        return ro, rS
+    P = pieces or {}
+    out = [dict(o, src="main") for o in ro]
+    if ((P.get(al["entry"]) or {}).get("rule") or {}).get("event") == "formula":
+        ao, aS = robot_opps({"entry": al["entry"], "stop": al.get("stop") or parts.get("stop")}, pieces, opps, S, bars)
+        out += [dict(o, src="al") for o in ao]
+        rS = dict(aS, **rS)
+    elif ro is not opps:
+        out += [dict(o, src="eyes") for o in opps]
+    out.sort(key=lambda o: (o["t"], o["d"]))
+    return out, rS
+
+
 def run_robot_and_parent(parts, parent_parts, PCS, TM, BID, ASK, END, opps, bars, S):
     """the robot next to its parent; a formula-entry robot runs on its own stream, the parent on the eyes'"""
-    ro, rS = robot_opps(parts, PCS, opps, S, bars)
+    ro, rS = robot_stream(parts, PCS, opps, S, bars)
     ra = arm_for("robot", parts, bars, rS, PCS, opps=opps)
     pa = arm_for("parent", parent_parts, bars, S, PCS, opps=opps)
     if ro is opps:
@@ -443,7 +468,9 @@ if __name__ == "__main__":
             t0 = time.time()
             parts = resolve(rid, robots); parent = r.get("parent") or "owl"
             PCS = {p["id"]: p for p in json.load(open(REG, encoding="utf-8")).get("pieces") or []}   # fresh: pieces made meanwhile
-            missing = [v for k, v in parts.items() if k != "money" and k != "filters" and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
+            _alp = [x for x in ((parts.get("after_loss") or {}).get("entry"), (parts.get("after_loss") or {}).get("stop")) if x]   # 2026-11-01
+            missing = [v for k, v in parts.items() if k not in ("money", "filters", "after_loss") and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)] \
+                + [v for v in _alp if (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
             if missing:
                 print(rid, "skipped: pieces not testable yet", missing, flush=True); continue
             # 2026-10-25 (owner: "test it on any given range of dates available"): date-range jobs. The same bench on a
@@ -508,7 +535,8 @@ if __name__ == "__main__":
                     x["stage"] = "tested"; x["tested_at"] = res["generated_at"]
                 if x["id"] == rid and x.get("retest"):
                     x.pop("retest", None); x["tested_at"] = res["generated_at"]
-            used = set(v for k, v in parts.items() if k not in ("filters", "money")) | set(parts.get("filters") or [])
+            used = set(v for k, v in parts.items() if k not in ("filters", "money", "after_loss")) | set(parts.get("filters") or []) \
+                | set(x for x in ((parts.get("after_loss") or {}).get("entry"), (parts.get("after_loss") or {}).get("stop")) if x)
             for pc in reg.get("pieces") or []:          # a new rule piece becomes "tested" once a robot using it was tested
                 if pc.get("id") in used and pc.get("status") == "new":
                     pc["status"] = "tested"

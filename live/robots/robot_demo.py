@@ -302,7 +302,10 @@ def examples(market, rules, n=3, overlays=None, rr=0.8, pick="recent"):
     R, k, eyes, _ = D
     B = _bars(R, eyes)
     cache, trades, busy = {}, [], -1
-    for i, d, slp in _signals(rules, R, eyes, B):
+    import robot_after as _RA
+    if _RA.uses(rules):                   # 2026-11-01: the next trade depends on the last one (robots/robot_after.py)
+        trades = _trades_hist(rules, R, eyes, B, cache, rr)
+    for i, d, slp in ([] if _RA.uses(rules) else _signals(rules, R, eyes, B)):
         if i <= busy or i < 1440 or i >= len(R) - 2:
             continue
         if not _ok_filters(rules, i, d, R, B, cache):
@@ -351,6 +354,47 @@ def examples(market, rules, n=3, overlays=None, rr=0.8, pick="recent"):
     return {"market": market, "trades": out, "count": len(trades), "won": sum(1 for t in trades if t["r"] > 0)}
 
 
+def _trades_hist(rules, R, eyes, B, cache, rr):
+    """2026-11-01 (owner: "1:1, and after a stop-out the reverse trade on the next BOS at 1:2"): the same walk for a robot
+    whose next trade depends on its last one - a target formula, the after-loss trade (robots/robot_after.py, the rules
+    the bench and the desk apply). R units, no costs, like every demonstration."""
+    import robot_after as RA
+    import robot_lot as RLOT
+    al = rules.get("after_loss")
+    ra = RA.rules_for(rules, al) if al else None
+    S = [(i, d, slp, False) for i, d, slp in _signals(rules, R, eyes, B)]
+    if ra:
+        S += [(i, d, slp, True) for i, d, slp in _signals(ra, R, eyes, B)]
+    S.sort(key=lambda x: (x[0], x[3]))
+    H = RLOT.History(0.0)
+    trades, busy = [], -1
+    for i, d, slp, is_al in S:
+        if i <= busy or i < 1440 or i >= len(R) - 2:
+            continue
+        want = RA.pending(al, H.last_trade) if al else None
+        if (want is not None) != is_al or (want and d != want):
+            continue
+        ru = ra if is_al else rules
+        if not _ok_filters(ru, i, d, R, B, cache):
+            continue
+        e = float(R["close"][i])
+        sl = _stop(ru, i, d, slp, R, B, cache)
+        if sl != sl or d * (e - sl) <= 0:
+            continue
+        ex = ru.get("exit") or {}
+        if RA.is_formula(ex.get("target")):
+            ru = dict(ru, exit=dict(ex, target=RA.target_r(ex["target"], H.names(), default=rr)))
+        w = _walk(ru, i, d, e, sl, R, B, cache, rr)
+        if w is None:
+            continue
+        j, xp, why, tp = w
+        r = round(d * (xp - e) / abs(e - sl), 2)
+        trades.append({"i": i, "j": j, "d": d, "e": e, "sl": sl, "tp": tp, "x": xp, "why": why, "r": r, "al": is_al})
+        H.add(r, d=d, hit_sl=why in ("stop", "be"), al=is_al, t=int(R["time"][j]))
+        busy = j
+    return trades
+
+
 def rules_of(robot, pieces):
     """the chat's robot (slots: {use} or {rule}) -> the piece language dict a demonstration reads; Owl engine pieces
     are mapped to what they do (break entry, protected stop, target); the Owl's brakes are not shown"""
@@ -374,6 +418,15 @@ def rules_of(robot, pieces):
     elif eng and eng.get("rr"):
         rr = float(eng["rr"])
     out["filters"] = [x for x in (rule(f)[0] for f in robot.get("filters") or []) if x]
+    al = robot.get("after_loss")
+    if isinstance(al, dict) and al.get("entry"):         # 2026-11-01: the trade after a stop-out (robots/robot_after.py)
+        r, eng = rule(al["entry"])
+        st = None
+        if al.get("stop"):
+            st, eng = rule(al["stop"])
+            st = st or {"kind": "protected"}
+        out["after_loss"] = {"entry": r or {"event": "any"}, "stop": st, "direction": al.get("direction") or "reverse",
+                             "target": al.get("target"), "on": al.get("on") or "sl", "expire_min": al.get("expire_min")}
     return out, rr
 
 
