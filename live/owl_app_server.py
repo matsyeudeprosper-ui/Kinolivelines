@@ -35709,6 +35709,9 @@ class H(BaseHTTPRequestHandler):
             if not user.get("public") and not (admin_cookie_ok(self.headers) and user.get("id") not in OWNER_UIDS):
                 _ck = SESS_SET % parts[0]
             self._send(page, "text/html; charset=utf-8", cookie=_ck)
+        elif sub == "kinoworld" and is_admin(user):   # 2026-11-01: Kino's world - his computer, diary, requests, mail
+            _rc()
+            self._send(__import__("kino_worldpage").page(), "text/html; charset=utf-8")
         elif sub == "couts" and is_admin(user):       # 2026-10-27: Kino's cost per member vs the plan price
             self._send(costs_page(), "text/html; charset=utf-8")
         elif sub == "funnel" and is_admin(user):
