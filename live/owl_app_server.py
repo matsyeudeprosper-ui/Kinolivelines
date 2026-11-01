@@ -15918,6 +15918,22 @@ def _named_test_watch(cid, uid, rid, name, t0):
         pass
 
 
+def _result_event(c, res):
+    """2026-11-01 22:04 (watch): the chat's test result landed and Kino was woken WITHOUT an event - the one mind read it as a
+    member turn it had already answered ("DUP_TURN ... dropped") and the owner waited 19 min for the result he had asked for.
+    The result itself is the event now, with the figures, for the one mind only (the older brain comments on the card)."""
+    if c.get("brain") != "one" and not _person_uids(c.get("uid") or "")[1:]:
+        return None
+    try:
+        r = res or {}
+        nm = (c.get("robot") or {}).get("name") or "the robot"
+        figs = ", ".join("%s %s" % (k, r.get(k)) for k in ("net", "trades", "win_rate", "max_loss_streak", "cc_dd", "days") if r.get(k) is not None)
+        return ("TEST RESULT ARRIVED for '%s' (the test of this conversation's robot, on past prices): %s. Tell them now in your "
+                "own words, the figures exactly as given, with your honest take." % (nm, figs or "see the result card"))
+    except Exception:
+        return None
+
+
 def _deed_do(cid, uid, todo):
     """2026-10-24 (engine 2): the actions a bubble claimed without a job behind them - started once the bubble is saved"""
     try:
@@ -21075,7 +21091,8 @@ def _companion_tick():
                     except Exception:
                         pass
                     _inner_feel_result(uid, res)             # 2026-10-20: the away path feels it too (was only chat_get)
-                    threading.Thread(target=_chat_quick, args=(c["id"], u), kwargs={"notify": True, "important": True}, daemon=True).start()
+                    threading.Thread(target=_chat_quick, args=(c["id"], u), kwargs={"notify": True, "important": True,
+                                                                                     "event": _result_event(c, res)}, daemon=True).start()
                 else:
                     _CHAT_Q[c["id"]] -= 1
             # (1b) a test Kino ran by itself at night (a variant) -> the result goes into the conversation, Kino comments
@@ -24360,7 +24377,7 @@ def chat_get(user, cid, ui=""):
             except Exception:
                 pass
             _inner_feel_result(user.get("id"), res)
-            threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
+            threading.Thread(target=_chat_quick, args=(c["id"], user), kwargs={"event": _result_event(c, res)}, daemon=True).start()
         else:
             _CHAT_Q[c["id"]] -= 1
         c = _chat_load(user, cid)
