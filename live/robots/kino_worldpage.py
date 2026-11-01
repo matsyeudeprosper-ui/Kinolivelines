@@ -106,6 +106,26 @@ ul{margin:4px 0;padding-left:18px}li{margin:2px 0}.row{display:flex;justify-cont
             {"approved": "accepté", "refused": "refusé", "waiting": "en attente - réponds dans le chat"}.get(st, st), _ago(r.get("t")),
             ("<div>%s</div>" % _e(r.get("why"))) if r.get("why") else "",
             ("<details><summary>résultat</summary><pre>%s</pre></details>" % _e(r.get("result"))) if r.get("result") else ""))
+    try:                                           # 2026-11-01: what he made public on his own, and the owner's stop switch
+        import kino_post as KP
+        off = KP.is_off()
+        H.append("<h2>Ce qu'il publie seul</h2><div class='card'><div class='row'><span>Blog <a href='https://kinoverse26-byte.github.io'>"
+                 "kinoverse26-byte.github.io</a> · GitHub <a href='https://github.com/kinoverse26-byte'>kinoverse26-byte</a></span>"
+                 "<button id='psw' data-off='%d' style='border-radius:99px;padding:3px 12px;border:1px solid var(--line);background:var(--card);"
+                 "color:var(--tx);cursor:pointer'>%s</button></div><div class='t'>%s</div></div>" % (
+                     1 if off else 0, "▶ Reprendre" if off else "⏸ Arrêter ses publications",
+                     "Arrêté : il ne publie plus rien." if off else "Il publie seul (2 billets et 4 mises à jour GitHub par jour au plus), "
+                     "chaque texte relu d'abord par une seconde IA."))
+        for p in KP.recent(10):
+            H.append("<div class='card'><div class='row'><b>%s %s</b><span class='pill %s'>%s</span></div><div class='t'>%s</div>%s</div>" % (
+                "📝" if p.get("channel") == "blog" else "📦", _e(p.get("what")), "ok" if p.get("ok") else "bad",
+                "publié" if p.get("ok") else "bloqué", _ago(p.get("t")),
+                ("<a href='%s'>%s</a>" % (_e(p.get("url")), _e(p.get("url")))) if p.get("url") else ("<div>%s</div>" % _e(p.get("why")))))
+        H.append("<script>document.getElementById('psw').onclick=function(){var b=this,off=b.dataset.off!=='1';"
+                 "fetch(location.pathname.replace(/\/kinoworld.*$/,'/kino_post_switch'),{method:'POST',headers:{'Content-Type':'application/json'},"
+                 "body:JSON.stringify({off:off})}).then(function(r){return r.json()}).then(function(j){if(j.ok)location.reload();else alert(j.err||'erreur')})}</script>")
+    except Exception:
+        pass
     H.append("<h2>À son ordinateur</h2>")
     if not S:
         H.append("<p class='sub'>Il ne s'est pas encore assis à son ordinateur.</p>")

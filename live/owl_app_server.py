@@ -26317,6 +26317,15 @@ def _kino_req_card(r):
     __import__("kino_hands").mark(r["id"], carded=time.time())
 
 
+def kino_post_switch(user, body):
+    """2026-11-01: the owner's stop switch for Kino's own posting (his blog, his GitHub) - from his world page"""
+    if not is_admin(user):
+        return {"ok": False, "err": "admin"}
+    import kino_post as _KPs
+    _KPs.set_off(bool(body.get("off")), by=user.get("id") or "")
+    return {"ok": True, "off": _KPs.is_off()}
+
+
 def kino_req(user, body):
     """the owner's answer to one of Kino's requests"""
     if not is_admin(user):
@@ -33766,7 +33775,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
             return
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
-        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm", "kino_req",
+        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm", "kino_req", "kino_post_switch",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
@@ -33799,7 +33808,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req,
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
                        "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
