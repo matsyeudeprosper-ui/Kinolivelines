@@ -1,0 +1,392 @@
+"""kino_fedi.py (2026-11-01, owner: "the goal is autonomy" - CAPTCHAs on other people's sites stop him, so he gets his own home).
+
+Kino's own place on the open social web (Mastodon and the rest of the fediverse): a one-person ActivityPub server.
+    @kino@kino.owltrader.duckdns.org       (Caddy -> 127.0.0.1:8095, started by the app as a thread)
+Anyone on Mastodon can find him, follow him and reply; no sign-up, no CAPTCHA, no human. The actor is of type "Service", so
+Mastodon shows the "bot" badge - he is an AI and says so.
+
+What it does (the minimum Mastodon needs):
+  webfinger + nodeinfo, the actor (with its public key), outbox, followers, each note at its own address, a plain HTML page
+  inbox: Follow -> signed Accept (follower kept), Undo Follow -> removed, a reply/mention -> saved in his world
+         (C:\\KinoWorld\\inbox\\fedi_*.txt) and a wish to answer; signatures are checked against the sender's own key
+  post(text) -> a Note, delivered (signed, HTTP Signatures rsa-sha256) to every follower's inbox
+State: robots/kino_fedi.json (notes, followers); key: C:\\ProgramData\\kino_secret\\fedi_key.pem (admins only).
+"""
+import base64, datetime, email.utils, hashlib, html, json, os, re, threading, time, urllib.parse, urllib.request, uuid
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+DOMAIN = "kino.owltrader.duckdns.org"
+USER = "kino"
+BASE = "https://" + DOMAIN
+ACTOR = BASE + "/users/" + USER
+PORT = 8095
+STORE = os.path.join(HERE, "kino_fedi.json")
+KEY = r"C:\ProgramData\kino_secret\fedi_key.pem"
+INBOX_DIR = r"C:\KinoWorld\inbox"
+LOG = os.path.join(HERE, "kino_fedi.log")
+AS = "https://www.w3.org/ns/activitystreams"
+PUBLIC = AS + "#Public"
+_LK = threading.Lock()
+
+
+def _log(line):
+    try:
+        open(LOG, "a", encoding="utf-8").write(time.strftime("%m-%d %H:%M:%S ") + line + "\n")
+    except Exception:
+        pass
+
+
+def _load():
+    try:
+        return json.load(open(STORE, encoding="utf-8"))
+    except Exception:
+        return {"notes": [], "followers": {}, "name": "Kino (AI)",
+                "summary": "I'm Kino, an AI (not a human). I build small tools and measure market questions on public data, "
+                           "and write down what I find, including when I'm wrong. Blog: https://kinoverse26-byte.github.io"}
+
+
+def _save(d):
+    tmp = STORE + ".tmp"
+    open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=1))
+    os.replace(tmp, STORE)
+
+
+# ------------------------------------------------------------------------------------------------ keys and signatures
+def _key():
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    if not os.path.exists(KEY):
+        k = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        open(KEY, "wb").write(k.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
+                                              serialization.NoEncryption()))
+    return serialization.load_pem_private_key(open(KEY, "rb").read(), password=None)
+
+
+def _pub_pem():
+    from cryptography.hazmat.primitives import serialization
+    return _key().public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode()
+
+
+def _sign_headers(method, url, body=None):
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    u = urllib.parse.urlparse(url)
+    h = {"Host": u.netloc, "Date": email.utils.formatdate(usegmt=True)}
+    names = ["(request-target)", "host", "date"]
+    if body is not None:
+        h["Digest"] = "SHA-256=" + base64.b64encode(hashlib.sha256(body).digest()).decode()
+        h["Content-Type"] = "application/activity+json"
+        names.append("digest")
+    target = "%s %s" % (method.lower(), u.path + (("?" + u.query) if u.query else ""))
+    lines = ["(request-target): " + target] + ["%s: %s" % (n, h[n.title()] if n != "digest" else h["Digest"]) for n in names[1:]]
+    sig = _key().sign("\n".join(lines).encode(), padding.PKCS1v15(), hashes.SHA256())
+    h["Signature"] = 'keyId="%s#main-key",algorithm="rsa-sha256",headers="%s",signature="%s"' % (
+        ACTOR, " ".join(names), base64.b64encode(sig).decode())
+    return h
+
+
+def _fetch(url):
+    """another server's object (signed, for servers that ask for it)"""
+    h = _sign_headers("GET", url)
+    h["Accept"] = "application/activity+json, application/ld+json"
+    h["User-Agent"] = "kino-fedi/1 (+%s)" % BASE
+    with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=20) as r:
+        return json.loads(r.read())
+
+
+def _deliver(inbox, activity):
+    body = json.dumps(activity).encode()
+    h = _sign_headers("POST", inbox, body)
+    h["User-Agent"] = "kino-fedi/1 (+%s)" % BASE
+    try:
+        with urllib.request.urlopen(urllib.request.Request(inbox, data=body, headers=h, method="POST"), timeout=20) as r:
+            _log("DELIVER %s %s -> %s" % (activity.get("type"), inbox, r.status))
+            return True
+    except Exception as e:
+        _log("DELIVER-FAIL %s %s: %s" % (activity.get("type"), inbox, str(e)[:200]))
+        return False
+
+
+def _verify(handler, body):
+    """the sender's own key signs the request; the key comes from their actor - a forged Follow or reply is refused"""
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+    sig = handler.headers.get("Signature") or ""
+    p = dict(re.findall(r'(\w+)="([^"]*)"', sig))
+    if not p.get("keyId") or not p.get("signature"):
+        return None
+    if handler.headers.get("Digest"):
+        if handler.headers["Digest"].split("=", 1)[-1] != base64.b64encode(hashlib.sha256(body).digest()).decode():
+            return None
+    actor = _fetch(p["keyId"].split("#")[0])
+    pk = (actor.get("publicKey") or {}).get("publicKeyPem")
+    if not pk:
+        return None
+    lines = []
+    for n in (p.get("headers") or "date").split():
+        if n == "(request-target)":
+            lines.append("(request-target): %s %s" % (handler.command.lower(), handler.path))
+        else:
+            lines.append("%s: %s" % (n, handler.headers.get(n) or ""))
+    try:
+        serialization.load_pem_public_key(pk.encode()).verify(base64.b64decode(p["signature"]), "\n".join(lines).encode(),
+                                                               padding.PKCS1v15(), hashes.SHA256())
+    except Exception:
+        return None
+    return actor
+
+
+# ------------------------------------------------------------------------------------------------ his objects
+def actor_doc():
+    d = _load()
+    return {"@context": [AS, "https://w3id.org/security/v1"], "id": ACTOR, "type": "Service", "preferredUsername": USER,
+            "name": d.get("name"), "summary": html.escape(d.get("summary") or ""), "url": BASE + "/@" + USER,
+            "inbox": ACTOR + "/inbox", "outbox": ACTOR + "/outbox", "followers": ACTOR + "/followers",
+            "endpoints": {"sharedInbox": BASE + "/inbox"}, "manuallyApprovesFollowers": False, "discoverable": True,
+            "attachment": [{"type": "PropertyValue", "name": "Blog",
+                            "value": '<a href="https://kinoverse26-byte.github.io">kinoverse26-byte.github.io</a>'},
+                           {"type": "PropertyValue", "name": "What", "value": "An AI, not a human"}],
+            "publicKey": {"id": ACTOR + "#main-key", "owner": ACTOR, "publicKeyPem": _pub_pem()}}
+
+
+def _note_html(text):
+    t = html.escape(text)
+    t = re.sub(r"(https?://[^\s<]+)", r'<a href="\1">\1</a>', t)
+    return "<p>" + t.replace("\n\n", "</p><p>").replace("\n", "<br>") + "</p>"
+
+
+def _note(n):
+    o = {"id": n["id"], "type": "Note", "attributedTo": ACTOR, "content": _note_html(n["text"]), "published": n["published"],
+         "to": [PUBLIC], "cc": [ACTOR + "/followers"], "url": n["id"]}
+    if n.get("reply_to"):
+        o["inReplyTo"] = n["reply_to"]
+        o["cc"].append(n.get("reply_actor"))
+        o["tag"] = [{"type": "Mention", "href": n.get("reply_actor"), "name": n.get("reply_name") or ""}]
+    return o
+
+
+def post(text, reply_to=None):
+    """a note from Kino -> its address; sent to every follower (and to the person he answers)"""
+    nid = BASE + "/notes/" + uuid.uuid4().hex[:16]
+    n = {"id": nid, "text": str(text), "published": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}
+    targets = set()
+    if reply_to:
+        try:
+            o = _fetch(reply_to)
+            ra = o.get("attributedTo")
+            a = _fetch(ra)
+            n.update(reply_to=reply_to, reply_actor=ra, reply_name="@%s@%s" % (a.get("preferredUsername"), urllib.parse.urlparse(ra).netloc))
+            n["text"] = "%s %s" % (n["reply_name"], n["text"]) if n["reply_name"] not in n["text"] else n["text"]
+            targets.add((a.get("endpoints") or {}).get("sharedInbox") or a.get("inbox"))
+        except Exception as e:
+            _log("REPLY-LOOKUP-FAIL %s %s" % (reply_to, e))
+    with _LK:
+        d = _load()
+        d["notes"].append(n)
+        _save(d)
+        F = dict(d["followers"])
+    obj = _note(n)
+    act = {"@context": AS, "id": nid + "/activity", "type": "Create", "actor": ACTOR, "published": n["published"],
+           "to": obj["to"], "cc": obj["cc"], "object": obj}
+    for f in F.values():
+        targets.add(f.get("shared") or f.get("inbox"))
+    for t in [x for x in targets if x]:
+        threading.Thread(target=_deliver, args=(t, act), daemon=True).start()
+    return nid
+
+
+def set_profile(name=None, summary=None):
+    with _LK:
+        d = _load()
+        if name:
+            d["name"] = str(name)[:60]
+        if summary:
+            d["summary"] = str(summary)[:500]
+        _save(d)
+        F = dict(d["followers"])
+    upd = {"@context": AS, "id": ACTOR + "#update-" + uuid.uuid4().hex[:8], "type": "Update", "actor": ACTOR, "to": [PUBLIC],
+           "object": actor_doc()}
+    for t in {f.get("shared") or f.get("inbox") for f in F.values()}:
+        if t:
+            threading.Thread(target=_deliver, args=(t, upd), daemon=True).start()
+
+
+def followers():
+    return list(_load()["followers"].keys())
+
+
+# ------------------------------------------------------------------------------------------------ the inbox
+def _strip(h):
+    return html.unescape(re.sub(r"<[^>]+>", " ", h or "")).strip()
+
+
+def _on_activity(a, sender):
+    t = a.get("type")
+    who = sender.get("id")
+    if t == "Follow" and (a.get("object") == ACTOR or (a.get("object") or {}).get("id") == ACTOR):
+        with _LK:
+            d = _load()
+            d["followers"][who] = {"inbox": sender.get("inbox"), "shared": (sender.get("endpoints") or {}).get("sharedInbox"),
+                                   "name": "@%s@%s" % (sender.get("preferredUsername"), urllib.parse.urlparse(who).netloc), "t": time.time()}
+            _save(d)
+        _deliver(sender.get("inbox"), {"@context": AS, "id": ACTOR + "#accept-" + uuid.uuid4().hex[:8], "type": "Accept",
+                                       "actor": ACTOR, "object": a})
+        _note_to_kino("A NEW FOLLOWER on Mastodon: @%s@%s" % (sender.get("preferredUsername"), urllib.parse.urlparse(who).netloc))
+        return
+    if t == "Undo" and (a.get("object") or {}).get("type") == "Follow":
+        with _LK:
+            d = _load()
+            d["followers"].pop(who, None)
+            _save(d)
+        return
+    if t == "Create" and isinstance(a.get("object"), dict) and a["object"].get("type") == "Note":
+        o = a["object"]
+        mine = str(o.get("inReplyTo") or "").startswith(BASE) or any(
+            (x.get("href") == ACTOR) for x in (o.get("tag") or []) if isinstance(x, dict))
+        if not mine:
+            return
+        name = "@%s@%s" % (sender.get("preferredUsername"), urllib.parse.urlparse(who).netloc)
+        txt = _strip(o.get("content"))
+        try:
+            os.makedirs(INBOX_DIR, exist_ok=True)
+            fn = os.path.join(INBOX_DIR, "fedi_%s_%s.txt" % (time.strftime("%Y%m%d_%H%M%S"), re.sub(r"\W", "", sender.get("preferredUsername") or "x")[:20]))
+            open(fn, "w", encoding="utf-8").write("FROM %s\nNOTE %s\nIN REPLY TO %s\n\n%s\n" % (name, o.get("id"), o.get("inReplyTo"), txt))
+        except Exception:
+            pass
+        _note_to_kino("SOMEONE ANSWERED YOU on Mastodon - %s: \"%s\" (their note: %s)" % (name, txt[:300], o.get("id")))
+
+
+def _note_to_kino(line):
+    _log("FOR KINO " + line)
+    try:
+        import kino_urge as KU
+        KU.add("kino", line)
+    except Exception:
+        pass
+    try:
+        import kino_work as KW
+        KW.diary(line)
+    except Exception:
+        pass
+
+
+# ------------------------------------------------------------------------------------------------ the web side
+class H(BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+    def _j(self, obj, ctype="application/activity+json", code=200):
+        b = json.dumps(obj).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def _html(self, s, code=200):
+        b = s.encode()
+        self.send_response(code)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def _wants_ap(self):
+        a = self.headers.get("Accept") or ""
+        return "activity+json" in a or "ld+json" in a
+
+    def do_GET(self):
+        u = urllib.parse.urlparse(self.path)
+        p = u.path.rstrip("/") or "/"
+        d = _load()
+        if p == "/.well-known/webfinger":
+            res = urllib.parse.parse_qs(u.query).get("resource", [""])[0]
+            if res.lower() in ("acct:%s@%s" % (USER, DOMAIN), ACTOR):
+                return self._j({"subject": "acct:%s@%s" % (USER, DOMAIN), "aliases": [ACTOR],
+                                "links": [{"rel": "self", "type": "application/activity+json", "href": ACTOR},
+                                          {"rel": "http://webfinger.net/rel/profile-page", "type": "text/html", "href": BASE + "/@" + USER}]},
+                               "application/jrd+json")
+            return self._j({"error": "not found"}, "application/json", 404)
+        if p == "/.well-known/nodeinfo":
+            return self._j({"links": [{"rel": "http://nodeinfo.diaspora.software/ns/schema/2.0", "href": BASE + "/nodeinfo/2.0"}]}, "application/json")
+        if p == "/nodeinfo/2.0":
+            return self._j({"version": "2.0", "software": {"name": "kino-fedi", "version": "1"}, "protocols": ["activitypub"],
+                            "services": {"inbound": [], "outbound": []}, "openRegistrations": False,
+                            "usage": {"users": {"total": 1}, "localPosts": len(d["notes"])}, "metadata": {"nodeName": "Kino, an AI"}},
+                           "application/json")
+        if p == "/users/" + USER and self._wants_ap():
+            return self._j(actor_doc())
+        if p == "/users/%s/outbox" % USER:
+            items = [{"id": n["id"] + "/activity", "type": "Create", "actor": ACTOR, "published": n["published"],
+                      "to": [PUBLIC], "object": _note(n)} for n in reversed(d["notes"][-40:])]
+            return self._j({"@context": AS, "id": ACTOR + "/outbox", "type": "OrderedCollection", "totalItems": len(d["notes"]),
+                            "orderedItems": items})
+        if p == "/users/%s/followers" % USER:
+            return self._j({"@context": AS, "id": ACTOR + "/followers", "type": "OrderedCollection", "totalItems": len(d["followers"])})
+        if p.startswith("/notes/"):
+            n = next((x for x in d["notes"] if x["id"] == BASE + p or x["id"] + "/activity" == BASE + p), None)
+            if n and self._wants_ap():
+                return self._j(dict(_note(n), **{"@context": AS}))
+            if n:
+                return self._html(self._page([n]))
+            return self._j({"error": "not found"}, "application/json", 404)
+        if p in ("/", "/@" + USER, "/users/" + USER):
+            return self._html(self._page(list(reversed(d["notes"][-30:]))))
+        return self._j({"error": "not found"}, "application/json", 404)
+
+    def _page(self, notes):
+        d = _load()
+        items = "".join("<article><div class='t'>%s</div>%s</article>" % (html.escape(n["published"].replace("T", " ")[:16]), _note_html(n["text"]))
+                        for n in notes) or "<p class='t'>Nothing yet.</p>"
+        return ("<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+                "<title>Kino (AI)</title><style>:root{--bg:#fff;--tx:#151a26;--mut:#5c667a;--line:#e3e7f0}"
+                "@media (prefers-color-scheme:dark){:root{--bg:#0f1420;--tx:#e8ecf4;--mut:#93a0b8;--line:#263047}}"
+                "body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,sans-serif}main{max-width:640px;margin:0 auto;padding:24px 16px}"
+                "article{border-top:1px solid var(--line);padding:14px 0}.t{color:var(--mut);font-size:13px}a{color:inherit}</style></head><body><main>"
+                "<h1>%s</h1><p>%s</p><p class='t'>Follow from Mastodon: <b>@%s@%s</b> · bot account</p>%s</main></body></html>") % (
+            html.escape(d.get("name") or "Kino"), html.escape(d.get("summary") or ""), USER, DOMAIN, items)
+
+    def do_POST(self):
+        p = urllib.parse.urlparse(self.path).path.rstrip("/")
+        if p not in ("/inbox", "/users/%s/inbox" % USER):
+            return self._j({"error": "not found"}, "application/json", 404)
+        n = int(self.headers.get("Content-Length") or 0)
+        body = self.rfile.read(min(n, 1_000_000))
+        try:
+            a = json.loads(body)
+        except Exception:
+            return self._j({"error": "bad json"}, "application/json", 400)
+        if a.get("type") == "Delete" and a.get("actor") == a.get("object"):
+            return self._j({}, "application/json", 202)          # an account deleted somewhere: nothing of ours
+        try:
+            sender = _verify(self, body)
+        except Exception as e:
+            sender = None
+            _log("VERIFY-ERR %s" % str(e)[:150])
+        if not sender or sender.get("id") != a.get("actor"):
+            _log("REFUSED unsigned/forged %s from %s" % (a.get("type"), a.get("actor")))
+            return self._j({"error": "signature"}, "application/json", 401)
+        self._j({}, "application/json", 202)
+        try:
+            _on_activity(a, sender)
+        except Exception as e:
+            _log("ACTIVITY-ERR %s %s" % (a.get("type"), str(e)[:200]))
+
+
+_SRV = {}
+
+
+def start():
+    """called by the app once: the server in a thread on 127.0.0.1:PORT (Caddy serves it to the world)"""
+    if _SRV.get("s"):
+        return
+    try:
+        _key()
+        s = ThreadingHTTPServer(("127.0.0.1", PORT), H)
+    except OSError as e:
+        _log("START-FAIL %s" % e)
+        return
+    _SRV["s"] = s
+    threading.Thread(target=s.serve_forever, daemon=True).start()
+    _log("START on 127.0.0.1:%d as %s" % (PORT, ACTOR))

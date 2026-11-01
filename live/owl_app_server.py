@@ -23231,6 +23231,10 @@ def _urge_tick():
                         __import__("kino_care").write_checkup()
                 except Exception:
                     pass
+                try:                                   # 2026-11-01: his own fediverse home (Caddy kino.owltrader.duckdns.org -> :8095)
+                    __import__("kino_fedi").start()
+                except Exception:
+                    pass
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
                     _KHq = __import__("kino_hands")
                     _KHq.ON_REQUEST = _kino_req_card

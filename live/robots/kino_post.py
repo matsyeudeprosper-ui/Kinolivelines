@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6}   # per UTC day
+BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10}   # per UTC day
 BSKY = "https://bsky.social/xrpc/"
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it
@@ -300,6 +300,40 @@ def bluesky_profile(W, name, about, log=None):
         return "the profile change failed: %s" % str(e)[:200]
     _record("bluesky", "profile: " + about[:100], True, "", "https://bsky.app/profile/" + handle)
     return "your Bluesky profile is updated: https://bsky.app/profile/%s" % handle
+
+
+def mastodon(W, text, reply_to=None, log=None):
+    """a note on his own fediverse home @kino@kino.owltrader.duckdns.org (kino_fedi) - followers on Mastodon get it"""
+    text = str(text or "").strip()
+    if not text:
+        return "a note needs text"
+    if len(text) > 1000:
+        return "too long: %d characters, 1000 at most" % len(text)
+    no = _gate(W, "mastodon", text[:120], text, log)
+    if no:
+        return no
+    import kino_github as KG
+    if any(s in text for s in KG._secrets()):
+        _record("mastodon", text[:120], False, "contains a secret")
+        return "not posted - it contains one of your secrets"
+    try:
+        import kino_fedi as KF
+        nid = KF.post(text, reply_to=reply_to or None)
+    except Exception as e:
+        _record("mastodon", text[:120], False, str(e)[:200])
+        return "the note failed: %s" % str(e)[:200]
+    _record("mastodon", text[:120], True, "", nid)
+    return "posted: %s (%d followers get it)" % (nid, len(__import__("kino_fedi").followers()))
+
+
+def mastodon_profile(W, name, about, log=None):
+    no = _gate(W, "mastodon", "profile: " + str(about)[:100], "%s\n%s" % (name, about), log)
+    if no:
+        return no
+    import kino_fedi as KF
+    KF.set_profile(name, about)
+    _record("mastodon", "profile: " + str(about)[:100], True, "", KF.BASE)
+    return "your Mastodon profile is updated: %s" % KF.BASE
 
 
 def recent(n=12):
