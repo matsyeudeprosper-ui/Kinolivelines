@@ -251,3 +251,6 @@ live/robots/kino_indicators.json
 live/robots/kino_indicators.json.tmp
 live/robots/kino_indicators.log
 live/robots/kino_affect.log
+live/robots/kino_hands.log
+live/robots/kino_requests.json
+live/robots/kino_requests.json.tmp
