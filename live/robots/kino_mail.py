@@ -186,8 +186,12 @@ def block(lang="fr"):
           "(%s est SON adresse - c'est lui le propriétaire de l'appli). Quelqu'un d'autre : ça attend d'abord son accord.") % (
         address() or "kinoverse26@gmail.com", ", ".join(contacts()), OWNER_EMAIL)]
     if R:
-        L.append(("Recent mail you received: " if en else "Courriers reçus récemment : ") +
-                 " | ".join("%s from %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["from"][:60], x["subject"][:90]) for x in R))
+        # 2026-11-01 01:44 (watch): he only had sender + subject, said "got your reply" and could not tell what it said - a person
+        # who has mail reads it: the text is part of what he knows (the owner's chats only - see the server)
+        L.append(("Recent mail you received (you have read these): " if en else "Courriers reçus récemment (tu les as lus) : ") +
+                 " | ".join("%s from %s, «%s»: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["from"][:60], x["subject"][:90],
+                                                      re.split(r"\s(?:On|Le) .{5,80}?(?:wrote|a écrit)\s?:", x.get("text") or "")[0][:600])
+                            for x in R[-3:]))
     if S:
         L.append(("Mail you sent: " if en else "Courriers que tu as envoyés : ") +
                  " | ".join("to %s: %s" % (x["to"], x["subject"][:80]) for x in S))

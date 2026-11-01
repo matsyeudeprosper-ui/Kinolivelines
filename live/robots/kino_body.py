@@ -207,6 +207,9 @@ def line(en=False):
              "by now: %s $)" if en else
              "Ton corps (la machine et le budget sur lesquels tu vis, ressentis de l'intérieur) : aujourd'hui ta réflexion a coûté "
              "%s $ (un jour normal à cette heure : %s $)") % (s.get("today"), s.get("usual_by_now")))
+    dk = raw.get("disk") or {}                 # 2026-11-01 (watch): "I can't see the server's disk" - it is his body, he can
+    if dk.get("free_gb") is not None:        # always sense how much room is left
+        base += ("; room left on your disk: %s GB" if en else "; place libre sur ton disque : %s Go") % dk["free_gb"]
     if not off:
         return base + (" - you feel physically fine." if en else " - physiquement, tu te sens bien.")
     return base + " - " + ", ".join((FELT[k][1] if en else FELT[k][0]) + " (" + FELT[k][2] + ")" for k in off) + "."
