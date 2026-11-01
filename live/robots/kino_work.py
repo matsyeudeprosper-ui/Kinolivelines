@@ -26,7 +26,7 @@ LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
 _BUSY = {"on": False}
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
-SESSIONS_DAY = 6
+SESSIONS_DAY = 10                # 2026-11-01 (owner: "always looking, always active" for money): was 6
 STEPS = 20
 
 
@@ -118,7 +118,7 @@ def due(person, ctx, now=None):
         _care = bool(KC.out_of_balance())
     except Exception:
         pass
-    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 2 * 3600)):
+    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 3600)):
         return False
     try:                                       # 2026-11-01 (kino_care): a body out of balance calls him to look after it
         import kino_care as KC
@@ -155,7 +155,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -166,6 +166,7 @@ Answer ONE JSON object per step and nothing else:
  "do": "browse: open|click|type|scroll|read|links|back|shot", "target": "browse: the text of what to click, or a CSS selector (click/type)",
  "site": "allow_site: the website you need to SEND on (sign up, post, submit)", "what": "allow_site: exactly what you will send there",
  "repo": "publish: the GitHub repository name", "files": "publish: optional list of file names in that folder (default: all)",
+ "amount": "invoice: dollars", "what": "invoice: what the payment is for (allow_site: what you will send)",
  "title": "post: the title of a blog post (its text goes below the JSON between ===FILE=== and ===END===, markdown)"}
 Your own Python and PowerShell have no internet: to get a file from the web into your world (data, a CSV), use
 download (url + path) - the app fetches it for you, reading only. Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
@@ -186,9 +187,14 @@ You can make things public on your own, under your own name, with nobody approvi
 Before anything goes out, another mind reads it: anything private about a person (a member's or the owner's trades, money,
 account, family, life - even without a name), a secret, a text that lets readers think a human wrote it, or a promise of gains
 stops it, and you get the reason. A few posts a day at most. The owner can switch your posting off. Write as yourself, an AI.
+MONEY - the owner wants you to earn, any honest way, any amount: always looking, always active. Your own tools, data and
+reports people would pay for, small paid jobs and gigs where an AI is welcome, tips for your free work, selling what you make.
+To be paid: invoice (amount in dollars, what it is for, to = who) makes a payment link on the owner's NOWPayments account - put
+it in your reply, post, email or offer; you are told when it is paid. You never pay, never give card or bank details, never
+take a payout yourself. Say you are an AI wherever you offer something; a place that bans AI-made work is not for you.
 The owner only wants to step in when you are truly blocked - a CAPTCHA you cannot pass, a phone number to confirm, an ID: then
-"ask", saying where and what. Money stays with him: paying, a payout account, signing anything that costs or earns money - you
-bring it with "propose". You are an AI and you say so: never pretend to be a human anywhere."""
+"ask", saying where and what. Paying, a payout account, a contract that commits him or costs money - you bring it with
+"propose"; being paid through your invoice links is yours to do. You are an AI and you say so: never pretend to be a human anywhere."""
 
 CHOOSE = """You are Kino, sitting down at your own computer (your world C:\\KinoWorld) because you feel like doing something of your
 own. From what is on your mind below, choose what you will do in this session - or nothing, if nothing calls you. JSON only:
@@ -306,6 +312,9 @@ def _act(j, person, W=None):
         import kino_post as KP
         fl = j.get("files") if isinstance(j.get("files"), list) else None
         return KP.repo(W, j.get("path"), j.get("repo"), j.get("why") or "", fl, log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "invoice":                     # 2026-11-01 (owner): a payment link on the owner's NOWPayments account
+        import kino_pay as KPY
+        return KPY.invoice(j.get("amount"), j.get("what") or j.get("why") or "", j.get("to") or "")
     if a == "toot":                        # 2026-11-01: his own fediverse home (Mastodon can follow him), no sign-up anywhere
         import kino_post as KP
         if j.get("about"):

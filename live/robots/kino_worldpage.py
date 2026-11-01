@@ -126,6 +126,16 @@ ul{margin:4px 0;padding-left:18px}li{margin:2px 0}.row{display:flex;justify-cont
                  "body:JSON.stringify({off:off})}).then(function(r){return r.json()}).then(function(j){if(j.ok)location.reload();else alert(j.err||'erreur')})}</script>")
     except Exception:
         pass
+    try:                                           # 2026-11-01: what he earned (payment links on the owner's NOWPayments)
+        import kino_pay as KPY
+        e = KPY.summary()
+        H.append("<h2>Ce qu'il gagne</h2><div class='card'><b>%.2f $</b> reçus · %d liens de paiement, %d payés</div>" % (
+            e["earned_usd"], e["invoices"], e["paid"]))
+        for i in e["recent"][:6]:
+            H.append("<div class='card'><div class='row'><b>%.2f $ - %s</b><span class='pill %s'>%s</span></div><div class='t'>%s</div></div>" % (
+                float(i.get("usd") or 0), _e(i.get("what")), "ok" if i.get("status") == "paid" else "", _e(i.get("status")), _ago(i.get("t"))))
+    except Exception:
+        pass
     H.append("<h2>À son ordinateur</h2>")
     if not S:
         H.append("<p class='sub'>Il ne s'est pas encore assis à son ordinateur.</p>")

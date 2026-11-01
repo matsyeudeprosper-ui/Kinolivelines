@@ -34075,6 +34075,11 @@ class H(BaseHTTPRequestHandler):
                 if good and not _dupgrant and data.get("payment_status") in ("finished", "confirmed"):
                     try:
                         _uid, _pkg, _ts = str(data.get("order_id")).split("|")[:3]
+                        if _uid == "kino" and _pkg.startswith("earn-"):
+                            # 2026-11-01 (owner): money Kino earned with one of his own payment links (kino_pay)
+                            if __import__("kino_pay").paid(data.get("order_id"), data.get("price_amount"), data.get("payment_id")):
+                                rec["granted"] = "kino-earn"
+                            _pkg = "_kino_done"
                         if _pkg == "setup":
                             # 2026-10-03 (owner): the opening fee, paid in crypto
                             SHARE.mark_setup(_uid, f"nowpayments:{data.get('payment_id')}", float(data.get("price_amount") or 0))

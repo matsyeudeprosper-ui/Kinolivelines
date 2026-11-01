@@ -1,0 +1,113 @@
+"""kino_pay.py (2026-11-01, owner: "Kino should look for any way possible to make money ... let me use my NOWPayments account
+to collect money whenever necessary").
+
+Kino can ASK to be paid, never take or move money: invoice() creates a NOWPayments invoice on the owner's account (the same key
+the app uses for the voice packs) and gives him the payment link to put in a reply, a post, an email or a gig. When it is paid,
+the app's IPN (/np_ipn, signature checked there) calls paid(): the money is recorded and he is told. The money lands in the
+owner's NOWPayments balance - Kino has no payout, no withdrawal, no card.
+
+robots/kino_earnings.json: every invoice (what, for whom, amount, link, status) - shown on his world page.
+"""
+import json, os, re, threading, time, urllib.request, uuid
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STORE = os.path.join(HERE, "kino_earnings.json")
+CONFIG = os.path.join(os.path.dirname(HERE), "owl_nest_config.json")
+MAX_USD = 1000
+PER_DAY = 10
+_LK = threading.Lock()
+
+
+def _load():
+    try:
+        return json.load(open(STORE, encoding="utf-8"))
+    except Exception:
+        return {"invoices": []}
+
+
+def _save(d):
+    tmp = STORE + ".tmp"
+    open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=1))
+    os.replace(tmp, STORE)
+
+
+def _cfg():
+    try:
+        return json.load(open(CONFIG, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def invoice(amount, what, payer=""):
+    """a payment link for amount USD -> a sentence for him (with the link)"""
+    try:
+        amount = round(float(amount), 2)
+    except Exception:
+        return "an invoice needs an amount in dollars"
+    if not 1 <= amount <= MAX_USD:
+        return "an invoice is between 1 and %d dollars" % MAX_USD
+    what = str(what or "").strip()[:150]
+    if not what:
+        return "say what the payment is for"
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if sum(1 for x in _load()["invoices"] if x.get("day") == day) >= PER_DAY:
+        return "no more invoices today (%d a day)" % PER_DAY
+    c = _cfg()
+    if not c.get("np_api_key"):
+        return "the payment account is not set up"
+    api = "https://api-sandbox.nowpayments.io" if c.get("np_sandbox") else "https://api.nowpayments.io"
+    origin = c.get("public_origin") or "https://owltrader.duckdns.org"
+    ref = uuid.uuid4().hex[:10]
+    body = {"price_amount": amount, "price_currency": "usd", "order_id": "kino|earn-%s|%d" % (ref, int(time.time())),
+            "order_description": ("Kino (an AI): " + what)[:200], "ipn_callback_url": origin + "/np_ipn",
+            "success_url": "https://kinoverse26-byte.github.io", "cancel_url": "https://kinoverse26-byte.github.io"}
+    try:
+        r = urllib.request.Request(api + "/v1/invoice", data=json.dumps(body).encode(), method="POST",
+                                   headers={"x-api-key": c["np_api_key"], "Content-Type": "application/json"})
+        with urllib.request.urlopen(r, timeout=20) as x:
+            inv = json.loads(x.read().decode("utf-8", "replace"))
+    except Exception as e:
+        return "the invoice could not be made: %s" % str(e)[:150]
+    url = inv.get("invoice_url")
+    if not url:
+        return "the invoice could not be made"
+    with _LK:
+        d = _load()
+        d["invoices"].append({"ref": ref, "t": time.time(), "day": day, "usd": amount, "what": what, "payer": str(payer)[:100],
+                              "url": url, "status": "waiting"})
+        _save(d)
+    return "payment link for %.2f $ (%s): %s - it stays valid; you are told when it is paid" % (amount, what, url)
+
+
+def paid(order_id, usd, pid):
+    """called by the app's IPN for a finished payment of one of his invoices -> True if it was his"""
+    m = re.match(r"kino\|earn-([0-9a-f]+)\|", str(order_id or ""))
+    if not m:
+        return False
+    with _LK:
+        d = _load()
+        x = next((i for i in d["invoices"] if i["ref"] == m.group(1)), None)
+        if x is None or x.get("status") == "paid":
+            return x is not None
+        x.update(status="paid", paid_usd=float(usd or 0), paid_t=time.time(), payment=str(pid))
+        _save(d)
+    line = "MONEY ARRIVED - %.2f $ paid for \"%s\"%s. It is in the owner's account; tell him." % (
+        float(usd or 0), x["what"], (" by " + x["payer"]) if x.get("payer") else "")
+    try:
+        import kino_urge as KU
+        KU.add("kino", line)
+    except Exception:
+        pass
+    try:
+        import kino_work as KW
+        KW.diary(line)
+    except Exception:
+        pass
+    return True
+
+
+def summary():
+    I = _load()["invoices"]
+    P = [i for i in I if i.get("status") == "paid"]
+    return {"invoices": len(I), "paid": len(P), "earned_usd": round(sum(float(i.get("paid_usd") or 0) for i in P), 2),
+            "recent": list(reversed(I[-10:]))}
