@@ -121,7 +121,7 @@ def _rsave(R):
     os.replace(tmp, REQ)
 
 
-def request(what, why, command="", kind="admin"):
+def request(what, why, command="", kind="admin", extra=None):
     """a request for something outside his world (the owner decides)"""
     with _LK:
         R = _rload()
@@ -129,6 +129,7 @@ def request(what, why, command="", kind="admin"):
             return None
         r = {"id": uuid.uuid4().hex[:8], "t": time.time(), "what": str(what)[:300], "why": str(why)[:500],
              "command": str(command)[:2000], "kind": kind, "status": "waiting"}
+        r.update(extra or {})
         R.append(r)
         _rsave(R[-200:])
     _log("REQUEST %s %s | %s" % (r["id"], r["what"], r["command"][:200]))
@@ -181,6 +182,15 @@ def decide(rid, yes, by="owner", note=""):
         _log("DONE %s email %s" % (rid, res))
         return r
     if r.get("kind") == "proposal":                  # an idea: the answer is the decision itself, nothing runs
+        return r
+    if r.get("kind") == "publish":                   # his files, staged when he asked, go to GitHub (the token never reaches him)
+        if yes:
+            try:
+                import kino_github as KG
+                mark(rid, result=KG.publish(r.get("stage"), r.get("repo"), r.get("desc") or ""))
+            except Exception as e:
+                mark(rid, result="failed: %s" % str(e)[:250])
+            _log("DONE %s publish %s" % (rid, next((x.get("result") for x in _rload() if x["id"] == rid), "")))
         return r
     if r.get("kind") == "site":                      # a permit to SEND on one website (kino_browser gate), for a day
         if yes:

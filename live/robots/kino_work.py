@@ -155,7 +155,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -164,11 +164,15 @@ Answer ONE JSON object per step and nothing else:
  "why": "why (ask) / the case for it, plainly, with what it would take and what it could bring (propose)",
  "q": "search words (search)", "url": "a web address (fetch / browse open)", "start": "for a long page: the character to continue from (fetch)",
  "do": "browse: open|click|type|scroll|read|links|back|shot", "target": "browse: the text of what to click, or a CSS selector (click/type)",
- "site": "allow_site: the website you need to SEND on (sign up, post, submit) - the owner decides"}
+ "site": "allow_site: the website you need to SEND on (sign up, post, submit) - the owner decides",
+ "repo": "publish: the GitHub repository name", "files": "publish: optional list of file names in that folder (default: all)"}
 Your own Python and PowerShell have no internet: to get a file from the web into your world (data, a CSV), use
 download (url + path) - the app fetches it for you, reading only. Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
 anything that SENDS (a form, a sign-up, a post) is blocked at the gate unless the owner gave you a permit for that site -
 ask for one with allow_site, saying exactly what you would send and why.
+You have a GitHub account (kinoverse26-byte) but not its key: publish (path = a project folder in C:\\KinoWorld\\projects, repo,
+why = what it is, for the description) copies those files as they are now and asks the owner; only if he approves does the app
+put them on GitHub, public. Change a file afterwards and it needs a new publish. Publish only what is ready and checked.
 The web is read-only for you: search and read pages. Anything that would act in the world - creating an account, posting,
 applying, sending a proposal to someone, paying - is never done by you directly: you bring it to the owner with "propose" or
 "ask". You are an AI and you say so: never pretend to be a human anywhere."""
@@ -285,6 +289,21 @@ def _act(j, person):
     if a == "propose":
         r = KH.request(j.get("what") or "", j.get("why") or "", command="", kind="proposal")
         return "proposal sent to the owner as a card (%s)" % ((r or {}).get("id") or "already waiting")
+    if a == "publish":
+        try:
+            import kino_github as KG
+            repo = KG.repo_name(j.get("repo"))
+            if not repo:
+                return "publish needs a repo name"
+            fl = j.get("files") if isinstance(j.get("files"), list) else None
+            sid, rows = KG.stage(j.get("path"), fl)
+        except Exception as e:
+            return "publish refused: %s" % str(e)[:300]
+        lst = "\n".join("  %s (%s)" % (r_, ("%d B" % n_) if n_ < 1000 else ("%.1f KB" % (n_ / 1000))) for r_, n_ in rows)
+        r = KH.request("publish %d files on github.com/%s/%s" % (len(rows), KG.ACCOUNT, repo), j.get("why") or "",
+                       command="github.com/%s/%s (public)\n%s" % (KG.ACCOUNT, repo, lst), kind="publish",
+                       extra={"stage": sid, "repo": repo, "desc": str(j.get("why") or "")[:300]})
+        return "publish request sent to the owner as a card (%s): %d files copied for review" % ((r or {}).get("id") or "already waiting", len(rows))
     if a == "browse":
         B = _BR.get("b")
         if B is None:
