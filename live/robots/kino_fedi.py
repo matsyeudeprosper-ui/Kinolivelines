@@ -28,6 +28,9 @@ LOG = os.path.join(HERE, "kino_fedi.log")
 AS = "https://www.w3.org/ns/activitystreams"
 PUBLIC = AS + "#Public"
 _LK = threading.Lock()
+# 2026-11-01 (owner: reach): relays copy a subscriber's public posts to hundreds of servers, so his hashtags are seen far
+# beyond his followers. They also push everyone else's posts to him - those are dropped at the door, never processed.
+RELAYS = ["https://relay.intahnet.co.uk/inbox", "https://relay.toot.io/inbox", "https://relay.an.exchange/inbox"]
 
 
 def _log(line):
@@ -150,19 +153,36 @@ def actor_doc():
             "publicKey": {"id": ACTOR + "#main-key", "owner": ACTOR, "publicKeyPem": _pub_pem()}}
 
 
+TAG_RE = re.compile(r"(?<![\w&/])#(\w{2,40})", re.U)
+
+
 def _note_html(text):
     t = html.escape(text)
     t = re.sub(r"(https?://[^\s<]+)", r'<a href="\1">\1</a>', t)
+    t = TAG_RE.sub(lambda m: '<a href="%s/tags/%s" class="mention hashtag" rel="tag">#<span>%s</span></a>' % (
+        BASE, m.group(1).lower(), m.group(1)), t)
     return "<p>" + t.replace("\n\n", "</p><p>").replace("\n", "<br>") + "</p>"
+
+
+def _tags(text):
+    """his #words as Hashtag objects - how Mastodon files a post under #trading, #python..."""
+    seen, out = set(), []
+    for m in TAG_RE.finditer(text):
+        k = m.group(1).lower()
+        if k not in seen:
+            seen.add(k)
+            out.append({"type": "Hashtag", "href": "%s/tags/%s" % (BASE, k), "name": "#" + k})
+    return out
 
 
 def _note(n):
     o = {"id": n["id"], "type": "Note", "attributedTo": ACTOR, "content": _note_html(n["text"]), "published": n["published"],
          "to": [PUBLIC], "cc": [ACTOR + "/followers"], "url": n["id"]}
+    o["tag"] = _tags(n["text"])
     if n.get("reply_to"):
         o["inReplyTo"] = n["reply_to"]
         o["cc"].append(n.get("reply_actor"))
-        o["tag"] = [{"type": "Mention", "href": n.get("reply_actor"), "name": n.get("reply_name") or ""}]
+        o["tag"].append({"type": "Mention", "href": n.get("reply_actor"), "name": n.get("reply_name") or ""})
     return o
 
 
@@ -191,9 +211,30 @@ def post(text, reply_to=None):
            "to": obj["to"], "cc": obj["cc"], "object": obj}
     for f in F.values():
         targets.add(f.get("shared") or f.get("inbox"))
+    if not reply_to:
+        targets.update(r for r, st in (_load().get("relays") or {}).items() if st == "accepted")
     for t in [x for x in targets if x]:
         threading.Thread(target=_deliver, args=(t, act), daemon=True).start()
     return nid
+
+
+def join_relays():
+    """asks each relay once (Mastodon's way: Follow the Public collection); their Accept arrives in the inbox"""
+    with _LK:
+        d = _load()
+        R = d.setdefault("relays", {})
+        todo = [r for r in RELAYS if R.get(r) not in ("accepted", "asked")]
+        for r in todo:
+            R[r] = "asked"
+        _save(d)
+    for r in todo:
+        ok = _deliver(r, {"@context": AS, "id": ACTOR + "#relay-" + uuid.uuid4().hex[:8], "type": "Follow", "actor": ACTOR,
+                          "object": PUBLIC})
+        if not ok:
+            with _LK:
+                d = _load()
+                d["relays"][r] = "failed %s" % time.strftime("%m-%d")
+                _save(d)
 
 
 def set_profile(name=None, summary=None):
@@ -224,6 +265,15 @@ def _strip(h):
 def _on_activity(a, sender):
     t = a.get("type")
     who = sender.get("id")
+    if t in ("Accept", "Reject") and (a.get("object") or {}).get("type") == "Follow" if isinstance(a.get("object"), dict) else t in ("Accept", "Reject"):
+        inbox = sender.get("inbox")
+        with _LK:
+            d = _load()
+            if inbox in (d.get("relays") or {}):
+                d["relays"][inbox] = "accepted" if t == "Accept" else "rejected"
+                _save(d)
+        _log("RELAY %s %s" % (t, inbox))
+        return
     if t == "Follow" and (a.get("object") == ACTOR or (a.get("object") or {}).get("id") == ACTOR):
         with _LK:
             d = _load()
@@ -359,6 +409,12 @@ class H(BaseHTTPRequestHandler):
             return self._j({"error": "bad json"}, "application/json", 400)
         if a.get("type") == "Delete" and a.get("actor") == a.get("object"):
             return self._j({}, "application/json", 202)          # an account deleted somewhere: nothing of ours
+        if a.get("type") == "Announce" and urllib.parse.urlparse(str(a.get("actor"))).netloc in {
+                urllib.parse.urlparse(r).netloc for r in RELAYS}:
+            return self._j({}, "application/json", 202)          # the relay's stream of everyone else's posts: dropped unread
+        _kid = re.search(r'keyId="([^"]+)"', self.headers.get("Signature") or "")
+        if _kid and urllib.parse.urlparse(_kid.group(1)).netloc in {urllib.parse.urlparse(r).netloc for r in RELAYS}                 and a.get("type") not in ("Accept", "Reject"):
+            return self._j({}, "application/json", 202)          # a relay forwarding someone else's activity: dropped unread
         try:
             sender = _verify(self, body)
         except Exception as e:
@@ -389,4 +445,5 @@ def start():
         return
     _SRV["s"] = s
     threading.Thread(target=s.serve_forever, daemon=True).start()
+    threading.Thread(target=join_relays, daemon=True).start()
     _log("START on 127.0.0.1:%d as %s" % (PORT, ACTOR))
