@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10}   # per UTC day
+BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10, "shop": 5, "contribute": 3}   # per UTC day
 BSKY = "https://bsky.social/xrpc/"
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it

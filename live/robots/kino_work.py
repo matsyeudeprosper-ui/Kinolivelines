@@ -102,6 +102,13 @@ def _diary_tail(n=12):
         return ""
 
 
+WEEKLY = ("My weekly look back, Sunday evening. Read my diary, my wallet, my goals and leads (won, lost, what they taught me), "
+          "the people I met online and my posts this week. Write C:/KinoWorld/diary/week-<year>-<week>.md: what worked, what did "
+          "not, what I learned, how I feel about it, and the ONE thing I change next week. Then update my goals and leads to match "
+          "(close what is dead, set the next step). If something in it is worth sharing - my own work, never a friend's life - "
+          "a short honest post is welcome.")
+
+
 def due(person, ctx, now=None):
     """does he feel like sitting down at his computer now? (his needs and his body decide; a few times a day at most)"""
     now = now or time.time()
@@ -126,6 +133,19 @@ def due(person, ctx, now=None):
             return True
     except Exception:
         pass
+    # 2026-11-01 (owner: "do all 3" - a day rhythm): his night is the owner's night (France, UTC+1). Between 1 and 7 he rests -
+    # nothing calls him to his computer, not even a follow-up; a body out of balance (above) still does.
+    _fr = time.gmtime(now + 3600)
+    if 1 <= _fr.tm_hour < 7:
+        return False
+    # the weekly look back: Sunday evening, once a week, before anything else
+    _wk = time.strftime("%G-%V", _fr)
+    if _fr.tm_wday == 6 and _fr.tm_hour >= 18 and d.get("review_week") != _wk:
+        def _mark(dd, _wk=_wk):
+            dd["review_week"] = _wk
+            dd["next_task"] = {"do": WEEKLY, "project": "", "why": "Sunday evening: my weekly look back"}
+        _mut(_mark)
+        return True
     try:
         import kino_body as KB
         if KB.fatigue() >= 0.5:
@@ -167,7 +187,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|lead|goal|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|lead|goal|shop|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -181,6 +201,7 @@ Answer ONE JSON object per step and nothing else:
  "id": "lead/goal: which one (to update)", "status": "lead: idea|tried|waiting|won|lost|dropped", "next": "lead: the next step",
  "follow_up_h": "lead: in how many hours to come back to it", "learned": "lead: what it taught you (when it ends)",
  "measure": "goal: earned|mine|balance|followers|paid|leads_won", "target": "goal: a number", "by": "goal: YYYY-MM-DD",
+ "op": "shop: add|remove|list", "price": "shop: dollars", "about": "shop: the product description", "file": "shop: file in C:/KinoWorld/shop",
  "amount": "invoice: dollars", "what": "invoice: what the payment is for (allow_site: what you will send)",
  "title": "post: the title of a blog post (its text goes below the JSON between ===FILE=== and ===END===, markdown)"}
 Your own Python and PowerShell have no internet: to get a file from the web into your world (data, a CSV), use
@@ -209,6 +230,8 @@ reports people would pay for, small paid jobs and gigs where an AI is welcome, t
 Keep a real plan: every opportunity is a lead (what, where, url, status, next, follow_up_h) - update it when something happens,
 close it as won or lost with what it taught you; follow-ups that fall due bring you back. Set yourself up to 3 goals with goal
 (what, a real measure, a target, a date) - they are measured from real numbers, so you will feel where you really stand.
+Your shop, https://kino.owltrader.duckdns.org/shop: put a file you made in C:\\KinoWorld\\shop (a report, a dataset, a
+small tool), then shop (op add, title, price, about, file) - buyers pay and download it on their own, you are told of each sale.
 To be paid: invoice (amount in dollars, what it is for, to = who) makes a payment link on the owner's NOWPayments account - put
 it in your reply, post, email or offer; you are told when it is paid. You never pay, never give card or bank details, never
 take a payout yourself. Say you are an AI wherever you offer something; a place that bans AI-made work is not for you.
@@ -370,6 +393,9 @@ def _act(j, person, W=None):
         import kino_post as KP
         fl = j.get("files") if isinstance(j.get("files"), list) else None
         return KP.repo(W, j.get("path"), j.get("repo"), j.get("why") or "", fl, log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "shop":                        # 2026-11-01 (kino_shop): what he makes and sells
+        import kino_shop as KSH
+        return KSH.act(W, j, log=os.path.join(HERE, "kino_post_calls.log"))
     if a == "lead":                        # 2026-11-01 (kino_plan): an opportunity he tracks and follows up
         import kino_plan as KPL
         return KPL.lead(j)
@@ -455,7 +481,10 @@ def session(W, person, uid, log=None, task=None, project=""):
     t0 = time.time()
     try:
         mind = _mind(person, uid)
-        ch = {"do": task, "project": project, "why": "the owner asked me to work on it"} if task else \
+        nt = None if task else _load().get("next_task")     # 2026-11-01: a session his rhythm set (the Sunday look back)
+        if nt:
+            _mut(lambda d: d.pop("next_task", None))
+        ch = {"do": task, "project": project, "why": "the owner asked me to work on it"} if task else nt or \
             W.ask_json(CHOOSE, mind[:12000] + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
         task = str((ch or {}).get("do") or "").strip() if isinstance(ch, dict) else ""
         rec = {"t": t0, "day": time.strftime("%Y-%m-%d", time.gmtime(t0)), "task": task[:300], "why": str((ch or {}).get("why") or "")[:300],

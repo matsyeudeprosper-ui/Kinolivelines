@@ -38,45 +38,60 @@ def _cfg():
         return {}
 
 
-def invoice(amount, what, payer=""):
-    """a payment link for amount USD -> a sentence for him (with the link)"""
+def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DAY):
+    """one NOWPayments invoice on the owner's account -> (ref, url) or raises ValueError with a reason for him"""
     try:
         amount = round(float(amount), 2)
     except Exception:
-        return "an invoice needs an amount in dollars"
+        raise ValueError("an invoice needs an amount in dollars")
     if not 1 <= amount <= MAX_USD:
-        return "an invoice is between 1 and %d dollars" % MAX_USD
+        raise ValueError("an invoice is between 1 and %d dollars" % MAX_USD)
     what = str(what or "").strip()[:150]
     if not what:
-        return "say what the payment is for"
+        raise ValueError("say what the payment is for")
     day = time.strftime("%Y-%m-%d", time.gmtime())
-    if sum(1 for x in _load()["invoices"] if x.get("day") == day) >= PER_DAY:
-        return "no more invoices today (%d a day)" % PER_DAY
+    if sum(1 for x in _load()["invoices"] if x.get("day") == day and x.get("kind", "link") == kind) >= per_day:
+        raise ValueError("no more invoices of this kind today (%d a day)" % per_day)
     c = _cfg()
     if not c.get("np_api_key"):
-        return "the payment account is not set up"
+        raise ValueError("the payment account is not set up")
     api = "https://api-sandbox.nowpayments.io" if c.get("np_sandbox") else "https://api.nowpayments.io"
     origin = c.get("public_origin") or "https://owltrader.duckdns.org"
     ref = uuid.uuid4().hex[:10]
+    back = success_url(ref) if callable(success_url) else (success_url or "https://kinoverse26-byte.github.io")
     body = {"price_amount": amount, "price_currency": "usd", "order_id": "kino|earn-%s|%d" % (ref, int(time.time())),
             "order_description": ("Kino (an AI): " + what)[:200], "ipn_callback_url": origin + "/np_ipn",
-            "success_url": "https://kinoverse26-byte.github.io", "cancel_url": "https://kinoverse26-byte.github.io"}
+            "success_url": back, "cancel_url": "https://kinoverse26-byte.github.io"}
     try:
         r = urllib.request.Request(api + "/v1/invoice", data=json.dumps(body).encode(), method="POST",
                                    headers={"x-api-key": c["np_api_key"], "Content-Type": "application/json"})
         with urllib.request.urlopen(r, timeout=20) as x:
             inv = json.loads(x.read().decode("utf-8", "replace"))
     except Exception as e:
-        return "the invoice could not be made: %s" % str(e)[:150]
+        raise ValueError("the invoice could not be made: %s" % str(e)[:150])
     url = inv.get("invoice_url")
     if not url:
-        return "the invoice could not be made"
+        raise ValueError("the invoice could not be made")
     with _LK:
         d = _load()
         d["invoices"].append({"ref": ref, "t": time.time(), "day": day, "usd": amount, "what": what, "payer": str(payer)[:100],
-                              "url": url, "status": "waiting"})
+                              "url": url, "status": "waiting", "kind": kind})
         _save(d)
-    return "payment link for %.2f $ (%s): %s - it stays valid; you are told when it is paid" % (amount, what, url)
+    return ref, url
+
+
+def invoice(amount, what, payer=""):
+    """a payment link for amount USD -> a sentence for him (with the link)"""
+    try:
+        ref, url = create(amount, what, payer)
+    except ValueError as e:
+        return str(e)
+    return "payment link for %.2f $ (%s): %s - it stays valid; you are told when it is paid" % (float(amount), str(what)[:150], url)
+
+
+def status_of(ref):
+    x = next((i for i in _load()["invoices"] if i["ref"] == ref), None)
+    return (x or {}).get("status")
 
 
 def paid(order_id, usd, pid):
