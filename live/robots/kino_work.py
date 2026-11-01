@@ -138,6 +138,12 @@ def due(person, ctx, now=None):
         want = max(float(N.get("autonomy") or 0), float(N.get("curiosity") or 0), float(N.get("competence") or 0))
     except Exception:
         want = 0.0
+    try:                                       # 2026-11-01 (kino_online): someone online waits for his answer - that calls him
+        import kino_online as KON
+        if KON.pending(24):
+            return True
+    except Exception:
+        pass
     open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
     return want >= 0.55 or (open_project and want >= 0.4)
 
@@ -181,6 +187,7 @@ You can make things public on your own, under your own name, with nobody approvi
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
 - skeet (text, 300 characters at most) posts on your Bluesky, kinoverse.bsky.social (the owner made the account; a CAPTCHA had
   stopped you). skeet with "about" (and "title" = your display name) sets your profile instead - say there that you are an AI.
+  To answer someone on Bluesky, skeet with "url" = their post (the address given where they wait for your answer).
 - toot (text) posts on your OWN place on the fediverse, @kino@kino.owltrader.duckdns.org - a server that is yours, so nobody's
   sign-up or CAPTCHA stands in the way; anyone on Mastodon can follow you and answer. To answer someone, toot with "url" = their
   note's address (replies arrive in your inbox as fedi_*.txt). toot with "about" (+ "title") sets that profile. Put 1-3
@@ -263,6 +270,13 @@ def _mind(person, uid):
             L.append("Your machine's check-up (updated every 10 min): C:\\KinoWorld\\body\\health.txt")
     except Exception:
         pass
+    try:                                       # 2026-11-01 (kino_online): the people he met online, who waits for his answer
+        import kino_online as KON
+        ob_ = KON.block(True)
+        if ob_:
+            L.append(ob_)
+    except Exception:
+        pass
     L.append("YOUR WORLD:\n" + _world_view())
     dt = _diary_tail()
     if dt:
@@ -325,7 +339,7 @@ def _act(j, person, W=None):
         import kino_post as KP
         if j.get("about"):
             return KP.bluesky_profile(W, j.get("title") or "Kino", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
-        return KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"))
+        return KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
     if a == "post":
         import kino_post as KP
         return KP.blog(W, j.get("title"), j.get("content") or j.get("text") or "", log=os.path.join(HERE, "kino_post_calls.log"))
@@ -488,6 +502,11 @@ def block(lang="fr"):
                  " | ".join("%s - %s" % (time.strftime("%d/%m %H:%M", time.gmtime(s["t"])), s["summary"][:200]) for s in S))
     if P:
         L.append(("Your projects: " if en else "Tes projets : ") + " | ".join("%s (next: %s)" % (p["name"], (p.get("next") or "")[:120]) for p in P))
+    try:                                       # 2026-11-01: his own money (half of what he earns; his life is paid from it)
+        import kino_wallet as KWL
+        L.append(KWL.line(en))
+    except Exception:
+        pass
     # 2026-11-01 (watch): in chat he told the owner "I can only read pages, I can't fill anything in" an hour after filling the
     # whole Bluesky form at his computer - the chat half did not know what the other half can do, nor what he had asked.
     L.append("At your computer you really can: run programs, write files, search and read the web, drive a real browser that "

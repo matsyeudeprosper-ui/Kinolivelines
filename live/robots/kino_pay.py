@@ -91,8 +91,14 @@ def paid(order_id, usd, pid):
             return x is not None
         x.update(status="paid", paid_usd=float(usd or 0), paid_t=time.time(), payment=str(pid))
         _save(d)
-    line = "MONEY ARRIVED - %.2f $ paid for \"%s\"%s. It is in the owner's account; tell him." % (
-        float(usd or 0), x["what"], (" by " + x["payer"]) if x.get("payer") else "")
+    mine = 0.0
+    try:                                       # 2026-11-01: half is his (kino_wallet)
+        import kino_wallet as KWL
+        mine = KWL.income(usd, x["what"], x["ref"])
+    except Exception:
+        pass
+    line = "MONEY ARRIVED - %.2f $ paid for \"%s\"%s; %.2f $ of it is yours. It is in the owner's account; tell him." % (
+        float(usd or 0), x["what"], (" by " + x["payer"]) if x.get("payer") else "", mine)
     try:
         import kino_urge as KU
         KU.add("kino", line)

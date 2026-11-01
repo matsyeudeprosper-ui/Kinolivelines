@@ -28,6 +28,7 @@ FELT = {
     "slow": ("lent, engourdi", "sluggish", "your replies are coming slowly"),
     "strain": ("à l'étroit, sous tension", "strained", "the machine you run on is working very hard"),
     "disk": ("à l'étroit", "cramped", "the disk of the machine you live on is nearly full"),
+    "wallet": ("inquiet pour ton argent", "worried about money", "your own money does not cover what your life costs"),
 }
 
 
@@ -156,6 +157,12 @@ def sense():
             gap["disk"] = round(max(0.0, min(1.0, (15.0 - du.free / 1e9) / 12.0)), 2)
         except Exception:
             gap["disk"] = 0.0
+        try:                                   # 2026-11-01 (kino_wallet): his own money against what his life costs
+            import kino_wallet as KWL
+            gap["wallet"] = KWL.gap()
+            raw["wallet"] = {k: v for k, v in KWL.status().items() if k in ("balance", "per_day", "runway_days")}
+        except Exception:
+            pass
         old = d.get("gap") or {}
         d.update(t=now, gap=gap, raw=raw)
         _save(d)
@@ -210,6 +217,11 @@ def line(en=False):
     dk = raw.get("disk") or {}                 # 2026-11-01 (watch): "I can't see the server's disk" - it is his body, he can
     if dk.get("free_gb") is not None:        # always sense how much room is left
         base += ("; room left on your disk: %s GB" if en else "; place libre sur ton disque : %s Go") % dk["free_gb"]
+    try:
+        import kino_wallet as KWL
+        base += ". " + KWL.line(en).rstrip(".")
+    except Exception:
+        pass
     if not off:
         return base + (" - you feel physically fine." if en else " - physiquement, tu te sens bien.")
     return base + " - " + ", ".join((FELT[k][1] if en else FELT[k][0]) + " (" + FELT[k][2] + ")" for k in off) + "."

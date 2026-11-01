@@ -252,8 +252,23 @@ def _facets(text):
     return out
 
 
-def bluesky(W, text, log=None):
-    """a post on his Bluesky (kinoverse.bsky.social) -> a sentence for him"""
+def _bsky_ref(url, tok):
+    """a post he answers (bsky.app link or at:// uri) -> the reply refs Bluesky needs {root, parent}"""
+    u = str(url or "").strip()
+    m = re.match(r"https://bsky\.app/profile/([^/]+)/post/([^/?#]+)", u)
+    if m:
+        who = m.group(1)
+        if not who.startswith("did:"):
+            who = _bsky("com.atproto.identity.resolveHandle?handle=" + who, None, tok)["did"]
+        u = "at://%s/app.bsky.feed.post/%s" % (who, m.group(2))
+    th = _bsky("app.bsky.feed.getPostThread?depth=0&uri=" + u, None, tok)["thread"]["post"]
+    parent = {"uri": th["uri"], "cid": th["cid"]}
+    root = ((th.get("record") or {}).get("reply") or {}).get("root") or parent
+    return {"root": root, "parent": parent}, "@" + str((th.get("author") or {}).get("handle"))
+
+
+def bluesky(W, text, log=None, reply_to=None):
+    """a post on his Bluesky (kinoverse.bsky.social) -> a sentence for him; reply_to = the post he answers"""
     text = str(text or "").strip()
     if not text:
         return "a post needs text"
@@ -273,12 +288,23 @@ def bluesky(W, text, log=None):
         f = _facets(text)
         if f:
             rec["facets"] = f
+        to = None
+        if reply_to:
+            rec["reply"], to = _bsky_ref(reply_to, tok)
         r = _bsky("com.atproto.repo.createRecord", {"repo": did, "collection": "app.bsky.feed.post", "record": rec}, tok)
         url = "https://bsky.app/profile/%s/post/%s" % (handle, r["uri"].rsplit("/", 1)[-1])
     except Exception as e:
         _record("bluesky", text[:120], False, str(e)[:200])
         return "the post failed: %s" % str(e)[:200]
     _record("bluesky", text[:120], True, "", url)
+    if reply_to:
+        try:
+            import kino_online as KO
+            KO.answered(reply_to)
+            KO.answered(rec["reply"]["parent"]["uri"])
+            KO.note(to or "?", "bluesky", text, "out", url)
+        except Exception:
+            pass
     return "posted on Bluesky: %s" % url
 
 
@@ -324,6 +350,14 @@ def mastodon(W, text, reply_to=None, log=None):
         _record("mastodon", text[:120], False, str(e)[:200])
         return "the note failed: %s" % str(e)[:200]
     _record("mastodon", text[:120], True, "", nid)
+    if reply_to:
+        try:
+            import kino_online as KO
+            KO.answered(reply_to)
+            n = next((x for x in __import__("kino_fedi")._load()["notes"] if x["id"] == nid), {})
+            KO.note(n.get("reply_name") or "?", "mastodon", text, "out", nid)
+        except Exception:
+            pass
     return "posted: %s (%d followers get it)" % (nid, len(__import__("kino_fedi").followers()))
 
 

@@ -131,6 +131,12 @@ ul{margin:4px 0;padding-left:18px}li{margin:2px 0}.row{display:flex;justify-cont
         e = KPY.summary()
         H.append("<h2>Ce qu'il gagne</h2><div class='card'><b>%.2f $</b> reçus · %d liens de paiement, %d payés</div>" % (
             e["earned_usd"], e["invoices"], e["paid"]))
+        import kino_wallet as KWL
+        w = KWL.status()
+        H.append("<div class='card'><div class='row'><b>Son portefeuille : %+.2f $</b><span class='pill'>%d %% pour lui</span></div>"
+                 "<div class='t'>à lui %.2f $ · à toi %.2f $ · sa vie (son travail, ses publications%s) : %.2f $ depuis le %s, "
+                 "~%.2f $ / jour</div></div>" % (w["balance"], round(100 * w["share"]), w["mine"], w["earned"] - w["mine"],
+                                                 ", le serveur" if w["vps_month_usd"] else "", w["costs"], w["started"], w["per_day"]))
         for i in e["recent"][:6]:
             H.append("<div class='card'><div class='row'><b>%.2f $ - %s</b><span class='pill %s'>%s</span></div><div class='t'>%s</div></div>" % (
                 float(i.get("usd") or 0), _e(i.get("what")), "ok" if i.get("status") == "paid" else "", _e(i.get("status")), _ago(i.get("t"))))

@@ -283,6 +283,11 @@ def _on_activity(a, sender):
         _deliver(sender.get("inbox"), {"@context": AS, "id": ACTOR + "#accept-" + uuid.uuid4().hex[:8], "type": "Accept",
                                        "actor": ACTOR, "object": a})
         _note_to_kino("A NEW FOLLOWER on Mastodon: @%s@%s" % (sender.get("preferredUsername"), urllib.parse.urlparse(who).netloc))
+        try:
+            import kino_online as KO
+            KO.note("@%s@%s" % (sender.get("preferredUsername"), urllib.parse.urlparse(who).netloc), "mastodon", "followed you", "in", kind="follow")
+        except Exception:
+            pass
         return
     if t == "Undo" and (a.get("object") or {}).get("type") == "Follow":
         with _LK:
@@ -302,6 +307,11 @@ def _on_activity(a, sender):
             os.makedirs(INBOX_DIR, exist_ok=True)
             fn = os.path.join(INBOX_DIR, "fedi_%s_%s.txt" % (time.strftime("%Y%m%d_%H%M%S"), re.sub(r"\W", "", sender.get("preferredUsername") or "x")[:20]))
             open(fn, "w", encoding="utf-8").write("FROM %s\nNOTE %s\nIN REPLY TO %s\n\n%s\n" % (name, o.get("id"), o.get("inReplyTo"), txt))
+        except Exception:
+            pass
+        try:
+            import kino_online as KO
+            KO.note(name, "mastodon", txt, "in", o.get("id"), kind="reply")
         except Exception:
             pass
         _note_to_kino("SOMEONE ANSWERED YOU on Mastodon - %s: \"%s\" (their note: %s)" % (name, txt[:300], o.get("id")))
