@@ -21456,8 +21456,12 @@ def _companion_tick():
                             evs.append((g["name"], e))
                     duel_ev = None
                     if len(G) == 2 and not cg.get("duel_done") and all(_RG.summary(g)["days"] >= 7 for g in G):
+                        def _plain(s):                 # 2026-11-01: "sum_r" came out as "-2,4 R" - the number with what it means
+                            s = dict(s)
+                            s["net_counted_in_full_stop_losses"] = s.pop("sum_r", None)
+                            return s
                         duel_ev = "DUEL RESULT after 7 days of pretend money on live prices: " + "; ".join(
-                            "%s: %s" % (g["name"], json.dumps(_RG.summary(g))) for g in G)
+                            "%s: %s" % (g["name"], json.dumps(_plain(_RG.summary(g)))) for g in G)
 
                     def putg(cc, G=G, duel_ev=duel_ev):
                         cc["ghosts"] = G
