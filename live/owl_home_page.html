@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8"><meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Kino</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="/icon192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-11-01 (owner: "the focus is not the Owl anymore, it's Kino - show off Kino, professional and modern"): the member's
+   home. Kino first: what he is doing, his last words, what he pursues with you; then your robots, the robots he created
+   (the Owl among them), your plan. Data: home_data. Same tokens as the Atelier. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--accent:#7c6cff;--accent2:#22d3ee;--up:#2ecc71;--down:#ff6b6b;--warn:#e8c55a;
+ --grad:linear-gradient(135deg,#7c6cff,#22d3ee);--sh:0 18px 50px rgba(0,0,0,.45)}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;--border2:#d5dce7;
+ --text:#121722;--text2:#3b4658;--muted:#6a7588;--sh:0 12px 34px rgba(20,30,50,.10)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:640px;margin:0 auto;padding:18px 16px 24px}
+.top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 18px}
+.hello{font-size:13px;color:var(--muted)}.hello b{display:block;font-size:20px;color:var(--text);letter-spacing:-.02em}
+.plan{font-size:12px;padding:5px 11px;border-radius:99px;border:1px solid var(--border2);color:var(--text2);background:var(--surface)}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:20px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh)}
+.hero:before{content:"";position:absolute;inset:-60% -30% auto auto;width:340px;height:340px;background:radial-gradient(closest-side,#7c6cff33,transparent)}
+.who{position:relative;display:flex;align-items:center;gap:12px}
+.av{width:48px;height:48px;border-radius:15px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:0 0 48px}
+.who b{font-size:17px}.st{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px #2ecc7122}
+.msg{position:relative;margin:16px 0 4px;padding:14px 16px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);
+ color:var(--text);white-space:pre-wrap;max-height:9.5em;overflow:hidden}
+.msg:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.4em;background:linear-gradient(transparent,var(--surface2))}
+.when{position:relative;font-size:12px;color:var(--muted);margin-bottom:14px}
+.cta{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;
+ background:var(--grad);color:#fff;font-weight:700;font-size:15px;border:0;box-shadow:0 10px 28px #7c6cff44;cursor:pointer}
+.chips{position:relative;display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:13px;padding:8px 12px;border-radius:99px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);cursor:pointer}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:28px 4px 10px;font-weight:700;display:flex;justify-content:space-between}
+h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600}
+a.card:not(.row){display:block}.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px}
+.goal{font-size:15px;color:var(--text)}.goal small{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rb{display:flex;align-items:center;gap:12px}.ri{width:38px;height:38px;border-radius:12px;background:var(--surface3);display:grid;place-items:center;flex:0 0 38px;font-size:18px}
+.rn{font-weight:600}.rs{font-size:12.5px;color:var(--muted)}
+.pos{color:var(--up)}.neg{color:var(--down)}
+.tag{font-size:11.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);white-space:nowrap}
+.tag.k{border-color:#7c6cff66;color:#b4a9ff}.tag.on{border-color:#2ecc7166;color:var(--up)}
+.empty{color:var(--muted);font-size:14px}
+.empty b{color:var(--text)}
+.bar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--grad)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);
+ border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+nav.tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);min-width:58px;padding:4px 0}
+nav.tabs a.on{color:var(--text)}nav.tabs svg{width:22px;height:22px}
+nav.tabs a.k span.kd{width:24px;height:24px;border-radius:8px;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.skel{color:transparent;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
+@keyframes sk{50%{opacity:.5}}
+.foot{margin:26px 4px 0;font-size:12px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
+</style></head><body>
+<div class="wrap">
+ <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="?classic=1#offres">&nbsp;</a></div>
+
+ <section class="hero">
+  <div class="who"><div class="av">K</div><div><b>Kino</b><div class="st"><span class="dot"></span><span id="status">…</span></div></div></div>
+  <div class="msg" id="msg"><span class="skel">Kino réfléchit à ce qu’il va te dire…</span></div>
+  <div class="when" id="when"></div>
+  <a class="cta" id="talk" href="atelier"><span id="talk-t">Parler à Kino</span> <span aria-hidden="true">→</span></a>
+  <div class="chips" id="chips"></div>
+ </section>
+
+ <h2><span id="h-goal">Ce qu’il poursuit avec toi</span></h2>
+ <div class="card" id="goal"><div class="goal skel">…</div></div>
+
+ <h2><span id="h-rob">Tes robots</span><a href="mesrobots" id="h-rob-all">Tout voir</a></h2>
+ <div id="robots"><div class="card skel">…</div></div>
+
+ <h2><span id="h-pick">Créés par Kino</span><a href="place" id="h-pick-all">La place</a></h2>
+ <div id="picks"><div class="card skel">…</div></div>
+
+ <h2><span id="h-plan">Ta formule</span></h2>
+ <div class="card" id="plancard"><div class="skel">…</div></div>
+
+ <div class="foot" id="foot"></div>
+</div>
+
+<nav class="tabs" aria-label="Navigation">
+ <a class="on" href="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span id="t1">Accueil</span></a>
+ <a class="k" id="tk" href="atelier"><span class="kd">K</span><span>Kino</span></a>
+ <a href="mesrobots"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg><span id="t3">Robots</span></a>
+ <a href="place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 11a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span id="t4">La place</span></a>
+ <a href="?classic=1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="t5">Compte</span></a>
+</nav>
+
+<script>
+const B=location.pathname.replace(/home\/?$/,'');
+let EN=false;const T=(f,e)=>EN?e:f;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function ago(t){if(!t)return'';const m=Math.round((Date.now()/1000-t)/60);
+ if(m<1)return T('à l’instant','just now');if(m<60)return T('il y a '+m+' min',m+' min ago');const h=Math.round(m/60);
+ if(h<24)return T('il y a '+h+' h',h+' h ago');const d=Math.round(h/24);return T('il y a '+d+' j',d+' d ago');}
+function money(v){if(v==null)return'';const n=Number(v);return(n>=0?'+':'−')+Math.abs(n).toFixed(2)+' $';}
+function go(q){location.href=B+'atelier'+(q?'#q='+encodeURIComponent(q):'');}
+async function load(){
+ let d;try{d=await (await fetch(B+'home_data',{cache:'no-store'})).json();}catch(e){setTimeout(load,4000);return;}
+ EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
+ const hr=new Date().getHours();
+ document.getElementById('hi').textContent=hr<5||hr>=18?T('Bonsoir','Good evening'):T('Bonjour','Hello');
+ document.getElementById('nm').textContent=d.name||'';
+ const P=d.plan||{};document.getElementById('plan').textContent=EN?(P.label_en||'Plan'):(P.label||'Formule');
+ const st=d.status||{};document.getElementById('status').textContent=(EN?st.en:st.fr)||T('disponible','available');
+ const ms=document.getElementById('msg');
+ if(d.last){ms.textContent=d.last.text;document.getElementById('when').textContent=T('Son dernier message · ','His last message · ')+ago(d.last.t);}
+ else{ms.textContent=T('Salut, moi c’est Kino. Raconte-moi comment tu trades, ou l’idée qui te trotte dans la tête : je la transforme en robot, je la teste sur de vrais prix, et je te dis honnêtement si ça tient.',
+  'Hi, I’m Kino. Tell me how you trade, or the idea on your mind: I turn it into a robot, test it on real prices, and tell you honestly whether it holds up.');}
+ const talk=document.getElementById('talk');talk.href=B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):'');
+ document.getElementById('talk-t').textContent=d.last?T('Répondre à Kino','Reply to Kino'):T('Parler à Kino','Talk to Kino');
+ document.getElementById('tk').href=talk.href;
+ const C=[[T('Construis mon robot','Build my robot'),T('J’aimerais construire un robot avec ma méthode.','I’d like to build a robot from my method.')],
+  [T('Teste une idée','Test an idea'),T('J’ai une idée à tester sur de vrais prix.','I have an idea to test on real prices.')],
+  [T('Tu fais quoi ?','What are you up to?'),T('Tu fais quoi en ce moment ?','What are you up to right now?')]];
+ document.getElementById('chips').innerHTML=C.map((c,i)=>'<span class="chip" data-i="'+i+'">'+esc(c[0])+'</span>').join('');
+ document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{location.href=talk.href+(talk.href.includes('?')?'&':'?')+'ask='+encodeURIComponent(C[+el.dataset.i][1]);});
+ document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');
+ document.getElementById('goal').innerHTML=d.goal?'<div class="goal"><small>'+T('Son objectif pour toi','His goal for you')+'</small>'+esc(d.goal)+'</div>'
+  :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';
+ document.getElementById('h-rob').textContent=T('Tes robots','Your robots');document.getElementById('h-rob-all').textContent=T('Tout voir','See all');
+ const R=d.robots||[];
+ document.getElementById('robots').innerHTML=R.length?R.map(r=>{const t=r.test||{};
+  return '<a class="card row" href="'+B+'mesrobots"><div class="rb"><div class="ri">🤖</div><div><div class="rn">'+esc(r.name)+'</div><div class="rs">'+
+  (t.trades!=null?(T('Dernier test : ','Last test: ')+'<span class="'+(t.net>=0?'pos':'neg')+'">'+money(t.net)+'</span> · '+t.trades+' trades'):T('Pas encore testé','Not tested yet'))+
+  '</div></div></div><span class="tag">'+esc(r.why||T('en test','testing'))+'</span></a>';}).join('')
+  :'<div class="card empty">'+T('Pas encore de robot. <b>Raconte ta méthode à Kino</b> : il le construit avec toi, en parlant.','No robot yet. <b>Tell Kino your method</b>: he builds it with you, as you talk.')+'</div>';
+ document.getElementById('h-pick').textContent=T('Créés par Kino','Made by Kino');document.getElementById('h-pick-all').textContent=T('La place','Marketplace');
+ const K=d.picks||[];
+ document.getElementById('picks').innerHTML=K.length?K.map(p=>'<a class="card" href="'+B+'place"><div class="row"><div class="rn">'+esc(p.name)+'</div>'+
+  (p.access==='active'?'<span class="tag on">'+T('Actif chez toi','Active for you')+'</span>':p.access==='invite'?'<span class="tag k">'+T('Sur invitation','By invitation')+'</span>':'<span class="tag">'+T('Ouvert','Open')+'</span>')+
+  '</div><div class="rs" style="margin-top:6px">'+esc(p.blurb)+'</div>'+(p.trades?'<div class="rs" style="margin-top:6px">'+T('Test : ','Test: ')+'<span class="'+(p.net>=0?'pos':'neg')+'">'+money(p.net)+'</span> · '+p.trades+' trades · '+T('passé, pas une promesse','past, not a promise')+'</div>':'')+'</a>').join('')
+  :'<div class="card empty">'+T('La place s’ouvre bientôt.','The marketplace opens soon.')+'</div>';
+ document.getElementById('h-plan').textContent=T('Ta formule','Your plan');
+ const left=P.replies_left,cap=P.month!=null?P.month:P.replies,per=P.month!=null?T('ce mois','this month'):T('aujourd’hui','today');
+ document.getElementById('plancard').innerHTML='<div class="row"><div><div class="rn">'+esc(EN?P.label_en:P.label)+'</div><div class="rs">'+
+  (cap==null?T('Kino sans limite','Kino without limit'):(T('Réponses de Kino ','Kino replies ')+per+' : '+(left==null?cap:left)+' / '+cap))+
+  '</div></div><a class="tag k" href="'+B+'?classic=1#offres">'+T('Changer','Change')+'</a></div>'+
+  (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
+ document.getElementById('t1').textContent=T('Accueil','Home');document.getElementById('t4').textContent=T('La place','Market');document.getElementById('t5').textContent=T('Compte','Account');
+ document.getElementById('foot').innerHTML=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.')+
+  ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>'+
+  (d.family||d.owner?' · <a href="'+B+'?classic=1">'+T('Tableau de bord du robot','Robot dashboard')+'</a>':'');
+}
+load();setInterval(load,60000);
+</script>
+</body></html>

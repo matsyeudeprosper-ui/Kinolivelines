@@ -29192,6 +29192,60 @@ def _member_pkg(uid):
     return "manual"
 
 
+def home_kino_data(user):
+    """2026-11-01 (owner: "the focus is not the Owl anymore, it's Kino"): everything the Kino home shows, in one call -
+    his status and mood, his last words to the member, what he pursues with them, their robots, the robots he created
+    (the Owl among them: on invitation, active for the family), the plan and what is left of it"""
+    uid = user.get("id")
+    out = {"name": user.get("name") or "", "lang": "fr"}
+    try:
+        _d = kino_day(user)
+        out["status"] = _d.get("status") or {}
+        out["mood"] = (_d.get("mood") or {}).get("label") or ""
+    except Exception:
+        out["status"], out["mood"] = {}, ""
+    try:
+        cid = _person_main(uid)
+        out["cid"] = cid
+        c = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
+        out["lang"] = "en" if c.get("lang") == "en" else "fr"
+        last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and str(m.get("text") or "").strip()), None)
+        if last:
+            out["last"] = {"text": str(last.get("text"))[:600], "t": float(last.get("t") or 0)}
+    except Exception:
+        pass
+    try:
+        kd = kino_data(user)
+        g = kd.get("goal")
+        out["goal"] = (g.get("goal") if isinstance(g, dict) else str(g or ""))[:300]
+        pt = kd.get("portrait")
+        out["portrait"] = (pt.get("text") if isinstance(pt, dict) else str(pt or ""))[:400]
+    except Exception:
+        pass
+    fam = has(uid, "family")
+    try:
+        pp = place_payload(user)
+        out["robots"] = [{"id": r.get("id"), "name": r.get("name"), "test": {k: (r.get("test") or {}).get(k) for k in
+                          ("net", "trades", "win_rate", "max_loss_streak", "tested_at")} if r.get("test") else None,
+                          "why": r.get("why")} for r in (pp.get("my_robots") or [])][:6]
+        L = [l for l in (pp.get("listings") or []) if not l.get("hidden") and not l.get("paused")]
+        L.sort(key=lambda l: -float(((l.get("test") or {}).get("net")) or 0))
+        out["picks"] = [{"id": l.get("id"), "name": l.get("name"), "blurb": str(l.get("blurb") or "")[:160],
+                         "by_kino": bool(l.get("by_nest")), "net": (l.get("test") or {}).get("net"),
+                         "trades": (l.get("test") or {}).get("trades"),
+                         "access": "active" if (fam and l.get("by_nest")) else ("invite" if l.get("by_nest") else "open")}
+                        for l in L[:4]]
+    except Exception:
+        out["robots"], out["picks"] = [], []
+    try:
+        out["plan"] = _plan_tier_block(user)
+    except Exception:
+        out["plan"] = {}
+    out["family"] = bool(fam)
+    out["owner"] = uid in OWNER_UIDS
+    return out
+
+
 def place_payload(user, admin=False):
     import owl_market as _OMKT
     import owl_wallet as _OW
@@ -33878,7 +33932,7 @@ class H(BaseHTTPRequestHandler):
             if ctype.startswith("text/html"):
                 _pp = [x for x in self.path.split("?")[0].split("/") if x]
                 _pg = _pp[1] if len(_pp) > 1 else ""
-                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app") and not _pg.startswith("chat_"):
+                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app", "home") and not _pg.startswith("chat_"):
                     _uk = user_by_token(_pp[0])
                     if _uk and kino_ok(_uk):
                         _b = body.decode("utf-8") if isinstance(body, bytes) else body
@@ -35950,6 +36004,23 @@ class H(BaseHTTPRequestHandler):
             self._not_found()
             return
         sub = parts[1] if len(parts) > 1 else ""
+        if sub == "" and not user.get("public") and "classic=1" not in self.path and user.get("id") not in OWNER_UIDS \
+                and not has(user.get("id"), "family") and not (user.get("mt5_login") or user.get("login")):
+            # 2026-11-01 (owner: "the focus is Kino"): members without a robot on a real account land on Kino's home
+            self.send_response(302)
+            self.send_header("Location", "/%s/home" % parts[0])
+            self.end_headers()
+            return
+        if sub in ("home", "home_data"):
+            if sub == "home":
+                _ck = None
+                if not user.get("public") and not (admin_cookie_ok(self.headers) and user.get("id") not in OWNER_UIDS):
+                    _ck = SESS_SET % parts[0]
+                self._send(open(os.path.join(DIR, "owl_home_page.html"), encoding="utf-8").read().replace("%%BUILD%%", APP_BUILD),
+                           "text/html; charset=utf-8", cookie=_ck)
+            else:
+                self._send(json.dumps(home_kino_data(user), ensure_ascii=False, default=str), "application/json")
+            return
         if sub == "":
             # 2026-10-15 (owner): the public demo greets a visitor, not "Compte demo"
             page = (PAGE.replace("%%NAME%%", "" if user.get("public") else user.get("name", ""))
