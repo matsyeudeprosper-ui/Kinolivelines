@@ -140,6 +140,15 @@ def request(what, why, command="", kind="admin"):
     return r
 
 
+def mark(rid, **kw):
+    with _LK:
+        R = _rload()
+        x = next((y for y in R if y["id"] == rid), None)
+        if x:
+            x.update(kw)
+            _rsave(R)
+
+
 def requests(status=None):
     return [r for r in _rload() if status is None or r["status"] == status]
 

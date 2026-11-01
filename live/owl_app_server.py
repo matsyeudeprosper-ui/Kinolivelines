@@ -23188,7 +23188,11 @@ def _urge_tick():
                 except Exception:
                     pass
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
-                    __import__("kino_hands").ON_REQUEST = _kino_req_card
+                    _KHq = __import__("kino_hands")
+                    _KHq.ON_REQUEST = _kino_req_card
+                    for _rq in _KHq.requests("waiting"):           # made elsewhere (another process): posted by the app itself,
+                        if not _rq.get("carded"):                  # never written into a chat from outside (it was overwritten)
+                            _kino_req_card(_rq)
                 except Exception:
                     pass
                 try:                                   # 2026-11-01 (kino_work): he sits down at his own computer when he feels like it
@@ -26288,6 +26292,7 @@ def _kino_req_card(r):
     if not cid:
         return
     _chat_mut(cid, lambda cc: _chat_msg(cc, "kreq", req={k: r.get(k) for k in ("id", "what", "why", "command", "kind")}, status="waiting"))
+    __import__("kino_hands").mark(r["id"], carded=time.time())
 
 
 def kino_req(user, body):
