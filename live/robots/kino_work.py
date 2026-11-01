@@ -180,7 +180,12 @@ own. From what is on your mind below, choose what you will do in this session - 
 
 
 def _mind(person, uid):
-    L = []
+    # 2026-11-01 04:48 (watch): he "corrected" Sunday 1 November into Saturday 31 October in a mail to the owner - his machine's
+    # own clock (Get-Date) is set to US Central time; the real time comes from here
+    L = ["THE REAL TIME NOW: %s UTC (for the owner, in France: %s). Your machine's own clock (Get-Date) is set to US Central "
+         "time - never use it for dates or times you tell anyone." % (
+             time.strftime("%A %d %B %Y, %H:%M", time.gmtime()),
+             time.strftime("%A %d %B, %H:%M", time.gmtime(time.time() + 3600)))]
     try:
         import kino_selfmodel as KSF
         P = KSF._P(KSF._load(), person)
