@@ -946,7 +946,7 @@ def _plan_tier_block(u):
         I = _PL.info(pn)
         tz = int(_tz_of(u.get("id")).get("off") or 0)
         pu = _person(u.get("id"))
-        return {"name": pn, "label": I["label"], "label_en": I["label_en"], "replies": I.get("replies"),
+        return {"name": pn, "label": I["label"], "label_en": I["label_en"], "replies": I.get("replies"), "month": I.get("month"),
                 "replies_left": _PL.kino_left(pu, pn, tz), "tests": I.get("tests"), "tests_left": _PL.tests_left(pu, pn),
                 "voice": I.get("voice"), "trial_end": int(_PL.trial_end(u)) if pn == "decouverte_trial" else 0,
                 "no_remind": bool(ent(u.get("id")).get("no_remind"))}
@@ -6466,11 +6466,11 @@ function renderPlan(d){
  (function(){const R=P.tier;if(!R||d.is_master||P.pending_pay||P.family||P.family_expired)return;
   const lab=en?R.label_en:R.label,until=P.premium?P.premium_until:(P.strategy?P.strategy_until:(P.manual?P.manual_until:0));
   t.textContent=lab;const parts=[];
-  parts.push(R.replies==null?(en?'Kino: no daily limit':'Kino : sans limite par jour'):((en?'Kino: ':'Kino : ')+(R.replies_left==null?R.replies:R.replies_left)+' / '+R.replies+(en?' replies left today':' r\u00e9ponses restantes aujourd\u2019hui')));
+  parts.push(R.month!=null?((en?'Kino: ':'Kino : ')+(R.replies_left==null?R.month:R.replies_left)+' / '+R.month+(en?' replies left this month':' r\u00e9ponses restantes ce mois')):R.replies==null?(en?'Kino: no limit':'Kino : sans limite'):((en?'Kino: ':'Kino : ')+(R.replies_left==null?R.replies:R.replies_left)+' / '+R.replies+(en?' replies left today':' r\u00e9ponses restantes aujourd\u2019hui')));
   if(R.tests!=null)parts.push((en?'Robot tests: ':'Tests de robot : ')+(R.tests_left==null?R.tests:R.tests_left)+' / '+R.tests+(en?' this month':' ce mois'));
   if(R.voice)parts.push((en?'Calls with Kino: ':'Appels avec Kino : ')+R.voice+' min');
   let h='<div>'+parts.join(' \u00b7 ')+'</div>';
-  if(R.name==='decouverte_trial'&&R.trial_end)h+='<div style="margin-top:6px">'+(en?'Your trial: Kino at full speed until ':'Votre essai : Kino \u00e0 fond jusqu\u2019au ')+fd(R.trial_end)+(en?', then 10 replies a day - he stays with you.':', puis 10 r\u00e9ponses par jour \u2014 il reste avec vous.')+'</div>';
+  if(R.name==='decouverte_trial'&&R.trial_end)h+='<div style="margin-top:6px">'+(en?'Your trial: Kino at full speed until ':'Votre essai : Kino \u00e0 fond jusqu\u2019au ')+fd(R.trial_end)+(en?', then 5 replies a day - he stays with you.':', puis 5 r\u00e9ponses par jour \u2014 il reste avec vous.')+'</div>';
   if(until){h+='<div style="margin-top:6px">'+(en?'No auto-renewal: your plan simply ends on ':'Pas de renouvellement automatique : votre formule s\u2019arr\u00eate seule le ')+fd(until)+(en?'. Nothing to cancel; Kino and your memory stay (at least 90 days).':'. Rien \u00e0 r\u00e9silier ; Kino et votre m\u00e9moire restent (au moins 90 jours).')+'</div>'+
    '<button class="shbtn shghost" style="margin:10px 0 0;padding:10px" onclick="noRemind('+(R.no_remind?0:1)+')">'+(R.no_remind?(en?'Remind me before it ends':'Me pr\u00e9venir avant la fin'):(en?'Stop renewal reminders':'Ne plus me rappeler de renouveler'))+'</button>';}
   else h+='<div style="margin-top:6px">'+(en?'Kino stays with you whatever you choose; your memory and conversations are kept at least 90 days.':'Kino reste avec vous quoi que vous choisissiez ; votre m\u00e9moire et vos conversations sont gard\u00e9es au moins 90 jours.')+'</div>';
@@ -9667,14 +9667,14 @@ function offersSheet(){fnb('offers');
   '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Chaque formule vient avec Kino, l\u2019intelligence artificielle de l\u2019app : un vrai trader et un compagnon, qui lit les march\u00e9s avec vous, transforme vos id\u00e9es en robots en quelques phrases et se souvient de vous. Le reste, vous le d\u00e9couvrirez avec lui.','Every plan comes with Kino, the app\u2019s built-in AI: a real trader and a companion, who reads the markets with you, turns your ideas into robots in a few sentences and remembers you. The rest you\u2019ll discover with him.')+'</p>'+
   tier('free',T2('D\u00e9couverte','Discovery'),T2('Gratuit','Free'),
    T2('Rencontrez Kino aujourd\u2019hui, sans payer','Meet Kino today, for free'),
-   [T2('Kino \u00e0 fond pendant 14 jours, puis 10 r\u00e9ponses par jour','Kino at full speed for 14 days, then 10 replies a day')+ic(T2('Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour.','He stays after the trial: same Kino, same memory, just fewer messages a day.')),
+   [T2('Kino \u00e0 fond pendant 7 jours, puis 5 r\u00e9ponses par jour','Kino at full speed for 7 days, then 5 replies a day')+ic(T2('Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour.','He stays after the trial: same Kino, same memory, just fewer messages a day.')),
     T2('Votre premier robot construit avec Kino, en mode fant\u00f4me sur les vrais prix','Your first robot built with Kino, in ghost mode on live prices')+ic(T2('Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime.','Ghost mode trades pretend money on live prices: you watch your idea work without risking a cent.')),
     T2('2 tests de robot par mois, le graphique et les prix en direct','2 robot tests a month, the chart and live prices'),
     T2('Votre m\u00e9moire avec Kino gard\u00e9e au moins 90 jours','Your memory with Kino kept at least 90 days')].concat(P.exness_ref?[T2('Pour trader aux m\u00eames prix que le robot : ','To trade at the robot\u2019s prices: ')+'<a href="'+_escS(P.exness_ref)+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">'+T2('votre compte Exness avec notre lien','your Exness account with our link')+'</a>']:[]),
    'var(--muted2)')+
   tier('manual',T2('Essentiel','Essential'),'$'+(pk.manual||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
    T2('Kino au quotidien, et les signaux du robot','Kino every day, and the robot\u2019s signals'),
-   [T2('Kino : 40 r\u00e9ponses par jour, partout dans l\u2019app','Kino: 40 replies a day, everywhere in the app'),
+   [T2('Kino : 400 r\u00e9ponses par mois, partout dans l\u2019app (+300 pour 9 $ si besoin)','Kino: 400 replies a month, everywhere in the app (+300 for 9 $ if needed)'),
     T2('Une alerte sur votre t\u00e9l\u00e9phone \u00e0 chaque entr\u00e9e du robot, \u00e0 vos prix','An alert on your phone at each robot entry, at your prices')+ic(T2('Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique.','The robot enters at the second; you, seconds later, at another price. The alert is a signal to understand, not an identical copy.')),
     T2('5 tests de robot par mois, mode fant\u00f4me','5 robot tests a month, ghost mode'),
     T2('Les prix de nos courtiers partenaires (Exness) ; aucun compte \u00e0 nous confier','Our partner brokers\u2019 prices (Exness); no account to hand over'),
@@ -9682,15 +9682,15 @@ function offersSheet(){fnb('offers');
    'var(--up-soft)')+
   tier('strategy','Pro','$'+(pk.strategy||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
    T2('Construisez et testez sans limite','Build and test without limits'),
-   [T2('Kino : 150 r\u00e9ponses par jour et 30 minutes d\u2019appel vocal par mois','Kino: 150 replies a day and 30 minutes of voice calls a month'),
+   [T2('Kino : 1 200 r\u00e9ponses par mois et 30 minutes d\u2019appel vocal par mois','Kino: 1,200 replies a month and 30 minutes of voice calls a month'),
     T2('Tests illimit\u00e9s sur de vrais prix \u2014 Bitcoin, l\u2019or, le Nasdaq\u2026 \u2014 avec le contr\u00f4le du hasard','Unlimited tests on real prices \u2014 Bitcoin, gold, the Nasdaq\u2026 \u2014 with the luck check')+ic(T2('Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard.','The same test bench as the nest\u2019s robot. A result counts only if it beats random entries.')),
     T2('L\u2019atelier complet et la place des robots : vos robots publi\u00e9s vous rapportent','The full workshop and the robot place: your published robots earn you money'),
     T2('Le graphique complet et la m\u00e9thode en mots simples ; Essentiel inclus','The full chart and the method in plain words; Essential included')],
    'var(--warn)')+
   tier('premium','Premium','$'+(pk.premium||{usd:119}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
-   T2('Votre courtier, et Kino sans compter','Your own broker, and Kino without counting'),
+   T2('Votre courtier, et Kino \u00e0 son meilleur','Your own broker, and Kino at his best'),
    [T2('Les prix de votre propre courtier, branch\u00e9s pour vous','Your own broker\u2019s prices, connected for you')+ic(T2('Le Owl branche le flux de prix de votre courtier sur notre serveur, sous 48 h apr\u00e8s le paiement.','The Owl connects your broker\u2019s price feed on our server, within 48 h of payment.')),
-    T2('Kino sans compter (usage normal) et 60 minutes d\u2019appel par mois','Kino without counting (normal use) and 60 minutes of calls a month'),
+    T2('Kino au plus haut niveau (son meilleur cerveau), 600 r\u00e9ponses par mois et 60 minutes d\u2019appel','Kino at his very best (his strongest brain), 600 replies a month and 60 minutes of calls'),
     T2('Vos tests passent en priorit\u00e9 ; Pro inclus','Your tests go first; Pro included')],
    'var(--accent-soft)')+
   tier('family',T2('Automatique','Automatic'),T2('Famille<span>sur invitation</span>','Family<span>by invitation</span>'),
@@ -24179,8 +24179,9 @@ def chat_send(user, body):
         _tzo = int(_tz_of(user.get("id")).get("off") or 0)
         _pu = _person(user.get("id"))
         if _PL.kino_left(_pu, _pn, _tzo) == 0:
-            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
-        _PL.note_reply(_pu, _tzo)
+            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies"),
+                    "month": _PL.info(_pn).get("month"), "pack": _PL.PACK}
+        _PL.note_reply(_pu, _tzo, _pn)
     _ex = {"voice": True} if body.get("voice") else {}
     rp = body.get("reply") if isinstance(body.get("reply"), dict) else None     # 2026-10-20 (owner UI item 1): a quoted message
     if rp and str(rp.get("text") or "").strip():
@@ -25015,7 +25016,7 @@ def chat_image(user, body):
         _pu = _person(user.get("id"))
         if _PL.kino_left(_pu, _pn, _tzo) == 0:
             return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
-        _PL.note_reply(_pu, _tzo)
+        _PL.note_reply(_pu, _tzo, _pn)
     d = str(body.get("data") or "")
     if d.startswith("data:"):
         d = d.split(",", 1)[-1]
@@ -25087,7 +25088,7 @@ def chat_doc(user, body):
         _pu = _person(user.get("id"))
         if _PL.kino_left(_pu, _pn, _tzo) == 0:
             return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
-        _PL.note_reply(_pu, _tzo)
+        _PL.note_reply(_pu, _tzo, _pn)
     d = str(body.get("data") or "")
     if d.startswith("data:"):
         d = d.split(",", 1)[-1]
@@ -26871,7 +26872,7 @@ def chat_show(user, body):
         _pu = _person(user.get("id"))
         if _PL.kino_left(_pu, _pn, _tzo) == 0:
             return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies")}
-        _PL.note_reply(_pu, _tzo)
+        _PL.note_reply(_pu, _tzo, _pn)
     mk = str(body.get("market") or _chat_market(c))
     tf = str(body.get("tf") or "M5")
     marks = []
@@ -27927,6 +27928,34 @@ def voice_wallet(user, body):
     o = voice_offer()
     return {"ok": True, "admin": is_admin(user), "wallet": _vw_view(uid), "pay_ready": bool(cfg.get("np_api_key")),
             "packs": [dict(v, id=k) for k, v in (o.get("packs") or {}).items()], "included_min": o.get("included_min")}
+
+
+def msg_pack_buy(user, body):
+    """2026-11-01 (owner: plans that never lose money): 300 more replies with Kino for 9 $ - a NOWPayments invoice, the IPN
+    credits the pack (owl_plans.add_extra), on top of the month, never expiring"""
+    import urllib.request as _urq
+    pk = str(body.get("pack") or "msgs-300")
+    P = _PL.PACK.get(pk)
+    cfg = nest_config()
+    if not P:
+        return {"ok": False, "err": "bad pack"}
+    if not cfg.get("np_api_key"):
+        return {"ok": False, "err": "not ready"}
+    origin = cfg.get("public_origin") or "https://owltrader.duckdns.org"
+    api = "https://api-sandbox.nowpayments.io" if cfg.get("np_sandbox") else "https://api.nowpayments.io"
+    back = "%s/%s/atelier" % (origin, user.get("token"))
+    req = _urq.Request(api + "/v1/invoice", data=json.dumps({
+        "price_amount": P["usd"], "price_currency": "usd", "order_id": "%s|%s|%d" % (_person(user.get("id")), pk, int(time.time())),
+        "order_description": "OwlNest - Kino, %d messages" % P["n"], "ipn_callback_url": origin + "/np_ipn",
+        "success_url": back, "cancel_url": back}).encode(), method="POST", headers={"x-api-key": cfg["np_api_key"], "Content-Type": "application/json"})
+    try:
+        with _urq.urlopen(req, timeout=20) as r:
+            inv = json.loads(r.read().decode("utf-8", "replace"))
+    except Exception as e:
+        return {"ok": False, "err": str(e)[:120]}
+    if not inv.get("invoice_url"):
+        return {"ok": False, "err": "no invoice"}
+    return {"ok": True, "url": inv["invoice_url"]}
 
 
 def voice_buy(user, body):
@@ -31411,16 +31440,16 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <div style="font-size:.86rem;color:var(--text2);margin:2px 4px 10px;line-height:1.55">Dans chaque formule, il y a Kino : l&#8217;intelligence artificielle int&eacute;gr&eacute;e &agrave; l&#8217;app. Pas un simple assistant : un vrai trader, qui lit les march&eacute;s avec vous, transforme vos id&eacute;es en robots en quelques phrases et se souvient de vous d&#8217;un jour &agrave; l&#8217;autre. Un compagnon plut&ocirc;t qu&#8217;un outil. Pour le reste, on vous laisse le d&eacute;couvrir.</div>
 <div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
 <div class="ft"><b>D&eacute;couverte &middot; gratuit</b>
-<span>Kino, votre ami trader, &agrave; fond pendant 14 jours, puis 10 r&eacute;ponses par jour. Votre premier robot construit avec lui, en mode fant&ocirc;me sur les vrais prix. Un pr&eacute;nom et un mot de passe suffisent.</span></div></div>
+<span>Kino, votre ami trader, &agrave; fond pendant 7 jours, puis 5 r&eacute;ponses par jour. Votre premier robot construit avec lui, en mode fant&ocirc;me sur les vrais prix. Un pr&eacute;nom et un mot de passe suffisent.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--up)">$19</div>
 <div class="ft"><b>Essentiel &middot; 30 jours</b>
-<span>Kino au quotidien (40 r&eacute;ponses par jour) et les signaux du robot sur votre t&eacute;l&eacute;phone. 5 tests de robot par mois. Aucun compte MT5 &agrave; confier.</span></div></div>
+<span>Kino au quotidien (400 r&eacute;ponses par mois) et les signaux du robot sur votre t&eacute;l&eacute;phone. 5 tests de robot par mois. Aucun compte MT5 &agrave; confier.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--warn)">$49</div>
 <div class="ft"><b>Pro &middot; 30 jours</b>
-<span>Kino 150 r&eacute;ponses par jour et 30 minutes d&#8217;appel. Tests illimit&eacute;s sur Bitcoin, l&#8217;or, le Nasdaq ; l&#8217;atelier complet et la place des robots ; le graphique complet et la m&eacute;thode.</span></div></div>
+<span>Kino 1 200 r&eacute;ponses par mois et 30 minutes d&#8217;appel. Tests illimit&eacute;s sur Bitcoin, l&#8217;or, le Nasdaq ; l&#8217;atelier complet et la place des robots ; le graphique complet et la m&eacute;thode.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">$119</div>
 <div class="ft"><b>Premium &middot; 30 jours</b>
-<span>Tout Pro, plus les prix de votre propre courtier branch&eacute;s pour vous, Kino sans compter et 60 minutes d&#8217;appel.</span></div></div>
+<span>Tout Pro, plus les prix de votre propre courtier branch&eacute;s pour vous, Kino &agrave; son meilleur (600 r&eacute;ponses par mois) et 60 minutes d&#8217;appel.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
 <span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
@@ -31707,13 +31736,13 @@ var EN={
 "OwlNest vend un logiciel et un service de copie — pas de conseil ni de gestion d’investissement.": "OwlNest sells software and a copy service — not investment advice or management.",
 "La démo est gratuite, toujours, et Découverte aussi. Les formules se paient à l’avance et se renouvellent à la main, jamais toutes seules.": "The demo is free, always, and so is Discovery. Plans are paid in advance and renewed by hand, never by themselves.",
 "Découverte · gratuit": "Discovery · free",
-"Kino, votre ami trader, à fond pendant 14 jours, puis 10 réponses par jour. Votre premier robot construit avec lui, en mode fantôme sur les vrais prix. Un prénom et un mot de passe suffisent.": "Kino, your trading friend, at full speed for 14 days, then 10 replies a day. Your first robot built with him, in ghost mode on live prices. A first name and a password are enough.",
+"Kino, votre ami trader, à fond pendant 7 jours, puis 5 réponses par jour. Votre premier robot construit avec lui, en mode fantôme sur les vrais prix. Un prénom et un mot de passe suffisent.": "Kino, your trading friend, at full speed for 7 days, then 5 replies a day. Your first robot built with him, in ghost mode on live prices. A first name and a password are enough.",
 "Essentiel · 30 jours": "Essential · 30 days",
-"Kino au quotidien (40 réponses par jour) et les signaux du robot sur votre téléphone. 5 tests de robot par mois. Aucun compte MT5 à confier.": "Kino every day (40 replies a day) and the robot’s signals on your phone. 5 robot tests a month. No MT5 account to hand over.",
+"Kino au quotidien (400 réponses par mois) et les signaux du robot sur votre téléphone. 5 tests de robot par mois. Aucun compte MT5 à confier.": "Kino every day (400 replies a month) and the robot’s signals on your phone. 5 robot tests a month. No MT5 account to hand over.",
 "Pro · 30 jours": "Pro · 30 days",
-"Kino 150 réponses par jour et 30 minutes d’appel. Tests illimités sur Bitcoin, l’or, le Nasdaq ; l’atelier complet et la place des robots ; le graphique complet et la méthode.": "Kino 150 replies a day and 30 minutes of calls. Unlimited tests on Bitcoin, gold, the Nasdaq; the full workshop and the robot place; the full chart and the method.",
+"Kino 1 200 réponses par mois et 30 minutes d’appel. Tests illimités sur Bitcoin, l’or, le Nasdaq ; l’atelier complet et la place des robots ; le graphique complet et la méthode.": "Kino 1,200 replies a month and 30 minutes of calls. Unlimited tests on Bitcoin, gold, the Nasdaq; the full workshop and the robot place; the full chart and the method.",
 "Premium · 30 jours": "Premium · 30 days",
-"Tout Pro, plus les prix de votre propre courtier branchés pour vous, Kino sans compter et 60 minutes d’appel.": "All of Pro, plus your own broker’s prices connected for you, Kino without counting and 60 minutes of calls.",
+"Tout Pro, plus les prix de votre propre courtier branchés pour vous, Kino à son meilleur (600 réponses par mois) et 60 minutes d’appel.": "All of Pro, plus your own broker’s prices connected for you, Kino at his best (600 replies a month) and 60 minutes of calls.",
 "Kino, l’IA trader de l’app, est dans chaque formule. Les formules payantes se paient à l’avance, en crypto dans l’app ou par code, et ne se renouvellent jamais toutes seules : à la fin des 30 jours, vous revenez simplement à Découverte, avec Kino et votre mémoire.": "Kino, the app’s trading AI, is in every plan. Paid plans are paid in advance, in crypto in the app or with a code, and never renew by themselves: after 30 days you simply go back to Discovery, with Kino and your memory.",
 "Dans chaque formule, il y a Kino : l’intelligence artificielle intégrée à l’app. Pas un simple assistant : un vrai trader, qui lit les marchés avec vous, transforme vos idées en robots en quelques phrases et se souvient de vous d’un jour à l’autre. Un compagnon plutôt qu’un outil. Pour le reste, on vous laisse le découvrir.": "In every plan there is Kino: the AI built into the app. Not just an assistant: a real trader who reads the markets with you, turns your ideas into robots in a few sentences and remembers you from one day to the next. A companion rather than a tool. The rest, we’ll let you discover.",
 "Nos offres": "Our plans",
@@ -32441,7 +32470,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
     tiers = (
         tier("free", "D&eacute;couverte", "Gratuit",
              "Kino d&egrave;s aujourd&#8217;hui, sans payer",
-             ["Kino, votre ami trader, &agrave; fond pendant 14 jours, puis 10 r&eacute;ponses par jour "
+             ["Kino, votre ami trader, &agrave; fond pendant 7 jours, puis 5 r&eacute;ponses par jour "
               + info("Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour."),
               "Votre premier robot construit avec Kino, en mode fant&ocirc;me sur les vrais prix "
               + info("Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime."),
@@ -32452,7 +32481,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
              "#9aa9bd", button="<button type=\"button\" class=\"go\" onclick=\"pick('free')\">Commencer gratuitement</button>")
         + tier("manual", "Essentiel", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
              "Kino au quotidien, et les signaux du robot",
-             ["Kino : 40 r&eacute;ponses par jour, partout dans l&#8217;app",
+             ["Kino : 400 r&eacute;ponses par mois, partout dans l&#8217;app",
               "Une alerte sur votre t&eacute;l&eacute;phone &agrave; chaque entr&eacute;e du robot, &agrave; vos prix "
               + info("Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique."),
               "5 tests de robot par mois, mode fant&ocirc;me",
@@ -32462,7 +32491,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
              "var(--up)")
         + tier("strategy", "Pro", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
              "Construisez et testez sans limite",
-             ["Kino : 150 r&eacute;ponses par jour et 30 minutes d&#8217;appel vocal par mois",
+             ["Kino : 1 200 r&eacute;ponses par mois et 30 minutes d&#8217;appel vocal par mois",
               "Tests illimit&eacute;s sur de vrais prix &mdash; Bitcoin, l&#8217;or, le Nasdaq&hellip; &mdash; avec le contr&ocirc;le du hasard "
               + info("Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard."),
               "L&#8217;atelier complet et la place des robots : vos robots publi&eacute;s vous rapportent "
@@ -32470,10 +32499,10 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
               "Le graphique complet et la m&eacute;thode en mots simples ; Essentiel inclus"],
              "var(--warn)", "&nbsp;<span class=\"bdg\">Le plus choisi</span>")
         + tier("premium", "Premium", "$%d<span>/ 30 jours</span>" % PACKAGES["premium"]["usd"],
-             "Votre courtier, et Kino sans compter",
+             "Votre courtier, et Kino &agrave; son meilleur",
              ["Les prix de votre propre courtier, branch&eacute;s pour vous "
               + info("Le Owl branche le flux de prix de votre courtier sur notre serveur, sous 48 h apr\u00e8s le paiement."),
-              "Kino sans compter (usage normal) et 60 minutes d&#8217;appel par mois",
+              "Kino &agrave; son meilleur, 600 r&eacute;ponses par mois et 60 minutes d&#8217;appel par mois",
               "Vos tests passent en priorit&eacute; ; Pro inclus"],
              "var(--accent-soft)")
         + tier("family", "Automatique", "Famille<span>sur invitation</span>",
@@ -33852,7 +33881,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")
@@ -33878,7 +33907,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy,
+                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
@@ -34167,6 +34196,13 @@ class H(BaseHTTPRequestHandler):
                                     rec["granted"] = "short"
                             except Exception as _e:
                                 rec["granted"] = "robot_err:" + str(_e)[:60]
+                        if _pkg in _PL.PACK:
+                            # 2026-11-01: a message pack - more replies with Kino, on top of the month
+                            _PL.add_extra(_uid, _PL.PACK[_pkg]["n"])
+                            rec["granted"] = "msgs"
+                            queue_push(_uid, "💬 Messages ajoutés", "Merci ! %d messages de plus avec Kino." % _PL.PACK[_pkg]["n"])
+                            queue_push("kino", "💬 Pack vendu", "%s · %s · $%.2f" % (_uid, _pkg, float(data.get("price_amount") or 0)))
+                            _pkg = "_msgs_done"
                         if _pkg.startswith("voice-"):
                             # 2026-10-20 (owner): call minutes, paid in crypto like the packages
                             _vp = float(data.get("price_amount") or 0)

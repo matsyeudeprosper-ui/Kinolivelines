@@ -18,25 +18,30 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 USAGE = os.path.join(HERE, "robots", "plan_usage.json")
-TRIAL_DAYS = 14
+TRIAL_DAYS = 7                       # 2026-11-01 (owner: plans that never lose money): was 14
 _LOCK = threading.Lock()
 
 # price: USD per 30 days (NOWPayments invoices are in USD, like every page of the app)
+# 2026-11-01 (owner: "only if the business is not making me lose money"): paid plans count Kino's replies per MONTH ("month"),
+# sized so a member who uses all of them still leaves a margin (measured: ~0.11 $ a message on Sonnet, ~0.02-0.03 on the small
+# model the plans below Premium use once the owner's blind lean test passed). Free tiers keep a small daily allowance.
+# Bought message packs ("extra") come on top of the month and do not expire.
 PLAN_INFO = {
-    "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 10, "tests": 2, "voice": 0,
+    "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 5, "tests": 2, "voice": 0,
                          "markets": False, "background": False},
-    "decouverte_trial": {"label": "Découverte · essai", "label_en": "Discovery · trial", "usd": 0, "replies": 40, "tests": 2,
+    "decouverte_trial": {"label": "Découverte · essai", "label_en": "Discovery · trial", "usd": 0, "replies": 30, "tests": 2,
                          "voice": 0, "markets": False, "background": True},
-    "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": 40, "tests": 5, "voice": 0,
+    "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": None, "month": 400, "tests": 5, "voice": 0,
                          "markets": False, "background": True},
-    "pro":              {"label": "Pro", "label_en": "Pro", "usd": 49, "replies": 150, "tests": None, "voice": 30,
+    "pro":              {"label": "Pro", "label_en": "Pro", "usd": 49, "replies": None, "month": 1200, "tests": None, "voice": 30,
                          "markets": True, "background": True},
-    "premium":          {"label": "Premium", "label_en": "Premium", "usd": 119, "replies": 400, "tests": None, "voice": 60,
+    "premium":          {"label": "Premium", "label_en": "Premium", "usd": 119, "replies": None, "month": 600, "tests": None, "voice": 60,
                          "markets": True, "background": True, "own_broker": True},
     "owner":            {"label": "Propriétaire", "label_en": "Owner", "usd": 0, "replies": None, "tests": None, "voice": None,
                          "markets": True, "background": True},
 }
 ORDER = ("decouverte", "decouverte_trial", "essentiel", "pro", "premium", "owner")
+PACK = {"msgs-300": {"usd": 9, "n": 300}}       # 2026-11-01: a top-up when the month runs out
 
 
 def _start(user):
@@ -119,8 +124,27 @@ def replies_today(uid, tz_off_min=0):
     return int((r.get("days") or {}).get(_day(tz_off_min), 0))
 
 
-def note_reply(uid, tz_off_min=0):
-    """one member message answered by Kino today (counted when it is sent)"""
+def replies_month(uid):
+    return int(((_load().get(uid) or {}).get("months") or {}).get(_month(), 0))
+
+
+def extra(uid):
+    return int((_load().get(uid) or {}).get("extra") or 0)
+
+
+def add_extra(uid, n):
+    """a message pack bought: n replies on top of the month, never expiring"""
+    with _LOCK:
+        d = _load()
+        r = d.setdefault(uid, {})
+        r["extra"] = int(r.get("extra") or 0) + int(n)
+        _save(d)
+        return r["extra"]
+
+
+def note_reply(uid, tz_off_min=0, plan=None):
+    """one member message answered by Kino (counted when it is sent) - per day, per month, and from a pack once the month's
+    allowance is used up"""
     with _LOCK:
         d = _load()
         r = d.setdefault(uid, {})
@@ -129,15 +153,27 @@ def note_reply(uid, tz_off_min=0):
         D[k] = int(D.get(k, 0)) + 1
         for old in sorted(D)[:-8]:
             D.pop(old, None)
+        M = r.setdefault("months", {})
+        mk = _month()
+        cap = info(plan).get("month") if plan else None
+        if cap is not None and int(M.get(mk, 0)) >= int(cap) and int(r.get("extra") or 0) > 0:
+            r["extra"] = int(r["extra"]) - 1
+        else:
+            M[mk] = int(M.get(mk, 0)) + 1
+        for old in sorted(M)[:-3]:
+            M.pop(old, None)
         _save(d)
         return D[k]
 
 
 def kino_left(uid, plan, tz_off_min=0):
-    cap = info(plan).get("replies")
+    I = info(plan)
+    if I.get("month") is not None:
+        return max(0, int(I["month"]) - replies_month(uid)) + extra(uid)
+    cap = I.get("replies")
     if cap is None:
         return None
-    return max(0, int(cap) - replies_today(uid, tz_off_min))
+    return max(0, int(cap) - replies_today(uid, tz_off_min)) + extra(uid)
 
 
 def tests_this_month(uid):
@@ -173,7 +209,10 @@ def describe(plan, uid=None, tz_off_min=0, user=None, lang="fr"):
     parts = []
     kl = kino_left(uid, plan, tz_off_min) if uid else None
     if kl is not None:
-        parts.append(("he can still write to you %d times today" if lang == "en" else "il peut encore t'écrire %d fois aujourd'hui") % kl)
+        if I.get("month") is not None:
+            parts.append(("%d replies left this month" if lang == "en" else "encore %d réponses ce mois") % kl)
+        else:
+            parts.append(("he can still write to you %d times today" if lang == "en" else "il peut encore t'écrire %d fois aujourd'hui") % kl)
     tl = tests_left(uid, plan) if uid else None
     if tl is not None:
         parts.append(("%d robot tests left this month" if lang == "en" else "encore %d tests de robot ce mois") % tl)
@@ -197,10 +236,18 @@ if __name__ == "__main__":
     assert plan_of(u_old, {"strategy_until": now - 100}) == "decouverte"          # expired -> light, not cut off
     assert plan_of(u_old, {}, family=True) == "pro"
     assert plan_of(u_old, {}, owner=True) == "owner"
-    assert kino_left("x", "decouverte") == 10
+    assert kino_left("x", "decouverte") == 5
+    assert kino_left("x", "essentiel") == 400
+    for _ in range(400):
+        note_reply("y", 0, "essentiel")
+    assert kino_left("y", "essentiel") == 0
+    add_extra("y", 300)
+    assert kino_left("y", "essentiel") == 300
+    note_reply("y", 0, "essentiel")
+    assert kino_left("y", "essentiel") == 299
     for _ in range(3):
         note_reply("x")
-    assert kino_left("x", "decouverte") == 7 and kino_left("x", "owner") is None
+    assert kino_left("x", "decouverte") == 2 and kino_left("x", "owner") is None
     note_test("x")
     assert tests_left("x", "decouverte") == 1 and tests_left("x", "pro") is None
     print(describe("decouverte_trial", "x", user=u_new))
