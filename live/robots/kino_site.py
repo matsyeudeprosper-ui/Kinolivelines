@@ -55,6 +55,47 @@ def cfg():
     return out
 
 
+def act(W, j, log=None):
+    """his 'site' action: op headline (title = headline, about = the line under it) | service (title, price, about) |
+    remove_service (title) | strengths (about = lines "name: text") -> a sentence for him"""
+    op = str(j.get("op") or "").lower()
+    c = cfg()
+    try:
+        cur = json.load(open(CFG, encoding="utf-8"))
+    except Exception:
+        cur = {}
+    if op == "headline":
+        new = {"headline": str(j.get("title") or "")[:90], "sub": str(j.get("about") or "")[:400]}
+        if not new["headline"]:
+            return "a headline needs title (and about = the line under it)"
+    elif op == "service":
+        s = {"title": str(j.get("title") or "")[:80], "price": str(j.get("price") or "")[:30], "about": str(j.get("about") or "")[:400]}
+        if not s["title"] or not s["about"] or not s["price"]:
+            return "a service needs title, price (e.g. 'from 25 $') and about"
+        S = [x for x in c["services"] if x["title"].lower() != s["title"].lower()] + [s]
+        new = {"services": S[-6:]}
+    elif op == "remove_service":
+        new = {"services": [x for x in c["services"] if x["title"].lower() != str(j.get("title") or "").lower()]}
+    elif op == "strengths":
+        L = [l.split(":", 1) for l in str(j.get("about") or "").splitlines() if ":" in l]
+        if len(L) < 3:
+            return "strengths: at least 3 lines 'name: what it means'"
+        new = {"strengths": [[a.strip()[:40], b.strip()[:160]] for a, b in L[:6]]}
+    else:
+        return "site op is one of: headline, service, remove_service, strengths"
+    import kino_post as KP
+    no = KP._gate(W, "site_text", op, "TEXT FOR KINO'S PUBLIC SALES PAGE (true claims only - no invented clients, reviews, numbers "
+                  "or guarantees):\n" + json.dumps(new, ensure_ascii=False), log)
+    if no:
+        return no
+    cur.update(new)
+    tmp = CFG + ".tmp"
+    open(tmp, "w", encoding="utf-8").write(json.dumps(cur, ensure_ascii=False, indent=1))
+    os.replace(tmp, CFG)
+    KP._record("site_text", op, True, "", BASE)
+    return "your site is updated: %s" % BASE
+
+
 def _e(x):
     return html.escape(str(x or ""))
 

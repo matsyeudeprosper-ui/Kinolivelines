@@ -120,7 +120,15 @@ def invoice(amount, what, payer=""):
         ref, url = create(amount, what, payer)
     except ValueError as e:
         return str(e)
-    return "payment link for %.2f $ (%s): %s - it stays valid; you are told when it is paid" % (float(amount), str(what)[:150], url)
+    alt = ""
+    try:                                       # 2026-11-01 (owner): PayPal for people who don't use crypto - same order, owner confirms
+        import kino_site as KSI, kino_shop as KS
+        if KSI.cfg().get("paypal_me"):
+            alt = " - or by PayPal: https://kino.owltrader.duckdns.org/pay/%s/%s" % (ref, KS._token(ref))
+    except Exception:
+        pass
+    return "payment link for %.2f $ (%s): crypto %s%s - give them the link(s); you are told when it is paid" % (
+        float(amount), str(what)[:150], url, alt)
 
 
 def status_of(ref):

@@ -443,6 +443,18 @@ class H(BaseHTTPRequestHandler):
                     return self._html(KSI.message("Sorry", tok), 400)
                 return self._html(KSI.paypal(prod, ref, tok))
             return self._html(KSI.choose(prod))
+        if p.startswith("/pay/"):                       # PayPal for an invoice Kino made (a service agreed by email)
+            import kino_shop as KS, kino_pay as KPY, hmac as _hm
+            parts = p.split("/")
+            ref, tok = (parts[2] if len(parts) > 2 else ""), (parts[3] if len(parts) > 3 else "")
+            x = next((i for i in KPY._load()["invoices"] if i["ref"] == ref), None)
+            if not x or not re.fullmatch(r"[0-9a-f]{10}", ref) or not _hm.compare_digest(KS._token(ref), tok) or not KSI.cfg().get("paypal_me"):
+                return self._html(KSI.message("Not found", "This link is not valid."), 404)
+            if x.get("status") == "paid":
+                return self._html(KSI.message("Already paid", "This one is paid - thank you!"))
+            x2 = dict(x)
+            x2["method"] = "PayPal"
+            return self._html(KSI.paypal({"title": x["what"], "price": float(x["usd"])}, ref, tok))
         if p.startswith("/paid/"):
             import kino_shop as KS, kino_pay as KPY, hmac as _hm
             parts = p.split("/")

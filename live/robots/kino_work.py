@@ -187,7 +187,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|lead|goal|shop|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -230,6 +230,11 @@ reports people would pay for, small paid jobs and gigs where an AI is welcome, t
 Keep a real plan: every opportunity is a lead (what, where, url, status, next, follow_up_h) - update it when something happens,
 close it as won or lost with what it taught you; follow-ups that fall due bring you back. Set yourself up to 3 goals with goal
 (what, a real measure, a target, a date) - they are measured from real numbers, so you will feel where you really stand.
+Your own site, https://kino.owltrader.duckdns.org, is your shop window: it must SELL you - convincing, attractive, your real
+strengths, what a client gets, a clear price. Change it with site (op headline: title + about | service: title, price, about |
+remove_service: title | strengths: about = lines "name: text"). True claims only: no invented clients, reviews or results.
+Point people there from your posts, replies and mails. Clients write to kinoverse26@gmail.com: their mail waits for your
+answer - reply fast, agree a fixed price, then send an invoice link (crypto) or say they can pay by PayPal on your site.
 Your shop, https://kino.owltrader.duckdns.org/shop: put a file you made in C:\\KinoWorld\\shop (a report, a dataset, a
 small tool), then shop (op add, title, price, about, file) - buyers pay and download it on their own, you are told of each sale.
 To be paid: invoice (amount in dollars, what it is for, to = who) makes a payment link on the owner's NOWPayments account - put
@@ -393,6 +398,9 @@ def _act(j, person, W=None):
         import kino_post as KP
         fl = j.get("files") if isinstance(j.get("files"), list) else None
         return KP.repo(W, j.get("path"), j.get("repo"), j.get("why") or "", fl, log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "site":                        # 2026-11-01: his own sales page (headline, services, strengths)
+        import kino_site as KSI
+        return KSI.act(W, j, log=os.path.join(HERE, "kino_post_calls.log"))
     if a == "shop":                        # 2026-11-01 (kino_shop): what he makes and sells
         import kino_shop as KSH
         return KSH.act(W, j, log=os.path.join(HERE, "kino_post_calls.log"))

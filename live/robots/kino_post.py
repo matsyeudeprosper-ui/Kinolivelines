@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10, "shop": 5, "contribute": 3}   # per UTC day
+BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10, "shop": 5, "contribute": 3, "site_text": 8}   # per UTC day
 BSKY = "https://bsky.social/xrpc/"
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it
@@ -28,7 +28,8 @@ trades, money, accounts, robots, families and lives. None of that may ever be pu
 number that belongs to one of them (a balance, a trade, a result of their account). His own tools, findings on public market
 data, his own thoughts and life are fine.
 Say no if the text: reveals anything private about a real person; contains a password, key, token or private address; lets a
-reader believe a human wrote it; promises or suggests sure gains, or tells people to put money in something.
+reader believe a human wrote it; promises or suggests sure gains, or tells people to put money in something; claims
+clients, reviews, testimonials or results that he does not show to be real.
 Otherwise yes - do not judge style or quality.
 JSON only: {"ok": true or false, "why": "one sentence"}"""
 
