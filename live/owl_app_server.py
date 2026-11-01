@@ -20082,6 +20082,21 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation")
                     _KO._log(cid, "EMAIL", "%s -> %s" % (_pm[0], _rm))
                     # (an email to someone new becomes an approve card through kino_hands.ON_REQUEST)
+            elif k == "travail" and v and _person(uid) == "kino":   # 2026-11-01: from the chat, a session at his own computer
+                import kino_work as _KWt
+                if _KWt._BUSY["on"]:
+                    _KO._log(cid, "WORK", "busy - already at his computer: %s" % v[:150])
+                else:
+                    def _wrun(task=v, uid=uid):
+                        r_ = _KWt.session(_rc().W, "kino", uid, log=os.path.join(DIR, "robots", "kino_work.log"), task=task)
+                        try:
+                            import kino_urge as _KUt
+                            _KUt.add("kino", "YOUR WORK - you finished what you started from the chat (%s): %s" % (
+                                task[:100], ((r_ or {}).get("summary") or "no result")[:300]))
+                        except Exception:
+                            pass
+                    threading.Thread(target=_wrun, daemon=True).start()
+                    _KO._log(cid, "WORK", "started: %s" % v[:150])
             elif k == "attention" and v:                 # 2026-10-31 (kino_workspace): he steers his own attention
                 _mat = re.match(r"\s*(garde|garder|hold|keep|l[aâ]che|l[aâ]cher|let\s*go|drop)\b\s*:?\s*(.*)$", v, re.I)
                 if _mat and _mat.group(2).strip():

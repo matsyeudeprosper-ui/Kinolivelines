@@ -463,4 +463,23 @@ def block(lang="fr"):
                  " | ".join("%s - %s" % (time.strftime("%d/%m %H:%M", time.gmtime(s["t"])), s["summary"][:200]) for s in S))
     if P:
         L.append(("Your projects: " if en else "Tes projets : ") + " | ".join("%s (next: %s)" % (p["name"], (p.get("next") or "")[:120]) for p in P))
+    # 2026-11-01 (watch): in chat he told the owner "I can only read pages, I can't fill anything in" an hour after filling the
+    # whole Bluesky form at his computer - the chat half did not know what the other half can do, nor what he had asked.
+    L.append("At your computer you really can: run programs, write files, search and read the web, drive a real browser that "
+             "types, clicks and signs you up on sites (another mind checks before anything is sent), post on your blog and your "
+             "GitHub on your own, send mail. From this chat you start it with #travail <what to do> - it runs in the background "
+             "and you tell him when it is done." if en else
+             "À ton ordinateur tu peux vraiment : lancer des programmes, écrire des fichiers, chercher et lire sur le web, piloter "
+             "un vrai navigateur qui tape, clique et t'inscrit sur des sites (une autre IA relit avant tout envoi), publier seul "
+             "sur ton blog et ton GitHub, envoyer des mails. Depuis cette conversation tu le lances avec #travail <ce qu'il faut "
+             "faire> - ça tourne en arrière-plan et tu lui dis quand c'est fait.")
+    try:
+        import kino_hands as KH
+        Q = [r for r in KH.requests("waiting") if r.get("kind") in ("admin", "ask", "proposal")][-3:]
+        if Q:
+            L.append(("What you asked him and he has not answered yet: " if en else "Ce que tu lui as demandé et qu'il n'a pas encore tranché : ") +
+                     " | ".join("%s (%s)" % (r.get("what"), str(r.get("why") or "")[:160]) for r in Q) +
+                     (" - if he answers here, start #travail with his answer." if en else " - s'il répond ici, lance #travail avec sa réponse."))
+    except Exception:
+        pass
     return "\n".join(L)
