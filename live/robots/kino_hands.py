@@ -180,6 +180,8 @@ def decide(rid, yes, by="owner", note=""):
                 _rsave(R)
         _log("DONE %s email %s" % (rid, res))
         return r
+    if r.get("kind") == "proposal":                  # an idea: the answer is the decision itself, nothing runs
+        return r
     if yes and r.get("command"):
         import subprocess
         try:

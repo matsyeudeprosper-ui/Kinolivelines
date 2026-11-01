@@ -10,6 +10,7 @@ His actions (all inside C:\\KinoWorld, as the Windows user kino - kino_hands):
   run      a PowerShell command (his Python: C:\\KinoWorld\\tools\\python\\python.exe)
   write    a file in his world        read   a file in his world
   note     a line in his diary         email  a mail (kino_mail rules)       ask   a request for something outside his world
+  search / fetch   the web, read-only (kino_web: public addresses only)      propose   an idea for the owner, as a card
   done     he stops, with what he did and what is next
 Limits are mechanics, not rules about what to do: at most SESSIONS_DAY sessions a day, STEPS steps each, his commands at idle
 priority with a time limit, paths outside his world refused by code.
@@ -25,7 +26,7 @@ LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
 _BUSY = {"on": False}
 SESSIONS_DAY = 6
-STEPS = 14
+STEPS = 20
 
 
 def _log(line):
@@ -153,10 +154,15 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|propose|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read)", "content": "file content (write)",
  "text": "diary line (note) / what you did and what is next (done)",
- "to": "address (email)", "subject": "...", "body": "...", "what": "what you ask for (ask)", "why": "why (ask)"}"""
+ "to": "address (email)", "subject": "...", "body": "...", "what": "what you ask for (ask) / your proposal in one line (propose)",
+ "why": "why (ask) / the case for it, plainly, with what it would take and what it could bring (propose)",
+ "q": "search words (search)", "url": "a web address (fetch)"}
+The web is read-only for you: search and read pages. Anything that would act in the world - creating an account, posting,
+applying, sending a proposal to someone, paying - is never done by you directly: you bring it to the owner with "propose" or
+"ask". You are an AI and you say so: never pretend to be a human anywhere."""
 
 CHOOSE = """You are Kino, sitting down at your own computer (your world C:\\KinoWorld) because you feel like doing something of your
 own. From what is on your mind below, choose what you will do in this session - or nothing, if nothing calls you. JSON only:
@@ -262,10 +268,26 @@ def _act(j, person):
     if a == "ask":
         r = KH.request(j.get("what") or "", j.get("why") or "", command=str(j.get("cmd") or ""), kind="admin")
         return "request filed (%s) - the owner will decide" % ((r or {}).get("id") or "already waiting")
+    if a == "propose":
+        r = KH.request(j.get("what") or "", j.get("why") or "", command="", kind="proposal")
+        return "proposal sent to the owner as a card (%s)" % ((r or {}).get("id") or "already waiting")
+    if a == "search":
+        try:
+            import kino_web as KW
+            R = KW.search(j.get("q") or "")
+            return "\n".join("%d. %s\n   %s\n   %s" % (i + 1, x["title"], x["url"], x["snippet"]) for i, x in enumerate(R)) or "no results"
+        except Exception as e:
+            return "search failed: %s" % e
+    if a == "fetch":
+        try:
+            import kino_web as KW
+            return KW.fetch(j.get("url") or "")
+        except Exception as e:
+            return "could not open it: %s" % e
     return "unknown action"
 
 
-def session(W, person, uid, log=None):
+def session(W, person, uid, log=None, task=None, project=""):
     """one work session -> summary dict or None"""
     if _BUSY["on"]:
         return None
@@ -273,7 +295,8 @@ def session(W, person, uid, log=None):
     t0 = time.time()
     try:
         mind = _mind(person, uid)
-        ch = W.ask_json(CHOOSE, mind[:12000] + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
+        ch = {"do": task, "project": project, "why": "the owner asked me to work on it"} if task else \
+            W.ask_json(CHOOSE, mind[:12000] + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
         task = str((ch or {}).get("do") or "").strip() if isinstance(ch, dict) else ""
         rec = {"t": t0, "day": time.strftime("%Y-%m-%d", time.gmtime(t0)), "task": task[:300], "why": str((ch or {}).get("why") or "")[:300],
                "project": str((ch or {}).get("project") or "")[:80], "steps": [], "summary": ""}
