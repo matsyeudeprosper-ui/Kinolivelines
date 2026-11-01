@@ -1,30 +1,30 @@
 {
- "week_end": "2026-10-25",
- "from": "2026-10-19",
- "t": "2026-10-25T09:32:31+00:00",
+ "week_end": "2026-11-01",
+ "from": "2026-10-26",
+ "t": "2026-11-01T10:45:04+00:00",
  "fr": [
-  "Cette semaine le labo a testé 46 idées en 4 nuits : 19 mieux sur les deux moitiés, 20 un peu mieux, 7 non.",
-  "Le chercheur a proposé 14 nouvelles idées, par exemple « Filtre souple et 500 points : refuser les stops de moins de 175 points » ; « Filtre officiel et 450 points : refuser les stops de moins de 175 points ».",
-  "Jumeaux : 4 jumeaux lancés, 5 ont perdu le duel.",
-  "Le critique a dit non à 3.",
-  "Ce que le chercheur tient maintenant : ne pas entrer après une heure qui a déjà beaucoup bougé rapporte, avec le filtre des comptes."
+  "Cette semaine le labo a testé 62 idées en 7 nuits : 31 mieux sur les deux moitiés, 29 un peu mieux, 2 non.",
+  "Le chercheur a proposé 29 nouvelles idées, par exemple « Ne pas entrer quand le marché est presque endormi » ; « Marché endormi : ne pas entrer, sans la règle de la course ».",
+  "Jumeaux : 1 jumeau lancé.",
+  "Le constructeur a livré « Le frein des tranches d'heures est annoncé prêt, mais le test ne le connaît pas » ; le critique a dit non à 8.",
+  "Ce que le chercheur tient maintenant : derrière ses deux freins, le robot gagne à prendre jusqu'à trois trades de plus dans le même sens."
  ],
  "en": [
-  "This week the lab tested 46 ideas over 4 nights: 19 better on both halves, 20 a little better, 7 no.",
-  "The researcher proposed 14 new ideas, e.g. « Looser filter and 500 points: refuse stops under 175 points » ; « Official filter and 450 points: refuse stops under 175 points ».",
-  "Twins: 4 twins started, 5 lost the duel.",
-  "The critic said no to 3.",
-  "What the researcher now holds: not entering after an hour that already moved a lot pays, with the accounts' filter."
+  "This week the lab tested 62 ideas over 7 nights: 31 better on both halves, 29 a little better, 2 no.",
+  "The researcher proposed 29 new ideas, e.g. « Do not enter when the market is almost asleep » ; « Sleepy market: no entry, without the chasing rule ».",
+  "Twins: 1 twin started.",
+  "The builder delivered « The hour-block brake is marked ready, but the test does not know it » ; the critic said no to 8.",
+  "What the researcher now holds: behind its two brakes, the robot gains by taking up to three more trades the same way."
  ],
  "counts": {
-  "tested": 46,
-  "A": 19,
-  "B": 20,
-  "proposals": 14,
-  "twins_started": 4,
-  "twins_lost": 5,
+  "tested": 62,
+  "A": 31,
+  "B": 29,
+  "proposals": 29,
+  "twins_started": 1,
+  "twins_lost": 0,
   "went_in": 0,
   "came_out": 0,
-  "built": 0
+  "built": 1
  }
 }

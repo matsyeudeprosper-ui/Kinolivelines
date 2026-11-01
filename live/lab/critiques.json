@@ -769,6 +769,72 @@
     "overlap: old 'noday' wearing the brakes; skipny is a sub-window. Twin 'no day' +30 in 8 trades since 10-28 - 3 days, too few to count",
     "runs used: 8 (08-14 by parse slip, 08-16, brakes alone, 09-15, 07-17, 08-16 drag auto, brakes alone drag auto, 08-16 drag 1)"
    ]
+  },
+  {
+   "id": "pb_w_ch350_cost5_ny1316",
+   "date": "2026-11-01",
+   "verdict": "doute",
+   "fr": "Moitié mise de 13 h à 17 h ajoute 27 $ en 42 jours aux deux freins seuls, avec un plus gros trou de 40 au lieu de 58. Les réglages voisins gagnent tous, même à 1 $ par trade. Mon inquiétude : la première moitié ne gagne que 2 $, sur un seul trade ; presque tout vient de fin octobre. Sur les vrais trades, le robot perd encore 18 $.",
+   "en": "Half stake from 13:00 to 17:00 adds $27 over 42 days to the two brakes alone, and shrinks the biggest hole (40 instead of 58). Every neighbouring setting gains, and it holds at $1 a trade. What worries me: the first half gains only $2, thanks to a single trade; nearly all of it comes from late October. And on the real trades the robot still loses $18.",
+   "checks": [
+    "reproduction: harness 2026-11-01 idea +48.53 / 35 tr / hole 40.01 (h1 +41.97 10 tr / h2 +6.55), base -55.85 / 266 tr - context said +37.97 / 36 tr (h1 +36.76 11 tr / h2 +1.21): a bar moved, read diffs not levels",
+    "fair reference: same brakes (trend filter + chase 350 + cost 5) without the half stake: +21.10 / 35 tr / hole 58.31 (h1 +40.34 / h2 -19.24). Half stake adds +27.43, hole 58 -> 40 - matches the card's pretest (+1.63 / +25.79)",
+    "halves: vs brakes alone h1 +1.63, h2 +25.79. The h1 part is two trades: one loss -5.80 -> -2.90, one win 2.54 -> 1.27. 'Gains on both halves' is true in sign only - the first half carries no evidence; narrowing 12-17 -> 13-17 just dropped the one h1 trade that cost money (ny05 had h1 -1.25)",
+    "dose window: 14-17 +17.7 (h1 +1.63 / h2 +16.1, hole 47.69); 13-17 +27.4; 13-18 +26.4 (h1 +0.39 / h2 +26.0, hole 40.01). No sign flip; plateau 13-17 / 13-18",
+    "dose stake: 0.25 in 13-17 gives +70.40 / 36 tr / hole 30.86 (h1 +50.95 / h2 +19.45) = +49.3 vs brakes alone. Monotone: the less stake the better, which points to skipping these hours - and skipping 12-16 lost $29 vs the brakes over 69 days (pb_v_ch350_nf06_skipny, bloque). h1 also moves +9 and gains a trade at 0.25: path effects through the catch-up, not pure scaling",
+    "shapes: replay has no daily cap; byref base and capped account give identical diffs (+99.44 / -110.64) - shape tells nothing",
+    "concentration: not one trade - the increment is spread over 11 halved trades at 13-17 UTC (9 losers halved, largest pieces 6.03, 4.62, 4.59), all under the run's biggest trade (18.80). But those trades sit mostly in 13-27 Oct",
+    "long window (context): 69 d +39.92 vs base, h1 -57.95 / h2 +77.17 - vs base, not vs the brakes alone; no 69-day evidence for the half stake itself",
+    "real trades (context): 19 of 120 kept, net -18.03 (+87 vs base) - the robot still loses",
+    "drag: auto unresolved (came back raw, drag None). At $1/trade: idea +9.28 / hole 52.94 (h1 +31.47 / h2 -22.20) vs brakes alone -24.40 / hole 75.10 (h1 +28.84 / h2 -53.24): increment +33.7, survives (half stake also halves the charge); the idea's second half loses at $1",
+    "mechanism: plausible in one sentence - 13-17 UTC is the US open, wide swings that stop out a break-of-structure entry; 9 of the 11 trades there lost in 42 days. Real cause possible, but rests on ~11 trades from two weeks",
+    "past: sibling pb_v_ch350_cost5_ny05 (12-17) doubted 10-31 for 'carried by late October'; this narrowing is the chercheur's answer and it moves the first half by only $2. No twin yet. Registry same family: jar / kill only, no hour-sizing verdict",
+    "overlap: brakes = pb_t_ch350_nf06_cost5 family (doubted); half stake = a soft skipny (bloque) one hour shorter. Old pieces recombined",
+    "runs used: 8 (idea, brakes alone, 14-17, 13-18, 13-17 at 0.25, idea drag auto, idea drag 1, brakes alone drag 1)"
+   ]
+  },
+  {
+   "id": "pb_w_ch350_fh05_ny1316q",
+   "date": "2026-11-01",
+   "verdict": "doute",
+   "fr": "Miser un quart de 13 h à 17 h, c'est presque ne pas trader ces heures-là, et ne pas les trader a perdu 29 $ sur 69 jours. Ici aussi, sur 69 jours, la première moitié perd 68 $ face aux règles d'aujourd'hui. Sur 42 jours, la deuxième moitié perd encore 4 $, et deux trades font presque tout le gain. Décaler d'une heure divise le gain par deux.",
+   "en": "Staking a quarter from 13:00 to 17:00 is almost not trading those hours, and not trading them lost $29 over 69 days. Here too, over 69 days the first half loses $68 against today's rules. Over 42 days the second half still loses $4, and two trades make nearly all the profit. Moving the window one hour halves the gain.",
+   "checks": [
+    "reproduction: harness 2026-11-01 idea +40.11 / 60 tr / hole 37.20 (h1 +45.32 17 tr / h2 -3.51 42 tr), base -55.85 / 266 tr; context said +31.92 / 62 tr - a bar moved, read diffs not levels",
+    "fair reference: same brakes (trend filter + chase 350) without any stake change: -11.81 / hole 75.04 (h1 +39.80 / h2 -53.57). The stake changes add +51.9 (h1 +5.5 / h2 +50.1), hole 75 -> 37: nearly all second half",
+    "dose stake 13-17: 0.5 -> +28.52 / hole 43.94; 0.25 -> +40.11 / hole 37.20. Monotone toward skipping; skipping 12-16 was bloque (pb_v_ch350_nf06_skipny, -$29 vs brakes over 69 d)",
+    "dose nervous change of direction: 0.25 +44.47, 0.5 +40.11, 0.75 +36.96 - smooth, ~3 $ per step, so this part is worth ~6-7 $ at most; same piece added only $2 in 42 d / $1 in 69 d on the choch filter (pb_choch_ext500_fh05, doute 10-21). The hour part carries ~45 $",
+    "dose window: 14-18 at 0.25 -> +18.74 / hole 46.92 (h2 -20.81): one hour later halves the gain - fitted to the exact hours",
+    "halves: own net h1 +45.32 / h2 -3.51; the idea still loses in the second half, it just loses less than today's rules",
+    "shapes: replay has no daily cap; byref base and capped account give identical diffs (+93.39 / -120.92) - shape tells nothing",
+    "concentration: idea's own pnls - two trades +19.91 (h1) and +17.30 (h2) = 37.2 of 40.11 net. The increment over the brakes is spread over the cut 13-17 trades, mostly 13-27 Oct (as found for ny1316)",
+    "long window (context): 69 d +25.67 vs base, verdict B, h1 -67.76 / h2 +72.73 - a loss on the first half, a doubt by the owner's rule",
+    "real trades (context): 31 of 120 kept, net -9.40 (+95.89 vs base): the robot still loses on the real trades",
+    "drag: auto unresolved (drag None, came back raw). At $1/trade: idea -35.02 / hole 80.35 (h1 +29.94 / h2 -57.76), +20.83 vs base, verdict B - the idea itself loses money at $1 a trade",
+    "mechanism: 13-17 UTC is the US open, wide swings stopping out break entries - plausible, but picked on this same data and the bordering hour (17) already breaks it",
+    "overlap: = pb_w_ch350_cost5_ny1316 (doute today) at the 0.25 dose that critique already flagged as 'monotone toward skipping', minus cost 5, plus fh05 (doute 10-21). Old pieces recombined, no twin yet",
+    "runs used: 8 (idea json, brakes alone, hour 0.5, fh 0.25, fh 0.75, window 14-18, drag auto, drag 1)"
+   ]
+  },
+  {
+   "id": "pb_w_ch350_nf06_ny1316q",
+   "date": "2026-11-01",
+   "verdict": "doute",
+   "fr": "La direction tient : plus on mise petit de 13 h à 17 h UTC, mieux c'est ; ne pas trader à ces heures fait encore mieux. Mais ces heures ont été choisies sur les mêmes 42 jours. Ce qui m'inquiète le plus : le robot perd encore de l'argent sur la deuxième moitié et sur les vrais trades. Et sur 69 jours, la première moitié fait 67 $ de moins.",
+   "en": "The direction holds: the smaller the stake from 13:00 to 17:00 UTC, the better, and not trading at all in those hours is better still. But the hours were picked on the same 42 days. What worries me most: the robot still loses money on the second half and on the real trades. And over 69 days the first half is $67 worse.",
+   "checks": [
+    "dose (13-17 UTC stake, brakes kept): 1.0 -> -1.07 net, hole 70; 0.5 -> +28.95, hole 50; 0.25 -> +44.55, hole 41; 0 (skip those hours) -> +50.83, hole 35. Monotone, no sign flip - but the end of the ladder is plain 'skip NY-open hours', so the quarter is a timid hour skip",
+    "window neighbour: 12-18 UTC at 0.25 -> +34.53, hole 34, h2 -2.01: still positive, not a knife-edge on the hours",
+    "halves: vs the two brakes alone the quarter adds +5.7 first half, +42.6 second half - carried by the second half. The variant's own second half is still negative (-10.08); its gain vs deployed there (-95) is mostly from not trading (59 trades vs 266)",
+    "shapes: byref base and valere identical (+91.0 / -119.8) - no split between capped and uncapped",
+    "long window (69 d): diff +24.63 overall but first half -67.07, second +71.01 - a doubt, the gain is again carried by the recent half",
+    "real trades: diff +76.03 vs the real outcome, but variant net on them is still -29.26 over 26 trades",
+    "concentration: about 13 trades fall in 13-17 UTC (59 with vs 46 when skipped); quarter gain +45.6 vs brakes alone is spread over those losses (worst loss -12.05 -> -8.94), not one trade; biggest wins (19.9, 17.3) sit outside the window and are unchanged",
+    "drag: --drag auto unchanged (+44.55, gap not charged yet); --drag 1 -> -30.45 net, hole 80, h2 -56: the package as a whole loses at $1 a trade (still ahead of deployed, which trades 4x more). The quarter itself adds no trades, so drag does not hurt the stake part",
+    "past: no registry/archive entry at these settings, no twin; proposal pretest (+44.55 / 41) reproduced exactly",
+    "mechanism: plausible - NY-open hours on BTC are whipsaw-prone, so stops are hit more there - but not tested out of sample; hour choice is in-sample",
+    "overlap: same trades as an hour-skip of 13-17 UTC, cut by stake instead of by refusal"
+   ]
   }
  ]
 }

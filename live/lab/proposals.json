@@ -4922,7 +4922,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-31",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-01"
   },
   {
    "id": "pb_w_ch350_nf06_ny1316q",
@@ -4958,7 +4960,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-31",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-01"
   },
   {
    "id": "pb_w_ch350_fh05_ny1316q",
@@ -4994,7 +4998,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-31",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-01"
   },
   {
    "id": "pb_w_ch350_cost5",
@@ -5023,7 +5029,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-31",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-01"
   },
   {
    "id": "pb_w_ch350_cost5_ny1316",
@@ -5059,7 +5067,165 @@
    },
    "by": "chercheur",
    "date": "2026-10-31",
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-01"
+  },
+  {
+   "id": "pb_x_ch350_nf06_nc3",
+   "family": "structure",
+   "title_fr": "Jusqu'à trois trades de plus dans le même sens, avec les deux freins",
+   "title_en": "Up to three more trades the same way, with the two brakes",
+   "why_fr": "Après un changement de sens, le robot pourrait prendre jusqu'à trois trades de plus dans le même sens au lieu d'un. Les freins écartent trois entrées sur quatre ; ces trades rendent ce qu'ils retirent. +26 $ sur 42 jours (+15 et +9), +30 $ sur 69 jours, trou de 61 au lieu de 70. Non en septembre, mais sans filtre ni freins.",
+   "why_en": "After a change of direction, the robot could take up to three more trades the same way instead of one. The brakes refuse three entries in four; these trades give back what they take. +$26 over 42 days (+15 and +9), +$30 over 69 days, hole 61 instead of 70. A no in September, but without filter or brakes.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 3,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "chase_pts": 350,
+    "nerv_floor": 0.6
+   },
+   "pretest": {
+    "net": 24.97,
+    "worst": 61.46,
+    "h1": 15.17,
+    "h2": 8.82,
+    "base_net": -1.07,
+    "base_worst": 70.15
+   },
+   "by": "chercheur",
+   "date": "2026-11-01",
    "status": "pending"
+  },
+  {
+   "id": "pb_x_ch350_nf06_nc2",
+   "family": "structure",
+   "title_fr": "Jusqu'à deux trades de plus dans le même sens, avec les deux freins",
+   "title_en": "Up to two more trades the same way, with the two brakes",
+   "why_fr": "Le voisin de l'idée à trois, pour que le test voie l'échelle : un, deux, trois trades de plus donnent -1, +9 et +25 $ sur 42 jours. À deux : +10 $ (pareil puis +8), trou de 62 au lieu de 70 ; sur 69 jours +8 $ seulement.",
+   "why_en": "The neighbour of the three-trade idea, so the test sees the ladder: one, two, three more trades give -1, +9 and +25 dollars over 42 days. At two: +$10 (same, then +8), hole 62 instead of 70; over 69 days only +$8.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 2,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "chase_pts": 350,
+    "nerv_floor": 0.6
+   },
+   "pretest": {
+    "net": 9.46,
+    "worst": 61.81,
+    "h1": 0.0,
+    "h2": 8.47,
+    "base_net": -1.07,
+    "base_worst": 70.15
+   },
+   "by": "chercheur",
+   "date": "2026-11-01",
+   "status": "pending"
+  },
+  {
+   "id": "pb_x_ch350_nc3_q1316",
+   "family": "argent",
+   "title_fr": "Trois trades de plus dans le même sens, et un quart de mise 13 h - 17 h",
+   "title_en": "Three more trades the same way, and a quarter stake 13:00-17:00",
+   "why_fr": "Réunir les deux pistes les plus solides : plus de trades dans le même sens, et miser un quart de 13 h à 17 h UTC. Avec aussi le plancher de marché endormi : +59 $ sur 42 jours face aux freins seuls (+15 et +44), +43 $ sur 69 jours, trou de 39 au lieu de 70. Ici sans ce plancher, pas encore testé.",
+   "why_en": "Join the two strongest leads: more trades the same way, and a quarter stake from 13:00 to 17:00 UTC. With the sleepy-market floor too: +$59 over 42 days against the brakes alone (+15 and +44), +$43 over 69 days, hole 39 instead of 70. Here without that floor, not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 3,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "chase_pts": 350,
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25
+   },
+   "by": "chercheur",
+   "date": "2026-11-01",
+   "status": "pending",
+   "pretest": {
+    "net": 52.85,
+    "worst": 43.74,
+    "h1": 60.65,
+    "h2": -13.15,
+    "base_net": -56.21,
+    "base_worst": 219.74,
+    "base_h1": 35.51,
+    "base_h2": -95.01,
+    "verdict": "A",
+    "trades": 65,
+    "at": "2026-11-01 04:38",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 36.74,
+     "diff_worst": -176.0
+    },
+    "real": {
+     "n_real": 120,
+     "trades": 36,
+     "diff_net": 87.09,
+     "diff_worst": -66.04
+    }
+   }
+  },
+  {
+   "id": "pb_x_ch350_nc3_fl05",
+   "family": "argent",
+   "title_fr": "Plus de trades dans le même sens, moitié mise sur un changement de sens après une perte",
+   "title_en": "More trades the same way, half stake on a change of direction after a loss",
+   "why_fr": "Récolter davantage quand la tendance tient, risquer moins quand elle vient de tromper le robot. Avec aussi le plancher de marché endormi : +41 $ sur 42 jours face aux freins seuls (+15 et +26), trou de 44 au lieu de 70, avant et après le 20 octobre. Ici sans ce plancher, pas encore testé.",
+   "why_en": "Harvest more while the trend holds, risk less right after it fooled the robot. With the sleepy-market floor too: +$41 over 42 days against the brakes alone (+15 and +26), hole 44 instead of 70, before and after 20 October. Here without that floor, not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 3,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "chase_pts": 350,
+    "flip_loss_size": 0.5
+   },
+   "by": "chercheur",
+   "date": "2026-11-01",
+   "status": "pending",
+   "pretest": {
+    "net": 28.55,
+    "worst": 49.61,
+    "h1": 54.97,
+    "h2": -32.26,
+    "base_net": -56.21,
+    "base_worst": 219.74,
+    "base_h1": 35.51,
+    "base_h2": -95.01,
+    "verdict": "A",
+    "trades": 65,
+    "at": "2026-11-01 04:40",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 32.27,
+     "diff_worst": -170.13
+    },
+    "real": {
+     "n_real": 120,
+     "trades": 36,
+     "diff_net": 68.26,
+     "diff_worst": -56.46
+    }
+   }
   }
  ]
 }

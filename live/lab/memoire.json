@@ -14,8 +14,41 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-31",
+ "updated": "2026-11-01",
  "hypotheses": [
+  {
+   "id": "more_conts_with_brakes",
+   "status": "en test",
+   "fr": "Derrière le filtre et les deux freins, laisser jusqu'à trois trades de plus dans le même sens rend l'argent que les freins retirent.",
+   "en": "Behind the filter and the two brakes, allowing up to three more trades the same way gives back the money the brakes take away.",
+   "evidence": [
+    "2026-11-01: brakes (pb+ch350+nf06) n_cont 1/2/3: 42 d -1.07/+9.46/+24.97 (nc3 h +15.2/+8.8, pre/post 10-20 +17.2/+8.8), hole 70.2/61.8/61.5; 69 d +65.58/+74.01/+95.60 (nc3 h +4.0/+13.8, pre +21.2/post +8.8). Monotone ladder, both windows, both halves, both sides of 10-20. Registry C (09-27) was raw robot, old engine. Cautions: raw battery cont2 real -14.55 on 120; nc3+cost5 adds nothing (+28.6 vs +29.3); nc2+wait15 worse than nc2."
+   ],
+   "next": "Battery + critic on pb_x_ch350_nf06_nc3 / nc2; real view on 120 entries; check it is not just more trades in the late-October run (post 10-20 still -54)."
+  },
+  {
+   "id": "ny_open",
+   "fr": "Les trades pris à l'ouverture de New York (12 h - 17 h UTC) perdent ; les miser à moitié garde le gain et réduit le trou.",
+   "en": "Trades taken around the New York open (12:00-17:00 UTC) lose; betting half there keeps the gain and cuts the hole.",
+   "status": "renforce",
+   "next": "Battery + critic on pb_w_ch350_nf06_ny1316(q) and pb_w_ch350_fh05_ny1316q; watch 69 d first half (Aug-Sep) as it leaves the window; real 13-16 h pile when accounts resume.",
+   "evidence": [
+    "2026-10-30: real 13-16 h 41 tr 15 won -116.66 both halves lose; lab robot 12-17 h 14 tr 2 won -50.37 on 10-28/29. Replay trio+hs12-17:0.5 42 d +25.7 vs trio +6.0 (h -6.8/+26.5) hole 40.7 vs 56; 69 d +88.96 vs +91.80 (h -20.9/+19.9). Skip 12-17 on trio: 42 d +34.9 hole 29.7 (h -0.2/+27.4), 69 d +62.9 (h -59.5/+19.5): refusal too strong on the long window, half stake right.",
+    "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only.",
+    "2026-10-31 12:00 veille: new closes entered 13-16 h 4 tr 3 won +0.64 per 0.01 (against, peu); 08-13 h 7 tr 1 won -9.62. One week, too few to move it.",
+    "2026-11-01: same bars (market closed): 42 d quarter 13-16 +44.55 hole 40.67 (pre/post 10-20 +13.1/+32.5 vs brakes). With nc3: 42 d +57.74 (h +15.0/+44.4), 69 d +108.90 vs +65.58 (h -13.9/+50.0) - 69 d first half still worse (critic doute x3). Reference account (unfiltered) since 10-26: 13-16 h 6 tr 5 won +3.69 per 0.01 - against (trop peu)."
+   ]
+  },
+  {
+   "id": "stake_not_refusal",
+   "status": "nouveau",
+   "fr": "Miser moins aux endroits connus pour perdre vaut mieux que refuser ces trades : le trou baisse autant, l'argent reste.",
+   "evidence": [
+    "2026-10-31: 13-16 h on brakes: skip (critic run 12-16) -29 vs brakes on 69 d; half +10.8, quarter +16.7 on 69 d. ch350 + nervous-flip half + 13-16 quarter: hole 37 vs 70 on both windows, 42 d +47 vs brakes. Refusals win the short window and lose the long one; stake cuts keep the long one closer.",
+    "2026-11-01: nc3 + flip-after-loss half (with floor) 42 d +39.94 hole 44.08 (h +15.2/+26.0, pre +15.0/post +26.0): stake cut + more harvest, both sides of 10-20."
+   ],
+   "next": "Battery + critic on pb_w_ch350_fh05_ny1316q; chase_size / tight_stop_size requests would extend it to the two refusal brakes."
+  },
   {
    "id": "no_chase",
    "fr": "Ne pas entrer quand le prix a déjà beaucoup couru dans le sens du trade.",
@@ -30,6 +63,21 @@
     "2026-10-31: tonight's bars, 42 d filter -55.73 hole 78.4 / brakes ch350+nf06 -1.07 hole 70.2 (+54.7, h +31.9/+23.5); 69 d filter +44.98 / brakes +78.29 (+33.3, h +17.2/+28.1). Still -62.6 after 10-20: critic's 'loses less, does not win' stands for the recent weeks."
    ],
    "next": "Battery + critic on ch300/ch500 trio; build chase_size (stake instead of refusal) to rescue wk36."
+  },
+  {
+   "id": "wide_stops_carry",
+   "fr": "Les trades au stop large (300 points et plus) portent le robot ; les stops serrés rapportent peu.",
+   "status": "renforce",
+   "next": "Battery + critic on pb_w_ch350_cost5 / pb_w_ch350_cost5_ny1316; tight_stop_size request (stake not refusal).",
+   "evidence": [
+    "2026-10-19: trace soft+ext500: stop>=300 22 tr 77% +108.9; <300 120 tr 56% +21.7. cost_max on soft+ext500: 2.5 C -39.5 (29 tr), 3 C -26.5 (37 tr), 4 B +36.1 (h +85.7/-19.6, 57 tr, hole 57->11). Jagged between neighbours; h2 negative. official+ext450+cost3 B +0.4 (18 tr, hole 15->9).",
+    "2026-10-20: critic doute confirmed: on S, cost_max 3.5 B +3.1 (h +60.9/-37.8), 4.5 B +15.8 (h +59.1/-28.7), cost4+fh0.75 B +21.9 (h2 -27.2). Hole 57->11 at every setting, h2 always negative. Money part weakened, hole part holds.",
+    "2026-10-24: top 25 real wins median stop 308 pts vs 168 all; this morning 7 small losses with stops 26-81 pts, calm 0.52-0.77. Hole part holds; tight_stop_size still unbuilt.",
+    "2026-10-28: test: ch350+nf06 + cost_max 3/4/5 = +85.9/+79.2/+79.6, both halves, but 20/29/35 tr (h1 6-7 tr); cost4 alone +23.8 (h1 -4.3). REAL disagrees: stops >=175 117 tr 47% -128.23, <175 147 tr 46% -40.97 (raw $). By band: 250-400 46 tr 57% +3.71 only positive; 150-250 79 tr -90.69; >=400 13 tr -50.68. Test-vs-real split.",
+    "2026-10-30: 69 d ch350+nf06+cost5 +107.09 vs filter +47.83 (h +19.6/+44.3) hole 58.3 vs 79.5, 63 tr (33/33 per half: answers the thin-sample doubt); vs ch350+nf06 alone +22.4 (h -1.1/+16.2). Week 43 still -45.",
+    "2026-10-31: ch350+cost5 vs brakes ch350+nf06: 42 d +29.26 vs -1.07 hole 58.3 vs 70.2 (h +1.1/+29.4, 11/25 tr); 69 d +100.74 vs +78.29 (h -1.1/+23.6, 32/31 tr). Halves agree in money only weakly; proposed pb_w_ch350_cost5. +13-16 half: +56.69 hole 40.0 (h +1.6/+25.8 vs ch350+cost5).",
+    "2026-11-01: ch350+cost5+nc3 +28.62 hole 63.7 vs ch350+cost5 +29.26 (10-31): extra same-way trades add nothing among wide stops (h2 -28.2 vs -19.2)."
+   ]
   },
   {
    "id": "sleepy_market",
@@ -64,32 +112,6 @@
     "2026-10-29: 69 d fl05 alone hole 64.3 vs filter 74.4, net +41.4 vs +36.7. Carries the hole on the long window too."
    ],
    "next": "Parked."
-  },
-  {
-   "id": "ny_open",
-   "fr": "Les trades pris à l'ouverture de New York (12 h - 17 h UTC) perdent ; les miser à moitié garde le gain et réduit le trou.",
-   "en": "Trades taken around the New York open (12:00-17:00 UTC) lose; betting half there keeps the gain and cuts the hole.",
-   "status": "renforce",
-   "next": "Battery + critic on pb_w_ch350_nf06_ny1316(q) and pb_w_ch350_fh05_ny1316q; watch 69 d first half (Aug-Sep) as it leaves the window; real 13-16 h pile when accounts resume.",
-   "evidence": [
-    "2026-10-30: real 13-16 h 41 tr 15 won -116.66 both halves lose; lab robot 12-17 h 14 tr 2 won -50.37 on 10-28/29. Replay trio+hs12-17:0.5 42 d +25.7 vs trio +6.0 (h -6.8/+26.5) hole 40.7 vs 56; 69 d +88.96 vs +91.80 (h -20.9/+19.9). Skip 12-17 on trio: 42 d +34.9 hole 29.7 (h -0.2/+27.4), 69 d +62.9 (h -59.5/+19.5): refusal too strong on the long window, half stake right.",
-    "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only.",
-    "2026-10-31 12:00 veille: new closes entered 13-16 h 4 tr 3 won +0.64 per 0.01 (against, peu); 08-13 h 7 tr 1 won -9.62. One week, too few to move it."
-   ]
-  },
-  {
-   "id": "wide_stops_carry",
-   "fr": "Les trades au stop large (300 points et plus) portent le robot ; les stops serrés rapportent peu.",
-   "status": "renforce",
-   "next": "Battery + critic on pb_w_ch350_cost5 / pb_w_ch350_cost5_ny1316; tight_stop_size request (stake not refusal).",
-   "evidence": [
-    "2026-10-19: trace soft+ext500: stop>=300 22 tr 77% +108.9; <300 120 tr 56% +21.7. cost_max on soft+ext500: 2.5 C -39.5 (29 tr), 3 C -26.5 (37 tr), 4 B +36.1 (h +85.7/-19.6, 57 tr, hole 57->11). Jagged between neighbours; h2 negative. official+ext450+cost3 B +0.4 (18 tr, hole 15->9).",
-    "2026-10-20: critic doute confirmed: on S, cost_max 3.5 B +3.1 (h +60.9/-37.8), 4.5 B +15.8 (h +59.1/-28.7), cost4+fh0.75 B +21.9 (h2 -27.2). Hole 57->11 at every setting, h2 always negative. Money part weakened, hole part holds.",
-    "2026-10-24: top 25 real wins median stop 308 pts vs 168 all; this morning 7 small losses with stops 26-81 pts, calm 0.52-0.77. Hole part holds; tight_stop_size still unbuilt.",
-    "2026-10-28: test: ch350+nf06 + cost_max 3/4/5 = +85.9/+79.2/+79.6, both halves, but 20/29/35 tr (h1 6-7 tr); cost4 alone +23.8 (h1 -4.3). REAL disagrees: stops >=175 117 tr 47% -128.23, <175 147 tr 46% -40.97 (raw $). By band: 250-400 46 tr 57% +3.71 only positive; 150-250 79 tr -90.69; >=400 13 tr -50.68. Test-vs-real split.",
-    "2026-10-30: 69 d ch350+nf06+cost5 +107.09 vs filter +47.83 (h +19.6/+44.3) hole 58.3 vs 79.5, 63 tr (33/33 per half: answers the thin-sample doubt); vs ch350+nf06 alone +22.4 (h -1.1/+16.2). Week 43 still -45.",
-    "2026-10-31: ch350+cost5 vs brakes ch350+nf06: 42 d +29.26 vs -1.07 hole 58.3 vs 70.2 (h +1.1/+29.4, 11/25 tr); 69 d +100.74 vs +78.29 (h -1.1/+23.6, 32/31 tr). Halves agree in money only weakly; proposed pb_w_ch350_cost5. +13-16 half: +56.69 hole 40.0 (h +1.6/+25.8 vs ch350+cost5)."
-   ]
   },
   {
    "id": "rested_cont",
@@ -285,7 +307,8 @@
     "2026-10-24: replay official filter takes 55 tr in 41.7 d (1.3/day, h1 only 14) vs parity live 3.79 entries/day (all accounts). pb_gate_parity still open; constructor blocked.",
     "2026-10-26: replay official filter 58 tr in 41.7 d (1.4/day); drag now usable 0.511 $/trade on 91 tr (battery still charged 0 in auto.json). All tonight's gains (+40..+73 on ~55 tr, >1 $/trade) are above the gap.",
     "2026-10-30: raw battery base (kill line) dies on 09-22 after 29 trades (-60.16) in the 42 d window: 21 C / 7 = / 4 B / 3 A are mostly 'who dies later'. Raw battery verdicts tonight are noise; read filter-vs-filter.",
-    "2026-10-31: battery cards of filtered ideas show 11-18 trades (blocked ~190) where harness/runner gives 36-59 for the same cfg; critic flags 'card numbers do not reproduce' on three ideas. Requested battery_pb_reproduce."
+    "2026-10-31: battery cards of filtered ideas show 11-18 trades (blocked ~190) where harness/runner gives 36-59 for the same cfg; critic flags 'card numbers do not reproduce' on three ideas. Requested battery_pb_reproduce.",
+    "2026-11-01: battery cards of filtered ideas now show 59-62 trades = harness (59): trade count fixed; money still differs (q1316 card +29.53 vs harness +44.55). Drag 0.508 $/tr on 95 tr, charged still 0."
    ],
    "next": "battery_pb_reproduce + pb_gate_parity."
   },
@@ -516,7 +539,8 @@
     "2026-10-05: battery has no rr09 tonight; rr10 family took its place. Unchanged.",
     "2026-10-17: on choch+ext500: rr0.9 C -11.5 (h -17.0/+14.8, hole 57->68) but real +63.14 vs +34.52 on 45 real entries (+28.6). Test and real disagree again; proposed pb_choch_ext500_rr09 as rescue.",
     "2026-10-19: soft+ext500 rr0.85 C -39.3 (h -24.1/-9.4). Battery pb_choch_ext500_rr09 B vs raw, real +89.04, long B +76.1: test-vs-real disagreement persists.",
-    "2026-10-20: on S: rr1.1 C -17.3, rr1.2 A +0.3 (h +6.4/+9.4), rr1.2 69 d C -65.9 (h1 -84.9). Targets stay jagged."
+    "2026-10-20: on S: rr1.1 C -17.3, rr1.2 A +0.3 (h +6.4/+9.4), rr1.2 69 d C -65.9 (h1 -84.9). Targets stay jagged.",
+    "2026-11-01: on brakes rr0.7 -16.38 (h -7.9/-5.8), rr1.0 -15.52 hole 85.8; q1316+rr0.9 -8.4 vs q1316. Any target move hurts behind the brakes."
    ],
    "next": "Superseded by target_10_nosun unless 1.0 fails the critic; keep 0.9 as the fallback setting."
   },
@@ -558,7 +582,8 @@
     "2026-10-05: battery B (+4.5, capped A +3.5), long C -29.1 (h -18.4/-10.5). Critic's block stands; not proposed.",
     "2026-10-06: battery = (-0.1 / +0.8), long C -29.1. Critic's block stands.",
     "2026-10-08: battery B (+2.7 / capped C +1.7), long C -35.0. Critic's block stands.",
-    "2026-10-09: battery C (-0.5 / +0.5), long C -40.3. Block stands."
+    "2026-10-09: battery C (-0.5 / +0.5), long C -40.3. Block stands.",
+    "2026-11-01: other side: k_streak 1 on brakes -22.22 vs -1.07 (h -12.3/-11.1). Catch-ups up to two losses stay right."
    ],
    "next": "Do not re-propose k3 alone. Keep watching k3_rr09 long window only as a side view."
   },
@@ -689,15 +714,6 @@
     "2026-10-29: 42 d ch350+fl05+nf06+debt_nerv -2.98 (h 19.30/-5.95) vs filter -49.11 (h 17.05/-41.79): +46.1, hole 41.45 vs 73.36, 34 tr (12/33). 69 d +30.96 vs filter +36.67, hole 41.45 vs 74.43, 56 tr. A belt: less money than trio, much smaller hole. Battery debtnerv raw: B, real +117.17 on 120.",
     "2026-10-30: critic's bar (beat the two brakes alone on 69 d) not met: ch350+nf06 +84.64 vs +debt_nerv +48.93 (-35.7, h -32.3/-18.7), 59 tr; hole 41.2 vs 70.2. A belt only; twin debtnerv already lost its duel 10-24. Withdrawn as a money idea."
    ]
-  },
-  {
-   "id": "stake_not_refusal",
-   "status": "nouveau",
-   "fr": "Miser moins aux endroits connus pour perdre vaut mieux que refuser ces trades : le trou baisse autant, l'argent reste.",
-   "evidence": [
-    "2026-10-31: 13-16 h on brakes: skip (critic run 12-16) -29 vs brakes on 69 d; half +10.8, quarter +16.7 on 69 d. ch350 + nervous-flip half + 13-16 quarter: hole 37 vs 70 on both windows, 42 d +47 vs brakes. Refusals win the short window and lose the long one; stake cuts keep the long one closer."
-   ],
-   "next": "Battery + critic on pb_w_ch350_fh05_ny1316q; chase_size / tight_stop_size requests would extend it to the two refusal brakes."
   }
  ],
  "tried": [
@@ -2245,6 +2261,36 @@
    "d": "2026-10-31",
    "run": "proposed",
    "res": "pb_w_ch350_nf06_ny1316 (ask ny_open), pb_w_ch350_nf06_ny1316q, pb_w_ch350_fh05_ny1316q (out of box), pb_w_ch350_cost5, pb_w_ch350_cost5_ny1316; request battery_pb_reproduce; no new pile"
+  },
+  {
+   "d": "2026-11-01",
+   "run": "42 d brakes / rr0.7 / rr1.0 / k1",
+   "res": "-1.07 hole 70.15 59 tr (h 45.65/-52.70) / -16.38 / -15.52 hole 85.77 / -22.22"
+  },
+  {
+   "d": "2026-11-01",
+   "run": "42 d brakes n_cont 2 / 3 / nc2+wait15",
+   "res": "+9.46 hole 61.81 (h 45.65/-44.23) / +24.97 hole 61.46 (h 60.82/-43.88) / +14.59"
+  },
+  {
+   "d": "2026-11-01",
+   "run": "42 d brakes q1316 / +rr0.9 / nc2+q / nc3+q / ch350+fl05+q no floor",
+   "res": "+44.55 hole 40.67 / +36.12 / +51.49 hole 35.79 / +57.74 hole 38.85 (h 60.65/-8.26) / +42.59 hole 42.46"
+  },
+  {
+   "d": "2026-11-01",
+   "run": "69 d brakes / nc2 / nc3 / nc2+q / nc3+q",
+   "res": "+65.58 hole 70.15 (h 77.16/19.11) / +74.01 / +95.60 hole 61.46 (h 81.14/32.88) / +94.61 hole 35.79 / +108.90 hole 38.85 (h 63.28/69.06)"
+  },
+  {
+   "d": "2026-11-01",
+   "run": "42 d nc3+fl05 (brakes) / ch300+nf06+nc3 / ch350+cost5+nc3",
+   "res": "+39.94 hole 44.08 (h 60.82/-26.73) / +4.04 (no ch300 ref tonight) / +28.62 hole 63.73"
+  },
+  {
+   "d": "2026-11-01",
+   "run": "proposed",
+   "res": "pb_x_ch350_nf06_nc3 (out of box, pretest), pb_x_ch350_nf06_nc2 (pretest), pb_x_ch350_nc3_q1316, pb_x_ch350_nc3_fl05 (no pretest: floor dropped); no pile; no request"
   }
  ],
  "scrutiny_log": [
@@ -3533,6 +3579,18 @@
     "wake_context (four hours passed; no new trade, total 273; twin noday 8 tr +29.86 unchanged; no labo activity; no open ask)"
    ],
    "saw": "Weekend, market closed, nothing new since the 12:00 watch. No harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Waiting for: Sunday-evening reopen, the 13-16 h pile, and h1 internal leaving 0 so h1_internal_late can be tested again."
+  },
+  {
+   "t": "2026-11-01T11:00:00Z",
+   "looked": [
+    "auto.json (8 A / 12 B / 16 C / 1 = vs raw base -61.47, dead)",
+    "critiques 11-01 (3 doute on 13-16 ideas)",
+    "asks (none open)",
+    "twins (noday +29.86 8 tr)",
+    "wealth ledgers since 10-26 by entry block",
+    "drag 0.508 on 95"
+   ],
+   "saw": "No new journal trade (273). Reference account 31 tr 19 won +16.6 per 0.01, 13-16 h 6/5 won. Battery filtered cards now match harness trade counts. n_cont ladder monotone behind the brakes."
   }
  ],
  "lessons": [
@@ -3598,13 +3656,15 @@
   "2026-10-30: when the raw base hits the kill line early (09-22 tonight, 29 trades), the raw battery compares variants to a dead robot: '=' and C mostly mean 'also died'. Read filtered ideas against the filter alone, never against the raw base.",
   "2026-10-30: a refusal over a window (skip 12-17) and a half stake on the same window agree on 42 d but split on 69 d (-29 vs -3 against the brakes alone). When a refusal wins on the short window, always run its half-stake twin on the long one.",
   "2026-10-31: the battery's cards for pb-gate ideas do not reproduce (11-18 trades vs 36-59 in harness for the same cfg). Quote my own runner / harness for filtered ideas, and judge them against the brakes alone, as the critic does.",
-  "2026-10-31: split every run's curve before/after 10-20: an idea whose gain sits only after 10-20 is the late-October losing run, not a cause (critic's test). 13-16 h passed it on 42 d (pre +8.4 half / +13.1 quarter), failed it on 69 d (pre -10.8 / -15.8)."
+  "2026-10-31: split every run's curve before/after 10-20: an idea whose gain sits only after 10-20 is the late-October losing run, not a cause (critic's test). 13-16 h passed it on 42 d (pre +8.4 half / +13.1 quarter), failed it on 69 d (pre -10.8 / -15.8).",
+  "2026-11-01: a dial rejected on the raw robot (n_cont 2-3, 09-27) can reverse behind refusal brakes: when brakes refuse most entries, re-test the dials that ADD entries in their company."
  ],
  "open": [
-  "Battery + critic on pb_w_* (13-16 h half/quarter, stake-not-refusal trio, ch350+cost5).",
+  "Battery + critic on pb_x_ch350_nf06_nc3 (ladder nc2): is it just more trades in late October?",
+  "Run nc3+q1316 and nc3+fl05 without the floor (proposed untested).",
+  "69 d first half (Aug-Sep) dislikes 13-16 h stake cuts: watch it leave the window.",
+  "Every brake still loses after 10-20 (best: -25 post 10-20).",
   "battery_pb_reproduce: cards of filtered ideas keep 11-18 trades vs 36-59 in harness.",
-  "69 d first half (Aug-Sep) dislikes every daytime cut: watch it as it leaves the window.",
-  "Every brake still loses after 10-20: nothing found that wins in late October.",
   "Build chase_size, tight_stop_size, time_exit (stake instead of refusal; close a dragging trade).",
   "builder_unblock: 21 open requests, none built since 10-26.",
   "Twin noday (+29.86 on 8 trades): watch it.",
