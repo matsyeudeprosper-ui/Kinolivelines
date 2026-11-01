@@ -3591,6 +3591,13 @@
     "drag 0.508 on 95"
    ],
    "saw": "No new journal trade (273). Reference account 31 tr 19 won +16.6 per 0.01, 13-16 h 6/5 won. Battery filtered cards now match harness trade counts. n_cont ladder monotone behind the brakes."
+  },
+  {
+   "t": "2026-11-01T13:00:16Z",
+   "looked": [
+    "wake_context (four hours passed; no new trade, total 273; twin noday 8 tr +29.86 unchanged; labo empty; no open ask in asks.json)"
+   ],
+   "saw": "Sunday afternoon, market still closed. Nothing new since the night run. No harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Waiting for: Sunday-evening reopen (first trade after a long pause = >3 h arm of rested_cont), Monday 13-16 h trades for ny_open, h1 internal leaving 0."
   }
  ],
  "lessons": [
