@@ -263,3 +263,6 @@ live/robots/kino_work.log
 live/robots/kino_care.log
 live/robots/kino_web.log
 live/robots/kino_work_calls.log
+live/robots/kino_browser.log
+live/robots/kino_permits.json
+live/robots/kino_permits.json.tmp

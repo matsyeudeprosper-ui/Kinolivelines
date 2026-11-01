@@ -25,6 +25,7 @@ STORE = os.path.join(HERE, "kino_work.json")
 LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
 _BUSY = {"on": False}
+_BR = {}                        # the browser of the current session (opened on first use, closed at the end)
 SESSIONS_DAY = 6
 STEPS = 20
 
@@ -154,12 +155,17 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|propose|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|browse|allow_site|propose|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read)", "content": "file content (write)",
  "text": "diary line (note) / what you did and what is next (done)",
  "to": "address (email)", "subject": "...", "body": "...", "what": "what you ask for (ask) / your proposal in one line (propose)",
  "why": "why (ask) / the case for it, plainly, with what it would take and what it could bring (propose)",
- "q": "search words (search)", "url": "a web address (fetch)", "start": "for a long page: the character to continue from (fetch)"}
+ "q": "search words (search)", "url": "a web address (fetch / browse open)", "start": "for a long page: the character to continue from (fetch)",
+ "do": "browse: open|click|type|scroll|read|links|back|shot", "target": "browse: the text of what to click, or a CSS selector (click/type)",
+ "site": "allow_site: the website you need to SEND on (sign up, post, submit) - the owner decides"}
+Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
+anything that SENDS (a form, a sign-up, a post) is blocked at the gate unless the owner gave you a permit for that site -
+ask for one with allow_site, saying exactly what you would send and why.
 The web is read-only for you: search and read pages. Anything that would act in the world - creating an account, posting,
 applying, sending a proposal to someone, paying - is never done by you directly: you bring it to the owner with "propose" or
 "ask". You are an AI and you say so: never pretend to be a human anywhere."""
@@ -271,6 +277,18 @@ def _act(j, person):
     if a == "propose":
         r = KH.request(j.get("what") or "", j.get("why") or "", command="", kind="proposal")
         return "proposal sent to the owner as a card (%s)" % ((r or {}).get("id") or "already waiting")
+    if a == "browse":
+        B = _BR.get("b")
+        if B is None:
+            try:
+                import kino_browser as KBR
+                B = _BR["b"] = KBR.Browser()
+            except Exception as e:
+                return "the browser could not start: %s" % str(e)[:200]
+        return B.act(j)
+    if a == "allow_site":
+        r = KH.request("let me send on %s" % (j.get("site") or "?"), j.get("why") or "", command=str(j.get("site") or ""), kind="site")
+        return "permit request sent to the owner (%s)" % ((r or {}).get("id") or "already waiting")
     if a == "search":
         try:
             import kino_web as KW
@@ -332,6 +350,11 @@ def session(W, person, uid, log=None, task=None, project=""):
                   "seen": seen[:400]}
             rec["steps"].append(st)
             hist.append("- %s | %s %s\n  -> %s" % (st["thought"], a, st["detail"][:200], seen[:1500]))
+        try:
+            if _BR.get("b"):
+                _BR.pop("b").close()
+        except Exception:
+            pass
         if not rec["summary"]:
             rec["summary"] = "stopped after %d steps: %s" % (len(rec["steps"]), task)
         diary("Done: %s" % rec["summary"])
@@ -367,6 +390,11 @@ def session(W, person, uid, log=None, task=None, project=""):
         return rec
     finally:
         _BUSY["on"] = False
+        try:
+            if _BR.get("b"):
+                _BR.pop("b").close()
+        except Exception:
+            pass
 
 
 def block(lang="fr"):

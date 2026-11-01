@@ -182,6 +182,15 @@ def decide(rid, yes, by="owner", note=""):
         return r
     if r.get("kind") == "proposal":                  # an idea: the answer is the decision itself, nothing runs
         return r
+    if r.get("kind") == "site":                      # a permit to SEND on one website (kino_browser gate), for a day
+        if yes:
+            try:
+                import kino_browser as KBR
+                d = KBR.grant(r.get("command") or "")
+                mark(rid, result="permit for %s (%d h)" % (d, KBR.PERMIT_H))
+            except Exception as e:
+                mark(rid, result=str(e)[:200])
+        return r
     if yes and r.get("command"):
         import subprocess
         try:

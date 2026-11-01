@@ -1420,7 +1420,7 @@ function kreqHTML(m,i){const r=m.req||{},st=m.status||'waiting',em=r.kind==='ema
  if(r.command){try{const e=JSON.parse(r.command);cmd=em?(T('À : ','To: ')+(e.to||'')+'\n'+T('Sujet : ','Subject: ')+(e.subject||'')+'\n\n'+(e.body||'')):r.command;}catch(x){cmd=r.command;}}
  const done=st!=='waiting';
  return '<div class="m ai"><div class="bub kreq" style="border:1px solid var(--line,#334);border-radius:14px;padding:12px 14px;max-width:520px">'+
-  '<div style="font-weight:600;margin-bottom:4px">'+(r.kind==='proposal'?'💡 '+T('Kino propose : ','Kino proposes: '):(em?'✉️ ':'🔐 ')+T('Kino demande : ','Kino asks: '))+esc(r.what||'')+'</div>'+
+  '<div style="font-weight:600;margin-bottom:4px">'+(r.kind==='proposal'?'💡 '+T('Kino propose : ','Kino proposes: '):r.kind==='site'?'🌐 '+T('Kino demande : ','Kino asks: '):(em?'✉️ ':'🔐 ')+T('Kino demande : ','Kino asks: '))+esc(r.what||'')+'</div>'+
   (r.why?'<div style="opacity:.8;font-size:.92em;margin-bottom:6px;white-space:pre-wrap">'+esc(r.why)+'</div>':'')+
   (cmd?'<pre style="white-space:pre-wrap;font-size:.82em;opacity:.85;max-height:220px;overflow:auto;margin:6px 0;padding:8px;border-radius:8px;background:rgba(127,127,127,.12)">'+esc(cmd)+'</pre>':'')+
   (done?'<div style="font-size:.9em;margin-top:6px">'+(st==='approved'?'✅ '+T('Accepté','Approved'):'❌ '+T('Refusé','Refused'))+(m.result?' · '+esc(String(m.result).slice(0,160)):'')+'</div>':
