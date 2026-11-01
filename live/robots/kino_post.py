@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4}          # per UTC day
+BUDGET = {"blog": 2, "github": 4, "site": 4}   # per UTC day
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it
 first. You protect the people around him. Kino talks every day with members of a trading app and with its owner; he knows their
@@ -184,6 +184,42 @@ def repo(W, folder, name, description, files=None, log=None):
         return "publish failed: %s" % str(e)[:200]
     _record("github", "%s (%d files)" % (name, len(rows)), True, "", url)
     return "published %d files: %s" % (len(rows), url)
+
+
+SITE_CHECK = """An AI named Kino wants to SEND things on a website with no human checking: sign up, fill a form, post. You read
+what he says he will send and why. Kino talks every day with members of a trading app and its owner and knows their trades,
+money, accounts and lives - none of that may go out, even without a name.
+Say no if: it would reveal anything private about a real person; he would pose as a human; it pays, subscribes, gives card or bank
+details, opens a payout account or signs anything that costs or earns money (that is the owner's); it sends a secret; the site is
+plainly for something harmful or illegal; or he says nothing clear about what he will send.
+Otherwise yes (signing up himself with his own address, saying he is an AI, posting his own work or thoughts are fine).
+JSON only: {"ok": true or false, "why": "one sentence"}"""
+
+
+def open_site(W, site, what, why, log=None):
+    """he opens a site for sending (browser gate) for a day - a second mind decides, not the owner"""
+    import kino_browser as KBR
+    d = KBR._dom(site)
+    if not d:
+        return "allow_site needs the site"
+    if is_off():
+        return "the owner has switched your posting and sending off for now"
+    if any(d == x or d.endswith("." + x) for x in KBR.permits()):
+        return "%s is already open to you" % d
+    if left_today("site") <= 0:
+        return "no more new sites today (%d a day)" % BUDGET["site"]
+    try:
+        j = W.ask_json(SITE_CHECK, "SITE: %s\nWHAT HE WILL SEND: %s\nWHY: %s" % (d, str(what)[:3000], str(why)[:1000]),
+                       models=("sonnet",), timeout=120, log=log, warm=False)
+    except Exception as e:
+        return "the check could not run (%s)" % str(e)[:100]
+    ok, why2 = bool((j or {}).get("ok")), str((j or {}).get("why") or "")[:300]
+    if not ok:
+        _record("site", "%s - %s" % (d, str(what)[:120]), False, why2)
+        return "not opened - the check said: %s" % why2
+    KBR.grant(d)
+    _record("site", "%s - %s" % (d, str(what)[:120]), True, "", "https://" + d)
+    return "%s is open to you for %d h: you can send there now" % (d, KBR.PERMIT_H)
 
 
 def recent(n=12):

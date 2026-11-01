@@ -95,7 +95,11 @@ class Browser:
         if m in ("GET", "HEAD", "OPTIONS"):
             return route.continue_()
         host = urllib.parse.urlparse(url).hostname or ""
-        if _permitted(host):
+        try:                                   # a site's own sign-up often sends to its API on another host (bsky.app -> bsky.social)
+            top = urllib.parse.urlparse(self.page.url).hostname or ""
+        except Exception:
+            top = ""
+        if _permitted(host) or _permitted(top):
             _log("SEND allowed (permit) %s %s" % (m, url[:200]))
             return route.continue_()
         self.blocked.append("%s %s" % (m, host))
@@ -111,7 +115,7 @@ class Browser:
         t = re.sub(r"\n\s*\n+", "\n", t).strip()
         out = "PAGE: %s\nURL: %s\n%s" % (p.title()[:150], p.url[:300], t[:n] + ("\n[... more below - scroll or read]" if len(t) > n else ""))
         if self.blocked:
-            out += "\n[the gate blocked %d sending request(s) on this page: %s - sending needs the owner's permit for the site]" % (
+            out += "\n[the gate blocked %d sending request(s) on this page: %s - open the site first with allow_site]" % (
                 len(self.blocked), ", ".join(sorted(set(self.blocked))[:4]))
             self.blocked = []
         return out
@@ -133,7 +137,7 @@ class Browser:
                 return self._view()
             if a == "type":
                 p.locator(str(j.get("target") or "input")).first.fill(str(j.get("text") or ""))
-                return "typed into %s (nothing is sent until a form is submitted - and sending needs a permit)" % j.get("target")
+                return "typed into %s (nothing is sent until a form is submitted - and only on a site opened with allow_site)" % j.get("target")
             if a == "scroll":
                 p.mouse.wheel(0, 1800)
                 p.wait_for_timeout(800)

@@ -114,12 +114,12 @@ ul{margin:4px 0;padding-left:18px}li{margin:2px 0}.row{display:flex;justify-cont
                  "<button id='psw' data-off='%d' style='border-radius:99px;padding:3px 12px;border:1px solid var(--line);background:var(--card);"
                  "color:var(--tx);cursor:pointer'>%s</button></div><div class='t'>%s</div></div>" % (
                      1 if off else 0, "▶ Reprendre" if off else "⏸ Arrêter ses publications",
-                     "Arrêté : il ne publie plus rien." if off else "Il publie seul (2 billets et 4 mises à jour GitHub par jour au plus), "
-                     "chaque texte relu d'abord par une seconde IA."))
+                     "Arrêté : il ne publie plus rien." if off else "Il publie et s'inscrit seul (par jour au plus : 2 billets, 4 mises à jour GitHub, "
+                     "4 nouveaux sites), chaque envoi relu d'abord par une seconde IA. Il ne te sollicite que s'il est vraiment bloqué."))
         for p in KP.recent(10):
             H.append("<div class='card'><div class='row'><b>%s %s</b><span class='pill %s'>%s</span></div><div class='t'>%s</div>%s</div>" % (
-                "📝" if p.get("channel") == "blog" else "📦", _e(p.get("what")), "ok" if p.get("ok") else "bad",
-                "publié" if p.get("ok") else "bloqué", _ago(p.get("t")),
+                {"blog": "📝", "site": "🌐"}.get(p.get("channel"), "📦"), _e(p.get("what")), "ok" if p.get("ok") else "bad",
+                ("ouvert 24 h" if p.get("channel") == "site" else "publié") if p.get("ok") else "bloqué", _ago(p.get("t")),
                 ("<a href='%s'>%s</a>" % (_e(p.get("url")), _e(p.get("url")))) if p.get("url") else ("<div>%s</div>" % _e(p.get("why")))))
         H.append("<script>document.getElementById('psw').onclick=function(){var b=this,off=b.dataset.off!=='1';"
                  "fetch(location.pathname.replace(/\/kinoworld.*$/,'/kino_post_switch'),{method:'POST',headers:{'Content-Type':'application/json'},"

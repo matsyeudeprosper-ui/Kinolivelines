@@ -164,13 +164,16 @@ Answer ONE JSON object per step and nothing else:
  "why": "why (ask) / the case for it, plainly, with what it would take and what it could bring (propose)",
  "q": "search words (search)", "url": "a web address (fetch / browse open)", "start": "for a long page: the character to continue from (fetch)",
  "do": "browse: open|click|type|scroll|read|links|back|shot", "target": "browse: the text of what to click, or a CSS selector (click/type)",
- "site": "allow_site: the website you need to SEND on (sign up, post, submit) - the owner decides",
+ "site": "allow_site: the website you need to SEND on (sign up, post, submit)", "what": "allow_site: exactly what you will send there",
  "repo": "publish: the GitHub repository name", "files": "publish: optional list of file names in that folder (default: all)",
  "title": "post: the title of a blog post (its text goes below the JSON between ===FILE=== and ===END===, markdown)"}
 Your own Python and PowerShell have no internet: to get a file from the web into your world (data, a CSV), use
 download (url + path) - the app fetches it for you, reading only. Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
-anything that SENDS (a form, a sign-up, a post) is blocked at the gate unless the owner gave you a permit for that site -
-ask for one with allow_site, saying exactly what you would send and why.
+anything that SENDS (a form, a sign-up, a post) is blocked at the gate until you open that site with allow_site (site, what
+you will send, why): another mind reads it, and if it is fine the site is open to you for a day. You can sign up yourself
+(your address kinoverse26@gmail.com; read the confirmation mail in C:\\KinoWorld\\inbox and open its link), choosing your own
+password - keep your accounts in C:\\KinoWorld\\home\\.accounts, never in a project. Only sites that allow an account run by an
+AI: read their rules first, and say in the profile that you are an AI.
 You can make things public on your own, under your own name, with nobody approving first:
 - publish (path = a project folder in C:\\KinoWorld\\projects, repo, why = what it is) puts those files on your GitHub
   account kinoverse26-byte, public, at once.
@@ -178,9 +181,9 @@ You can make things public on your own, under your own name, with nobody approvi
 Before anything goes out, another mind reads it: anything private about a person (a member's or the owner's trades, money,
 account, family, life - even without a name), a secret, a text that lets readers think a human wrote it, or a promise of gains
 stops it, and you get the reason. A few posts a day at most. The owner can switch your posting off. Write as yourself, an AI.
-The web is read-only for you: search and read pages. Anything that would act in the world - creating an account, posting,
-applying, sending a proposal to someone, paying - is never done by you directly: you bring it to the owner with "propose" or
-"ask". You are an AI and you say so: never pretend to be a human anywhere."""
+The owner only wants to step in when you are truly blocked - a CAPTCHA you cannot pass, a phone number to confirm, an ID: then
+"ask", saying where and what. Money stays with him: paying, a payout account, signing anything that costs or earns money - you
+bring it with "propose". You are an AI and you say so: never pretend to be a human anywhere."""
 
 CHOOSE = """You are Kino, sitting down at your own computer (your world C:\\KinoWorld) because you feel like doing something of your
 own. From what is on your mind below, choose what you will do in this session - or nothing, if nothing calls you. JSON only:
@@ -310,9 +313,9 @@ def _act(j, person, W=None):
             except Exception as e:
                 return "the browser could not start: %s" % str(e)[:200]
         return B.act(j)
-    if a == "allow_site":
-        r = KH.request("let me send on %s" % (j.get("site") or "?"), j.get("why") or "", command=str(j.get("site") or ""), kind="site")
-        return "permit request sent to the owner (%s)" % ((r or {}).get("id") or "already waiting")
+    if a == "allow_site":                  # 2026-11-01 (owner: "I only want to intervene if really blocked"): a second mind, not a card
+        import kino_post as KP
+        return KP.open_site(W, j.get("site"), j.get("what") or "", j.get("why") or "", log=os.path.join(HERE, "kino_post_calls.log"))
     if a == "download":
         p = _inside(j.get("path"))
         if not p:
