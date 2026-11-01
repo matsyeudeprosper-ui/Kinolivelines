@@ -18013,6 +18013,23 @@ LOOKUP_SYS = ("You look things up for Kino in the DATA below (an AI friend who t
               "DATA, say exactly what is missing. No advice, no opinion.")
 
 
+def _kino_websearch(q):
+    """2026-11-01: his '#cherche <question>' in chat - the same reading-only web his work sessions use (kino_web: a search,
+    then the first pages read). The owner asked him to check his daughter's school site; he answered he had no web search."""
+    try:
+        import kino_web as KW
+        hits = KW.search(q, n=6) or []
+    except Exception as e:
+        return "search failed: %s" % str(e)[:150]
+    out = ["RESULTS: " + " | ".join("%s <%s> %s" % (h.get("title", ""), h.get("url", ""), h.get("snippet", "")) for h in hits)[:2500]]
+    for h in hits[:2]:
+        try:
+            out.append("PAGE %s:\n%s" % (h.get("url", ""), KW.fetch(h.get("url", ""), max_chars=2500)))
+        except Exception:
+            pass
+    return "\n".join(out)[:7000]
+
+
 def _kino_lookup(user, c, q):
     """2026-10-31 (owner: "do all", item 5 - real tools): his '#regarde <question>' - everything the app knows about this
     member, unfiltered (his reply sees a focused, trimmed view), searched for the answer; he then writes his message with it"""
@@ -19843,19 +19860,19 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         return
     say, acts, fil = r["say"], r["acts"], r["fil"]
     try:                                               # 2026-10-31 (item 5): he looked something up - the answer, then his message
-        _lk = [v for k, v in acts if k == "regarde" and v][:2]
+        _lk = [(k, v) for k, v in acts if k in ("regarde", "cherche") and v][:2]
         if _lk:
             _CHAT_ACT[cid] = "🔎 regarde…" if lang != "en" else "🔎 looking it up…"
-            _found = [(q_, _kino_lookup(user, c, q_)) for q_ in _lk]
+            _found = [(q_, _kino_websearch(q_) if k_ == "cherche" else _kino_lookup(user, c, q_)) for k_, q_ in _lk]
             _KO._log(cid, "LOOKUP", " | ".join("%s -> %s" % (q_[:80], a_[:160]) for q_, a_ in _found))
             r3 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
                           model=_mdl, note=("WHAT YOU FOUND WHEN YOU LOOKED: %s. Your draft was: « %s ». Now write your real message with it "
-                                            "(no new #regarde for the same thing)." if lang == "en" else
+                                            "(no new #regarde or #cherche for the same thing)." if lang == "en" else
                                             "CE QUE TU AS TROUVÉ EN REGARDANT : %s. Ton brouillon était : « %s ». Écris maintenant ton vrai "
-                                            "message avec ça (pas de nouveau #regarde pour la même chose).") % (
+                                            "message avec ça (pas de nouveau #regarde ni #cherche pour la même chose).") % (
                               " ; ".join("« %s » : %s" % (q_, a_ or "rien trouvé") for q_, a_ in _found), say[:400]))
             if r3 and (r3.get("say") or r3.get("acts")):
-                say, acts, fil = r3["say"], [x for x in r3["acts"] if x[0] != "regarde"], r3["fil"] or fil
+                say, acts, fil = r3["say"], [x for x in r3["acts"] if x[0] not in ("regarde", "cherche")], r3["fil"] or fil
             _CHAT_ACT.pop(cid, None)
     except Exception as e:
         try:

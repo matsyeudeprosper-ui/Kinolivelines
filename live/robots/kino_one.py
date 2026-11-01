@@ -82,6 +82,9 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
 #test <nom> sans vérifier       le lance même sans la vérification des moments - seulement si vous êtes d'accord tous les deux
 #regarde <ta question>          tu vas voir toi-même dans toutes les données (son compte, ses trades, les tests, les tests
                                 de chance, les robots) avant d'envoyer : ton message attend la réponse, puis tu l'écris avec
+#cherche <ta recherche>         tu cherches toi-même sur le web (un moteur de recherche, puis tu lis les pages) : ton message
+                                attend ce que tu trouves, puis tu l'écris avec - pour ce qu'on ne trouve que dehors (un site,
+                                une école, une info du jour). Tu lis seulement, tu ne remplis rien en ligne.
 #annule <nom du robot>          retire un test ou un test de chance en file pour ce robot, même un robot abandonné
                                 (s'il change d'avis, tu peux vraiment l'arrêter ; un test déjà en cours finit seul)
 #chance                         lance le test de chance du robot de cette conversation
@@ -138,7 +141,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -268,6 +271,8 @@ def parse(raw, partial=False):
             acts.append(("ordre", v))
         elif k in ("look", "check", "verifie", "vérifie"):
             acts.append(("regarde", v))
+        elif k in ("search", "web"):
+            acts.append(("cherche", v))
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)
