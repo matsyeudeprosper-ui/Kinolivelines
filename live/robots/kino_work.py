@@ -155,15 +155,18 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|browse|allow_site|propose|done",
- "cmd": "PowerShell command (run)", "path": "file path in your world (write/read)", "content": "file content (write)",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|done",
+ "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
+ "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
+            between a line ===FILE=== and a line ===END===",
  "text": "diary line (note) / what you did and what is next (done)",
  "to": "address (email)", "subject": "...", "body": "...", "what": "what you ask for (ask) / your proposal in one line (propose)",
  "why": "why (ask) / the case for it, plainly, with what it would take and what it could bring (propose)",
  "q": "search words (search)", "url": "a web address (fetch / browse open)", "start": "for a long page: the character to continue from (fetch)",
  "do": "browse: open|click|type|scroll|read|links|back|shot", "target": "browse: the text of what to click, or a CSS selector (click/type)",
  "site": "allow_site: the website you need to SEND on (sign up, post, submit) - the owner decides"}
-Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
+Your own Python and PowerShell have no internet: to get a file from the web into your world (data, a CSV), use
+download (url + path) - the app fetches it for you, reading only. Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
 anything that SENDS (a form, a sign-up, a post) is blocked at the gate unless the owner gave you a permit for that site -
 ask for one with allow_site, saying exactly what you would send and why.
 The web is read-only for you: search and read pages. Anything that would act in the world - creating an account, posting,
@@ -289,6 +292,16 @@ def _act(j, person):
     if a == "allow_site":
         r = KH.request("let me send on %s" % (j.get("site") or "?"), j.get("why") or "", command=str(j.get("site") or ""), kind="site")
         return "permit request sent to the owner (%s)" % ((r or {}).get("id") or "already waiting")
+    if a == "download":
+        p = _inside(j.get("path"))
+        if not p:
+            return "refused: that path is outside your world"
+        try:
+            import kino_web as KW
+            n = KW.download(j.get("url") or "", p)
+            return "downloaded %d bytes into %s" % (n, p)
+        except Exception as e:
+            return "download failed: %s" % str(e)[:200]
     if a == "search":
         try:
             import kino_web as KW
@@ -303,6 +316,23 @@ def _act(j, person):
         except Exception as e:
             return "could not open it: %s" % e
     return "unknown action"
+
+
+def _step(W, ctx, log):
+    """one step: his JSON line, and - for a file - the content written below it between ===FILE=== and ===END===
+    (2026-11-01: a whole program squeezed into one JSON string derailed into broken markup and ended the session)"""
+    try:
+        import robot_interview as IV
+        raw = W.ask_text(SYSTEM, ctx, model="sonnet", timeout=180, log=log, warm=False) or ""
+        j = IV.first_json(raw)
+    except Exception:
+        return None
+    if not isinstance(j, dict):
+        return None
+    m = re.search(r"===FILE===\r?\n(.*?)\r?\n?===END===", raw, re.S)
+    if m and str(j.get("action") or "").lower() == "write":
+        j["content"] = m.group(1)
+    return j
 
 
 def session(W, person, uid, log=None, task=None, project=""):
@@ -329,14 +359,14 @@ def session(W, person, uid, log=None, task=None, project=""):
         for i in range(STEPS):
             ctx = "WHAT YOU DECIDED TO DO: %s\n\nWHAT IS ON YOUR MIND:\n%s\n\nTHIS SESSION SO FAR:\n%s\n\nStep %d of at most %d. JSON only." % (
                 task, mind[:6000], "\n".join(hist[-12:])[-9000:] or "(nothing yet)", i + 1, STEPS)
-            j = W.ask_json(SYSTEM, ctx, models=("sonnet",), timeout=120, log=log, warm=False)
+            j = _step(W, ctx, log)
             if not isinstance(j, dict) or not j.get("action"):
                 # 2026-11-01 (first research session): one empty answer after a long page ended the whole session at step 6 -
                 # once more, with a shorter memory of the session (the last results, cut)
                 short = "\n".join(h_[:700] for h_ in hist[-5:])
                 ctx = "WHAT YOU DECIDED TO DO: %s\n\nTHIS SESSION SO FAR (the last steps, shortened):\n%s\n\nStep %d of at most %d. ONE JSON object only." % (
                     task, short or "(nothing yet)", i + 1, STEPS)
-                j = W.ask_json(SYSTEM, ctx, models=("sonnet",), timeout=120, log=log, warm=False)
+                j = _step(W, ctx, log)
                 if not isinstance(j, dict) or not j.get("action"):
                     _log("%s STOP empty answer at step %d" % (person, i + 1))
                     break

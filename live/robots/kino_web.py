@@ -65,6 +65,22 @@ def _text(h):
     return re.sub(r"\n\s*\n+", "\n", t).strip()
 
 
+def download(url, path, cap=20_000_000):
+    """a public file saved as it is (bytes) - reading only; path already checked by the caller"""
+    url = str(url or "").strip()
+    if not _public(url):
+        raise ValueError("not a public web address")
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with _OPENER.open(req, timeout=60) as r:
+        data = r.read(cap + 1)
+    if len(data) > cap:
+        raise ValueError("file larger than %d MB" % (cap // 1_000_000))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "wb").write(data)
+    _log("DOWNLOAD %s -> %s (%d bytes)" % (url[:150], path, len(data)))
+    return len(data)
+
+
 def search(q, n=8):
     """-> list of {title, url, snippet}"""
     q = str(q or "").strip()[:300]
