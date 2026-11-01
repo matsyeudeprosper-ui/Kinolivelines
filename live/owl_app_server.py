@@ -19539,7 +19539,8 @@ def _blind_cases(uid, n=14, days=3, one=False):
 
 def _blind_build(user, mode="one"):
     """mode 'one': old Kino vs the one mind (2026-10-25). mode 'model' (2026-10-31): the one mind on Sonnet ("old" slot) vs
-    on Opus ("new" slot), same facts and memory, on his real messages - his pick sets the default brain (blind_vote)"""
+    on Opus ("new" slot), same facts and memory, on his real messages - his pick sets the default brain (blind_vote).
+    mode 'lean' (2026-11-01, owner: plans must not lose money): Sonnet ("old") vs Haiku ("new") - is the cheap Kino still Kino?"""
     import random as _r
     _rc()
     import kino_one as _KO
@@ -19547,17 +19548,18 @@ def _blind_build(user, mode="one"):
     W.set_brain(None)
     W.member_turn(True)
     cases = []
-    for t, cid, i, m, old in _blind_cases(user.get("id"), one=(mode == "model")):
+    for t, cid, i, m, old in _blind_cases(user.get("id"), one=(mode in ("model", "lean"))):
         try:
             c = json.load(open(_chat_path(cid), encoding="utf-8"))
             ct = dict(c, msgs=(c.get("msgs") or [])[:i + 1], mind=None)
             now = "%s UTC (le moment de ce message)" % time.strftime("%d/%m %H:%M", time.gmtime(t))
             _lg = "en" if c.get("lang") == "en" else "fr"
             _f1, _m1 = _one_facts(user, ct), _one_memory(user, ct)
-            r = _KO.turn(W, ct, _f1, _m1, now, None, _lg, check=_KO.unknown_figures, model="opus" if mode == "model" else "sonnet")
+            r = _KO.turn(W, ct, _f1, _m1, now, None, _lg, check=_KO.unknown_figures,
+                         model={"model": "opus", "lean": "haiku"}.get(mode, "sonnet"))
             if not r or not r.get("say"):
                 continue
-            if mode == "model":
+            if mode in ("model", "lean"):
                 r0 = _KO.turn(W, ct, _f1, _m1, now, None, _lg, check=_KO.unknown_figures, model="sonnet")
                 if not r0 or not r0.get("say"):
                     continue
@@ -19578,7 +19580,7 @@ def _blind_build(user, mode="one"):
 def blind_build(user, body):
     if not is_admin(user):
         return {"ok": False, "err": "admin"}
-    mode = "one" if body.get("mode") == "one" else "model"     # 2026-10-31: the default test is now Sonnet vs Opus
+    mode = body.get("mode") if body.get("mode") in ("one", "lean") else "model"     # 2026-10-31: the default test is Sonnet vs Opus
     json.dump({"made": time.time(), "state": "building", "mode": mode, "cases": []}, open(ONE_BLIND, "w", encoding="utf-8"))
     threading.Thread(target=_blind_build, args=(user, mode), daemon=True).start()
     return {"ok": True}
@@ -19607,7 +19609,8 @@ def blind_get(user, body):
              "same": sum(1 for o in done if o["vote"] == "same"), "n": len(out)}
     mode = B.get("mode") or "one"
     return {"ok": True, "state": B.get("state") or "none", "cases": out, "score": score, "mode": mode,
-            "labels": {"new": "Opus", "old": "Sonnet"} if mode == "model" else {"new": "le nouveau Kino", "old": "l'ancien"},
+            "labels": {"new": "Opus", "old": "Sonnet"} if mode == "model" else
+                      {"new": "Kino léger (Haiku)", "old": "Kino actuel (Sonnet)"} if mode == "lean" else {"new": "le nouveau Kino", "old": "l'ancien"},
             "member_model": _kino_member_model()}
 
 
@@ -19625,8 +19628,15 @@ def blind_vote(user, body):
         sc = g.get("score") or {}
         if g.get("mode") == "model" and g.get("state") == "ready" and sc.get("n") and sc["new"] + sc["old"] + sc["same"] >= sc["n"]:
             pick_m = "opus" if sc["new"] > sc["old"] else "sonnet"
-            json.dump({"member": pick_m, "t": time.time(), "score": sc}, open(KINO_MODEL, "w", encoding="utf-8"))
+            json.dump(dict(_jload(KINO_MODEL, {}) or {}, member=pick_m, t=time.time(), score=sc), open(KINO_MODEL, "w", encoding="utf-8"))
             g["member_model"] = pick_m
+        # 2026-11-01: the lean test decides whether the paying plans may run on the small model (Haiku "as good or better" in
+        # at least 60% of the voted cases, "same" counting for it)
+        if g.get("mode") == "lean" and g.get("state") == "ready" and sc.get("n") and sc["new"] + sc["old"] + sc["same"] >= sc["n"]:
+            ok_l = (sc["new"] + sc["same"]) >= 0.6 * max(1, sc["new"] + sc["old"] + sc["same"])
+            json.dump(dict(_jload(KINO_MODEL, {}) or {}, lean_ok=ok_l, lean_t=time.time(), lean_score=sc),
+                      open(KINO_MODEL, "w", encoding="utf-8"))
+            g["lean_ok"] = ok_l
     except Exception:
         pass
     return g
@@ -19807,12 +19817,23 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _ff = _light_facts(_ff)
         except Exception:
             _mdl = "sonnet"
+        # 2026-11-01 (owner: "only if the business is not making me lose money"): once the owner's blind lean test passed
+        # (kino_model.json lean_ok), the plans below Premium talk with the small model - Sonnet cost ~0.11 $ a message,
+        # more than an Essentiel member pays. Premium and the owner keep Sonnet (and the careful Opus below).
+        _plan_now = "owner"
+        try:
+            _plan_now = plan_name(_thread_user(cid, user) or user)
+            if _plan_now not in ("premium", "owner") and (_jload(KINO_MODEL, {}) or {}).get("lean_ok") and _mdl != "haiku":
+                _mdl = "haiku"
+        except Exception:
+            pass
         _careful, _kn = False, {}
         try:                                                    # 2026-10-31 (kino_affect): a tense state makes him think with the
             import kino_affect as _KAf                          # stronger model - his feeling changes the machinery, not his words
             _kn = _KAf.knobs(uid)
             # 2026-11-01 (owner OK): not in the nightly sandbox test - it ran 8 Opus calls a night (~$4-6) for the same measure
-            if not event and _mdl == "sonnet" and _kn.get("careful") and not getattr(__import__("kino_inner").PROBE, "sandbox", False):
+            if not event and _mdl == "sonnet" and _kn.get("careful") and _plan_now in ("premium", "owner") and \
+                    not getattr(__import__("kino_inner").PROBE, "sandbox", False):
                 _mdl, _careful = "opus", True
         except Exception:
             pass
