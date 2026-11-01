@@ -53,6 +53,7 @@ def income(usd, what, ref):
             return mine
         d["income"].append({"t": time.time(), "usd": usd, "mine": mine, "owner": round(usd - mine, 2), "what": str(what)[:150], "ref": ref})
         _save(d)
+    _CACHE["v"] = None
     try:
         import kino_inner as KI
         KI.feel("relieved and proud", 0.6, why="%.2f $ paid for \"%s\" - %.2f $ of it is yours" % (usd, what, mine))
@@ -85,8 +86,20 @@ def _ai_by_day(days):
     return out
 
 
+_CACHE = {"t": 0.0, "v": None}
+
+
 def status():
-    """{balance, earned, mine, costs, ai_today, per_day, runway_days, vps_month_usd}"""
+    """{balance, earned, mine, costs, ai_today, per_day, runway_days, vps_month_usd} - cached 10 min (it reads the cost log,
+    and the chat, the body and the plan all ask for it)"""
+    if _CACHE["v"] is not None and time.time() - _CACHE["t"] < 600:
+        return dict(_CACHE["v"])
+    v = _status()
+    _CACHE.update(t=time.time(), v=v)
+    return dict(v)
+
+
+def _status():
     c = cfg()
     today = time.strftime("%Y-%m-%d", time.gmtime())
     with _LK:
