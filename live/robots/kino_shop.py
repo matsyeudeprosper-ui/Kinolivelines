@@ -44,6 +44,26 @@ def _token(ref):
     return hmac.new(k, ref.encode(), hashlib.sha256).hexdigest()[:20]
 
 
+BUYER = """You are a skeptical trader with a little money to spend, looking at a product an AI named Kino wants to sell you. You
+see its title, price, description and the start of the file you would get. Would you really pay that price for it? Judge
+like a buyer: is it worth more to me than it costs - enough data, a real answer, something I can use or reuse, clearly
+better than what I find free in ten minutes? Honest AI authorship is fine; say no only for lack of value. If no, say what
+would make you buy (concrete: more data, more markets, a tool not just a report, a lower price...).
+JSON only: {"buy": true or false, "why": "one sentence", "would_buy_if": "what is missing (empty if buy)"}"""
+
+
+def buyer_view(W, title, price, about, sample, log=None):
+    """a buyer's eye on a product before it is listed -> (buy, why, missing)"""
+    try:
+        j = W.ask_json(BUYER, "TITLE: %s\nPRICE: %.2f $\nDESCRIPTION: %s\n\nTHE FILE YOU GET (start):\n%s" % (
+            title, price, about, sample[:6000]), models=("sonnet",), timeout=120, log=log, warm=False)
+    except Exception:
+        return True, "", ""
+    if not isinstance(j, dict):
+        return True, "", ""
+    return bool(j.get("buy")), str(j.get("why") or "")[:300], str(j.get("would_buy_if") or "")[:400]
+
+
 def act(W, j, log=None):
     """his 'shop' action: op add (title, price, about, file) | remove (id) | list"""
     op = str(j.get("op") or "add").lower()
@@ -73,6 +93,16 @@ def act(W, j, log=None):
         return "the file to deliver must be in C:\\KinoWorld\\shop (write it there first)"
     if os.path.getsize(f) > 20_000_000:
         return "the file is larger than 20 MB"
+    # 2026-11-01 (owner: "people won't be buying from that"): before it goes on sale, a buyer looks at it
+    ok_, why_, miss_ = buyer_view(W, title, price, about, open(f, "rb").read(6000).decode("utf-8", "replace"), log)
+    if not ok_:
+        try:
+            import kino_inner as KI
+            KI.feel("stung", 0.35, why="a buyer would not pay for \"%s\": %s" % (title, why_))
+        except Exception:
+            pass
+        return "not listed - a buyer would not pay %.2f $ for it yet: %s. They would buy if: %s. Make it better, then add it again." % (
+            price, why_, miss_)
     import kino_post as KP
     no = KP._gate(W, "shop", title, "PRODUCT FOR SALE: %s - %.2f $\n%s\n\n(the file it delivers starts with:)\n%s" % (
         title, price, about, open(f, "rb").read(3000).decode("utf-8", "replace")), log)

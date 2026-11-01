@@ -27,7 +27,7 @@ _LK = threading.Lock()
 _BUSY = {"on": False}
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
 SESSIONS_DAY = 10                # 2026-11-01 (owner: "always looking, always active" for money): was 6
-STEPS = 20
+STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
 
 
 def _log(line):
@@ -507,7 +507,7 @@ def session(W, person, uid, log=None, task=None, project=""):
         hist = []
         for i in range(STEPS):
             ctx = "WHAT YOU DECIDED TO DO: %s\n\nWHAT IS ON YOUR MIND:\n%s\n\nTHIS SESSION SO FAR:\n%s\n\nStep %d of at most %d. JSON only." % (
-                task, mind[:6000], "\n".join(hist[-12:])[-9000:] or "(nothing yet)", i + 1, STEPS)
+                task, mind[:6000], "\n".join(hist[-18:])[-12000:] or "(nothing yet)", i + 1, STEPS)
             j = _step(W, ctx, log)
             if not isinstance(j, dict) or not j.get("action"):
                 # 2026-11-01 (first research session): one empty answer after a long page ended the whole session at step 6 -
