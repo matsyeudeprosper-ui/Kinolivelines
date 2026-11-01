@@ -2673,7 +2673,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <svg id="kino-spark" viewBox="0 0 300 44" style="width:100%;height:44px;display:none;margin-top:10px"></svg>
  <div id="kino-s" style="font-size:.78rem;color:var(--muted2);margin-top:8px"></div>
  <div style="display:flex;gap:8px;margin-top:12px">
-  <a id="kino-link" href="/demo" class="shbtn shghost" style="flex:1;margin:0;padding:10px;text-align:center;text-decoration:none;font-size:.86rem">Voir en direct</a>
+  <a id="kino-link" href="/demo/live" class="shbtn shghost" style="flex:1;margin:0;padding:10px;text-align:center;text-decoration:none;font-size:.86rem">Voir en direct</a>
   <button class="shbtn shmain" style="flex:1;margin:0;padding:10px;font-size:.86rem" onclick="offersSheet()">Les offres</button>
  </div>
 </div>
@@ -29243,6 +29243,25 @@ def home_kino_data(user):
         out["plan"] = {}
     out["family"] = bool(fam)
     out["owner"] = uid in OWNER_UIDS
+    # the account and the robot on it, when there is one (the family, the owner's accounts): their robot keeps trading
+    try:
+        for _u in [uid] + [x for x in (_person_uids(_person(uid)) or []) if x != uid]:
+            _f = os.path.join(DIR, "nest_data", "%s.json" % _u)
+            if os.path.exists(_f):
+                nd = json.load(open(_f, encoding="utf-8"))
+                if nd.get("balance") is None:
+                    continue
+                _rb = ""
+                try:
+                    _rb = ((acct_robot_block(_user_by_id(_u) or user, False) or {}).get("current") or {}).get("name_fr") or ""
+                except Exception:
+                    pass
+                out["account"] = {"uid": _u, "real": bool(nd.get("real")), "balance": nd.get("balance"), "today": nd.get("today"),
+                                  "week": nd.get("week"), "month": nd.get("month"), "open": len(nd.get("open_list") or []),
+                                  "robot": _rb, "auto": bool(((_user_by_id(_u) or {}).get("mode") == "auto") and (_user_by_id(_u) or {}).get("trade"))}
+                break
+    except Exception:
+        pass
     return out
 
 
@@ -31028,7 +31047,7 @@ button,a.b{display:block;width:100%;box-sizing:border-box;margin-top:12px;border
 <p>Collez le lien que vous avez re&ccedil;u (il contient votre cl&eacute;). L&#8217;application s&#8217;en souviendra.</p>
 <input id="lnk" placeholder="Collez votre lien ici" autocomplete="off" inputmode="url">
 <button class="m" onclick="go()">Ouvrir mon compte</button>
-<a class="b g" href="/demo">Voir le compte d&eacute;mo</a>
+<a class="b g" href="/demo/live">Voir le compte d&eacute;mo</a>
 <div class="s">Pas encore de lien ? <a href="/" style="color:#9fc2de">Demander un acc&egrave;s</a></div>
 </div>
 <script>
@@ -31454,7 +31473,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
   <div class="g3" id="pf2-g3"></div>
   <div class="nt" id="pf2-nt"></div>
  </div>
- <a class="go" id="pf2-go" href="/demo"><span id="pf2-gt">Voir la preuve compl&egrave;te</span><span aria-hidden="true">&rsaquo;</span></a>
+ <a class="go" id="pf2-go" href="/demo/live"><span id="pf2-gt">Voir la preuve compl&egrave;te</span><span aria-hidden="true">&rsaquo;</span></a>
 </div>
 <div class="pw" id="pw" hidden>
  <div class="h"><svg aria-hidden="true" class="ic ic-s"><use href="#i-info"/></svg>Le pire moment, sans filtre</div>
@@ -31487,7 +31506,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti. Les r&eacute;sultats pass&eacute;s ne promettent pas les suivants.</div>
 </div>
 <a class="bigbtn b1" id="hero-cta" href="/offres" onclick="try{fn('kino_trial_open')}catch(e){}" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg> Essayer Kino gratuitement</a>
-<a href="/demo" onclick="try{fn('demo_open')}catch(e){}" style="display:block;margin-top:10px;text-align:center;color:var(--text2);font-size:.9rem">Voir un robot travailler en direct &rsaquo;</a>
+<a href="/demo" onclick="try{fn('demo_open')}catch(e){}" style="display:block;margin-top:10px;text-align:center;color:var(--text2);font-size:.9rem">Parler à Kino maintenant, sans compte &rsaquo;</a>
 <div class="trust" id="trust">
  <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-lock"/></svg></span><span><b>Votre argent reste chez vous</b>sur votre compte, chez votre courtier.</span></div>
  <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-key"/></svg></span><span><b>Le robot ne peut rien retirer</b>il passe des ordres, c&rsquo;est tout.</span></div>
@@ -31823,7 +31842,7 @@ var EN={
 "Il se souvient de toi": "He remembers you",
 "Ta méthode, tes erreurs, tes objectifs. Il t’écrit quand il a quelque chose à dire, comme un vrai associé.": "Your method, your mistakes, your goals. He writes when he has something to say, like a real partner.",
 "Essayer Kino gratuitement": "Try Kino for free",
-"Voir un robot travailler en direct ›": "Watch a robot work live ›",
+"Parler à Kino maintenant, sans compte ›": "Talk to Kino now, no account ›",
 "Racontez votre idée à Kino": "Tell Kino your idea",
 "Comme à un ami qui s’y connaît : votre façon de trader, avec vos mots, sans jargon.": "Like to a friend who knows: how you trade, in your words, no jargon.",
 "Il construit et teste, honnêtement": "He builds and tests, honestly",
@@ -33969,6 +33988,20 @@ class H(BaseHTTPRequestHandler):
     def _do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
+        if p == "/meet_chat":                            # 2026-11-01: "Meet Kino" - a visitor's message (kino_meet: limits, API key)
+            try:
+                _b = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 12000)).decode("utf-8", "replace") or "{}")
+            except Exception:
+                _b = {}
+            _ip = (self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip()
+            _rdir = os.path.join(DIR, "robots")         # (no _rc() here: _do_POST binds that name later)
+            if _rdir not in sys.path:
+                sys.path.insert(0, _rdir)
+            _r = __import__("kino_meet").chat(_ip, _b.get("h") if isinstance(_b.get("h"), list) else [])
+            if _r.get("ok"):
+                fn_count("meet_msg")
+            self._send(json.dumps(_r, ensure_ascii=False), "application/json")
+            return
         if p == "/kino_tg":
             try:
                 _sec = open(os.path.join(DIR, "kino_bridge.secret"), encoding="utf-8").read().strip()
@@ -35971,9 +36004,15 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512m.png":
             self._send(ICON512M, "image/png")
             return
+        if parts == ["demo"]:
+            # 2026-11-01 (owner: "think deeper what the demo becomes"): the demo is meeting Kino - a conversation without an
+            # account (kino_meet), what he does, and a robot he made working live at /demo/live
+            fn_count("meet_open")
+            self._send(open(os.path.join(DIR, "owl_meet_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            return
         if parts and parts[0] == "demo":
             # front door to the showcase: no password, straight to the
-            # public account's page (owner 2026-09-19)
+            # public account's page (owner 2026-09-19); since 2026-11-01 at /demo/live
             pu = public_user()
             if pu is None:
                 self._not_found()
@@ -36004,9 +36043,10 @@ class H(BaseHTTPRequestHandler):
             self._not_found()
             return
         sub = parts[1] if len(parts) > 1 else ""
-        if sub == "" and not user.get("public") and "classic=1" not in self.path and user.get("id") not in OWNER_UIDS \
-                and not has(user.get("id"), "family") and not (user.get("mt5_login") or user.get("login")):
-            # 2026-11-01 (owner: "the focus is Kino"): members without a robot on a real account land on Kino's home
+        if sub == "" and not user.get("public") and "classic=1" not in self.path:
+            # 2026-11-01 (owner: "the focus is Kino"; then "I'd like everyone on the new design, yet all using the Owl should
+            # continue"): every member lands on Kino's home - the robots on the accounts are untouched (a page, not a switch);
+            # the account and its robot are the home's first card, the full dashboard stays at ?classic=1
             self.send_response(302)
             self.send_header("Location", "/%s/home" % parts[0])
             self.end_headers()

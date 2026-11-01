@@ -71,6 +71,8 @@ nav.tabs a.k span.kd{width:24px;height:24px;border-radius:8px;background:var(--g
   <div class="chips" id="chips"></div>
  </section>
 
+ <div id="acct"></div>
+
  <h2><span id="h-goal">Ce qu’il poursuit avec toi</span></h2>
  <div class="card" id="goal"><div class="goal skel">…</div></div>
 
@@ -123,6 +125,13 @@ async function load(){
   [T('Tu fais quoi ?','What are you up to?'),T('Tu fais quoi en ce moment ?','What are you up to right now?')]];
  document.getElementById('chips').innerHTML=C.map((c,i)=>'<span class="chip" data-i="'+i+'">'+esc(c[0])+'</span>').join('');
  document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{location.href=talk.href+(talk.href.includes('?')?'&':'?')+'ask='+encodeURIComponent(C[+el.dataset.i][1]);});
+ const A=d.account;
+ document.getElementById('acct').innerHTML=A?'<h2><span>'+T('Ton compte','Your account')+'</span><a href="'+B+'?classic=1">'+T('Tableau de bord','Dashboard')+'</a></h2>'+
+  '<a class="card" href="'+B+'?classic=1"><div class="row"><div><div class="rs">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+'</div>'+
+  '<div style="font-size:26px;font-weight:800;letter-spacing:-.02em">'+Number(A.balance||0).toFixed(2)+' $</div>'+
+  '<div class="rs">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today||0)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week||0)+'</span>'+
+  (A.open?' · '+A.open+' '+T('trade(s) ouvert(s)','open trade(s)'):'')+'</div></div>'+
+  (A.robot&&A.auto?'<span class="tag on">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div></a>':'';
  document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');
  document.getElementById('goal').innerHTML=d.goal?'<div class="goal"><small>'+T('Son objectif pour toi','His goal for you')+'</small>'+esc(d.goal)+'</div>'
   :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';
