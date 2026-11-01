@@ -192,7 +192,8 @@ async function load(){try{D=await api('place_data');}catch(e){$('list').innerHTM
   if(k==='r')detail(id);else if(k==='mine'){if((D.mine||[]).some(y=>y.id===id))mineSh(id);else detail(id);}
   else{const r=(D.my_robots||[]).find(y=>y.id===id);if((D.mine||[]).some(y=>y.id===id)||(r&&r.can))publishSh(id);else toast(r&&r.why?T('Pas encore : ','Not yet: ')+r.why:T('Ce robot ne peut pas être publié ici.','This robot cannot be published here.'));}}}
 const pricePill=x=>x.paused?'<span class="rs pause">'+T('en pause','paused')+'</span>':'<span class="rs free">'+T('inclus','included')+'</span>';
-const byLine=x=>'<small>'+T('par ','by ')+(x.by_nest?'<span class="nest">'+CROWN+esc(x.alias||'Le Nid')+'</span>':esc(x.alias||'?'))+' · '+plural(x.followers||0,'abonné','follower')+(x.mine?' · '+T('le vôtre','yours'):'')+'</small>';
+/* 2026-11-01 (owner): the nest's robots are robots Kino created - the Owl is one of them, on invitation (active for the family) */
+const byLine=x=>'<small>'+T('par ','by ')+(x.by_nest?'<span class="nest">'+CROWN+'Kino</span>'+((D.me&&D.me.auto)?'':' · '+T('sur invitation','by invitation')):esc(x.alias||'?'))+' · '+plural(x.followers||0,'abonné','follower')+(x.mine?' · '+T('le vôtre','yours'):'')+'</small>';
 function action(x){const me=D.me||{};
  if(x.following)return '<button class="btn sec" data-act="unfollow">'+T('Je le suis · arrêter','Following · stop')+'</button>';
  if(x.paused)return '<button class="btn sec" disabled>'+T('En pause','Paused')+'</button>';

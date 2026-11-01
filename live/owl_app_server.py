@@ -19840,6 +19840,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         W = _rc().W
         W.set_brain(None)
         W.member_turn(not event)
+        try:                                     # 2026-11-01 (owner): customers run on the commercial API key; the owner and the
+            W.set_api(not has(_person(user.get("id")), "family"))          # family stay on the owner's own setup
+        except Exception:
+            pass
         _tc0 = time.time()
         _pre = _ONE_PRE.pop(cid, None)
         if _pre and not event and time.time() - _pre[0] < 25:

@@ -75,6 +75,12 @@ def brain():
     return getattr(_TL, "brain", None)
 
 
+def set_api(flag):
+    """2026-11-01 (owner: connect the API key): this thread answers a CUSTOMER - every call of the turn goes through the
+    commercial API (robot_anthropic) instead of the owner's personal plan; a failed API call falls back to the local brain"""
+    _TL.api = bool(flag)
+
+
 def _bg_usd_cap():
     try:
         return float(json.load(open(BG_USD_FILE, encoding="utf-8")).get("usd_day") or 6.0)
@@ -322,6 +328,15 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         _OA_DOWN["n"] += 1
         if _OA_DOWN["n"] >= 2:
             _OA_DOWN["until"], _OA_DOWN["n"] = time.time() + 600, 0
+    if getattr(_TL, "api", False):
+        try:
+            import robot_anthropic as _RA
+            if _RA.ready():
+                _ra = _RA.ask_text(system, user, model, timeout, log, on_text)
+                if _ra is not None:
+                    return _ra
+        except Exception:
+            pass
     if not getattr(_TL, "member", False) and not _budget_ok(log):
         try:                                      # refused, and said so in the cost log
             io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
