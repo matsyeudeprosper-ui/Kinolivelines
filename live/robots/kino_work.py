@@ -115,6 +115,17 @@ def due(person, ctx, now=None):
     if _BUSY["on"] or ctx.get("in_talk"):
         return False
     d = _load()
+    # the weekly look back comes first: Sunday evening, or Monday morning if Sunday's was missed - it does not count against the
+    # day's sessions (2026-11-01: a busy Sunday used up the day's count and the first review never happened)
+    _fr = time.gmtime(now + 3600)
+    _wk = time.strftime("%G-%V", _fr) if _fr.tm_wday == 6 else time.strftime("%G-%V", time.gmtime(now + 3600 - 86400))
+    if ((_fr.tm_wday == 6 and _fr.tm_hour >= 18) or (_fr.tm_wday == 0 and 7 <= _fr.tm_hour < 13)) and d.get("review_week") != _wk \
+            and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):
+        def _mark(dd, _wk=_wk):
+            dd["review_week"] = _wk
+            dd["next_task"] = {"do": WEEKLY, "project": "", "why": "my weekly look back"}
+        _mut(_mark)
+        return True
     today = time.strftime("%Y-%m-%d", time.gmtime(now))
     S = [s for s in d.get("sessions") or [] if s.get("day") == today]
     if len(S) >= SESSIONS_DAY + 2:                     # (two more a day can go to looking after his body)
@@ -135,17 +146,8 @@ def due(person, ctx, now=None):
         pass
     # 2026-11-01 (owner: "do all 3" - a day rhythm): his night is the owner's night (France, UTC+1). Between 1 and 7 he rests -
     # nothing calls him to his computer, not even a follow-up; a body out of balance (above) still does.
-    _fr = time.gmtime(now + 3600)
     if 1 <= _fr.tm_hour < 7:
         return False
-    # the weekly look back: Sunday evening, once a week, before anything else
-    _wk = time.strftime("%G-%V", _fr)
-    if _fr.tm_wday == 6 and _fr.tm_hour >= 18 and d.get("review_week") != _wk:
-        def _mark(dd, _wk=_wk):
-            dd["review_week"] = _wk
-            dd["next_task"] = {"do": WEEKLY, "project": "", "why": "Sunday evening: my weekly look back"}
-        _mut(_mark)
-        return True
     try:
         import kino_body as KB
         if KB.fatigue() >= 0.5:
