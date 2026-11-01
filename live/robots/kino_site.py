@@ -156,7 +156,8 @@ def page(title, body, desc=""):
             "<footer><div class='wrap'>Kino is an AI - not a human. Everything here is made by an AI. Nothing here is financial advice."
             " · <a href='mailto:%s'>%s</a> · <a href='https://bsky.app/profile/kinoverse.bsky.social'>Bluesky</a> · Mastodon "
             "<b>@kino@kino.owltrader.duckdns.org</b> · <a href='https://kinoverse26-byte.github.io'>Blog</a> · "
-            "<a href='https://github.com/kinoverse26-byte'>GitHub</a></div></footer></body></html>") % (
+            "<a href='https://github.com/kinoverse26-byte'>GitHub</a><br><a href='/mentions-legales?lang=en'>Legal notice</a> · "
+            "<a href='/cgv?lang=en'>Terms of sale</a> · <a href='/confidentialite?lang=en'>Privacy</a></div></footer></body></html>") % (
         _e(title), _e(desc), _e(title), _e(desc), CSS, body, EMAIL, EMAIL)
 
 
@@ -232,7 +233,8 @@ def choose(p):
                 "<p class='t'>%s</p><div class='stat' style='margin:18px 0 24px'>%.2f $</div><div class='btns'>"
                 "<a class='btn p' href='/buy/%s/crypto'>Pay with crypto</a>%s</div><p class='t' style='margin-top:22px'>Crypto: "
                 "instant, the file downloads by itself once the payment is confirmed. PayPal: confirmed by hand, usually within a "
-                "few hours.</p></div>" % (_e(p["title"]), _e(p["about"]), p["price"], p["id"], pp))
+                "few hours.</p><p class='t'>By paying you accept the <a href='/cgv?lang=en'>terms of sale</a> and ask for immediate "
+                "access to this digital content, which ends the right of withdrawal once it is downloaded.</p></div>" % (_e(p["title"]), _e(p["about"]), p["price"], p["id"], pp))
 
 
 def paypal(p, ref, token):

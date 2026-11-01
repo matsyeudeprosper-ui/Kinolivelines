@@ -400,6 +400,11 @@ class H(BaseHTTPRequestHandler):
             return self._html(self._page(list(reversed(d["notes"][-30:]))))
         if p == "/shop":
             return self._html(KSI.shop())
+        if p in ("/mentions-legales", "/legal", "/cgv", "/terms", "/confidentialite", "/privacy"):   # 2026-11-01: legal pages
+            import sys as _sys
+            _sys.path.insert(0, os.path.dirname(HERE)) if os.path.dirname(HERE) not in _sys.path else None
+            import legal_pages as _LGP
+            return self._html(_LGP.render(p[1:], "lang=en" in (u.query or "")))
         if p == "/support":
             return self._html(KSI.support())
         if p == "/thanks":

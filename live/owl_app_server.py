@@ -9710,7 +9710,8 @@ function offersSheet(){fnb('offers');
    '<b>'+T2('30 jours, sans reconduction.','30 days, no auto-renewal.')+'</b> '+T2('Rien ne se renouvelle tout seul.','Nothing renews by itself.')+'<br>'+
    '<b>'+T2('Pour arr\u00eater :','To stop:')+'</b> '+T2('ne rien faire, \u00e7a se termine.','do nothing, it ends.')+'<br>'+
    '<b>'+T2('Votre argent reste chez vous.','Your money stays yours.')+'</b> '+T2('OwlNest ne d\u00e9tient jamais vos fonds.','OwlNest never holds your funds.')+'<br>'+
-   '<b>'+T2('Trader comporte un risque de perte.','Trading carries a risk of loss.')+'</b> '+T2('Aucun r\u00e9sultat n\u2019est garanti.','No result is guaranteed.')+'</div>'+
+   '<b>'+T2('Trader comporte un risque de perte.','Trading carries a risk of loss.')+'</b> '+T2('Aucun r\u00e9sultat n\u2019est garanti.','No result is guaranteed.')+'<br>'+
+   '<b>'+T2('En payant,','By paying,')+'</b> '+T2('vous acceptez les <a href="/cgv" target="_blank">CGV</a> et demandez l\u2019acc\u00e8s imm\u00e9diat ; remboursement au prorata si vous nous \u00e9crivez sous 14 jours.','you accept the <a href="/cgv?lang=en" target="_blank">terms of sale</a> and ask for immediate access; pro rata refund if you write within 14 days.')+' <a href="/mentions-legales" target="_blank">'+T2('Mentions l\u00e9gales','Legal notice')+'</a> \u00b7 <a href="/confidentialite" target="_blank">'+T2('Confidentialit\u00e9','Privacy')+'</a></div>'+
   '<div style="font-size:.76rem;color:var(--muted);line-height:1.5;margin-top:14px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service - not investment advice or management.')+'</div>'+
   '<button class="shbtn shghost" style="margin-top:16px" onclick="_shDone(1)">'+T2('Fermer','Close')+'</button>';
  sheet(h);
@@ -35611,6 +35612,11 @@ class H(BaseHTTPRequestHandler):
     def _do_GET(self):
         p = self.path.split("?")[0].rstrip("/")
         parts = [x for x in p.split("/") if x]
+        if len(parts) == 1 and parts[0] in ("mentions-legales", "legal", "cgv", "terms", "confidentialite", "privacy"):
+            # 2026-11-01 (owner: "draft all the bases needed"): the public legal pages (legal_pages.py)
+            import legal_pages as _LGP
+            self._send(_LGP.render(parts[0], "lang=en" in (self.path.split("?") + [""])[1]), "text/html; charset=utf-8")
+            return
         if len(parts) == 2 and parts[0] == "s":          # 2026-10-21 item 10: a robot's journey, view-only, shared by its owner
             _sp_ = share_page(parts[1])
             if _sp_ is None:
