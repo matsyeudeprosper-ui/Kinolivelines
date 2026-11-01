@@ -36855,5 +36855,10 @@ if __name__ == "__main__":
     threading.Thread(target=_tts_warm, daemon=True).start()
     threading.Thread(target=_luck_hold_loop, daemon=True).start()      # 2026-10-21 item 1: Kino gets the machine first
     threading.Thread(target=_commit_loop, daemon=True).start()         # 2026-10-23 engine 1: commitments verified, broken ones said
+    try:                                                               # 2026-11-01: his site (Mastodon home, shop) up with the app,
+        sys.path.insert(0, os.path.join(DIR, "robots")) if os.path.join(DIR, "robots") not in sys.path else None
+        __import__("kino_fedi").start()                                # not ~5 min later at the first urge tick
+    except Exception:
+        pass
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 
