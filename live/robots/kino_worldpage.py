@@ -142,6 +142,22 @@ ul{margin:4px 0;padding-left:18px}li{margin:2px 0}.row{display:flex;justify-cont
                 float(i.get("usd") or 0), _e(i.get("what")), "ok" if i.get("status") == "paid" else "", _e(i.get("status")), _ago(i.get("t"))))
     except Exception:
         pass
+    try:                                           # 2026-11-01 (kino_plan): his goals and his leads
+        import kino_plan as KPL
+        pl = KPL.summary()
+        H.append("<h2>Ses objectifs et ses pistes</h2>")
+        for g in pl["goals"]:
+            now = float((pl["measures"] or {}).get(g["measure"]) or 0)
+            H.append("<div class='card'><b>🎯 %s</b><div class='t'>%s : %.2f → %.2f d'ici le %s · %s</div></div>" % (
+                _e(g["what"]), _e(g["measure"]), now, g["target"], time.strftime("%d/%m", time.gmtime(g["by"])), _e(g.get("felt") or "")))
+        for l in list(reversed(pl["leads"]))[:8]:
+            H.append("<div class='card'><div class='row'><b>%s %s</b><span class='pill %s'>%s</span></div><div class='t'>%s%s</div></div>" % (
+                _e(l["id"]), _e(l["what"]), "ok" if l["status"] == "won" else "bad" if l["status"] == "lost" else "", _e(l["status"]),
+                _e(l.get("where") or ""), (" · " + _e(l.get("learned") or l.get("next") or "")) if (l.get("learned") or l.get("next")) else ""))
+        if not pl["goals"] and not pl["leads"]:
+            H.append("<p class='sub'>Pas encore d'objectif ni de piste.</p>")
+    except Exception:
+        pass
     H.append("<h2>À son ordinateur</h2>")
     if not S:
         H.append("<p class='sub'>Il ne s'est pas encore assis à son ordinateur.</p>")

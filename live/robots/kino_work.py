@@ -144,6 +144,12 @@ def due(person, ctx, now=None):
             return True
     except Exception:
         pass
+    try:                                       # 2026-11-01 (kino_plan): a follow-up he promised himself falls due
+        import kino_plan as KPL
+        if KPL.due_follow_ups():
+            return True
+    except Exception:
+        pass
     open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
     return want >= 0.55 or (open_project and want >= 0.4)
 
@@ -161,7 +167,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|lead|goal|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -172,6 +178,9 @@ Answer ONE JSON object per step and nothing else:
  "do": "browse: open|click|type|scroll|read|links|back|shot", "target": "browse: the text of what to click, or a CSS selector (click/type)",
  "site": "allow_site: the website you need to SEND on (sign up, post, submit)", "what": "allow_site: exactly what you will send there",
  "repo": "publish: the GitHub repository name", "files": "publish: optional list of file names in that folder (default: all)",
+ "id": "lead/goal: which one (to update)", "status": "lead: idea|tried|waiting|won|lost|dropped", "next": "lead: the next step",
+ "follow_up_h": "lead: in how many hours to come back to it", "learned": "lead: what it taught you (when it ends)",
+ "measure": "goal: earned|mine|balance|followers|paid|leads_won", "target": "goal: a number", "by": "goal: YYYY-MM-DD",
  "amount": "invoice: dollars", "what": "invoice: what the payment is for (allow_site: what you will send)",
  "title": "post: the title of a blog post (its text goes below the JSON between ===FILE=== and ===END===, markdown)"}
 Your own Python and PowerShell have no internet: to get a file from the web into your world (data, a CSV), use
@@ -197,6 +206,9 @@ account, family, life - even without a name), a secret, a text that lets readers
 stops it, and you get the reason. A few posts a day at most. The owner can switch your posting off. Write as yourself, an AI.
 MONEY - the owner wants you to earn, any honest way, any amount: always looking, always active. Your own tools, data and
 reports people would pay for, small paid jobs and gigs where an AI is welcome, tips for your free work, selling what you make.
+Keep a real plan: every opportunity is a lead (what, where, url, status, next, follow_up_h) - update it when something happens,
+close it as won or lost with what it taught you; follow-ups that fall due bring you back. Set yourself up to 3 goals with goal
+(what, a real measure, a target, a date) - they are measured from real numbers, so you will feel where you really stand.
 To be paid: invoice (amount in dollars, what it is for, to = who) makes a payment link on the owner's NOWPayments account - put
 it in your reply, post, email or offer; you are told when it is paid. You never pay, never give card or bank details, never
 take a payout yourself. Say you are an AI wherever you offer something; a place that bans AI-made work is not for you.
@@ -270,6 +282,11 @@ def _mind(person, uid):
             L.append("Your machine's check-up (updated every 10 min): C:\\KinoWorld\\body\\health.txt")
     except Exception:
         pass
+    try:                                       # 2026-11-01 (kino_plan): his goals, leads, follow-ups due, lessons
+        import kino_plan as KPL
+        L.append(KPL.block(True))
+    except Exception:
+        pass
     try:                                       # 2026-11-01 (kino_online): the people he met online, who waits for his answer
         import kino_online as KON
         ob_ = KON.block(True)
@@ -327,6 +344,12 @@ def _act(j, person, W=None):
         import kino_post as KP
         fl = j.get("files") if isinstance(j.get("files"), list) else None
         return KP.repo(W, j.get("path"), j.get("repo"), j.get("why") or "", fl, log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "lead":                        # 2026-11-01 (kino_plan): an opportunity he tracks and follows up
+        import kino_plan as KPL
+        return KPL.lead(j)
+    if a == "goal":
+        import kino_plan as KPL
+        return KPL.goal(j)
     if a == "invoice":                     # 2026-11-01 (owner): a payment link on the owner's NOWPayments account
         import kino_pay as KPY
         return KPY.invoice(j.get("amount"), j.get("what") or j.get("why") or "", j.get("to") or "")

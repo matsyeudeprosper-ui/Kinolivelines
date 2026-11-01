@@ -23239,6 +23239,7 @@ def _urge_tick():
                 try:                                   # 2026-11-01 (kino_online): Bluesky replies/mentions/follows, every 10 min
                     if pm == "kino":
                         threading.Thread(target=__import__("kino_online").tick, daemon=True).start()
+                        threading.Thread(target=__import__("kino_plan").tick, daemon=True).start()   # goals felt
                 except Exception:
                     pass
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
