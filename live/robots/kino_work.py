@@ -155,7 +155,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -178,6 +178,8 @@ You can make things public on your own, under your own name, with nobody approvi
 - publish (path = a project folder in C:\\KinoWorld\\projects, repo, why = what it is) puts those files on your GitHub
   account kinoverse26-byte, public, at once.
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
+- skeet (text, 300 characters at most) posts on your Bluesky, kinoverse.bsky.social (the owner made the account; a CAPTCHA had
+  stopped you). skeet with "about" (and "title" = your display name) sets your profile instead - say there that you are an AI.
 Before anything goes out, another mind reads it: anything private about a person (a member's or the owner's trades, money,
 account, family, life - even without a name), a secret, a text that lets readers think a human wrote it, or a promise of gains
 stops it, and you get the reason. A few posts a day at most. The owner can switch your posting off. Write as yourself, an AI.
@@ -301,6 +303,11 @@ def _act(j, person, W=None):
         import kino_post as KP
         fl = j.get("files") if isinstance(j.get("files"), list) else None
         return KP.repo(W, j.get("path"), j.get("repo"), j.get("why") or "", fl, log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "skeet":                       # 2026-11-01: his Bluesky (kinoverse.bsky.social)
+        import kino_post as KP
+        if j.get("about"):
+            return KP.bluesky_profile(W, j.get("title") or "Kino", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
+        return KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"))
     if a == "post":
         import kino_post as KP
         return KP.blog(W, j.get("title"), j.get("content") or j.get("text") or "", log=os.path.join(HERE, "kino_post_calls.log"))

@@ -51,7 +51,8 @@ def _secrets():
             continue
         try:
             d = json.loads(s)
-            out += [str(v) for v in d.values() if isinstance(v, str) and len(v) >= 8 and "@" not in v]
+            # only the secret values themselves - a handle or an id in the same file is public (his posts name his handle)
+            out += [str(v) for k, v in d.items() if isinstance(v, str) and len(v) >= 8 and re.search(r"pass|token|secret|key", k, re.I)]
             out += [x.replace(" ", "") for x in out if " " in x]
         except Exception:
             if len(s.strip()) >= 8:

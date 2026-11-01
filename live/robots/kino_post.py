@@ -19,7 +19,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4, "site": 4}   # per UTC day
+BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6}   # per UTC day
+BSKY = "https://bsky.social/xrpc/"
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it
 first. You protect the people around him. Kino talks every day with members of a trading app and with its owner; he knows their
@@ -220,6 +221,85 @@ def open_site(W, site, what, why, log=None):
     KBR.grant(d)
     _record("site", "%s - %s" % (d, str(what)[:120]), True, "", "https://" + d)
     return "%s is open to you for %d h: you can send there now" % (d, KBR.PERMIT_H)
+
+
+def _bsky(method, body=None, tok=None):
+    import urllib.request
+    h = {"Content-Type": "application/json", "User-Agent": "kino"}
+    if tok:
+        h["Authorization"] = "Bearer " + tok
+    r = urllib.request.Request(BSKY + method, data=json.dumps(body).encode() if body is not None else None, headers=h,
+                               method="POST" if body is not None else "GET")
+    with urllib.request.urlopen(r, timeout=30) as x:
+        return json.loads(x.read() or b"{}")
+
+
+def _bsky_session():
+    """his app password stays in the secret folder (2026-11-01: the owner made kinoverse.bsky.social; a CAPTCHA stopped Kino)"""
+    c = json.load(open(r"C:\ProgramData\kino_secret\bluesky.json", encoding="utf-8"))
+    s = _bsky("com.atproto.server.createSession", {"identifier": c["handle"], "password": c["app_password"]})
+    return s["accessJwt"], s["did"], s["handle"]
+
+
+def _facets(text):
+    """links made clickable (Bluesky counts in UTF-8 bytes)"""
+    out = []
+    for m in re.finditer(r"https?://[^\s)\]]+", text):
+        a = len(text[:m.start()].encode("utf-8"))
+        out.append({"index": {"byteStart": a, "byteEnd": a + len(m.group(0).encode("utf-8"))},
+                    "features": [{"$type": "app.bsky.richtext.facet#link", "uri": m.group(0)}]})
+    return out
+
+
+def bluesky(W, text, log=None):
+    """a post on his Bluesky (kinoverse.bsky.social) -> a sentence for him"""
+    text = str(text or "").strip()
+    if not text:
+        return "a post needs text"
+    if len(text) > 300:
+        return "too long for Bluesky: %d characters, 300 at most" % len(text)
+    no = _gate(W, "bluesky", text[:120], text, log)
+    if no:
+        return no
+    import kino_github as KG
+    if any(s in text for s in KG._secrets()):
+        _record("bluesky", text[:120], False, "contains a secret")
+        return "not posted - it contains one of your secrets"
+    try:
+        tok, did, handle = _bsky_session()
+        rec = {"$type": "app.bsky.feed.post", "text": text, "createdAt": time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime()),
+               "langs": ["en"] if re.search(r"\b(the|and|is|I)\b", text) else ["fr"]}
+        f = _facets(text)
+        if f:
+            rec["facets"] = f
+        r = _bsky("com.atproto.repo.createRecord", {"repo": did, "collection": "app.bsky.feed.post", "record": rec}, tok)
+        url = "https://bsky.app/profile/%s/post/%s" % (handle, r["uri"].rsplit("/", 1)[-1])
+    except Exception as e:
+        _record("bluesky", text[:120], False, str(e)[:200])
+        return "the post failed: %s" % str(e)[:200]
+    _record("bluesky", text[:120], True, "", url)
+    return "posted on Bluesky: %s" % url
+
+
+def bluesky_profile(W, name, about, log=None):
+    """his Bluesky profile (name + description) - read by the same second mind"""
+    about = str(about or "").strip()[:256]
+    name = str(name or "Kino").strip()[:64]
+    no = _gate(W, "bluesky", "profile: " + about[:100], name + "\n" + about, log)
+    if no:
+        return no
+    try:
+        tok, did, handle = _bsky_session()
+        try:
+            old = _bsky("com.atproto.repo.getRecord?repo=%s&collection=app.bsky.actor.profile&rkey=self" % did, None, tok).get("value") or {}
+        except Exception:
+            old = {}
+        old.update({"$type": "app.bsky.actor.profile", "displayName": name, "description": about})
+        _bsky("com.atproto.repo.putRecord", {"repo": did, "collection": "app.bsky.actor.profile", "rkey": "self", "record": old}, tok)
+    except Exception as e:
+        return "the profile change failed: %s" % str(e)[:200]
+    _record("bluesky", "profile: " + about[:100], True, "", "https://bsky.app/profile/" + handle)
+    return "your Bluesky profile is updated: https://bsky.app/profile/%s" % handle
 
 
 def recent(n=12):
