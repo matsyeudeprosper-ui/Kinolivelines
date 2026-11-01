@@ -13655,6 +13655,20 @@ def robot_create(user, body, dry=False):
         if len(set(F)) != len(F) or any(not usable(f, "filter") for f in F):
             return {"ok": False, "err": "filters"}
         clean["filters"] = F
+    if isinstance(P.get("after_loss"), dict):
+        # 2026-11-01 (owner): the trade right after a stop-out (robots/robot_after.py) - its trigger and stop are pieces
+        _rc()
+        import robot_after as _RAc
+        import robot_dsl as _RDc
+        al = P["after_loss"]
+        if not (al.get("entry") and usable(al["entry"], "entry")) or (al.get("stop") and not usable(al["stop"], "stop")):
+            return {"ok": False, "err": "after_loss"}
+        _alr = _RAc.from_parts(al, PCS)
+        ok, why = _RAc.validate(_alr, _RDc.validate) if _alr else (False, "after_loss")
+        if not ok:
+            return {"ok": False, "err": "after_loss"}
+        clean["after_loss"] = {"entry": al["entry"], "stop": al.get("stop") or None, "direction": why["direction"],
+                               "target": why["target"], "on": why["on"], "expire_min": why["expire_min"]}
     if P.get("money"):
         try:
             pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8")).get("packages") or {}
@@ -15931,6 +15945,18 @@ def _deed_do(cid, uid, todo):
                         break
                 if not _rid:
                     __import__("kino_deed")._log(cid, "TEST_NAME_UNKNOWN", k)
+                    # 2026-11-01 21:32 (watch): "#test Bougie contre le graphique du haut" - the name of the robot he had just
+                    # rebuilt IN this chat, not yet in the robot list - started nothing, and he told the owner "test is running".
+                    # The chat's own robot is what he means when it has a robot; otherwise he is told the test did not start.
+                    if c.get("robot") or c.get("robot_id"):
+                        H["act_test"](cid, uid)
+                    else:
+                        try:
+                            __import__("kino_urge").add(_person(uid), "A MISTAKE OF YOURS - your test of '%s' did NOT start: no robot "
+                                                                        "of that name. Do not say it is running; tell them, and test the "
+                                                                        "right one." % k[5:].strip())
+                        except Exception:
+                            pass
                     continue
                 if _rid == c.get("robot_id"):
                     H["act_test"](cid, uid)
@@ -19048,7 +19074,7 @@ def _desk_robot_set(cid, user, v, en, c):
     if r0 is None:
         return say_(("No robot called «%s»." if en else "Pas de robot qui s'appelle « %s ».") % (nm or "?"))
     try:
-        pkg = robot_package(dict(r0, resolved=robot_resolve(r0["id"], byid)), reg.get("pieces") or [], None, None)
+        pkg = robot_package(dict(r0, resolved=robot_resolve(r0["id"], byid)), reg.get("pieces") or [], None, None, desk=True)
     except Exception as e:
         return say_(("🤖 «%s» cannot run on an account yet: %s" if en else "🤖 « %s » ne peut pas encore tourner sur un compte : %s") % (
             r0.get("name_fr") or r0["id"], str(e)[:120]))
@@ -24670,6 +24696,11 @@ def _chat_test0(user, body):
         if (rob.get("money") or {}).get("lot"):       # 2026-10-26: the member's sizing rule, as a package of its own
             parts["money"] = _lot_package(rob["money"].get("use") or "simple", rob["money"]["lot"])
         parts["filters"] = [pid_of("filter", f) for f in rob.get("filters") or []]
+        _al = rob.get("after_loss")
+        if isinstance(_al, dict) and _al.get("entry"):       # 2026-11-01 (owner): the trade right after a stop-out
+            parts["after_loss"] = {"entry": pid_of("entry", _al["entry"]), "stop": pid_of("stop", _al["stop"]) if _al.get("stop") else None,
+                                   "direction": _al.get("direction") or "reverse", "target": _al.get("target"),
+                                   "on": _al.get("on") or "sl", "expire_min": _al.get("expire_min")}
     except Exception as e:
         return {"ok": False, "err": "piece:" + str(e)[:40]}
     owl = _ai_owl()
@@ -28423,8 +28454,10 @@ BOT_VARIANT = {"kino": "kino", "u224016179": "valere", "demo": "demo", "infinity
 PLUG_LOG = os.path.join(DIR, "robots", "plug.log")
 
 
-def robot_package(r, pieces, account_pkg=None, own_money=None):
+def robot_package(r, pieces, account_pkg=None, own_money=None, desk=False):
     """a robot (resolved pieces) -> the package the live bot reads; raises ValueError when it cannot run live.
+    desk=True (2026-11-01): for the member's desk (owl_manual_trader.robot_tick), which also runs the rules on the last
+    trade's result (robots/robot_after.py: a target formula, the after-loss trade); the account bots do not yet.
     MONEY (owner 2026-10-13): the account keeps its OWN money settings unless the robot explicitly chose a money
     piece (own_money) - plugging a robot changes the strategy, not how the account is sized and protected."""
     P = {p["id"]: p for p in pieces}
@@ -28456,14 +28489,29 @@ def robot_package(r, pieces, account_pkg=None, own_money=None):
             pk["rr"] = float(eng["rr"])
         else:
             raise ValueError("exit")
-    elif ex["rule"].get("target"):
-        pk["rr"] = float(ex["rule"]["target"])
+    elif ex["rule"].get("target") and not isinstance(ex["rule"]["target"], str):
+        pk["rr"] = float(ex["rule"]["target"])      # 2026-11-01: a target FORMULA stays in rules["exit"] (robot_live.tp_for)
     fr = [(P.get(f) or {}).get("rule") for f in F if (P.get(f) or {}).get("rule")]
     if fr:
         rules["filters"] = fr
     # 2026-10-22: limit/stop orders, partial closes and trailing stops run on the BENCH only - the live bot does not
     # place them yet, so such a robot is tested but never put on an account (it would trade something else)
     _todo = (["order"] if (rules.get("entry") or {}).get("order") else []) + [k for k in ("partial", "trail") if (rules.get("exit") or {}).get(k)]
+    # 2026-11-01 (owner: "1:1, and after a stop-out the reverse trade on the next BOS at 1:2"): the after-loss trade and a
+    # target formula (robots/robot_after.py) - run by the bench and the member's desk; an account bot would trade
+    # something else, so there they stay bench-only until structure_bos_bot reads them
+    if os.path.join(DIR, "robots") not in sys.path:
+        sys.path.insert(0, os.path.join(DIR, "robots"))
+    import robot_after as _RAp
+    _alr = _RAp.from_parts(R.get("after_loss"), P)
+    if R.get("after_loss") and not _alr:
+        raise ValueError("after_loss")
+    if _alr:
+        if _alr["entry"].get("order"):
+            raise ValueError("bench_only:order")
+        rules["after_loss"] = _alr
+    if not desk:
+        _todo += (["after_loss"] if _alr else []) + (["target_formula"] if isinstance((rules.get("exit") or {}).get("target"), str) else [])
     if _todo:
         raise ValueError("bench_only:" + ",".join(_todo))
     pk["robot_rules"] = rules or None
