@@ -19811,7 +19811,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         try:                                                    # 2026-10-31 (kino_affect): a tense state makes him think with the
             import kino_affect as _KAf                          # stronger model - his feeling changes the machinery, not his words
             _kn = _KAf.knobs(uid)
-            if not event and _mdl == "sonnet" and _kn.get("careful"):
+            # 2026-11-01 (owner OK): not in the nightly sandbox test - it ran 8 Opus calls a night (~$4-6) for the same measure
+            if not event and _mdl == "sonnet" and _kn.get("careful") and not getattr(__import__("kino_inner").PROBE, "sandbox", False):
                 _mdl, _careful = "opus", True
         except Exception:
             pass
