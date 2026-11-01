@@ -178,10 +178,13 @@ def block(lang="fr"):
     en = lang == "en"
     R = [x for x in d.get("received") or [] if time.time() - x["t"] < 3 * 86400][-4:]
     S = [x for x in d.get("sent") or [] if time.time() - x["t"] < 3 * 86400][-2:]
-    L = [("Your own email address: %s (yours - you can write with #email <address> | <subject> | <message>; to someone new it "
-          "waits for his OK)." if en else
-          "Ton adresse mail à toi : %s (la tienne - tu peux écrire avec #email <adresse> | <sujet> | <message> ; à quelqu'un de "
-          "nouveau, ça attend son accord).") % (address() or "kinoverse26@gmail.com")]
+    # 2026-11-01 01:33 (watch): he told the owner "it might wait for the owner's OK" about the owner's own address - he must know
+    # who he can write to at once (and that the person in this conversation IS the owner, so it goes)
+    L = [("Your own email address: %s (yours - you write with #email <address> | <subject> | <message>). Goes out at once to: %s "
+          "(%s is HIS address - he is the owner of the app). Anyone else: it waits for his OK first." if en else
+          "Ton adresse mail à toi : %s (la tienne - tu écris avec #email <adresse> | <sujet> | <message>). Part tout de suite vers : %s "
+          "(%s est SON adresse - c'est lui le propriétaire de l'appli). Quelqu'un d'autre : ça attend d'abord son accord.") % (
+        address() or "kinoverse26@gmail.com", ", ".join(contacts()), OWNER_EMAIL)]
     if R:
         L.append(("Recent mail you received: " if en else "Courriers reçus récemment : ") +
                  " | ".join("%s from %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["from"][:60], x["subject"][:90]) for x in R))
