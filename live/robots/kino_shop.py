@@ -122,6 +122,59 @@ def buy(pid, ip):
     return url, ""
 
 
+def product(pid):
+    return next((x for x in _load()["products"] if x["id"] == pid and x.get("on")), None)
+
+
+def _ip_ok(ip):
+    now = time.time()
+    hits = [t for t in _IP.get(ip, []) if now - t < 3600]
+    if len(hits) >= BUYS_HOUR_IP:
+        return False
+    _IP[ip] = hits + [now]
+    return True
+
+
+def buy_paypal(pid, ip):
+    """a PayPal order -> (ref, token) or (None, reason)"""
+    p = product(pid)
+    if not p:
+        return None, "This item is no longer for sale."
+    if not _ip_ok(ip):
+        return None, "Too many tries - please come back in an hour."
+    import kino_pay as KPY
+    ref = KPY.manual(p["price"], "shop: " + p["title"], kind="shop", method="PayPal")
+    with _LK:
+        d = _load()
+        d["sales"].append({"ref": ref, "pid": pid, "t": time.time(), "method": "paypal"})
+        d["sales"] = d["sales"][-500:]
+        _save(d)
+    return ref, _token(ref)
+
+
+def tip_crypto(amount, ip):
+    if not _ip_ok(ip):
+        return None, "Too many tries - please come back in an hour."
+    import kino_pay as KPY
+    try:
+        ref, url = KPY.create(amount, "a tip for Kino", "", kind="tip", per_day=30,
+                              success_url="https://kino.owltrader.duckdns.org/thanks")
+    except ValueError as e:
+        return None, str(e)
+    return url, ""
+
+
+def tip_paypal_claim(amount, name, ip):
+    if not _ip_ok(ip):
+        return False
+    import kino_pay as KPY
+    try:
+        ref = KPY.manual(float(amount), "a PayPal tip%s" % ((" from " + str(name)[:60]) if name else ""), kind="tip", method="PayPal")
+    except Exception:
+        return False
+    return KPY.claim(ref, "")
+
+
 def got(ref, token):
     """the buyer comes back -> (file path, product) when paid; (None, product or None) otherwise"""
     if not re.fullmatch(r"[0-9a-f]{10}", ref or "") or not hmac.compare_digest(_token(ref), str(token or "")):

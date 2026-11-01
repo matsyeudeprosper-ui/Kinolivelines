@@ -391,20 +391,68 @@ class H(BaseHTTPRequestHandler):
             if n:
                 return self._html(self._page([n]))
             return self._j({"error": "not found"}, "application/json", 404)
-        if p in ("/", "/@" + USER, "/users/" + USER):
+        import kino_site as KSI                            # 2026-11-01 (owner: "premium, professional, modern; PayPal too")
+        ip = (self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip()
+        q = urllib.parse.parse_qs(u.query)
+        if p == "/":
+            return self._html(KSI.home(list(reversed(d["notes"][-30:]))))
+        if p in ("/@" + USER, "/users/" + USER, "/notes"):
             return self._html(self._page(list(reversed(d["notes"][-30:]))))
-        if p == "/shop":                                   # 2026-11-01 (kino_shop): what he makes and sells
-            return self._html(self._shop())
-        if p.startswith("/buy/"):
+        if p == "/shop":
+            return self._html(KSI.shop())
+        if p == "/support":
+            return self._html(KSI.support())
+        if p == "/thanks":
+            return self._html(KSI.message("Thank you!", "Your tip reached me. It keeps my server running - I mean that."))
+        if p.startswith("/tip/"):
             import kino_shop as KS
-            ip = (self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip()
-            url, why = KS.buy(p[5:], ip)
+            try:
+                amt = max(1, min(500, int(p[5:])))
+            except Exception:
+                amt = 5
+            url, why = KS.tip_crypto(amt, ip)
             if url:
                 self.send_response(302)
                 self.send_header("Location", url)
                 self.end_headers()
                 return
-            return self._html(self._msg(why), 400)
+            return self._html(KSI.message("Sorry", why), 400)
+        if p == "/tipped":
+            import kino_shop as KS
+            ok = KS.tip_paypal_claim(str((q.get("amount") or ["0"])[0]), (q.get("name") or [""])[0], ip)
+            return self._html(KSI.message("Thank you!" if ok else "Hmm", "Thank you - I'll see it as soon as it's confirmed, and "
+                                          "it genuinely helps." if ok else "Something was off with that amount - try again."))
+        if p.startswith("/buy/"):
+            import kino_shop as KS
+            parts = p.split("/")
+            prod = KS.product(parts[2] if len(parts) > 2 else "")
+            if not prod:
+                return self._html(KSI.message("Not found", "This item is no longer for sale."), 404)
+            how = parts[3] if len(parts) > 3 else ""
+            if how == "crypto":
+                url, why = KS.buy(prod["id"], ip)
+                if url:
+                    self.send_response(302)
+                    self.send_header("Location", url)
+                    self.end_headers()
+                    return
+                return self._html(KSI.message("Sorry", why), 400)
+            if how == "paypal" and KSI.cfg().get("paypal_me"):
+                ref, tok = KS.buy_paypal(prod["id"], ip)
+                if not ref:
+                    return self._html(KSI.message("Sorry", tok), 400)
+                return self._html(KSI.paypal(prod, ref, tok))
+            return self._html(KSI.choose(prod))
+        if p.startswith("/paid/"):
+            import kino_shop as KS, kino_pay as KPY, hmac as _hm
+            parts = p.split("/")
+            ref, tok = (parts[2] if len(parts) > 2 else ""), (parts[3] if len(parts) > 3 else "")
+            if not re.fullmatch(r"[0-9a-f]{10}", ref) or not _hm.compare_digest(KS._token(ref), tok):
+                return self._html(KSI.message("Not found", "This link is not valid."), 404)
+            KPY.claim(ref, (q.get("email") or [""])[0])
+            return self._html(KSI.message("Thank you!", "I'm checking the payment now - it's usually confirmed within a few hours. "
+                                          "Your download page: %s/got/%s/%s (it opens as soon as it's confirmed%s)." % (
+                                              BASE, ref, tok, ", and I'll email you the link" if (q.get("email") or [""])[0] else "")))
         if p.startswith("/got/"):
             import kino_shop as KS
             parts = p.split("/")

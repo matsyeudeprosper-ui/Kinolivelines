@@ -60,6 +60,14 @@ def answered(url):
         _save(d)
 
 
+def answered_by(who):
+    """he wrote back to this person (an email) - what they sent no longer waits"""
+    with _LK:
+        d = _load()
+        d["pending"] = [x for x in d["pending"] if x.get("who") != who]
+        _save(d)
+
+
 def pending(max_age_h=72):
     return [x for x in _load()["pending"] if time.time() - float(x.get("t") or 0) < max_age_h * 3600]
 
@@ -72,8 +80,9 @@ def block(en=True):
     W = pending()
     if W:
         out.append("WAITING FOR YOUR ANSWER: " + " | ".join(
-            "%s on %s: \"%s\" (answer with %s and url=%s)" % (x["who"], x["where"], x["text"][:200],
-                                                             "skeet" if x["where"] == "bluesky" else "toot", x["url"]) for x in W[-5:]))
+            ("%s by email: \"%s\" (answer with email to %s)" % (x["who"], x["text"][:240], x["who"])) if x["where"] == "email" else
+            ("%s on %s: \"%s\" (answer with %s and url=%s)" % (x["who"], x["where"], x["text"][:200],
+                                                              "skeet" if x["where"] == "bluesky" else "toot", x["url"])) for x in W[-5:]))
     if P:
         out.append("PEOPLE YOU MET ONLINE (most recent first; how many exchanges; the last words): " + " | ".join(
             "%s (%s, %d) %s" % (k, v.get("where"), int(v.get("n") or 0),

@@ -123,6 +123,15 @@ def check(first_run_quiet=True):
     _mut(f)
     for x in new:
         _log("IN from %s | %s" % (x["from"], x["subject"][:120]))
+        # 2026-11-01 (owner: clients write to him): who writes to him can be answered, and the mail waits for his answer
+        a = email.utils.parseaddr(x["from"])[1].lower()
+        if a and a != OWNER_EMAIL and "noreply" not in a and "no-reply" not in a and "notification" not in a:
+            allow(a)
+            try:
+                import kino_online as KON
+                KON.note(a, "email", "%s - %s" % (x["subject"], x["text"][:300]), "in", "mail:" + x["id"], kind="reply")
+            except Exception:
+                pass
     return new
 
 
@@ -164,7 +173,21 @@ def send(to, subject, body, why=""):
     if not a or "@" not in a:
         return {"ok": False, "why": "no valid address"}
     if a in contacts():
+        if a != OWNER_EMAIL:                       # 2026-11-01: a mail to a client goes through the same second mind as his posts
+            try:
+                import kino_post as KP, robot_warm as W
+                ok, why2 = KP.check(W, "EMAIL to %s\nSubject: %s\n\n%s" % (a, subject, body))
+                if not ok:
+                    return {"ok": False, "why": "not sent - the check said: %s" % why2}
+            except Exception:
+                pass
         send_now(a, subject, body)
+        try:
+            import kino_online as KON
+            KON.answered_by(a)
+            KON.note(a, "email", "%s - %s" % (subject, str(body)[:300]), "out")
+        except Exception:
+            pass
         return {"ok": True, "sent": True}
     import kino_hands as KH
     r = KH.request("send an email to %s: %s" % (a, str(subject)[:100]), why or "Kino wants to write to someone new",

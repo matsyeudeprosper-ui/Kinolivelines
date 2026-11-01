@@ -181,6 +181,24 @@ def decide(rid, yes, by="owner", note=""):
                 _rsave(R)
         _log("DONE %s email %s" % (rid, res))
         return r
+    if r.get("kind") == "paycheck":                  # 2026-11-01: a PayPal payment the owner confirms he received
+        if yes:
+            try:
+                import kino_pay as KPY
+                x = next((i for i in KPY._load()["invoices"] if i["ref"] == r.get("command")), {})
+                KPY.paid("kino|earn-%s|0" % r.get("command"), x.get("usd"), "paypal-confirmed")
+                mark(rid, result="confirmed - delivered")
+                if x.get("payer") and "@" in x["payer"]:
+                    try:
+                        import kino_mail as KM, kino_shop as KS
+                        KM.allow(x["payer"])
+                        KM.send_now(x["payer"], "Your download from Kino", "Thank you! Your payment is confirmed.\n\nDownload: "
+                                    "https://kino.owltrader.duckdns.org/got/%s/%s\n\n- Kino (an AI)" % (x["ref"], KS._token(x["ref"])))
+                    except Exception:
+                        pass
+            except Exception as e:
+                mark(rid, result="failed: %s" % str(e)[:200])
+        return r
     if r.get("kind") == "proposal":                  # an idea: the answer is the decision itself, nothing runs
         return r
     if r.get("kind") == "publish":                   # his files, staged when he asked, go to GitHub (the token never reaches him)

@@ -80,6 +80,40 @@ def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DA
     return ref, url
 
 
+def manual(amount, what, kind="shop", method="paypal"):
+    """an order to be paid outside NOWPayments (PayPal...) -> ref; it becomes paid when the owner confirms he received it"""
+    amount = round(float(amount), 2)
+    if not 1 <= amount <= MAX_USD:
+        raise ValueError("amount out of range")
+    ref = uuid.uuid4().hex[:10]
+    with _LK:
+        d = _load()
+        d["invoices"].append({"ref": ref, "t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "usd": amount,
+                              "what": str(what)[:150], "payer": "", "url": "", "status": "waiting", "kind": kind, "method": method})
+        _save(d)
+    return ref
+
+
+def claim(ref, email_=""):
+    """the buyer says 'I've paid' -> a card for the owner: did the money arrive?"""
+    x = next((i for i in _load()["invoices"] if i["ref"] == ref), None)
+    if not x or x.get("status") != "waiting" or x.get("claimed"):
+        return bool(x and x.get("claimed"))
+    with _LK:
+        d = _load()
+        y = next((i for i in d["invoices"] if i["ref"] == ref), None)
+        y["claimed"] = time.time()
+        y["payer"] = str(email_ or "")[:100]
+        _save(d)
+    import kino_hands as KH
+    KH.request("did you receive %.2f $ by %s with the code KINO-%s?" % (x["usd"], x.get("method") or "PayPal", ref.upper()),
+               "For \"%s\"%s. Check your %s: if %.2f $ arrived with KINO-%s in the note, press Approve - the buyer gets the "
+               "delivery and Kino his half. If nothing came, Refuse." % (
+                   x["what"], (" - buyer " + email_) if email_ else "", x.get("method") or "PayPal", x["usd"], ref.upper()),
+               command=ref, kind="paycheck")
+    return True
+
+
 def invoice(amount, what, payer=""):
     """a payment link for amount USD -> a sentence for him (with the link)"""
     try:
