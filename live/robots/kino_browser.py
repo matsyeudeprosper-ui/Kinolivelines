@@ -106,6 +106,29 @@ class Browser:
         _log("SEND blocked %s %s" % (m, url[:200]))
         return route.abort()
 
+    def _settle(self):
+        """2026-11-01 (bsky.app came back empty, clicks timed out): app-like sites draw the page with scripts after loading"""
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=8000)
+        except Exception:
+            pass
+        self.page.wait_for_timeout(800)
+
+    def _find(self, tgt):
+        """what a person means by 'click Create account': a visible button or link with that name, else visible text"""
+        p = self.page
+        if tgt.startswith(("#", ".", "[", "//")):
+            return p.locator(tgt).first
+        for loc in (p.get_by_role("button", name=tgt, exact=False), p.get_by_role("link", name=tgt, exact=False),
+                    p.get_by_text(tgt, exact=False)):
+            try:
+                for x in loc.all()[:20]:
+                    if x.is_visible():
+                        return x
+            except Exception:
+                continue
+        return p.get_by_text(tgt, exact=False).first
+
     def _view(self, n=5000):
         p = self.page
         try:
@@ -127,16 +150,17 @@ class Browser:
         try:
             if a == "open":
                 p.goto(str(j.get("url") or ""), wait_until="domcontentloaded")
-                p.wait_for_timeout(1500)
+                self._settle()
                 return self._view()
             if a == "click":
-                tgt = str(j.get("target") or "")
-                loc = p.get_by_text(tgt, exact=False).first if not tgt.startswith(("#", ".", "[", "//")) else p.locator(tgt).first
-                loc.click()
-                p.wait_for_timeout(1500)
+                self._find(str(j.get("target") or "")).click(timeout=8000)
+                self._settle()
                 return self._view()
             if a == "type":
-                p.locator(str(j.get("target") or "input")).first.fill(str(j.get("text") or ""))
+                tgt = str(j.get("target") or "input")
+                loc = p.locator(tgt).first if tgt.startswith(("#", ".", "[", "//", "input", "textarea")) else (
+                    p.get_by_label(tgt, exact=False).or_(p.get_by_placeholder(tgt, exact=False)).first)
+                loc.fill(str(j.get("text") or ""), timeout=8000)
                 return "typed into %s (nothing is sent until a form is submitted - and only on a site opened with allow_site)" % j.get("target")
             if a == "scroll":
                 p.mouse.wheel(0, 1800)

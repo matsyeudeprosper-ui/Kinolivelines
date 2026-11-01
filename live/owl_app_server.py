@@ -21256,7 +21256,10 @@ def _companion_tick():
                                  tst.get("trades"), float(tst.get("cc_dd") or 0), tst.get("max_loss_streak"),
                                  ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("n"),
                                  ((nd.get("month_stats") or {}).get(time.strftime("%Y-%m")) or {}).get("won")))
-                    _mem_note_safe(uid, lambda mm: mm.__setitem__("week_review", wk))
+                    # 2026-11-01 (watch): the owner's two logins (std, kino) share one thread - each ran its own review, two
+                    # "week" cards 2 min apart. One person, one weekly review: the mark goes on every login of the person.
+                    for _wu in [uid] + [x for x in (_person_uids(_person(uid)) or []) if x != uid]:
+                        _mem_note_safe(_wu, lambda mm: mm.__setitem__("week_review", wk))
                     try:                                  # 2026-10-21 (Jarvis list item 12): the honest scorecard, by voice
                         _w0 = now - 7 * 86400
                         _cl = [x for x in json.load(open(LIVE_CALLS, encoding="utf-8")) if x.get("uid") == uid and float(x.get("t") or 0) >= _w0]
