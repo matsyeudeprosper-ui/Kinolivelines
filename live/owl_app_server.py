@@ -20687,10 +20687,25 @@ def _chat_build(cid, user):
                         _chat_msg(c, "ai", text="", one=True, made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")),
                                   probs=probs[:4] if probs else None, follow=True, link=ans.get("link"), chips=[])
                     _bd = "; ".join("%s: %s" % (x.get("name"), x.get("plain")) for x in (ans.get("made") or []) if isinstance(x, dict))
+                    # 2026-11-01 20:17 (watch): nothing was made, the event said "the robot is up to date", and Kino told the owner
+                    # it was built "as you described... 0.01 lot every time" - the saved robot still had the lot ladder, the old
+                    # exit and no reversal. He now hears whether anything changed, and the robot as it really is, to compare.
+                    try:
+                        _rb = c.get("robot") or {}
+                        _now_rules = "entry piece %s; stop piece %s; exit: %s; lot: %s; recovery: %s; filters: %s" % (
+                            (_rb.get("entry") or {}).get("use"), (_rb.get("stop") or {}).get("use"),
+                            (_rb.get("exit") or {}).get("plain_en") or (_rb.get("exit") or {}).get("plain") or "-",
+                            (_rb.get("money") or {}).get("lot") or (_rb.get("money") or {}).get("use"),
+                            (_rb.get("recovery") or {}).get("use"), ", ".join(str(f) for f in (_rb.get("filters") or [])) or "none")
+                    except Exception:
+                        _now_rules = "?"
+                    _nothing = not (ans.get("made") or [])
                     threading.Timer(1.0, lambda: (_CHAT_Q.__setitem__(cid, _CHAT_Q.get(cid, 0) + 1), _chat_quick(cid, user, (
-                        "BUILD DONE - the builder finished the change you asked for. What it did: %s. Its own note: %s%s. Tell them in your own "
-                        "words only if you have not already said it; if they asked you something meanwhile, answer that first.") % (
-                        _bd or "the robot is up to date", txt.strip()[:400] or "-", " (one piece failed its checks, the old one was kept)" if probs else ""))) ).start()
+                        "BUILD DONE - %s Its own note: %s%s. THE ROBOT AS IT IS NOW (saved): %s. Compare it with what they asked: say "
+                        "plainly what is in and what is NOT (never claim a rule that is not in the robot as it is now). Tell them in "
+                        "your own words; if they asked you something meanwhile, answer that first.") % (
+                        "NOTHING CHANGED: the builder made no new piece." if _nothing else "What it made: %s." % _bd,
+                        txt.strip()[:400] or "-", " (one piece failed its checks, the old one was kept)" if probs else "", _now_rules[:900]))) ).start()
                 elif txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Done, your robot is up to date." if _rc().member_lang(c, "en" if en else "fr") == "en" else "C'est fait, ton robot est à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
