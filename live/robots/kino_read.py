@@ -74,6 +74,10 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         import kino_selfmodel as KSF                   # claimed a 1 out of 3 grade") - the intuition must know what is true about him
         _P = KSF._P(KSF._load(), _person_of(uid))
         _kt = " ".join(x for x in (KSF.tests_line(_P, True), KSF.growth_line(_P, True)) if x)[:1500]
+        try:                                           # 23:57 (watch): "my brain is running on fumes" while his body read
+            _kt += " " + __import__("kino_body").line(True)    # "physically fine" - a claim about his body can be checked too
+        except Exception:
+            pass
     except Exception:
         pass
     user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
