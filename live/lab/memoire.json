@@ -3526,6 +3526,13 @@
     "scrutiny --by dur, --by gap"
    ],
    "saw": "34 closes 19 won +10.57 per 0.01 (reference account 22 tr +11.71, lab robot 11 tr +2.51). 30-60 min holds won 7 of 8: slow_trade halves now disagree (41/57). gap 15-60 11 of 16 won: rested_cont holds. 08-13 h 1 of 7. h1 internal 0 on 33/34: no h1 test this week. m15 t -1 since 10-08 looks stale. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-01T00:30:18Z",
+   "looked": [
+    "wake_context (four hours passed; no new trade, total 273; twin noday 8 tr +29.86 unchanged; no labo activity; no open ask)"
+   ],
+   "saw": "Weekend, market closed, nothing new since the 12:00 watch. No harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Waiting for: Sunday-evening reopen, the 13-16 h pile, and h1 internal leaving 0 so h1_internal_late can be tested again."
   }
  ],
  "lessons": [
