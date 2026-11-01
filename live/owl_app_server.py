@@ -18273,6 +18273,12 @@ def _one_memory(user, c):
             L.insert(0, _wsb)
     except Exception:
         pass
+    try:                                               # 2026-11-01 (kino_work): what he did at his own computer
+        _wb = __import__("kino_work").block("en" if c.get("lang") == "en" else "fr")
+        if _wb:
+            L.append(_wb)
+    except Exception:
+        pass
     try:                                               # 2026-11-01 (kino_mail): his own mailbox (owner's chats only for now)
         if _person(uid) == "kino":
             _mb = __import__("kino_mail").block("en" if c.get("lang") == "en" else "fr")
@@ -23182,6 +23188,13 @@ def _urge_tick():
                     _KU.add(pm, "A NEED OF YOURS - %s" % _KPst.NEED_TEXT[_nk])
                 try:                                   # 2026-10-31 (kino_body): his body is sensed (cached 60 s, one body for all)
                     __import__("kino_body").sense()
+                except Exception:
+                    pass
+                try:                                   # 2026-11-01 (kino_work): he sits down at his own computer when he feels like it
+                    import kino_work as _KWk
+                    if pm == "kino" and _KWk.due(pm, ctx, now):
+                        threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
+                                         kwargs={"log": os.path.join(DIR, "robots", "kino_work.log")}, daemon=True).start()
                 except Exception:
                     pass
                 if pm == "kino" and now - _MAIL_T.get("t", 0) > 300:   # 2026-11-01 (kino_mail): his mailbox, every 5 min

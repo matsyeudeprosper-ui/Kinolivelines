@@ -21,6 +21,7 @@ REQ = os.path.join(HERE, "kino_requests.json")
 _LK = threading.Lock()
 LOGON_WITH_PROFILE = 0x1
 CREATE_NO_WINDOW = 0x08000000
+IDLE_PRIORITY = 0x00000040      # his work never takes the processor from the bots
 
 
 class _SI(ctypes.Structure):
@@ -70,7 +71,7 @@ def run(cmd, timeout=120, max_out=12000):
     si.cb = ctypes.sizeof(_SI)
     buf = ctypes.create_unicode_buffer(line)
     t0 = time.time()
-    ok = ctypes.windll.advapi32.CreateProcessWithLogonW("kino", ".", pw, LOGON_WITH_PROFILE, None, buf, CREATE_NO_WINDOW,
+    ok = ctypes.windll.advapi32.CreateProcessWithLogonW("kino", ".", pw, LOGON_WITH_PROFILE, None, buf, CREATE_NO_WINDOW | IDLE_PRIORITY,
                                                         None, home, ctypes.byref(si), ctypes.byref(pi))
     if not ok:
         err = ctypes.GetLastError()

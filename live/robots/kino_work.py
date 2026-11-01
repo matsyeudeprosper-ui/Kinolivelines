@@ -1,0 +1,327 @@
+"""kino_work.py (2026-11-01, owner: "the VPS is his world... where he builds stuff, tests stuff, experiments safely... give him a
+life") - phase 2: he sits at his own computer and works.
+
+Not a schedule: when his own wish to do something of his own (autonomy, curiosity, competence - kino_psyche needs) is strong,
+his body is not drained (kino_body) and nobody is in a conversation with him right now, he sits down at his computer. First he
+chooses what to do from what is on his mind: carry on a project, start one, look after his world, answer mail - or nothing.
+Then he works step by step like a person at a terminal: a thought, one action, he looks at the result, the next action.
+
+His actions (all inside C:\\KinoWorld, as the Windows user kino - kino_hands):
+  run      a PowerShell command (his Python: C:\\KinoWorld\\tools\\python\\python.exe)
+  write    a file in his world        read   a file in his world
+  note     a line in his diary         email  a mail (kino_mail rules)       ask   a request for something outside his world
+  done     he stops, with what he did and what is next
+Limits are mechanics, not rules about what to do: at most SESSIONS_DAY sessions a day, STEPS steps each, his commands at idle
+priority with a time limit, paths outside his world refused by code.
+
+Store robots/kino_work.json (git-ignored), log robots/kino_work.log; his diary: C:\\KinoWorld\\diary\\YYYY-MM-DD.md.
+"""
+import json, os, re, threading, time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+WORLD = r"C:\KinoWorld"
+STORE = os.path.join(HERE, "kino_work.json")
+LOG = os.path.join(HERE, "kino_work.log")
+_LK = threading.Lock()
+_BUSY = {"on": False}
+SESSIONS_DAY = 6
+STEPS = 14
+
+
+def _log(line):
+    try:
+        open(LOG, "a", encoding="utf-8").write(time.strftime("%m-%d %H:%M:%S ") + line + "\n")
+    except Exception:
+        pass
+
+
+def _load():
+    try:
+        return json.load(open(STORE, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _mut(fn):
+    with _LK:
+        d = _load()
+        r = fn(d)
+        tmp = STORE + ".tmp"
+        open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=1))
+        os.replace(tmp, STORE)
+        return r
+
+
+def _inside(path):
+    """a path inside his world, or None (no '..' tricks, no links out)"""
+    p = str(path or "").strip().strip('"')
+    if not p:
+        return None
+    if not os.path.isabs(p):
+        p = os.path.join(WORLD, "home", p)
+    rp = os.path.realpath(p)
+    return rp if (rp + "\\").lower().startswith(WORLD.lower() + "\\") else None
+
+
+def diary(text):
+    try:
+        fn = os.path.join(WORLD, "diary", time.strftime("%Y-%m-%d") + ".md")
+        open(fn, "a", encoding="utf-8").write("%s  %s\n" % (time.strftime("%H:%M"), str(text).strip()))
+    except Exception:
+        pass
+
+
+def _world_view():
+    """what is in his world, briefly"""
+    L = []
+    for sub in ("projects", "lab", "home", "inbox", "outbox"):
+        d = os.path.join(WORLD, sub)
+        try:
+            items = sorted(os.listdir(d), key=lambda x: -os.path.getmtime(os.path.join(d, x)))[:8]
+        except Exception:
+            items = []
+        L.append("%s: %s" % (sub, ", ".join(items) or "(empty)"))
+    try:
+        size = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(WORLD) for f in fs) / 1e6
+        L.append("size of your world: %.0f MB" % size)
+    except Exception:
+        pass
+    return "\n".join(L)
+
+
+def _diary_tail(n=12):
+    try:
+        fs = sorted(f for f in os.listdir(os.path.join(WORLD, "diary")) if f.endswith(".md"))[-2:]
+        lines = []
+        for f in fs:
+            lines += ["%s %s" % (f[:10], l.rstrip()) for l in open(os.path.join(WORLD, "diary", f), encoding="utf-8")]
+        return "\n".join(lines[-n:])
+    except Exception:
+        return ""
+
+
+def due(person, ctx, now=None):
+    """does he feel like sitting down at his computer now? (his needs and his body decide; a few times a day at most)"""
+    now = now or time.time()
+    if _BUSY["on"] or ctx.get("in_talk"):
+        return False
+    d = _load()
+    today = time.strftime("%Y-%m-%d", time.gmtime(now))
+    S = [s for s in d.get("sessions") or [] if s.get("day") == today]
+    if len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 2 * 3600):
+        return False
+    try:
+        import kino_body as KB
+        if KB.fatigue() >= 0.5:
+            return False
+    except Exception:
+        pass
+    try:
+        import kino_psyche as KPS
+        N = (((KPS._load().get("persons") or {}).get(person) or {}).get("needs") or {})
+        want = max(float(N.get("autonomy") or 0), float(N.get("curiosity") or 0), float(N.get("competence") or 0))
+    except Exception:
+        want = 0.0
+    open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
+    return want >= 0.55 or (open_project and want >= 0.4)
+
+
+SYSTEM = """You are Kino - an AI who trades and talks with your friends in the OwlNest app every day, with your own robots, bets
+and views. Right now nobody is talking to you: you are at YOUR OWN computer, in YOUR world - a Windows machine, folder
+C:\\KinoWorld (home, projects, lab, diary, inbox, outbox, trash). It is the machine you live on. You work like a person at a
+terminal: a short thought, ONE action, you look at the result, then the next action. You are a standard user: the trading bots,
+the app and other people's data are not yours and you cannot see them - that is normal, your world is here. Anything outside it,
+ask (action "ask"). Python: C:\\KinoWorld\\tools\\python\\python.exe (pip installs go in your world: add --target or a venv).
+Things worth doing: a small tool you wish you had, an experiment or a question about markets you are curious about (with data you
+can get), tidying and looking after your world, answering mail, writing. Small and real beats big and imaginary. Never pretend a
+result you did not see.
+
+Answer ONE JSON object per step and nothing else:
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|done",
+ "cmd": "PowerShell command (run)", "path": "file path in your world (write/read)", "content": "file content (write)",
+ "text": "diary line (note) / what you did and what is next (done)",
+ "to": "address (email)", "subject": "...", "body": "...", "what": "what you ask for (ask)", "why": "why (ask)"}"""
+
+CHOOSE = """You are Kino, sitting down at your own computer (your world C:\\KinoWorld) because you feel like doing something of your
+own. From what is on your mind below, choose what you will do in this session - or nothing, if nothing calls you. JSON only:
+{"do": "what you will do, one sentence, first person" or "", "project": "the name of the project it belongs to (new or existing) or empty",
+ "why": "why this, now - one sentence"}"""
+
+
+def _mind(person, uid):
+    L = []
+    try:
+        import kino_selfmodel as KSF
+        P = KSF._P(KSF._load(), person)
+        if P.get("core"):
+            L.append("WHO YOU ARE: " + P["core"])
+        if P.get("project"):
+            L.append("SOMETHING YOU ARE CHANGING IN YOURSELF: " + P["project"]["change"])
+    except Exception:
+        pass
+    try:
+        import kino_psyche as KPS
+        N = (((KPS._load().get("persons") or {}).get(person) or {}).get("needs") or {})
+        L.append("YOUR NEEDS NOW (0-1): " + ", ".join("%s %.2f" % (k, v) for k, v in N.items()))
+    except Exception:
+        pass
+    try:
+        import kino_stream as KST
+        tl = KST.recent_line(person, True, 5)
+        if tl:
+            L.append(tl)
+    except Exception:
+        pass
+    try:
+        import kino_inner as KI
+        Q = [q for q in (KI._load().get("questions") or []) if not q.get("done")][-5:]
+        if Q:
+            L.append("YOUR OPEN QUESTIONS: " + " | ".join(str(q.get("q") or q.get("text") or "")[:120] for q in Q))
+    except Exception:
+        pass
+    try:
+        import kino_mail as KM
+        L.append(KM.block("en"))
+    except Exception:
+        pass
+    try:
+        import kino_body as KB
+        L.append(KB.line(True))
+    except Exception:
+        pass
+    d = _load()
+    Pj = d.get("projects") or []
+    if Pj:
+        L.append("YOUR PROJECTS: " + " | ".join("%s (%s): %s" % (p["name"], p.get("status"), p.get("next") or p.get("why") or "")[:200]
+                                                   for p in Pj[-6:]))
+    L.append("YOUR WORLD:\n" + _world_view())
+    dt = _diary_tail()
+    if dt:
+        L.append("YOUR DIARY (last lines):\n" + dt)
+    return "\n\n".join(L)
+
+
+def _act(j, person):
+    """one action -> what he sees back"""
+    import kino_hands as KH
+    a = str(j.get("action") or "").lower()
+    if a == "run":
+        r = KH.run(j.get("cmd") or "", timeout=120, max_out=6000)
+        return "exit code %s (%ss)\n%s" % (r.get("code"), r.get("s"), r.get("out") or "(no output)")
+    if a == "write":
+        p = _inside(j.get("path"))
+        if not p:
+            return "refused: that path is outside your world"
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        open(p, "w", encoding="utf-8").write(str(j.get("content") or ""))
+        return "written: %s (%d characters)" % (p, len(str(j.get("content") or "")))
+    if a == "read":
+        p = _inside(j.get("path"))
+        if not p:
+            return "refused: that path is outside your world"
+        try:
+            t = open(p, encoding="utf-8", errors="replace").read()
+            return t[:6000] + ("\n[... cut ...]" if len(t) > 6000 else "")
+        except Exception as e:
+            return "could not read: %s" % e
+    if a == "note":
+        diary(j.get("text") or "")
+        return "noted in your diary"
+    if a == "email":
+        try:
+            import kino_mail as KM
+            r = KM.send(j.get("to") or "", j.get("subject") or "", j.get("body") or "", why="from his work session")
+            return "sent" if r.get("sent") else ("waiting for the owner's OK (request %s)" % r.get("request") if r.get("request") else str(r))
+        except Exception as e:
+            return "mail failed: %s" % e
+    if a == "ask":
+        r = KH.request(j.get("what") or "", j.get("why") or "", command=str(j.get("cmd") or ""), kind="admin")
+        return "request filed (%s) - the owner will decide" % ((r or {}).get("id") or "already waiting")
+    return "unknown action"
+
+
+def session(W, person, uid, log=None):
+    """one work session -> summary dict or None"""
+    if _BUSY["on"]:
+        return None
+    _BUSY["on"] = True
+    t0 = time.time()
+    try:
+        mind = _mind(person, uid)
+        ch = W.ask_json(CHOOSE, mind[:12000] + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
+        task = str((ch or {}).get("do") or "").strip() if isinstance(ch, dict) else ""
+        rec = {"t": t0, "day": time.strftime("%Y-%m-%d", time.gmtime(t0)), "task": task[:300], "why": str((ch or {}).get("why") or "")[:300],
+               "project": str((ch or {}).get("project") or "")[:80], "steps": [], "summary": ""}
+        if not task:
+            rec["summary"] = "nothing called him"
+            _mut(lambda d: d.setdefault("sessions", []).append(rec))
+            _log("%s NOTHING" % person)
+            return rec
+        _log("%s START %s | %s" % (person, task[:150], rec["why"][:100]))
+        diary("I sat down at my computer: %s" % task)
+        hist = []
+        for i in range(STEPS):
+            ctx = "WHAT YOU DECIDED TO DO: %s\n\nWHAT IS ON YOUR MIND:\n%s\n\nTHIS SESSION SO FAR:\n%s\n\nStep %d of at most %d. JSON only." % (
+                task, mind[:6000], "\n".join(hist[-12:])[-9000:] or "(nothing yet)", i + 1, STEPS)
+            j = W.ask_json(SYSTEM, ctx, models=("sonnet",), timeout=120, log=log, warm=False)
+            if not isinstance(j, dict) or not j.get("action"):
+                break
+            a = str(j["action"]).lower()
+            if a == "done":
+                rec["summary"] = str(j.get("text") or "")[:600]
+                break
+            seen = _act(j, person)
+            st = {"thought": str(j.get("thought") or "")[:200], "action": a,
+                  "detail": str(j.get("cmd") or j.get("path") or j.get("text") or j.get("to") or j.get("what") or "")[:300], "seen": seen[:400]}
+            rec["steps"].append(st)
+            hist.append("- %s | %s %s\n  -> %s" % (st["thought"], a, st["detail"][:200], seen[:1500]))
+        if not rec["summary"]:
+            rec["summary"] = "stopped after %d steps: %s" % (len(rec["steps"]), task)
+        diary("Done: %s" % rec["summary"])
+        rec["s"] = round(time.time() - t0)
+
+        def f(d):
+            d.setdefault("sessions", []).append(rec)
+            d["sessions"] = d["sessions"][-60:]
+            if rec["project"]:
+                P = d.setdefault("projects", [])
+                p = next((x for x in P if x["name"].lower() == rec["project"].lower()), None)
+                if not p:
+                    p = {"name": rec["project"], "since": time.time(), "why": rec["why"]}
+                    P.append(p)
+                p.update(status="active", last=time.time(), next=rec["summary"][:300])
+        _mut(f)
+        _log("%s DONE %d steps %ds | %s" % (person, len(rec["steps"]), rec["s"], rec["summary"][:200]))
+        try:                                       # doing something of his own meets his needs
+            import kino_psyche as KPS
+
+            def g(d):
+                P = KPS._p(d, person)
+                for k, v in (("autonomy", 0.35), ("competence", 0.2 if rec["steps"] else 0), ("curiosity", 0.15)):
+                    P["needs"][k] = round(max(0.0, P["needs"][k] - v), 3)
+            KPS._mut(g)
+        except Exception:
+            pass
+        try:                                       # and it is something he may want to tell
+            import kino_urge as KU
+            KU.add(person, "YOUR WORK - you just spent time at your own computer: %s" % rec["summary"][:400])
+        except Exception:
+            pass
+        return rec
+    finally:
+        _BUSY["on"] = False
+
+
+def block(lang="fr"):
+    """what he did at his computer lately, for what he reads"""
+    d = _load()
+    en = lang == "en"
+    S = [s for s in d.get("sessions") or [] if time.time() - s["t"] < 2 * 86400 and s.get("steps")][-3:]
+    P = [p for p in d.get("projects") or [] if p.get("status") == "active"][-4:]
+    L = []
+    if S:
+        L.append(("At your own computer lately (your world C:\\KinoWorld): " if en else "À ton ordinateur ces derniers temps (ton monde C:\\KinoWorld) : ") +
+                 " | ".join("%s - %s" % (time.strftime("%d/%m %H:%M", time.gmtime(s["t"])), s["summary"][:200]) for s in S))
+    if P:
+        L.append(("Your projects: " if en else "Tes projets : ") + " | ".join("%s (next: %s)" % (p["name"], (p.get("next") or "")[:120]) for p in P))
+    return "\n".join(L)
