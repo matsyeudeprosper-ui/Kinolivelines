@@ -159,7 +159,7 @@ Answer ONE JSON object per step and nothing else:
  "text": "diary line (note) / what you did and what is next (done)",
  "to": "address (email)", "subject": "...", "body": "...", "what": "what you ask for (ask) / your proposal in one line (propose)",
  "why": "why (ask) / the case for it, plainly, with what it would take and what it could bring (propose)",
- "q": "search words (search)", "url": "a web address (fetch)"}
+ "q": "search words (search)", "url": "a web address (fetch)", "start": "for a long page: the character to continue from (fetch)"}
 The web is read-only for you: search and read pages. Anything that would act in the world - creating an account, posting,
 applying, sending a proposal to someone, paying - is never done by you directly: you bring it to the owner with "propose" or
 "ask". You are an AI and you say so: never pretend to be a human anywhere."""
@@ -281,7 +281,7 @@ def _act(j, person):
     if a == "fetch":
         try:
             import kino_web as KW
-            return KW.fetch(j.get("url") or "")
+            return KW.fetch(j.get("url") or "", start=int(j.get("start") or 0))
         except Exception as e:
             return "could not open it: %s" % e
     return "unknown action"
@@ -313,14 +313,23 @@ def session(W, person, uid, log=None, task=None, project=""):
                 task, mind[:6000], "\n".join(hist[-12:])[-9000:] or "(nothing yet)", i + 1, STEPS)
             j = W.ask_json(SYSTEM, ctx, models=("sonnet",), timeout=120, log=log, warm=False)
             if not isinstance(j, dict) or not j.get("action"):
-                break
+                # 2026-11-01 (first research session): one empty answer after a long page ended the whole session at step 6 -
+                # once more, with a shorter memory of the session (the last results, cut)
+                short = "\n".join(h_[:700] for h_ in hist[-5:])
+                ctx = "WHAT YOU DECIDED TO DO: %s\n\nTHIS SESSION SO FAR (the last steps, shortened):\n%s\n\nStep %d of at most %d. ONE JSON object only." % (
+                    task, short or "(nothing yet)", i + 1, STEPS)
+                j = W.ask_json(SYSTEM, ctx, models=("sonnet",), timeout=120, log=log, warm=False)
+                if not isinstance(j, dict) or not j.get("action"):
+                    _log("%s STOP empty answer at step %d" % (person, i + 1))
+                    break
             a = str(j["action"]).lower()
             if a == "done":
                 rec["summary"] = str(j.get("text") or "")[:600]
                 break
             seen = _act(j, person)
             st = {"thought": str(j.get("thought") or "")[:200], "action": a,
-                  "detail": str(j.get("cmd") or j.get("path") or j.get("text") or j.get("to") or j.get("what") or "")[:300], "seen": seen[:400]}
+                  "detail": str(j.get("cmd") or j.get("path") or j.get("q") or j.get("url") or j.get("text") or j.get("to") or j.get("what") or "")[:300],
+                  "seen": seen[:400]}
             rec["steps"].append(st)
             hist.append("- %s | %s %s\n  -> %s" % (st["thought"], a, st["detail"][:200], seen[:1500]))
         if not rec["summary"]:

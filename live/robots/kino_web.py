@@ -86,9 +86,13 @@ def search(q, n=8):
     return out
 
 
-def fetch(url, max_chars=7000):
-    """-> the page as plain text (cut)"""
+def fetch(url, max_chars=7000, start=0):
+    """-> the page as plain text, a part of it (start = where to continue a long page)"""
     h, ct = _get(str(url or "").strip())
     t = _text(h) if "html" in ct or "<html" in h[:500].lower() else h
-    _log("FETCH %s (%d chars)" % (str(url)[:150], len(t)))
-    return t[:max_chars] + ("\n[... page cut ...]" if len(t) > max_chars else "")
+    start = max(0, min(int(start or 0), len(t)))
+    _log("FETCH %s (%d chars, from %d)" % (str(url)[:150], len(t), start))
+    part = t[start:start + max_chars]
+    more = len(t) - (start + len(part))
+    return ("[characters %d-%d of %d]\n" % (start, start + len(part), len(t))) + part + (
+        ("\n[... %d more characters - fetch again with start=%d to continue]" % (more, start + len(part))) if more > 0 else "")
