@@ -18273,6 +18273,13 @@ def _one_memory(user, c):
             L.insert(0, _wsb)
     except Exception:
         pass
+    try:                                               # 2026-11-01 (kino_mail): his own mailbox (owner's chats only for now)
+        if _person(uid) == "kino":
+            _mb = __import__("kino_mail").block("en" if c.get("lang") == "en" else "fr")
+            if _mb:
+                L.append(_mb)
+    except Exception:
+        pass
     try:                                               # 2026-10-31 (kino_affect): what he notices in his own behaviour
         import kino_affect as _KAm, kino_inner as _KIm
         if not getattr(_KIm.PROBE, "sandbox", False):
@@ -20046,6 +20053,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _rules_set(uid, v)
             elif k == "suivi" and v:
                 _followup_add(uid, v)
+            elif k == "email" and v and _person(uid) == "kino":   # 2026-11-01 (kino_mail): his own mailbox (owner's chats only for now)
+                _pm = [x.strip() for x in v.split("|", 2)]
+                if len(_pm) == 3 and "@" in _pm[0]:
+                    _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation")
+                    _KO._log(cid, "EMAIL", "%s -> %s" % (_pm[0], _rm))
+                    if not _rm.get("sent") and _rm.get("request"):
+                        _chat_mut(cid, lambda cc, _a=_pm[0]: _chat_msg(cc, "sys", text=(
+                            "✉️ Kino wants to write to %s - it waits for your OK." % _a if en else
+                            "✉️ Kino veut écrire à %s - ça attend ton accord." % _a)))
             elif k == "attention" and v:                 # 2026-10-31 (kino_workspace): he steers his own attention
                 _mat = re.match(r"\s*(garde|garder|hold|keep|l[aâ]che|l[aâ]cher|let\s*go|drop)\b\s*:?\s*(.*)$", v, re.I)
                 if _mat and _mat.group(2).strip():
@@ -23126,6 +23142,9 @@ def _followups_due(pm, now):
     return due
 
 
+_MAIL_T = {}
+
+
 def _urge_tick():
     """2026-10-28: every minute, for each person with a main thread on the one mind - does the wish to talk tip over now?"""
     _rc()
@@ -23165,6 +23184,18 @@ def _urge_tick():
                     __import__("kino_body").sense()
                 except Exception:
                     pass
+                if pm == "kino" and now - _MAIL_T.get("t", 0) > 300:   # 2026-11-01 (kino_mail): his mailbox, every 5 min
+                    _MAIL_T["t"] = now
+
+                    def _mail_look(pm=pm):
+                        try:
+                            for _em in __import__("kino_mail").check():
+                                _KU.add(pm, "AN EMAIL ARRIVED - in your own mailbox, from %s, subject «%s»: %s" % (
+                                    _em["from"][:80], _em["subject"][:120], _em["text"][:500]))
+                        except Exception as _e:
+                            open(os.path.join(DIR, "robots", "kino_mail.log"), "a", encoding="utf-8").write(
+                                "%s ERR check %s\n" % (time.strftime("%m-%d %H:%M:%S"), _e))
+                    threading.Thread(target=_mail_look, daemon=True).start()
                 try:                                   # 2026-10-31 (kino_workspace): the competition for his awareness goes on
                     __import__("kino_workspace").tick(pm, uid)                # between messages too
                 except Exception:

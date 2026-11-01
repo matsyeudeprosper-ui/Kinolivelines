@@ -147,6 +147,23 @@ def decide(rid, yes, by="owner", note=""):
         r.update(status="approved" if yes else "refused", by=by, note=str(note)[:300], decided_t=time.time())
         _rsave(R)
     _log("DECIDE %s %s by %s %s" % (rid, r["status"], by, note))
+    if yes and r.get("kind") == "email":              # an email to someone new: approved -> sent, and that person is allowed now
+        try:
+            import kino_mail as KM
+            m = json.loads(r["command"])
+            KM.allow(m["to"])
+            KM.send_now(m["to"], m.get("subject") or "", m.get("body") or "")
+            res, code = "sent", 0
+        except Exception as e:
+            res, code = str(e)[:300], None
+        with _LK:
+            R = _rload()
+            x = next((y for y in R if y["id"] == rid), None)
+            if x:
+                x.update(result=res, code=code, done_t=time.time())
+                _rsave(R)
+        _log("DONE %s email %s" % (rid, res))
+        return r
     if yes and r.get("command"):
         import subprocess
         try:

@@ -100,6 +100,8 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
                                       place d'une réponse (alors ton message est seulement : …)
 #attention garde <chose> | #attention lâche <chose>   ton attention, tu peux la diriger : garder une chose en tête exprès,
                                       ou laisser partir une chose qui t'occupe trop (elle peut revenir si elle est forte)
+#email <adresse> | <sujet> | <message>   un mail depuis TON adresse à toi (kinoverse26@gmail.com) ; à quelqu'un de
+                                      nouveau, il attend l'accord du propriétaire de l'appli avant de partir
 #infos on | #infos off          il aime (ou n'aime plus) entendre les grandes nouvelles du monde dans vos conversations
 #montre                         remet juste sous ton message la carte à vérifier (la semaine du robot), pour qu'il n'ait pas à remonter
 Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que tu sais - les prix en chiffres, pas de mots) :
@@ -136,7 +138,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -256,6 +258,8 @@ def parse(raw, partial=False):
             acts.append(("reaction", v))
         elif k in ("focus",):
             acts.append(("attention", v))
+        elif k in ("mail",):
+            acts.append(("email", v))
         elif k in ("show",):
             acts.append(("montre", v))
         elif k in ("cancel",):
