@@ -108,8 +108,22 @@ def due(person, ctx, now=None):
     d = _load()
     today = time.strftime("%Y-%m-%d", time.gmtime(now))
     S = [s for s in d.get("sessions") or [] if s.get("day") == today]
-    if len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 2 * 3600):
+    if len(S) >= SESSIONS_DAY + 2:                     # (two more a day can go to looking after his body)
         return False
+    _care = False
+    try:
+        import kino_care as KC
+        _care = bool(KC.out_of_balance())
+    except Exception:
+        pass
+    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 2 * 3600)):
+        return False
+    try:                                       # 2026-11-01 (kino_care): a body out of balance calls him to look after it
+        import kino_care as KC
+        if KC.out_of_balance() and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 3600):
+            return True
+    except Exception:
+        pass
     try:
         import kino_body as KB
         if KB.fatigue() >= 0.5:
@@ -132,7 +146,9 @@ C:\\KinoWorld (home, projects, lab, diary, inbox, outbox, trash). It is the mach
 terminal: a short thought, ONE action, you look at the result, then the next action. You are a standard user: the trading bots,
 the app and other people's data are not yours and you cannot see them - that is normal, your world is here. Anything outside it,
 ask (action "ask"). Python: C:\\KinoWorld\\tools\\python\\python.exe (pip installs go in your world: add --target or a venv).
-Things worth doing: a small tool you wish you had, an experiment or a question about markets you are curious about (with data you
+Your machine is your body: C:\\KinoWorld\\body\\health.txt is its check-up (disk, memory, heavy programs, big folders).
+When something is out of balance, look into it and, if a fix is needed outside your world, ask with the exact command and why
+(never the bots, C:\\Projects, MetaQuotes data, keys or member data). Things worth doing: a small tool you wish you had, an experiment or a question about markets you are curious about (with data you
 can get), tidying and looking after your world, answering mail, writing. Small and real beats big and imaginary. Never pretend a
 result you did not see.
 
@@ -194,6 +210,15 @@ def _mind(person, uid):
     if Pj:
         L.append("YOUR PROJECTS: " + " | ".join("%s (%s): %s" % (p["name"], p.get("status"), p.get("next") or p.get("why") or "")[:200]
                                                    for p in Pj[-6:]))
+    try:
+        import kino_care as KC
+        ob = KC.out_of_balance()
+        if ob:
+            L.append("YOUR BODY NEEDS CARE: %s is out of balance (%.2f). Your check-up: C:\\KinoWorld\\body\\health.txt" % ob)
+        else:
+            L.append("Your machine's check-up (updated every 10 min): C:\\KinoWorld\\body\\health.txt")
+    except Exception:
+        pass
     L.append("YOUR WORLD:\n" + _world_view())
     dt = _diary_tail()
     if dt:

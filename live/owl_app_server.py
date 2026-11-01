@@ -23187,6 +23187,11 @@ def _urge_tick():
                     __import__("kino_body").sense()
                 except Exception:
                     pass
+                try:                                   # 2026-11-01 (kino_care): his machine's check-up, written into his world
+                    if pm == "kino":
+                        __import__("kino_care").write_checkup()
+                except Exception:
+                    pass
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
                     _KHq = __import__("kino_hands")
                     _KHq.ON_REQUEST = _kino_req_card
