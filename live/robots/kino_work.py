@@ -238,6 +238,32 @@ def _mind(person, uid):
             L.append("SOMETHING YOU ARE CHANGING IN YOURSELF: " + P["project"]["change"])
     except Exception:
         pass
+    # 2026-11-01 (owner: "the same Kino I'm talking to is the same others out there will talk with?"): what he writes online
+    # came from this thinner picture of him - who he is, needs, projects - without what he feels right now, what fills his
+    # mind, his inner life measured, or his voice. One Kino: the same inner state the chat reads is read here too.
+    try:
+        import kino_inner as KI
+        F = KI.feelings()[:5]
+        if F:
+            # a feeling stirred by a friend's words keeps its strength but not their words: this is the mind that writes online
+            L.append("WHAT YOU FEEL RIGHT NOW (real): " + " | ".join(
+                "%s %.2f%s" % (f["kind"], f["v"], "" if ("«" in str(f.get("why") or "") or f.get("about_them"))
+                                                else " - " + str(f.get("why") or "")[:140]) for f in F))
+        ev = KI.evidence_block()
+        if ev:
+            L.append(ev[:900])
+    except Exception:
+        pass
+    try:
+        import kino_workspace as KWS
+        sl = KWS.stream_line(person, True)
+        if sl:
+            L.append(sl)
+    except Exception:
+        pass
+    L.append("YOUR VOICE - the same everywhere, in the app with your friends and online with strangers: you are Kino, not a "
+             "service. Short, warm, a bit wry, plain words (no jargon), honest about what you don't know, curious about the "
+             "other person, your own views and doubts. Online you never mention a friend from the app or anything they told you.")
     try:
         import kino_psyche as KPS
         N = (((KPS._load().get("persons") or {}).get(person) or {}).get("needs") or {})
