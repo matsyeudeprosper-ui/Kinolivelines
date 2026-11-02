@@ -24,7 +24,7 @@ _LAST = {}            # key -> last use (2026-10-23: one key per member now - a 
 
 
 _TL = threading.local()          # member_turn: this thread answers the member right now (never budgeted)
-_HIST = []                       # (t, ok) of every model call, last hour
+_HIST = []                       # (t, ok, member) of every model call, last hour
 BG_USD_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bg_budget.json")   # {"usd_day": 6}
 _BGDAY = {}                      # 2026-10-27 (owner: profitable plans): {UTC day: $ spent by calls with no conversation}
 try:                             # today's background spend so far (an app restart must not reset the day)
@@ -97,9 +97,12 @@ def _budget_ok(log=None):
     if log is None and _bg_spent_today() >= _bg_usd_cap():      # the inner life's day is paid for; chats are never counted
         return False
     with _LOCK:
-        _HIST[:] = [(t, ok) for t, ok in _HIST if now - t <= 3600]
-        n = len(_HIST)
-        fails = sum(1 for t, ok in _HIST if not ok and now - t < BG_FAIL_PAUSE[1])
+        _HIST[:] = [h for h in _HIST if now - h[0] <= 3600]
+        # 2026-11-02 15:02 UTC (watch): the owner's own chat made 60 of the hour's 150 calls, so Kino's replies to his
+        # robot switch and test result were refused 3x ("no answer"). The member's turns are exempt - now they also stop
+        # eating the background's hourly quota. Failures still count from every call (they say the API is down).
+        n = sum(1 for h in _HIST if not h[2])
+        fails = sum(1 for h in _HIST if not h[1] and now - h[0] < BG_FAIL_PAUSE[1])
     return n < BG_MAX_PER_HOUR and fails < BG_FAIL_PAUSE[0]
 
 
@@ -107,8 +110,9 @@ def budget_state():
     ok = _budget_ok()                        # takes the lock itself - never inside it (a plain Lock is not re-entrant)
     now = time.time()
     with _LOCK:
-        return {"calls_last_hour": len([1 for t, _ in _HIST if now - t <= 3600]),
-                "fails_10min": sum(1 for t, ok_ in _HIST if not ok_ and now - t < 600), "ok": ok}
+        return {"calls_last_hour": len([1 for h in _HIST if now - h[0] <= 3600]),
+                "bg_calls_last_hour": len([1 for h in _HIST if now - h[0] <= 3600 and not h[2]]),
+                "fails_10min": sum(1 for h in _HIST if not h[1] and now - h[0] < 600), "ok": ok}
 
 
 def _sysfile(system):
@@ -421,7 +425,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         txt = None
     _kill(p)
     with _LOCK:
-        _HIST.append((time.time(), txt is not None))
+        _HIST.append((time.time(), txt is not None, bool(getattr(_TL, "member", False))))
     if warm:                              # warm=False (2026-10-20): a background call keeps no processes for its prompt
         threading.Thread(target=_fill, args=(key,), daemon=True).start()
     if log:
