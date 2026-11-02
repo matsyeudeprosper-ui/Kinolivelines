@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-02T14:30:45Z",
+ "updated": "2026-11-02T18:40:00Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -104,7 +104,8 @@
     "2026-10-25 13:30 veille: day FLIP-BOS BUY -2.87 (closed 12:25, pace 0.931, after the 07:40 BOS loss, hours later = not quick). flip_day 84 tr 42% vs 48% -90.26 PF 0.55 (h 36/49); 0.8-1.0 22 tr 45% -19.80 (h 62/36, second half worse); 1.0-1.3 24 tr -61.30 unchanged; 12-13 h 14 tr 3 won -48.52, 16 h 6 tr 0 won -41.99 (peu per hour). As flip_day predicts; neutral for the nervous/calm split. Twins empty.",
     "2026-10-31: flip_hot_size 0.5 on brakes 42 d +13.68 vs -1.07 (h -1.1/+16.0) hole 52.6 vs 70.2. With ch350 + 13-16 quarter (no floor): 42 d +45.97 hole 37.2 (h +4.7/+44.4 vs brakes), 69 d +94.53 hole 37.2 (h -28.7/+44.9 vs brakes). Proposed pb_w_ch350_fh05_ny1316q (stake rules instead of refusals).",
     "2026-11-02: on filter + quarter 13-16: flip_hot 0.5 adds +10.1 on 42 d (hole 47.5 -> 39.2, h2 -11.0 -> -0.3) and +8.2 on 69 d. Alone with fl05 (no hours) 42 d -24.2 vs F -42.1: helps, not enough.",
-    "2026-11-02 13:00 veille: two day nervous FLIP-BOS lost (08:40 BUY pace 1.446 -4.50; 09:36 SELL pace 1.331 -1.45 at 0.02), as flip_day/flip_hot predict. FLIP-BOS 147 tr 45% -97.37 PF 0.67 (h 45/45); BOS 136 tr 50% -40.81 (h 58/43)."
+    "2026-11-02 13:00 veille: two day nervous FLIP-BOS lost (08:40 BUY pace 1.446 -4.50; 09:36 SELL pace 1.331 -1.45 at 0.02), as flip_day/flip_hot predict. FLIP-BOS 147 tr 45% -97.37 PF 0.67 (h 45/45); BOS 136 tr 50% -40.81 (h 58/43).",
+    "2026-11-02 18:40 veille: evening FLIP-BOS SELL pace 1.819 storm, stop 109, 4.6 min, L -2.29 at 0.02 (twin same -2.49). Journal ref account: FLIP nervous 28 tr 15 won -3.42 (flat, fits 'earn nothing'); FLIP calm 76 tr 33 won -51.79 (contradicts 'calm flips carry' on real trades). Recheck pooled at night."
    ],
    "next": "Battery + critic on pb_y_q1316_fh05."
   },
@@ -3704,6 +3705,16 @@
     "twin_noday.log + twin_noday_state.json"
    ],
    "saw": "Twin alive (answers the open question). Its 9th trade: FLIP-BOS BUY entered Sun 11-01 23:39 (session open after the weekend), stop ~760 pts, risk $15.18 vs usual $2.7-6.7, held ~13 h 45, stopped 11-02 13:23 (day) -15.21: half its gain in one trade. skip_hours gates entries only, so a night trade can still die by day. Fits real: stops >=400 13 tr -50.68, held >3 h 14 tr -34.3. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-02T18:40:00Z",
+   "looked": [
+    "wake_context (1 real close 18:36, 286 total; twin noday 9 tr +14.65 -> 10 tr +12.16; labo empty; no open ask)",
+    "bos_journal_u477508138 last row + twin_noday.log",
+    "scrutiny --by storm",
+    "journal ref account FLIP split nervous/calm, nervous x gap>60, nervous x storm"
+   ],
+   "saw": "FLIP-BOS SELL entry 18:32 after a 6 h 25 pause (last close 12:07), pace 1.819, storm 1, stop 109 pts, h1 internal opposite (the side h1_internal_late favours), held 4.6 min, L -2.29 at 0.02 (pooled -3.43). Twin took the same trade -2.49 (risk 2.48): 10 tr 7W +12.16. storm=1 66 tr 45% -94.10 PF 0.57 (h 45/46) vs 65 tr -90.67 this morning: nothing new. Journal ref account: FLIP nervous (>=1.3) 28 tr 15 won -3.42 (of which gap>60 16 tr +5.22, storm 12 tr 8 won +14.92); FLIP calm (<1.3) 76 tr 33 won -51.79. On real trades the calm flips are not the ones carrying, unlike the engine trace (10-04 calm +82). To recheck on pooled metrics at night. No run, no pile, no proposal."
   }
  ],
  "lessons": [
