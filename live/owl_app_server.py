@@ -18778,6 +18778,14 @@ def _one_memory(user, c):
             L.insert(0, _wsb)
     except Exception:
         pass
+    try:                                               # 2026-11-02 12:08 (watch, Valère): "I have no result to give you" - the
+        if not (is_admin(user) or uid in OWNER_UIDS):  # Owl's numbers on his account existed; Kino only heard them on a "#test"
+            _nd0 = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
+            if _nd0.get("balance") is not None:
+                L.append("L'OWL SUR LE COMPTE DE CETTE PERSONNE (ses vrais chiffres, à donner tels quels si on te les demande ; "
+                         "un membre ne peut pas relancer le test de l'Owl, ses tests existent déjà) : " + _owl_facts(user))
+    except Exception:
+        pass
     try:                                               # 2026-11-02: the learner (L'école de Kino), when they chose a path
         _sb = _school_mod().block(_person(uid), c.get("lang") == "en", owner=bool(is_admin(user) or uid in OWNER_UIDS))
         if _sb:
