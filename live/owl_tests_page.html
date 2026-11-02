@@ -288,6 +288,11 @@ svg.chart{width:100%;height:180px;margin-top:10px;display:block}
 .trip div:last-child{text-align:right}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* 2026-11-02 (owner: "and the test space?"): the bench leads with the action - the fidelity check is a slim trust badge */
+.trust{padding:10px 14px!important;gap:12px!important;background:var(--card,#121a25)!important;border-color:rgba(46,204,113,.28)!important}
+.trust:after{display:none}.trust .ring,.trust .ring svg{width:38px!important;height:38px!important}.trust .ring b{font-size:.72rem!important}.trust .ring b small{display:none}
+#cta{bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}   /* the launch bar sits above the app's bottom menu */
+.trust .t1 span:first-child{display:none}.trust .t1{display:inline-flex}.trust .t2{font-size:.86rem!important;margin-top:2px!important}.trust .t3{display:none}
 </style></head><body><div id="aur"></div>
 <div class="wrap">
 <header><div class="hrow">
@@ -413,7 +418,7 @@ function renderTrust(){const p=S.proof||{};
  const ok=p.status==='verified',pc=p.pct_same||0;
  requestAnimationFrame(()=>{$('ringv').setAttribute('stroke-dasharray',pc+' 100');$('ringv').setAttribute('stroke',ok?'#8df0bb':'#e8c55a');});
  $('ringt').innerHTML=pc+'<small>%</small>';$('trustPill').className='pill '+(ok?'ok':'mid');$('trustPill').textContent=ok?'vérifié':'en cours';
- $('trustH').textContent=ok?'Le test refait exactement ce que fait le vrai robot.':p.same_result+' vrais trades sur '+p.real_trades+' refaits à l’identique';
+ $('trustH').textContent=ok?'Tests vérifiés : ils refont exactement le vrai robot.':p.same_result+' vrais trades sur '+p.real_trades+' refaits à l’identique';
  $('trustP').textContent='Sur le compte '+p.account+', du '+fd(p.from)+' au '+fd(p.to);}
 $('trust').onclick=()=>tab('proof');$('trust').onkeydown=e=>{if(e.key==='Enter')tab('proof');};
 
@@ -579,7 +584,7 @@ function openRes(x){const t=x.t,r=x.r,c=capOf(t);
   '<div class="g4"><div><small>Trades</small><b>'+t.trades+'</b></div><div><small>Gagnés</small><b>'+Math.round(100*(t.win_rate||0))+' %</b></div><div><small>Pire creux</small><b>'+fmt(t.dip,2)+' $</b></div><div><small>Pertes de suite (max)</small><b>'+(t.streak==null?'–':t.streak)+'</b></div>'+
   '<div><small>1re moitié</small><b class="'+cls(t.h1)+'">'+money(t.h1)+'</b></div><div><small>2e moitié</small><b class="'+cls(t.h2)+'">'+money(t.h2)+'</b></div><div><small>Meilleur trade</small><b class="pos">'+money(t.best)+'</b></div><div><small>Pire trade</small><b class="neg">'+money(t.worst)+'</b></div></div>'+
   '<div style="margin-top:12px">'+halves(t)+'</div>'+
-  '<div class="acts">'+((x.range||x.sym)?'<button class="btn" id="reRun">Relancer</button>':'<span></span>')+'<button class="btn pri" id="other">'+(x.sym?'Autre marché':'Autre période')+'</button></div>');
+  '<div class="acts">'+((x.range||x.sym)?'<button class="btn" id="reRun">Relancer</button>':'<span></span>')+'<button class="btn pri" id="other">'+(x.sym?'Autre marché':'Autre période')+'</button></div>'+'<a class="btn" style="display:block;text-align:center;margin-top:8px;text-decoration:none" href="robot?id='+encodeURIComponent(r.ref?'owl':r.id)+'&tab='+(r.ref?'perf':'tests')+'">'+(r.ref?'La page de l’Owl ›':'La page de ce robot ›')+'</a>');   /* 2026-11-02: a result lives with its robot */
  const rr=$('reRun');if(rr)rr.onclick=async()=>{rr.disabled=true;let ok;if(x.sym){ok=await launchMk(r.id,[x.sym],c);if(ok)toast('Test relancé sur '+mkName(x.sym));}else ok=await launch(r.id,x.range[0],x.range[1],c);if(ok){closeSheet();tab('run');}else rr.disabled=false;};
  $('other').onclick=()=>{S.sel=r.id;closeSheet();renderRows();tab('run');setTimeout(x.sym?openMarkets:openPeriod,260);};}
 

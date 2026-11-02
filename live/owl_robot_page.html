@@ -260,12 +260,14 @@ function liveTab(){const S=liveState(),ms=A.meteo_struct||{},t=ms.pb_trend,k=mki
  return h;}
 function proofTab(){return '<div class="card"><div class="rule"><small>'+T('Le compte témoin','The witness account')+'</small><div>'+T('Le même robot sur un vrai compte suivi depuis septembre, avec ses frais.','The same robot on a real account followed since September, with its costs.')+'</div></div>'+
   '<div class="rule"><small>'+T('Le test sur 10 mois','The 10-month test')+'</small><div>'+T('Avec les deux filtres du 2 nov. : +94,92 $ sur 10 mois, 2 mois en perte sur 10 (sans filtre : +4,96 $, 6 mois en perte).','With the two filters of 2 Nov: +$94.92 over 10 months, 2 losing months out of 10 (without: +$4.96, 6 losing months).')+'</div></div></div>'+
+  '<a class="cta" style="margin-top:12px" href="'+B+'tests#robot=owl">'+T('Le tester sur une autre période','Test it on another period')+'</a>'+
   '<div class="links two"><a href="'+B+'rentabilite">'+T('La preuve complète','The full proof')+'</a><a href="'+B+'tests">'+T('Tous les tests','All tests')+'</a></div>';}
 /* ---------- built robots: tests and story ---------- */
 function testsTab(d){const RS=(d.timeline||[]).filter(e=>e.k==='result');
  let h=d.result?resultCard(d.result,d):'<div class="card empty">'+T('Cette version n’a pas encore été testée.','This version has not been tested yet.')+'<div style="margin-top:14px"><a class="cta" href="'+talk(d,T('Teste la version actuelle de mon robot.','Test the current version of my robot.'))+'">'+T('Le tester avec Kino','Test it with Kino')+' →</a></div></div>';
  if(RS.length){const mx=Math.max(1,...RS.map(e=>Math.abs(+e.net||0)));
   h+='<h2><span>'+T('Chaque version testée','Every version tested')+'</span></h2><div class="card">'+RS.map(e=>'<div class="vr"><span class="vn">v'+esc(e.rev||'?')+'</span><span class="vb"><i class="'+((+e.net)>=0?'u':'d')+'" style="width:'+Math.max(3,Math.round(100*Math.abs(+e.net||0)/mx))+'%"></i></span><b class="num '+cls(e.net)+'">'+money(e.net)+'</b><small>'+(e.trades||0)+' tr · '+(e.win_rate!=null?Math.round(100*e.win_rate)+' %':'')+'</small></div>').join('')+'</div>';}
+ h+='<a class="cta" style="margin-top:12px" href="'+B+'tests#robot='+encodeURIComponent(d.id)+'">'+T('Nouveau test : un autre marché, une autre période','New test: another market, another period')+'</a>';
  h+='<div class="links two"><a href="'+B+'mesrobots#r='+encodeURIComponent(d.id)+'">'+T('Autres marchés, pièces','Other markets, pieces')+'</a><a href="'+B+'tests">'+T('Tous les tests','All tests')+'</a></div>';
  return h;}
 function storyTab(d){const TL=d.timeline||[];
