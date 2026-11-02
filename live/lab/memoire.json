@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-02T18:40:00Z",
+ "updated": "2026-11-02T20:00:23Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -211,7 +211,8 @@
     "2026-11-02 04:35 veille: first trade of the week, FLIP-BOS SELL after ~67 h pause (Fri win), 04:00 entry, won +0.94 per 0.01. Long pause again harmless for flips (one trade, peu).",
     "2026-11-02 06:05 veille: BOS SELL 04:51 after 15.6-min pause (after flip win) won +1.33; BOS SELL 05:13 re-entered 8 min after that win lost -2.84 (held 30.6 min); BOS BUY 05:44 re-entered 26 s after the loss lost -1.82. Real gap <15 min 82 tr 33% -78.42 PF 0.55 (h 36/30 ok); 15-30 41 tr 63% +21.87 (h 64/63); 30-60 62 tr 58% +15.23; 1-3 h 40 tr 38% -78.79. Holds.",
     "2026-11-02 07:30 veille: three quick re-entries (all <15 min): FLIP SELL 06:04 2 min after a loss won +0.53 per 0.01; BOS SELL 06:19 1 min after a win won +0.46 (held 1.7 min); BOS SELL 06:30 9 min after a win lost -0.69 (held 33 min). 2 of 3 won, net ~+0.3: mildly against, tight stops 59-68 pts, tiny money.",
-    "2026-11-02 13:00 veille: quick re-entries 07:15 BOS (12 min after a loss) W +1.12, 09:36 FLIP (2 min after a loss) L -0.73, 11:18 BOS (26 s after a win) L -1.04 per 0.01; 10:01 BOS after 15 min W +1.41. Today's <15 min: 3 W / 5 L. Holds."
+    "2026-11-02 13:00 veille: quick re-entries 07:15 BOS (12 min after a loss) W +1.12, 09:36 FLIP (2 min after a loss) L -0.73, 11:18 BOS (26 s after a win) L -1.04 per 0.01; 10:01 BOS after 15 min W +1.41. Today's <15 min: 3 W / 5 L. Holds.",
+    "2026-11-02 20:00 veille: BOS SELL entry 18:44, 7.4 min after the 18:36 FLIP loss, pace 1.83 storm 0, stop 196, h1 internal opposite, held 56 min, W +3.26 at 0.02 (+1.63 per 0.01). A quick re-entry after a loss won - against; today's <15 min now 4 W / 5 L. One trade, holds."
    ],
    "next": "cont_wait when built, test it split by previous result (after a win vs after a loss, ties loss_gap_size); re-read on src=filtre once real_pool_split exists. Watch whether the pile's second half keeps falling."
   },
@@ -229,7 +230,8 @@
     "2026-10-26: deduped across journals (117 real tr since 10-01, not 210 as counted on 10-25): h1 same 50 tr 34% -41.3 per 0.01; NEW m15 split: h1 same + m15 not same 33 tr 7 won (21%) -46.6 (h 9/40, 20/13 tr); h1 opp + m15 same 38 tr 63% +11.4 (h 67/60). h4 trend adds nothing (same 47% / opp 43%). Requested late_wave_size.",
     "2026-10-31 12:00 veille: h1 internal = 0 on 33 of 34 closes since 10-26 (all 0 except one, 10-29 15:47 BUY h1 i=1 same way, lost -5.73 as predicted). The 0 bucket: 19 won of 34. No test possible this week. m15 trend reads -1 on nearly every trade since 10-08: capture may be stale (doubt).",
     "2026-11-02 07:30 veille: h1 internal non-zero again from Monday (i=1 on all 7 closes today). u477508138 since 10-26: h1 same 2 tr 0 won -3.78 per 0.01 (10-29 BUY, 11-02 05:44 BUY), opp 6 tr 4 won +0.49, zero 30 tr 19 won +19.49. As predicted in count, flat in money (peu). Capture alive again: the real-trade test can resume.",
-    "2026-11-02 13:00 veille: 5 more closes, h1 i=1 on all: FLIP BUY 08:40 the same way lost -4.50 (0.02); 4 sells against it 2 won (+2.23, +2.82 / -1.45, -2.07). Since 10-26: same 3 tr 0 won, opp 10 tr 6 won, ~flat in money (peu). As predicted in count; the edge is in avoiding 'same'."
+    "2026-11-02 13:00 veille: 5 more closes, h1 i=1 on all: FLIP BUY 08:40 the same way lost -4.50 (0.02); 4 sells against it 2 won (+2.23, +2.82 / -1.45, -2.07). Since 10-26: same 3 tr 0 won, opp 10 tr 6 won, ~flat in money (peu). As predicted in count; the edge is in avoiding 'same'.",
+    "2026-11-02 20:00 veille: evening, h1 i=1 still; two sells against it: 18:32 FLIP (storm) L -2.29, 18:44 BOS W +3.26 at 0.02. Since 10-26: same 3 tr 0 won, opp 12 tr 7 won (peu)."
    ],
    "next": "Wait for h1_int_size / late_wave_size to be built; then test refusal and half stake."
   },
@@ -3715,6 +3717,14 @@
     "journal ref account FLIP split nervous/calm, nervous x gap>60, nervous x storm"
    ],
    "saw": "FLIP-BOS SELL entry 18:32 after a 6 h 25 pause (last close 12:07), pace 1.819, storm 1, stop 109 pts, h1 internal opposite (the side h1_internal_late favours), held 4.6 min, L -2.29 at 0.02 (pooled -3.43). Twin took the same trade -2.49 (risk 2.48): 10 tr 7W +12.16. storm=1 66 tr 45% -94.10 PF 0.57 (h 45/46) vs 65 tr -90.67 this morning: nothing new. Journal ref account: FLIP nervous (>=1.3) 28 tr 15 won -3.42 (of which gap>60 16 tr +5.22, storm 12 tr 8 won +14.92); FLIP calm (<1.3) 76 tr 33 won -51.79. On real trades the calm flips are not the ones carrying, unlike the engine trace (10-04 calm +82). To recheck on pooled metrics at night. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-02T20:00:23Z",
+   "looked": [
+    "wake_context (1 real close 19:40, 287 total; twin noday 10 tr +12.16 -> 11 tr +15.32; labo empty; no open ask)",
+    "bos_journal_u477508138 last row + twin_noday.log"
+   ],
+   "saw": "BOS SELL 18:44 -> 19:40 TP, gap 7.4 min after a loss, pace 1.83 (very nervous, storm 0), stop 196 pts (the 150-250 band that loses on real), h1 internal opposite, W +3.26 at 0.02. Twin took the same trade +3.16: 11 tr 8W/3L +15.32. Against rested_cont and the stop-band picture on one trade; for h1_internal_late. No run, no pile, no proposal."
   }
  ],
  "lessons": [

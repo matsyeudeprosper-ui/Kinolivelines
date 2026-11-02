@@ -1,13 +1,13 @@
 {
- "last_trade_x": 1793644604.0,
- "twins_sig": "noday:running:10",
+ "last_trade_x": 1793648402.0,
+ "twins_sig": "noday:running:11",
  "labo_sig": "{}",
  "asks_open": 0,
  "day": "2026-11-02",
- "count": 5,
- "last_wake": 1793630213.6102455,
+ "count": 6,
+ "last_wake": 1793644864.4448602,
  "lock": {
-  "pid": 28256,
-  "t": 1793644611.0104158
+  "pid": 1212,
+  "t": 1793649622.448011
  }
 }
