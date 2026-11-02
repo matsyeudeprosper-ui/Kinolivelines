@@ -103,6 +103,10 @@ body.k-sec .hero{display:none!important}
 <script>(function(){try{
  var seg=location.pathname.split('/').filter(Boolean),tok=seg[0],sub=seg[1]||'',dash=sub==='';
  var en=false;try{en=(localStorage.getItem('owlLang')||document.documentElement.lang)==='en';}catch(e){}
+ /* 2026-11-02 (owner's home: English content under a French menu): when the page sets its language, the bar and the menu follow */
+ new MutationObserver(function(){var e2=document.documentElement.lang==='en';if(e2===en)return;en=e2;
+  try{document.querySelectorAll('#knav span[data-fr]').forEach(function(x){x.textContent=en?x.getAttribute('data-en'):x.getAttribute('data-fr');});}catch(e){}
+  try{title();}catch(e){}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  var T=function(f,e){return en?e:f;};
  try{localStorage.setItem('owlTourDone','1');}catch(e){}
  /* 2026-11-02 (owner: "users must not reach the old design any more"): an old link (./#offres, ./#marche...) lands on the
