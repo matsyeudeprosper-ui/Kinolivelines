@@ -50,7 +50,10 @@ h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;c
 .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:24px;font-size:13.5px;color:var(--mut)}
 .trust span{display:inline-flex;align-items:center;gap:7px}.trust svg{width:16px;height:16px;color:var(--acc)}
 /* the phone = the app's chat */
-.phone{position:relative;justify-self:center;width:min(392px,100%);border-radius:44px;padding:10px;background:linear-gradient(160deg,#2a3346,#11161f);
+/* 2026-11-02 (owner's phone, large text: title and lead cut on both sides): a grid column never grows past the
+   screen for the phone mock - the mock shrinks instead */
+.hgrid>*{min-width:0;max-width:100%}.scr>*{min-width:0}h1,.lead{overflow-wrap:anywhere}
+.phone{position:relative;justify-self:center;width:min(392px,100%);max-width:100%;box-sizing:border-box;border-radius:44px;padding:10px;background:linear-gradient(160deg,#2a3346,#11161f);
  box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06) inset}
 .scr{border-radius:35px;overflow:hidden;background:var(--wa-bg);display:flex;flex-direction:column;height:min(640px,78vh);position:relative}
 .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:96px;height:24px;border-radius:99px;background:#05070b;z-index:3}
