@@ -30260,6 +30260,50 @@ def ai_pulse():
     return out
 
 
+def _landing_robot():
+    """the robot Kino made for the place with the best real test: name, market, the test's figures and window, the random
+    control's verdict. Only listed, visible, unpaused robots by the nest; nothing about the recipe, no robot count."""
+    import glob as _gl
+    try:
+        M = json.load(open(os.path.join(DIR, "owl_market.json"), encoding="utf-8")).get("listings") or {}
+    except Exception:
+        return None
+    try:
+        RB = json.load(open(os.path.join(DIR, "robots", "robots.json"), encoding="utf-8"))
+        RB = RB if isinstance(RB, list) else RB.get("robots") or list(RB.values())
+        names = {r.get("id"): r for r in RB if isinstance(r, dict)}
+    except Exception:
+        names = {}
+    best = None
+    for rid, l in M.items():
+        if not isinstance(l, dict) or l.get("hidden") or l.get("paused") or l.get("by_uid") != "kino":
+            continue
+        for f in _gl.glob(os.path.join(DIR, "robots", "results", "%s@*.json" % rid)) + [os.path.join(DIR, "robots", "results", "%s.json" % rid)]:
+            try:
+                d = json.load(open(f, encoding="utf-8"))
+            except Exception:
+                continue
+            r = d.get("robot") or {}
+            if r.get("trades") is None or r.get("net") is None:
+                continue
+            sym = d.get("market") or "BTCUSD"
+            cv = r.get("curve") or []
+            vals = [float(c[1]) if isinstance(c, (list, tuple)) else float(c) for c in cv if c is not None]
+            if len(vals) > 40:
+                k = len(vals) / 40.0
+                vals = [vals[int(i * k)] for i in range(40)] + [vals[-1]]
+            w = d.get("window_utc") or []
+            _nm = names.get(rid) or {}
+            row = {"id": rid, "name": _nm.get("name_fr") or _nm.get("name") or rid, "name_en": _nm.get("name_en") or _nm.get("name_fr") or rid,
+                   "market": d.get("market_name") or sym, "sym": sym,
+                   "net": round(float(r["net"]), 2), "trades": int(r["trades"]), "wr": r.get("win_rate"), "days": d.get("days"),
+                   "balance": d.get("balance"), "window": [str(w[0])[:10], str(w[1])[:10]] if len(w) >= 2 else None,
+                   "ticks": bool(d.get("fills") == "ticks"), "curve": [round(v, 2) for v in vals], "ctl": _random_ctl(rid, sym)}
+            if best is None or row["net"] > best["net"]:
+                best = row
+    return best
+
+
 def landing_payload():
     """2026-10-11 (owner, acquisition): the public, AGGREGATED numbers the
     logged-out landing shows - the witness account's figures and its worst
@@ -30311,6 +30355,10 @@ def landing_payload():
     except Exception:
         out["live"] = {"online": False}
     out["tg_bot"] = nest_config().get("tg_bot") or "Kino_owl_bot"
+    try:                                   # 2026-11-02 (owner: "show off a robot and its test, that's the business"): the best
+        out["robot"] = _landing_robot()    # robot Kino made for the place, with its real test and its random control
+    except Exception:
+        out["robot"] = None
     try:                                   # 2026-11-02: the plans strip on the landing, from the real plan table
         out["plans"] = [{"k": k, "label": _PL.PLAN_INFO[k]["label"], "label_en": _PL.PLAN_INFO[k]["label_en"], "usd": _PL.PLAN_INFO[k]["usd"]}
                         for k in ("decouverte", "essentiel", "pro", "premium") if k in _PL.PLAN_INFO]

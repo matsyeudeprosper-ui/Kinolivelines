@@ -87,6 +87,21 @@ details p{margin:-4px 0 14px;color:var(--text2);font-size:14px}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media (min-width:560px){h1{font-size:40px}.hero{padding-top:40px}.cta{max-width:380px;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){.wrap>*,.live i{animation:none!important}}
+/* Kino at work: a chat extract, then a real test of a robot he made */
+.chat{display:grid;gap:10px;padding:16px 16px 14px}
+.bub{max-width:88%;padding:11px 14px;border-radius:18px;font-size:14.5px;line-height:1.5}
+.bub.me{justify-self:end;background:var(--grad);color:#fff;border-bottom-right-radius:6px}
+.bub.ki{justify-self:start;background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:6px}
+.kwho{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-bottom:4px}.kwho canvas{width:18px;height:18px}
+.res{justify-self:start;width:100%;margin-top:2px;padding:14px;border-radius:18px;background:var(--surface);border:1px solid #7c6cff44;box-shadow:var(--hl),0 16px 40px -20px rgba(0,0,0,.6)}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.rh b{color:var(--text);font-size:13.5px}
+.rbig{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin:8px 0 2px}
+.rrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.rsp{width:120px;height:44px;flex:none}
+.badge{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;font-weight:700;color:#b4a9ff;padding:5px 10px;border-radius:99px;background:#7c6cff14;border:1px solid #7c6cff44}
+.badge.no{color:var(--warn);background:#e8c55a12;border-color:#e8c55a44}
+.ccap{font-size:12px;color:var(--muted);margin-top:4px;padding:0 2px}#rtiles{white-space:nowrap}
 [hidden]{display:none!important}
 </style></head><body>
 <div class="wrap">
@@ -101,7 +116,20 @@ details p{margin:-4px 0 14px;color:var(--text2);font-size:14px}
   <div class="pills"><span data-en="Free 7 days">Gratuit 7 jours</span><span data-en="No commitment">Sans engagement</span><span data-en="Nothing to install">Rien à installer</span><span data-en="Your money stays with you">Ton argent reste chez toi</span></div>
  </section>
 
- <h2 data-en="A real account, losses included">Un vrai compte, pertes comprises</h2>
+ <h2 data-en="Kino at work">Kino au travail</h2>
+ <div class="card chat" id="chat">
+  <div class="bub me" data-en="I trade gold. I enter on a breakout after a pullback, stop under the last low, out at 1 times the risk.">Je trade l’or. J’entre sur une cassure après un recul, stop sous le dernier creux, je sors à 1 fois le risque.</div>
+  <div class="bub ki"><div class="kwho"><canvas class="kpres" aria-hidden="true"></canvas>Kino</div><span data-en="Got it. I built the robot: breakout after a pullback, stop under the low, out at 1R. I'm testing it on 60 days of real gold prices, every tick, then against 100 random robots. If it's luck, I'll say so.">Compris. J’ai construit le robot : cassure après recul, stop sous le creux, sortie à 1R. Je le teste sur 60 jours de vrais prix de l’or, tous les ticks, puis contre 100 robots au hasard. Si c’est de la chance, je te le dirai.</span></div>
+  <div class="res" id="res" hidden>
+   <div class="rh"><b id="rname"></b><span id="rwin"></span></div>
+   <div class="rrow"><div><div class="rbig" id="rnet"></div><div class="ccap" id="rtiles"></div></div><svg class="rsp" id="rsp" viewBox="0 0 120 44" aria-hidden="true"></svg></div>
+   <div class="badge" id="rbadge" hidden></div>
+   <div class="pnote" id="rorig"></div>
+  </div>
+ </div>
+ <div class="ccap" data-en="A typical exchange. The result card is a real test of a robot Kino made, read from its test file.">Un échange type. La carte de résultat est un vrai test d’un robot fait par Kino, lue dans son fichier de test.</div>
+
+ <h2 data-en="And with real money">Et avec du vrai argent</h2>
  <div class="card proof" id="proof" hidden>
   <div class="plbl"><span id="psince"></span><span class="live" id="plive" hidden><i></i><span data-en="Live">En direct</span></span></div>
   <div class="pbig" id="pbig"></div>
@@ -183,6 +211,21 @@ function paint(){if(!D)return;var w=D.witness,P=document.getElementById('proof')
   document.getElementById('pn').textContent=w.n;document.getElementById('pwr').textContent=w.wr!=null?Math.round(w.wr)+' %':'—';
   document.getElementById('pbal').textContent='$'+Number(w.balance||0).toFixed(0);
   document.getElementById('plive').hidden=!(D.live&&D.live.online);}
+ var R=D.robot,RC=document.getElementById('res');function symName(x){x=String(x||'').replace(/m$/,'');return /^XAU/.test(x)?(EN?'Gold':'Or'):/^BTC/.test(x)?'Bitcoin':/^USTEC/.test(x)?'Nasdaq':/^US30/.test(x)?'Dow Jones':x;}
+ if(R&&R.trades){RC.hidden=false;document.getElementById('rname').textContent=(EN?(R.name_en||R.name):R.name)||'';
+  document.getElementById('rwin').textContent='Test · '+symName(R.sym||R.market)+(R.days?' · '+Math.round(R.days)+(EN?' days':' jours'):'');
+  document.getElementById('rnet').innerHTML='<span class="'+(R.net>=0?'pos':'neg')+'">'+money(R.net)+'</span>';
+  document.getElementById('rtiles').textContent=R.trades+' trades'+(R.wr!=null?' · '+Math.round(100*R.wr)+' % '+(EN?'winners':'gagnants'):'');
+  var cv=R.curve||[],sp=document.getElementById('rsp');
+  if(cv.length>1){var v=[0].concat(cv),mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),r=(mx-mn)||1,W=120,H=44;
+   var d=v.map(function(x,i){return (i?'L':'M')+(2+i*(W-4)/(v.length-1)).toFixed(1)+' '+(2+(H-4)*(1-(x-mn)/r)).toFixed(1);}).join(' ');
+   sp.innerHTML='<path d="'+d+'" fill="none" stroke="'+(R.net>=0?'#2ecc71':'#ff6b6b')+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';}
+  var c=R.ctl,b=document.getElementById('rbadge');
+  if(c&&c.pct!=null){b.hidden=false;var ok=c.pct>=95;b.className='badge'+(ok?'':' no');
+   b.textContent=ok?(EN?'Better than '+Math.round(c.pct)+' of 100 random robots':'Meilleur que '+Math.round(c.pct)+' robots sur 100 au hasard'):(EN?'Not proven against chance':'Pas prouvé face au hasard');}
+  var w=R.window||[],fd=function(x){try{return new Date(String(x).slice(0,10)+'T12:00:00').toLocaleDateString(EN?'en':'fr',{day:'numeric',month:'short',year:'numeric'});}catch(e){return x;}};
+  document.getElementById('rorig').textContent=(EN?'A test, not a promise: ':'Un test, pas une promesse : ')+(R.ticks?(EN?'every real price tick':'chaque vrai tick de prix'):(EN?'real prices':'vrais prix'))+
+   (w.length===2?(EN?' from '+fd(w[0])+' to '+fd(w[1]):' du '+fd(w[0])+' au '+fd(w[1])):'')+(R.balance?(EN?', starting balance $'+R.balance:', compte de départ '+R.balance+' $'):'')+(EN?', costs included.':', coûts compris.');}
  var pl=D.plans||[],el=document.getElementById('plans');
  el.innerHTML=pl.map(function(p){return '<div class="plan'+(p.k==='pro'?' hi':'')+'"><b>'+(EN?p.label_en:p.label)+'</b><i>'+(p.usd?'$'+p.usd:(EN?'Free':'Gratuit'))+'</i><small>'+(p.usd?(EN?'30 days':'30 jours'):(EN?'to start':'pour commencer'))+'</small></div>';}).join('');}
 fetch('/landing_data',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){D=d;paint();}).catch(function(){});
