@@ -2454,6 +2454,6 @@ function tGuess(btn,g){const w=btn.closest('.tgs');try{localStorage.setItem(w.da
 <button class="chg" onclick="callEnd()" aria-label="Raccrocher">✆</button></div>
 <div id="fsc"><div class="fh"><button onclick="fsClose()" aria-label="Fermer">✕</button><b id="fst"></b><button onclick="fsZoom(1)" aria-label="Zoomer">＋</button><button onclick="fsZoom(-1)" aria-label="Dézoomer">－</button><button onclick="fsPlay()" aria-label="Rejouer">▶</button></div><canvas id="fcv"></canvas><div class="fz" id="fzh">Pince pour zoomer · glisse pour te déplacer</div></div>
 <style>/* 2026-10-26: inside the chart's Kino panel - no back arrow, no side plan, no footnote */
-body.emb #bk,body.emb aside.bp,body.emb #hint{display:none!important}</style>
-<script>try{if(/[?&]embed=1/.test(location.search)&&window.top!==window)document.body.classList.add('emb');}catch(e){}</script>
+html[data-emb] #bk,html[data-emb] aside.bp,html[data-emb] #hint{display:none!important}</style>
+<script>try{if(window.top!==window)document.documentElement.setAttribute('data-emb','1');   /* 2026-11-02: inside a frame = the Kino panel (the page drops ?embed=1 from its address before this runs) */}catch(e){}</script>
 </body></html>

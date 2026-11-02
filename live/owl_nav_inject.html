@@ -183,6 +183,7 @@ body.k-sec .hero{display:none!important}
  /* Kino, everywhere: his panel slides open; on pages without it, his conversation */
  document.getElementById('kbk').onclick=function(){var t=document.getElementById('kpgtab');if(t){t.click();return;}
   var k=document.querySelector('#knav a[data-p="atelier"]');location.href=k?k.href:'/'+tok+'/atelier';};
+ var km=document.querySelector('#knav a[data-p="atelier"]');if(km)km.addEventListener('click',function(e){if(typeof window.kinoPanel==='function'){e.preventDefault();window.kinoPanel();}});
  document.querySelectorAll('#knav a').forEach(function(a){var p=a.getAttribute('data-p');
   a.href='/'+tok+'/'+p;
   var s=a.querySelector('span[data-fr]');if(s)s.textContent=en?s.getAttribute('data-en'):s.getAttribute('data-fr');});
