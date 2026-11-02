@@ -127,6 +127,9 @@
    "_why_pb_gate_mode": "2026-10-10 owner (evening), OFFICIAL trend-following rule: with the pullback trend AND beyond its last BOS (buys above / sells below); wrong side = continuation paused until reclaim or reversal. Replaces the morning CHoCH exception. Backtest deferred by the owner (to run on request)."
   },
   "valere": {
+   "max_trades_day": 3,
+   "m15_gate": true,
+   "_filters_note": "2026-11-02 owner: resume real trading with the two filters tested on 10 months (botsim m15cap3: +94.92 vs +4.96 plain, 2/10 losing months)",
    "extends": "base",
    "label": "Valere - sans plafond du jour",
    "day_cap": null,
@@ -161,6 +164,9 @@
    "movement": true
   },
   "special_10": {
+   "max_trades_day": 3,
+   "m15_gate": true,
+   "_filters_note": "2026-11-02 owner: resume real trading with the two filters tested on 10 months (botsim m15cap3: +94.92 vs +4.96 plain, 2/10 losing months)",
    "extends": "special",
    "label": "Special - meme regles que les autres comptes (sans plafond du jour)",
    "day_cap": null,
@@ -286,6 +292,11 @@
    "extends": "simple",
    "label": "Taille : min(0.04, 0.01 + 0.01 * losses_since_peak)",
    "lot_rule": "min(0.04, 0.01 + 0.01 * losses_since_peak)"
+  },
+  "lot-d6ec6f03": {
+   "extends": "simple",
+   "label": "Taille : 0.01",
+   "lot_rule": "0.01"
   }
  },
  "accounts": {
