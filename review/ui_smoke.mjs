@@ -263,7 +263,7 @@ let chartWx = await readChartWx();
 check("the chart can state a weather verdict", !!chartWx,
       chartWx ? `${chartWx.k} (mv ${chartWx.mv}, nb ${chartWx.nb})` : "none");
 const readCard = async () => {
-  await nav("about:blank"); await nav(`${BASE}/${VAL}/#marche`); await sleep(11000);
+  await nav("about:blank"); await nav(`${BASE}/${VAL}/?classic=1#marche`); await sleep(11000);
   return await ev("(document.getElementById('mx-title')||{}).textContent");
 };
 let cardTitle = await readCard();
@@ -294,7 +294,7 @@ check("the chart uses the rule the bot runs",
 // ---------- settings --------------------------------------------------
 console.log("");
 console.log("settings");
-await nav("about:blank"); await nav(`${BASE}/${VAL}/#set`); await sleep(10000);
+await nav("about:blank"); await nav(`${BASE}/${VAL}/?classic=1#set`); await sleep(10000);
 check("inner-marks row exists",
       (await ev("!!document.getElementById('intmkrow')")) === true);
 check("its switch reflects the stored value",
@@ -322,18 +322,18 @@ check("no runtime errors anywhere", (await ev("(window.__errs||[]).length")) ===
 console.log("");
 console.log("suivi du lancement");
 {
-  await nav("about:blank"); await nav(`${BASE}/${TOK("std")}/`); await sleep(9000);
+  await nav("about:blank"); await nav(`${BASE}/${TOK("std")}/?classic=1`); await sleep(9000);
   check("the owner sees the launch-tracking row in Reglages", (await ev("(function(){var r=document.getElementById('usagerow');return !!r&&r.style.display==='flex'&&r.getAttribute('href').endsWith('funnel');})()")) === true);
-  await nav("about:blank"); await nav(`${BASE}/${VAL}/`); await sleep(9000);
+  await nav("about:blank"); await nav(`${BASE}/${VAL}/?classic=1`); await sleep(9000);
   check("a member never sees the launch-tracking row", (await ev("(function(){var r=document.getElementById('usagerow');return !r||r.style.display==='none';})()")) === true);
 }
 console.log("");
 console.log("labo");
 {
   const KIN = TOK("kino");
-  await nav("about:blank"); await nav(`${BASE}/${KIN}/`);
+  await nav("about:blank"); await nav(`${BASE}/${KIN}/?classic=1`);
   await ev("try{localStorage.setItem('owlTourDone','1');localStorage.setItem('owl_adm','1');localStorage.setItem('owlLabIntro','1');}catch(e){}1");
-  await nav(`${BASE}/${KIN}/`); await sleep(12000);
+  await nav(`${BASE}/${KIN}/?classic=1`); await sleep(12000);
   await ev("(function(){var b=document.getElementById('tb-marche');if(b)b.click();return 1;})()"); await sleep(1500);
   // 2026-10-12 (owner): the old Labo board is replaced by the Labo space - Strategies, Robots, AI team.
   // The Labo button now leads there; every side must paint, with no NaN/undefined and no bare verdict letter.
@@ -367,7 +367,7 @@ console.log("labo");
   check("Robots · that member sees the account card or the Automatique door", (await ev("!!document.querySelector('#top .arb, #top .zdoor')")) === true);
   check("Robots · that member gets the Strategie door, no create buttons, no NaN", !/NaN|undefined/.test(await ev("document.body.innerText")) && /Avec (la formule )?Strat/.test(await ev("document.body.innerText")) && (await ev("!!document.querySelector('.lh-a button[onclick*=goNew]')")) === false);
   await shot("smoke_labo");
-  await nav("about:blank"); await nav(`${BASE}/${KIN}/`); await sleep(9000);
+  await nav("about:blank"); await nav(`${BASE}/${KIN}/?classic=1`); await sleep(9000);
   await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()");
   let nidRows = 0;                       // the Nid rows arrive with the owner's data: poll up to 20 s instead of one fixed wait
   for (let i = 0; i < 20 && nidRows < 3; i++) { await sleep(1000); nidRows = await ev("document.querySelectorAll('#nest .nrow, #tab-nid .nrow').length"); }

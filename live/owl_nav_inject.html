@@ -1,18 +1,54 @@
-<!-- 2026-11-02 (owner: "the new design navigation..." then "merge the old and new design so nothing is lost"): ONE bottom menu for
-     every page - the new pages AND the robot dashboard (its old tab bar is hidden; its sections are reached by address:
-     ?classic=1#marche (live market), #hist (performance), #set (settings), #nid (the nest, owner), #home (today)). -->
+<!-- 2026-11-02 (owner: "it feels inconsistent between pages - redesign the whole app, Kino first, premium, coherent, easy to
+     find; Kino available on all pages with his sliding chat panel"): THE APP SHELL, injected before </body> on every page
+     of the app (the new pages and the robot dashboard):
+       - one palette (the same tokens everywhere, Kino's violet-cyan as the accent)
+       - one top bar: the page's name, the page's own action buttons (moved in from its old header), and Kino - a tap
+         slides his chat panel open (kino_panel_inject), wherever you are
+       - one bottom menu: Accueil · Kino · Robots · Marché · Compte
+     Every page's old header is folded into the bar, so all pages start the same way. -->
 <style>
-#knav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;
- padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(11,15,20,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
- border-top:1px solid rgba(255,255,255,.07);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;--text:#e8eef4;
+ --text2:#c6d3df;--muted:#8a9bb0;--muted2:#a9b8c8;--accent:#7c6cff;--accent-soft:#b4a9ff;--kgrad:linear-gradient(135deg,#7c6cff,#22d3ee);--kacc:#00a884}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;--border2:#d5dce7;--text:#121722;
+ --text2:#3b4658;--muted:#6a7588;--muted2:#5c667a}
+html,body{background:var(--bg)!important}
+body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+#kbar{position:fixed;left:0;right:0;top:0;z-index:61;height:calc(58px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0 18px;
+ display:flex;align-items:center;gap:10px;background:rgba(11,15,20,.86);backdrop-filter:saturate(1.4) blur(16px);-webkit-backdrop-filter:saturate(1.4) blur(16px);
+ border-bottom:1px solid rgba(255,255,255,.06);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+:root[data-theme="light"] #kbar{background:rgba(246,248,252,.9);border-bottom-color:#e3e8f0}
+#kbar .kt{flex:1;min-width:0;line-height:1.15}
+#kbar .kt b{display:block;font-size:17px;font-weight:800;letter-spacing:-.02em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#kbar .kt small{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#kbar .ka{display:flex;align-items:center;gap:6px}
+#kbar .ka>*{transform:scale(.92)}
+#kbar .kc{display:flex;align-items:center;gap:8px;border:1px solid var(--border2);background:var(--surface);border-radius:99px;padding:3px 11px 3px 3px;cursor:pointer;
+ color:var(--text);font:700 13px Inter,system-ui,sans-serif}
+#kbar .kc .av{position:relative;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6d5cf6,#3b82f6);display:grid;place-items:center;font-size:16px}
+#kbar .kc .av i{position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--kacc);border:2px solid var(--surface)}
+#knav{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;height:auto!important;margin:0 auto!important;z-index:60;display:flex;justify-content:space-around;
+ padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(11,15,20,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+ border-top:1px solid rgba(255,255,255,.06);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 :root[data-theme="light"] #knav{background:rgba(246,248,252,.92);border-top-color:#e3e8f0}
-#knav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#8a9bb0;min-width:58px;padding:4px 0;text-decoration:none}
-#knav a.on{color:#e8eef4}:root[data-theme="light"] #knav a.on{color:#121722}
+#knav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#8a9bb0;min-width:58px;padding:4px 0;text-decoration:none;position:relative}
+#knav a.on{color:var(--text)}#knav a.on:after{content:"";position:absolute;top:-8px;width:22px;height:3px;border-radius:0 0 3px 3px;background:var(--kgrad)}
 #knav svg{width:22px;height:22px}
-#knav .kd{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#7c6cff,#22d3ee);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
-body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
-.tabbar{display:none!important}
+#knav .kd{width:24px;height:24px;border-radius:8px;background:var(--kgrad);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.k-folded{display:none!important}
+/* a page's own sticky strip (Patrimoine tabs) sticks under the bar, not behind it; its repeated title and back arrow go */
+.wrap > nav:not(#knav),body > nav:not(#knav){top:calc(58px + env(safe-area-inset-top,0px))!important}
+.k-dup{display:none!important}
+.tabbar,#hbar,#kpgtab{display:none!important}
+/* the robot dashboard: its brand row is the bar now; the balance banner becomes a card, and only on "Aujourd'hui" */
+.hero .topline{display:none!important}
+.hero{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:22px!important;margin:14px 14px 0!important;
+ box-shadow:none!important;padding-top:18px!important}
+body.k-sec .hero{display:none!important}
+/* one button language: the main action is Kino's gradient */
+.btn.pri,.shbtn.shmain,.bigbtn.b1,button.pri{background:var(--kgrad)!important;border:0!important;color:#fff!important}
 </style>
+<div id="kbar"><div class="kt"><b id="kbt">&nbsp;</b><small id="kbs"></small></div><div class="ka" id="kba"></div>
+ <button class="kc" id="kbk" aria-label="Kino"><span class="av">🦉<i></i></span><span>Kino</span></button></div>
 <nav id="knav" aria-label="Navigation">
  <a data-p="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-fr="Accueil" data-en="Home">Accueil</span></a>
  <a data-p="atelier"><span class="kd">K</span><span>Kino</span></a>
@@ -20,22 +56,58 @@ body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
  <a data-p="marche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg><span data-fr="Marché" data-en="Market">Marché</span></a>
  <a data-p="compte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-fr="Compte" data-en="Account">Compte</span></a>
 </nav>
-<script>(function(){try{var seg=location.pathname.split('/').filter(Boolean),tok=seg[0],sub=seg[1]||'';
+<script>(function(){try{
+ var seg=location.pathname.split('/').filter(Boolean),tok=seg[0],sub=seg[1]||'',dash=sub==='';
  var en=false;try{en=(localStorage.getItem('owlLang')||document.documentElement.lang)==='en';}catch(e){}
- var dash=sub==='';                                  /* the robot dashboard (?classic=1) */
- function act(){var h=(location.hash||'').slice(1);
-  var pg=dash?({marche:'marche',robot:'marche',hist:'compte',set:'compte',nid:'compte',offres:'compte'}[h]||'home'):
-   ({tests:'mesrobots',place:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'compte'}[sub]||sub||'home');
-  document.querySelectorAll('#knav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-p')===pg);});}
+ var T=function(f,e){return en?e:f;};
+ var TITLES={home:[T('Accueil','Home'),''],compte:[T('Compte','Account'),T('Ta formule, ton compte, tes réglages','Your plan, account and settings')],
+  mesrobots:[T('Mes robots','My robots'),T('Construits avec Kino · leurs résultats','Built with Kino · their results')],
+  place:[T('La place','Marketplace'),T('Les robots créés par Kino et les membres','Robots made by Kino and members')],
+  tests:[T('Tests','Tests'),T('Résultats, preuves, tests de chance','Results, proofs, luck tests')],kino:[T('Kino et toi','Kino and you'),T('Ce qu’il retient, ce qu’il poursuit','What he remembers, what he pursues')],
+  wealth:[T('Patrimoine','Wealth'),T('Ton argent, tes poches, tes dépôts','Your money, pockets and deposits')],parrainage:[T('Parrainage','Referral'),T('50 % du premier mois de chaque ami','50% of each friend’s first month')],
+  rentabilite:[T('Rentabilité','Profitability'),'']};
+ var DT={home:[T('Aujourd’hui','Today'),T('Ton compte et ton robot en ce moment','Your account and robot right now')],
+  marche:[T('Marché','Market'),T('En direct · ce que voient tes robots','Live · what your robots see')],robot:[T('Marché','Market'),T('En direct','Live')],
+  hist:[T('Performance · L’Owl','Performance · the Owl'),T('Le robot de ton compte, jour par jour','Your account’s robot, day by day')],
+  set:[T('Réglages','Settings'),T('Notifications, application, abonnement','Notifications, app, plan')],nid:[T('Le Nid','The Nest'),T('Tous les comptes','All accounts')],
+  offres:[T('Formules','Plans'),'']};
+ function sec(){return (location.hash||'').slice(1)||'home';}
+ function key(){if(dash){var h=sec();return {marche:'marche',robot:'marche',hist:'compte',set:'compte',nid:'compte',offres:'compte'}[h]||'home';}
+  return ({tests:'mesrobots',place:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'compte'}[sub])||sub||'home';}
+ function title(){var t=dash?(DT[sec()]||DT.home):(TITLES[sub||'home']||[document.title,'']);
+  if(!dash&&(sub==='home'||sub==='')){var h=new Date().getHours();var n=(document.getElementById('nm')||{}).textContent||'';
+   t=[(h<5||h>=18?T('Bonsoir','Good evening'):T('Bonjour','Hello'))+(n.trim()?', '+n.trim():''),T('Kino et ton trading, en un coup d’œil','Kino and your trading at a glance')];}
+  document.getElementById('kbt').textContent=t[0];document.getElementById('kbs').textContent=t[1]||'';
+  document.body.classList.toggle('k-sec',dash&&sec()!=='home');
+  document.querySelectorAll('#knav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-p')===key());});}
+ /* the page's own header: its actions move into the bar, the rest folds away */
+ var A=document.getElementById('kba');
+ function isBack(x){var s=((x.getAttribute('onclick')||'')+' '+(x.getAttribute('aria-label')||'')+' '+(x.getAttribute('href')||'')+' '+(x.className||'')).toLowerCase();
+  return /history\.back|retour|back|\.\.\/|appback/.test(s);}
+ var H=document.querySelector('body > header');
+ if(H&&!dash){[].slice.call(H.querySelectorAll('button,a')).forEach(function(x){if(!isBack(x)&&x.offsetParent!==null&&!x.closest('#kbar'))A.appendChild(x);});H.classList.add('k-folded');}
+ if(dash){['acctchip','hbell','chartlink'].forEach(function(id){var x=document.getElementById(id);if(x)A.appendChild(x);});}
+ if(sub==='home'){var tp=document.querySelector('.wrap > .top');if(tp){var pl=tp.querySelector('.plan');if(pl)A.appendChild(pl);tp.classList.add('k-folded');}}
+ if(sub==='wealth'){['back','h1'].forEach(function(i){var x=document.getElementById(i);if(x)x.classList.add('k-dup');});}
+ if(sub==='compte'){var h1=document.getElementById('ttl');if(h1)h1.classList.add('k-folded');}
+ /* Kino, everywhere: his panel slides open; on pages without it, his conversation */
+ document.getElementById('kbk').onclick=function(){var t=document.getElementById('kpgtab');if(t){t.click();return;}
+  var k=document.querySelector('#knav a[data-p="atelier"]');location.href=k?k.href:'/'+tok+'/atelier';};
  document.querySelectorAll('#knav a').forEach(function(a){var p=a.getAttribute('data-p');
   a.href=p==='marche'?'/'+tok+'/?classic=1#marche':'/'+tok+'/'+p;
   var s=a.querySelector('span[data-fr]');if(s)s.textContent=en?s.getAttribute('data-en'):s.getAttribute('data-fr');});
- if(dash){                                           /* a section of the dashboard opened by its address */
-  var go=function(){var h=(location.hash||'').slice(1)||'home';h=h==='robot'?'marche':h;
+ if(dash){var go=function(){var h=sec();h=h==='robot'?'marche':h;
    if(['home','marche','hist','set','nid'].indexOf(h)<0||typeof tab!=='function')return;
    var b=document.getElementById('tb-'+h)||[].slice.call(document.querySelectorAll('.tb')).find(function(x){return (x.getAttribute('onclick')||'').indexOf("'"+h+"'")>=0;});
-   tab(h,b||null);if(h==='marche'&&typeof mxView==='function')setTimeout(function(){mxView('market',true)},50);act();};
-  window.addEventListener('hashchange',go);if((location.hash||'').slice(1)==='nid')setTimeout(go,300);}
- act();window.addEventListener('hashchange',act);
- fetch('/'+tok+'/home_data').then(function(r){return r.json()}).then(function(d){if(d&&d.cid){var k=document.querySelector('#knav a[data-p="atelier"]');if(k)k.href='/'+tok+'/atelier?c='+encodeURIComponent(d.cid);}}).catch(function(){});
+   tab(h,b||null);if(h==='marche'&&typeof mxView==='function')setTimeout(function(){mxView('market',true)},50);title();};
+  window.addEventListener('hashchange',go);if(sec()==='nid')setTimeout(go,300);}
+ title();window.addEventListener('hashchange',title);setTimeout(title,1500);
+ fetch('/'+tok+'/home_data').then(function(r){return r.json()}).then(function(d){
+  if(d&&d.cid){var k=document.querySelector('#knav a[data-p="atelier"]');if(k)k.href='/'+tok+'/atelier?c='+encodeURIComponent(d.cid);}
+  /* each robot has its own performance: the robot running on the account is the first card of "Mes robots" */
+  if(sub==='mesrobots'&&d&&d.account&&d.account.auto){var c=document.createElement('a');c.href='/'+tok+'/?classic=1#hist';
+   c.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 16px 4px;padding:14px 16px;border-radius:18px;background:var(--surface);border:1px solid rgba(46,204,113,.35);text-decoration:none;color:var(--text);font-family:Inter,system-ui,sans-serif';
+   c.innerHTML='<span><small style="display:block;color:var(--muted);font-size:12px">'+T('Sur ton compte réel','On your live account')+'</small><b style="font-size:16px">'+(d.account.robot||'L’Owl')+' · '+T('actif','running')+'</b></span><span style="color:#2ecc71;font-weight:700;font-size:14px">'+T('Performance ›','Performance ›')+'</span>';
+   var tgt=document.querySelector('main')||document.querySelector('.wrap')||document.body;tgt.insertBefore(c,tgt.firstChild);}
+ }).catch(function(){});
 }catch(e){}})();</script>

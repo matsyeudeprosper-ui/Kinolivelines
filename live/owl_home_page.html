@@ -125,7 +125,7 @@ async function load(){
  document.getElementById('acct').innerHTML=A?'<h2><span>'+T('Ton compte','Your account')+'</span><a href="'+B+'?classic=1">'+T('Tableau de bord','Dashboard')+'</a></h2>'+
   '<a class="card" href="'+B+'?classic=1"><div class="row"><div><div class="rs">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+'</div>'+
   '<div style="font-size:26px;font-weight:800;letter-spacing:-.02em">'+Number(A.balance||0).toFixed(2)+' $</div>'+
-  '<div class="rs">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today||0)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week||0)+'</span>'+
+  '<div class="rs">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today||0)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week||0)+'</span>'+' · '+T('Mois ','Month ')+'<span class="'+((A.month||0)>=0?'pos':'neg')+'">'+money(A.month||0)+'</span>'+
   (A.open?' · '+A.open+' '+T('trade(s) ouvert(s)','open trade(s)'):'')+'</div></div>'+
   (A.robot&&A.auto?'<span class="tag on">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div></a>'+SC:'';
  document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');

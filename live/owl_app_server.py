@@ -34017,7 +34017,7 @@ class H(BaseHTTPRequestHandler):
             if ctype.startswith("text/html"):
                 _pp = [x for x in self.path.split("?")[0].split("/") if x]
                 _pg = _pp[1] if len(_pp) > 1 else ""
-                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app", "home") and _pg not in NAV_PAGES and not _pg.startswith("chat_"):
+                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app") and not _pg.startswith("chat_"):
                     _uk = user_by_token(_pp[0])
                     if _uk and kino_ok(_uk):
                         _b = body.decode("utf-8") if isinstance(body, bytes) else body
@@ -36770,7 +36770,9 @@ class H(BaseHTTPRequestHandler):
             if (is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"):
                 self._send(open(os.path.join(DIR, "owl_tests_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
-                self.send_error(404)
+                self.send_response(302)              # 2026-11-02: not a raw 404 - the plans, where Tests come with Pro
+                self.send_header("Location", "/%s/?classic=1#offres" % parts[0])
+                self.end_headers()
         elif sub in ("strategies", "strategies_data", "robots", "equipe", "robots_data", "team_data"):
             # 2026-10-12 (owner): "Strategies" - every strategy in one catalog. Strategie members and the
             # admin only (the numbers per account and the research are the Strategie offer)
