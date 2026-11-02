@@ -64,9 +64,11 @@ body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bot
 #knav .kd{width:24px;height:24px;border-radius:8px;background:var(--kgrad);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
 /* 2026-11-02 (owner: build + test first): Kino, where every robot starts, is the raised button in the middle */
 #knav a.kmid{margin-top:-22px}
-#knav a.kmid .kd{width:56px;height:56px;border-radius:50%;background:transparent!important;padding:0;filter:drop-shadow(0 8px 18px rgba(124,108,255,.55));font-size:0;box-shadow:0 10px 26px rgba(124,108,255,.45),0 0 0 5px var(--bg)}
+/* 2026-11-02 (owner: "the transparency shows things through"): a solid dark disc, a fine violet ring, a soft glow - the presence glows inside */
+#knav a.kmid .kd{width:58px;height:58px;border-radius:50%;padding:0;font-size:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#18203a 0%,#0d121e 62%,#0a0e16 100%)!important;border:1px solid rgba(157,146,255,.45);box-shadow:0 0 0 5px var(--bg),0 10px 28px rgba(124,108,255,.38),inset 0 0 18px rgba(124,108,255,.18)}
+:root[data-theme="light"] #knav a.kmid .kd{background:radial-gradient(circle at 50% 40%,#232b47 0%,#121828 70%)!important}
 #knav a.kmid.on:after{display:none}
-#knav a.kmid .kd svg,#knav a.kmid .kd canvas{width:56px!important;height:56px!important}
+#knav a.kmid .kd svg,#knav a.kmid .kd canvas{width:50px!important;height:50px!important}
 .k-folded{display:none!important}
 #owlnav{display:none!important}   /* the old pages' own bottom bars: the shell's menu replaces them */
 /* a page's own sticky strip (Patrimoine tabs) sticks under the bar, not behind it; its repeated title and back arrow go */
