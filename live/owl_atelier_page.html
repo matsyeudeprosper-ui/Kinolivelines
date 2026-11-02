@@ -1041,7 +1041,7 @@ try{document.fonts.ready.then(()=>{const el=$('chat');if(!el.querySelector('.hel
  else if(q.get('brain'))start(undefined,q.get('brain'));
  else{let L=[];try{L=(await getJ('chat_list')).chats||[];}catch(e){}if(L.length)openChat(L[0].id);else start();}
  // 2026-10-19 (owner item 1): arrived from a long-press "Demande à Kino" somewhere in the app
- if(q.get('ask')){const ask=q.get('ask');history.replaceState(null,'',location.pathname+(CID?'?c='+CID:''));let n=0;const w=setInterval(()=>{n++;if(CID&&C&&C.status!=='thinking'){clearInterval(w);$('tx').value=ask;send();}else if(n>40)clearInterval(w);},300);}
+ if(q.get('ask')){const ask=q.get('ask');history.replaceState(null,'',location.pathname+(CID?'?c='+CID:''));let n=0;const w=setInterval(()=>{n++;if(CID&&C&&C.status!=='thinking'){clearInterval(w);$('tx').value=ask;try{autosize();}catch(e){}$('tx').focus();}else if(n>40)clearInterval(w);},300);}   /* 2026-11-02 09:06 (watch): a shortcut button only FILLS the box - the owner had to write "Ignore" after a tap Kino already acted on */
  getJ('robots_data').then(j=>{PIECES=((j.builder||{}).pieces)||[];const owl=((j.builder||{}).robots||[]).find(r=>r.id==='owl');OWL=(owl&&(owl.resolved||owl.parts))||{};if(C)paintBP();}).catch(()=>{});})();
 
 /* ---------- 2026-10-20: "still here" - while the chat is open and quiet, a tiny ping every 6 s; reload only on news

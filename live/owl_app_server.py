@@ -21058,8 +21058,12 @@ def _chat_build(cid, user):
                     # exit and no reversal. He now hears whether anything changed, and the robot as it really is, to compare.
                     try:
                         _rb = c.get("robot") or {}
-                        _now_rules = "entry piece %s; stop piece %s; exit: %s; lot: %s; recovery: %s; filters: %s" % (
-                            (_rb.get("entry") or {}).get("use"), (_rb.get("stop") or {}).get("use"),
+                        # 2026-11-02 09:09 (watch): a formula piece has no "use" - this said "entry piece None; stop piece None" and
+                        # Kino told the owner his robot had no entry and no stop, then corrected himself three times
+                        _pc = (lambda x: ("%s (%s)" % (x.get("name") or x.get("use"), str(x.get("plain_en") or x.get("plain") or "")[:160])
+                                          if (x.get("name") or x.get("plain")) else str(x.get("use"))) if isinstance(x, dict) and x else "MISSING")
+                        _now_rules = "entry: %s; stop: %s; exit: %s; lot: %s; recovery: %s; filters: %s" % (
+                            _pc(_rb.get("entry")), _pc(_rb.get("stop")),
                             (_rb.get("exit") or {}).get("plain_en") or (_rb.get("exit") or {}).get("plain") or "-",
                             (_rb.get("money") or {}).get("lot") or (_rb.get("money") or {}).get("use"),
                             ("%s (no effect: with the 'simple' money it is never read - not a gap from his rule)" % (_rb.get("recovery") or {}).get("use"))
