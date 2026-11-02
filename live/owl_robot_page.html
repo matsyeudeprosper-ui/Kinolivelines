@@ -90,6 +90,49 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
 .skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}@keyframes sk{50%{opacity:.5}}
 .links{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
 .links a{padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600;text-align:center;color:var(--text2)}
+/* tabs, account performance, live card (2026-11-02 merge of the old dashboard) */
+.hero.slim{padding:16px 16px 14px}
+.tabs{display:flex;gap:4px;margin:12px 0 14px;padding:4px;border-radius:14px;background:var(--surface);border:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:calc(62px + env(safe-area-inset-top,0px));z-index:5}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 1 0;min-width:0;border:0;background:transparent;color:var(--muted);font:600 12.5px Inter,system-ui,sans-serif;padding:9px 4px;overflow:hidden;text-overflow:ellipsis;border-radius:10px;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.cta.ghost{background:var(--surface3);box-shadow:none;color:var(--text)}
+.pct{font-size:15px;font-weight:700;letter-spacing:0;opacity:.85}
+h2 a{cursor:pointer}
+.bars{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;align-items:flex-end}.bars::-webkit-scrollbar{display:none}
+.bar{flex:1 0 54px;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid transparent;background:transparent;border-radius:12px;padding:8px 2px;cursor:pointer;color:inherit;font:inherit}
+.bar.on{background:var(--surface2);border-color:var(--border2)}
+.bv{font-size:11.5px;font-weight:700}.bt{height:66px;display:flex;align-items:flex-end}.bt i{display:block;width:18px;border-radius:6px 6px 3px 3px}
+.bt i.u{background:linear-gradient(#2ecc71,#2ecc7155)}.bt i.d{background:linear-gradient(#ff6b6b55,#ff6b6b)}
+.bl{font-size:11.5px;color:var(--text2);text-transform:capitalize}.bs{font-size:10.5px;color:var(--muted)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal em{font-style:normal;font-size:10.5px;color:var(--muted);text-align:center;font-weight:700}
+.cd{aspect-ratio:1;border-radius:9px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;font-style:normal;position:relative}
+.cd.e{background:transparent}.cd b{font-size:10.5px;color:var(--muted);font-weight:600}.cd s{text-decoration:none;font-size:10px;font-weight:700}
+.cd.u{background:rgba(46,204,113,calc(var(--a)*.32))}.cd.u s{color:#7ff0b0}.cd.d{background:rgba(255,107,107,calc(var(--a)*.32))}.cd.d s{color:#ffb0b0}
+.calk{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;font-size:12px;color:var(--muted)}.calk i{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:5px}.calk i.u{background:var(--up)}.calk i.d{background:var(--down)}
+.dayr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}.dayr:last-child{border-bottom:0}
+.dayr span:first-child{width:72px;color:var(--text2);text-transform:capitalize}.dt{flex:1;display:flex;gap:3px;flex-wrap:wrap}.dt i{width:8px;height:8px;border-radius:50%}.dt i.u{background:var(--up)}.dt i.d{background:var(--down)}
+.live .lst{display:flex;gap:14px;align-items:flex-start}.live h3{margin:0 0 4px;font-size:21px;letter-spacing:-.02em}.live p{margin:0;color:var(--text2);font-size:14px}
+.orb{flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--surface2)}.orb i{width:18px;height:18px;border-radius:50%;background:var(--muted)}
+.orb.gr i{background:var(--up);box-shadow:0 0 18px #2ecc71aa}.orb.or i{background:var(--warn);box-shadow:0 0 18px #e8c55a88}.orb.bl i{background:var(--accent2);box-shadow:0 0 18px #22d3ee88}.orb.rd i{background:var(--down)}
+.rail2{margin-top:16px;padding:14px;border-radius:16px;background:var(--surface2);border:1px solid var(--border)}
+.rt{font-size:13.5px;color:var(--text2);margin-bottom:14px}.rl{position:relative;height:8px;border-radius:99px;background:var(--surface3);margin:18px 4px 10px}
+.rl b{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#2ecc7140,var(--up))}
+.rl i{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #ffffff22}
+.rl i em{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-style:normal;font-size:12px;font-weight:800;background:#fff;color:#0b0f14;padding:2px 7px;border-radius:7px;white-space:nowrap}
+.re{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--muted)}.re b{display:block;color:var(--text);font-size:14px}
+.ckh{display:flex;justify-content:space-between;margin:18px 0 8px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}.ckh b{color:var(--text);letter-spacing:0;text-transform:none;font-size:13px}
+.ckb{display:flex;gap:4px;margin-bottom:10px}.ckb i{flex:1;height:5px;border-radius:9px;background:#e8c55a66}.ckb i.ok{background:var(--up)}
+.cks{display:grid;gap:6px}.ck{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:13px;background:var(--surface2);border:1px solid var(--border)}
+.ck>span{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800}
+.ck.ok>span{background:#2ecc7122;color:var(--up)}.ck.wt{border-color:#e8c55a55}.ck.wt>span{background:#e8c55a22;color:var(--warn)}
+.ck b{display:block;font-size:13.5px}.ck small{font-size:12px;color:var(--muted)}
+.today{margin-top:12px;font-size:13px;color:var(--text2)}
+.links.two{grid-template-columns:1fr 1fr}
+.vr{display:grid;grid-template-columns:36px 1fr auto;gap:4px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.vr:last-child{border-bottom:0}
+.vn{font-size:12px;font-weight:700;color:var(--text2)}.vb{height:6px;border-radius:9px;background:var(--surface3);overflow:hidden}.vb i{display:block;height:100%}.vb i.u{background:var(--up)}.vb i.d{background:var(--down)}
+.vr b{font-size:13.5px}.vr small{grid-column:2/4;font-size:11.5px;color:var(--muted);margin-top:-2px}
 </style></head><body>
 <div class="wrap" id="app"><div class="hero"><div class="nm skel" style="width:60%">…</div><div class="sub skel" style="width:40%;margin-top:8px">…</div><div class="steps skel" style="height:40px"></div></div></div>
 <script>
@@ -108,32 +151,127 @@ function spark(cv){if(!cv||cv.length<2)return '';const W=320,H=64,p=3,mn=Math.mi
  return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><line x1="0" x2="'+W+'" y1="'+z+'" y2="'+z+'" stroke="currentColor" stroke-opacity=".15" stroke-dasharray="3 4"/>'+
   '<path d="'+l+'" fill="none" stroke="'+c+'" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';}
 const SLOTF=()=>({entry:T('Entrée','Entry'),stop:'Stop',exit:T('Sortie','Exit'),money:T('Taille','Size'),filters:T('Filtres','Filters'),recovery:T('Rattrapage','Recovery'),after_loss:T('Après un stop','After a stop')});
-let SHOWALL=/^#v/.test(location.hash);   // opened on one version: the whole story, so it is there
+/* 2026-11-02 (owner: "each robot should have its own submenu of performance" / "the old dashboard and the new need to
+   merge, only the most important features, the best design"): one robot = one page with tabs. A robot trading on the
+   account (the Owl) gets the old dashboard's best parts here, redrawn: its performance (since start, months, calendar,
+   days) and what it sees right now (its state, the trigger, its checks). Built robots: tests, versions, story. */
+let SHOWALL=/^#v/.test(location.hash);
+let D=null,A=null,TAB=(new URLSearchParams(location.search).get('tab'))||(/^#v/.test(location.hash)?'story':'')||'over';
 function talk(d,ask){return B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):'')+(ask?((d.cid?'&':'?')+'ask='+encodeURIComponent(ask)):'');}
-function render(d){const app=document.getElementById('app');EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
- if(!d.ok){app.innerHTML='<div class="card empty">'+(d.err==='unknown'?T('Pas encore de robot. Raconte ta méthode à Kino : il le construit avec toi.','No robot yet. Tell Kino your method: he builds it with you.'):T('Ce robot n’est pas à toi.','This robot is not yours.'))+
-  '<div style="margin-top:16px"><a class="cta" href="'+B+'atelier">'+T('Parler à Kino','Talk to Kino')+' →</a></div></div>';return;}
- try{document.body.dataset.ktitle=d.name;window.dispatchEvent(new HashChangeEvent('hashchange'));}catch(e){}
- const R=d.result,st=d.running&&!R?['run',T('Test en cours','Testing')]:d.live?['ok',T('En vrai','Live')]:R?(Number(R.net)>=0?['ok',T('Testé · gagne','Tested · wins')]:['bad',T('Testé · perd','Tested · loses')]):['',T('Pas encore testé','Not tested yet')];
- const N=d.next||{};
- let h='<div class="hero"><div class="hrow"><div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg></div>'+
-  '<div style="min-width:0"><div class="nm">'+esc(d.name)+'</div><div class="sub">'+esc(d.market)+' · '+T('version ','version ')+esc(d.rev)+' · '+T('construit avec Kino','built with Kino')+'</div>'+
-  '<div style="margin-top:8px"><span class="pill '+st[0]+'"><i></i>'+esc(st[1])+'</span></div></div></div>'+
-  '<div class="steps">'+d.steps.map((s,i)=>'<div class="sp '+(s.done?'done':i===d.step?'cur':'')+'"><b>'+(s.done?'✓':i+1)+'</b>'+esc(s.label)+'</div>').join('')+'</div>'+
+function tabsOf(d){const acc=d.kind==='account';
+ return [['over',T('Aperçu','Overview')],['perf',T('Performance','Performance')]].concat(acc?[['live',T('En direct','Live')],['tests',T('Preuves','Proof')]]:[['tests',T('Tests','Tests')],['story',T('Histoire','Story')]]);}
+function hero(d){const R=d.result,acc=d.kind==='account';
+ const st=acc?(d.live?['ok',T('Trade sur ton compte','Trading on your account')]:['',T('En pause sur ton compte','Paused on your account')])
+  :d.running&&!R?['run',T('Test en cours','Testing')]:d.live?['ok',T('En vrai','Live')]:R?(Number(R.net)>=0?['ok',T('Testé · gagne','Tested · wins')]:['bad',T('Testé · perd','Tested · loses')]):['',T('Pas encore testé','Not tested yet')];
+ return '<div class="hero slim"><div class="hrow"><div class="ri">'+(acc?'<span style="font-size:24px">🦉</span>':'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>')+'</div>'+
+  '<div style="min-width:0"><div class="nm">'+esc(d.name)+'</div><div class="sub">'+esc(d.market)+(acc?' · '+T('sur ton compte réel','on your live account'):' · v'+esc(d.rev)+' · '+T('construit avec Kino','built with Kino'))+'</div>'+
+  '<div style="margin-top:8px"><span class="pill '+st[0]+'"><i></i>'+esc(st[1])+'</span></div></div></div></div>'+
+  '<div class="tabs" role="tablist">'+tabsOf(d).map(x=>'<button role="tab" data-t="'+x[0]+'" class="'+(TAB===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>';}
+function overview(d){const N=d.next||{},R=d.result,acc=d.kind==='account';
+ let h='<div class="card"><div class="steps">'+d.steps.map((s,i)=>'<div class="sp '+(s.done?'done':i===d.step?'cur':'')+'"><b>'+(s.done?'✓':i+1)+'</b>'+esc(s.label)+'</div>').join('')+'</div>'+
   '<div class="next"><small>'+T('À faire maintenant','Next step')+'</small><p>'+(N.k==='wait'?'<span class="spin"></span>':'')+esc(N.text)+'</p>'+
-  (N.k==='wait'?'<a class="cta" style="background:var(--surface3);box-shadow:none;color:var(--text)" href="'+talk(d,'')+'">'+T('Ouvrir la conversation','Open the conversation')+'</a>'
+  (N.k==='wait'?'<a class="cta ghost" href="'+talk(d,'')+'">'+T('Ouvrir la conversation','Open the conversation')+'</a>'
    :'<a class="cta" href="'+talk(d,N.ask)+'">'+(N.k==='vote'?T('Voir la semaine avec Kino','See the week with Kino'):T('En parler à Kino','Talk it over with Kino'))+' →</a>')+'</div></div>';
- if(R){h+='<h2><span>'+T('Dernier test · version ','Latest test · version ')+esc(R.rev||d.rev)+'</span><a href="'+B+'tests">'+T('Détails','Details')+'</a></h2><div class="card"><div class="res"><div><div class="big num '+cls(R.net)+'">'+money(R.net)+'</div>'+
-  '<div class="sub">'+T('sur ','over ')+Math.round(R.days||0)+T(' jours de vrais prix',' days of real prices')+'</div></div></div>'+spark(R.curve)+
+ if(acc&&A)h+=accSummary();
+ else if(R)h+=resultCard(R,d);
+ if(d.rules&&d.rules.length)h+='<h2><span>'+T('Ses règles, en mots simples','Its rules, in plain words')+'</span></h2><div class="card">'+d.rules.map(r=>'<div class="rule"><small>'+esc(r.k)+'</small><div>'+esc(r.v)+'</div></div>').join('')+'</div>';
+ return h;}
+function resultCard(R,d){return '<h2><span>'+T('Dernier test · version ','Latest test · version ')+esc(R.rev||d.rev)+'</span></h2><div class="card"><div class="big num '+cls(R.net)+'">'+money(R.net)+'</div>'+
+  '<div class="sub">'+T('sur ','over ')+Math.round(R.days||0)+T(' jours de vrais prix',' days of real prices')+'</div>'+spark(R.curve)+
   '<div class="kv"><div><b class="num">'+(R.trades||0)+'</b><span>trades</span></div><div><b class="num">'+(R.win_rate!=null?Math.round(100*R.win_rate)+' %':'—')+'</b><span>'+T('gagnants','winners')+'</span></div>'+
   '<div><b class="num neg">'+(R.dip!=null?'−$'+Math.abs(R.dip).toFixed(0):'—')+'</b><span>'+T('pire creux','worst dip')+'</span></div></div>'+
   '<div class="note">'+T('Un test sur le passé, pas une promesse. Ton compte n’a pas bougé.','A test on the past, not a promise. Your account did not move.')+'</div></div>';}
- if(d.rules&&d.rules.length)h+='<h2><span>'+T('Ses règles, en mots simples','Its rules, in plain words')+'</span></h2><div class="card">'+d.rules.map(r=>'<div class="rule"><small>'+esc(r.k)+'</small><div>'+esc(r.v)+'</div></div>').join('')+'</div>';
- const TL=d.timeline||[];
- h+='<h2><span>'+T('Son histoire','Its story')+' · '+d.versions+' '+T('versions','versions')+'</span></h2>';
- if(!TL.length)h+='<div class="card empty">'+T('Son histoire commence avec ta prochaine conversation avec Kino.','Its story starts with your next talk with Kino.')+'</div>';
- else{const L=SHOWALL?TL:TL.slice(0,12);
-  h+='<div class="tl">'+L.map(e=>{
+/* ---------- the account robot: numbers from the account (/api) ---------- */
+function monthNet(ym){return ((A.months||{})[ym]||[]).reduce((a,x)=>a+(+x.p||0),0);}
+function accSummary(){const S=A.since_start||{},bal=+A.balance||0,start=bal-(+S.net||0),wr=S.n?Math.round(100*(S.won||0)/S.n):null;
+ return '<h2><span>'+T('Sur ton compte','On your account')+'</span><a data-go="perf">'+T('Performance ›','Performance ›')+'</a></h2><div class="card"><div class="big num '+cls(S.net)+'">'+money(S.net)+(start>0?' <small class="pct">'+(S.net>=0?'+':'−')+Math.abs(100*S.net/start).toFixed(1)+' %</small>':'')+'</div>'+
+  '<div class="sub">'+T('depuis le début · ','since the start · ')+(S.days||0)+T(' jours',' days')+'</div>'+spark(A.curve30)+
+  '<div class="kv"><div><b class="num '+cls(A.month)+'">'+money(A.month)+'</b><span>'+T('ce mois','this month')+'</span></div><div><b class="num '+cls(A.today)+'">'+money(A.today)+'</b><span>'+T('aujourd’hui','today')+'</span></div>'+
+  '<div><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('trades gagnants','winning trades')+'</span></div></div></div>';}
+function perfAccount(){const S=A.since_start||{},ms=A.month_stats||{},M=Object.keys(A.months||{}).sort();
+ const ym=perfAccount.ym&&M.indexOf(perfAccount.ym)>=0?perfAccount.ym:M[M.length-1];
+ let h=accSummary().replace(/<h2>.*?<\/h2>/,'<h2><span>'+T('Depuis le début','Since the start')+'</span></h2>');
+ // the months, side by side
+ if(M.length){const vals=M.map(monthNet),mx=Math.max(1,...vals.map(Math.abs));
+  h+='<h2><span>'+T('Mois par mois','Month by month')+'</span></h2><div class="card"><div class="bars">'+M.map((k,i)=>{const v=vals[i],st=ms[k]||{};
+   return '<button class="bar'+(k===ym?' on':'')+'" data-ym="'+k+'"><span class="bv num '+cls(v)+'">'+money(v)+'</span><span class="bt"><i class="'+(v>=0?'u':'d')+'" style="height:'+Math.max(4,Math.round(64*Math.abs(v)/mx))+'px"></i></span>'+
+    '<span class="bl">'+new Date(k+'-15').toLocaleDateString(EN?'en':'fr',{month:'short'})+'</span>'+(st.n?'<span class="bs">'+Math.round(100*(st.won||0)/st.n)+' %</span>':'')+'</button>';}).join('')+'</div></div>';}
+ // the month's calendar
+ if(ym){const L=(A.months||{})[ym]||[],by={};L.forEach(x=>by[String(x.d).slice(0,10)]=+x.p||0);
+  const y=+ym.slice(0,4),m=+ym.slice(5,7),first=new Date(y,m-1,1),nd=new Date(y,m,0).getDate(),off=(first.getDay()+6)%7,st=ms[ym]||{};
+  const vals=Object.values(by),mx=Math.max(1,...vals.map(Math.abs)),green=vals.filter(v=>v>0).length,red=vals.filter(v=>v<0).length;
+  let g='';for(let i=0;i<off;i++)g+='<i class="cd e"></i>';
+  for(let dd=1;dd<=nd;dd++){const k=ym+'-'+String(dd).padStart(2,'0'),v=by[k];
+   g+='<i class="cd'+(v==null?'':(v>=0?' u':' d'))+'" style="'+(v==null?'':'--a:'+(0.25+0.75*Math.abs(v)/mx).toFixed(2))+'" title="'+k+(v==null?'':' '+money(v))+'"><b>'+dd+'</b>'+(v==null?'':'<s>'+(v>=0?'+':'−')+Math.abs(v).toFixed(0)+'</s>')+'</i>';}
+  h+='<h2><span>'+new Date(ym+'-15').toLocaleDateString(EN?'en':'fr',{month:'long',year:'numeric'})+'</span><span class="num '+cls(monthNet(ym))+'" style="text-transform:none;letter-spacing:0">'+money(monthNet(ym))+'</span></h2>'+
+   '<div class="card"><div class="cal">'+['L','M','M','J','V','S','D'].map(x=>'<em>'+(EN?{L:'M',M:'T',J:'T',V:'F',S:'S',D:'S'}[x]||x:x)+'</em>').join('')+g+'</div>'+
+   '<div class="calk"><span><i class="u"></i>'+green+' '+T('jours verts','green days')+'</span><span><i class="d"></i>'+red+' '+T('rouges','red')+'</span>'+(st.n?'<span>'+st.n+' trades · '+Math.round(100*(st.won||0)/st.n)+' % '+T('gagnants','winners')+'</span>':'')+(st.streak?'<span>'+T('pire série ','worst streak ')+st.streak+'</span>':'')+'</div></div>';}
+ // the latest days
+ const DT=A.day_trades||{},days=Object.keys(DT).slice(-7).reverse();
+ if(days.length)h+='<h2><span>'+T('Derniers jours','Latest days')+'</span></h2><div class="card">'+days.map(k=>{const L=DT[k]||[],n=L.reduce((a,x)=>a+(+x.p||0),0);
+  return '<div class="dayr"><span>'+esc(k)+'</span><span class="dt">'+L.map(x=>'<i class="'+((+x.p)>=0?'u':'d')+'" title="'+esc(x.t)+' '+money(+x.p)+'"></i>').join('')+'</span><b class="num '+cls(n)+'">'+money(n)+'</b></div>';}).join('')+'</div>';
+ h+='<div class="note" style="margin:6px 4px 0">'+T('Ce sont les vrais résultats de ton compte, frais du courtier compris.','These are your account’s real results, broker costs included.')+'</div>';
+ return h;}
+/* what it sees right now - the old "En direct" card, its state in the same words as before */
+function mkind(){const ms=A.meteo_struct||{},g=A.gates||{},gN=g.nervosity!==false,gM=g.movement!==false;
+ const mv=ms.moves_2h!==undefined?ms.moves_2h:(ms.flips_2h||0),rv=(ms.vol_now&&ms.vol_ref)?ms.vol_now/Math.max(ms.vol_ref,1):1,nb=ms.int_brk_1h||0;
+ const storm=rv>=1.85,bad=storm||(gN&&rv>1.0),intRule=!!ms.int_trend&&!!ms.internal_entries,mvOk=gM?(intRule?nb>=1:mv>=1):true;
+ return storm?'nervous':((!gN&&!gM)?'nogate':(bad?(rv<1.30?'brisk':'nervous'):(!mvOk?'none':(intRule?(ms.int_state||'ready'):'ready'))));}
+function todayN(){const n0=new Date(),dd=String(n0.getDate()).padStart(2,'0')+'/'+String(n0.getMonth()+1).padStart(2,'0'),k=Object.keys(A.day_trades||{}).find(x=>x.slice(-5)===dd);return k?(A.day_trades[k]||[]):[];}
+function m15(){const r=((A.tf_align||{}).rows||[]).find(x=>x.k==='M15');return r?r.trend:0;}
+function liveState(){const ms=A.meteo_struct||{},k=mkind(),lg=A.ledger||{},open=A.open_list||[],gate=!!ms.pb_gate,t=ms.pb_trend;
+ const side=gate?(t===1?T('un achat','a buy'):(t===-1?T('une vente','a sell'):T('un trade','a trade'))):T('un trade','a trade');
+ const trend=t===1?T('la tendance est en hausse','the trend is up'):(t===-1?T('la tendance est en baisse','the trend is down'):'');
+ const cap=(D&&D.max_day)||3,nT=todayN().length;
+ if(open.length){const pl=open.reduce((a,p)=>a+(+p.pl||0),0);return {c:'gr',t:T('En trade','In a trade'),pl:pl,s:(open[0].d==='A'?T('Achat','Buy'):T('Vente','Sell'))+T(' en cours : il laisse courir jusqu’à l’objectif ou au stop.',' running: it lets it run to the target or the stop.'),open:open};}
+ if(A.bot_killed)return {c:'rd',t:T('Arrêté','Stopped'),s:T('La ligne d’arrêt du compte est atteinte : il ne prend plus de trade.','The account’s stop line was reached: it takes no more trades.')};
+ if(A.trading_paused)return {c:'gy',t:T('En pause','Paused'),s:T('Il est en pause sur ce compte.','It is paused on this account.')};
+ if(D.max_day&&nT>=D.max_day)return {c:'gy',t:T('Au repos','Resting'),s:T('Il a pris ses '+nT+' trades du jour : il reprend demain.','It took its '+nT+' trades today: it starts again tomorrow.')};
+ if(lg.day_capped)return {c:'gy',t:T('Au repos','Resting'),s:T('L’objectif du jour est atteint. Il reprend demain.','The day’s target is reached. It starts again tomorrow.')};
+ if(gate&&t!==1&&t!==-1)return {c:'or',t:T('Il attend','Waiting'),s:T('Pas de tendance claire : il attend qu’un sens se dessine.','No clear trend: it waits for a direction.')};
+ if(gate&&ms.pb_side==='wrong')return {c:'or',t:T('Il attend','Waiting'),s:T('Le prix est du mauvais côté de sa dernière cassure : il attend qu’il repasse — ','Price is on the wrong side of its last break: it waits for it to come back — ')+trend+'.'};
+ if(k==='nervous'||k==='brisk')return {c:'or',t:T('Il se méfie','Cautious'),s:k==='nervous'?T('Le marché va trop vite : il reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: it stays out until it calms down.'):T('Le marché est agité : il attend que ça se calme.','The market is choppy: it waits for it to calm down.')};
+ if(k==='none')return {c:'or',t:T('Il attend','Waiting'),s:T('Il cherche ','It looks for ')+'<b>'+side+'</b>'+T(' dès que le marché se réveille.',' as soon as the market wakes up.')};
+ if(D.m15&&m15()&&t&&m15()!==t)return {c:'or',t:T('Il attend','Waiting'),s:T('La tendance 15 minutes est contre lui : il attend qu’elle se remette dans son sens.','The 15-minute trend is against it: it waits for it to turn its way.')};
+ return {c:'bl',t:T('Prêt','Ready'),s:T('Tout est réuni : il entrera dès qu’une cassure confirme ','All is in place: it enters as soon as a break confirms ')+'<b>'+side+'</b>.'};}
+function fmtN(v){return Math.round(+v).toLocaleString(EN?'en':'fr');}
+function liveTab(){const S=liveState(),ms=A.meteo_struct||{},t=ms.pb_trend,k=mkind(),nT=todayN().length,net=todayN().reduce((a,x)=>a+(+x.p||0),0);
+ let h='<div class="card live"><div class="lst"><span class="orb '+S.c+'"><i></i></span><div style="min-width:0"><h3>'+esc(S.t)+(S.pl!=null?' · <span class="num '+cls(S.pl)+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
+ if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
+  if(e&&tp&&sl){const lo=Math.min(sl,tp),hi=Math.max(sl,tp),pos=Math.max(2,Math.min(98,(cur-lo)/((hi-lo)||1)*100));
+   h+='<div class="rail2"><div class="rl"><i style="left:'+pos.toFixed(1)+'%"></i></div><div class="re"><span>'+(dir===1?T('stop ','stop ')+fmtN(sl):T('objectif ','target ')+fmtN(tp))+'</span><span>'+T('entrée ','entry ')+fmtN(e)+'</span><span>'+(dir===1?T('objectif ','target ')+fmtN(tp):T('stop ','stop ')+fmtN(sl))+'</span></div></div>';}}
+ else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(t===1||t===-1)&&S.c!=='gy'&&S.c!=='rd'){
+  const up=t===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,pos=Math.max(2,Math.min(98,(ms.px-lo)/((hi-lo)||1)*100));
+  h+='<div class="rail2"><div class="rt">'+T('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T('au-dessus de ','above '):T('en dessous de ','below '))+fmtN(ms.next_bos)+'</b> · '+T('encore ','still ')+fmtN(Math.abs(ms.next_bos-ms.px))+' pts</div>'+
+   '<div class="rl go"><b style="width:'+(up?pos:100-pos).toFixed(1)+'%;'+(up?'left:0':'right:0')+'"></b><i style="left:'+pos.toFixed(1)+'%"><em>'+fmtN(ms.px)+'</em></i></div>'+
+   '<div class="re"><span>'+(up?T('dernière cassure','last break'):T('déclencheur','trigger'))+'<b>'+fmtN(lo)+'</b></span><span style="text-align:right">'+(up?T('déclencheur','trigger'):T('dernière cassure','last break'))+'<b>'+fmtN(hi)+'</b></span></div></div>';}
+ const side=t===1?T('que des achats','only buys'):T('que des ventes','only sells'),CK=[
+  {ok:t===1||t===-1,nm:T('Sens clair','Clear trend'),why:t===1||t===-1?T('Tendance de fond en '+(t===1?'hausse':'baisse')+' : '+side+'.','Background trend '+(t===1?'up':'down')+': '+side+'.'):T('Pas encore de tendance de fond.','No background trend yet.')},
+  {ok:!ms.pb_gate||ms.pb_side!=='wrong',nm:T('Bon côté','Right side'),why:T('Le prix doit être du bon côté de sa dernière cassure.','Price must be on the right side of its last break.')},
+  {ok:k!=='nervous'&&k!=='brisk',nm:T('Calme','Calm'),why:T('Pas de tempête sur le marché.','No storm on the market.')},
+  {ok:k!=='none',nm:T('Éveillé','Awake'),why:T('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.')}];
+ if(D.m15)CK.push({ok:!m15()||!t||m15()===t,nm:T('15 min dans le sens','15 min aligned'),why:T('La tendance 15 minutes va dans le sens du trade (filtre du 2 nov.).','The 15-minute trend goes the trade’s way (filter of 2 Nov).')});
+ if(D.max_day)CK.push({ok:nT<D.max_day,nm:T('Trades du jour ','Trades today ')+nT+'/'+D.max_day,why:T('Au plus '+D.max_day+' trades par jour (filtre du 2 nov.).','At most '+D.max_day+' trades a day (filter of 2 Nov).')});
+ const met=CK.filter(x=>x.ok).length;
+ h+='<div class="ckh"><span>'+T('Ce qu’il vérifie','What it checks')+'</span><b>'+(met===CK.length?T('Tout est réuni','All met'):met+' / '+CK.length)+'</b></div><div class="ckb">'+CK.map(x=>'<i class="'+(x.ok?'ok':'')+'"></i>').join('')+'</div>'+
+  '<div class="cks">'+CK.slice().sort((a,b)=>a.ok-b.ok).map(x=>'<div class="ck '+(x.ok?'ok':'wt')+'"><span>'+(x.ok?'✓':'…')+'</span><div><b>'+esc(x.nm)+'</b><small>'+esc(x.why)+'</small></div></div>').join('')+'</div>'+
+  '<div class="today">'+(nT?T('Aujourd’hui : ','Today: ')+nT+' trade'+(nT>1?'s':'')+' · <b class="num '+cls(net)+'">'+money(net)+'</b>':T('Aujourd’hui : pas encore de trade fermé.','Today: no closed trade yet.'))+'</div></div>'+
+  '<div class="links two"><a href="'+B+'chart">'+T('Voir le graphique','See the chart')+'</a><a href="'+talk(D,T('Que vois-tu sur le marché en ce moment ?','What do you see on the market right now?'))+'">'+T('Demander à Kino','Ask Kino')+'</a></div>';
+ return h;}
+function proofTab(){return '<div class="card"><div class="rule"><small>'+T('Le compte témoin','The witness account')+'</small><div>'+T('Le même robot sur un vrai compte suivi depuis septembre, avec ses frais.','The same robot on a real account followed since September, with its costs.')+'</div></div>'+
+  '<div class="rule"><small>'+T('Le test sur 10 mois','The 10-month test')+'</small><div>'+T('Avec les deux filtres du 2 nov. : +94,92 $ sur 10 mois, 2 mois en perte sur 10 (sans filtre : +4,96 $, 6 mois en perte).','With the two filters of 2 Nov: +$94.92 over 10 months, 2 losing months out of 10 (without: +$4.96, 6 losing months).')+'</div></div></div>'+
+  '<div class="links two"><a href="'+B+'rentabilite">'+T('La preuve complète','The full proof')+'</a><a href="'+B+'tests">'+T('Tous les tests','All tests')+'</a></div>';}
+/* ---------- built robots: tests and story ---------- */
+function testsTab(d){const RS=(d.timeline||[]).filter(e=>e.k==='result');
+ let h=d.result?resultCard(d.result,d):'<div class="card empty">'+T('Cette version n’a pas encore été testée.','This version has not been tested yet.')+'<div style="margin-top:14px"><a class="cta" href="'+talk(d,T('Teste la version actuelle de mon robot.','Test the current version of my robot.'))+'">'+T('Le tester avec Kino','Test it with Kino')+' →</a></div></div>';
+ if(RS.length){const mx=Math.max(1,...RS.map(e=>Math.abs(+e.net||0)));
+  h+='<h2><span>'+T('Chaque version testée','Every version tested')+'</span></h2><div class="card">'+RS.map(e=>'<div class="vr"><span class="vn">v'+esc(e.rev||'?')+'</span><span class="vb"><i class="'+((+e.net)>=0?'u':'d')+'" style="width:'+Math.max(3,Math.round(100*Math.abs(+e.net||0)/mx))+'%"></i></span><b class="num '+cls(e.net)+'">'+money(e.net)+'</b><small>'+(e.trades||0)+' tr · '+(e.win_rate!=null?Math.round(100*e.win_rate)+' %':'')+'</small></div>').join('')+'</div>';}
+ h+='<div class="links two"><a href="'+B+'mesrobots#r='+encodeURIComponent(d.id)+'">'+T('Autres marchés, pièces','Other markets, pieces')+'</a><a href="'+B+'tests">'+T('Tous les tests','All tests')+'</a></div>';
+ return h;}
+function storyTab(d){const TL=d.timeline||[];
+ if(!TL.length)return '<div class="card empty">'+T('Son histoire commence avec ta prochaine conversation avec Kino.','Its story starts with your next talk with Kino.')+'</div>';
+ const L=SHOWALL?TL:TL.slice(0,12);
+ return '<h2><span>'+d.versions+' '+T('versions','versions')+'</span></h2><div class="tl">'+L.map(e=>{
    if(e.k==='change')return '<div class="ev change" id="v'+esc(e.rev)+'"><div class="h">'+T('Version ','Version ')+esc(e.rev)+'<span>'+when(e.t)+'</span></div><div class="b">'+
     (e.diff||[]).map(x=>'<div class="d"><em>'+esc(SLOTF()[x.slot]||x.slot)+'</em>'+(x.from?'<s>'+esc(x.from)+'</s> → ':'')+'<b>'+esc(x.to||T('retiré','removed'))+'</b></div>').join('')+
     (e.asked?'<div class="q"><i>'+T('Tu as dit','You said')+' :</i> '+esc(e.asked)+'</div>':'')+
@@ -143,12 +281,25 @@ function render(d){const app=document.getElementById('app');EN=d.lang==='en';doc
    if(e.k==='test')return '<div class="ev"><div class="h">'+T('Test lancé','Test started')+(e.rev?' · v'+esc(e.rev):'')+'<span>'+when(e.t)+'</span></div></div>';
    if(e.k==='week')return '<div class="ev"><div class="h">'+T('Semaine montrée','Week shown')+(e.rev?' · v'+esc(e.rev):'')+'<span>'+when(e.t)+'</span></div><div class="b">'+(e.count||0)+' '+T('trades sur la semaine choisie','trades on the chosen week')+(e.per_day?' · ~'+Math.round(e.per_day)+T(' par jour',' a day'):'')+'</div></div>';
    return '';}).join('')+'</div>'+(TL.length>12&&!SHOWALL?'<a class="more" id="more">'+T('Voir toute son histoire','See its whole story')+' ('+TL.length+')</a>':'');}
- h+='<div class="links"><a href="'+B+'mesrobots#r='+encodeURIComponent(d.id)+'">'+T('Marchés et pièces','Markets and pieces')+'</a><a href="'+B+'mesrobots">'+T('Tous mes robots','All my robots')+'</a><a href="'+B+'tests">'+T('Tous les tests','All tests')+'</a></div>';
- app.innerHTML=h;if(location.hash&&!render._j){render._j=1;const tg=document.getElementById(location.hash.slice(1));if(tg){tg.scrollIntoView({block:'center'});tg.animate([{opacity:.4},{opacity:1}],{duration:900});}}
- const m=document.getElementById('more');if(m)m.onclick=()=>{SHOWALL=true;render(d);};}
-let LAST='';
+function render(){const d=D,app=document.getElementById('app');if(!d)return;EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
+ if(!d.ok){app.innerHTML='<div class="card empty">'+(d.err==='unknown'?T('Pas encore de robot. Raconte ta méthode à Kino : il le construit avec toi.','No robot yet. Tell Kino your method: he builds it with you.'):T('Ce robot n’est pas à toi.','This robot is not yours.'))+
+  '<div style="margin-top:16px"><a class="cta" href="'+B+'atelier">'+T('Parler à Kino','Talk to Kino')+' →</a></div></div>';return;}
+ try{document.body.dataset.ktitle=d.name;window.dispatchEvent(new HashChangeEvent('hashchange'));}catch(e){}
+ if(!tabsOf(d).some(x=>x[0]===TAB))TAB='over';
+ const acc=d.kind==='account',wait='<div class="card"><div class="skel" style="height:120px"></div></div>';
+ const body=TAB==='over'?overview(d):TAB==='perf'?(acc?(A?perfAccount():wait):(d.result?resultCard(d.result,d)+testsTab(d).replace(resultCard(d.result,d),''):testsTab(d)))
+  :TAB==='live'?(A?liveTab():wait):TAB==='tests'?(acc?proofTab():testsTab(d)):storyTab(d);
+ app.innerHTML=hero(d)+'<div class="tabbody">'+body+'</div>';
+ app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','?id='+encodeURIComponent(d.id)+'&tab='+TAB);}catch(e){}render();window.scrollTo({top:0});});
+ app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{TAB=b.dataset.go;render();});
+ app.querySelectorAll('.bars .bar').forEach(b=>b.onclick=()=>{perfAccount.ym=b.dataset.ym;render();});
+ if(location.hash&&!render._j){const tg=document.getElementById(location.hash.slice(1));if(tg){render._j=1;tg.scrollIntoView({block:'center'});tg.animate([{opacity:.4},{opacity:1}],{duration:900});}}
+ const m=document.getElementById('more');if(m)m.onclick=()=>{SHOWALL=true;render();};}
+let LAST='',LASTA='';
 async function load(){try{const r=await fetch(B+'robot_story?id='+encodeURIComponent(Q.get('id')||''),{cache:'no-store'});const d=await r.json();
- const k=JSON.stringify([d.rev,d.running,d.timeline&&d.timeline.length,d.step]);if(k!==LAST){LAST=k;render(d);}}catch(e){setTimeout(load,4000);}}
-load();setInterval(load,30000);
+ const k=JSON.stringify([d.rev,d.running,d.timeline&&d.timeline.length,d.step,d.live]);if(k!==LAST){LAST=k;D=d;render();}
+ if(d.kind==='account'){const a=await (await fetch(B+'api?t='+Date.now(),{cache:'no-store'})).json();const ka=JSON.stringify([a.balance,a.today,a.open_list,a.meteo_struct,a.trading_paused,a.day_trades&&Object.keys(a.day_trades).length]);
+  if(ka!==LASTA){LASTA=ka;A=a;render();}}}catch(e){setTimeout(load,4000);}}
+load();setInterval(load,20000);
 </script>
 </body></html>

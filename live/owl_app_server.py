@@ -13901,8 +13901,59 @@ def _robot_chats(rid, uids):
     return out
 
 
+def _owl_story(user, en):
+    """2026-11-02 (owner: "each robot its own performance submenu; the old dashboard merged into the new"): the robot
+    that trades on the member's account (the Owl) gets the same page as a robot built with Kino. Its rules come from
+    the account's real package (what the bot loaded), its numbers from the account (/api on the page)."""
+    T = (lambda f, e: e if en else f)
+    uid = user.get("id")
+    try:
+        import owl_package as _OP
+        pk = _OP.for_account(uid) or {}
+    except Exception:
+        pk = {}
+    live = bool(acct_auto(user))
+    rules = [{"k": T("Quand il entre", "When it enters"),
+              "v": T("Quand le prix casse la dernière structure (BOS) dans le sens de la tendance du graphique des reculs.",
+                     "When price breaks the last structure (BOS) in the direction of the pullback chart's trend.")},
+             {"k": T("Son stop", "Its stop"), "v": T("Derrière le point protégé de la cassure.", "Behind the protected point of the break.")},
+             {"k": T("Quand il sort", "When it exits"),
+              "v": T("Objectif à %s fois le risque, ou au stop." % pk.get("rr", 0.8), "Target at %s times the risk, or at the stop." % pk.get("rr", 0.8))},
+             {"k": T("Ses freins", "Its brakes"),
+              "v": T("Il ne trade que du bon côté de la dernière cassure, quand le marché est éveillé et pas en tempête.",
+                     "It only trades on the right side of the last break, when the market is awake and not stormy.")}]
+    if pk.get("max_trades_day") or pk.get("m15_gate"):
+        rules.append({"k": T("Filtres ajoutés le 2 nov.", "Filters added on 2 Nov"),
+                      "v": "; ".join(([T("au plus %s trades par jour" % pk["max_trades_day"], "at most %s trades a day" % pk["max_trades_day"])] if pk.get("max_trades_day") else []) +
+                                     ([T("pas de trade contre la tendance 15 minutes", "no trade against the 15-minute trend")] if pk.get("m15_gate") else []))})
+    rules.append({"k": T("La taille", "The size"),
+                  "v": T("lot de base %s, plus grand quand le compte grandit" % pk.get("base_lot", 0.02), "base lot %s, larger as the account grows" % pk.get("base_lot", 0.02))})
+    if pk.get("kill_net"):
+        rules.append({"k": T("Sa ligne d'arrêt", "Its stop line"),
+                      "v": T("il s'arrête pour de bon si le compte perd %.0f $ depuis son départ" % abs(float(pk["kill_net"])),
+                             "it stops for good if the account loses %.0f $ from its start" % abs(float(pk["kill_net"])))})
+    steps = [{"k": "built", "label": T("Construit", "Built"), "done": True},
+             {"k": "test", "label": T("Testé 10 mois", "Tested 10 months"), "done": True},
+             {"k": "luck", "label": T("Pas de la chance", "Not luck"), "done": True},
+             {"k": "live", "label": T("En vrai", "For real"), "done": live}]
+    nxt = {"k": "watch" if live else "paused", "text": T("Il trade sur ton compte. Kino le surveille avec toi.", "It trades on your account. Kino watches it with you.") if live
+           else T("Il est en pause sur ton compte.", "It is paused on your account."), "ask": T("Comment va l'Owl sur mon compte ?", "How is the Owl doing on my account?")}
+    nxt["short"] = T("Il trade sur ton compte", "Trading on your account") if live else T("En pause sur ton compte", "Paused on your account")
+    return {"ok": True, "id": "owl", "kind": "account", "name": "L'Owl", "market": "BTCUSD", "rev": None, "rules": rules, "steps": steps,
+            "step": next((i for i, x in enumerate(steps) if not x["done"]), len(steps)), "next": nxt, "running": False, "live": live,
+            "result": None, "full": None, "cid": _person_main(uid), "versions": 0, "timeline": [], "lang": "en" if en else "fr",
+            "package": pk.get("label") or "", "max_day": pk.get("max_trades_day") or None, "m15": bool(pk.get("m15_gate"))}
+
+
 def robot_story(user, rid, en=False):
     rid = str(rid or "")[:80]
+    if rid == "owl":
+        if en is None:                     # the language of his conversation
+            try:
+                en = json.load(open(_chat_path(_person_main(user.get("id"))), encoding="utf-8")).get("lang") == "en"
+            except Exception:
+                en = False
+        return _owl_story(user, bool(en))
     if not rid:                            # no id: the member's latest robot
         _rs = robots_of_person(user)
         rid = _rs[0]["id"] if _rs else ""
@@ -29535,6 +29586,13 @@ def _home_kino_data(user):
         # waiting for HIM first (a week to vote on, a loss to look at), then the ones to test, then those running / waiting
         _ord = {"vote": 0, "improve": 1, "test": 2, "luck": 3, "live": 4, "wait": 5, "watch": 6}
         _bd.sort(key=lambda b: _ord.get((b.get("next") or {}).get("k"), 9))
+        try:
+            if out.get("account"):
+                _ow = _owl_story(user, out.get("lang") == "en")
+                _ow["result"] = {"net": (out["account"].get("since") or {}).get("net"), "rev": None, "real": True}
+                _bd.insert(0, {k: _ow.get(k) for k in ("id", "name", "market", "rev", "steps", "step", "next", "result", "running", "cid", "versions", "live", "kind")})
+        except Exception:
+            pass
         out["my_robots"] = _bd
         if _bd:
             out["my_robot"] = _bd[0]

@@ -393,7 +393,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
  if(a==='retest'){act('robot_test',{id:id,again:1},T('Re-test lancé : environ 5 minutes.','Re-test started: about 5 minutes.'),el);return;}
  if(a==='remk'){act('robot_test_market',{id:id,sym:el.dataset.s},T('Re-test du marché lancé.','Market re-test started.'),el);return;}
  if(a==='arch'){const r=byId(id);act('robot_update',{id:id,archived:!r.archived},r.archived?T('Robot remis dans la liste.','Robot back in the list.'):T('Robot archivé : il garde son historique.','Robot archived: it keeps its history.'),el);return;}
- if(a==='close')closeSh();else if(a==='detail')detail(id,'res');else if(a==='tab')detail(id,el.dataset.tab);else if(a==='mkd')mkDetail(id,el.dataset.s);else if(a==='test')runTest(id,el);});
+ if(a==='close')closeSh();else if(a==='detail'){const r0=byId(id);if(r0&&(r0.mine||r0.can_edit)&&!el.closest('#sh'))location.href='robot?id='+encodeURIComponent(id);else detail(id,'res');}   /* 2026-11-02: your robot opens its own page */else if(a==='tab')detail(id,el.dataset.tab);else if(a==='mkd')mkDetail(id,el.dataset.s);else if(a==='test')runTest(id,el);});
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');F=c.dataset.f;render();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSh();});
 if(EN){$('h1').textContent='My robots';$('h1s').textContent='Their tests, their markets, their progress';const C=document.querySelectorAll('.chip');['All','Tested','To test','Live','Archived'].forEach((t,i)=>{if(C[i])C[i].textContent=t;});document.title='My robots';}

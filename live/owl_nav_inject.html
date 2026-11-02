@@ -62,6 +62,10 @@ body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bot
 #knav a.on{color:var(--text)}#knav a.on:after{content:"";position:absolute;top:-8px;width:22px;height:3px;border-radius:0 0 3px 3px;background:var(--kgrad)}
 #knav svg{width:22px;height:22px}
 #knav .kd{width:24px;height:24px;border-radius:8px;background:var(--kgrad);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+/* 2026-11-02 (owner: build + test first): Kino, where every robot starts, is the raised button in the middle */
+#knav a.kmid{margin-top:-22px}
+#knav a.kmid .kd{width:52px;height:52px;border-radius:18px;font-size:22px;box-shadow:0 10px 26px rgba(124,108,255,.45),0 0 0 5px var(--bg)}
+#knav a.kmid.on:after{display:none}
 .k-folded{display:none!important}
 /* a page's own sticky strip (Patrimoine tabs) sticks under the bar, not behind it; its repeated title and back arrow go */
 .wrap > nav:not(#knav),body > nav:not(#knav){top:calc(58px + env(safe-area-inset-top,0px))!important}
@@ -86,9 +90,9 @@ body.k-sec .hero{display:none!important}
  <button class="kc" id="kbk" aria-label="Kino"><span class="av">🦉<i></i></span><span>Kino</span></button></div>
 <nav id="knav" aria-label="Navigation">
  <a data-p="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-fr="Accueil" data-en="Home">Accueil</span></a>
- <a data-p="atelier"><span class="kd">K</span><span>Kino</span></a>
  <a data-p="mesrobots"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg><span data-fr="Robots" data-en="Robots">Robots</span></a>
- <a data-p="marche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg><span data-fr="Marché" data-en="Market">Marché</span></a>
+ <a data-p="atelier" class="kmid"><span class="kd">K</span><span>Kino</span></a>
+ <a data-p="place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18M9 20v-6h6v6"/></svg><span data-fr="La place" data-en="Market">La place</span></a>
  <a data-p="compte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-fr="Compte" data-en="Account">Compte</span></a>
 </nav>
 <script>(function(){try{
@@ -108,8 +112,8 @@ body.k-sec .hero{display:none!important}
   set:[T('Réglages','Settings'),T('Notifications, application, abonnement','Notifications, app, plan')],nid:[T('Le Nid','The Nest'),T('Tous les comptes','All accounts')],
   offres:[T('Formules','Plans'),'']};
  function sec(){return (location.hash||'').slice(1)||'home';}
- function key(){if(dash){var h=sec();return {marche:'marche',robot:'marche',hist:'home',set:'compte',nid:'compte',offres:'compte'}[h]||'home';}
-  return ({tests:'mesrobots',place:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'compte',robot:'mesrobots'}[sub])||sub||'home';}
+ function key(){if(dash){var h=sec();return {marche:'home',robot:'home',hist:'home',set:'compte',nid:'compte',offres:'compte'}[h]||'home';}
+  return ({tests:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'home',robot:'mesrobots'}[sub])||sub||'home';}
  function title(){var t=dash?(DT[sec()]||DT.home):(TITLES[sub||'home']||[document.title,'']);
   if(document.body.dataset.ktitle)t=[document.body.dataset.ktitle,''];   /* a page can name itself (a robot's page: its name) */
   if(!dash&&(sub==='home'||sub==='')){var h=new Date().getHours();var n=(document.getElementById('nm')||{}).textContent||'';
@@ -175,7 +179,7 @@ body.k-sec .hero{display:none!important}
  document.getElementById('kbk').onclick=function(){var t=document.getElementById('kpgtab');if(t){t.click();return;}
   var k=document.querySelector('#knav a[data-p="atelier"]');location.href=k?k.href:'/'+tok+'/atelier';};
  document.querySelectorAll('#knav a').forEach(function(a){var p=a.getAttribute('data-p');
-  a.href=p==='marche'?'/'+tok+'/?classic=1#marche':'/'+tok+'/'+p;
+  a.href='/'+tok+'/'+p;
   var s=a.querySelector('span[data-fr]');if(s)s.textContent=en?s.getAttribute('data-en'):s.getAttribute('data-fr');});
  if(dash){var go=function(){var h=sec();h=h==='robot'?'marche':h;
    if(['home','marche','hist','set','nid'].indexOf(h)<0||typeof tab!=='function')return;
@@ -190,9 +194,9 @@ body.k-sec .hero{display:none!important}
  fetch('/'+tok+'/home_data').then(function(r){return r.json()}).then(function(d){
   if(d&&d.cid){var k=document.querySelector('#knav a[data-p="atelier"]');if(k)k.href='/'+tok+'/atelier?c='+encodeURIComponent(d.cid);}
   /* each robot has its own performance: the robot running on the account is the first card of "Mes robots" */
-  if(sub==='mesrobots'&&d&&d.account&&d.account.auto){var c=document.createElement('a');c.href='/'+tok+'/?classic=1#hist';
-   c.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 16px 4px;padding:14px 16px;border-radius:18px;background:var(--surface);border:1px solid rgba(46,204,113,.35);text-decoration:none;color:var(--text);font-family:Inter,system-ui,sans-serif';
-   c.innerHTML='<span><small style="display:block;color:var(--muted);font-size:12px">'+T('Sur ton compte réel','On your live account')+'</small><b style="font-size:16px">'+(d.account.robot||'L’Owl')+' · '+T('actif','running')+'</b></span><span style="color:#2ecc71;font-weight:700;font-size:14px">'+T('Performance ›','Performance ›')+'</span>';
+  if(sub==='mesrobots'&&d&&d.account){var c=document.createElement('a');c.href='/'+tok+'/robot?id=owl';var on=!!d.account.auto;
+   c.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 16px 4px;padding:14px 16px;border-radius:18px;background:var(--surface);border:1px solid '+(on?'rgba(46,204,113,.35)':'var(--border2)')+';text-decoration:none;color:var(--text);font-family:Inter,system-ui,sans-serif';
+   c.innerHTML='<span><small style="display:block;color:var(--muted);font-size:12px">'+T('Sur ton compte réel','On your live account')+'</small><b style="font-size:16px">'+(d.account.robot||'L’Owl')+' · '+(on?T('actif','running'):T('en pause','paused'))+'</b></span><span style="color:'+(on?'#2ecc71':'var(--muted)')+';font-weight:700;font-size:14px">'+T('Sa page ›','Its page ›')+'</span>';
    var tgt=document.querySelector('main')||document.querySelector('.wrap')||document.body;tgt.insertBefore(c,tgt.firstChild);}
  }).catch(function(){});
 }catch(e){}})();</script>

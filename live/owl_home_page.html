@@ -190,7 +190,7 @@ function moneyCard(){const A=D.account;const el=document.getElementById('acct');
  const wr=S.n?Math.round(100*(S.won||0)/S.n):null;
  const LM=A.last_month;const mN=LM?new Date(LM.ym+'-15').toLocaleDateString(EN?'en':'fr',{month:'long'}):'';
  el.innerHTML='<div class="money"><div class="mtop"><span class="lbl">'+(A.real?T('Ton compte réel','Your live account'):T('Ton compte démo','Your demo account'))+(A.broker?' · '+esc(A.broker):'')+'</span>'+
-  '<a class="state '+st[0]+'" href="'+B+'?classic=1#set"><i></i>'+esc(st[1])+'</a></div>'+
+  '<a class="state '+st[0]+'" href="'+B+'robot?id=owl&tab=live"><i></i>'+esc(st[1])+'</a></div>'+
   '<div class="bal num">$'+b[0]+'<small>.'+b[1]+'</small></div>'+
   '<div class="chg num"><span class="'+cls(P[0])+'">'+money(P[0])+pct+'</span><span class="p">'+esc(P[1])+'</span></div>'+
   '<div class="cap">'+T('Tout l’argent du compte, quel que soit le robot qui trade dessus.','All the money in the account, whichever robot trades on it.')+'</div>'+
@@ -203,7 +203,7 @@ function moneyCard(){const A=D.account;const el=document.getElementById('acct');
    '<div class="stat"><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('Trades gagnants','Winning trades')+'</span></div></div>'+
   (A.ended?'<div class="renew"><span>'+T('Ta période Automatique est terminée : le robot ne trade plus pour toi.','Your Automatic period has ended: the robot no longer trades for you.')+'</span><a href="'+B+'?classic=1#home">'+T('Renouveler','Renew')+'</a></div>':'')+
   (A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'?classic=1#marche">'+T('Voir','See')+'</a></div>':'')+
-  '<div class="alinks"><a href="'+B+'?classic=1#home">'+T('Aujourd’hui','Today')+'</a><a href="'+B+'?classic=1#marche">'+T('En direct','Live')+'</a><a href="'+B+'?classic=1#hist">'+T('Performance','Performance')+'</a></div>'+
+  '<div class="alinks"><a href="'+B+'robot?id=owl&tab=perf">'+T('Performance','Performance')+'</a><a href="'+B+'robot?id=owl&tab=live">'+T('En direct','Live')+'</a><a href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div>'+
   '</div>';
  el.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{PER=x.dataset.p;try{localStorage.setItem('homePer',PER);}catch(e){}moneyCard();});}
 async function load(){
@@ -247,7 +247,7 @@ async function load(){
    return '<a class="brow" href="'+B+'robot?id='+encodeURIComponent(x.id)+'"><div class="ri">'+svg('robot')+'</div><div class="bmain"><div class="bn">'+esc(x.name)+'</div>'+
     '<div class="bdots">'+(x.steps||[]).map((s0,i)=>'<i class="'+(s0.done?'d':i===x.step?'c':'')+'"></i>').join('')+'</div>'+
     '<div class="bnx'+(ME(x)?' me':'')+'">'+(n.k==='wait'?'<span class="spin"></span>':'')+esc(n.short||n.text||'')+'</div></div>'+
-    '<div class="bres">'+(R0?'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+T('test v','test v')+esc(R0.rev||x.rev)+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
+    '<div class="bres">'+(R0?'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+(x.kind==='account'?T('réel · depuis le début','real · since start'):T('test v','test v')+esc(R0.rev||x.rev))+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
    '<a class="badd" href="'+document.getElementById('talk').href+(document.getElementById('talk').href.includes('?')?'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))+'">+ '+
    (BD.length?T('Un nouveau robot avec Kino','A new robot with Kino'):T('Ton premier robot avec Kino','Your first robot with Kino'))+'</a>';}
  const MR=null;
