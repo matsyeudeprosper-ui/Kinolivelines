@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8"><meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>L'école de Kino</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="/icon192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-11-02 (owner: "people who know nothing about trading but want to learn - something never done before, with Kino:
+   tools, workshops, continuous learning, levels; experts and beginners, no clutter"). L'école de Kino: you learn by building
+   your own robot; every step measured against chance. Engine: robots/kino_school.py, action "school". */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--accent:#7c6cff;--accent2:#22d3ee;--up:#2ecc71;--down:#ff6b6b;--warn:#e8c55a;
+ --grad:linear-gradient(135deg,#7c6cff,#22d3ee);--sh:0 18px 50px rgba(0,0,0,.45)}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;--border2:#d5dce7;
+ --text:#121722;--text2:#3b4658;--muted:#6a7588;--sh:0 12px 34px rgba(20,30,50,.10)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:24px 2px 10px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.num{font-variant-numeric:tabular-nums}.pos{color:var(--up)}.neg{color:var(--down)}
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:18px;background:radial-gradient(120% 90% at 100% 0%,#7c6cff30,transparent 60%),radial-gradient(90% 70% at 0% 100%,#22d3ee18,transparent 60%),var(--surface);border:1px solid var(--border);box-shadow:var(--sh)}
+.hero p{margin:0 64px 0 0;color:var(--text2);font-size:14px}
+.streak{position:absolute;top:16px;right:16px;font-size:13px;font-weight:800;padding:5px 10px;border-radius:99px;background:#e8c55a1a;border:1px solid #e8c55a55;color:var(--warn)}
+.path{display:flex;margin:18px 0 2px}
+.pn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;text-align:center;font-size:10.5px;color:var(--muted);font-weight:600}
+.pn:before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--border2)}.pn:first-child:before{display:none}
+.pn.done:before,.pn.cur:before{background:var(--grad)}
+.pn b{position:relative;z-index:1;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface3);border:2px solid var(--border2);font-size:12px}
+.pn.done b{background:var(--grad);border-color:transparent;color:#fff}.pn.cur b{border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 0 5px #22d3ee22}.pn.cur{color:var(--text)}
+.q{font-size:16px;font-weight:700;margin:12px 0}
+.opts{display:grid;gap:8px}
+.opt{width:100%;text-align:left;padding:13px 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;font-weight:600;font-size:14.5px}
+.opt.ok{border-color:var(--up);background:#2ecc7118}.opt.no{border-color:var(--down);background:#ff6b6b14}.opt:disabled{cursor:default}
+.opts.six{grid-template-columns:repeat(6,1fr)}.opts.six .opt{text-align:center;padding:12px 0}
+.why{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);font-size:14px;color:var(--text2)}
+.why b{color:var(--text)}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:14px;border:0;background:var(--grad);color:#fff;font-weight:700;font-size:15px;box-shadow:0 10px 28px #7c6cff40;cursor:pointer;margin-top:12px}
+.cta.gh{background:var(--surface3);box-shadow:none;color:var(--text)}
+.ch{display:block;width:100%;height:190px;margin-top:6px;border-radius:12px;background:var(--surface2)}
+.bar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--grad)}
+.lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+.dj{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.dj button{padding:14px 0;border-radius:14px;border:0;font-weight:800;font-size:15px;cursor:pointer}
+.dj .b{background:#2ecc71;color:#06210f}.dj .s{background:#ff6b6b;color:#2a0707}.dj .w{background:var(--surface3);color:var(--text)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.chips span{font-size:12px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2)}
+.duel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.duel div{padding:12px 6px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);text-align:center}
+.duel div.me{border-color:#7c6cff88;background:linear-gradient(135deg,#7c6cff1c,#22d3ee12)}
+.duel b{display:block;font-size:19px}.duel span{font-size:11.5px;color:var(--muted)}
+.big{font-size:15px;color:var(--text2);margin-top:10px}
+.row{display:flex;gap:12px;align-items:center}.ic{width:40px;height:40px;border-radius:13px;background:var(--surface3);display:grid;place-items:center;flex:none;font-size:20px}
+.row b{display:block}.row small{color:var(--muted);font-size:12.5px}
+.lock{opacity:.6}
+.cert{border:1px solid #e8c55a66;background:radial-gradient(120% 100% at 100% 0%,#e8c55a22,transparent 60%),var(--surface)}
+.tabs2{display:flex;gap:6px;margin-top:4px;overflow-x:auto;scrollbar-width:none}.tabs2 button{flex:none;padding:9px 13px;border-radius:12px;background:var(--surface);border:1px solid var(--border2);font-weight:700;font-size:13px;cursor:pointer}
+.tabs2 button.on{background:var(--surface3);border-color:#7c6cff88}
+.skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}@keyframes sk{50%{opacity:.5}}
+.foot{margin:22px 2px 0;font-size:11.5px;color:var(--muted);line-height:1.6}
+</style></head><body>
+<div class="wrap" id="app"><div class="hero"><div class="skel" style="height:22px;width:60%"></div><div class="skel" style="height:40px;margin-top:20px"></div></div></div>
+<script>
+const B=location.pathname.replace(/ecole\/?$/,'');let EN=false;try{EN=localStorage.getItem('owlLang')==='en';}catch(e){}
+const T=(f,e)=>EN?e:f,$=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const R=v=>(v>=0?'+':'−')+Math.abs(+v).toFixed(2)+' R';
+async function api(b){const r=await fetch(B+'school',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({lang:EN?'en':'fr'},b))});return r.json();}
+function talk(ask){return B+'atelier'+(S&&S.cid?'?c='+encodeURIComponent(S.cid)+'&':'?')+'ask='+encodeURIComponent(ask);}
+/* candles as an SVG: [t,o,h,l,c]; marks {H:[[t,v]],L:[[t,v]]}; arrows [{at,ch}] */
+function chart(c,opt){opt=opt||{};if(!c||!c.length)return '';const W=600,H=190,p=8,n=c.length,cw=(W-2*p)/n;
+ let mn=Math.min(...c.map(x=>x[3])),mx=Math.max(...c.map(x=>x[2]));if(opt.lv)opt.lv.forEach(v=>{mn=Math.min(mn,v);mx=Math.max(mx,v);});const pad=(mx-mn)*.08||1;mn-=pad;mx+=pad;
+ const y=v=>p+(H-2*p)*(1-(v-mn)/(mx-mn)),ix={};c.forEach((x,i)=>ix[x[0]]=i);
+ let s='<svg class="ch" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+ (opt.lv||[]).forEach(v=>{s+='<line x1="0" x2="'+W+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#22d3ee" stroke-dasharray="5 5" stroke-opacity=".7"/>';});
+ c.forEach((x,i)=>{const cx=p+i*cw+cw/2,up=x[4]>=x[1],col=up?'#2ecc71':'#ff6b6b',bt=y(Math.max(x[1],x[4])),bb=y(Math.min(x[1],x[4]));
+  s+='<line x1="'+cx+'" x2="'+cx+'" y1="'+y(x[2])+'" y2="'+y(x[3])+'" stroke="'+col+'" stroke-width="1.2"/><rect x="'+(cx-cw*.35)+'" y="'+bt+'" width="'+(cw*.7)+'" height="'+Math.max(1,bb-bt)+'" fill="'+col+'" rx="1"/>';});
+ if(opt.marks){(opt.marks.H||[]).forEach(m=>{const i=ix[m[0]];if(i!=null)s+='<circle cx="'+(p+i*cw+cw/2)+'" cy="'+(y(m[1])-7)+'" r="4" fill="#e8c55a"/>';});
+  (opt.marks.L||[]).forEach(m=>{const i=ix[m[0]];if(i!=null)s+='<circle cx="'+(p+i*cw+cw/2)+'" cy="'+(y(m[1])+7)+'" r="4" fill="#22d3ee"/>';});}
+ (opt.arrows||[]).forEach(a=>{const i=ix[a.at];if(i==null||!a.ch)return;const cx=p+i*cw+cw/2,up=a.ch===1;
+  s+='<path d="M'+cx+' '+(up?H-6:6)+' l-6 '+(up?-10:10)+' h12z" fill="'+(up?'#2ecc71':'#ff6b6b')+'"/>';});
+ if(opt.split){const i=opt.split;s+='<line x1="'+(p+i*cw)+'" x2="'+(p+i*cw)+'" y1="0" y2="'+H+'" stroke="currentColor" stroke-opacity=".25" stroke-dasharray="3 4"/>';}
+ return s+'</svg>';}
+let S=null,MODE=null,Q=null,DJ=null;
+function path(){return '<div class="path">'+S.levels.map((l,i)=>'<div class="pn '+(l.done?'done':(i+1===S.level?'cur':''))+'"><b>'+(l.done?'✓':i+1)+'</b>'+esc(l.name)+'</div>').join('')+'</div>';}
+function onboarding(){return '<div class="card"><div class="q">'+T('Pour commencer : tu trades déjà ?','To start: do you already trade?')+'</div><div class="opts">'+
+ [['beginner',T('Non, je veux apprendre','No, I want to learn')],['some',T('Un peu, sans vraie méthode','A bit, without a real method')],['expert',T('Oui, j’ai ma méthode','Yes, I have my method')]]
+ .map(x=>'<button class="opt" data-track="'+x[0]+'">'+x[1]+'</button>').join('')+'</div></div>';}
+function moment(){return '<h2><span>'+T('Le moment du jour','Today’s moment')+'</span><span style="text-transform:none;letter-spacing:0">'+(S.streak?'🔥 '+S.streak+T(' jours',' days'):'')+'</span></h2><div class="card" id="mom"><div class="skel" style="height:190px"></div></div>';}
+async function loadMoment(){const el=$('mom');if(!el)return;const m=await api({act:'moment'});if(!m.ok){el.innerHTML='<div class="big">'+T('Le marché se repose, reviens dans un instant.','The market is resting, come back in a moment.')+'</div>';return;}
+ el.innerHTML='<div style="font-size:12.5px;color:var(--muted)">'+T('Bitcoin en direct · vu par le filtre de Kino','Live Bitcoin · seen through Kino’s filter')+'</div>'+chart(m.candles)+'<div class="q">'+esc(m.q)+'</div><div class="opts">'+m.opts.map(o=>'<button class="opt" data-m="'+o[0]+'"'+(m.done?' disabled':'')+'>'+esc(o[1])+'</button>').join('')+'</div>'+
+  (m.done?'<div class="why">'+(m.done.ok?'✅ ':'')+T('Déjà joué aujourd’hui. Bonne réponse : ','Already played today. Right answer: ')+'<b>'+esc((m.opts.find(o=>o[0]===m.ans)||[,''])[1])+'</b>. '+esc(m.why||'')+'</div>':'');
+ el.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{el.querySelectorAll('[data-m]').forEach(x=>x.disabled=true);const r=await api({act:'moment_answer',choice:b.dataset.m});
+  el.querySelectorAll('[data-m]').forEach(x=>{if(x.dataset.m===r.ans)x.classList.add('ok');else if(x===b)x.classList.add('no');});
+  el.insertAdjacentHTML('beforeend','<div class="why"><b>'+(r.right?T('Exact !','Right!'):T('Pas cette fois.','Not this time.'))+'</b> '+esc(r.why)+(r.streak?' · 🔥 '+r.streak+T(' jours d’affilée',' days in a row'):'')+'</div>');});}
+function levelCard(){const lv=S.level,P=S.progress;
+ if(lv<=2){const k=lv===1?'lire':'voir',p=P[k];return '<h2><span>'+T('Niveau ','Level ')+lv+' · '+esc(S.levels[lv-1].name)+'</span></h2><div class="card"><div class="big">'+
+  (lv===1?T('Apprends à lire une bougie : ce qu’elle dit des acheteurs et des vendeurs. Sur de vrais prix de Bitcoin.','Learn to read a candle: what it says about buyers and sellers. On real Bitcoin prices.')
+   :T('Repère la tendance : les sommets et les creux, et le niveau qui la confirmerait.','Spot the trend: the highs and lows, and the level that would confirm it.'))+'</div>'+
+  '<div class="bar"><i style="width:'+Math.min(100,100*p[0]/p[1])+'%"></i></div><div class="lbl"><span>'+p[0]+' / '+p[1]+(lv===2?T(' sur les 10 derniers',' of the last 10'):T(' bonnes réponses',' right answers'))+'</span><span>'+T('niveau ','level ')+(lv+1)+' ›</span></div>'+
+  '<button class="cta" data-go="read'+lv+'">'+T('Un exercice','An exercise')+' →</button></div>';}
+ if(lv===3)return '<h2><span>'+T('Niveau 3 · Décider','Level 3 · Decide')+'</span></h2><div class="card"><div class="big">'+T('Le dojo : une vraie séance de Bitcoin rejouée. Tu achètes, vends ou attends à 6 moments. Kino joue aussi, et un robot au hasard. On compare.','The dojo: a real Bitcoin session replayed. You buy, sell or wait at 6 moments. Kino plays too, and a robot at random. We compare.')+'</div>'+
+  '<div class="bar"><i style="width:'+Math.min(100,100*P.decider[0]/P.decider[1])+'%"></i></div><div class="lbl"><span>'+P.decider[0]+' / '+P.decider[1]+T(' séances',' sessions')+'</span><span>'+T('ton robot ›','your robot ›')+'</span></div>'+
+  (S.full?'<button class="cta" data-go="dojo">'+T('Entrer dans le dojo','Enter the dojo')+' →</button>':'<a class="cta" href="'+B+'compte#formules">'+T('Le dojo vient avec Essentiel','The dojo comes with Essential')+'</a>')+'</div>';
+ if(lv===4){const h=S.habit;return '<h2><span>'+T('Niveau 4 · Ton robot','Level 4 · Your robot')+'</span></h2><div class="card">'+(h?'<div class="big">'+T('Dans tes ','In your ')+h.n+T(' décisions, Kino a trouvé ton habitude :',' decisions, Kino found your habit:')+'</div><div class="q">« '+esc(EN?h.en:h.fr)+' »</div>'+
+  '<div class="chips"><span>'+Math.round(100*h.agree)+T(' % de tes décisions',' % of your decisions')+'</span><span class="'+(h.avg_r>=0?'pos':'neg')+'">'+R(h.avg_r)+T(' en moyenne au dojo',' on average in the dojo')+'</span></div>'+
+  '<a class="cta" href="'+talk(T('Construis-moi un robot avec mon habitude du dojo : ','Build me a robot from my dojo habit: ')+(EN?h.en:h.fr)+T(' (achat : ',' (buy: ')+h.buy+T(' ; vente : ','; sell: ')+h.sell+T('). Sur Bitcoin, lot 0,01.',') On Bitcoin, lot 0.01.'))+'">'+T('Construire mon robot avec Kino','Build my robot with Kino')+' →</a>'
+  :'<div class="big">'+T('Tes décisions ne suivent pas encore une règle simple. Encore quelques séances au dojo et Kino la trouvera.','Your decisions don’t follow a simple rule yet. A few more dojo sessions and Kino will find it.')+'</div><button class="cta" data-go="dojo">'+T('Retour au dojo','Back to the dojo')+' →</button>')+'</div>';}
+ if(lv===5)return '<h2><span>'+T('Niveau 5 · Prouver','Level 5 · Prove')+'</span></h2><div class="card"><div class="big">'+T('Ton robot « ','Your robot “')+esc(S.robot&&S.robot.name)+T(' » existe. Teste-le sur 10 mois de vrais prix, puis le test de chance : c’est là qu’on sait si ton instinct a un vrai avantage.','” exists. Test it on 10 months of real prices, then the luck test: that’s where we learn if your instinct has a real edge.')+'</div><a class="cta" href="'+B+'robot?id='+encodeURIComponent(S.robot?S.robot.id:'')+'">'+T('La page de ton robot','Your robot’s page')+' →</a></div>';
+ return '<h2><span>'+T('Niveau 6 · En vrai','Level 6 · For real')+'</span></h2><div class="card"><div class="big">'+T('Ton robot a passé le test de chance. Fais-le trader petit, sur un vrai compte, et suis-le avec Kino.','Your robot passed the luck test. Let it trade small, on a real account, and follow it with Kino.')+'</div><a class="cta" href="'+B+'robot?id='+encodeURIComponent(S.robot?S.robot.id:'')+'">'+T('La page de ton robot','Your robot’s page')+' →</a></div>';}
+function practice(){const L=[['read1','📖',T('Lire','Read'),T('une bougie','a candle')],['read2','🧭',T('Voir','See'),T('la tendance','the trend')],['dojo','🥋',T('Dojo','Dojo'),S.full?T('une séance','a session'):T('avec Essentiel','with Essential')]];
+ return '<h2><span>'+T('S’entraîner','Practise')+'</span></h2><div class="tabs2">'+L.map(x=>'<button data-go="'+x[0]+'"'+(x[0]==='dojo'&&!S.full?' class="lock"':'')+'>'+x[1]+' '+x[2]+'</button>').join('')+'</div>';}
+function stats(){const D=S.dojo;if(!D.sessions)return '';return '<h2><span>'+T('Ton dojo','Your dojo')+'</span></h2><div class="card"><div class="duel"><div class="me"><b class="num '+(D.total_r>=0?'pos':'neg')+'">'+R(D.total_r)+'</b><span>'+T('toi','you')+'</span></div>'+
+ '<div><b class="num '+(D.kino_r>=0?'pos':'neg')+'">'+R(D.kino_r)+'</b><span>Kino</span></div><div><b class="num">'+(D.pct_avg==null?'—':D.pct_avg+' %')+'</b><span>'+T('mieux que le hasard','better than chance')+'</span></div></div>'+
+ '<div class="lbl" style="margin-top:10px"><span>'+D.sessions+T(' séances · ',' sessions · ')+D.decisions+T(' décisions',' decisions')+'</span><span>'+T('certificat à 120 décisions','certificate at 120 decisions')+'</span></div></div>';}
+function workshop(){return '<h2><span>'+T('L’atelier de la semaine','This week’s workshop')+'</span></h2><a class="card row" href="'+talk(T('Fais-moi l’atelier de la semaine : reprends mes décisions du dojo et mes exercices, explique-moi ce que je fais bien et ce que je dois travailler, puis donne-moi un exercice.','Give me this week’s workshop: go through my dojo decisions and exercises, tell me what I do well and what to work on, then give me an exercise.'))+'"><div class="ic">🎓</div><div style="flex:1"><b>'+T('Avec Kino, sur tes propres décisions','With Kino, on your own decisions')+'</b><small>'+T('Ce que tu fais bien, ce qui coûte, un exercice. En écrit ou en appel.','What you do well, what costs you, an exercise. In writing or on a call.')+'</small></div><span>›</span></a>';}
+function cert(){const c=S.cert;if(!c)return '';return '<h2><span>'+T('Ton certificat','Your certificate')+'</span></h2><div class="card cert"><div class="row"><div class="ic">🏅</div><div><b>'+T('Certificat Kino · décisions prouvées','Kino certificate · proven decisions')+'</b><small>'+c.n+T(' vraies situations · mieux que ',' real situations · better than ')+c.pct+T(' % des joueurs au hasard',' % of random players')+'</small></div></div>'+
+ '<button class="cta" id="share">'+T('Partager','Share')+'</button></div>';}
+function render(){const app=$('app');if(!S)return;
+ let h='<div class="hero">'+(S.streak?'<span class="streak">🔥 '+S.streak+'</span>':'')+'<p>'+T('Tu apprends en construisant ton propre robot. Chaque étape est mesurée face au hasard.','You learn by building your own robot. Every step is measured against chance.')+'</p>'+path()+'</div>';
+ if(!S.track&&!MODE)h+=onboarding();
+ if(MODE)h+='<div id="ex"></div>';
+ else h+=moment()+levelCard()+practice()+stats()+cert()+workshop();
+ h+='<div class="foot">'+T('Des prix réels passés de Bitcoin, minute par minute. Un entraînement, jamais un conseil : le trading comporte un risque de perte.','Real past Bitcoin prices, minute by minute. Training, never advice: trading carries a risk of loss.')+'</div>';
+ app.innerHTML=h;
+ app.querySelectorAll('[data-track]').forEach(b=>b.onclick=async()=>{await api({act:'track',track:b.dataset.track});S.track=b.dataset.track;render();});
+ app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+ const sh=$('share');if(sh)sh.onclick=()=>{const t=T('Mes décisions de trading battent le hasard sur ','My trading decisions beat chance on ')+S.cert.n+T(' vraies situations — certifié par Kino.',' real situations — certified by Kino.');
+  if(navigator.share)navigator.share({text:t,url:location.origin+'/demo'}).catch(()=>{});else{try{navigator.clipboard.writeText(t+' '+location.origin+'/demo');sh.textContent=T('Copié ✓','Copied ✓');}catch(e){}}};
+ if(MODE)drawMode();else loadMoment();}
+function go(m){if(m==='dojo'&&!S.full){location.href=B+'compte#formules';return;}MODE=m;Q=null;DJ=null;render();window.scrollTo({top:0});}
+function back(){MODE=null;load();}
+async function drawMode(){const el=$('ex');
+ if(MODE==='read1'||MODE==='read2'){el.innerHTML='<div class="card"><div class="skel" style="height:190px"></div></div>';Q=await api({act:'read_new',level:MODE==='read1'?1:2});
+  el.innerHTML='<div class="card"><div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)"><span>'+(MODE==='read1'?T('Lire · une vraie séance passée','Read · a real past session'):T('Voir · une vraie séance passée','See · a real past session'))+'</span><span>'+T('bougies de 5 min','5-min candles')+'</span></div>'+chart(Q.candles)+
+   '<div class="q">'+esc(Q.q)+'</div><div class="opts'+(Q.opts.length===6?' six':'')+'">'+Q.opts.map(o=>'<button class="opt" data-a="'+o[0]+'">'+esc(o[1])+'</button>').join('')+'</div><div id="fb"></div></div>'+
+   '<button class="cta gh" id="bk">'+T('Retour à l’école','Back to school')+'</button>';
+  $('bk').onclick=back;
+  el.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{el.querySelectorAll('[data-a]').forEach(x=>x.disabled=true);const r=await api({act:'read_answer',choice:b.dataset.a});
+   el.querySelectorAll('[data-a]').forEach(x=>{if(x.dataset.a===r.ans)x.classList.add('ok');else if(x===b)x.classList.add('no');});
+   if(r.marks){const sv=el.querySelector('svg.ch');if(sv)sv.outerHTML=chart(Q.candles,{marks:r.marks});}
+   $('fb').innerHTML='<div class="why"><b>'+(r.right?T('Exact !','Right!'):T('Pas cette fois.','Not this time.'))+'</b> '+esc(r.why)+'</div><button class="cta" id="nx">'+T('Suivant','Next')+' →</button>';$('nx').onclick=()=>drawMode();});
+  return;}
+ if(MODE==='dojo'){if(!DJ){el.innerHTML='<div class="card"><div class="skel" style="height:240px"></div></div>';DJ=await api({act:'dojo_new'});if(!DJ.ok){el.innerHTML='<div class="card big">'+T('Le dojo vient avec Essentiel.','The dojo comes with Essential.')+'<a class="cta" href="'+B+'compte#formules">'+T('Voir les formules','See the plans')+'</a></div>';return;}}
+  const d=DJ,last=d.past.length?d.past[d.past.length-1]:null;
+  let h='<div class="card"><div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)"><span>'+T('Dojo · une vraie séance de Bitcoin','Dojo · a real Bitcoin session')+'</span><span>'+(d.done?esc(d.date||''):T('moment ','moment ')+Math.min(d.step+1,d.of)+' / '+d.of)+'</span></div>'+
+   chart(d.candles,{arrows:d.past.map(p=>({at:p.at,ch:p.ch}))});
+  if(last)h+='<div class="chips"><span>'+T('Ton dernier choix : ','Your last choice: ')+({1:T('achat','buy'),'-1':T('vente','sell'),0:T('attente','wait')}[last.ch])+'</span><span class="'+(last.r>=0?'pos':'neg')+'">'+R(last.r)+'</span><span>Kino : '+({1:T('achat','buy'),'-1':T('vente','sell'),0:T('attente','wait')}[last.kino])+'</span></div>';
+  if(!d.done)h+='<div class="q">'+T('Et maintenant ?','And now?')+'</div><div class="big" style="margin-top:-6px;font-size:13px">'+T('Stop et objectif à une « agitation » moyenne du marché (1 R). Le résultat se lit 30 minutes plus tard.','Stop and target at one average market “swing” (1 R). The result shows 30 minutes later.')+'</div>'+
+   '<div class="dj"><button class="b" data-d="buy">'+T('Acheter','Buy')+'</button><button class="w" data-d="wait">'+T('Attendre','Wait')+'</button><button class="s" data-d="sell">'+T('Vendre','Sell')+'</button></div>';
+  else{const sc=d.score;h+='<div class="q">'+T('Fin de la séance','End of the session')+'</div><div class="duel"><div class="me"><b class="num '+(sc.me>=0?'pos':'neg')+'">'+R(sc.me)+'</b><span>'+T('toi','you')+'</span></div><div><b class="num '+(sc.kino>=0?'pos':'neg')+'">'+R(sc.kino)+'</b><span>Kino</span></div><div><b class="num">'+R(sc.rand_med)+'</b><span>'+T('le hasard','chance')+'</span></div></div>'+
+   '<div class="why">'+(sc.pct>=80?T('<b>Très bien.</b> ','<b>Very good.</b> '):sc.pct>=50?'':T('<b>Pas encore.</b> ','<b>Not yet.</b> '))+T('Tu fais mieux que ','You do better than ')+sc.pct+T(' % des joueurs qui choisissent au hasard. Une séance ne prouve rien : c’est la suite qui compte.',' % of players choosing at random. One session proves nothing: what follows counts.')+'</div>'+
+   '<button class="cta" id="again">'+T('Une autre séance','Another session')+' →</button><a class="cta gh" href="'+talk(T('Regarde ma dernière séance au dojo avec moi : qu’est-ce que j’aurais dû voir ?','Look at my last dojo session with me: what should I have seen?'))+'">'+T('La revoir avec Kino','Review it with Kino')+'</a>';}
+  h+='</div><button class="cta gh" id="bk">'+T('Retour à l’école','Back to school')+'</button>';el.innerHTML=h;
+  $('bk').onclick=back;const ag=$('again');if(ag)ag.onclick=()=>{DJ=null;drawMode();};
+  el.querySelectorAll('[data-d]').forEach(b=>b.onclick=async()=>{el.querySelectorAll('[data-d]').forEach(x=>x.disabled=true);const r=await api({act:'dojo_decide',choice:b.dataset.d});if(r.ok){DJ=r;drawMode();}});}}
+async function load(){try{S=await api({act:'state'});render();}catch(e){setTimeout(load,3000);}}
+load();
+</script>
+</body></html>

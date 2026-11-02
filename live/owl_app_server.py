@@ -14102,6 +14102,94 @@ def robot_story(user, rid, en=False):
     return out
 
 
+# ---- 2026-11-02 (owner: "people who know nothing about trading but want to learn... something never done before, with
+# Kino; levels, workshops, continuous learning; experts and beginners, no clutter"): L'école de Kino (robots/kino_school.py).
+# One action for every step; the right answer of a question stays here until the member answers. ----
+_SCHOOL_Q = {}
+
+
+def _school_mod():
+    sys.path.insert(0, os.path.join(DIR, "robots")) if os.path.join(DIR, "robots") not in sys.path else None
+    import kino_school
+    return kino_school
+
+
+def _school_full(user):
+    """the dojo and what follows: Essentiel and above, the family and the owner"""
+    try:
+        pn = plan_name(user)
+        return pn in ("essentiel", "pro", "premium", "owner", "decouverte_trial") or has(user.get("id"), "family")
+    except Exception:
+        return False
+
+
+def _school_state(user, en):
+    S = _school_mod()
+    pid = _person(user.get("id"))
+
+    def robot_after(ts):
+        day = time.strftime("%Y-%m-%d", time.gmtime(ts))
+        rs = [r for r in robots_of_person(user) if str(r.get("created") or "") >= day]
+        return {"id": rs[0]["id"], "name": rs[0].get("name_en" if en else "name_fr") or rs[0]["id"]} if rs else None
+
+    def luck_ok(rid):
+        try:
+            return (_luck_of(rid, "BTCUSD") or {}).get("state") == "pass"
+        except Exception:
+            return False
+
+    def live(rid):
+        try:
+            return bool(robot_story(user, rid, en).get("live"))
+        except Exception:
+            return False
+    st = S.state(pid, robot_after, luck_ok, live, en)
+    st["full"] = _school_full(user)
+    st["cid"] = _person_main(user.get("id"))
+    return st
+
+
+def school(user, body):
+    S = _school_mod()
+    pid = _person(user.get("id"))
+    en = str(body.get("lang") or "") == "en"
+    act = str(body.get("act") or "state")
+    if act == "state":
+        return _school_state(user, en)
+    if act == "track":
+        S.set_track(pid, str(body.get("track") or ""))
+        return {"ok": True}
+    if act == "read_new":
+        lv = 2 if int(body.get("level") or 1) >= 2 else 1
+        q = S.new_read(pid, lv, en)
+        _SCHOOL_Q[pid] = q
+        return {"ok": True, **{k: v for k, v in q.items() if k not in ("ans", "why")}}
+    if act == "read_answer":
+        q = _SCHOOL_Q.pop(pid, None)
+        if not q:
+            return {"ok": False, "err": "no question"}
+        ok = S.answer_read(pid, q, body.get("choice"))
+        return {"ok": True, "right": ok, "ans": q["ans"], "why": q["why"], "marks": q.get("marks")}
+    if act == "moment":
+        m = S.moment(pid, en)
+        if not m.get("q"):
+            return {"ok": False}
+        _SCHOOL_Q[pid + ":m"] = m
+        return {"ok": True, **{k: v for k, v in m.items() if k not in ("ans", "why")}, **({"ans": m["ans"], "why": m["why"]} if m.get("done") else {})}
+    if act == "moment_answer":
+        m = _SCHOOL_Q.pop(pid + ":m", None) or S.moment(pid, en)
+        ok = str(body.get("choice")) == str(m.get("ans"))
+        stk = S.answer_moment(pid, ok)
+        return {"ok": True, "right": ok, "ans": m.get("ans"), "why": m.get("why"), "streak": stk}
+    if act in ("dojo_new", "dojo_decide"):
+        if not _school_full(user):
+            return {"ok": False, "err": "plan"}
+        if act == "dojo_new":
+            return {"ok": True, **S.dojo_new(pid)}
+        return S.dojo_decide(pid, body.get("choice"))
+    return {"ok": False, "err": "act"}
+
+
 def robots_of_person(user):
     """the member's robots, newest first, each with its step and next thing (the home's 'Ton robot' card)"""
     uids = _person_uids(user.get("id"))
@@ -18614,6 +18702,12 @@ def _one_memory(user, c):
                                                       if m.get("role") in ("user", "ai")), "en" if c.get("lang") == "en" else "fr")
         if _wsb:
             L.insert(0, _wsb)
+    except Exception:
+        pass
+    try:                                               # 2026-11-02: the learner (L'école de Kino), when they chose a path
+        _sb = _school_mod().block(_person(uid), c.get("lang") == "en")
+        if _sb:
+            L.append(_sb)
     except Exception:
         pass
     try:                                               # 2026-11-01 (kino_work): what he did at his own computer
@@ -29508,7 +29602,7 @@ def _member_pkg(uid):
 
 
 _HOME_CACHE = {}
-NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot")
+NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot", "ecole")
 
 
 def home_kino_data(user):
@@ -29579,6 +29673,12 @@ def _home_kino_data(user):
                         for l in L[:4]]
     except Exception:
         out["robots"], out["picks"] = [], []
+    try:                                   # 2026-11-02: L'école de Kino - the path chosen, the level, today's moment
+        _ss = _school_state(user, out.get("lang") == "en")
+        out["school"] = {k: _ss.get(k) for k in ("track", "level", "streak", "moment_done", "full")}
+        out["school"]["level_name"] = (_ss.get("levels") or [{}] * 6)[min(5, int(_ss.get("level") or 1) - 1)].get("name")
+    except Exception:
+        pass
     try:                                   # 2026-11-02: the robot built with Kino - its step and the one thing to do next
         _rs = robots_of_person(user)
         _bd = []
@@ -34469,7 +34569,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "school", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")
@@ -34495,7 +34595,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
+                       "replay_get": replay_get, "replay_bars": replay_bars, "school": school, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
@@ -36518,6 +36618,8 @@ class H(BaseHTTPRequestHandler):
                     self._send(json.dumps(console_payload(), ensure_ascii=False), "application/json")
                 except Exception as e:
                     self._send(json.dumps({"err": str(e)[:120]}), "application/json")
+        elif sub == "ecole":                      # 2026-11-02 (owner): L'école de Kino
+            self._send(open(os.path.join(DIR, "owl_school_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "robot":                      # 2026-11-02 (owner): one robot's whole story, its steps, what's next
             self._send(open(os.path.join(DIR, "owl_robot_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "robot_story":

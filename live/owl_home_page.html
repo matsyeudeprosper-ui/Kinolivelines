@@ -135,6 +135,8 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
  </section>
 
 
+ <div id="school"></div>
+
  <h2><span id="h-board">Tes robots</span><a href="mesrobots" id="h-board-all">Tout voir</a></h2>
  <div class="board" id="board"><div class="brow"><div class="bmain"><div class="bn skel">…</div></div></div></div>
 
@@ -236,6 +238,18 @@ async function load(){
   ['perf',T('Tester','Test'),'tests'],['live',T('La place','Marketplace'),'place'],
   d.account?['wealth',T('Patrimoine','Wealth'),'wealth']:['wealth',T('Formules','Plans'),'compte#formules']];
  if(document.getElementById('tiles'))document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
+ /* 2026-11-02 (owner): L'école de Kino - first the path question, then for learners one card: level, streak, today's moment */
+ {const SC=d.school||{},el=document.getElementById('school');
+  if(el){if(!SC.track)el.innerHTML='<div class="card" style="margin-top:14px"><div class="rn" style="margin-bottom:10px">'+T('Tu trades déjà ?','Do you already trade?')+'</div>'+
+    '<div style="display:grid;gap:8px">'+[['beginner',T('Non, je veux apprendre','No, I want to learn')],['some',T('Un peu, sans vraie méthode','A bit, without a real method')],['expert',T('Oui, j’ai ma méthode','Yes, I have my method')]]
+    .map(x=>'<button class="chip" style="text-align:left;padding:12px 14px;border-radius:14px;font-weight:600;font-size:14px" data-tr="'+x[0]+'">'+x[1]+'</button>').join('')+'</div></div>';
+   else if(SC.track!=='expert')el.innerHTML='<a class="myr" style="margin-top:14px" href="'+B+'ecole"><div class="rh"><div class="ri" style="font-size:18px">🎓</div><div style="flex:1;min-width:0"><div class="rn">'+T('L’école de Kino','Kino’s school')+'</div>'+
+    '<div class="rs">'+T('Niveau ','Level ')+(SC.level||1)+' · '+esc(SC.level_name||'')+(SC.streak?' · 🔥 '+SC.streak:'')+'</div></div></div>'+
+    '<div class="mst">'+[1,2,3,4,5,6].map(i=>'<i class="'+(i<(SC.level||1)?'d':i===(SC.level||1)?'c':'')+'"></i>').join('')+'</div>'+
+    '<div class="mnx"><span>'+(SC.moment_done?T('Moment du jour fait. Continue ton niveau.','Today’s moment done. Carry on with your level.'):T('Le moment du jour t’attend : une question sur Bitcoin, maintenant.','Today’s moment is waiting: one question on Bitcoin, right now.'))+'</span><b>›</b></div></a>';
+   else el.innerHTML='';
+   el.querySelectorAll('[data-tr]').forEach(b=>b.onclick=async()=>{try{await fetch(B+'school',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'track',track:b.dataset.tr})});}catch(e){}
+    if(b.dataset.tr==='expert')el.innerHTML='';else location.href=B+'ecole';});}}
  const BD=d.my_robots||[],ME=x=>(x.next||{}).k==='vote',WK=x=>(x.next||{}).k==='improve';
  document.getElementById('h-board').textContent=T('Tes robots','Your robots');document.getElementById('h-board-all').textContent=T('Tout voir','See all');
  {const nMe=BD.filter(ME).length,nRun=BD.filter(x=>x.running).length,nLive=BD.filter(x=>x.live).length;

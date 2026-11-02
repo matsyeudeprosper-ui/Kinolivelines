@@ -111,7 +111,7 @@ body.k-sec .hero{display:none!important}
   place:[T('La place','Marketplace'),T('Les robots créés par Kino et les membres','Robots made by Kino and members')],
   tests:[T('Tests','Tests'),T('Résultats, preuves, tests de chance','Results, proofs, luck tests')],kino:[T('Kino et toi','Kino and you'),T('Ce qu’il retient, ce qu’il poursuit','What he remembers, what he pursues')],
   wealth:[T('Patrimoine','Wealth'),T('Ton argent, tes poches, tes dépôts','Your money, pockets and deposits')],parrainage:[T('Parrainage','Referral'),T('50 % du premier mois de chaque ami','50% of each friend’s first month')],
-  rentabilite:[T('Rentabilité','Profitability'),''],robot:[T('Mon robot','My robot'),'']};
+  rentabilite:[T('Rentabilité','Profitability'),''],robot:[T('Mon robot','My robot'),''],ecole:[T('L’école de Kino','Kino’s school'),'']};
  var DT={home:[T('Aujourd’hui','Today'),T('Ton compte et ton robot en ce moment','Your account and robot right now')],
   marche:[T('Marché','Market'),T('En direct · ce que voient tes robots','Live · what your robots see')],robot:[T('Marché','Market'),T('En direct','Live')],
   hist:[T('Performance · L’Owl','Performance · the Owl'),T('Le robot de ton compte, jour par jour','Your account’s robot, day by day')],
@@ -119,7 +119,7 @@ body.k-sec .hero{display:none!important}
   offres:[T('Formules','Plans'),'']};
  function sec(){return (location.hash||'').slice(1)||'home';}
  function key(){if(dash){var h=sec();return {marche:'home',robot:'home',hist:'home',set:'compte',nid:'compte',offres:'compte'}[h]||'home';}
-  return ({tests:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'home',robot:'mesrobots'}[sub])||sub||'home';}
+  return ({tests:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'home',robot:'mesrobots',ecole:'home'}[sub])||sub||'home';}
  function title(){var t=dash?(DT[sec()]||DT.home):(TITLES[sub||'home']||[document.title,'']);
   if(document.body.dataset.ktitle)t=[document.body.dataset.ktitle,''];   /* a page can name itself (a robot's page: its name) */
   if(!dash&&(sub==='home'||sub==='')){var h=new Date().getHours();var n=(document.getElementById('nm')||{}).textContent||'';

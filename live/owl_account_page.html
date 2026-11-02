@@ -136,6 +136,7 @@ function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
  $('h-kino').textContent=T('Avec Kino','With Kino');
  $('kino').innerHTML=row('chat',T('Ta conversation','Your conversation'),T('Reprendre où vous en étiez','Pick up where you left off'),B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):''))+
   row('brain',T('Kino et toi','Kino and you'),T('Ce qu’il retient de toi, ce qu’il poursuit','What he remembers, what he pursues'),B+'kino')+
+  row('brain',T('L’école de Kino','Kino’s school'),T('Apprendre à trader en construisant ton robot','Learn to trade by building your robot'),B+'ecole')+
   row('flask',T('Tes tests','Your tests'),T('Résultats, preuves, tests de chance','Results, proofs, luck tests'),B+'tests')+
   row('gift',T('Parrainage','Referral'),T('50 % du premier mois de chaque ami, pour toi','50% of each friend’s first month, for you'),B+'parrainage');
  $('h-pref').textContent=T('Préférences','Preferences');$('p-lang').textContent=T('Langue','Language');$('p-theme').textContent=T('Thème','Theme');$('th-d').textContent=T('Sombre','Dark');$('th-l').textContent=T('Clair','Light');
@@ -153,8 +154,8 @@ function shut(){$('sh').classList.remove('on');try{history.replaceState(null,'',
 $('sh').addEventListener('click',e=>{if(e.target.id==='sh'||e.target.dataset.x!=null)shut();});
 const PLANS=[['decouverte','manual',0],['essentiel','manual',19],['pro','strategy',49],['premium','premium',119]];
 function plansSheet(){const P=(D&&D.plan)||{},cur=P.name||'decouverte';
- const F={decouverte:[T('5 réponses de Kino par jour','5 Kino replies a day'),T('2 tests','2 tests')],
-  essentiel:[T('400 réponses de Kino par mois','400 Kino replies a month'),T('5 tests','5 tests'),T('Kino travaille en fond pour toi','Kino works in the background for you')],
+ const F={decouverte:[T('5 réponses de Kino par jour','5 Kino replies a day'),T('2 tests','2 tests'),T('L’école : niveaux 1-2 et le moment du jour','The school: levels 1-2 and today’s moment')],
+  essentiel:[T('400 réponses de Kino par mois','400 Kino replies a month'),T('5 tests','5 tests'),T('L’école complète : le dojo, ton robot, ton certificat','The full school: the dojo, your robot, your certificate'),T('Kino travaille en fond pour toi','Kino works in the background for you')],
   pro:[T('1 200 réponses par mois','1,200 replies a month'),T('Tests sans limite, tous les marchés','Unlimited tests, every market'),T('30 min d’appel avec Kino','30 min of calls with Kino')],
   premium:[T('600 réponses par mois, réfléchies avec soin','600 carefully thought replies a month'),T('Tests sans limite, tous les marchés','Unlimited tests, every market'),T('60 min d’appel, ton propre courtier','60 min of calls, your own broker')]};
  const L={decouverte:T('Découverte','Discovery'),essentiel:T('Essentiel','Essential'),pro:'Pro',premium:'Premium'};

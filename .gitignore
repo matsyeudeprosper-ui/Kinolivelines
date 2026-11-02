@@ -266,3 +266,7 @@ live/robots/kino_work_calls.log
 live/robots/kino_browser.log
 live/robots/kino_permits.json
 live/robots/kino_permits.json.tmp
+
+# 2026-11-02: L'école de Kino - each learner's progress (member data)
+live/robots/kino_school.json
+live/robots/kino_school.json.tmp
