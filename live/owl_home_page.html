@@ -88,13 +88,7 @@ nav.tabs a.k span.kd{width:24px;height:24px;border-radius:8px;background:var(--g
  <div class="foot" id="foot"></div>
 </div>
 
-<nav class="tabs" aria-label="Navigation">
- <a class="on" href="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span id="t1">Accueil</span></a>
- <a class="k" id="tk" href="atelier"><span class="kd">K</span><span>Kino</span></a>
- <a href="mesrobots"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg><span id="t3">Robots</span></a>
- <a href="place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 11a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span id="t4">La place</span></a>
- <a href="?classic=1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="t5">Compte</span></a>
-</nav>
+
 
 <script>
 const B=location.pathname.replace(/home\/?$/,'');
@@ -119,7 +113,6 @@ async function load(){
   'Hi, I’m Kino. Tell me how you trade, or the idea on your mind: I turn it into a robot, test it on real prices, and tell you honestly whether it holds up.');}
  const talk=document.getElementById('talk');talk.href=B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):'');
  document.getElementById('talk-t').textContent=d.last?T('Répondre à Kino','Reply to Kino'):T('Parler à Kino','Talk to Kino');
- document.getElementById('tk').href=talk.href;
  const C=[[T('Construis mon robot','Build my robot'),T('J’aimerais construire un robot avec ma méthode.','I’d like to build a robot from my method.')],
   [T('Teste une idée','Test an idea'),T('J’ai une idée à tester sur de vrais prix.','I have an idea to test on real prices.')],
   [T('Tu fais quoi ?','What are you up to?'),T('Tu fais quoi en ce moment ?','What are you up to right now?')]];
@@ -154,7 +147,6 @@ async function load(){
   (cap==null?T('Kino sans limite','Kino without limit'):(T('Réponses de Kino ','Kino replies ')+per+' : '+(left==null?cap:left)+' / '+cap))+
   '</div></div><a class="tag k" href="'+B+'?classic=1#offres">'+T('Changer','Change')+'</a></div>'+
   (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
- document.getElementById('t1').textContent=T('Accueil','Home');document.getElementById('t4').textContent=T('La place','Market');document.getElementById('t5').textContent=T('Compte','Account');
  document.getElementById('foot').innerHTML=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.')+
   ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>'+
   (d.family||d.owner?' · <a href="'+B+'?classic=1">'+T('Tableau de bord du robot','Robot dashboard')+'</a>':'');

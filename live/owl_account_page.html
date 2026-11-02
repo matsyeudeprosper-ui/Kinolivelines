@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8"><meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Compte</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="/icon192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-11-02 (owner: "Compte only shows the home screen"): the member's account in the new design - who they are, their plan and
+   what is left, their trading account and its robot, everything around Kino, preferences, help and the legal pages. Data:
+   home_data (same call as the home). The full dashboard of the robot stays one tap away. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--up:#2ecc71;--down:#ff6b6b;--acc:#22d3ee;--grad:linear-gradient(135deg,#7c6cff,#22d3ee)}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;--border2:#d5dce7;
+ --text:#121722;--text2:#3b4658;--muted:#6a7588}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}.wrap{max-width:640px;margin:0 auto;padding:22px 16px 24px}
+h1{font-size:26px;letter-spacing:-.03em;margin:4px 0 18px}
+.me{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px}
+.ini{width:52px;height:52px;border-radius:16px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800;font-size:22px;flex:0 0 52px}
+.me b{font-size:17px;display:block}.me small{color:var(--muted)}
+h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:26px 4px 10px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.pad{padding:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-top:1px solid var(--border)}
+.card>.row:first-child{border-top:0}
+.row .l{display:flex;align-items:center;gap:12px}.row .ic{width:34px;height:34px;border-radius:10px;background:var(--surface3);display:grid;place-items:center;flex:0 0 34px}
+.row .ic svg{width:18px;height:18px;color:var(--text2)}.row .t{font-weight:600}.row .s{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+.chev{color:var(--muted);font-size:20px}
+.plan{display:flex;justify-content:space-between;align-items:flex-start}.plan b{font-size:19px}.plan small{display:block;color:var(--muted);margin-top:2px}
+.bar{height:7px;border-radius:99px;background:var(--surface3);overflow:hidden;margin:14px 0 6px}.bar i{display:block;height:100%;background:var(--grad)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:12px;font-weight:700;background:var(--grad);color:#fff;font-size:14px}
+.btn.g{background:var(--surface3);color:var(--text)}
+.bal{font-size:30px;font-weight:800;letter-spacing:-.02em}.pos{color:var(--up)}.neg{color:var(--down)}
+.tag{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid #2ecc7166;color:var(--up);font-weight:600}
+.seg{display:flex;background:var(--surface3);border-radius:10px;padding:3px}.seg button{border:0;background:none;color:var(--muted);font:inherit;font-weight:600;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.out{color:var(--down)}
+.foot{margin:24px 4px 0;font-size:12px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
+</style></head><body>
+<div class="wrap">
+ <h1 id="ttl">Compte</h1>
+ <div class="me"><div class="ini" id="ini">·</div><div><b id="nm">&nbsp;</b><small id="pl">&nbsp;</small></div></div>
+
+ <h2 id="h-plan">Ta formule</h2>
+ <div class="card pad" id="plan"></div>
+
+ <div id="acct"></div>
+
+ <h2 id="h-kino">Avec Kino</h2>
+ <div class="card" id="kino"></div>
+
+ <h2 id="h-pref">Préférences</h2>
+ <div class="card">
+  <div class="row"><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><span class="t" id="p-lang">Langue</span></div>
+   <div class="seg"><button data-l="fr">FR</button><button data-l="en">EN</button></div></div>
+  <div class="row"><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></svg></div><span class="t" id="p-theme">Thème</span></div>
+   <div class="seg"><button data-t="dark" id="th-d">Sombre</button><button data-t="light" id="th-l">Clair</button></div></div>
+ </div>
+
+ <h2 id="h-help">Aide</h2>
+ <div class="card" id="help"></div>
+
+ <div class="card" style="margin-top:22px"><a class="row" href="/logout"><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div><span class="t out" id="lo">Se déconnecter</span></div></a></div>
+
+ <div class="foot" id="foot"></div>
+</div>
+<script>
+const B=location.pathname.replace(/compte\/?$/,'');let EN=false;
+try{EN=localStorage.getItem('owlLang')==='en';}catch(e){}
+const T=(f,e)=>EN?e:f,$=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const IC={chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',brain:'<path d="M12 5a3 3 0 0 0-5.9.8A3 3 0 0 0 4 11a3 3 0 0 0 2 5.4A3 3 0 0 0 12 18V5zM12 5a3 3 0 0 1 5.9.8A3 3 0 0 1 20 11a3 3 0 0 1-2 5.4A3 3 0 0 1 12 18"/>',
+ flask:'<path d="M9 3h6M10 3v6L4 19a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 19l-6-10V3"/>',wallet:'<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M16 13h.01M3 10h18"/>',
+ gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S9 3 7 5s5 3 5 3zm0 0s3-5 5-3-5 3-5 3z"/>',dash:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.2-2.4 3.7M12 17h.01"/>',doc:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/>'};
+const row=(ic,t,s,href,ext)=>'<a class="row" href="'+href+'"'+(ext?' target="_blank" rel="noopener"':'')+'><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[ic]+'</svg></div><span class="t">'+esc(t)+(s?'<span class="s">'+esc(s)+'</span>':'')+'</span></div><span class="chev">›</span></a>';
+function money(v){const n=Number(v||0);return(n>=0?'+':'−')+Math.abs(n).toFixed(2)+' $';}
+let D=null;
+function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
+ $('ttl').textContent=T('Compte','Account');$('nm').textContent=d.name||'';$('ini').textContent=(d.name||'·').trim().charAt(0).toUpperCase()||'·';
+ const P=d.plan||{};$('pl').textContent=(EN?P.label_en:P.label)||'';
+ $('h-plan').textContent=T('Ta formule','Your plan');
+ const left=P.replies_left,cap=P.month!=null?P.month:P.replies,per=P.month!=null?T('ce mois','this month'):T('aujourd’hui','today');
+ $('plan').innerHTML='<div class="plan"><div><b>'+esc((EN?P.label_en:P.label)||'')+'</b><small>'+(cap==null?T('Kino sans limite','Kino without limit'):T('Réponses de Kino ','Kino replies ')+per+' : '+(left==null?cap:left)+' / '+cap)+
+  (P.tests!=null?' · '+T('tests : ','tests: ')+(P.tests_left==null?P.tests:P.tests_left)+' / '+P.tests:'')+'</small></div>'+(d.owner?'':'<a class="btn" href="'+B+'?classic=1#offres">'+T('Changer','Change')+'</a>')+'</div>'+
+  (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
+ const A=d.account;
+ $('acct').innerHTML=A?'<h2>'+T('Ton compte de trading','Your trading account')+'</h2><div class="card pad"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><small style="color:var(--muted)">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+'</small><div class="bal">'+Number(A.balance||0).toFixed(2)+' $</div>'+
+  '<small style="color:var(--muted)">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week)+'</span></small></div>'+
+  (A.auto?'<span class="tag">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div>'+
+  '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><a class="btn g" href="'+B+'?classic=1">'+T('Tableau de bord complet','Full dashboard')+'</a><a class="btn g" href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div></div>':'';
+ $('h-kino').textContent=T('Avec Kino','With Kino');
+ $('kino').innerHTML=row('chat',T('Ta conversation','Your conversation'),T('Reprendre où vous en étiez','Pick up where you left off'),B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):''))+
+  row('brain',T('Kino et toi','Kino and you'),T('Ce qu’il retient de toi, ce qu’il poursuit','What he remembers, what he pursues'),B+'kino')+
+  row('flask',T('Tes tests','Your tests'),T('Résultats, preuves, tests de chance','Results, proofs, luck tests'),B+'tests')+
+  row('gift',T('Parrainage','Referral'),T('50 % du premier mois de chaque ami, pour toi','50% of each friend’s first month, for you'),B+'parrainage');
+ $('h-pref').textContent=T('Préférences','Preferences');$('p-lang').textContent=T('Langue','Language');$('p-theme').textContent=T('Thème','Theme');$('th-d').textContent=T('Sombre','Dark');$('th-l').textContent=T('Clair','Light');
+ document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',(b.dataset.l==='en')===EN));
+ const lt=document.documentElement.getAttribute('data-theme')==='light';document.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',(b.dataset.t==='light')===lt));
+ $('h-help').textContent=T('Aide','Help');
+ $('help').innerHTML=row('help',T('Une question ?','A question?'),T('Demande à Kino, il connaît l’app par cœur','Ask Kino, he knows the app by heart'),B+'atelier?ask='+encodeURIComponent(T('J’ai une question sur l’app.','I have a question about the app.')))+
+  row('doc',T('Conditions de vente','Terms of sale'),'','/cgv'+(EN?'?lang=en':''),1)+row('doc',T('Confidentialité','Privacy'),'','/confidentialite'+(EN?'?lang=en':''),1)+row('doc',T('Mentions légales','Legal notice'),'','/mentions-legales'+(EN?'?lang=en':''),1);
+ $('lo').textContent=T('Se déconnecter','Sign out');
+ $('foot').textContent=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.');
+ document.querySelectorAll('#knav span[data-fr]').forEach(s=>s.textContent=EN?s.dataset.en:s.dataset.fr);}
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{EN=b.dataset.l==='en';try{localStorage.setItem('owlLang',EN?'en':'fr');}catch(e){}paint();});
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const l=b.dataset.t==='light';if(l)document.documentElement.setAttribute('data-theme','light');else document.documentElement.removeAttribute('data-theme');
+ try{localStorage.setItem('owlTheme',l?'light':'dark');}catch(e){}paint();});
+paint();fetch(B+'home_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{D=d;if(!localStorage.getItem('owlLang'))EN=d.lang==='en';paint();}).catch(()=>{});
+</script>
+</body></html>

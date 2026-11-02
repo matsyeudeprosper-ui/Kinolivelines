@@ -29231,6 +29231,7 @@ def _member_pkg(uid):
 
 
 _HOME_CACHE = {}
+NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite")
 
 
 def home_kino_data(user):
@@ -34009,7 +34010,7 @@ class H(BaseHTTPRequestHandler):
             if ctype.startswith("text/html"):
                 _pp = [x for x in self.path.split("?")[0].split("/") if x]
                 _pg = _pp[1] if len(_pp) > 1 else ""
-                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app", "home") and not _pg.startswith("chat_"):
+                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app", "home") and _pg not in NAV_PAGES and not _pg.startswith("chat_"):
                     _uk = user_by_token(_pp[0])
                     if _uk and kino_ok(_uk):
                         _b = body.decode("utf-8") if isinstance(body, bytes) else body
@@ -34024,6 +34025,15 @@ class H(BaseHTTPRequestHandler):
                             except Exception:
                                 pass
                             body = _b.replace("</body>", _kino_panel_html().replace("__TOK__", _pp[0]).replace("__FIRST__", _first) + "</body>", 1)
+        except Exception:
+            pass
+        try:                                             # 2026-11-02 (owner): one bottom menu on every page of the new design
+            if ctype.startswith("text/html"):
+                _pp2 = [x for x in self.path.split("?")[0].split("/") if x]
+                if len(_pp2) == 2 and _pp2[1] in NAV_PAGES and user_by_token(_pp2[0]):
+                    _b2 = body.decode("utf-8") if isinstance(body, bytes) else body
+                    if "</body>" in _b2 and 'id="knav"' not in _b2:
+                        body = _b2.replace("</body>", open(os.path.join(DIR, "owl_nav_inject.html"), encoding="utf-8").read() + "</body>", 1)
         except Exception:
             pass
         if isinstance(body, str):
@@ -36108,6 +36118,9 @@ class H(BaseHTTPRequestHandler):
             self.send_response(302)
             self.send_header("Location", "/%s/home" % parts[0])
             self.end_headers()
+            return
+        if sub == "compte":                              # 2026-11-02 (owner): the account page of the new design
+            self._send(open(os.path.join(DIR, "owl_account_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             return
         if sub in ("home", "home_data"):
             if sub == "home":

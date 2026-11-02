@@ -1,0 +1,28 @@
+<!-- 2026-11-02 (owner: "the new design navigation - Compte only shows the home, Robots and La place have no menu"): ONE bottom
+     menu for every page of the new design (home, robots, place, account, tests, wealth...), injected by the server before
+     </body>. The active tab is the page's own address; the Kino tab opens his conversation. -->
+<style>
+#knav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;
+ padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(11,15,20,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ border-top:1px solid rgba(255,255,255,.07);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+:root[data-theme="light"] #knav{background:rgba(246,248,252,.92);border-top-color:#e3e8f0}
+#knav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#8a9bb0;min-width:58px;padding:4px 0;text-decoration:none}
+#knav a.on{color:#e8eef4}:root[data-theme="light"] #knav a.on{color:#121722}
+#knav svg{width:22px;height:22px}
+#knav .kd{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#7c6cff,#22d3ee);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+</style>
+<nav id="knav" aria-label="Navigation">
+ <a data-p="home" href="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-fr="Accueil" data-en="Home">Accueil</span></a>
+ <a data-p="atelier" href="atelier"><span class="kd">K</span><span>Kino</span></a>
+ <a data-p="mesrobots" href="mesrobots"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg><span data-fr="Robots" data-en="Robots">Robots</span></a>
+ <a data-p="place" href="place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16l-1.5 11a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span data-fr="La place" data-en="Market">La place</span></a>
+ <a data-p="compte" href="compte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-fr="Compte" data-en="Account">Compte</span></a>
+</nav>
+<script>(function(){try{var seg=location.pathname.split('/').filter(Boolean),pg=seg[1]||'home',tok=seg[0];
+ var map={tests:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'compte'};pg=map[pg]||pg;
+ var en=false;try{en=(localStorage.getItem('owlLang')||document.documentElement.lang)==='en';}catch(e){}
+ document.querySelectorAll('#knav a').forEach(function(a){a.href='/'+tok+'/'+a.getAttribute('data-p');if(a.getAttribute('data-p')===pg)a.classList.add('on');
+  var s=a.querySelector('span[data-fr]');if(s)s.textContent=en?s.getAttribute('data-en'):s.getAttribute('data-fr');});
+ fetch('/'+tok+'/home_data').then(function(r){return r.json()}).then(function(d){if(d&&d.cid){var k=document.querySelector('#knav a[data-p="atelier"]');if(k)k.href='/'+tok+'/atelier?c='+encodeURIComponent(d.cid);}}).catch(function(){});
+}catch(e){}})();</script>
