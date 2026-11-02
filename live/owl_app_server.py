@@ -36430,7 +36430,8 @@ class H(BaseHTTPRequestHandler):
             self._not_found()
             return
         sub = parts[1] if len(parts) > 1 else ""
-        if sub == "" and not user.get("public") and "classic=1" not in self.path:
+        if sub == "" and not user.get("public") and ("classic=1" not in self.path or not (is_admin(user) or user.get("id") in OWNER_UIDS)):
+            # 2026-11-02 (owner: "I don't want users to access the old design anymore"): ?classic=1 is the owner's alone (the Nid)
             # 2026-11-01 (owner: "the focus is Kino"; then "I'd like everyone on the new design, yet all using the Owl should
             # continue"): every member lands on Kino's home - the robots on the accounts are untouched (a page, not a switch);
             # the account and its robot are the home's first card, the full dashboard stays at ?classic=1
@@ -37089,7 +37090,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(open(os.path.join(DIR, "owl_tests_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
                 self.send_response(302)              # 2026-11-02: not a raw 404 - the plans, where Tests come with Pro
-                self.send_header("Location", "/%s/?classic=1#offres" % parts[0])
+                self.send_header("Location", "/%s/compte#formules" % parts[0])
                 self.end_headers()
         elif sub in ("strategies", "strategies_data", "robots", "equipe", "robots_data", "team_data"):
             # 2026-10-12 (owner): "Strategies" - every strategy in one catalog. Strategie members and the

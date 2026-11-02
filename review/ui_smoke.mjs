@@ -294,7 +294,7 @@ check("the chart uses the rule the bot runs",
 // ---------- settings --------------------------------------------------
 console.log("");
 console.log("settings");
-await nav("about:blank"); await nav(`${BASE}/${VAL}/?classic=1#set`); await sleep(10000);
+await nav("about:blank"); await nav(`${BASE}/${TOK("kino")}/?classic=1#set`); await sleep(10000);
 check("inner-marks row exists",
       (await ev("!!document.getElementById('intmkrow')")) === true);
 check("its switch reflects the stored value",

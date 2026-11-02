@@ -67,6 +67,7 @@ body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bot
 #knav a.kmid .kd{width:52px;height:52px;border-radius:18px;font-size:22px;box-shadow:0 10px 26px rgba(124,108,255,.45),0 0 0 5px var(--bg)}
 #knav a.kmid.on:after{display:none}
 .k-folded{display:none!important}
+#owlnav{display:none!important}   /* the old pages' own bottom bars: the shell's menu replaces them */
 /* a page's own sticky strip (Patrimoine tabs) sticks under the bar, not behind it; its repeated title and back arrow go */
 .wrap > nav:not(#knav),body > nav:not(#knav){top:calc(58px + env(safe-area-inset-top,0px))!important}
 .k-dup{display:none!important}
@@ -100,6 +101,10 @@ body.k-sec .hero{display:none!important}
  var en=false;try{en=(localStorage.getItem('owlLang')||document.documentElement.lang)==='en';}catch(e){}
  var T=function(f,e){return en?e:f;};
  try{localStorage.setItem('owlTourDone','1');}catch(e){}
+ /* 2026-11-02 (owner: "users must not reach the old design any more"): an old link (./#offres, ./#marche...) lands on the
+    home; what it was going for opens in the new design */
+ if(sub==='home'){var OLD={offres:'compte#formules',set:'compte',marche:'robot?id=owl&tab=live',robot:'robot?id=owl&tab=live',hist:'robot?id=owl&tab=perf'}[(location.hash||'').slice(1)];
+  if(OLD){location.replace('/'+tok+'/'+OLD);return;}}
  var TITLES={home:[T('Accueil','Home'),''],compte:[T('Compte','Account'),T('Ta formule, ton compte, tes réglages','Your plan, account and settings')],
   mesrobots:[T('Mes robots','My robots'),T('Construits avec Kino · leurs résultats','Built with Kino · their results')],
   place:[T('La place','Marketplace'),T('Les robots créés par Kino et les membres','Robots made by Kino and members')],

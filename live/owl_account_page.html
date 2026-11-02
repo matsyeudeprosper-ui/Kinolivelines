@@ -41,6 +41,27 @@ h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .out{color:var(--down)}
 .foot{margin:24px 4px 0;font-size:12px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
+/* 2026-11-02 (owner: "users must not reach the old design any more"): plans, codes and notifications live here now */
+#sh{position:fixed;inset:0;z-index:80;display:none;background:rgba(3,6,10,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#sh.on{display:block}
+#sh .p{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;background:var(--surface);border-top:1px solid var(--border2);padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));animation:shUp .25s ease-out}
+@media (min-width:700px){#sh .p{left:50%;right:auto;width:520px;transform:translateX(-50%);bottom:24px;border-radius:22px;border:1px solid var(--border2)}}
+@keyframes shUp{from{opacity:0;transform:translateY(30px)}to{opacity:1}}
+#sh .g{width:40px;height:4px;border-radius:4px;background:var(--border2);margin:0 auto 12px}
+#sh h3{margin:2px 0 6px;font-size:19px}#sh p{color:var(--text2);font-size:14px;margin:0 0 12px}
+.pl{display:block;width:100%;text-align:left;border:1px solid var(--border2);background:var(--surface2);border-radius:16px;padding:14px;margin-bottom:10px;color:var(--text);font:inherit;cursor:pointer}
+.pl.cur{border-color:#7c6cff88;background:linear-gradient(135deg,#7c6cff14,#22d3ee0d)}
+.pl .h{display:flex;justify-content:space-between;align-items:baseline}.pl b{font-size:16px}.pl .pr{font-size:18px;font-weight:800}.pl .pr small{font-size:12px;color:var(--muted);font-weight:600}
+.pl ul{margin:8px 0 0;padding:0;list-style:none;font-size:13px;color:var(--text2)}.pl li{padding:2px 0}.pl li:before{content:"✓ ";color:var(--up);font-weight:800}
+.pl .tg{font-size:11px;font-weight:800;color:#b4a9ff;margin-left:8px}
+.in{width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text);padding:13px;font:600 16px Inter,system-ui,sans-serif;margin-bottom:10px}
+.in.code{letter-spacing:.3em;text-transform:uppercase;text-align:center;font-size:20px}
+.bt{display:block;width:100%;border:0;border-radius:14px;padding:13px;font:700 15px Inter,system-ui,sans-serif;cursor:pointer;margin-top:6px;background:var(--grad,linear-gradient(135deg,#7c6cff,#22d3ee));color:#fff}
+.bt.gh{background:var(--surface3);color:var(--text)}
+.msg{font-size:13.5px;margin:6px 0;color:var(--text2)}.msg.bad{color:#ff8a8a}.msg.ok{color:#7ff0b0}
+.sw{position:relative;width:46px;height:28px;border-radius:99px;background:var(--surface3);border:1px solid var(--border2);flex:none;cursor:pointer;transition:background .2s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw.on{background:#2ecc71}.sw.on:after{transform:translateX(18px)}
 </style></head><body>
 <div class="wrap">
  <h1 id="ttl">Compte</h1>
@@ -70,6 +91,7 @@ h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
  <div class="card" style="margin-top:22px"><a class="row" href="/logout"><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div><span class="t out" id="lo">Se déconnecter</span></div></a></div>
 
  <div class="foot" id="foot"></div>
+<div id="sh"><div class="p" id="shp"></div></div>
 </div>
 <script>
 const B=location.pathname.replace(/compte\/?$/,'');let EN=false;
@@ -79,6 +101,7 @@ const IC={chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/
  flask:'<path d="M9 3h6M10 3v6L4 19a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 19l-6-10V3"/>',wallet:'<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M16 13h.01M3 10h18"/>',
  gift:'<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8S9 3 7 5s5 3 5 3zm0 0s3-5 5-3-5 3-5 3z"/>',dash:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 2.2-2.4 3.7M12 17h.01"/>',doc:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/>'};
+const shrow=(ic,t,s,k)=>'<a class="row" href="#'+k+'" data-sh="'+k+'"><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[ic]+'</svg></div><span class="t">'+esc(t)+'<span class="s">'+esc(s)+'</span></span></div><span class="chev">›</span></a>';
 const row=(ic,t,s,href,ext)=>'<a class="row" href="'+href+'"'+(ext?' target="_blank" rel="noopener"':'')+'><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+IC[ic]+'</svg></div><span class="t">'+esc(t)+(s?'<span class="s">'+esc(s)+'</span>':'')+'</span></div><span class="chev">›</span></a>';
 function money(v){const n=Number(v||0);return(n>=0?'+':'−')+Math.abs(n).toFixed(2)+' $';}
 let D=null;
@@ -88,22 +111,23 @@ function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
  $('h-plan').textContent=T('Ta formule','Your plan');
  const left=P.replies_left,cap=P.month!=null?P.month:P.replies,per=P.month!=null?T('ce mois','this month'):T('aujourd’hui','today');
  $('plan').innerHTML='<div class="plan"><div><b>'+esc((EN?P.label_en:P.label)||'')+'</b><small>'+(cap==null?T('Kino sans limite','Kino without limit'):T('Réponses de Kino ','Kino replies ')+per+' : '+(left==null?cap:left)+' / '+cap)+
-  (P.tests!=null?' · '+T('tests : ','tests: ')+(P.tests_left==null?P.tests:P.tests_left)+' / '+P.tests:'')+'</small></div>'+(d.owner?'':'<a class="btn" href="'+B+'?classic=1#offres">'+T('Changer','Change')+'</a>')+'</div>'+
+  (P.tests!=null?' · '+T('tests : ','tests: ')+(P.tests_left==null?P.tests:P.tests_left)+' / '+P.tests:'')+'</small></div>'+(d.owner?'':'<a class="btn" href="#formules" data-sh="plans">'+T('Changer','Change')+'</a>')+'</div>'+
   (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
  const A=d.account;
  $('acct').innerHTML=A?'<h2>'+T('Ton compte de trading','Your trading account')+'</h2><div class="card pad"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><small style="color:var(--muted)">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+'</small><div class="bal">'+Number(A.balance||0).toFixed(2)+' $</div>'+
   '<small style="color:var(--muted)">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week)+'</span></small></div>'+
   (A.auto?'<span class="tag">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div>'+
-  '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><a class="btn g" href="'+B+'?classic=1">'+T('Tableau de bord complet','Full dashboard')+'</a><a class="btn g" href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div></div>':'';
+  '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><a class="btn g" href="'+B+'robot?id=owl">'+T('Son robot','Its robot')+'</a><a class="btn g" href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div></div>':'';
  // 2026-11-02 (owner: "merge the old and new design so nothing is lost"): every part of the robot dashboard has its row here
  $('dash').innerHTML='<h2>'+T('Ton robot et tes résultats','Your robot and results')+'</h2><div class="card">'+
-  row('dash',T('Aujourd’hui','Today'),T('Le robot en ce moment, ta journée, les alertes','The robot right now, your day, alerts'),B+'?classic=1#home')+
-  row('dash',T('En direct','Live'),T('Le marché, le scanner, le labo, le robot','The market, the scanner, the lab, the robot'),B+'?classic=1#marche')+
-  row('dash',T('Performance','Performance'),T('Jour par jour, signaux, statistiques, derniers trades','Day by day, signals, stats, latest trades'),B+'?classic=1#hist')+
+  (A?row('dash',T('L’Owl sur ton compte','The Owl on your account'),T('Ce qu’il fait maintenant, ses règles','What it does now, its rules'),B+'robot?id=owl')+
+  row('dash',T('Performance','Performance'),T('Depuis le début, mois par mois, calendrier','Since the start, month by month, calendar'),B+'robot?id=owl&tab=perf')+
+  row('dash',T('En direct','Live'),T('Ce qu’il voit et attend','What it sees and waits for'),B+'robot?id=owl&tab=live'):'')+
   row('wallet',T('Patrimoine','Wealth'),T('Ton argent, tes poches, tes dépôts','Your money, your pockets, your deposits'),B+'wealth')+'</div>'+
   '<h2>'+T('Réglages','Settings')+'</h2><div class="card">'+
-  row('help',T('Notifications et application','Notifications and app'),T('Alertes, installation, code d’accès','Alerts, install, access code'),B+'?classic=1#set')+
-  row('gift',T('Formules et paiements','Plans and payments'),T('Changer de formule, historique','Change plan, history'),B+'?classic=1#offres')+
+  '<div class="row"><div class="l"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div><span class="t">'+T('Notifications','Notifications')+'<span class="s" id="nst">'+T('Trades, bilans, messages de Kino','Trades, reviews, Kino’s messages')+'</span></span></div><button class="sw" id="nsw" aria-label="Notifications"></button></div>'+
+  shrow('gift',T('Formules','Plans'),T('Changer de formule, plus de messages','Change plan, more messages'),'plans')+
+  shrow('help',T('Entrer un code','Enter a code'),T('Un code reçu pour activer ou renouveler','A code you received to activate or renew'),'code')+
   row('chat',T('La place des robots','The robot marketplace'),T('Les robots créés par Kino et par les membres','Robots made by Kino and by members'),B+'place')+
   (d.owner?row('brain',T('Le Nid','The Nest'),T('Tous les comptes, administration','All accounts, administration'),B+'?classic=1#nid')+row('brain',T('Le monde de Kino','Kino’s world'),T('Son ordinateur, ses publications, ses gains','His computer, his posts, his earnings'),B+'kinoworld'):'')+'</div>';
  $('h-kino').textContent=T('Avec Kino','With Kino');
@@ -119,10 +143,65 @@ function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
   row('doc',T('Conditions de vente','Terms of sale'),'','/cgv'+(EN?'?lang=en':''),1)+row('doc',T('Confidentialité','Privacy'),'','/confidentialite'+(EN?'?lang=en':''),1)+row('doc',T('Mentions légales','Legal notice'),'','/mentions-legales'+(EN?'?lang=en':''),1);
  $('lo').textContent=T('Se déconnecter','Sign out');
  $('foot').textContent=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.');
- document.querySelectorAll('#knav span[data-fr]').forEach(s=>s.textContent=EN?s.dataset.en:s.dataset.fr);}
+ document.querySelectorAll('#knav span[data-fr]').forEach(s=>s.textContent=EN?s.dataset.en:s.dataset.fr);if(typeof nsetup==='function')nsetup();}
+/* ---- sheets: plans, a code (2026-11-02, from the old dashboard) ---- */
+function sheet(h){$('shp').innerHTML='<div class="g"></div>'+h;$('sh').classList.add('on');}
+function shut(){$('sh').classList.remove('on');try{history.replaceState(null,'',location.pathname);}catch(e){}}
+$('sh').addEventListener('click',e=>{if(e.target.id==='sh'||e.target.dataset.x!=null)shut();});
+const PLANS=[['decouverte','manual',0],['essentiel','manual',19],['pro','strategy',49],['premium','premium',119]];
+function plansSheet(){const P=(D&&D.plan)||{},cur=P.name||'decouverte';
+ const F={decouverte:[T('5 réponses de Kino par jour','5 Kino replies a day'),T('2 tests','2 tests')],
+  essentiel:[T('400 réponses de Kino par mois','400 Kino replies a month'),T('5 tests','5 tests'),T('Kino travaille en fond pour toi','Kino works in the background for you')],
+  pro:[T('1 200 réponses par mois','1,200 replies a month'),T('Tests sans limite, tous les marchés','Unlimited tests, every market'),T('30 min d’appel avec Kino','30 min of calls with Kino')],
+  premium:[T('600 réponses par mois, réfléchies avec soin','600 carefully thought replies a month'),T('Tests sans limite, tous les marchés','Unlimited tests, every market'),T('60 min d’appel, ton propre courtier','60 min of calls, your own broker')]};
+ const L={decouverte:T('Découverte','Discovery'),essentiel:T('Essentiel','Essential'),pro:'Pro',premium:'Premium'};
+ sheet('<h3>'+T('Les formules','The plans')+'</h3><p>'+T('Paiement en crypto, pour 30 jours. Sans engagement.','Paid in crypto, for 30 days. No commitment.')+'</p>'+
+  PLANS.map(x=>'<button class="pl'+((cur===x[0]||(x[0]==='decouverte'&&cur==='decouverte_trial'))?' cur':'')+'" data-buy="'+(x[2]?x[1]:'')+'"><div class="h"><b>'+L[x[0]]+((cur===x[0]||(x[0]==='decouverte'&&cur==='decouverte_trial'))?'<span class="tg">'+T('TA FORMULE','YOUR PLAN')+'</span>':'')+'</b><span class="pr">'+(x[2]?x[2]+' $<small> / '+T('mois','month')+'</small>':T('Gratuit','Free'))+'</span></div><ul>'+F[x[0]].map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul></button>').join('')+
+  '<button class="pl" data-pack="msgs-300"><div class="h"><b>'+T('300 messages de plus','300 more messages')+'</b><span class="pr">9 $</span></div><ul><li>'+T('En plus de ta formule, ils n’expirent jamais','On top of your plan, they never expire')+'</li></ul></button>'+
+  '<div class="msg" id="pmsg"></div><button class="bt gh" data-x>'+T('Fermer','Close')+'</button>');
+ $('shp').querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{const k=b.dataset.buy;if(!k||b.classList.contains('cur'))return;const m=$('pmsg');m.className='msg';m.textContent=T('Je prépare le paiement…','Preparing the payment…');
+  try{const r=await fetch(B+'buy',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pkg='+encodeURIComponent(k)});const j=await r.json();
+   if(j.ok&&j.url){m.textContent=T('La page de paiement s’ouvre.','The payment page opens.');try{window.open(j.url,'_blank');}catch(e){location.href=j.url;}}
+   else{m.className='msg bad';m.textContent=j.err==='not ready'?T('Le paiement n’est pas encore ouvert. Demande à Kino.','Payments are not open yet. Ask Kino.'):T('Le paiement n’a pas pu démarrer. Réessaie dans un instant.','The payment could not start. Try again in a moment.');}}
+  catch(e){m.className='msg bad';m.textContent=T('Hors ligne.','Offline.');}});
+ $('shp').querySelectorAll('[data-pack]').forEach(b=>b.onclick=async()=>{const m=$('pmsg');m.className='msg';m.textContent=T('Je prépare le paiement…','Preparing the payment…');
+  try{const r=await fetch(B+'msg_pack_buy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pack:b.dataset.pack})});const j=await r.json();
+   if(j.ok&&(j.url||j.invoice_url)){const u=j.url||j.invoice_url;m.textContent=T('La page de paiement s’ouvre.','The payment page opens.');try{window.open(u,'_blank');}catch(e){location.href=u;}}
+   else{m.className='msg bad';m.textContent=T('Le paiement n’a pas pu démarrer.','The payment could not start.');}}catch(e){m.className='msg bad';m.textContent=T('Hors ligne.','Offline.');}});}
+function codeSheet(){sheet('<h3>'+T('Entrer un code','Enter a code')+'</h3><p>'+T('Le code reçu sur Telegram : il active ou renouvelle ta formule.','The code you received on Telegram: it activates or renews your plan.')+'</p>'+
+  '<input class="in code" id="cin" maxlength="8" autocomplete="one-time-code" placeholder="ABC123"><div id="cmt"></div><div class="msg" id="cmsg"></div>'+
+  '<button class="bt" id="cgo">'+T('Activer','Activate')+'</button><button class="bt gh" data-x>'+T('Fermer','Close')+'</button>');
+ setTimeout(()=>{try{$('cin').focus();}catch(e){}},200);
+ $('cgo').onclick=async()=>{const code=$('cin').value.trim().toUpperCase(),m=$('cmsg'),b=$('cgo');m.className='msg';
+  if(code.length<6){m.className='msg bad';m.textContent=T('Entre le code complet.','Enter the full code.');return;}
+  let extra='';const ml=$('ml');if(ml){if(!ml.value||!$('ms').value||!$('mp').value){m.className='msg bad';m.textContent=T('Les trois champs sont nécessaires.','All three fields are needed.');return;}
+   extra='&mt5_login='+encodeURIComponent(ml.value)+'&mt5_server='+encodeURIComponent($('ms').value)+'&mt5_password='+encodeURIComponent($('mp').value);}
+  b.disabled=true;b.textContent='…';let j=null;
+  try{const r=await fetch(B+'activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'code='+encodeURIComponent(code)+extra});j=await r.json();}catch(e){}
+  b.disabled=false;b.textContent=T('Activer','Activate');
+  if(j&&!j.ok&&j.need==='mt5'){$('cmt').innerHTML='<p>'+T('Ce code met le robot sur ton propre compte MT5. Dis-moi lequel, une seule fois.','This code puts the robot on your own MT5 account. Tell me which one, once.')+'</p>'+
+    '<input class="in" id="ml" inputmode="numeric" placeholder="'+T('Numéro de compte MT5','MT5 account number')+'"><input class="in" id="ms" placeholder="Exness-MT5Real30"><input class="in" id="mp" type="password" placeholder="'+T('Mot de passe principal du compte','Account main password')+'">';
+   m.textContent='';return;}
+  if(j&&j.ok){m.className='msg ok';m.textContent=T('C’est fait : ta formule est active.','Done: your plan is active.');setTimeout(()=>location.reload(),1500);}
+  else{m.className='msg bad';m.textContent=(j&&j.err)?String(j.err):T('Ce code ne marche pas : vérifie-le, ou demande-en un nouveau.','This code does not work: check it, or ask for a new one.');}};}
+document.addEventListener('click',e=>{const a=e.target.closest('[data-sh]');if(!a)return;e.preventDefault();if(a.dataset.sh==='plans')plansSheet();else codeSheet();});
+/* ---- notifications: the same subscription as the old dashboard ---- */
+async function nsetup(){const sw=$('nsw');if(!sw)return;
+ if(!('serviceWorker' in navigator)||!('PushManager' in window)){$('nst').textContent=T('Pas disponible sur ce navigateur','Not available on this browser');sw.style.display='none';return;}
+ let reg=null;try{reg=await navigator.serviceWorker.getRegistration(B)||await navigator.serviceWorker.register(B+'sw.js',{scope:B});}catch(e){}
+ const s=reg?await reg.pushManager.getSubscription().catch(()=>null):null;sw.classList.toggle('on',!!s);
+ sw.onclick=async()=>{if(!reg)return;const cur=await reg.pushManager.getSubscription().catch(()=>null);
+  if(cur){await fetch(B+'push_unsub',{method:'POST',body:JSON.stringify(cur)}).catch(()=>null);await cur.unsubscribe().catch(()=>null);sw.classList.remove('on');return;}
+  if(await Notification.requestPermission()!=='granted'){$('nst').textContent=T('Refusé par le téléphone : autorise-les dans ses réglages.','Refused by the phone: allow them in its settings.');return;}
+  const kr=await fetch(B+'push_key').then(r=>r.json()).catch(()=>null);if(!kr||!kr.key)return;
+  const conv=x=>{const p='='.repeat((4-x.length%4)%4),b=atob((x+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)));};
+  const ns=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:conv(kr.key)}).catch(()=>null);
+  if(!ns){$('nst').textContent=T('Impossible sur cet appareil.','Not possible on this device.');return;}
+  await fetch(B+'push_sub',{method:'POST',body:JSON.stringify(ns)}).catch(()=>null);sw.classList.add('on');};}
 document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{EN=b.dataset.l==='en';try{localStorage.setItem('owlLang',EN?'en':'fr');}catch(e){}paint();});
 document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{const l=b.dataset.t==='light';if(l)document.documentElement.setAttribute('data-theme','light');else document.documentElement.removeAttribute('data-theme');
  try{localStorage.setItem('owlTheme',l?'light':'dark');}catch(e){}paint();});
-paint();fetch(B+'home_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{D=d;if(!localStorage.getItem('owlLang'))EN=d.lang==='en';paint();}).catch(()=>{});
+paint();fetch(B+'home_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{D=d;if(!localStorage.getItem('owlLang'))EN=d.lang==='en';paint();
+ if(location.hash==='#formules'||location.hash==='#plans')plansSheet();else if(location.hash==='#code')codeSheet();}).catch(()=>{});
 </script>
 </body></html>

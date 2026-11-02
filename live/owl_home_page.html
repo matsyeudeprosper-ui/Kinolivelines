@@ -124,7 +124,7 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
 .foot{margin:26px 2px 0;font-size:11.5px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
 </style></head><body>
 <div class="wrap">
- <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="?classic=1#offres">&nbsp;</a></div>
+ <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="compte#formules">&nbsp;</a></div>
 
  <div id="acct"><div class="money"><div class="lbl skel" style="width:40%">…</div><div class="bal skel" style="width:60%">…</div><div class="spark skel"></div></div></div>
 
@@ -185,7 +185,7 @@ function moneyCard(){const A=D.account;const el=document.getElementById('acct');
  const P={day:[A.today,T('aujourd’hui','today')],week:[A.week,T('cette semaine','this week')],month:[A.month,T('ce mois-ci','this month')],
   all:[S.net,S.days?T('en '+S.days+' jours','in '+S.days+' days'):T('depuis le début','since the start')]}[PER];
  const pct=PER==='all'&&start>0?' ('+(S.net>=0?'+':'−')+Math.abs(100*S.net/start).toFixed(1)+' %)':'';
- const st=A.ended?['end',T('Période terminée','Period ended')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:['off',(A.robot||'Robot')+T(' · en pause',' · paused')];
+ const st=A.auto&&!A.ended?['on',(A.robot||'Robot')+T(' · actif',' · running')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:A.ended?['end',T('Période terminée','Period ended')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:['off',(A.robot||'Robot')+T(' · en pause',' · paused')];
  const b=Number(A.balance||0).toFixed(2).split('.');
  const wr=S.n?Math.round(100*(S.won||0)/S.n):null;
  const LM=A.last_month;const mN=LM?new Date(LM.ym+'-15').toLocaleDateString(EN?'en':'fr',{month:'long'}):'';
@@ -201,8 +201,8 @@ function moneyCard(){const A=D.account;const el=document.getElementById('acct');
    '<div class="stat"><b class="num '+cls(A.month)+'">'+money(A.month)+'</b><span>'+T('Ce mois','This month')+'</span></div>'+
    '<div class="stat"><b class="num '+(LM?cls(LM.net):'')+'">'+(LM?money(LM.net):'—')+'</b><span>'+(LM?esc(mN.charAt(0).toUpperCase()+mN.slice(1)):T('Mois dernier','Last month'))+'</span></div>'+
    '<div class="stat"><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('Trades gagnants','Winning trades')+'</span></div></div>'+
-  (A.ended?'<div class="renew"><span>'+T('Ta période Automatique est terminée : le robot ne trade plus pour toi.','Your Automatic period has ended: the robot no longer trades for you.')+'</span><a href="'+B+'?classic=1#home">'+T('Renouveler','Renew')+'</a></div>':'')+
-  (A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'?classic=1#marche">'+T('Voir','See')+'</a></div>':'')+
+  (A.ended?'<div class="renew"><span>'+(A.auto?T('Ta période Automatique est terminée. Le robot trade encore : renouvelle avec ton code.','Your Automatic period has ended. The robot still trades: renew with your code.'):T('Ta période Automatique est terminée : le robot ne trade plus pour toi.','Your Automatic period has ended: the robot no longer trades for you.'))+'</span><a href="'+B+'compte#code">'+T('Entrer mon code','Enter my code')+'</a></div>':'')+
+  (A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'robot?id=owl&tab=live">'+T('Voir','See')+'</a></div>':'')+
   '<div class="alinks"><a href="'+B+'robot?id=owl&tab=perf">'+T('Performance','Performance')+'</a><a href="'+B+'robot?id=owl&tab=live">'+T('En direct','Live')+'</a><a href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div>'+
   '</div>';
  el.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{PER=x.dataset.p;try{localStorage.setItem('homePer',PER);}catch(e){}moneyCard();});}
@@ -236,7 +236,7 @@ async function load(){
  document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{location.href=talk.href+(talk.href.includes('?')?'&':'?')+'ask='+encodeURIComponent(C[+el.dataset.i][1]);});
  const TL=[['robot',T('Construire','Build'),'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid)+'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))],
   ['perf',T('Tester','Test'),'tests'],['live',T('La place','Marketplace'),'place'],
-  d.account?['wealth',T('Patrimoine','Wealth'),'wealth']:['wealth',T('Formules','Plans'),'?classic=1#offres']];
+  d.account?['wealth',T('Patrimoine','Wealth'),'wealth']:['wealth',T('Formules','Plans'),'compte#formules']];
  document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
  const BD=d.my_robots||[],ME=x=>(x.next||{}).k==='vote',WK=x=>(x.next||{}).k==='improve';
  document.getElementById('h-board').textContent=T('Tes robots','Your robots');document.getElementById('h-board-all').textContent=T('Tout voir','See all');
@@ -274,7 +274,7 @@ async function load(){
  const left=P.replies_left,cap=P.month!=null?P.month:P.replies,per=P.month!=null?T('ce mois','this month'):T('aujourd’hui','today');
  document.getElementById('plancard').innerHTML='<div class="planrow"><div><div class="rn">'+esc(EN?P.label_en:P.label)+'</div><div class="rs">'+
   (cap==null?T('Kino sans limite','Kino without limit'):(T('Réponses de Kino ','Kino replies ')+per+' : '+(left==null?cap:left)+' / '+cap))+
-  '</div></div><a class="tag k" href="'+B+'?classic=1#offres">'+T('Changer','Change')+'</a></div>'+
+  '</div></div><a class="tag k" href="'+B+'compte#formules">'+T('Changer','Change')+'</a></div>'+
   (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
  document.getElementById('foot').innerHTML=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.')+
   ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>';
