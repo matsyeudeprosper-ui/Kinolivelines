@@ -18028,7 +18028,10 @@ def _one_facts(user, c):
             else:
                 _st.append("après un stop touché : rien de spécial (pas de règle après-perte)")
             if _rb.get("recovery"):
-                _st.append("rattrapage : " + _pl(_rb.get("recovery")))
+                _simple = isinstance(_mo, dict) and _mo.get("use") == "simple"
+                _st.append("rattrapage : " + (("%s - SANS EFFET sur ce robot : avec l'argent 'simple' il n'est jamais lu, "
+                                               "ce n'est pas un écart avec sa règle, ne le cite pas comme tel" % _pl(_rb.get("recovery")))
+                                              if _simple else _pl(_rb.get("recovery"))))
             if _st:
                 L.append("Ce robot, tel qu'il est maintenant (version %s) : %s." % (c.get("rev") or 1, " | ".join(_st)))
         except Exception:
@@ -20800,7 +20803,9 @@ def _chat_build(cid, user):
                             (_rb.get("entry") or {}).get("use"), (_rb.get("stop") or {}).get("use"),
                             (_rb.get("exit") or {}).get("plain_en") or (_rb.get("exit") or {}).get("plain") or "-",
                             (_rb.get("money") or {}).get("lot") or (_rb.get("money") or {}).get("use"),
-                            (_rb.get("recovery") or {}).get("use"), ", ".join(str(f) for f in (_rb.get("filters") or [])) or "none")
+                            ("%s (no effect: with the 'simple' money it is never read - not a gap from his rule)" % (_rb.get("recovery") or {}).get("use"))
+                            if (_rb.get("money") or {}).get("use") == "simple" else (_rb.get("recovery") or {}).get("use"),
+                            ", ".join(str(f) for f in (_rb.get("filters") or [])) or "none")
                         _al = _rb.get("after_loss")         # 2026-11-02 00:04 (watch): left out here, Kino could not see the flip
                         if isinstance(_al, dict):           # that WAS saved and sent it back to the builder four times
                             _now_rules += "; AFTER A STOP-OUT (the next trade only): direction %s, entry %s, stop %s, target %s R" % (
