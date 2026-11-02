@@ -18008,6 +18008,18 @@ def _one_facts(user, c):
                 _st.append("taille du lot : formule %s (sur l'historique de ce robot)" % _mo["lot"])
             elif isinstance(_mo, dict) and _mo.get("use"):
                 _st.append("argent : %s" % _mo["use"])
+            # 2026-11-02 00:11-00:18 (watch): this view had no after-loss rule and no recovery piece, the BUILD DONE view had
+            # them - Kino said "the flip isn't in", "it is", "it isn't" in turn. One description, the whole robot.
+            _al = _rb.get("after_loss")
+            if isinstance(_al, dict):
+                _st.append("après un stop touché (le trade suivant seulement) : sens %s, entrée %s, stop %s, objectif %s R" % (
+                    {"reverse": "inverse", "same": "le même", "any": "libre"}.get(_al.get("direction"), _al.get("direction")),
+                    _pl(_al.get("entry")) if _al.get("entry") else "la normale", _pl(_al.get("stop")) if _al.get("stop") else "le normal",
+                    _al.get("target")))
+            else:
+                _st.append("après un stop touché : rien de spécial (pas de règle après-perte)")
+            if _rb.get("recovery"):
+                _st.append("rattrapage : " + _pl(_rb.get("recovery")))
             if _st:
                 L.append("Ce robot, tel qu'il est maintenant (version %s) : %s." % (c.get("rev") or 1, " | ".join(_st)))
         except Exception:
@@ -20272,6 +20284,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _okp = True
             if str(event).startswith(AUTO_EV) or _one_mind:     # 2026-10-26: not an initiative; 2026-10-28: the one mind's timing is his wish
                 _okp = True
+            if _one_mind and not str(event).startswith(AUTO_EV):
+                try:                                     # 2026-11-02 (watch): eight of his own in a row at 1 am, no answer
+                    _own = 0
+                    for _mq in reversed(c.get("msgs") or []):
+                        if _mq.get("role") == "user":
+                            break
+                        if _mq.get("role") == "ai" and str(_mq.get("text") or "").strip() and _mq.get("event"):
+                            _own += 1
+                    _urg = str(event).startswith(("LIVE TRADE", "TEST RESULT", "MONEY ARRIVED", "KILL", "SOMEONE ANSWERED", "AN EMAIL ARRIVED"))
+                    if _own >= 3 and not _urg:
+                        io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD one-mind %s | %d of his own unanswered\n" % (
+                            time.strftime("%m-%d %H:%M:%S"), user.get("id"), cid, str(event)[:30].replace(" ", "_"), _own))
+                        _okp = False
+                except Exception:
+                    pass
             if not _okp:
                 _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
                 return
