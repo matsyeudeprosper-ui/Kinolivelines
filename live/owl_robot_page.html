@@ -296,7 +296,7 @@ function render(){const d=D,app=document.getElementById('app');if(!d)return;EN=d
  try{document.body.dataset.ktitle=d.name;window.dispatchEvent(new HashChangeEvent('hashchange'));}catch(e){}
  if(!tabsOf(d).some(x=>x[0]===TAB))TAB='over';
  const acc=d.kind==='account',wait='<div class="card"><div class="skel" style="height:120px"></div></div>';
- const body=TAB==='over'?overview(d):TAB==='perf'?(acc?'<iframe id="perfx" title="Performance" src="'+B+'?classic=1&embed=perf#hist" style="display:block;width:100%;height:1400px;border:0;border-radius:18px;background:transparent" scrolling="no"></iframe>':(d.result?resultCard(d.result,d)+testsTab(d).replace(resultCard(d.result,d),''):testsTab(d)))
+ const body=TAB==='over'?overview(d):TAB==='perf'?(acc?'<iframe id="perfx" title="Performance" src="'+B+'?classic=1&embed=perf&lang='+(EN?'en':'fr')+'#hist" style="display:block;width:100%;height:1400px;border:0;border-radius:18px;background:transparent" scrolling="no"></iframe>':(d.result?resultCard(d.result,d)+testsTab(d).replace(resultCard(d.result,d),''):testsTab(d)))
   :TAB==='live'?(A?liveTab():wait):TAB==='tests'?(acc?proofTab():testsTab(d)):storyTab(d);
  app.innerHTML=hero(d)+'<div class="tabbody">'+body+'</div>';
  app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','?id='+encodeURIComponent(d.id)+'&tab='+TAB);}catch(e){}render();window.scrollTo({top:0});});
