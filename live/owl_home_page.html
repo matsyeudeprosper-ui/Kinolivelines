@@ -132,14 +132,12 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
   <div class="who"><div class="av" id="kav">🦉<em></em></div><div><b>Kino</b><div class="st"><span class="dot"></span><span id="status">…</span></div></div><span class="when" id="when"></span></div>
   <div class="msg" id="msg"><span class="skel">Kino réfléchit à ce qu’il va te dire…</span></div>
   <a class="cta" id="talk" href="atelier"><span id="talk-t">Parler à Kino</span> <span aria-hidden="true">→</span></a>
-  <div class="chips" id="chips"></div>
  </section>
 
 
  <h2><span id="h-board">Tes robots</span><a href="mesrobots" id="h-board-all">Tout voir</a></h2>
  <div class="board" id="board"><div class="brow"><div class="bmain"><div class="bn skel">…</div></div></div></div>
 
- <div class="tiles" id="tiles"></div>
 
  <h2><span id="h-rob">Tes robots</span><a href="mesrobots" id="h-rob-all">Tout voir</a></h2>
  <div class="rail" id="robots"><div class="rc solo skel" style="height:110px"></div></div>
@@ -232,12 +230,12 @@ async function load(){
   [T('Teste une idée','Test an idea'),T('J’ai une idée à tester sur de vrais prix.','I have an idea to test on real prices.')],
   [T('Explique mes résultats','Explain my results'),T('Explique-moi mes résultats en mots simples.','Explain my results in plain words.')],
   [T('Tu fais quoi ?','What are you up to?'),T('Tu fais quoi en ce moment ?','What are you up to right now?')]];
- document.getElementById('chips').innerHTML=C.map((c,i)=>'<span class="chip" data-i="'+i+'">'+esc(c[0])+'</span>').join('');
+ if(document.getElementById('chips'))document.getElementById('chips').innerHTML=C.map((c,i)=>'<span class="chip" data-i="'+i+'">'+esc(c[0])+'</span>').join('');
  document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{location.href=talk.href+(talk.href.includes('?')?'&':'?')+'ask='+encodeURIComponent(C[+el.dataset.i][1]);});
  const TL=[['robot',T('Construire','Build'),'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid)+'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))],
   ['perf',T('Tester','Test'),'tests'],['live',T('La place','Marketplace'),'place'],
   d.account?['wealth',T('Patrimoine','Wealth'),'wealth']:['wealth',T('Formules','Plans'),'compte#formules']];
- document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
+ if(document.getElementById('tiles'))document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
  const BD=d.my_robots||[],ME=x=>(x.next||{}).k==='vote',WK=x=>(x.next||{}).k==='improve';
  document.getElementById('h-board').textContent=T('Tes robots','Your robots');document.getElementById('h-board-all').textContent=T('Tout voir','See all');
  {const nMe=BD.filter(ME).length,nRun=BD.filter(x=>x.running).length,nLive=BD.filter(x=>x.live).length;

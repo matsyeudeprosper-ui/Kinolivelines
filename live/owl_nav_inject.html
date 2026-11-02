@@ -71,9 +71,10 @@ body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bot
 /* a page's own sticky strip (Patrimoine tabs) sticks under the bar, not behind it; its repeated title and back arrow go */
 .wrap > nav:not(#knav),body > nav:not(#knav){top:calc(58px + env(safe-area-inset-top,0px))!important}
 .k-dup{display:none!important}
-#ktip{top:calc(64px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:12px!important;left:auto!important;
- border-radius:14px 4px 14px 14px!important;z-index:62!important;box-shadow:0 12px 36px rgba(0,0,0,.45)!important;animation:ktipIn .3s ease-out}
+#ktip{top:auto!important;bottom:calc(92px + env(safe-area-inset-bottom,0px))!important;left:50%!important;right:auto!important;margin-left:-130px!important;width:260px!important;max-width:260px!important;
+ border-radius:14px 14px 14px 14px!important;z-index:62!important;box-shadow:0 12px 36px rgba(0,0,0,.45)!important;animation:ktipIn .3s ease-out}
 @keyframes ktipIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#knav a.kmid.unread .kd{position:relative}#knav a.kmid.unread .kd:after{content:"";position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:#ff5c7a;border:2px solid var(--bg)}
 #kbk.unread .av i{background:#ff5c7a!important;box-shadow:0 0 0 0 rgba(255,92,122,.6);animation:kbkP 1.6s infinite}
 @keyframes kbkP{70%{box-shadow:0 0 0 7px rgba(255,92,122,0)}100%{box-shadow:0 0 0 0 rgba(255,92,122,0)}}
 .tabbar,#hbar,#kpgtab{display:none!important}
@@ -88,7 +89,7 @@ body.k-sec .hero{display:none!important}
 <div id="kbar"><div class="kt"><b id="kbt">&nbsp;</b><small id="kbs"></small></div><div class="ka" id="kba"></div>
  <button class="kib" id="kbell" aria-label="Messages" title="Messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b></b></button>
  <button class="kib" id="kmore" aria-label="Plus" title="Plus" hidden><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
- <button class="kc" id="kbk" aria-label="Kino"><span class="av">🦉<i></i></span><span>Kino</span></button></div>
+ <a class="kib" id="kchart" href="#" aria-label="Graphique" title="Graphique des prix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M17 4v16"/><rect x="4.5" y="8" width="5" height="7" rx="1"/><rect x="14.5" y="6" width="5" height="9" rx="1"/></svg></a></div>
 <nav id="knav" aria-label="Navigation">
  <a data-p="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-fr="Accueil" data-en="Home">Accueil</span></a>
  <a data-p="mesrobots"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg><span data-fr="Robots" data-en="Robots">Robots</span></a>
@@ -181,8 +182,9 @@ body.k-sec .hero{display:none!important}
   try{if(IB.length)localStorage.setItem(IK,String(IB[0].t));}catch(e){}count();try{navigator.clearAppBadge&&navigator.clearAppBadge();}catch(e){}};
  inbox();setInterval(inbox,60000);
  /* Kino, everywhere: his panel slides open; on pages without it, his conversation */
- document.getElementById('kbk').onclick=function(){var t=document.getElementById('kpgtab');if(t){t.click();return;}
-  var k=document.querySelector('#knav a[data-p="atelier"]');location.href=k?k.href:'/'+tok+'/atelier';};
+ /* 2026-11-02 (owner: "Kino 3 times on the home is too much; the chart is very important but hard to find"): the bar's
+    Kino chip gives its place to the price chart - Kino is the raised button of the bottom menu, on every page */
+ document.getElementById('kchart').href='/'+tok+'/chart';
  var km=document.querySelector('#knav a[data-p="atelier"]');if(km)km.addEventListener('click',function(e){if(typeof window.kinoPanel==='function'){e.preventDefault();window.kinoPanel();}});
  document.querySelectorAll('#knav a').forEach(function(a){var p=a.getAttribute('data-p');
   a.href='/'+tok+'/'+p;
@@ -193,11 +195,16 @@ body.k-sec .hero{display:none!important}
    tab(h,b||null);if(h==='marche'&&typeof mxView==='function')setTimeout(function(){mxView('market',true)},50);title();};
   window.addEventListener('hashchange',go);if(sec()!=='home'){setTimeout(go,300);setTimeout(go,1600);}}
  function ktip(t){var x=(t.textContent||'').slice(0,80),k='ktip:'+x,was=false;try{was=!!sessionStorage.getItem(k);sessionStorage.setItem(k,'1');}catch(e){}
-  document.getElementById('kbk').classList.add('unread');if(was)t.remove();}
+  var km0=document.querySelector('#knav a.kmid');if(km0)km0.classList.add('unread');if(was)t.remove();}
  var kt0=document.getElementById('ktip');if(kt0)ktip(kt0);
  new MutationObserver(function(ms){ms.forEach(function(m){[].forEach.call(m.addedNodes,function(n){if(n.id==='ktip')ktip(n);});});}).observe(document.body,{childList:true});
  title();window.addEventListener('hashchange',title);setTimeout(title,1500);dedupe();setTimeout(dedupe,1600);
  fetch('/'+tok+'/home_data').then(function(r){return r.json()}).then(function(d){
+  /* 2026-11-02 (owner: "where is my Nid space - admin only - every account and the whole system"): in the menu of every page */
+  if(d&&d.owner){[['Le Nid · admin','The Nest · admin','/'+tok+'/?classic=1#nid'],['Le monde de Kino','Kino’s world','/'+tok+'/kinoworld']].forEach(function(x){
+   var a=document.createElement('a');a.href=x[2];a.setAttribute('aria-label',T(x[0],x[1]));a.className='k-dup';
+   a.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>';
+   document.body.appendChild(a);ACT.push(a);});document.getElementById('kmore').hidden=false;}
   if(d&&d.cid){var k=document.querySelector('#knav a[data-p="atelier"]');if(k)k.href='/'+tok+'/atelier?c='+encodeURIComponent(d.cid);}
   /* each robot has its own performance: the robot running on the account is the first card of "Mes robots" */
   if(sub==='mesrobots'&&d&&d.account){var c=document.createElement('a');c.href='/'+tok+'/robot?id=owl';var on=!!d.account.auto;

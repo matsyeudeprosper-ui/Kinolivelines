@@ -114,6 +114,9 @@ function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
   (P.tests!=null?' · '+T('tests : ','tests: ')+(P.tests_left==null?P.tests:P.tests_left)+' / '+P.tests:'')+'</small></div>'+(d.owner?'':'<a class="btn" href="#formules" data-sh="plans">'+T('Changer','Change')+'</a>')+'</div>'+
   (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
  const A=d.account;
+ /* 2026-11-02 (owner): his administration first - every account, the whole system */
+ {let ad=$('adm');if(!ad){ad=document.createElement('div');ad.id='adm';$('acct').parentNode.insertBefore(ad,$('acct'));}
+  ad.innerHTML=d.owner?'<h2>'+T('Administration','Administration')+'</h2><div class="card">'+row('brain',T('Le Nid','The Nest'),T('Tous les comptes, leurs robots, le système','Every account, its robots, the system'),B+'?classic=1#nid')+row('brain',T('Le monde de Kino','Kino’s world'),T('Son ordinateur, ses publications, ses gains','His computer, his posts, his earnings'),B+'kinoworld')+'</div>':'';}
  $('acct').innerHTML=A?'<h2>'+T('Ton compte de trading','Your trading account')+'</h2><div class="card pad"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><small style="color:var(--muted)">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+'</small><div class="bal">'+Number(A.balance||0).toFixed(2)+' $</div>'+
   '<small style="color:var(--muted)">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week)+'</span></small></div>'+
   (A.auto?'<span class="tag">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div>'+
