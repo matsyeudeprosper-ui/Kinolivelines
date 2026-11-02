@@ -901,22 +901,82 @@ def _robot_close(p, why):
         push("Robot de Kino", f"Trade ferme ({why}), {p.profit:+.2f} $")
 
 
-def _robot_history(cfg):
+def _robot_stop_of(x, i):
+    """2026-11-02: the stop price the closed robot trade had when it was hit (robot_after "stop_close" compares the
+    1-minute closes with it): the broker's "[sl PRICE]" on the closing deal, else the last stop this desk saw on the
+    open position (_RBT["sl"]), else the stop sent with its opening order; None = unknown (the trigger then waits)"""
+    import re
+    m = re.search(r"sl\s*([0-9]+(?:\.[0-9]+)?)", str(getattr(x, "comment", "") or ""))
+    if m:
+        return float(m.group(1))
+    v = (_RBT.get("sl") or {}).get(x.position_id)
+    if v:
+        return float(v)
+    if i is not None:
+        try:
+            od = mt5.history_orders_get(ticket=i.order) or []
+            if od and float(od[0].sl or 0) > 0:
+                return float(od[0].sl)
+        except Exception:
+            pass
+    return None
+
+
+def _robot_history(cfg, want_sl=False):
     """2026-11-01 (owner: "if that trade hits its stop-loss, take the reverse trade, 1:2"): the robot's own closed trades
     since it started here, with what robots/robot_after.py reads - each trade's side (its IN deal), whether the broker
-    closed it on its stop-loss (DEAL_REASON_SL) and whether it was the after-loss trade (its order comment KL-KROBOT-AL)"""
+    closed it on its stop-loss (DEAL_REASON_SL) and whether it was the after-loss trade (its order comment KL-KROBOT-AL).
+    want_sl (2026-11-02, a "stop_close" trigger): the last trade's stop price and entry too (_robot_stop_of)"""
     import robot_lot as RLOT
     H = RLOT.History(0.0)
     t0 = float(cfg.get("t") or 0)
     ds = mt5.history_deals_get(datetime.utcfromtimestamp(t0) - timedelta(hours=3), datetime.utcnow() + timedelta(days=1)) or []
     ins = {x.position_id: x for x in ds if x.magic == ROBOT_MAGIC and x.entry == mt5.DEAL_ENTRY_IN}
+    last = None
     for x in sorted(ds, key=lambda x: x.time_msc):
         if x.magic == ROBOT_MAGIC and x.entry == mt5.DEAL_ENTRY_OUT and x.time_msc / 1000.0 >= t0 - 60:
             i = ins.get(x.position_id)
             d = (1 if i.type == mt5.DEAL_TYPE_BUY else -1) if i is not None else (-1 if x.type == mt5.DEAL_TYPE_BUY else 1)
             H.add(x.profit + x.commission + x.swap, d=d, hit_sl=x.reason == mt5.DEAL_REASON_SL,
                   al=bool(i is not None and "KL-KROBOT-AL" in (i.comment or "")), t=x.time_msc / 1000.0)
+            last = (x, i)
+    if want_sl and last is not None and H.last_trade is not None:
+        H.last_trade["sl"] = _robot_stop_of(*last)
+        H.last_trade["e"] = float(last[1].price) if last[1] is not None else None
     return H
+
+
+def _robot_al_pick(rules, last, bt, c, sig, flip, C, RA, RL):
+    """2026-11-02 (owner: "after a stop-out, the reverse trade on a 1-minute candle that CLOSES beyond the stop just hit;
+    if that close never comes, a new breakout in the first direction"): the after-loss block with a stop_close trigger
+    and / or an alt branch, on the candle that just closed - every branch that fires (robot_after.trigger, the bench's
+    same call), the one the bench would take first (robot_after.first_of). (rules for that trade, its side, the
+    protected point, the kind) or None"""
+    al = rules.get("after_loss")
+    B = RA.branches(al, last, now=time.time())
+    if not B:
+        return None
+    fx_main = (rules.get("entry") or {}).get("event") == "formula"
+    cands = []
+    for j, (br, side) in enumerate(B):
+        r2 = RA.rules_for(rules, br)
+        ev = (br.get("entry") or {}).get("event")
+        if ev == RA.STOP_CLOSE:
+            s = RA.trigger(br, side, last, "minute", close=c, t_close=bt + 60)
+            if s:
+                slp = C.now("lowest(low, 20)" if s == 1 else "highest(high, 20)") if (C is not None and C.rows) else float("nan")
+                if slp == slp:
+                    cands.append((0, "close", (r2, s, slp, "CLOSE")))
+        elif ev == "formula":
+            f = RL.formula_entry(r2, C)
+            s = RA.trigger(br, side, last, "formula", d=f[0], t_close=bt + 60) if f else 0
+            if s:
+                cands.append((f[0], ("al", "alt")[j], (r2, s, f[1], "FORMULA")))
+        elif sig is not None:
+            s = RA.trigger(br, side, last, "choch" if flip else "bos", d=sig[0], t_close=bt + 60)
+            if s:
+                cands.append((int(sig[0]), "eyes" if fx_main else "main", (r2, s, float(sig[1]), "FLIP-BOS" if flip else "BOS")))
+    return RA.first_of(cands)
 
 
 def robot_tick(bar, sig, prev_trend, eng):
@@ -952,6 +1012,8 @@ def robot_tick(bar, sig, prev_trend, eng):
     tick = mt5.symbol_info_tick(SYMBOL)
     for p in mine:
         d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+        if p.sl:                                       # 2026-11-02: its stop as last seen (_robot_stop_of)
+            _RBT.setdefault("sl", {})[p.ticket] = float(p.sl)
         act = RL.formula_exit(rules, d, C) or RL.manage(rules, d, p.price_open, p.sl, float(p.time), now,
                                                          (tick.bid if d == 1 else tick.ask) if tick else c,
                                                          eng.choch == -d, p.ticket in _RBT["be"], tp=p.tp or None)
@@ -969,10 +1031,10 @@ def robot_tick(bar, sig, prev_trend, eng):
     # functions): a target formula reads its history; right after a normal trade closed on its stop with a loss, the
     # after-loss rules (trigger, side, stop, target) replace the normal ones for ONE trade. Robots without them: no change.
     import robot_after as RA
-    RV, want = None, None
+    RV, want, pre = None, None, None
     if RA.uses(rules):
         try:
-            RH = _robot_history(cfg)
+            RH = _robot_history(cfg, want_sl=RA.uses_stop_close(rules.get("after_loss")))
             _ai = mt5.account_info()
             RV = RH.names(_ai.balance if _ai else None)
             RV["start_balance"] = (_ai.balance - RH.net) if _ai else 0.0
@@ -980,10 +1042,18 @@ def robot_tick(bar, sig, prev_trend, eng):
         except Exception as _he:
             say(f"ROBOT historique illisible ({type(_he).__name__}: {_he}) - pas de trade sur cette bougie")
             return
-        if want is not None:
+        if want is not None and RA.has_branches(rules["after_loss"]):
+            # 2026-11-02: a stop_close trigger / an alt branch - the first that fires on this candle takes the trade
+            pre = _robot_al_pick(rules, RH.last_trade, bt, c, sig, flip, C, RA, RL)
+            if pre is None:
+                return
+            rules, want = pre[0], pre[1]
+        elif want is not None:
             rules = RA.rules_for(rules, rules["after_loss"])
     sgn = None
-    if (rules.get("entry") or {}).get("event") == "formula":
+    if pre is not None:
+        sgn, kind = (pre[1], pre[2]), pre[3]
+    elif (rules.get("entry") or {}).get("event") == "formula":
         sgn = RL.formula_entry(rules, C)
         kind = "FORMULA"
     elif sig is not None:
@@ -991,7 +1061,7 @@ def robot_tick(bar, sig, prev_trend, eng):
     if not sgn:
         return
     d, slp = int(sgn[0]), float(sgn[1])
-    ok, why = RL.entry_ok(rules, kind)
+    ok, why = (True, "") if pre is not None else RL.entry_ok(rules, kind)
     if ok and want:                                    # the after-loss trade: only on its side
         ok, why = (d == want), "apres un stop: seulement " + ("l'achat" if want == 1 else "la vente")
     cj = {}

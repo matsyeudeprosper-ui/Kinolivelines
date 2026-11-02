@@ -146,17 +146,19 @@ class History:
         self.last = 0.0
         self.last_dir = 0
         self.last_hit_sl = 0
-        self.last_trade = None         # 2026-11-01: {"d", "hit_sl", "pnl", "al", "tc"} of the last close (robot_after.pending)
+        self.last_trade = None         # 2026-11-01: {"d", "hit_sl", "pnl", "al", "tc", "sl", "e"} of the last close (robot_after)
 
-    def add(self, pnl, d=0, hit_sl=False, al=False, t=None):
+    def add(self, pnl, d=0, hit_sl=False, al=False, t=None, sl=None, e=None):
         """one closed trade; d / hit_sl / al / t (its side, closed on its stop, was it the after-loss trade, close time s)
-        are only known to the callers that need them (robot_after) - the defaults keep every older caller as it was"""
+        are only known to the callers that need them (robot_after) - the defaults keep every older caller as it was.
+        sl / e (2026-11-02): the stop price it had when it closed and its entry price (robot_after "stop_close")"""
         pnl = float(pnl)
         self.trades += 1
         self.last = pnl
         self.last_dir = int(d or 0)
         self.last_hit_sl = 1 if hit_sl else 0
-        self.last_trade = {"d": self.last_dir, "hit_sl": bool(hit_sl), "pnl": pnl, "al": bool(al), "tc": t}
+        self.last_trade = {"d": self.last_dir, "hit_sl": bool(hit_sl), "pnl": pnl, "al": bool(al), "tc": t,
+                           "sl": None if sl is None else float(sl), "e": None if e is None else float(e)}
         self.net += pnl
         if pnl > 0:
             self.wins += 1

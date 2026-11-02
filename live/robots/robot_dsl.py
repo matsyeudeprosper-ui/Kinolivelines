@@ -100,6 +100,12 @@ def validate(kind, rule):
             out = {"event": "formula", "buy": ab[0], "sell": ab[1]} if ok else None
         elif rule.get("event") in ("any", "bos", "choch"):
             ok, out = True, {"event": rule["event"]}
+        elif rule.get("event") == "stop_close":
+            # 2026-11-02 (owner): the after-loss trigger only (robots/robot_after.py) - the first 1-minute close beyond the
+            # stop that was just hit, by more than `buffer` price units; no waiting order on it
+            if od or not _num(rule.get("buffer", 0) or 0, 0, 1e6):
+                return False, "stop_close"
+            ok, out = True, {"event": "stop_close", "buffer": round(float(rule.get("buffer") or 0), 6)}
         else:
             return False, "event"
         if not ok:
@@ -243,6 +249,10 @@ def describe(kind, rule):
         return _fside(rule, "buy", "sell", "Trade seulement si la formule est vraie, ", "Trades only when the formula is true, ")
     if kind == "stop" and rule.get("kind") == "formula":
         return _fside(rule, "buy", "sell", "Stop au prix donné par la formule, ", "Stop at the price given by the formula, ")
+    if kind == "entry" and rule.get("event") == "stop_close":
+        b = float(rule.get("buffer") or 0)
+        return ("Après un stop touché seulement : entre dès qu'une bougie d'une minute clôture au-delà du stop touché" + (" de plus de %s" % _f(b)[1] if b else "") + ".",
+                "After a stop-out only: enters as soon as a 1-minute candle closes beyond the stop that was hit" + (" by more than %s" % _f(b)[0] if b else "") + ".")
     if kind == "entry":
         return {"any": ("Entre à la clôture de chaque cassure de structure (BOS ou CHoCH).", "Enters at the close of every structure break (BOS or CHoCH)."),
                 "bos": ("Entre seulement sur les cassures qui continuent la tendance (BOS), à la clôture.", "Enters only on breaks that continue the trend (BOS), at the close."),

@@ -312,16 +312,30 @@ RULES ON THE LAST TRADE'S RESULT (2026-11-01: a different target, side or trigge
   AFTER A STOP-OUT: the robot's "after_loss" = the ONE trade right after a normal trade closed on its stop with a loss:
     {"entry": SLOT  its trigger: {"rule": {"event": "any"}} = the next structure break (BOS or CHoCH, at the close) - the
                     usual meaning of a member's "when price breaks structure (BOS)"; {"event": "bos"} = only a break that
-                    continues the trend; {"event": "choch"}; or a formula entry,
+                    continues the trend; {"event": "choch"}; or a formula entry;
+                    {"rule": {"event": "stop_close", "buffer": 0}} = the FIRST 1-minute candle that CLOSES beyond the
+                    EXACT price of the stop that was just hit (below it after a stopped buy, above it after a stopped
+                    sell), entered at that close - the member's "a candle that closes beyond my stop"; buffer = how far
+                    beyond in price units (0 = any close beyond; outside Bitcoin keep 0). After a stop-out ONLY: never
+                    the robot's normal entry. It uses the real stop price, so NEVER rebuild it with a formula,
      "stop": SLOT | null   null = the robot's own stop; {"use": "point-protege"} = the protected point of that break,
      "direction": "reverse" (a buy after a stopped sell) | "same" | "any",
      "target": number in R | TARGET FORMULA | null (null = the robot's own target),
      "on": "sl" (closed on its stop with a loss - default) | "loss" (any losing close),
-     "expire_min": null | 5..10080   give up waiting after N minutes (null = wait for the trigger)}
+     "expire_min": null | 5..10080   give up waiting after N minutes (null = wait for the trigger),
+     "alt": null | {"entry": SLOT, "stop": SLOT | null, "direction": "same" (default) | "reverse" | "any",
+                    "target": number in R | TARGET FORMULA | null}   a SECOND trigger ("or else ..."): whichever of the
+                    two fires FIRST takes the one trade, the other is dropped}
     While it waits the normal entry is off; once that trade closes (won or lost) the robot is back to its normal rule.
     It runs in the TEST and on a member's DESK; not yet on an account bot (say so if they want it plugged there).
     e.g. "1:1 normally; if it hits the stop, immediately the reverse trade on the next BOS at 1:2" = exit target 1 and
     "after_loss": {"entry": {"rule": {"event": "any"}}, "stop": {"use": "point-protege"}, "direction": "reverse", "target": 2}.
+    e.g. the owner: "after a stop-out, enter the reverse trade on a 1-minute candle that CLOSES fully beyond the stop that
+    was just hit; if that close never comes, a new breakout in the first direction is a second entry" = EXACTLY
+    "after_loss": {"entry": {"rule": {"event": "stop_close", "buffer": 0}, "name": "Clôture au-delà du stop"},
+                   "stop": null, "direction": "reverse",
+                   "alt": {"entry": {"rule": {"event": "bos"}, "name": "Cassure dans le premier sens"}, "direction": "same"}}
+    (use {"event": "any"} in the alt if any break counts). This IS his rule, not an approximation - say so plainly.
   The "recovery" slot is something else (which follow-on breaks the Owl's money may take while in debt) - keep it as is.
 
 CHARTS - you and the member can SHOW things, like two traders looking at one screen:
@@ -1561,14 +1575,27 @@ def clean(raw, pieces, owl, prev, markets=None):
             if typ == "entry":
                 return {"event": "any"}
             return {"kind": "protected", "buffer": 0.0} if (pc.get("engine") or {}).get("stop") == "protected" else None
-        if en and (st or not al.get("stop")):
-            ok, cl = _RAc.validate({"entry": _rule(en, "entry"), "stop": _rule(st, "stop"), "direction": al.get("direction"),
-                                    "target": al.get("target"), "on": al.get("on"), "expire_min": al.get("expire_min")}, D.validate)
+        alt = al.get("alt") if isinstance(al.get("alt"), dict) and al["alt"].get("entry") else None
+        aen = ast_ = None
+        if alt:                              # 2026-11-02: the second trigger ("or else a break in the first direction")
+            aen = one("after_loss alt entry", alt.get("entry"), "entry")
+            ast_ = one("after_loss alt stop", alt.get("stop"), "stop") if alt.get("stop") else None
+        if en and (st or not al.get("stop")) and (not alt or (aen and (ast_ or not alt.get("stop")))):
+            blk = {"entry": _rule(en, "entry"), "stop": _rule(st, "stop"), "direction": al.get("direction"),
+                   "target": al.get("target"), "on": al.get("on"), "expire_min": al.get("expire_min")}
+            if alt:
+                blk["alt"] = {"entry": _rule(aen, "entry"), "stop": _rule(ast_, "stop"), "direction": alt.get("direction"),
+                              "target": alt.get("target")}
+            ok, cl = _RAc.validate(blk, D.validate)
             if ok:
                 out["after_loss"] = {"entry": en, "stop": st, "direction": cl["direction"], "target": cl["target"], "on": cl["on"],
                                      "expire_min": cl["expire_min"]}
+                if alt:
+                    out["after_loss"]["alt"] = {"entry": aen, "stop": ast_, "direction": cl["alt"]["direction"], "target": cl["alt"]["target"]}
             else:
                 probs.append(cl)
+    if (out["entry"].get("rule") or (P.get(out["entry"].get("use")) or {}).get("rule") or {}).get("event") == "stop_close":
+        probs.append("entry: stop_close (a close beyond the stop just hit) is an after_loss trigger only, not the normal entry")
     if out["entry"].get("rule", {}).get("event") == "formula":
         st = out["stop"]
         rule = st.get("rule") or (P.get(st.get("use")) or {}).get("rule") or {}
@@ -1611,9 +1638,14 @@ def view(robot, pieces):
     if isinstance(al, dict) and al.get("entry"):         # 2026-11-01: the trade after a stop-out (robots/robot_after.py)
         import robot_after as _RAv
         e = show(al["entry"], "entry")
-        fr, en = _RAv.describe(al, (e or {}).get("rule"))
+        alt = al.get("alt") if isinstance(al.get("alt"), dict) and al["alt"].get("entry") else None
+        ae = show(alt["entry"], "entry") if alt else None
+        fr, en = _RAv.describe(al, (e or {}).get("rule"), (ae or {}).get("rule"))
         v["after_loss"] = {"entry": e, "stop": show(al.get("stop"), "stop"), "direction": al.get("direction"), "target": al.get("target"),
                            "on": al.get("on"), "expire_min": al.get("expire_min"), "plain_fr": fr, "plain_en": en}
+        if alt:                                          # 2026-11-02: the second trigger
+            v["after_loss"]["alt"] = {"entry": ae, "stop": show(alt.get("stop"), "stop"), "direction": alt.get("direction"),
+                                      "target": alt.get("target")}
     return v
 
 

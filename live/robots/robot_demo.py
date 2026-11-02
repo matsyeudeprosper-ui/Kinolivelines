@@ -216,6 +216,8 @@ def _signals(rules, R, eyes, B):
                 p = float(lo[i] if d == 1 else hi[i])
                 if p == p:
                     out.append((int(i), d, p))
+    elif en.get("event") == "stop_close":
+        pass                 # 2026-11-02: the after-loss close beyond the stop just hit - not a candle signal of its own
     else:
         ev = en.get("event", "any")
         for i in np.flatnonzero(eyes["d"]):

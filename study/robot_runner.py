@@ -130,25 +130,77 @@ def robot_opps(parts, pieces, opps, S, bars):
     return out, S2
 
 
+def minute_opps(opps, S, bars):
+    """2026-11-02: every closed 1-minute candle as a signal of the robot's stream (src "close"), for an after-loss
+    "stop_close" trigger (robot_after.py: the first close beyond the stop that was just hit). Side 0: DslArm gives it the
+    trigger's side when it fires; its stop stands on the extreme of the last 20 candles ("lo20" for a buy, "hi20" for a
+    sell) - the protected point does not exist here, exactly as for a formula entry (robot_opps, robot_live.formula_entry)"""
+    import bisect
+    sys.path.insert(0, os.path.join(LIVE, "robots"))
+    import robot_expr as X
+    from datetime import datetime, timezone
+    R = E.R; n = len(R)
+    B = X.Bars.from_rates(R, X.pb_attach(X.eyes_from_opps(opps, n, S), R["time"]))
+    sw_lo, sw_hi = X.evaluate("lowest(low, 20)", B), X.evaluate("highest(high, 20)", B)
+    lo = min(1440, n - 1)
+    rt = sorted(opps, key=lambda o: o["t"]); rts = [o["t"] for o in rt]
+    out, S2 = [], {}
+    for i in range(lo, n - 2):
+        t = int(R["time"][i]); cl = float(R["close"][i])
+        g = datetime.fromtimestamp(t, tz=timezone.utc)
+        nv = (bars.get(t) or (0, 1.0))[1]
+        out.append({"t": t, "i": i, "d": 0, "slp": float("nan"), "cl": cl, "flip": True, "awake": True, "nv": nv, "mv2": None,
+                    "i_fire": False, "lvl": cl, "weekday": g.weekday(), "hour": g.hour, "minute": g.minute,
+                    "lo20": float(sw_lo[i]), "hi20": float(sw_hi[i]), "src": "close"})
+        if t not in S:
+            j = bisect.bisect_right(rts, t) - 1
+            S2[t] = S.get(rts[j], (0, 0, None, None)) if j >= 0 else (0, 0, None, None)
+    return out, S2
+
+
 def robot_stream(parts, pieces, opps, S, bars):
     """2026-11-01: the robot's signal stream - robot_opps() itself (the same object) for every robot without an
     after_loss block. With one, the after-loss trigger must reach the arm too: every signal is tagged ("src") - "main"
     = the robot's normal entry stream, "eyes" = the eyes' breaks added for an eyes trigger when the normal entry is a
-    formula, "al" = the trigger's own formula stream - and DslArm takes each in its mode (robot_after.pending)."""
+    formula, "al" = the trigger's own formula stream - and DslArm takes each in its mode (robot_after.pending).
+    2026-11-02: "alt" = the alt branch's formula stream, "close" = every closed 1-minute candle (only for a block with
+    a stop_close trigger: minute_opps). A block without either gives the same stream as before."""
     ro, rS = robot_opps(parts, pieces, opps, S, bars)
     al = parts.get("after_loss")
     if not isinstance(al, dict) or not al.get("entry"):
         return ro, rS
     P = pieces or {}
+    ev_of = lambda pid: ((P.get(pid) or {}).get("rule") or {}).get("event")
     out = [dict(o, src="main") for o in ro]
-    if ((P.get(al["entry"]) or {}).get("rule") or {}).get("event") == "formula":
+    eyes = False
+    if ev_of(al["entry"]) == "formula":
         ao, aS = robot_opps({"entry": al["entry"], "stop": al.get("stop") or parts.get("stop")}, pieces, opps, S, bars)
         out += [dict(o, src="al") for o in ao]
         rS = {**aS, **rS}     # 2026-11-02: keys are timestamps (ints) - dict(aS, **rS) raised 'keywords must be strings'
-    elif ro is not opps:
+    elif ev_of(al["entry"]) != "stop_close" and ro is not opps:
+        eyes = True
+    alt = al.get("alt") if isinstance(al.get("alt"), dict) and al["alt"].get("entry") else None
+    if alt and ev_of(alt["entry"]) == "formula":
+        bo, bS = robot_opps({"entry": alt["entry"], "stop": alt.get("stop") or parts.get("stop")}, pieces, opps, S, bars)
+        out += [dict(o, src="alt") for o in bo]
+        rS = {**bS, **rS}
+    elif alt and ev_of(alt["entry"]) != "stop_close" and ro is not opps:
+        eyes = True
+    if eyes:
         out += [dict(o, src="eyes") for o in opps]
+    if "stop_close" in (ev_of(al["entry"]), ev_of(alt["entry"]) if alt else None):
+        mo, mS = minute_opps(opps, S, bars)
+        out += mo
+        rS = {**mS, **rS}
     out.sort(key=lambda o: (o["t"], o["d"]))
     return out, rS
+
+
+def al_pieces(parts):
+    """2026-11-02: the piece ids of the after-loss block (its trigger and stop, and its alt branch's)"""
+    al = parts.get("after_loss") or {}
+    alt = al.get("alt") if isinstance(al.get("alt"), dict) else {}
+    return [x for x in (al.get("entry"), al.get("stop"), alt.get("entry"), alt.get("stop")) if x]
 
 
 def run_robot_and_parent(parts, parent_parts, PCS, TM, BID, ASK, END, opps, bars, S):
@@ -160,7 +212,7 @@ def run_robot_and_parent(parts, parent_parts, PCS, TM, BID, ASK, END, opps, bars
         return run_pair([ra, pa], TM, BID, ASK, END, opps, bars)
     out = run_pair([ra], TM, BID, ASK, END, ro, bars)
     out.update(run_pair([pa], TM, BID, ASK, END, opps, bars))
-    out["robot"]["signals"] = len(ro)
+    out["robot"]["signals"] = sum(1 for o in ro if o.get("src") != "close")      # 2026-11-02: 1-minute candles are not signals
     return out
 
 
@@ -468,11 +520,13 @@ if __name__ == "__main__":
             t0 = time.time()
             parts = resolve(rid, robots); parent = r.get("parent") or "owl"
             PCS = {p["id"]: p for p in json.load(open(REG, encoding="utf-8")).get("pieces") or []}   # fresh: pieces made meanwhile
-            _alp = [x for x in ((parts.get("after_loss") or {}).get("entry"), (parts.get("after_loss") or {}).get("stop")) if x]   # 2026-11-01
+            _alp = al_pieces(parts)   # 2026-11-01 (2026-11-02: + the alt branch's)
             missing = [v for k, v in parts.items() if k not in ("money", "filters", "after_loss") and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)] \
                 + [v for v in _alp if (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
             if missing:
                 print(rid, "skipped: pieces not testable yet", missing, flush=True); continue
+            if ((PCS.get(parts.get("entry")) or {}).get("rule") or {}).get("event") == "stop_close":
+                print(rid, "skipped: a close beyond the stop is an after-loss trigger only, not a normal entry", flush=True); continue
             # 2026-10-25 (owner: "test it on any given range of dates available"): date-range jobs. The same bench on a
             # slice of the recorded ticks and signals; written to results/ranges/, the main 42-day result is untouched.
             _rj = list(r.get("range_jobs") or [])
@@ -536,7 +590,7 @@ if __name__ == "__main__":
                 if x["id"] == rid and x.get("retest"):
                     x.pop("retest", None); x["tested_at"] = res["generated_at"]
             used = set(v for k, v in parts.items() if k not in ("filters", "money", "after_loss")) | set(parts.get("filters") or []) \
-                | set(x for x in ((parts.get("after_loss") or {}).get("entry"), (parts.get("after_loss") or {}).get("stop")) if x)
+                | set(al_pieces(parts))
             for pc in reg.get("pieces") or []:          # a new rule piece becomes "tested" once a robot using it was tested
                 if pc.get("id") in used and pc.get("status") == "new":
                     pc["status"] = "tested"

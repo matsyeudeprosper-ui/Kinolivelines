@@ -30,9 +30,12 @@ def uses_formulas(rules):
     r = rules or {}
     ex = r.get("exit") or {}
     al = r.get("after_loss") or {}      # 2026-11-01: the after-loss trade's own trigger / stop (robots/robot_after.py)
+    alt = al.get("alt") or {}           # 2026-11-02: its alt branch; a stop_close trigger stands its stop on the candles too
     return (r.get("entry") or {}).get("event") == "formula" or (r.get("stop") or {}).get("kind") == "formula" \
         or any(f.get("kind") == "formula" for f in r.get("filters") or []) or bool(ex.get("close_buy") or ex.get("close_sell")) \
-        or (al.get("entry") or {}).get("event") == "formula" or (al.get("stop") or {}).get("kind") == "formula"
+        or (al.get("entry") or {}).get("event") == "formula" or (al.get("stop") or {}).get("kind") == "formula" \
+        or (alt.get("entry") or {}).get("event") == "formula" or (alt.get("stop") or {}).get("kind") == "formula" \
+        or "stop_close" in ((al.get("entry") or {}).get("event"), (alt.get("entry") or {}).get("event"))
 
 
 class Candles:

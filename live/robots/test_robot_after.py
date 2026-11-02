@@ -76,4 +76,75 @@ assert "after_loss" not in C.clean({"robot": dict(raw["robot"], after_loss=None)
 raw_fx = {"robot": dict(raw["robot"], exit={"rule": {"target": "2 if last_hit_sl else 1", "choch": False}, "name": "1R / 2R", "plain": "x"})}
 assert C.clean(raw_fx, pieces, owl, None)[1] == []
 assert "RULES ON THE LAST TRADE'S RESULT" in C.SYSTEM and "never tell a member it cannot" in C.SYSTEM
+
+# 6. 2026-11-02 (owner: "after a stop-out, the reverse trade on a 1-minute candle that CLOSES fully beyond the stop just
+# hit; if that close never comes, a new breakout in the first direction is a second entry"): stop_close + alt
+OWN = {"entry": {"event": "stop_close", "buffer": 0}, "stop": None, "direction": "reverse",
+       "alt": {"entry": {"event": "bos"}, "direction": "same"}}
+ok, own = RA.validate(OWN, D.validate)
+assert ok and own["entry"] == {"event": "stop_close", "buffer": 0.0} and own["alt"]["direction"] == "same", own
+assert own["alt"]["entry"] == {"event": "bos"} and own["alt"]["stop"] is None and own["alt"]["target"] is None
+assert "alt" not in RA.validate({"entry": {"event": "any"}}, D.validate)[1]                    # old blocks: same shape
+assert not RA.validate(dict(OWN, entry={"event": "stop_close", "buffer": -1}), D.validate)[0]
+assert not RA.validate(dict(OWN, entry={"event": "stop_close", "order": {"type": "limit", "buy": "close", "sell": "close"}}), D.validate)[0]
+assert not RA.validate(dict(OWN, alt={"entry": {"event": "nope"}}), D.validate)[0]
+assert not RA.validate(dict(OWN, alt={"entry": {"event": "bos"}, "direction": "up"}), D.validate)[0]
+assert not RA.validate(dict(OWN, alt="bos"), D.validate)[0]
+assert "minute" in D.describe("entry", own["entry"])[1] and "stop" in D.describe("entry", own["entry"])[0]
+# the history keeps the stopped trade's exact stop
+H2 = L.History(200)
+H2.add(-3.0, d=1, hit_sl=True, t=1000.0, sl=99.5, e=105.0)
+assert H2.last_trade["sl"] == 99.5 and H2.last_trade["e"] == 105.0
+H2.add(1.0)
+assert H2.last_trade["sl"] is None                                           # older callers: unknown, not a stale value
+last = {"d": 1, "hit_sl": True, "pnl": -3.0, "al": False, "tc": 1000.0, "sl": 99.5, "e": 105.0}   # a BUY stopped at 99.5
+B = RA.branches(own, last, now=1000)
+(m, ms), (a, as_) = B
+assert ms == -1 and as_ == 1                                                 # main: SELL (reverse); alt: BUY (same)
+# minute after minute: neither fires until a close below 99.5 - then the SELL, at that close
+closes = [(1020, 100.4), (1080, 99.9), (1140, 99.5), (1200, 99.4)]
+fired = [(t, RA.trigger(m, ms, last, "minute", close=c, t_close=t)) for t, c in closes]
+assert fired == [(1020, 0), (1080, 0), (1140, 0), (1200, -1)], fired
+# a SELL break (not the alt's side) and a CHoCH up (not a BOS) do nothing; a BUY BOS fires the alt first
+assert RA.trigger(a, as_, last, "bos", d=-1, t_close=1080) == 0 and RA.trigger(a, as_, last, "choch", d=1, t_close=1080) == 0
+assert RA.trigger(a, as_, last, "bos", d=1, t_close=1080) == 1
+# a stopped SELL: the close must be ABOVE its stop
+lastS = dict(last, d=-1, sl=120.0, e=110.0)
+(m2, s2), (a2, t2) = RA.branches(own, lastS, now=1000)
+assert s2 == 1 and t2 == -1 and RA.trigger(m2, s2, lastS, "minute", close=120.01, t_close=1020) == 1
+assert RA.trigger(m2, s2, lastS, "minute", close=119.99, t_close=1020) == 0
+# the buffer
+ownb = RA.validate(dict(OWN, entry={"event": "stop_close", "buffer": 2}), D.validate)[1]
+mb, sb = RA.branches(ownb, last)[0]
+assert RA.trigger(mb, sb, last, "minute", close=98.0, t_close=1020) == 0 and RA.trigger(mb, sb, last, "minute", close=97.4, t_close=1020) == -1
+# neither fires until expire_min: then back to normal
+ownx = dict(own, expire_min=60)
+assert RA.branches(ownx, last, now=1000 + 59 * 60) is not None and RA.branches(ownx, last, now=1000 + 61 * 60) is None
+# the after-loss trade closed (whichever branch took it, whatever its result): back to normal
+assert RA.branches(own, dict(last, al=True, hit_sl=True, pnl=-1.0)) is None and RA.branches(own, dict(last, al=True, pnl=4.0)) is None
+assert RA.branches(own, dict(last, hit_sl=False, pnl=2.0)) is None             # a win: normal
+# the same candle: the bench's order (sell side first, then the 1-minute candle, then the buy side)
+assert RA.first_of([(1, "main", "alt-buy"), (0, "close", "close-sell")]) == "close-sell"
+# robots.json form with the alt branch, and the desk's candle memory
+PX = dict(P, **{"x-sc": {"id": "x-sc", "type": "entry", "rule": {"event": "stop_close", "buffer": 0.0}},
+                "x-bos": {"id": "x-bos", "type": "entry", "rule": {"event": "bos"}}})
+fp = RA.from_parts({"entry": "x-sc", "direction": "reverse", "alt": {"entry": "x-bos", "direction": "same"}}, PX)
+assert fp["entry"]["event"] == "stop_close" and fp["alt"] == {"entry": {"event": "bos"}, "stop": None, "direction": "same", "target": None}, fp
+assert RA.from_parts({"entry": "x-sc", "alt": {"entry": "no-such"}}, PX) is None
+assert "alt" not in RA.from_parts({"entry": "x-sc"}, PX)
+assert RL.uses_formulas({"after_loss": fp}) and RL.uses_formulas({"after_loss": {"entry": {"event": "any"}, "alt": {"entry": {"event": "formula", "buy": "close > open", "sell": None}}}})
+assert RA.rules_for(normal, fp["alt"])["entry"] == {"event": "bos"}
+# the builder builds it (and never as the normal entry), the page says it in plain words
+raw_own = {"robot": dict(raw["robot"], after_loss={"entry": {"rule": {"event": "stop_close", "buffer": 0}, "name": "Cloture au-dela du stop"},
+                                                   "stop": None, "direction": "reverse",
+                                                   "alt": {"entry": {"rule": {"event": "bos"}, "name": "Cassure"}, "direction": "same"}})}
+ans2, probs2 = C.clean(raw_own, pieces, owl, None)
+assert not probs2, probs2
+alc = ans2["robot"]["after_loss"]
+assert alc["entry"]["rule"] == {"event": "stop_close", "buffer": 0.0} and alc["alt"]["direction"] == "same" and alc["alt"]["entry"]["rule"] == {"event": "bos"}
+vw = C.view(ans2["robot"], pieces)["after_loss"]
+assert "clôture au-delà du stop touché" in vw["plain_fr"] and "whichever happens first" in vw["plain_en"] and vw["alt"]["direction"] == "same", vw
+assert C.clean({"robot": dict(raw["robot"], entry={"rule": {"event": "stop_close"}, "name": "x"})}, pieces, owl, None)[1]
+assert "stop_close" in C.SYSTEM and '"alt"' in C.SYSTEM
+assert RD._signals({"entry": {"event": "stop_close"}}, None, {"d": [1], "flip": [False], "slp": [1.0]}, None) == []
 print("ok")
