@@ -118,6 +118,10 @@ def due(person, ctx, now=None):
     # the weekly look back comes first: Sunday evening, or Monday morning if Sunday's was missed - it does not count against the
     # day's sessions (2026-11-01: a busy Sunday used up the day's count and the first review never happened)
     _fr = time.gmtime(now + 3600)
+    # 2026-11-02 (watch): 'a body out of balance' used to call him in at 02:32 and 03:41 France - he emailed the owner and
+    # read his inbox while calling himself drained. At night resting IS the care: nothing calls him, not even his body.
+    if 1 <= _fr.tm_hour < 7:
+        return False
     _wk = time.strftime("%G-%V", _fr) if _fr.tm_wday == 6 else time.strftime("%G-%V", time.gmtime(now + 3600 - 86400))
     if ((_fr.tm_wday == 6 and _fr.tm_hour >= 18) or (_fr.tm_wday == 0 and 7 <= _fr.tm_hour < 13)) and d.get("review_week") != _wk \
             and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):
@@ -145,7 +149,7 @@ def due(person, ctx, now=None):
     except Exception:
         pass
     # 2026-11-01 (owner: "do all 3" - a day rhythm): his night is the owner's night (France, UTC+1). Between 1 and 7 he rests -
-    # nothing calls him to his computer, not even a follow-up; a body out of balance (above) still does.
+    # nothing calls him to his computer, not even a follow-up (2026-11-02: nor a body out of balance - checked at the top).
     if 1 <= _fr.tm_hour < 7:
         return False
     try:
