@@ -90,6 +90,15 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
 .rv{font-size:20px;font-weight:800;letter-spacing:-.02em}
 .tag{align-self:flex-start;font-size:11.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);white-space:nowrap}
 .tag.k{border-color:#7c6cff66;color:#b4a9ff}.tag.on{border-color:#2ecc7166;color:var(--up)}
+/* the robot built with Kino: where it stands and the one thing to do next */
+.myr{display:block;position:relative;overflow:hidden;border-radius:20px;padding:16px;background:radial-gradient(100% 80% at 100% 0%,#22d3ee18,transparent 60%),var(--surface);border:1px solid var(--border)}
+.myr .rh{margin-bottom:12px}.myr .rn{font-size:16px}
+.mst{display:flex;gap:4px;margin:4px 0 6px}.mst i{flex:1;height:5px;border-radius:99px;background:var(--surface3)}.mst i.d{background:var(--grad)}.mst i.c{background:#22d3ee55}
+.msl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)}
+.mnx{margin-top:12px;padding:11px 12px;border-radius:13px;background:var(--surface2);border:1px solid var(--border);font-size:13.5px;color:var(--text2);display:flex;gap:10px;align-items:center;justify-content:space-between}
+.mnx b{flex:none;color:var(--accent2);font-size:13px}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid #22d3ee44;border-top-color:var(--accent2);animation:spn 1s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}
+@keyframes spn{to{transform:rotate(360deg)}}
 .planrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .bar{height:5px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--grad)}
 .skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
@@ -109,6 +118,8 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
  </section>
 
  <div class="tiles" id="tiles"></div>
+
+ <div id="myrobot"></div>
 
  <h2><span id="h-rob">Tes robots</span><a href="mesrobots" id="h-rob-all">Tout voir</a></h2>
  <div class="rail" id="robots"><div class="rc solo skel" style="height:110px"></div></div>
@@ -204,15 +215,23 @@ async function load(){
  const TL=d.account?[['today',T('Aujourd’hui','Today'),'?classic=1#home'],['live',T('En direct','Live'),'?classic=1#marche'],['perf',T('Performance','Performance'),'?classic=1#hist'],['wealth',T('Patrimoine','Wealth'),'wealth']]
   :[['robot',T('Mes robots','My robots'),'mesrobots'],['live',T('Le marché','Market'),'?classic=1#marche'],['perf',T('Les tests','Tests'),'tests'],['wealth',T('Formules','Plans'),'?classic=1#offres']];
  document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
+ const MR=d.my_robot;
+ document.getElementById('myrobot').innerHTML=MR?'<h2><span>'+T('Ton robot avec Kino','Your robot with Kino')+'</span><a href="'+B+'robot?id='+encodeURIComponent(MR.id)+'">'+T('Son histoire','Its story')+'</a></h2>'+
+  '<a class="myr" href="'+B+'robot?id='+encodeURIComponent(MR.id)+'"><div class="rh"><div class="ri">'+svg('robot')+'</div><div style="min-width:0;flex:1"><div class="rn">'+esc(MR.name)+'</div>'+
+  '<div class="rs">'+esc(MR.market)+' · v'+esc(MR.rev)+(MR.result?' · '+T('dernier test ','last test ')+'<span class="'+cls(MR.result.net)+'">'+money(MR.result.net)+'</span>':'')+'</div></div></div>'+
+  '<div class="mst">'+(MR.steps||[]).map((x,i)=>'<i class="'+(x.done?'d':i===MR.step?'c':'')+'"></i>').join('')+'</div>'+
+  '<div class="msl"><span>'+(MR.step<(MR.steps||[]).length?T('Prochaine étape : ','Next: ')+esc(((MR.steps||[])[MR.step]||{}).label||''):T('Toutes les étapes faites','All steps done'))+'</span><span>'+(MR.steps||[]).filter(x=>x.done).length+' / '+(MR.steps||[]).length+'</span></div>'+
+  '<div class="mnx"><span>'+(MR.next&&MR.next.k==='wait'?'<span class="spin"></span>':'')+esc((MR.next||{}).text||'')+'</span><b>›</b></div></a>':'';
  document.getElementById('h-rob').textContent=T('Tes robots','Your robots');document.getElementById('h-rob-all').textContent=T('Tout voir','See all');
  const R=d.robots||[];
  document.getElementById('robots').innerHTML=R.length?R.map(r=>{const t=r.test||{};
-  return '<a class="rc'+(R.length===1?' solo':'')+'" href="'+B+'mesrobots"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+esc(r.name)+'</div></div>'+
+  return '<a class="rc'+(R.length===1?' solo':'')+'" href="'+B+'robot?id='+encodeURIComponent(r.id||'')+'"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+esc(r.name)+'</div></div>'+
   (t.trades!=null?'<div class="rv num '+cls(t.net)+'">'+money(t.net)+'</div><div class="rs">'+T('Dernier test','Last test')+' · '+t.trades+' trades'+(t.win_rate!=null?' · '+Math.round(100*t.win_rate)+' % '+T('gagnants','winners'):'')+'</div>'
    :'<div class="rs">'+T('Pas encore testé','Not tested yet')+'</div>')+
   (r.why?'<span class="tag">'+esc(r.why)+'</span>':'')+'</a>';}).join('')
   :'<a class="rc solo" href="'+talk.href+'"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+T('Ton premier robot','Your first robot')+'</div></div>'+
    '<div class="rs">'+T('Raconte ta méthode à Kino : il le construit avec toi, en parlant, et le teste sur de vrais prix.','Tell Kino your method: he builds it with you as you talk, and tests it on real prices.')+'</div><span class="tag k">'+T('Commencer →','Start →')+'</span></a>';
+ {const one=MR&&R.length<=1&&(!R.length||R[0].id===MR.id);document.getElementById('h-rob').parentElement.style.display=one?'none':'';document.getElementById('robots').style.display=one?'none':'';}   // the robot card above already says it all
  document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');
  document.getElementById('goal').innerHTML=d.goal?'<div class="goal">'+esc(d.goal)+'</div>'
   :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';

@@ -6449,9 +6449,9 @@ function renderPlan(d){
   if(d.is_master||!had||active||P.pending_pay){c.style.display='none';return;}
   {const rc=document.getElementById('renewcard');if(rc&&rc.style.display==='block'){c.style.display='none';return;}}  // 2026-11-02: never two expiry cards
   const last=P.family_until>=Math.max(P.manual_until||0,P.strategy_until||0)?'family':(P.strategy_until>=(P.manual_until||0)?'strategy':'manual');
-  const L={family:en?'Automatic':'Automatique',manual:en?'Essential':'Essentiel',strategy:'Pro',premium:'Premium'}[last];
+  const L={family:en?'automatic trading':'de trading automatique',manual:en?'Essential':'Essentiel',strategy:'Pro',premium:'Premium'}[last];
   document.getElementById('exp-t').textContent=en?'Your '+L+' period has ended':'Votre p\u00e9riode '+L+' est termin\u00e9e';
-  document.getElementById('exp-b').textContent=en?'Renew with a code from the Owl on Telegram'+(last==='family'?'.':', or in crypto - it comes back right away.'):'Renouvelez avec un code du Owl sur Telegram'+(last==='family'?'.':', ou en crypto \u2014 \u00e7a repart tout de suite.');
+  document.getElementById('exp-b').textContent=en?'Ask for a code on Telegram to restart your robot'+(last==='family'?'.':', or in crypto - it comes back right away.'):'Demandez un code sur Telegram pour relancer votre robot'+(last==='family'?'.':', ou en crypto \u2014 \u00e7a repart tout de suite.');
   const g=document.getElementById('exp-go');g.textContent=en?'Renew':'Renouveler';g.onclick=()=>codeModal(last);
   c.style.display='block';})();
  let title,txt,color='var(--accent-soft)';
@@ -9466,7 +9466,7 @@ function refNudgeLater(){try{localStorage.setItem('owlRefNudge:'+B,String(Date.n
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
  const en=LANG()==='en',now=Date.now()/1000;let best=null;
- [['family',P.family_until,en?'Automatic':'Automatique'],['premium',P.premium_until,'Premium'],['strategy',P.strategy_until,'Pro'],['manual',P.manual_until,en?'Essential':'Essentiel']].forEach(([k,u,l])=>{
+ [['family',P.family_until,en?'Automatic trading':'Le trading automatique'],['premium',P.premium_until,'Premium'],['strategy',P.strategy_until,'Pro'],['manual',P.manual_until,en?'Essential':'Essentiel']].forEach(([k,u,l])=>{
   if(u&&(u-now)<=5*86400&&(now-u)<=45*86400&&(!best||(u>now&&u<best.u)||(best.u<=now&&u>best.u)))best={k,u,l};});
  if(!best||(best.k==='manual'&&P.strategy_until>now)||(best.k!=='family'&&P.tier&&P.tier.no_remind)){el.style.display='none';return;}
  const days=Math.max(0,Math.ceil((best.u-now)/86400));
@@ -9475,7 +9475,7 @@ function renewBanner(d){
   ?best.l+(en?' ended '+ago+' day'+(ago>1?'s':'')+' ago':' a expir\u00e9 il y a '+ago+' jour'+(ago>1?'s':''))
   :best.l+(en?' ends in ':' expire dans ')+days+(en?' day'+(days>1?'s':''):' jour'+(days>1?'s':''));
  const b=document.getElementById('renew-b');
- if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Settle with the Owl, then enter the code he sends you.':'R\u00e9glez le Owl, puis entrez le code qu\u2019il vous envoie.';
+ if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Ask for your code on Telegram, enter it here, and your robot trades again.':'Demandez votre code sur Telegram, entrez-le ici, et votre robot reprend.';
   b.textContent=en?'Enter the code':'Entrer le code';b.onclick=()=>{window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();}};}
  else{document.getElementById('renew-s').textContent=best.u<=now
    ?(en?'Renewing brings the signals back right away, for 30 days.':'Renouveler relance vos signaux tout de suite, pour 30 jours.')
@@ -13861,6 +13861,185 @@ def _test_summary(res):
             "curve": (rb.get("curve") or [])[-120:], "days": res.get("days"), "window": res.get("window_utc"),
             "when": str(res.get("generated_at") or "")[:16].replace("T", " "), "range": res.get("range"),
             "parent_net": ((res.get("parent_result") or {}).get("net")), "cap": float(res.get("balance") or 200)}
+
+
+# ---- 2026-11-02 (owner: "Kino as a trader friend, and the strategy/bot they create together and nourish regularly is
+# transparent"): ONE story per robot. The registry keeps only the robot as it is now; its life is in the Kino thread
+# (each change with the member's words before it and Kino's after it, each test started and each result, the week
+# checks) and in the result files. robot_story() joins them: the rules in plain words, the steps (built, week checked,
+# tested, luck test, for real) with the one thing to do next, and the timeline version by version. ----
+_STORY_CACHE = {}
+
+
+def _robot_chats(rid, uids):
+    out = []
+    try:
+        for f in os.listdir(CHAT_DIR):
+            if not f.endswith(".json"):
+                continue
+            p = os.path.join(CHAT_DIR, f)
+            try:
+                c = json.load(open(p, encoding="utf-8"))
+            except Exception:
+                continue
+            if c.get("robot_id") == rid and (not uids or c.get("uid") in uids):
+                out.append((f[:-5], c))
+    except Exception:
+        pass
+    return out
+
+
+def robot_story(user, rid, en=False):
+    rid = str(rid or "")[:80]
+    if not rid:                            # no id: the member's latest robot
+        _rs = robots_of_person(user)
+        rid = _rs[0]["id"] if _rs else ""
+    reg = robot_reg()
+    r = next((x for x in reg.get("robots") or [] if x.get("id") == rid), None)
+    if not r:
+        return {"ok": False, "err": "unknown"}
+    uids = _person_uids(user.get("id"))
+    if r.get("by_uid") not in uids and not is_admin(user):
+        return {"ok": False, "err": "not yours"}
+    key = (user.get("id"), rid, en)
+    hit = _STORY_CACHE.get(key)
+    if hit and time.time() - hit[0] < 20:
+        return hit[1]
+    chats = []
+    try:                                   # the person's main Kino thread first: reading every thread is slow
+        _mc = _person_main(user.get("id"))
+        _c0 = json.load(open(_chat_path(_mc), encoding="utf-8")) if _mc else {}
+        if _c0.get("robot_id") == rid:
+            chats = [(_mc, _c0)]
+    except Exception:
+        pass
+    if not chats:
+        chats = _robot_chats(rid, None if is_admin(user) else uids)
+    chats.sort(key=lambda kv: str(kv[1].get("updated") or ""), reverse=True)   # "updated" is an ISO date
+    cid, c = chats[0] if chats else (None, {})
+    if en is None:                         # no language asked: the robot's conversation decides
+        en = c.get("lang") == "en"
+    T = (lambda f, e: e if en else f)
+    rb = c.get("robot") or {}
+    msgs = c.get("msgs") or []
+
+    def plain(slot):
+        x = rb.get(slot)
+        if not isinstance(x, dict):
+            return ""
+        if x.get("formula"):              # a formula piece: its own description, never the formula itself
+            return str(x.get("plain") or x.get("name") or "")
+        return str((x.get("plain_en") if en else x.get("plain_fr")) or x.get("plain") or x.get("name") or x.get("use") or "")
+
+    rules = []
+    for slot, lab in (("entry", T("Quand il entre", "When it enters")), ("stop", T("Son stop", "Its stop")),
+                      ("exit", T("Quand il sort", "When it exits")), ("money", T("La taille", "The size"))):
+        if slot == "money":
+            mo = rb.get("money") or {}
+            v = (T("lot fixe ", "fixed lot ") + str(mo.get("lot"))) if mo.get("lot") and not any(ch in str(mo.get("lot")) for ch in "(*+") \
+                else (T("formule : ", "formula: ") + str(mo.get("lot"))) if mo.get("lot") else str(mo.get("use") or "")
+        else:
+            v = plain(slot)
+        if v:
+            rules.append({"k": lab, "v": v[:400]})
+    al = rb.get("after_loss")
+    if isinstance(al, dict):
+        rules.append({"k": T("Après un stop touché", "After a stop-out"),
+                      "v": "%s%s%s" % ({"reverse": T("trade inverse", "reverse trade"), "same": T("même sens", "same side")}.get(al.get("direction"), T("trade suivant", "next trade")),
+                                        (", " + T("entrée : ", "entry: ") + str(((al.get("entry") or {}).get("plain") if (al.get("entry") or {}).get("formula") else (al.get("entry") or {}).get("plain_en" if en else "plain_fr")) or (al.get("entry") or {}).get("name") or "")) if al.get("entry") else "",
+                                        (", " + T("objectif ", "target ") + str(al.get("target")) + " R") if al.get("target") else "")})
+    for f in rb.get("filters") or []:
+        if isinstance(f, dict):
+            rules.append({"k": T("Filtre", "Filter"), "v": str((f.get("plain_en") if en else f.get("plain_fr")) or f.get("plain") or f.get("name") or "")[:300]})
+
+    # the timeline: each change (the member's words before it, Kino's after it), each test and result, the week checks
+    ev = []
+    last_user = None
+    for i, m in enumerate(msgs):
+        ro = m.get("role")
+        t = float(m.get("t") or 0)
+        if ro == "user" and (len(str(m.get("text") or "").strip()) >= 15 or not last_user or t - float(last_user.get("t") or 0) > 3 * 3600):
+            last_user = m                      # a real request, not an "ok" / "yes" after it
+        elif ro == "change":
+            said = next((str(x.get("text") or "") for x in msgs[i + 1:i + 6] if x.get("role") == "ai" and str(x.get("text") or "").strip()), "")
+            ev.append({"k": "change", "t": t, "rev": m.get("rev"), "diff": [{"slot": d.get("slot"), "from": d.get("from"), "to": d.get("to")} for d in (m.get("diff") or [])][:6],
+                       "asked": str((last_user or {}).get("text") or "")[:220] if last_user and t - float(last_user.get("t") or 0) < 3 * 3600 else "",
+                       "kino": said[:320]})
+        elif ro == "test":
+            ev.append({"k": "test", "t": t, "text": str(m.get("text") or "")[:200]})
+        elif ro == "result":
+            x = m.get("result") or {}
+            ev.append({"k": "result", "t": t, "net": x.get("net"), "trades": x.get("trades"), "win_rate": x.get("win_rate"),
+                       "days": x.get("days"), "dip": x.get("dip"), "pf": x.get("profit_factor"),
+                       "curve": [p[1] for p in (x.get("curve") or [])][-60:]})
+        elif ro == "demo" and m.get("check"):
+            ev.append({"k": "week", "t": t, "count": m.get("count"), "per_day": m.get("per_day")})
+    rev = c.get("rev") or (max([e["rev"] for e in ev if e["k"] == "change" and e.get("rev")] or [1]))
+    # each result belongs to the version that was live when its test started
+    cur = None
+    for e in ev:
+        if e["k"] == "change":
+            cur = e.get("rev")
+        elif e["k"] in ("test", "result", "week"):
+            e["rev"] = cur
+    t_rev = max([e["t"] for e in ev if e["k"] == "change" and e.get("rev") == rev] or [0])
+    res_now = next((e for e in reversed(ev) if e["k"] == "result" and e["t"] >= t_rev), None)
+    week_now = next((e for e in reversed(ev) if e["k"] == "week" and e["t"] >= t_rev), None)
+    test_now = next((e for e in reversed(ev) if e["k"] == "test" and e["t"] >= t_rev), None)
+    running = r.get("stage") == "queued" or bool(r.get("retest"))
+    luck = None
+    try:
+        luck = (_luck_of(rid, r.get("market") or "BTCUSD") or {}).get("state")
+    except Exception:
+        pass
+    live = bool((c.get("auto_trade") or {}).get("on"))
+    # the steps of THIS version, and the one thing to do next
+    steps = [{"k": "built", "label": T("Construit avec Kino", "Built with Kino"), "done": True},
+             {"k": "week", "label": T("Semaine vérifiée", "Week checked"), "done": bool(test_now or res_now)},
+             {"k": "test", "label": T("Testé sur 6 semaines", "Tested on 6 weeks"), "done": bool(res_now)},
+             {"k": "luck", "label": T("Pas de la chance", "Not luck"), "done": luck == "pass"},
+             {"k": "live", "label": T("En vrai", "For real"), "done": live}]
+    if running and not res_now:
+        nxt = {"k": "wait", "text": T("Le test tourne. Kino te donne le résultat dès qu’il tombe.", "The test is running. Kino tells you the result as soon as it lands."), "ask": ""}
+    elif week_now and not test_now and not res_now:
+        nxt = {"k": "vote", "text": T("Regarde la semaine de ton robot et dis à Kino s’il trade aux bons moments.", "Look at your robot's week and tell Kino whether it trades at the right moments."),
+               "ask": T("Je regarde la semaine de mon robot.", "I'm looking at my robot's week.")}
+    elif not res_now:
+        nxt = {"k": "test", "text": T("Cette version n’a pas encore été testée.", "This version hasn't been tested yet."),
+               "ask": T("Teste la version actuelle de mon robot.", "Test the current version of my robot.")}
+    elif float(res_now.get("net") or 0) < 0:
+        nxt = {"k": "improve", "text": T("Le test perd de l’argent. Voyez ensemble ce qu’on change.", "The test loses money. Look together at what to change."),
+               "ask": T("Le test perd. Qu’est-ce qu’on change en premier ?", "The test loses. What do we change first?")}
+    elif luck not in ("pass", "running", "queued"):
+        nxt = {"k": "luck", "text": T("Le test gagne. Vérifie que ce n’est pas de la chance avant d’y mettre de l’argent.", "The test wins. Check it's not luck before putting money on it."),
+               "ask": T("Lance le test de chance sur mon robot.", "Run the luck test on my robot.")}
+    elif luck == "pass" and not live:
+        nxt = {"k": "live", "text": T("Il a passé le test de chance. Tu peux le faire trader, petit d’abord.", "It passed the luck test. You can let it trade, small at first."),
+               "ask": T("Comment je fais trader mon robot, petit d’abord ?", "How do I let my robot trade, small at first?")}
+    else:
+        nxt = {"k": "watch", "text": T("Il tourne. Kino le surveille avec toi.", "It's running. Kino watches it with you."), "ask": T("Comment va mon robot ?", "How is my robot doing?")}
+    cur_i = next((i for i, x in enumerate(steps) if not x["done"]), len(steps))
+    # the result files: the latest full test with its curve, and the other markets
+    full = None
+    try:
+        full = _test_summary(json.load(open(os.path.join(DIR, "robots", "results", rid + ".json"), encoding="utf-8")))
+    except Exception:
+        pass
+    out = {"ok": True, "id": rid, "name": (r.get("name_en") if en else r.get("name_fr")) or rb.get("name") or rid,
+           "market": r.get("market") or rb.get("market") or "BTCUSD", "created": r.get("created"), "rev": rev,
+           "rules": rules, "steps": steps, "step": cur_i, "next": nxt, "running": running, "luck": luck, "live": live,
+           "result": res_now, "full": full, "cid": cid, "versions": len([e for e in ev if e["k"] == "change"]) + 1,
+           "timeline": list(reversed(ev))[:80], "lang": "en" if en else "fr"}
+    _STORY_CACHE[key] = (time.time(), out)
+    return out
+
+
+def robots_of_person(user):
+    """the member's robots, newest first, each with its step and next thing (the home's 'Ton robot' card)"""
+    uids = _person_uids(user.get("id"))
+    rs = [x for x in robot_reg().get("robots") or [] if x.get("by_uid") in uids and x.get("id") != "owl"]
+    rs.sort(key=lambda x: str(x.get("queued_at") or x.get("created") or ""), reverse=True)
+    return rs
 
 
 def _test_cap(body):
@@ -29245,7 +29424,7 @@ def _member_pkg(uid):
 
 
 _HOME_CACHE = {}
-NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite")
+NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot")
 
 
 def home_kino_data(user):
@@ -29316,6 +29495,14 @@ def _home_kino_data(user):
                         for l in L[:4]]
     except Exception:
         out["robots"], out["picks"] = [], []
+    try:                                   # 2026-11-02: the robot built with Kino - its step and the one thing to do next
+        _rs = robots_of_person(user)
+        if _rs:
+            _st = robot_story(user, _rs[0]["id"], out.get("lang") == "en")
+            if _st.get("ok"):
+                out["my_robot"] = {k: _st.get(k) for k in ("id", "name", "market", "rev", "steps", "step", "next", "result", "running", "cid", "versions")}
+    except Exception:
+        pass
     try:
         out["plan"] = _plan_tier_block(user)
     except Exception:
@@ -36231,6 +36418,13 @@ class H(BaseHTTPRequestHandler):
                     self._send(json.dumps(console_payload(), ensure_ascii=False), "application/json")
                 except Exception as e:
                     self._send(json.dumps({"err": str(e)[:120]}), "application/json")
+        elif sub == "robot":                      # 2026-11-02 (owner): one robot's whole story, its steps, what's next
+            self._send(open(os.path.join(DIR, "owl_robot_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+        elif sub == "robot_story":
+            import urllib.parse as _upq
+            _q = _upq.parse_qs(_upq.urlparse(self.path).query)
+            _lg = (_q.get("lang") or [""])[0]
+            self._send(json.dumps(robot_story(user, (_q.get("id") or [""])[0], (_lg == "en") if _lg else None), ensure_ascii=False), "application/json")
         elif sub == "mesrobots":
             # 2026-10-18 (owner): "Mes robots" - every robot of the member on its own page (results, markets,
             # progress, pieces in panels); the Robots page keeps only the best one. Data = robots_data. From disk.

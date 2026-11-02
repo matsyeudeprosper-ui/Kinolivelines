@@ -324,6 +324,7 @@ function detail(id,tab){const r=byId(id);if(!r)return;DTAB=tab||DTAB||'res';cons
  const acts=[];if(t)acts.push('<button class="btn sec" data-act="cmp" data-id="'+esc(r.id)+'">'+T('Comparer','Compare')+'</button>');
  if(r.can_edit)acts.push('<button class="btn sec" data-act="arch" data-id="'+esc(r.id)+'">'+(r.archived?T('Désarchiver','Unarchive'):T('Archiver','Archive'))+'</button>');
  if(r.can_edit||BL().admin)acts.push('<a class="btn sec" href="robots#b='+encodeURIComponent(r.id)+'">'+T('Ouvrir dans l’atelier','Open in the workshop')+'</a>');
+ if(r.mine||r.can_edit)acts.unshift('<a class="btn" href="robot?id='+encodeURIComponent(r.id)+'">'+T('Son histoire et la suite','Its story and next step')+'</a>');   // 2026-11-02: the robot's own page
  if(t&&t.a.net>0&&r.mine)acts.push('<a class="btn" href="place#pub='+encodeURIComponent(r.id)+'">'+T('Publier sur la place','Publish on the place')+'</a>');
  const actH=acts.length?'<div class="cta"><div class="btn2" style="grid-template-columns:repeat('+Math.min(2,acts.length)+',1fr)">'+acts.join('')+'</div></div>':'';
  openSh('<div style="display:flex;align-items:center;gap:12px;margin-top:4px;padding-right:44px">'+avatar(r.id)+'<span class="rn" style="flex:1;min-width:0"><h2 style="padding:0">'+esc(rName(r))+'</h2><small>'+(par?T('enfant de ','child of ')+esc(rName(par)):T('robot d’origine','original robot'))+' · '+(r.public?T('public','public'):T('privé','private'))+'</small></span><span class="rs '+st[1]+'">'+st[0]+'</span></div>'

@@ -526,7 +526,7 @@ function bpHTML(){const v=C&&C.view;if(v&&!BPFULL&&!window.matchMedia('(min-widt
  h+='<button class="bpdemo" onclick="demoAsk()"><svg><use href="#chart"/></svg>'+T('Voir ses trades sur le graphique','See its trades on the chart')+'</button>';
  const t=C.test||{},busy=t.state==='queued';
  h+='<button class="bpbtn" onclick="runTest()" '+(busy||C.status!=='ready'?'disabled':'')+'>'+(busy?T('Test en cours…','Test running…'):(t.state==='done'?T('Retester ce robot','Test this robot again'):T('Tester ce robot','Test this robot')))+'</button>';
- if(C.robot_id)h+='<a class="btn" style="display:block;text-align:center;text-decoration:none;color:var(--text)" href="mesrobots">'+T('Voir dans Mes robots','See it in My robots')+'</a>';
+ if(C.robot_id)h+='<a class="btn" style="display:block;text-align:center;text-decoration:none;color:var(--text)" target="_top" href="robot?id='+encodeURIComponent(C.robot_id)+'">'+T('Voir son histoire et la suite','See its story and next step')+'</a>';
  return h;}
 function paintBP(flash){if(flash&&flash.length)LASTFL={k:flash,t:Date.now()};$('bp').innerHTML=bpHTML();const v=C&&C.view;
  // strip
@@ -1298,7 +1298,9 @@ function moneyLine(){const m=C&&C.money_plain;if(!m)return '';const L=[];
 function changeHTML(m,i){const lab=k=>k==='market'?T('Marché','Market'):((STEP[k]||['',k])[1]);const lastI=((C&&C.msgs)||[]).map((x,j)=>x.role==='change'?j:-1).filter(j=>j>=0).pop();
  const rows=(m.diff||[]).map(d=>'<div class="chr"><b>'+((STEP[d.slot]||['🌍'])[0])+' '+esc(lab(d.slot))+'</b><span><s>'+esc(d.from||T('rien','nothing'))+'</s> → <em>'+esc(d.to||T('rien','nothing'))+'</em></span></div>').join('');
  return '<div class="att"><div class="chg"><div class="chh">'+(m.undo?'↩ '+T('Retour à la version d’avant','Back to the previous version'):'🔁 '+T('Le robot a changé','The robot changed'))+'</div>'+rows+
-  (i===lastI&&C.can_undo&&!m.undo?'<button class="chu" onclick="undoRobot(this)">↩ '+T('Annuler ce changement','Undo this change')+'</button>':'')+'</div></div>';}
+  (i===lastI&&C.can_undo&&!m.undo?'<button class="chu" onclick="undoRobot(this)">↩ '+T('Annuler ce changement','Undo this change')+'</button>':'')+
+  /* 2026-11-02 (owner: the robot built together stays transparent): every change opens its place in the robot's story */
+  (C&&C.robot_id&&m.rev?'<a class="chu" target="_top" style="display:block;text-align:center;text-decoration:none" href="'+B+'robot?id='+encodeURIComponent(C.robot_id)+'#v'+m.rev+'">'+T('Version ','Version ')+m.rev+T(' dans l’histoire du robot ›',' in the robot’s story ›')+'</a>':'')+'</div></div>';}
 async function undoRobot(btn){btn.disabled=true;try{const j=await post('chat_undo',{id:CID});if(!j.ok)toast(T('Rien à annuler.','Nothing to undo.'));}catch(e){}load(CID,true);}
 async function compareFill(b){const v=C&&C.view,o=C&&C.owl_view;if(!v||!o)throw 0;const r=lastRes();
  const nm=s=>s?(s.name||s.use||'—'):'—';const rows=['entry','filters','stop','exit','recovery','money'].map(k=>{const a=k==='filters'?((v.filters||[]).map(nm).join(', ')||'—'):nm(v[k]),c=k==='filters'?((o.filters||[]).map(nm).join(', ')||'—'):nm(o[k]);

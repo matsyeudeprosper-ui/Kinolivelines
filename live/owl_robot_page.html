@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8"><meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Mon robot</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="/icon192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-11-02 (owner: "Kino as a trader friend, and the strategy/bot they create together and nourish regularly is
+   transparent"): ONE page per robot - what it is now, where it stands (built, week checked, tested, not luck, for real),
+   the one thing to do next with Kino, its latest result, its rules in plain words, and its whole story version by
+   version: what the member asked, what Kino changed, what each test gave. Data: robot_story. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--accent:#7c6cff;--accent2:#22d3ee;--up:#2ecc71;--down:#ff6b6b;--warn:#e8c55a;
+ --grad:linear-gradient(135deg,#7c6cff,#22d3ee);--sh:0 18px 50px rgba(0,0,0,.45)}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;--border2:#d5dce7;
+ --text:#121722;--text2:#3b4658;--muted:#6a7588;--sh:0 12px 34px rgba(20,30,50,.10)}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 24px}
+.num{font-variant-numeric:tabular-nums}.pos{color:var(--up)}.neg{color:var(--down)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:24px 2px 10px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;font-size:13px}
+/* who it is */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:18px;background:
+ radial-gradient(110% 90% at 100% 0%,#7c6cff2b,transparent 60%),var(--surface);border:1px solid var(--border);box-shadow:var(--sh)}
+.hrow{display:flex;gap:14px;align-items:center}
+.ri{width:52px;height:52px;border-radius:16px;background:var(--grad);display:grid;place-items:center;flex:none}
+.ri svg{width:26px;height:26px;stroke:#fff}
+.nm{font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:99px;border:1px solid var(--border2);color:var(--text2);background:var(--surface2)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.pill.run{color:var(--accent2);border-color:#22d3ee55}.pill.run i{background:var(--accent2);animation:pl 1.6s infinite}
+.pill.ok{color:var(--up);border-color:#2ecc7155}.pill.ok i{background:var(--up)}
+.pill.bad{color:var(--down);border-color:#ff6b6b55}.pill.bad i{background:var(--down)}
+@keyframes pl{50%{opacity:.35}}
+/* the steps */
+.steps{display:flex;align-items:flex-start;margin:18px 0 4px}
+.sp{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;text-align:center;font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.25}
+.sp:before{content:"";position:absolute;top:11px;left:-50%;width:100%;height:2px;background:var(--border2);z-index:0}
+.sp:first-child:before{display:none}
+.sp.done:before,.sp.cur:before{background:linear-gradient(90deg,#7c6cff,#22d3ee)}
+.sp b{position:relative;z-index:1;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--surface3);border:2px solid var(--border2);font-size:11px;color:var(--muted)}
+.sp.done b{background:var(--grad);border-color:transparent;color:#fff}
+.sp.cur b{border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 0 4px #22d3ee22}
+.sp.cur{color:var(--text)}
+/* what to do now */
+.next{margin-top:14px;padding:14px;border-radius:16px;background:var(--surface2);border:1px solid var(--border2)}
+.next small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-bottom:4px}
+.next p{margin:0 0 12px;font-size:14.5px}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:14px;background:var(--grad);color:#fff;font-weight:700;font-size:15px;box-shadow:0 10px 28px #7c6cff40}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid #22d3ee44;border-top-color:var(--accent2);animation:sp 1s linear infinite;display:inline-block;vertical-align:-3px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* result */
+.res{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.big{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.kv div{padding:10px;border-radius:12px;background:var(--surface2);border:1px solid var(--border)}
+.kv b{display:block;font-size:15px}.kv span{font-size:11.5px;color:var(--muted)}
+.spark{display:block;width:100%;height:64px;margin-top:12px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+/* rules */
+.rule{padding:11px 0;border-bottom:1px solid var(--border)}.rule:last-child{border-bottom:0;padding-bottom:2px}.rule:first-child{padding-top:2px}
+.rule small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:2px}
+.rule div{font-size:14px;color:var(--text)}
+/* the story */
+.tl{position:relative;padding-left:22px}
+.tl:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border2);border-radius:2px}
+.ev{position:relative;margin-bottom:14px}
+.ev:before{content:"";position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--surface3);border:2px solid var(--border2)}
+.ev.change:before{background:var(--grad);border-color:transparent}
+.ev.result.p:before{background:var(--up);border-color:transparent}.ev.result.n:before{background:var(--down);border-color:transparent}
+.ev .h{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:700}
+.ev .h span{font-size:11.5px;color:var(--muted);font-weight:500;white-space:nowrap}
+.ev .b{margin-top:6px;padding:11px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--border);font-size:13.5px;color:var(--text2)}
+.ev .d{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;margin:2px 0}
+.ev .d em{font-style:normal;color:var(--muted);font-size:12px;min-width:56px}
+.ev .d s{color:var(--muted)}.ev .d b{color:var(--text);font-weight:600}
+.q{margin-top:8px;padding-left:10px;border-left:2px solid var(--border2);color:var(--muted);font-size:12.5px}
+.q.k{border-left-color:#7c6cff;color:var(--text2)}
+.q i{font-style:normal;font-weight:700;color:var(--text2)}
+.more{display:block;text-align:center;margin-top:4px;font-size:13px;color:var(--accent2);font-weight:600;cursor:pointer}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:30px 10px}
+.skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}@keyframes sk{50%{opacity:.5}}
+.links{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.links a{padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:600;text-align:center;color:var(--text2)}
+</style></head><body>
+<div class="wrap" id="app"><div class="hero"><div class="nm skel" style="width:60%">…</div><div class="sub skel" style="width:40%;margin-top:8px">…</div><div class="steps skel" style="height:40px"></div></div></div>
+<script>
+const B=location.pathname.replace(/robot\/?$/,'');
+const Q=new URLSearchParams(location.search);
+let EN=false;   // set from the story: the robot's conversation language
+const T=(f,e)=>EN?e:f;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=v=>v==null?'—':(Number(v)>=0?'+':'−')+'$'+Math.abs(Number(v)).toFixed(2);
+const cls=v=>Number(v||0)>=0?'pos':'neg';
+function when(t){const d=new Date(t*1000),n=new Date(),dd=Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+ return (dd===0?T('aujourd’hui','today'):dd===1?T('hier','yesterday'):d.toLocaleDateString(EN?'en':'fr',{day:'numeric',month:'short'}))+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function spark(cv){if(!cv||cv.length<2)return '';const W=320,H=64,p=3,mn=Math.min(0,...cv),mx=Math.max(0,...cv),r=(mx-mn)||1;
+ const pts=cv.map((v,i)=>[p+i*(W-2*p)/(cv.length-1),p+(H-2*p)*(1-(v-mn)/r)]),c=cv[cv.length-1]>=0?'#2ecc71':'#ff6b6b';
+ const z=p+(H-2*p)*(1-(0-mn)/r),l=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+ return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><line x1="0" x2="'+W+'" y1="'+z+'" y2="'+z+'" stroke="currentColor" stroke-opacity=".15" stroke-dasharray="3 4"/>'+
+  '<path d="'+l+'" fill="none" stroke="'+c+'" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>';}
+const SLOTF=()=>({entry:T('Entrée','Entry'),stop:'Stop',exit:T('Sortie','Exit'),money:T('Taille','Size'),filters:T('Filtres','Filters'),recovery:T('Rattrapage','Recovery'),after_loss:T('Après un stop','After a stop')});
+let SHOWALL=/^#v/.test(location.hash);   // opened on one version: the whole story, so it is there
+function talk(d,ask){return B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):'')+(ask?((d.cid?'&':'?')+'ask='+encodeURIComponent(ask)):'');}
+function render(d){const app=document.getElementById('app');EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
+ if(!d.ok){app.innerHTML='<div class="card empty">'+(d.err==='unknown'?T('Pas encore de robot. Raconte ta méthode à Kino : il le construit avec toi.','No robot yet. Tell Kino your method: he builds it with you.'):T('Ce robot n’est pas à toi.','This robot is not yours.'))+
+  '<div style="margin-top:16px"><a class="cta" href="'+B+'atelier">'+T('Parler à Kino','Talk to Kino')+' →</a></div></div>';return;}
+ try{document.body.dataset.ktitle=d.name;window.dispatchEvent(new HashChangeEvent('hashchange'));}catch(e){}
+ const R=d.result,st=d.running&&!R?['run',T('Test en cours','Testing')]:d.live?['ok',T('En vrai','Live')]:R?(Number(R.net)>=0?['ok',T('Testé · gagne','Tested · wins')]:['bad',T('Testé · perd','Tested · loses')]):['',T('Pas encore testé','Not tested yet')];
+ const N=d.next||{};
+ let h='<div class="hero"><div class="hrow"><div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg></div>'+
+  '<div style="min-width:0"><div class="nm">'+esc(d.name)+'</div><div class="sub">'+esc(d.market)+' · '+T('version ','version ')+esc(d.rev)+' · '+T('construit avec Kino','built with Kino')+'</div>'+
+  '<div style="margin-top:8px"><span class="pill '+st[0]+'"><i></i>'+esc(st[1])+'</span></div></div></div>'+
+  '<div class="steps">'+d.steps.map((s,i)=>'<div class="sp '+(s.done?'done':i===d.step?'cur':'')+'"><b>'+(s.done?'✓':i+1)+'</b>'+esc(s.label)+'</div>').join('')+'</div>'+
+  '<div class="next"><small>'+T('À faire maintenant','Next step')+'</small><p>'+(N.k==='wait'?'<span class="spin"></span>':'')+esc(N.text)+'</p>'+
+  (N.k==='wait'?'<a class="cta" style="background:var(--surface3);box-shadow:none;color:var(--text)" href="'+talk(d,'')+'">'+T('Ouvrir la conversation','Open the conversation')+'</a>'
+   :'<a class="cta" href="'+talk(d,N.ask)+'">'+(N.k==='vote'?T('Voir la semaine avec Kino','See the week with Kino'):T('En parler à Kino','Talk it over with Kino'))+' →</a>')+'</div></div>';
+ if(R){h+='<h2><span>'+T('Dernier test · version ','Latest test · version ')+esc(R.rev||d.rev)+'</span><a href="'+B+'tests">'+T('Détails','Details')+'</a></h2><div class="card"><div class="res"><div><div class="big num '+cls(R.net)+'">'+money(R.net)+'</div>'+
+  '<div class="sub">'+T('sur ','over ')+Math.round(R.days||0)+T(' jours de vrais prix',' days of real prices')+'</div></div></div>'+spark(R.curve)+
+  '<div class="kv"><div><b class="num">'+(R.trades||0)+'</b><span>trades</span></div><div><b class="num">'+(R.win_rate!=null?Math.round(100*R.win_rate)+' %':'—')+'</b><span>'+T('gagnants','winners')+'</span></div>'+
+  '<div><b class="num neg">'+(R.dip!=null?'−$'+Math.abs(R.dip).toFixed(0):'—')+'</b><span>'+T('pire creux','worst dip')+'</span></div></div>'+
+  '<div class="note">'+T('Un test sur le passé, pas une promesse. Ton compte n’a pas bougé.','A test on the past, not a promise. Your account did not move.')+'</div></div>';}
+ if(d.rules&&d.rules.length)h+='<h2><span>'+T('Ses règles, en mots simples','Its rules, in plain words')+'</span></h2><div class="card">'+d.rules.map(r=>'<div class="rule"><small>'+esc(r.k)+'</small><div>'+esc(r.v)+'</div></div>').join('')+'</div>';
+ const TL=d.timeline||[];
+ h+='<h2><span>'+T('Son histoire','Its story')+' · '+d.versions+' '+T('versions','versions')+'</span></h2>';
+ if(!TL.length)h+='<div class="card empty">'+T('Son histoire commence avec ta prochaine conversation avec Kino.','Its story starts with your next talk with Kino.')+'</div>';
+ else{const L=SHOWALL?TL:TL.slice(0,12);
+  h+='<div class="tl">'+L.map(e=>{
+   if(e.k==='change')return '<div class="ev change" id="v'+esc(e.rev)+'"><div class="h">'+T('Version ','Version ')+esc(e.rev)+'<span>'+when(e.t)+'</span></div><div class="b">'+
+    (e.diff||[]).map(x=>'<div class="d"><em>'+esc(SLOTF()[x.slot]||x.slot)+'</em>'+(x.from?'<s>'+esc(x.from)+'</s> → ':'')+'<b>'+esc(x.to||T('retiré','removed'))+'</b></div>').join('')+
+    (e.asked?'<div class="q"><i>'+T('Tu as dit','You said')+' :</i> '+esc(e.asked)+'</div>':'')+
+    (e.kino?'<div class="q k"><i>Kino :</i> '+esc(e.kino.length>220?e.kino.slice(0,218)+'…':e.kino)+'</div>':'')+'</div></div>';
+   if(e.k==='result')return '<div class="ev result '+(Number(e.net)>=0?'p':'n')+'"><div class="h">'+T('Résultat du test','Test result')+(e.rev?' · v'+esc(e.rev):'')+'<span>'+when(e.t)+'</span></div><div class="b"><b class="num '+cls(e.net)+'">'+money(e.net)+'</b> · '+(e.trades||0)+' trades · '+
+    (e.win_rate!=null?Math.round(100*e.win_rate)+' % '+T('gagnants','winners'):'')+(e.days?' · '+Math.round(e.days)+T(' j',' d'):'')+'</div></div>';
+   if(e.k==='test')return '<div class="ev"><div class="h">'+T('Test lancé','Test started')+(e.rev?' · v'+esc(e.rev):'')+'<span>'+when(e.t)+'</span></div></div>';
+   if(e.k==='week')return '<div class="ev"><div class="h">'+T('Semaine montrée','Week shown')+(e.rev?' · v'+esc(e.rev):'')+'<span>'+when(e.t)+'</span></div><div class="b">'+(e.count||0)+' '+T('trades sur la semaine choisie','trades on the chosen week')+(e.per_day?' · ~'+Math.round(e.per_day)+T(' par jour',' a day'):'')+'</div></div>';
+   return '';}).join('')+'</div>'+(TL.length>12&&!SHOWALL?'<a class="more" id="more">'+T('Voir toute son histoire','See its whole story')+' ('+TL.length+')</a>':'');}
+ h+='<div class="links"><a href="'+B+'mesrobots#r='+encodeURIComponent(d.id)+'">'+T('Marchés et pièces','Markets and pieces')+'</a><a href="'+B+'mesrobots">'+T('Tous mes robots','All my robots')+'</a><a href="'+B+'tests">'+T('Tous les tests','All tests')+'</a></div>';
+ app.innerHTML=h;if(location.hash&&!render._j){render._j=1;const tg=document.getElementById(location.hash.slice(1));if(tg){tg.scrollIntoView({block:'center'});tg.animate([{opacity:.4},{opacity:1}],{duration:900});}}
+ const m=document.getElementById('more');if(m)m.onclick=()=>{SHOWALL=true;render(d);};}
+let LAST='';
+async function load(){try{const r=await fetch(B+'robot_story?id='+encodeURIComponent(Q.get('id')||''),{cache:'no-store'});const d=await r.json();
+ const k=JSON.stringify([d.rev,d.running,d.timeline&&d.timeline.length,d.step]);if(k!==LAST){LAST=k;render(d);}}catch(e){setTimeout(load,4000);}}
+load();setInterval(load,30000);
+</script>
+</body></html>
