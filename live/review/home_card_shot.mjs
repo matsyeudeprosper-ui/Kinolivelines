@@ -1,4 +1,5 @@
 // review/rentabilite_shots.mjs - headless captures of the Rentabilite space (4 tabs) and its home card, as the owner. node live/review/rentabilite_shots.mjs x
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // review/chart_options_check.mjs - headless Edge render of the chart page with the
 // display options (swing candles on/off, pullback base, line of the last two dots),
 // reporting any JS exception / console error and the candle counts.
@@ -9,7 +10,7 @@ const OUT = process.argv[2]; const BASE = "http://127.0.0.1:8787"; const WHO = p
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${OUT}/hcprof_${Date.now()}`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -36,4 +37,4 @@ for (const w of [412, 360]) {
   if (process.env.FULL) { await evalJs("window.scrollTo(0,0);1"); const h = await evalJs("document.documentElement.scrollHeight"); await send("Emulation.setDeviceMetricsOverride", { width: w, height: Math.min(h, 9000), deviceScaleFactor: 1, mobile: true }, S); await sleep(1500); }
   const { result } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: !!process.env.FULL }, S); writeFileSync(`${OUT}/${EL}_${WHO}_${w}.png`, Buffer.from(result.data, "base64"));
 }
-edge.kill(); process.exit(bad ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(bad ? 1 : 0);

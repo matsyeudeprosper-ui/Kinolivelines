@@ -1,4 +1,5 @@
 // landing_check.mjs (2026-10-11): the logged-out landing as a NEW visitor sees it
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // (fresh profile, phone emulation). Captures top-to-bottom slices at 390 and 360 px,
 // reports horizontal overflow, JS errors, and which acquisition blocks rendered.
 //   node live/review/landing_check.mjs <outdir>
@@ -9,7 +10,7 @@ const EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${PROF}`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -41,4 +42,4 @@ await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, devi
 await evalJs(`(()=>{const b=[...document.querySelectorAll('button,a')].find(x=>x.textContent.trim()==='EN');if(b)b.click();return !!b})()`); await sleep(1500);
 const en = await evalJs(`(()=>['pf2','pw','trust','calc','tgc'].map(id=>{const e=document.getElementById(id);return id+': '+(e?e.innerText.replace(/\\s+/g,' ').slice(0,260):'-')}).concat(['FAQ more: '+(document.querySelector('details.fqall>summary')||{}).textContent, 'tag: '+(document.querySelector('.tag')||{}).innerText]))()`);
 console.log("EN\n" + (en || []).join("\n"));
-edge.kill(); process.exit(bad ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(bad ? 1 : 0);

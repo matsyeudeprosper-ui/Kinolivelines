@@ -1,4 +1,5 @@
 // OwlNest UI check (2026-09-27). Run any time, no deps beyond Node 22 + Edge:
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 //   node review/ui_check.mjs [token]
 // 1. fetches the served page, the join page and the chart page and parses
 //    every inline <script> (the \' trap killed the page twice this month);
@@ -26,7 +27,7 @@ const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${PROF}`, "about:blank"], { stdio: "ignore" });
 let wsUrl = null;
 for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP endpoint - is Edge installed?"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP endpoint - is Edge installed?"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = []; const errors = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data);
@@ -76,6 +77,6 @@ if (frLeft.length > 8) failures++;
 await evalJs("localStorage.removeItem('owlLang'); 1");
 console.log(`\nruntime exceptions: ${errors.length}`); errors.slice(0, 5).forEach(e => console.log("  ", String(e).slice(0, 200)));
 failures += errors.length;
-ws.close(); edge.kill();
+ws.close(); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})();
 console.log(failures ? `\nUI CHECK: ${failures} problem(s)` : "\nUI CHECK: OK");
 process.exit(failures ? 1 : 0);

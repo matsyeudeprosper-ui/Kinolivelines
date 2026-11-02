@@ -13673,12 +13673,18 @@ def robot_create(user, body, dry=False):
         al = P["after_loss"]
         if not (al.get("entry") and usable(al["entry"], "entry")) or (al.get("stop") and not usable(al["stop"], "stop")):
             return {"ok": False, "err": "after_loss"}
+        _alt = al.get("alt") if isinstance(al.get("alt"), dict) and al["alt"].get("entry") else None
+        if _alt and (not usable(_alt["entry"], "entry") or (_alt.get("stop") and not usable(_alt["stop"], "stop"))):
+            return {"ok": False, "err": "after_loss"}
         _alr = _RAc.from_parts(al, PCS)
         ok, why = _RAc.validate(_alr, _RDc.validate) if _alr else (False, "after_loss")
         if not ok:
             return {"ok": False, "err": "after_loss"}
         clean["after_loss"] = {"entry": al["entry"], "stop": al.get("stop") or None, "direction": why["direction"],
                                "target": why["target"], "on": why["on"], "expire_min": why["expire_min"]}
+        if _alt:                                     # 2026-11-02: the second trigger
+            clean["after_loss"]["alt"] = {"entry": _alt["entry"], "stop": _alt.get("stop") or None,
+                                          "direction": why["alt"]["direction"], "target": why["alt"]["target"]}
     if P.get("money"):
         try:
             pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8")).get("packages") or {}
@@ -14076,7 +14082,10 @@ def robot_story(user, rid, en=False):
         rules.append({"k": T("Après un stop touché", "After a stop-out"),
                       "v": "%s%s%s" % ({"reverse": T("trade inverse", "reverse trade"), "same": T("même sens", "same side")}.get(al.get("direction"), T("trade suivant", "next trade")),
                                         (", " + T("entrée : ", "entry: ") + str(((al.get("entry") or {}).get("plain") if (al.get("entry") or {}).get("formula") else (al.get("entry") or {}).get("plain_en" if en else "plain_fr")) or (al.get("entry") or {}).get("name") or "")) if al.get("entry") else "",
-                                        (", " + T("objectif ", "target ") + str(al.get("target")) + " R") if al.get("target") else "")})
+                                        (", " + T("objectif ", "target ") + str(al.get("target")) + " R") if al.get("target") else "")
+                      + ((T(" ; sinon : ", "; or else: ") + str(((al["alt"].get("entry") or {}).get("plain_en" if en else "plain_fr")) or (al["alt"].get("entry") or {}).get("name") or "")
+                          + " (" + {"reverse": T("sens inverse", "reverse"), "same": T("même sens", "same side")}.get(al["alt"].get("direction"), T("libre", "either way")) + ")")
+                         if isinstance(al.get("alt"), dict) else "")})
     for f in rb.get("filters") or []:
         if isinstance(f, dict):
             rules.append({"k": T("Filtre", "Filter"), "v": str((f.get("plain_en") if en else f.get("plain_fr")) or f.get("plain") or f.get("name") or "")[:300]})
@@ -18450,6 +18459,10 @@ def _one_facts(user, c):
                     {"reverse": "inverse", "same": "le même", "any": "libre"}.get(_al.get("direction"), _al.get("direction")),
                     _pl(_al.get("entry")) if _al.get("entry") else "la normale", _pl(_al.get("stop")) if _al.get("stop") else "le normal",
                     _al.get("target")))
+                if isinstance(_al.get("alt"), dict):         # 2026-11-02: the second trigger - the first of the two wins
+                    _st.append("ou bien, si ça arrive d'abord : sens %s, entrée %s (le premier des deux déclencheurs prend le trade)" % (
+                        {"reverse": "inverse", "same": "le même", "any": "libre"}.get(_al["alt"].get("direction"), _al["alt"].get("direction")),
+                        _pl(_al["alt"].get("entry")) if _al["alt"].get("entry") else "?"))
             else:
                 _st.append("après un stop touché : rien de spécial (pas de règle après-perte)")
             if _rb.get("recovery"):
@@ -21254,6 +21267,9 @@ def _chat_build(cid, user):
                             _now_rules += "; AFTER A STOP-OUT (the next trade only): direction %s, entry %s, stop %s, target %s R" % (
                                 _al.get("direction"), (_al.get("entry") or {}).get("plain_en") or (_al.get("entry") or {}).get("use"),
                                 (_al.get("stop") or {}).get("use") if _al.get("stop") else "the normal one", _al.get("target"))
+                            if isinstance(_al.get("alt"), dict):     # 2026-11-02: the second trigger
+                                _now_rules += "; OR ELSE, whichever fires first: direction %s, entry %s" % (
+                                    _al["alt"].get("direction"), (_al["alt"].get("entry") or {}).get("plain_en") or (_al["alt"].get("entry") or {}).get("use"))
                         else:
                             _now_rules += "; after a stop-out: nothing special (no after_loss rule)"
                     except Exception:
@@ -25214,6 +25230,11 @@ def _chat_test0(user, body):
             parts["after_loss"] = {"entry": pid_of("entry", _al["entry"]), "stop": pid_of("stop", _al["stop"]) if _al.get("stop") else None,
                                    "direction": _al.get("direction") or "reverse", "target": _al.get("target"),
                                    "on": _al.get("on") or "sl", "expire_min": _al.get("expire_min")}
+            _alt = _al.get("alt")
+            if isinstance(_alt, dict) and _alt.get("entry"):     # 2026-11-02: the second trigger (robots/robot_after.py)
+                parts["after_loss"]["alt"] = {"entry": pid_of("entry", _alt["entry"]),
+                                              "stop": pid_of("stop", _alt["stop"]) if _alt.get("stop") else None,
+                                              "direction": _alt.get("direction") or "same", "target": _alt.get("target")}
     except Exception as e:
         return {"ok": False, "err": "piece:" + str(e)[:40]}
     owl = _ai_owl()
@@ -29703,13 +29724,32 @@ def home_kino_data(user):
             def _bg(u=user, k=uid):
                 try:
                     _HOME_CACHE[k] = [time.time(), _home_kino_data(u), False]
+                    _home_save(k, _HOME_CACHE[k][1])
                 except Exception:
                     _HOME_CACHE[k][2] = False
             threading.Thread(target=_bg, daemon=True).start()
         return hit[1]
+    try:                                   # 2026-11-02: after a restart the first build took 19 s - show the last copy meanwhile
+        _hf = os.path.join(DIR, "home_cache", "%s.json" % re.sub(r"[^A-Za-z0-9_-]", "", str(uid)))
+        if os.path.exists(_hf) and time.time() - os.path.getmtime(_hf) < 86400:
+            _HOME_CACHE[uid] = [0.0, json.load(open(_hf, encoding="utf-8")), False]
+            return home_kino_data(user)
+    except Exception:
+        pass
     v = _home_kino_data(user)
     _HOME_CACHE[uid] = [time.time(), v, False]
+    _home_save(uid, v)
     return v
+
+
+def _home_save(uid, v):
+    try:
+        os.makedirs(os.path.join(DIR, "home_cache"), exist_ok=True)
+        _hf = os.path.join(DIR, "home_cache", "%s.json" % re.sub(r"[^A-Za-z0-9_-]", "", str(uid)))
+        json.dump(v, open(_hf + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, default=str)
+        os.replace(_hf + ".tmp", _hf)
+    except Exception:
+        pass
 
 
 def _home_kino_data(user):
@@ -29776,13 +29816,6 @@ def _home_kino_data(user):
         # waiting for HIM first (a week to vote on, a loss to look at), then the ones to test, then those running / waiting
         _ord = {"vote": 0, "improve": 1, "test": 2, "luck": 3, "live": 4, "wait": 5, "watch": 6}
         _bd.sort(key=lambda b: _ord.get((b.get("next") or {}).get("k"), 9))
-        try:
-            if out.get("account"):
-                _ow = _owl_story(user, out.get("lang") == "en")
-                _ow["result"] = {"net": (out["account"].get("since") or {}).get("net"), "rev": None, "real": True}
-                _bd.insert(0, {k: _ow.get(k) for k in ("id", "name", "market", "rev", "steps", "step", "next", "result", "running", "cid", "versions", "live", "kind")})
-        except Exception:
-            pass
         out["my_robots"] = _bd
         if _bd:
             out["my_robot"] = _bd[0]
@@ -29826,7 +29859,26 @@ def _home_kino_data(user):
                     _A["ended"] = bool(_po.get("family_expired")) and not (_po.get("family") or _po.get("manual") or _po.get("strategy"))
                 except Exception:
                     pass
+                try:                       # 2026-11-02 (owner: "polish the home to the max"): the dated curve - the chart follows
+                    _c3, _t3 = nd.get("curve30") or [], nd.get("curve30_t") or []   # Day/Week/Month/Start, the finger reads any point
+                    _pt = [[int(t), round(float(v), 2)] for t, v in zip(_t3, _c3) if v is not None] if len(_t3) == len(_c3) else []
+                    if len(_pt) > 160:
+                        _k = len(_pt) / 160.0
+                        _pt = [_pt[int(i * _k)] for i in range(160)] + [_pt[-1]]
+                    out["account"]["pts"] = _pt
+                    out["account"]["open_list"] = [{k: p.get(k) for k in ("d", "lot", "pl", "e", "sl", "tp", "cur", "t", "sym")}
+                                                   for p in (nd.get("open_list") or [])[:4]]
+                except Exception:
+                    pass
                 break
+    except Exception:
+        pass
+    try:                                   # the Owl first on the board, once the account is known
+        if out.get("account") and out.get("my_robots") is not None:
+            _ow = _owl_story(user, out.get("lang") == "en")
+            _ow["result"] = {"net": (out["account"].get("since") or {}).get("net"), "rev": None, "real": True,
+                             "curve": [p[1] for p in (out["account"].get("pts") or [])][-40:]}
+            out["my_robots"].insert(0, {k: _ow.get(k) for k in ("id", "name", "market", "rev", "steps", "step", "next", "result", "running", "cid", "versions", "live", "kind")})
     except Exception:
         pass
     return out

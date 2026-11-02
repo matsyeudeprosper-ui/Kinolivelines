@@ -1,4 +1,5 @@
 // Landing screenshots (2026-09-27): three real renders of the public demo -
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // home, market, history - written to static/shot_*.webp and served at
 // /shots/<name>.webp for the landing carousel and the Open Graph preview.
 //   node review/landing_shots.mjs
@@ -21,7 +22,7 @@ const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${PROF}`, "about:blank"], { stdio: "ignore" });
 let wsUrl = null;
 for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 let paused = async () => {};
@@ -110,4 +111,4 @@ if (only) { for (const [n, b] of Object.entries(taken)) if (only.includes(n)) { 
 // (a missing picture is simply hidden on the landing); chart and lab carry no money.
 else if (red) { for (const n of ["shot_chart.webp", "shot_labo.webp"]) if (taken[n]) { writeFileSync(join(OUT, n), taken[n]); console.log("wrote static/" + n); } console.log("red day/week: money screens kept as they were" + (missing ? " (some missing: hidden on the landing)" : "")); }
 else { for (const [n, b] of Object.entries(taken)) { writeFileSync(join(OUT, n), b); console.log("wrote static/" + n); } }
-ws.close(); edge.kill();
+ws.close(); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})();

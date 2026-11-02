@@ -1,4 +1,5 @@
 // review/ui_shots.mjs - headless Edge (CDP) renders of the OwlNest app at
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // phone size with the first-visit tour dismissed: home / history / settings /
 // landing, plus an overflow report (elements wider than the viewport).
 // Usage: node review/ui_shots.mjs <output-dir> [prefix] [light]
@@ -25,7 +26,7 @@ for (let i = 0; i < 40 && !wsUrl; i++) {
   try { const v = await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json();
         wsUrl = v.webSocketDebuggerUrl; } catch { await sleep(250); }
 }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 
 const ws = new WebSocket(wsUrl);
 await new Promise(r => ws.onopen = r);
@@ -98,4 +99,4 @@ await nav(`${BASE}/${TOKEN}/chart`); await sleep(4000);
 await overflow("chart 390");
 // ---- fonts actually used
 console.log("font-family body(account):", await evalJs("getComputedStyle(document.body).fontFamily"));
-ws.close(); edge.kill();
+ws.close(); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})();

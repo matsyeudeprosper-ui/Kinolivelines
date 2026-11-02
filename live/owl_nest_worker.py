@@ -186,12 +186,15 @@ def compute():
     d30 = _since(d30_start)
     _c30 = 0.0
     curve30 = []
+    curve30_t = []                   # 2026-11-02 (home chart: Day/Week/Month + finger): when each point happened
     for d in d30:
         _c30 += val(d)
         curve30.append(round(_c30, 2))
+        curve30_t.append(int(d.time))
     if len(curve30) > 300:
         _stp = len(curve30) / 300.0
-        curve30 = [curve30[int(i * _stp)] for i in range(300)]
+        curve30 = [curve30[int(i * _stp)] for i in range(300)] + [curve30[-1]]
+        curve30_t = [curve30_t[int(i * _stp)] for i in range(300)] + [curve30_t[-1]]
     # daily strip: one line per UTC day over the last 7 days
     _wd = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
     _dm = {}
@@ -351,6 +354,7 @@ def compute():
         "since_start": since_start,
         "curve": curve[-120:],
         "curve30": curve30,
+        "curve30_t": curve30_t,
         # 2026-10-08: the curves are one point per TRADE, so the app cannot
         # derive their first date from their length - send it
         "curve_from": int(d7[-120:][0].time) if d7 else None,

@@ -1,4 +1,5 @@
 // tab_shot.mjs (2026-10-11): full-page capture of one app tab at 360 px, as a given account.
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 //   node live/review/tab_shot.mjs <outdir> <account id|demo> <tab: home|marche|hist|reglages> [marche view: market|robot|lab]
 import { spawn } from "node:child_process"; import { writeFileSync, readFileSync } from "node:fs";
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
@@ -9,7 +10,7 @@ const PORT = 9342;
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${OUT}/tsprof_${Date.now()}`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -34,4 +35,4 @@ const shot = await send("Page.captureScreenshot", { format: "png", captureBeyond
 writeFileSync(`${OUT}/${TAB}${VIEW ? "_" + VIEW : ""}_${WHO}${process.argv[7] ? "_" + process.argv[7] : ""}.png`, Buffer.from(shot.result.data, "base64"));
 const errs = events.filter(e => e.method === "Runtime.exceptionThrown").map(e => (e.params.exceptionDetails.exception || {}).description || "error");
 console.log(TAB, VIEW, WHO, "height", h, errs.length ? "JS ERRORS: " + errs.join(" | ") : "no JS errors");
-edge.kill(); process.exit(errs.length ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(errs.length ? 1 : 0);

@@ -1,4 +1,5 @@
 // studio_check.mjs (2026-10-12): the chart studio end to end - replay, trades with stops, save, observations.
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 //   node live/review/studio_check.mjs <outdir> [account id]
 import { spawn } from "node:child_process"; import { writeFileSync, readFileSync } from "node:fs";
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", BASE = "http://127.0.0.1:8787", PORT = 9363;
@@ -43,4 +44,4 @@ await ev("studioConfirm()"); await sleep(1500);
 console.log("parts:", await ev("JSON.stringify(STU&&STU.parts)"));
 const errs = events.filter(e => e.method === "Runtime.exceptionThrown").map(e => (e.params.exceptionDetails.exception || {}).description || "error");
 console.log(errs.length ? "JS ERRORS: " + errs.slice(0, 3).join(" | ") : "no JS errors");
-edge.kill(); process.exit(errs.length ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(errs.length ? 1 : 0);

@@ -122,7 +122,46 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--text2);font-weight:600;fon
 .skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
 @keyframes sk{50%{opacity:.5}}
 .foot{margin:26px 2px 0;font-size:11.5px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
-.kface,.kpres{display:block;width:100%;height:100%}.kblink{animation:kblk 5.2s infinite;transform-origin:50px 50px}@keyframes kblk{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}@media (prefers-reduced-motion:reduce){.kblink{animation:none}}[hidden]{display:none!important}</style></head><body>
+.kface,.kpres{display:block;width:100%;height:100%}.kblink{animation:kblk 5.2s infinite;transform-origin:50px 50px}@keyframes kblk{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}@media (prefers-reduced-motion:reduce){.kblink{animation:none}}[hidden]{display:none!important}
+/* 2026-11-02 (owner: "polish the home to the max, don't hold back"): the page rises in, the chart follows the period and the
+   finger, an open trade shows where the price stands between stop and target, every robot row carries its own curve */
+.wrap>*{animation:rise .55s cubic-bezier(.2,.8,.2,1) both}
+.wrap>*:nth-child(2){animation-delay:.04s}.wrap>*:nth-child(3){animation-delay:.09s}.wrap>*:nth-child(4){animation-delay:.13s}
+.wrap>*:nth-child(5){animation-delay:.17s}.wrap>*:nth-child(6){animation-delay:.2s}.wrap>*:nth-child(n+7){animation-delay:.23s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.chart{position:relative;margin:12px 0 10px;height:96px;touch-action:pan-y;cursor:crosshair;-webkit-user-select:none;user-select:none;color:var(--text)}
+.chart svg{display:block;width:100%;height:96px;overflow:visible}
+.chart .sx,.chart .sd{opacity:0;transition:opacity .15s}.chart.scr .sx,.chart.scr .sd{opacity:1}
+.chart.scr .last,.chart.scr .halo{opacity:.25}
+.halo{transform-box:fill-box;transform-origin:center;animation:hl 2.2s ease-out infinite}
+@keyframes hl{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.2);opacity:0}}
+.chart .none{position:absolute;inset:0;display:grid;place-items:center;font-size:12.5px;color:var(--muted)}
+.seg{position:relative}.seg .thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/4);border-radius:9px;
+ background:var(--surface3);box-shadow:0 2px 8px rgba(0,0,0,.25);transform:translateX(calc(var(--i,2)*100%));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.seg button{position:relative;z-index:1;transition:color .2s}.seg button.on{background:transparent!important;box-shadow:none!important}
+.trades{display:grid;gap:8px;margin-top:12px}
+.trt{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--up)}
+.trt i{width:7px;height:7px;border-radius:50%;background:var(--up);animation:pl 1.8s infinite}
+.trade{display:block;padding:12px 13px;border-radius:15px;background:var(--surface2);border:1px solid var(--border)}
+.trh{display:flex;align-items:center;gap:8px}
+.dir{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:7px}
+.dir.b{background:#2ecc711c;color:var(--up)}.dir.s{background:#ff6b6b1c;color:var(--down)}
+.sym{font-weight:700;font-size:14px}.since{font-size:12px;color:var(--muted)}
+.trh b{margin-left:auto;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.trk{position:relative;height:6px;border-radius:99px;margin:13px 0 6px;background:linear-gradient(90deg,#ff6b6b33,var(--surface3) 50%,#2ecc7133)}
+.trk i{position:absolute;top:0;height:100%}
+.trk .fill{border-radius:99px}.trk .fill.u{background:var(--up)}.trk .fill.d{background:var(--down)}
+.trk .ent{width:2px;margin-left:-1px;top:-3px;height:12px;border-radius:2px;background:var(--text2)}
+.trk .now{width:12px;height:12px;top:-3px;margin-left:-6px;border-radius:50%;background:var(--text);border:2px solid var(--surface2);box-shadow:0 0 0 3px #ffffff14;transition:left .6s}
+.trl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.bres{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.bsp{display:block;width:60px;height:20px;margin-bottom:2px}
+.msg.long{-webkit-line-clamp:unset;display:block;max-height:6.2em;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.brow,.badd,.trade,.cta{transition:transform .12s,background-color .2s}
+.brow:active,.trade:active{background:var(--surface2)}.cta:active{transform:scale(.98)}
+@media (hover:hover){.brow:hover{background:var(--surface2)}}
+@media (prefers-reduced-motion:reduce){.wrap>*,.halo,.trt i,.state.on i{animation:none!important}.seg .thumb{transition:none}}
+</style></head><body>
 <div class="wrap">
  <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="compte#formules">&nbsp;</a></div>
 
@@ -171,44 +210,109 @@ const ICO={today:'<path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 
  robot:'<rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/>'};
 const svg=k=>'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICO[k]+'</svg>';
 let D=null,PER='month';
-function spark(cv){if(!cv||cv.length<2)return '';const W=320,H=78,p=4,mn=Math.min(...cv),mx=Math.max(...cv),r=(mx-mn)||1;
- const pts=cv.map((v,i)=>[p+i*(W-2*p)/(cv.length-1),p+(H-2*p)*(1-(v-mn)/r)]);const up=cv[cv.length-1]>=cv[0];
- const c=up?'#2ecc71':'#ff6b6b',l=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
- const last=pts[pts.length-1];
- return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+
-  '<stop offset="0" stop-color="'+c+'" stop-opacity=".28"/><stop offset="1" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs>'+
-  '<path d="'+l+' L'+last[0].toFixed(1)+' '+H+' L'+p+' '+H+' Z" fill="url(#sg)"/><path d="'+l+'" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'+
-  '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="3.5" fill="'+c+'"/></svg>';}
-function moneyCard(){const A=D.account;const el=document.getElementById('acct');
- if(!A){el.innerHTML='';return;}
- const S=A.since||{},start=Number(A.balance||0)-Number(S.net||0);
+function fmtBal(v){const n=Number(v||0),b=Math.abs(n).toFixed(2).split('.');
+ return (n<0?'−':'')+'$'+String(b[0]).replace(/\B(?=(\d{3})+(?!\d))/g,EN?',':' ')+'<small>.'+b[1]+'</small>';}
+function perStart(per){const n=new Date();if(per==='day')return new Date(n.getFullYear(),n.getMonth(),n.getDate())/1000;
+ if(per==='week'){const d=new Date(n.getFullYear(),n.getMonth(),n.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return d/1000;}
+ if(per==='month')return new Date(n.getFullYear(),n.getMonth(),1)/1000;return 0;}
+/* the account's dated curve, cut to the period: it starts where the period starts (flat until the first trade) and ends now */
+function series(A,per){const P=A.pts||[];if(!P.length)return null;const t0=perStart(per),now=Date.now()/1000;
+ let base=0;const inP=[];for(const p of P){if(per!=='all'&&p[0]<t0)base=p[1];else inP.push(p);}
+ let s0=[[per==='all'?P[0][0]-1800:t0,base]].concat(inP);
+ /* the points cover the last 30 days: on Start, lift them so the curve ends on the real total since the start */
+ if(per==='all'&&A.since&&A.since.net!=null){const off=Number(A.since.net)-P[P.length-1][1];s0=s0.map(q=>[q[0],q[1]+off]);}
+ s0.push([Math.max(now,s0[s0.length-1][0]+1),s0[s0.length-1][1]]);return s0;}
+let CH=null,FIRST=true,SHOWN=null;
+function chart(sr,up,live){const el=document.getElementById('acct');const W=Math.max(200,(el&&el.clientWidth||320)-36),H=96,p=7;
+ if(!sr){CH=null;return '<div class="chart" id="chart"><div class="none">'+T('La courbe arrive avec le premier trade.','The curve arrives with the first trade.')+'</div></div>';}
+ const t0=sr[0][0],t1=sr[sr.length-1][0],vs=sr.map(q=>q[1]),mn=Math.min(...vs),mx=Math.max(...vs),r=(mx-mn)||1;
+ const X=t=>p+(W-2*p)*(t-t0)/((t1-t0)||1),Y=v=>mx===mn?H/2:p+(H-2*p)*(1-(v-mn)/r);
+ CH={sr,X,Y,W};const c=up?'#2ecc71':'#ff6b6b';
+ const l=sr.map((q,i)=>(i?'L':'M')+X(q[0]).toFixed(1)+' '+Y(q[1]).toFixed(1)).join(' '),z=sr[sr.length-1],yb=Y(sr[0][1]).toFixed(1);
+ return '<div class="chart" id="chart"><svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+
+  '<stop offset="0" stop-color="'+c+'" stop-opacity=".30"/><stop offset="1" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs>'+
+  '<line x1="0" x2="'+W+'" y1="'+yb+'" y2="'+yb+'" stroke="currentColor" stroke-opacity=".18" stroke-dasharray="3 4"/>'+
+  '<path d="'+l+' L'+X(z[0]).toFixed(1)+' '+H+' L'+X(t0).toFixed(1)+' '+H+' Z" fill="url(#sg)"/>'+
+  '<path d="'+l+'" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+
+  (live?'<circle class="halo" cx="'+X(z[0]).toFixed(1)+'" cy="'+Y(z[1]).toFixed(1)+'" r="4" fill="'+c+'"/>':'')+
+  '<circle class="last" cx="'+X(z[0]).toFixed(1)+'" cy="'+Y(z[1]).toFixed(1)+'" r="4" fill="'+c+'" stroke="var(--surface)" stroke-width="2"/>'+
+  '<line class="sx" id="sx" y1="0" y2="'+H+'" stroke="currentColor" stroke-opacity=".35"/><circle class="sd" id="sd" r="5" fill="'+c+'" stroke="var(--surface)" stroke-width="2"/></svg></div>';}
+function period(){const A=D.account,S=A.since||{},start=Number(A.balance||0)-Number(S.net||0);
  const P={day:[A.today,T('aujourd’hui','today')],week:[A.week,T('cette semaine','this week')],month:[A.month,T('ce mois-ci','this month')],
   all:[S.net,S.days?T('en '+S.days+' jours','in '+S.days+' days'):T('depuis le début','since the start')]}[PER];
- const pct=PER==='all'&&start>0?' ('+(S.net>=0?'+':'−')+Math.abs(100*S.net/start).toFixed(1)+' %)':'';
- const st=A.auto&&!A.ended?['on',(A.robot||'Robot')+T(' · actif',' · running')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:A.ended?['end',T('Période terminée','Period ended')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:['off',(A.robot||'Robot')+T(' · en pause',' · paused')];
- const b=Number(A.balance||0).toFixed(2).split('.');
+ const pct=PER==='all'&&start>0?' ('+(S.net>=0?'+':'−')+Math.abs(100*S.net/start).toFixed(1)+' %)':'';return [P[0],P[1],pct];}
+function head(){const A=D.account,q=period();const b=document.getElementById('bal');if(b&&!b._anim)b.innerHTML=fmtBal(A.balance);
+ const v=document.getElementById('chgv');if(v){v.className=cls(q[0]);v.textContent=money(q[0])+q[2];}
+ const p=document.getElementById('chgp');if(p)p.textContent=q[1];}
+function paintChart(){const A=D.account,box=document.getElementById('chartbox');if(!box)return;
+ box.innerHTML=chart(series(A,PER),Number(period()[0]||0)>=0,A.auto&&!A.ended);scrub();}
+/* the finger (or the mouse) reads the curve: the balance and the change above follow it, the date replaces the period */
+function scrub(){const ch=document.getElementById('chart');if(!ch||!CH)return;const sx=document.getElementById('sx'),sd=document.getElementById('sd');let on=false;
+ const mv=e=>{const b=ch.getBoundingClientRect(),x=Math.max(0,Math.min(b.width,e.clientX-b.left))*CH.W/b.width;let bi=0,bd=1e9;
+  CH.sr.forEach((q,i)=>{const d=Math.abs(CH.X(q[0])-x);if(d<=bd){bd=d;bi=i;}});
+  const q=CH.sr[bi],A=D.account,last=CH.sr[CH.sr.length-1][1],X0=CH.X(q[0]).toFixed(1),Y0=CH.Y(q[1]).toFixed(1);
+  sx.setAttribute('x1',X0);sx.setAttribute('x2',X0);sd.setAttribute('cx',X0);sd.setAttribute('cy',Y0);ch.classList.add('scr');
+  document.getElementById('bal').innerHTML=fmtBal(Number(A.balance||0)-(last-q[1]));
+  const dv=q[1]-CH.sr[0][1],v=document.getElementById('chgv');v.className=cls(dv);v.textContent=money(dv);
+  document.getElementById('chgp').textContent=bi===CH.sr.length-1?T('maintenant','now'):new Date(q[0]*1000).toLocaleString(EN?'en':'fr',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});};
+ const end=()=>{on=false;ch.classList.remove('scr');head();};
+ ch.onpointerdown=e=>{on=true;try{ch.setPointerCapture(e.pointerId);}catch(x){}mv(e);};
+ ch.onpointermove=e=>{if(on||e.pointerType==='mouse')mv(e);};
+ ch.onpointerup=ch.onpointercancel=end;ch.onpointerleave=e=>{if(e.pointerType==='mouse')end();};}
+function symName(s){s=String(s||'').replace(/m$/,'');return /^BTC/.test(s)?'Bitcoin':/^XAU/.test(s)?T('Or','Gold'):/^USTEC|^NAS/.test(s)?'Nasdaq':/^US30/.test(s)?'Dow Jones':s;}
+function since(t){if(!t)return '';const m=Math.max(0,Math.round((Date.now()/1000-t)/60));return m<60?T('depuis ','for ')+m+' min':T('depuis ','for ')+Math.floor(m/60)+' h '+String(m%60).padStart(2,'0');}
+/* a trade open right now: which way, how long, what it makes now, and where the price stands between the stop and the target */
+function tradesHtml(ol){if(!ol||!ol.length)return '';
+ return '<div class="trades"><div class="trt"><i></i>'+(ol.length>1?ol.length+T(' trades en cours',' open trades'):T('Trade en cours','Open trade'))+'</div>'+ol.map(p=>{
+  const buy=p.d==='A',pl=Number(p.pl||0),sl=+p.sl||0,tp=+p.tp||0,e=+p.e||0,cu=+p.cur||0;let tr='';
+  if(sl&&tp&&tp!==sl&&e){const f=v=>Math.max(0,Math.min(100,100*(v-sl)/(tp-sl))),pe=f(e),pc=f(cu||e);
+   tr='<div class="trk"><i class="fill '+(pl>=0?'u':'d')+'" style="left:'+Math.min(pe,pc).toFixed(1)+'%;width:'+Math.abs(pc-pe).toFixed(1)+'%"></i><i class="ent" style="left:'+pe.toFixed(1)+'%"></i><i class="now" style="left:'+pc.toFixed(1)+'%"></i></div>'+
+    '<div class="trl"><span>'+T('Stop','Stop')+'</span><span>'+T('Objectif','Target')+'</span></div>';}
+  return '<a class="trade" href="'+B+'robot?id=owl&tab=live"><div class="trh"><span class="dir '+(buy?'b':'s')+'">'+(buy?T('Achat','Buy'):T('Vente','Sell'))+'</span>'+
+   '<span class="sym">'+esc(symName(p.sym))+'</span><span class="since">'+since(p.t)+'</span><b class="num '+cls(pl)+'">'+money(pl)+'</b></div>'+tr+'</a>';}).join('')+'</div>';}
+function mini(cv){if(!cv||cv.length<2)return '';const v=[0].concat(cv.map(Number)),W=60,H=20,mn=Math.min(...v),mx=Math.max(...v),r=(mx-mn)||1;
+ const c=v[v.length-1]>=0?'#2ecc71':'#ff6b6b';
+ return '<svg class="bsp" viewBox="0 0 '+W+' '+H+'" aria-hidden="true"><path d="'+v.map((x,i)=>(i?'L':'M')+(1+i*(W-2)/(v.length-1)).toFixed(1)+' '+(1+(H-2)*(1-(x-mn)/r)).toFixed(1)).join(' ')+
+  '" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>';}
+function countUp(to){const b=document.getElementById('bal');if(!b||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const from=to*0.94,t0=performance.now();b._anim=true;
+ (function st(t){const k=Math.min(1,Math.max(0,(t-t0)/750)),e=1-Math.pow(1-k,3);b.innerHTML=fmtBal(from+(to-from)*e);if(k<1)requestAnimationFrame(st);else{b._anim=false;b.innerHTML=fmtBal(to);}})(t0);}
+const PERS=['day','week','month','all'];
+function moneyCard(){const A=D.account;const el=document.getElementById('acct');
+ if(!A){el.innerHTML='';return;}
+ const S=A.since||{},q=period();
+ const st=A.ended?['end',T('Période terminée','Period ended')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:['off',(A.robot||'Robot')+T(' · en pause',' · paused')];
  const wr=S.n?Math.round(100*(S.won||0)/S.n):null;
  const LM=A.last_month;const mN=LM?new Date(LM.ym+'-15').toLocaleDateString(EN?'en':'fr',{month:'long'}):'';
+ const ol=A.open_list||[],tr=ol.length?tradesHtml(ol):(A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'robot?id=owl&tab=live">'+T('Voir','See')+'</a></div>':'');
  el.innerHTML='<div class="money"><div class="mtop"><span class="lbl">'+(A.real?T('Ton compte réel','Your live account'):T('Ton compte démo','Your demo account'))+(A.broker?' · '+esc(A.broker):'')+'</span>'+
   '<a class="state '+st[0]+'" href="'+B+'robot?id=owl&tab=live"><i></i>'+esc(st[1])+'</a></div>'+
-  '<div class="bal num">$'+b[0]+'<small>.'+b[1]+'</small></div>'+
-  '<div class="chg num"><span class="'+cls(P[0])+'">'+money(P[0])+pct+'</span><span class="p">'+esc(P[1])+'</span></div>'+
-  spark(A.curve)+
-  '<div class="seg" role="tablist">'+[['day',T('Jour','Day')],['week',T('Semaine','Week')],['month',T('Mois','Month')],['all',T('Début','Start')]]
-   .map(x=>'<button role="tab" data-p="'+x[0]+'" class="'+(x[0]===PER?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
+  '<div class="bal num" id="bal">'+fmtBal(A.balance)+'</div>'+
+  '<div class="chg num"><span class="'+cls(q[0])+'" id="chgv">'+money(q[0])+q[2]+'</span><span class="p" id="chgp">'+esc(q[1])+'</span></div>'+
+  '<div id="chartbox"></div>'+
+  '<div class="seg" role="tablist" style="--i:'+PERS.indexOf(PER)+'"><span class="thumb"></span>'+[['day',T('Jour','Day')],['week',T('Semaine','Week')],['month',T('Mois','Month')],['all',T('Début','Start')]]
+   .map(x=>'<button role="tab" aria-selected="'+(x[0]===PER)+'" data-p="'+x[0]+'" class="'+(x[0]===PER?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
+  tr+
   '<div class="stats">'+
-   '<div class="stat"><b class="num '+cls(A.month)+'">'+money(A.month)+'</b><span>'+T('Ce mois','This month')+'</span></div>'+
-   '<div class="stat"><b class="num '+(LM?cls(LM.net):'')+'">'+(LM?money(LM.net):'—')+'</b><span>'+(LM?esc(mN.charAt(0).toUpperCase()+mN.slice(1)):T('Mois dernier','Last month'))+'</span></div>'+
-   '<div class="stat"><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('Gagnants','Winners')+'</span></div></div>'+
+   '<div class="stat"><b class="num">'+(S.n==null?'—':S.n)+'</b><span>'+T('Trades','Trades')+(S.days?T(' en '+S.days+' j',' in '+S.days+' d'):'')+'</span></div>'+
+   '<div class="stat"><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('Gagnants','Winners')+'</span></div>'+
+   '<div class="stat"><b class="num '+(LM?cls(LM.net):'')+'">'+(LM?money(LM.net):'—')+'</b><span>'+(LM?esc(mN.charAt(0).toUpperCase()+mN.slice(1)):T('Mois dernier','Last month'))+'</span></div></div>'+
   (A.ended?'<div class="renew"><span>'+(A.auto?T('Ta période Automatique est terminée. Le robot trade encore : renouvelle avec ton code.','Your Automatic period has ended. The robot still trades: renew with your code.'):T('Ta période Automatique est terminée : le robot ne trade plus pour toi.','Your Automatic period has ended: the robot no longer trades for you.'))+'</span><a href="'+B+'compte#code">'+T('Entrer mon code','Enter my code')+'</a></div>':'')+
-  (A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'robot?id=owl&tab=live">'+T('Voir','See')+'</a></div>':'')+
   '<div class="alinks"><a href="'+B+'robot?id=owl&tab=perf">'+T('Performance','Performance')+'</a><a href="'+B+'robot?id=owl&tab=live">'+T('En direct','Live')+'</a><a href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div>'+
   '</div>';
- el.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{PER=x.dataset.p;try{localStorage.setItem('homePer',PER);}catch(e){}moneyCard();});}
+ paintChart();
+ if(FIRST&&A.balance!=null){FIRST=false;countUp(Number(A.balance));}
+ el.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{PER=x.dataset.p;try{localStorage.setItem('homePer',PER);}catch(e){}
+  const sg=el.querySelector('.seg');sg.style.setProperty('--i',PERS.indexOf(PER));
+  sg.querySelectorAll('button').forEach(y=>{y.classList.toggle('on',y===x);y.setAttribute('aria-selected',y===x);});head();paintChart();});}
 async function load(){
+ if(!D){try{const c0=JSON.parse(localStorage.getItem('homeData:'+B)||'null');if(c0)render(c0);}catch(e){}}
  let d;try{d=await (await fetch(B+'home_data',{cache:'no-store'})).json();}catch(e){setTimeout(load,4000);return;}
+ try{localStorage.setItem('homeData:'+B,JSON.stringify(d));}catch(e){}
+ render(d);}
+function render(d){
  D=d;EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
- {const A0=d.account||{};let sv=null;try{sv=localStorage.getItem('homePer');}catch(e){}
+ if(!SHOWN){SHOWN=1;const A0=d.account||{};let sv=null;try{sv=localStorage.getItem('homePer');}catch(e){}
   /* early in a month with nothing traded yet, the story since the start says more than a row of zeros */
   PER=sv||(!Number(A0.month||0)&&!Number(A0.today||0)?'all':'month');}
  const hr=new Date().getHours();
@@ -221,6 +325,7 @@ async function load(){
  if(!d.account){const k=document.getElementById('kino');k.style.marginTop='0';}
  const st=d.status||{};document.getElementById('status').textContent=(EN?st.en:st.fr)||T('disponible','available');
  const ms=document.getElementById('msg'),fresh=d.last&&d.last.new;
+ ms.classList.toggle('long',!!(d.last&&d.last.text.length>150));
  if(d.last){ms.textContent=d.last.text;document.getElementById('when').textContent=ago(d.last.t);}
  else{ms.textContent=T('Salut, moi c’est Kino. Raconte-moi comment tu trades, ou l’idée qui te trotte dans la tête : je la transforme en robot, je la teste sur de vrais prix, et je te dis honnêtement si ça tient.',
   'Hi, I’m Kino. Tell me how you trade, or the idea on your mind: I turn it into a robot, test it on real prices, and tell you honestly whether it holds up.');}
@@ -258,7 +363,7 @@ async function load(){
    return '<a class="brow" href="'+B+'robot?id='+encodeURIComponent(x.id)+'"><div class="ri">'+svg('robot')+'</div><div class="bmain"><div class="bn">'+esc(x.name)+'</div>'+
     '<div class="bdots">'+(x.steps||[]).map((s0,i)=>'<i class="'+(s0.done?'d':i===x.step?'c':'')+'"></i>').join('')+'</div>'+
     '<div class="bnx'+(ME(x)?' me':'')+'">'+(n.k==='wait'?'<span class="spin"></span>':'')+esc(n.short||n.text||'')+'</div></div>'+
-    '<div class="bres">'+(R0?'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+(x.kind==='account'?T('réel · depuis le début','real · since start'):T('test v','test v')+esc(R0.rev||x.rev))+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
+    '<div class="bres">'+(R0?mini(R0.curve)+'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+(x.kind==='account'?T('réel · depuis le début','real · since start'):T('test v','test v')+esc(R0.rev||x.rev))+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
    (BD.length>3?'<a class="badd" style="color:var(--text2)" href="'+B+'mesrobots">'+T('Voir les ','See all ')+BD.length+T(' robots',' robots')+' ›</a>':'')+'<a class="badd" href="'+document.getElementById('talk').href+(document.getElementById('talk').href.includes('?')?'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))+'">+ '+
    (BD.length?T('Un nouveau robot avec Kino','A new robot with Kino'):T('Ton premier robot avec Kino','Your first robot with Kino'))+'</a>';}
  const MR=null;
@@ -291,5 +396,7 @@ async function load(){
   ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>';
 }
 load();setInterval(load,60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+let RW=0;addEventListener('resize',()=>{clearTimeout(RW);RW=setTimeout(()=>{if(D&&D.account)paintChart();},150);});
 </script>
 </body></html>

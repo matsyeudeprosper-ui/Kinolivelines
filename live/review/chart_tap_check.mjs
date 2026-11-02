@@ -1,4 +1,5 @@
 // review/chart_tap_check.mjs - headless Edge: opens the chart as the owner with the pullback panel, taps the
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // next-BOS / last-BOS ring on each panel with REAL input events (CDP Input.dispatchMouseEvent) and prints the
 // card that opens. Run: node live/review/chart_tap_check.mjs x  (any outdir arg; nothing is written)
 // review/chart_options_check.mjs - headless Edge render of the chart page with the
@@ -11,7 +12,7 @@ const OUT = process.argv[2]; const BASE = "http://127.0.0.1:8787"; const WHO = p
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${OUT}/edgeprof3`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -47,4 +48,4 @@ console.log('SPLIT', await tapTest('cvh', 'LVLHIT_H'));
 console.log('LIVE ', await evalJs(`(()=>{draw();const c=document.getElementById('cvh');const g=c.getContext('2d');const d=g.getImageData(0,0,c.width,c.height).data;let gold=0;
  for(let i=0;i<d.length;i+=4){if(d[i]>200&&d[i+1]>170&&d[i+1]<215&&d[i+2]<120&&d[i+3]>200)gold++;}return JSON.stringify({goldPixels:gold,LT:!!(typeof LT!=='undefined'&&LT),xts:HT.xts.length});})()`));
 const errs = errors().map(e => String(e).split(TOKEN).join('<token>')); console.log('errors', errs.length, errs.map(e=>e.slice(0,220)).join(' || '));
-edge.kill(); process.exit(0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(0);

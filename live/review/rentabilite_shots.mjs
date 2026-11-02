@@ -1,4 +1,5 @@
 // review/rentabilite_shots.mjs - headless captures of the Rentabilite space (4 tabs) and its home card, as the owner. node live/review/rentabilite_shots.mjs x
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // review/chart_options_check.mjs - headless Edge render of the chart page with the
 // display options (swing candles on/off, pullback base, line of the last two dots),
 // reporting any JS exception / console error and the candle counts.
@@ -9,7 +10,7 @@ const OUT = process.argv[2]; const BASE = "http://127.0.0.1:8787"; const WHO = p
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${OUT}/edgeprof3`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -39,4 +40,4 @@ const hc = await send("Runtime.evaluate", { expression: "(async()=>{window._rtT=
 console.log("home card", JSON.stringify(hc.result?.result?.value ?? hc.result?.exceptionDetails?.exception?.description).slice(0,300));
 for (const w of [412, 360]) { await send("Emulation.setDeviceMetricsOverride", { width: w, height: 900, deviceScaleFactor: 2, mobile: true }, S); await sleep(900); await send("Runtime.evaluate", { expression: "document.getElementById('rentcard').scrollIntoView({block:'center'})" }, S); await sleep(700); const { result } = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(`${OUTD}/rent_home_${w}.png`, Buffer.from(result.data, "base64")); }
 const errs = errors().map(e => String(e).split(TOKEN).join('<token>')).filter(e => !/favicon|net::ERR|404/.test(e)); console.log('errors', errs.length, errs.slice(0,3).join(' | '));
-edge.kill(); process.exit(0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(0);

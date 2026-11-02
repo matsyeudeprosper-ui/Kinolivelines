@@ -1,4 +1,5 @@
 // review/chart_options_check.mjs - headless Edge render of the chart page with the
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // display options (swing candles on/off, pullback base, line of the last two dots),
 // reporting any JS exception / console error and the candle counts.
 //     node live/review/chart_options_check.mjs <outdir> [nest id, default kino = the owner, Strategie view]
@@ -8,7 +9,7 @@ const OUT = process.argv[2]; const BASE = "http://127.0.0.1:8787"; const WHO = p
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${OUT}/edgeprof3`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -33,4 +34,4 @@ for (const [label, store] of [["default", {}], ["swing on", { owlSwing: "1" }], 
   console.log(`${bad.length ? "FAIL" : "ok  "}  ${label}: ${JSON.stringify(info)} errors=${bad.length} ${bad.slice(0, 2).join(" | ")}`);
   await shot(`chart_${label.replace(/[^a-z]+/g, "_")}`);
 }
-edge.kill(); console.log(fails ? "CHART OPTIONS: FAIL" : "CHART OPTIONS: OK"); process.exit(fails ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); console.log(fails ? "CHART OPTIONS: FAIL" : "CHART OPTIONS: OK"); process.exit(fails ? 1 : 0);

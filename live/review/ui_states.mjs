@@ -1,4 +1,5 @@
 // review/ui_states.mjs - captures the hidden states: trade sheet, info
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // sheet, tour overlay, chart page. Usage: node review/ui_states.mjs <out-dir> <prefix>
 // Capture the hidden states: trade sheet, info sheet, tour, chart page.
 import { spawn } from "node:child_process";
@@ -14,7 +15,7 @@ let wsUrl = null;
 for (let i = 0; i < 40 && !wsUrl; i++) {
   try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; }
   catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data);
@@ -56,4 +57,4 @@ console.log("sheet html sample:", (await evalJs("document.getElementById('sheet-
 // chart page, mobile
 await nav(`${BASE}/${TOKEN}/chart`); await sleep(5000);
 await shotView("chart");
-ws.close(); edge.kill();
+ws.close(); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})();

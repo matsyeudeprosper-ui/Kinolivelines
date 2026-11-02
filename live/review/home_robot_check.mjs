@@ -1,4 +1,5 @@
 // home_robot_check.mjs (2026-10-11): the home card "Le robot en ce moment" and the robot tab it opens.
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 // Captures both at 360 px, reports JS errors and whether the tap lands on the robot tab.
 //   node live/review/home_robot_check.mjs <outdir> [account id|demo]
 import { spawn } from "node:child_process"; import { writeFileSync, readFileSync } from "node:fs";
@@ -9,7 +10,7 @@ const PORT = 9338;
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", `--remote-debugging-port=${PORT}`, `--user-data-dir=${OUT}/hrprof_${Date.now()}`, "about:blank"], { stdio: "ignore" });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 let wsUrl = null; for (let i = 0; i < 40 && !wsUrl; i++) { try { wsUrl = (await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json()).webSocketDebuggerUrl; } catch { await sleep(250); } }
-if (!wsUrl) { console.log("no CDP"); edge.kill(); process.exit(1); }
+if (!wsUrl) { console.log("no CDP"); (()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(1); }
 const ws = new WebSocket(wsUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pending = new Map(); const events = [];
 ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method) events.push(d); };
@@ -32,4 +33,4 @@ const r = await evalJs("(()=>({robotShown:getComputedStyle(document.getElementBy
 shot = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(`${OUT}/robot_${WHO}.png`, Buffer.from(shot.result.data, "base64"));
 const errs = events.filter(e => e.method === "Runtime.exceptionThrown").map(e => (e.params.exceptionDetails.exception || {}).description || "error");
 console.log(WHO, "HOME:", home, "| TAP:", JSON.stringify(r), errs.length ? "JS ERRORS: " + errs.join(" | ") : "no JS errors");
-edge.kill(); process.exit(errs.length || !r.robotShown ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(errs.length || !r.robotShown ? 1 : 0);

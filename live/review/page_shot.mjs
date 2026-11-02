@@ -1,4 +1,5 @@
 // page_shot.mjs (2026-10-12): full-page capture of any member page at 360 px.
+import { execSync as __tk } from "node:child_process";   // edge.kill() left the renderers alive: kill_temp_edge.ps1
 //   node live/review/page_shot.mjs <outdir> <account id> <path after the token, e.g. "wealth"> [js to run before] [name]
 import { spawn } from "node:child_process"; import { writeFileSync, readFileSync } from "node:fs";
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", BASE = "http://127.0.0.1:8787", PORT = 9353;
@@ -26,4 +27,4 @@ const shot = await send("Page.captureScreenshot", { format: "png", captureBeyond
 writeFileSync(`${OUT}/${NAME || "page"}.png`, Buffer.from(shot.result.data, "base64"));
 const errs = events.filter(e => e.method === "Runtime.exceptionThrown").map(e => (e.params.exceptionDetails.exception || {}).description || "error");
 console.log(NAME || "page", "height", h, errs.length ? "JS ERRORS: " + errs.join(" | ") : "no JS errors");
-edge.kill(); process.exit(errs.length ? 1 : 0);
+(()=>{try{edge.kill();__tk("powershell -NoProfile -ExecutionPolicy Bypass -File C:/Projects/KinoliveLines/live/review/kill_temp_edge.ps1",{stdio:"ignore"});}catch{}})(); process.exit(errs.length ? 1 : 0);
