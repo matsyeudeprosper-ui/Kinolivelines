@@ -99,6 +99,24 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
 .mnx b{flex:none;color:var(--accent2);font-size:13px}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid #22d3ee44;border-top-color:var(--accent2);animation:spn 1s linear infinite;display:inline-block;vertical-align:-2px;margin-right:6px}
 @keyframes spn{to{transform:rotate(360deg)}}
+/* 2026-11-02 (owner: "what if the user has many robots? what is he in the app for?"): every robot on one board */
+.board{border-radius:20px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.bsum{display:flex;gap:6px;flex-wrap:wrap;padding:14px 16px 4px}
+.bsum span{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.bsum span.me{color:#ffb4c2;border-color:#ff5c7a66;background:#ff5c7a14}
+.brow{display:flex;gap:12px;align-items:center;padding:13px 16px;border-top:1px solid var(--border)}
+.brow:first-of-type{border-top:0}
+.brow .ri{width:36px;height:36px}
+.bmain{flex:1;min-width:0}
+.bn{font-weight:700;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdots{display:flex;gap:3px;margin:5px 0 4px}.bdots i{width:14px;height:4px;border-radius:9px;background:var(--surface3)}.bdots i.d{background:var(--grad)}.bdots i.c{background:#22d3ee66}
+.bnx{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bnx.me{color:#ffb4c2;font-weight:600}
+.bres{text-align:right;flex:none}.bres b{display:block;font-size:15px}.bres small{font-size:11px;color:var(--muted)}
+.badd{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-top:1px solid var(--border);font-weight:700;font-size:14px;color:var(--accent2)}
+.alinks{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.alinks a{text-align:center;padding:9px 4px;border-radius:11px;background:var(--surface2);border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--text2)}
+.cap{font-size:11.5px;color:var(--muted);margin-top:2px}
 .planrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .bar{height:5px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--grad)}
 .skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
@@ -117,9 +135,11 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
   <div class="chips" id="chips"></div>
  </section>
 
- <div class="tiles" id="tiles"></div>
 
- <div id="myrobot"></div>
+ <h2><span id="h-board">Tes robots</span><a href="mesrobots" id="h-board-all">Tout voir</a></h2>
+ <div class="board" id="board"><div class="brow"><div class="bmain"><div class="bn skel">…</div></div></div></div>
+
+ <div class="tiles" id="tiles"></div>
 
  <h2><span id="h-rob">Tes robots</span><a href="mesrobots" id="h-rob-all">Tout voir</a></h2>
  <div class="rail" id="robots"><div class="rc solo skel" style="height:110px"></div></div>
@@ -169,10 +189,11 @@ function moneyCard(){const A=D.account;const el=document.getElementById('acct');
  const b=Number(A.balance||0).toFixed(2).split('.');
  const wr=S.n?Math.round(100*(S.won||0)/S.n):null;
  const LM=A.last_month;const mN=LM?new Date(LM.ym+'-15').toLocaleDateString(EN?'en':'fr',{month:'long'}):'';
- el.innerHTML='<div class="money"><div class="mtop"><span class="lbl">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+(A.broker?' · '+esc(A.broker):'')+'</span>'+
+ el.innerHTML='<div class="money"><div class="mtop"><span class="lbl">'+(A.real?T('Ton compte réel','Your live account'):T('Ton compte démo','Your demo account'))+(A.broker?' · '+esc(A.broker):'')+'</span>'+
   '<a class="state '+st[0]+'" href="'+B+'?classic=1#set"><i></i>'+esc(st[1])+'</a></div>'+
   '<div class="bal num">$'+b[0]+'<small>.'+b[1]+'</small></div>'+
   '<div class="chg num"><span class="'+cls(P[0])+'">'+money(P[0])+pct+'</span><span class="p">'+esc(P[1])+'</span></div>'+
+  '<div class="cap">'+T('Tout l’argent du compte, quel que soit le robot qui trade dessus.','All the money in the account, whichever robot trades on it.')+'</div>'+
   spark(A.curve)+
   '<div class="seg" role="tablist">'+[['day',T('Jour','Day')],['week',T('Semaine','Week')],['month',T('Mois','Month')],['all',T('Début','Start')]]
    .map(x=>'<button role="tab" data-p="'+x[0]+'" class="'+(x[0]===PER?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
@@ -182,6 +203,7 @@ function moneyCard(){const A=D.account;const el=document.getElementById('acct');
    '<div class="stat"><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('Trades gagnants','Winning trades')+'</span></div></div>'+
   (A.ended?'<div class="renew"><span>'+T('Ta période Automatique est terminée : le robot ne trade plus pour toi.','Your Automatic period has ended: the robot no longer trades for you.')+'</span><a href="'+B+'?classic=1#home">'+T('Renouveler','Renew')+'</a></div>':'')+
   (A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'?classic=1#marche">'+T('Voir','See')+'</a></div>':'')+
+  '<div class="alinks"><a href="'+B+'?classic=1#home">'+T('Aujourd’hui','Today')+'</a><a href="'+B+'?classic=1#marche">'+T('En direct','Live')+'</a><a href="'+B+'?classic=1#hist">'+T('Performance','Performance')+'</a></div>'+
   '</div>';
  el.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{PER=x.dataset.p;try{localStorage.setItem('homePer',PER);}catch(e){}moneyCard();});}
 async function load(){
@@ -212,16 +234,23 @@ async function load(){
   [T('Tu fais quoi ?','What are you up to?'),T('Tu fais quoi en ce moment ?','What are you up to right now?')]];
  document.getElementById('chips').innerHTML=C.map((c,i)=>'<span class="chip" data-i="'+i+'">'+esc(c[0])+'</span>').join('');
  document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{location.href=talk.href+(talk.href.includes('?')?'&':'?')+'ask='+encodeURIComponent(C[+el.dataset.i][1]);});
- const TL=d.account?[['today',T('Aujourd’hui','Today'),'?classic=1#home'],['live',T('En direct','Live'),'?classic=1#marche'],['perf',T('Performance','Performance'),'?classic=1#hist'],['wealth',T('Patrimoine','Wealth'),'wealth']]
-  :[['robot',T('Mes robots','My robots'),'mesrobots'],['live',T('Le marché','Market'),'?classic=1#marche'],['perf',T('Les tests','Tests'),'tests'],['wealth',T('Formules','Plans'),'?classic=1#offres']];
+ const TL=[['robot',T('Construire','Build'),'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid)+'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))],
+  ['perf',T('Tester','Test'),'tests'],['live',T('La place','Marketplace'),'place'],
+  d.account?['wealth',T('Patrimoine','Wealth'),'wealth']:['wealth',T('Formules','Plans'),'?classic=1#offres']];
  document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
- const MR=d.my_robot;
- document.getElementById('myrobot').innerHTML=MR?'<h2><span>'+T('Ton robot avec Kino','Your robot with Kino')+'</span><a href="'+B+'robot?id='+encodeURIComponent(MR.id)+'">'+T('Son histoire','Its story')+'</a></h2>'+
-  '<a class="myr" href="'+B+'robot?id='+encodeURIComponent(MR.id)+'"><div class="rh"><div class="ri">'+svg('robot')+'</div><div style="min-width:0;flex:1"><div class="rn">'+esc(MR.name)+'</div>'+
-  '<div class="rs">'+esc(MR.market)+' · v'+esc(MR.rev)+(MR.result?' · '+T('dernier test ','last test ')+'<span class="'+cls(MR.result.net)+'">'+money(MR.result.net)+'</span>':'')+'</div></div></div>'+
-  '<div class="mst">'+(MR.steps||[]).map((x,i)=>'<i class="'+(x.done?'d':i===MR.step?'c':'')+'"></i>').join('')+'</div>'+
-  '<div class="msl"><span>'+(MR.step<(MR.steps||[]).length?T('Prochaine étape : ','Next: ')+esc(((MR.steps||[])[MR.step]||{}).label||''):T('Toutes les étapes faites','All steps done'))+'</span><span>'+(MR.steps||[]).filter(x=>x.done).length+' / '+(MR.steps||[]).length+'</span></div>'+
-  '<div class="mnx"><span>'+(MR.next&&MR.next.k==='wait'?'<span class="spin"></span>':'')+esc((MR.next||{}).text||'')+'</span><b>›</b></div></a>':'';
+ const BD=d.my_robots||[],ME=x=>(x.next||{}).k==='vote',WK=x=>(x.next||{}).k==='improve';
+ document.getElementById('h-board').textContent=T('Tes robots','Your robots');document.getElementById('h-board-all').textContent=T('Tout voir','See all');
+ {const nMe=BD.filter(ME).length,nRun=BD.filter(x=>x.running).length,nLive=BD.filter(x=>x.live).length;
+  const sum=BD.length?'<div class="bsum"><span>'+BD.length+' robot'+(BD.length>1?'s':'')+'</span>'+(nMe?'<span class="me">'+nMe+' '+T('attend'+(nMe>1?'ent':'')+' ta réponse','waiting for your answer')+'</span>':'')+
+   (BD.filter(WK).length?'<span>'+BD.filter(WK).length+' '+T('à retravailler','to rework')+'</span>':'')+(nRun?'<span>'+nRun+' '+T('test en cours','testing')+'</span>':'')+(nLive?'<span>'+nLive+' '+T('en vrai','live')+'</span>':'')+'</div>':'';
+  document.getElementById('board').innerHTML=sum+BD.slice(0,5).map(x=>{const R0=x.result,n=x.next||{};
+   return '<a class="brow" href="'+B+'robot?id='+encodeURIComponent(x.id)+'"><div class="ri">'+svg('robot')+'</div><div class="bmain"><div class="bn">'+esc(x.name)+'</div>'+
+    '<div class="bdots">'+(x.steps||[]).map((s0,i)=>'<i class="'+(s0.done?'d':i===x.step?'c':'')+'"></i>').join('')+'</div>'+
+    '<div class="bnx'+(ME(x)?' me':'')+'">'+(n.k==='wait'?'<span class="spin"></span>':'')+esc(n.short||n.text||'')+'</div></div>'+
+    '<div class="bres">'+(R0?'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+T('test v','test v')+esc(R0.rev||x.rev)+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
+   '<a class="badd" href="'+document.getElementById('talk').href+(document.getElementById('talk').href.includes('?')?'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))+'">+ '+
+   (BD.length?T('Un nouveau robot avec Kino','A new robot with Kino'):T('Ton premier robot avec Kino','Your first robot with Kino'))+'</a>';}
+ const MR=null;
  document.getElementById('h-rob').textContent=T('Tes robots','Your robots');document.getElementById('h-rob-all').textContent=T('Tout voir','See all');
  const R=d.robots||[];
  document.getElementById('robots').innerHTML=R.length?R.map(r=>{const t=r.test||{};
@@ -231,7 +260,7 @@ async function load(){
   (r.why?'<span class="tag">'+esc(r.why)+'</span>':'')+'</a>';}).join('')
   :'<a class="rc solo" href="'+talk.href+'"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+T('Ton premier robot','Your first robot')+'</div></div>'+
    '<div class="rs">'+T('Raconte ta méthode à Kino : il le construit avec toi, en parlant, et le teste sur de vrais prix.','Tell Kino your method: he builds it with you as you talk, and tests it on real prices.')+'</div><span class="tag k">'+T('Commencer →','Start →')+'</span></a>';
- {const one=MR&&R.length<=1&&(!R.length||R[0].id===MR.id);document.getElementById('h-rob').parentElement.style.display=one?'none':'';document.getElementById('robots').style.display=one?'none':'';}   // the robot card above already says it all
+ document.getElementById('h-rob').parentElement.style.display='none';document.getElementById('robots').style.display='none';   // the board above lists them all
  document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');
  document.getElementById('goal').innerHTML=d.goal?'<div class="goal">'+esc(d.goal)+'</div>'
   :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';

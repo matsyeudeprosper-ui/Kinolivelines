@@ -13874,7 +13874,12 @@ def _test_summary(res):
 _STORY_CACHE = {}
 
 
+_RCI = {}          # thread file -> (mtime, robot_id, uid)
+
+
 def _robot_chats(rid, uids):
+    """2026-11-02: the threads about one robot. Each thread file is re-read only when it changed (the home now shows
+    every robot of the member, and reading all 185 threads each time took seconds)."""
     out = []
     try:
         for f in os.listdir(CHAT_DIR):
@@ -13882,11 +13887,15 @@ def _robot_chats(rid, uids):
                 continue
             p = os.path.join(CHAT_DIR, f)
             try:
-                c = json.load(open(p, encoding="utf-8"))
+                mt = os.path.getmtime(p)
+                hit = _RCI.get(p)
+                if not hit or hit[0] != mt:
+                    c = json.load(open(p, encoding="utf-8"))
+                    _RCI[p] = hit = (mt, c.get("robot_id"), c.get("uid"))
+                if hit[1] == rid and (not uids or hit[2] in uids):
+                    out.append((f[:-5], json.load(open(p, encoding="utf-8"))))
             except Exception:
                 continue
-            if c.get("robot_id") == rid and (not uids or c.get("uid") in uids):
-                out.append((f[:-5], c))
     except Exception:
         pass
     return out
@@ -14022,6 +14031,10 @@ def robot_story(user, rid, en=False):
                "ask": T("Comment je fais trader mon robot, petit d’abord ?", "How do I let my robot trade, small at first?")}
     else:
         nxt = {"k": "watch", "text": T("Il tourne. Kino le surveille avec toi.", "It's running. Kino watches it with you."), "ask": T("Comment va mon robot ?", "How is my robot doing?")}
+    nxt["short"] = {"wait": T("Test en cours", "Test running"), "vote": T("Vérifie sa semaine", "Check its week"),
+                    "test": T("Pas encore testé", "Not tested yet"), "improve": T("Perd au test · à retravailler", "Loses in test · rework it"),
+                    "luck": T("Gagne · vérifier la chance", "Wins · check it is not luck"), "live": T("Prêt à trader petit", "Ready to trade small"),
+                    "watch": T("Il tourne", "Running")}.get(nxt["k"], "")
     cur_i = next((i for i, x in enumerate(steps) if not x["done"]), len(steps))
     # the result files: the latest full test with its curve, and the other markets
     full = None
@@ -29513,10 +29526,18 @@ def _home_kino_data(user):
         out["robots"], out["picks"] = [], []
     try:                                   # 2026-11-02: the robot built with Kino - its step and the one thing to do next
         _rs = robots_of_person(user)
-        if _rs:
-            _st = robot_story(user, _rs[0]["id"], out.get("lang") == "en")
+        _bd = []
+        for _r in _rs[:8]:
+            _st = robot_story(user, _r["id"], out.get("lang") == "en")
             if _st.get("ok"):
-                out["my_robot"] = {k: _st.get(k) for k in ("id", "name", "market", "rev", "steps", "step", "next", "result", "running", "cid", "versions")}
+                _bd.append({k: _st.get(k) for k in ("id", "name", "market", "rev", "steps", "step", "next", "result", "running", "cid", "versions", "live")})
+        # 2026-11-02 (owner: "what happens if the user has many robots? what is he in the app for"): one board, the robots
+        # waiting for HIM first (a week to vote on, a loss to look at), then the ones to test, then those running / waiting
+        _ord = {"vote": 0, "improve": 1, "test": 2, "luck": 3, "live": 4, "wait": 5, "watch": 6}
+        _bd.sort(key=lambda b: _ord.get((b.get("next") or {}).get("k"), 9))
+        out["my_robots"] = _bd
+        if _bd:
+            out["my_robot"] = _bd[0]
     except Exception:
         pass
     try:
