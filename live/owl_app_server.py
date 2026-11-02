@@ -16681,11 +16681,13 @@ def chat_start(user, body):
         # 2026-10-27 (owner: "get people attached from day one"): day one has ONE aim - by tonight their own idea runs as a
         # robot in ghost mode (pretend money on live prices), so there is something of THEIRS to come back to tomorrow
         threading.Thread(target=_chat_quick, args=(cid, user, "FIRST MEETING - %s opened the chat for the very first time; you have never "
-                                                   "met. Language: %s. Be warm and curious about THEM first (who they are, how they trade or "
-                                                   "would like to). Your one aim for their first day, as a friend who wants to see their idea "
-                                                   "live: their own trading idea turned into a robot running in ghost mode (pretend money on "
-                                                   "live prices) before the day ends - ask for the idea when the moment comes, never as a "
-                                                   "form. Never a sales line." % (user.get("name") or "a new member", "English" if en else "French")),
+                                                   "met. Language: %s. Be warm and curious about THEM first: find out, lightly, whether they already trade. "
+                                                   "Introduce yourself with something true and inviting (what you are watching on the market "
+                                                   "right now, what you enjoy) - not your losses or your failed robots, that is not a first "
+                                                   "impression. If they already trade: your aim for their first day is their own idea turned "
+                                                   "into a robot running in ghost mode (pretend money on live prices). If they are new to "
+                                                   "trading: no jargon, and offer L'école de Kino (learn on real past sessions, then build your "
+                                                   "own robot) rather than a robot. Never a form, never a sales line." % (user.get("name") or "a new member", "English" if en else "French")),
                          daemon=True).start()
         return {"ok": True, "id": cid}
     if rid:
