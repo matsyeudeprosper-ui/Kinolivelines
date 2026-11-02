@@ -156,7 +156,7 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--text2);font-weight:600;fon
 .trl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
 .bres{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
 .bsp{display:block;width:60px;height:20px;margin-bottom:2px}
-.msg.long{-webkit-line-clamp:unset;display:block;max-height:6.2em;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.msg.full{-webkit-line-clamp:unset;display:block}.msg.long{-webkit-line-clamp:unset;display:block;max-height:6.2em;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
 .brow,.badd,.trade,.cta{transition:transform .12s,background-color .2s}
 .brow:active,.trade:active{background:var(--surface2)}.cta:active{transform:scale(.98)}
 @media (hover:hover){.brow:hover{background:var(--surface2)}}
@@ -312,8 +312,8 @@ function tradesHtml(ol){if(!ol||!ol.length)return '';
     '<div class="trl"><span>'+T('Stop','Stop')+'</span><span>'+T('Objectif','Target')+'</span></div>';}
   return '<a class="trade" href="'+B+'robot?id=owl&tab=live"><div class="trh"><span class="dir '+(buy?'b':'s')+'">'+(buy?T('Achat','Buy'):T('Vente','Sell'))+'</span>'+
    '<span class="sym">'+esc(symName(p.sym))+'</span><span class="since">'+since(p.t)+'</span><b class="num '+cls(pl)+'">'+money(pl)+'</b></div>'+tr+'</a>';}).join('')+'</div>';}
-function mini(cv){if(!cv||cv.length<2)return '';const v=[0].concat(cv.map(Number)),W=60,H=20,mn=Math.min(...v),mx=Math.max(...v),r=(mx-mn)||1;
- const c=v[v.length-1]>=0?'#2ecc71':'#ff6b6b';
+function mini(cv,net){if(!cv||cv.length<2)return '';const v=[0].concat(cv.map(Number)),W=60,H=20,mn=Math.min(...v),mx=Math.max(...v),r=(mx-mn)||1;
+ const c=Number(net==null?v[v.length-1]:net)>=0?'#2ecc71':'#ff6b6b';
  return '<svg class="bsp" viewBox="0 0 '+W+' '+H+'" aria-hidden="true"><path d="'+v.map((x,i)=>(i?'L':'M')+(1+i*(W-2)/(v.length-1)).toFixed(1)+' '+(1+(H-2)*(1-(x-mn)/r)).toFixed(1)).join(' ')+
   '" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>';}
 function countUp(to){const b=document.getElementById('bal');if(!b||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -367,7 +367,7 @@ function render(d){
  if(!d.account){const k=document.getElementById('kino');k.style.marginTop='0';}
  const st=d.status||{};document.getElementById('status').textContent=(EN?st.en:st.fr)||T('disponible','available');
  const ms=document.getElementById('msg'),fresh=d.last&&d.last.new;
- ms.classList.toggle('long',!!(d.last&&d.last.text.length>150));
+ ms.classList.toggle('long',!!(d.last&&d.last.text.length>150));ms.classList.toggle('full',!d.last);
  if(d.last){ms.textContent=d.last.text;document.getElementById('when').textContent=ago(d.last.t);}
  else{ms.textContent=T('Salut, moi c’est Kino. Raconte-moi comment tu trades, ou l’idée qui te trotte dans la tête : je la transforme en robot, je la teste sur de vrais prix, et je te dis honnêtement si ça tient.',
   'Hi, I’m Kino. Tell me how you trade, or the idea on your mind: I turn it into a robot, test it on real prices, and tell you honestly whether it holds up.');}
@@ -386,7 +386,7 @@ function render(d){
  if(document.getElementById('tiles'))document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
  /* 2026-11-02 (owner): L'école de Kino - first the path question, then for learners one card: level, streak, today's moment */
  {const SC=d.school||{},el=document.getElementById('school');
-  if(el){if(!SC.track&&!d.owner)el.innerHTML='<div class="card" style="margin-top:14px"><div class="rn" style="margin-bottom:10px">'+T('Tu trades déjà ?','Do you already trade?')+'</div>'+
+  if(el){if(!SC.track&&!d.owner)el.innerHTML='<div class="card" style="margin-top:14px"><div class="rn" style="margin-bottom:4px">'+T('Tu trades déjà ?','Do you already trade?')+'</div><div class="rs" style="margin-bottom:12px">'+T('Kino adapte ses mots et son école à ton niveau.','Kino adapts his words and his school to your level.')+'</div>'+
     '<div style="display:grid;gap:8px">'+[['beginner',T('Non, je veux apprendre','No, I want to learn')],['some',T('Un peu, sans vraie méthode','A bit, without a real method')],['expert',T('Oui, j’ai ma méthode','Yes, I have my method')]]
     .map(x=>'<button class="chip" style="text-align:left;padding:12px 14px;border-radius:14px;font-weight:600;font-size:14px" data-tr="'+x[0]+'">'+x[1]+'</button>').join('')+'</div></div>';
    else if(SC.track!=='expert')el.innerHTML='<a class="myr" style="margin-top:14px" href="'+B+'ecole"><div class="rh"><div class="ri" style="font-size:18px">🎓</div><div style="flex:1;min-width:0"><div class="rn">'+T('L’école de Kino','Kino’s school')+'</div>'+
@@ -405,7 +405,7 @@ function render(d){
    return '<a class="brow" href="'+B+'robot?id='+encodeURIComponent(x.id)+'"><div class="ri">'+svg('robot')+'</div><div class="bmain"><div class="bn">'+esc(x.name)+'</div>'+
     '<div class="bdots">'+(x.steps||[]).map((s0,i)=>'<i class="'+(s0.done?'d':i===x.step?'c':'')+'"></i>').join('')+'</div>'+
     '<div class="bnx'+(ME(x)?' me':'')+'">'+(n.k==='wait'?'<span class="spin"></span>':'')+esc(n.short||n.text||'')+'</div></div>'+
-    '<div class="bres">'+(R0?mini(R0.curve)+'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+(x.kind==='account'?T('réel · depuis le début','real · since start'):T('test v','test v')+esc(R0.rev||x.rev))+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
+    '<div class="bres">'+(R0?mini(R0.curve,R0.net)+'<b class="num '+cls(R0.net)+'">'+money(R0.net)+'</b><small>'+(x.kind==='account'?T('réel · depuis le début','real · since start'):T('test v','test v')+esc(R0.rev||x.rev))+'</small>':'<small>'+T('pas testé','not tested')+'</small>')+'</div></a>';}).join('')+
    (BD.length>3?'<a class="badd" style="color:var(--text2)" href="'+B+'mesrobots">'+T('Voir les ','See all ')+BD.length+T(' robots',' robots')+' ›</a>':'')+'<a class="badd" href="'+document.getElementById('talk').href+(document.getElementById('talk').href.includes('?')?'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'))+'">+ '+
    (BD.length?T('Un nouveau robot avec Kino','A new robot with Kino'):T('Ton premier robot avec Kino','Your first robot with Kino'))+'</a>';}
  const MR=null;

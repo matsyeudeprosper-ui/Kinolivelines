@@ -14004,7 +14004,7 @@ def _owl_story(user, en):
              {"k": "live", "label": T("En vrai", "For real"), "done": live}]
     nxt = {"k": "watch" if live else "paused", "text": T("Il trade sur ton compte. Kino le surveille avec toi.", "It trades on your account. Kino watches it with you.") if live
            else T("Il est en pause sur ton compte.", "It is paused on your account."), "ask": T("Comment va l'Owl sur mon compte ?", "How is the Owl doing on my account?")}
-    nxt["short"] = T("Il trade sur ton compte", "Trading on your account") if live else T("En pause sur ton compte", "Paused on your account")
+    nxt["short"] = T("Actif sur ton compte", "Active on your account") if live else T("En pause sur ton compte", "Paused on your account")
     _mine = bool(is_admin(user) or user.get("id") in OWNER_UIDS)
     _shown = rules_shown("owl")
     if not (_mine or _shown):
@@ -30311,6 +30311,11 @@ def landing_payload():
     except Exception:
         out["live"] = {"online": False}
     out["tg_bot"] = nest_config().get("tg_bot") or "Kino_owl_bot"
+    try:                                   # 2026-11-02: the plans strip on the landing, from the real plan table
+        out["plans"] = [{"k": k, "label": _PL.PLAN_INFO[k]["label"], "label_en": _PL.PLAN_INFO[k]["label_en"], "usd": _PL.PLAN_INFO[k]["usd"]}
+                        for k in ("decouverte", "essentiel", "pro", "premium") if k in _PL.PLAN_INFO]
+    except Exception:
+        out["plans"] = []
     _LAND_CACHE[0], _LAND_CACHE[1] = time.time(), out
     return out
 
@@ -33535,10 +33540,12 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
             "document.getElementById('mp').textContent=fam?'Le compte que le robot va trader. Lu en moins d\u2019une minute, sans code.':(free?'Un pr\u00e9nom, un identifiant, un mot de passe : Kino vous attend de l\u2019autre c\u00f4t\u00e9.':'Un code ou un paiement, et votre compte s\u2019ouvre.');"
             "var _tgb=document.getElementById('tg');if(_tgb){_tgb.style.display=(fam||free)?'none':'block';}"
             "var _mh=document.getElementById('mh');if(_mh){_mh.textContent=fam?'Le robot passe des ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'Vos identifiants restent sur notre serveur.';}"
-            "document.getElementById('mt5').style.display=fam?'':'none';"
             "try{brokersUI(fam);}catch(e){}"
+            # 2026-11-02 (welcome review): brokersUI -> bkFields(true) showed the MT5 server row again on the free / app-only
+            # plans ("no broker account" was the promise); hidden after it, and the broker field is not asked on the free plan
+            "document.getElementById('mt5').style.display=fam?'':'none';"
             "var _cg=document.getElementById('codeg');if(_cg){_cg.style.display=(fam||free)?'none':'';}"
-            "var _bg2=document.getElementById('brokg');if(_bg2){_bg2.style.display=fam?'none':'';}"
+            "var _bg2=document.getElementById('brokg');if(_bg2){_bg2.style.display=(fam||free)?'none':'';}"
             "var _ok=document.getElementById('ok');if(_ok){_ok.textContent=fam?'V\u00e9rifier mon compte':(free?'Ouvrir mon compte gratuit':'Activer mon compte');}"
             "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
             "if(b){b.style.display=(fam||free)?'none':'';o.style.display=(fam||free)?'none':'';ph.style.display=(fam||free)?'none':'';}"
@@ -36664,7 +36671,13 @@ class H(BaseHTTPRequestHandler):
             _host = self.headers.get("Host") or "owlnest.local"
             _proto = "https" if (self.headers.get("X-Forwarded-Proto") == "https"
                                  or "127.0.0.1" not in _host and "localhost" not in _host) else "http"
-            self._send(JOIN_PAGE.replace("%%ORIGIN%%", f"{_proto}://{_host}").replace("%%CONTACT%%", nest_config().get("contact_url") or "/activate").replace("%%TGBOT%%", nest_config().get("tg_bot") or "Kino_owl_bot"),
+            _lp = JOIN_PAGE
+            try:                                     # 2026-11-02 (owner: "redesign the landing page"): the new front door
+                _lp = open(os.path.join(DIR, "owl_landing_page.html"), encoding="utf-8").read().replace(
+                    "%%PRESENCE%%", open(os.path.join(DIR, "kino_presence.js"), encoding="utf-8").read())
+            except Exception:
+                pass
+            self._send(_lp.replace("%%ORIGIN%%", f"{_proto}://{_host}").replace("%%CONTACT%%", nest_config().get("contact_url") or "/activate").replace("%%TGBOT%%", nest_config().get("tg_bot") or "Kino_owl_bot"),
                        "text/html; charset=utf-8")
             return
         user = user_by_token(parts[0])
