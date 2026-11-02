@@ -144,7 +144,7 @@ def robot_stream(parts, pieces, opps, S, bars):
     if ((P.get(al["entry"]) or {}).get("rule") or {}).get("event") == "formula":
         ao, aS = robot_opps({"entry": al["entry"], "stop": al.get("stop") or parts.get("stop")}, pieces, opps, S, bars)
         out += [dict(o, src="al") for o in ao]
-        rS = dict(aS, **rS)
+        rS = {**aS, **rS}     # 2026-11-02: keys are timestamps (ints) - dict(aS, **rS) raised 'keywords must be strings'
     elif ro is not opps:
         out += [dict(o, src="eyes") for o in opps]
     out.sort(key=lambda o: (o["t"], o["d"]))
