@@ -13901,6 +13901,33 @@ def _robot_chats(rid, uids):
     return out
 
 
+# 2026-11-02 (owner: "let's not expose the strategy openly to all - let the bot owner decide to expose or hide it"):
+# a robot's rules are shown to its creator always, to anyone else only if the creator switched them on (default: hidden)
+RULES_VIS_F = os.path.join(DIR, "robots", "rules_visibility.json")
+
+
+def rules_shown(rid):
+    return bool((_jload(RULES_VIS_F, {}) or {}).get(rid))
+
+
+def _rules_creator(user, rid):
+    if is_admin(user) or user.get("id") in OWNER_UIDS:
+        return True
+    r = next((x for x in robot_reg().get("robots") or [] if x.get("id") == rid), None)
+    return bool(r and r.get("by_uid") in _person_uids(user.get("id")))
+
+
+def robot_rules_vis(user, body):
+    rid = str(body.get("id") or "")[:80]
+    if not rid or not _rules_creator(user, rid) or (rid == "owl" and not (is_admin(user) or user.get("id") in OWNER_UIDS)):
+        return {"ok": False, "err": "not yours"}
+    d = _jload(RULES_VIS_F, {}) or {}
+    d[rid] = bool(body.get("shown"))
+    _atomic_json(RULES_VIS_F, d)
+    _STORY_CACHE.clear()
+    return {"ok": True, "shown": d[rid]}
+
+
 def _owl_story(user, en):
     """2026-11-02 (owner: "each robot its own performance submenu; the old dashboard merged into the new"): the robot
     that trades on the member's account (the Owl) gets the same page as a robot built with Kino. Its rules come from
@@ -13939,7 +13966,12 @@ def _owl_story(user, en):
     nxt = {"k": "watch" if live else "paused", "text": T("Il trade sur ton compte. Kino le surveille avec toi.", "It trades on your account. Kino watches it with you.") if live
            else T("Il est en pause sur ton compte.", "It is paused on your account."), "ask": T("Comment va l'Owl sur mon compte ?", "How is the Owl doing on my account?")}
     nxt["short"] = T("Il trade sur ton compte", "Trading on your account") if live else T("En pause sur ton compte", "Paused on your account")
+    _mine = bool(is_admin(user) or user.get("id") in OWNER_UIDS)
+    _shown = rules_shown("owl")
+    if not (_mine or _shown):
+        rules = []
     return {"ok": True, "id": "owl", "kind": "account", "name": "L'Owl", "market": "BTCUSD", "rev": None, "rules": rules, "steps": steps,
+            "rules_hidden": not (_mine or _shown), "can_vis": _mine, "rules_shown": _shown,
             "step": next((i for i, x in enumerate(steps) if not x["done"]), len(steps)), "next": nxt, "running": False, "live": live,
             "result": None, "full": None, "cid": _person_main(uid), "versions": 0, "timeline": [], "lang": "en" if en else "fr",
             "package": pk.get("label") or "", "max_day": pk.get("max_trades_day") or None, "m15": bool(pk.get("m15_gate"))}
@@ -14097,7 +14129,8 @@ def robot_story(user, rid, en=False):
            "market": r.get("market") or rb.get("market") or "BTCUSD", "created": r.get("created"), "rev": rev,
            "rules": rules, "steps": steps, "step": cur_i, "next": nxt, "running": running, "luck": luck, "live": live,
            "result": res_now, "full": full, "cid": cid, "versions": len([e for e in ev if e["k"] == "change"]) + 1,
-           "timeline": list(reversed(ev))[:80], "lang": "en" if en else "fr"}
+           "timeline": list(reversed(ev))[:80], "lang": "en" if en else "fr",
+           "can_vis": _rules_creator(user, rid), "rules_shown": rules_shown(rid)}
     _STORY_CACHE[key] = (time.time(), out)
     return out
 
@@ -34569,7 +34602,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
                                               "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
-                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "school", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
+                                              "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "school", "robot_rules_vis", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")
@@ -34595,7 +34628,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
                        "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
-                       "replay_get": replay_get, "replay_bars": replay_bars, "school": school, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
+                       "replay_get": replay_get, "replay_bars": replay_bars, "school": school, "robot_rules_vis": robot_rules_vis, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")

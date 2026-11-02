@@ -130,6 +130,8 @@ h2 a{cursor:pointer}
 .ck b{display:block;font-size:13.5px}.ck small{font-size:12px;color:var(--muted)}
 .today{margin-top:12px;font-size:13px;color:var(--text2)}
 .links.two{grid-template-columns:1fr 1fr}
+.sw{position:relative;width:46px;height:28px;border-radius:99px;background:var(--surface3);border:1px solid var(--border2);flex:none;cursor:pointer;transition:background .2s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}.sw.on{background:#2ecc71}.sw.on:after{transform:translateX(18px)}
 .vr{display:grid;grid-template-columns:36px 1fr auto;gap:4px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}.vr:last-child{border-bottom:0}
 .vn{font-size:12px;font-weight:700;color:var(--text2)}.vb{height:6px;border-radius:9px;background:var(--surface3);overflow:hidden}.vb i{display:block;height:100%}.vb i.u{background:var(--up)}.vb i.d{background:var(--down)}
 .vr b{font-size:13.5px}.vr small{grid-column:2/4;font-size:11.5px;color:var(--muted);margin-top:-2px}
@@ -174,7 +176,12 @@ function overview(d){const N=d.next||{},R=d.result,acc=d.kind==='account';
    :'<a class="cta" href="'+talk(d,N.ask)+'">'+(N.k==='vote'?T('Voir la semaine avec Kino','See the week with Kino'):T('En parler à Kino','Talk it over with Kino'))+' →</a>')+'</div></div>';
  if(acc&&A)h+=accSummary();
  else if(R)h+=resultCard(R,d);
- if(d.rules&&d.rules.length)h+='<h2><span>'+T('Ses règles, en mots simples','Its rules, in plain words')+'</span></h2><div class="card">'+d.rules.map(r=>'<div class="rule"><small>'+esc(r.k)+'</small><div>'+esc(r.v)+'</div></div>').join('')+'</div>';
+ if(d.rules_hidden)h+='<h2><span>'+T('Ses règles','Its rules')+'</span></h2><div class="card"><div class="rule"><small>🔒 '+T('Privées','Private')+'</small><div>'+T('Son créateur garde sa recette pour lui. Tu vois ce qu’il fait et ses résultats, pas comment il décide.','Its creator keeps the recipe private. You see what it does and its results, not how it decides.')+'</div></div></div>';
+ else if(d.rules&&d.rules.length){h+='<h2><span>'+T('Ses règles, en mots simples','Its rules, in plain words')+'</span></h2><div class="card">';
+  /* 2026-11-02 (owner: "let the bot owner decide to expose or hide it"): the creator's switch */
+  if(d.can_vis)h+='<div class="rule" style="display:flex;align-items:center;gap:12px"><div style="flex:1"><small>'+T('Qui voit ces règles ?','Who sees these rules?')+'</small><div>'+(d.rules_shown?T('Tout le monde','Everyone'):T('Toi seul','Only you'))+'</div></div>'+
+   '<button id="rvis" class="sw'+(d.rules_shown?' on':'')+'" aria-label="'+T('Montrer les règles','Show the rules')+'"></button></div>';
+  h+=d.rules.map(r=>'<div class="rule"><small>'+esc(r.k)+'</small><div>'+esc(r.v)+'</div></div>').join('')+'</div>';}
  return h;}
 function resultCard(R,d){return '<h2><span>'+T('Dernier test · version ','Latest test · version ')+esc(R.rev||d.rev)+'</span></h2><div class="card"><div class="big num '+cls(R.net)+'">'+money(R.net)+'</div>'+
   '<div class="sub">'+T('sur ','over ')+Math.round(R.days||0)+T(' jours de vrais prix',' days of real prices')+'</div>'+spark(R.curve)+
@@ -294,6 +301,8 @@ function render(){const d=D,app=document.getElementById('app');if(!d)return;EN=d
  app.innerHTML=hero(d)+'<div class="tabbody">'+body+'</div>';
  app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','?id='+encodeURIComponent(d.id)+'&tab='+TAB);}catch(e){}render();window.scrollTo({top:0});});
  app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{TAB=b.dataset.go;render();});
+ {const rv=document.getElementById('rvis');if(rv)rv.onclick=async()=>{rv.disabled=true;try{const r=await fetch(B+'robot_rules_vis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:d.id,shown:!d.rules_shown})});const j=await r.json();
+  if(j.ok){d.rules_shown=j.shown;render();}}catch(e){}rv.disabled=false;};}
  app.querySelectorAll('.bars .bar').forEach(b=>b.onclick=()=>{perfAccount.ym=b.dataset.ym;render();});
  if(location.hash&&!render._j){const tg=document.getElementById(location.hash.slice(1));if(tg){render._j=1;tg.scrollIntoView({block:'center'});tg.animate([{opacity:.4},{opacity:1}],{duration:900});}}
  const m=document.getElementById('more');if(m)m.onclick=()=>{SHOWALL=true;render();};}

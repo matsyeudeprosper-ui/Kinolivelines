@@ -187,7 +187,13 @@ function codeSheet(){sheet('<h3>'+T('Entrer un code','Enter a code')+'</h3><p>'+
     '<input class="in" id="ml" inputmode="numeric" placeholder="'+T('Numéro de compte MT5','MT5 account number')+'"><input class="in" id="ms" placeholder="Exness-MT5Real30"><input class="in" id="mp" type="password" placeholder="'+T('Mot de passe principal du compte','Account main password')+'">';
    m.textContent='';return;}
   if(j&&j.ok){m.className='msg ok';m.textContent=T('C’est fait : ta formule est active.','Done: your plan is active.');setTimeout(()=>location.reload(),1500);}
-  else{m.className='msg bad';m.textContent=(j&&j.err)?String(j.err):T('Ce code ne marche pas : vérifie-le, ou demande-en un nouveau.','This code does not work: check it, or ask for a new one.');}};}
+  /* 2026-11-02 (owner: "why is the activation code not working on Valère's account?"): the raw "bad code" / "too many tries"
+     read like a broken panel - each case in plain words */
+  else{m.className='msg bad';const E=(j&&j.err)||'';
+   m.textContent=E==='bad code'?T('Ce code n’est pas valable : il a déjà servi, il a plus de 7 jours, ou une lettre est fausse. Demande-en un nouveau.','This code is not valid: already used, older than 7 days, or a letter is wrong. Ask for a new one.')
+    :E==='too many tries'?T('Trop d’essais d’affilée : attends 10 minutes, puis réessaie une seule fois.','Too many tries in a row: wait 10 minutes, then try once more.')
+    :E==='plein'?T('Plus de place pour le trading automatique en ce moment. Demande au propriétaire.','No place left for automatic trading right now. Ask the owner.')
+    :T('Le code n’a pas pu être vérifié. Réessaie dans un instant.','The code could not be checked. Try again in a moment.');}};}
 document.addEventListener('click',e=>{const a=e.target.closest('[data-sh]');if(!a)return;e.preventDefault();if(a.dataset.sh==='plans')plansSheet();else codeSheet();});
 /* ---- notifications: the same subscription as the old dashboard ---- */
 async function nsetup(){const sw=$('nsw');if(!sw)return;
