@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-02T13:00:39Z",
+ "updated": "2026-11-02T14:30:45Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -121,7 +121,8 @@
     "2026-10-30: 69 d ch350+nf06+cost5 +107.09 vs filter +47.83 (h +19.6/+44.3) hole 58.3 vs 79.5, 63 tr (33/33 per half: answers the thin-sample doubt); vs ch350+nf06 alone +22.4 (h -1.1/+16.2). Week 43 still -45.",
     "2026-10-31: ch350+cost5 vs brakes ch350+nf06: 42 d +29.26 vs -1.07 hole 58.3 vs 70.2 (h +1.1/+29.4, 11/25 tr); 69 d +100.74 vs +78.29 (h -1.1/+23.6, 32/31 tr). Halves agree in money only weakly; proposed pb_w_ch350_cost5. +13-16 half: +56.69 hole 40.0 (h +1.6/+25.8 vs ch350+cost5).",
     "2026-11-01: ch350+cost5+nc3 +28.62 hole 63.7 vs ch350+cost5 +29.26 (10-31): extra same-way trades add nothing among wide stops (h2 -28.2 vs -19.2).",
-    "2026-11-02: real 283 tr by stop width: 250-400 pts 54 tr 61% +31.87 PF 1.21 (h 60/62); 150-250 80 tr 42% -95.19 PF 0.55 (h 48/38); <100 69 tr -23.71; >=400 13 tr -50.68 (peu). Test on brakes 42 d: refuse stops under ~200 (cost 3.5) +25.21 vs -14.05, under ~233 (cost 3) +17.98, but only 16-18 trades (5 in h1): not evidence."
+    "2026-11-02: real 283 tr by stop width: 250-400 pts 54 tr 61% +31.87 PF 1.21 (h 60/62); 150-250 80 tr 42% -95.19 PF 0.55 (h 48/38); <100 69 tr -23.71; >=400 13 tr -50.68 (peu). Test on brakes 42 d: refuse stops under ~200 (cost 3.5) +25.21 vs -14.05, under ~233 (cost 3) +17.98, but only 16-18 trades (5 in h1): not evidence.",
+    "2026-11-02 14:30 veille: twin noday FLIP-BOS BUY stop ~760 pts (risk 15.18, ~3x usual) held 13 h 45 lost -15.21 - the >=400 band again (real 13 tr -50.68). 'Wide carries' holds for 250-400 only; very wide is another animal (peu)."
    ]
   },
   {
@@ -3695,6 +3696,14 @@
     "scrutiny --by kind"
    ],
    "saw": "5 new at 0.02, net -2.97: 07:45 BOS SELL gap 12 min W +2.23; 09:33 FLIP BUY (08:40, gap 55 min after a win, h1 same) L -4.50; 09:46 FLIP SELL gap 2 min after a loss L -1.45; 11:17 BOS SELL gap 15 min W +2.82; 12:07 BOS SELL gap 26 s after a win, pace 0.97 L -2.07. Day flips 2/2 lost; quick re-entries 1 W / 2 L; h1 same since 10-26 3 tr 0 won vs opp 10 tr 6 won (peu). Everything as predicted; nothing new enough for a run, a pile or a proposal."
+  },
+  {
+   "t": "2026-11-02T14:30:45Z",
+   "looked": [
+    "wake_context (no new real close, 285 total; twin noday 8 tr +29.86 -> 9 tr +14.65; labo empty; no open ask)",
+    "twin_noday.log + twin_noday_state.json"
+   ],
+   "saw": "Twin alive (answers the open question). Its 9th trade: FLIP-BOS BUY entered Sun 11-01 23:39 (session open after the weekend), stop ~760 pts, risk $15.18 vs usual $2.7-6.7, held ~13 h 45, stopped 11-02 13:23 (day) -15.21: half its gain in one trade. skip_hours gates entries only, so a night trade can still die by day. Fits real: stops >=400 13 tr -50.68, held >3 h 14 tr -34.3. No run, no pile, no proposal."
   }
  ],
  "lessons": [
@@ -3770,7 +3779,7 @@
   "Every package still loses after 10-20 (best post: -9.7 refusal, -23.8 stakes): what changed in late October?",
   "Build tight_stop_size / chase_size / pile_field_dist: stop width 150-250 is the real leak.",
   "builder_unblock: 22 open requests, none built since 10-26.",
-  "Twin noday: no trade since 10-29 although the market reopened 11-02 night - check it is alive.",
+  "Very wide stops (>=400 pts) and holds >3 h lose on real and on twin noday (11-02 -15.21): worth a max-stop / max-hold request?",
   "Real accounts: watch the 13-16 h closes from 11-02 on.",
   "battery_pb_reproduce: compare cards to harness numbers.",
   "Capped ideas parked (no daily cap since 10-14)."
