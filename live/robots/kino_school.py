@@ -469,12 +469,19 @@ def set_track(pid, track):
         _save(d)
 
 
-def block(pid, en=False):
+def block(pid, en=False, owner=False):
     """what Kino knows of the person as a learner (his context, every reply)"""
     d = _load()
     me = d.get(pid)
     if not me or not me.get("track"):
-        return ""
+        # 2026-11-02 (watch, Valère - new to trading): Kino answered him like a trader ("-13 R", "la cassure", "trois robots")
+        # and never mentioned the school. He now knows it exists and what a newcomer needs - his judgment, not a rule.
+        return "" if owner else (
+            "L'ÉCOLE DE KINO existe dans l'app (page « L'école de Kino », menu Compte, ou la carte de l'accueil) : on y apprend à "
+            "lire le marché, à décider sur de vraies séances passées (le dojo, comparé au hasard) et à construire son propre robot. "
+            "Cette personne n'a pas encore dit si elle sait trader : écoute comment elle parle. Si elle débute, parle sans "
+            "jargon (explique R, BOS, cassure, rebond la première fois en mots simples), ne lui fais pas construire des robots "
+            "à l'aveugle, et propose-lui l'école une fois, naturellement, quand ça s'y prête.")
     s = state(pid)
     h = s.get("habit")
     L = LEVELS[s["level"] - 1]

@@ -13928,6 +13928,35 @@ def robot_rules_vis(user, body):
     return {"ok": True, "shown": d[rid]}
 
 
+def _owl_facts(user):
+    """the Owl's numbers a member may hear: its latest bench test and its real result on this member's account"""
+    out = []
+    try:
+        best = None
+        for f in os.listdir(os.path.join(DIR, "robots", "results")):
+            if f.endswith(".json") and "@" not in f:
+                j = json.load(open(os.path.join(DIR, "robots", "results", f), encoding="utf-8"))
+                if j.get("parent") == "owl" and j.get("parent_result") and (best is None or str(j.get("generated_at")) > str(best.get("generated_at"))):
+                    best = j
+        if best:
+            pr = best["parent_result"]
+            out.append("latest test on past Bitcoin prices: %+.2f $ over %s days, %s trades, %s %% winners, worst dip %.0f $" % (
+                float(pr.get("net") or 0), round(float(best.get("days") or 0)), pr.get("trades"), round(100 * float(pr.get("win_rate") or 0)),
+                float(pr.get("cc_dd") or 0)))
+    except Exception:
+        pass
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", user.get("id") + ".json"), encoding="utf-8"))
+        ss = nd.get("since_start") or {}
+        if ss.get("n"):
+            out.append("for real on their account since %s: %+.2f $ over %s trades (%s %% won)" % (
+                ss.get("first"), float(ss.get("net") or 0), ss.get("n"), round(100 * float(ss.get("won") or 0) / max(1, ss["n"]))))
+    except Exception:
+        pass
+    out.append("the 10-month replay with the two filters of 2 Nov (max 3 trades a day, no trade against the 15-minute trend): +94.92 $ on 200 $, 2 losing months of 10")
+    return "; ".join(out)
+
+
 def _owl_story(user, en):
     """2026-11-02 (owner: "each robot its own performance submenu; the old dashboard merged into the new"): the robot
     that trades on the member's account (the Owl) gets the same page as a robot built with Kino. Its rules come from
@@ -16342,6 +16371,16 @@ def _deed_do(cid, uid, todo):
                     if _nm and (_nm == str(r_.get("name") or "").lower() or _nm in str(r_.get("name") or "").lower()):
                         _rid = r_["id"]
                         break
+                if not _rid and _nm.replace("’", "'").replace("l'", "").replace("the ", "").strip() in ("owl", "owl 1r"):
+                    __import__("kino_deed")._log(cid, "TEST_OWL_FACTS", k)
+                    try:
+                        _of = _owl_facts(_u)
+                        threading.Timer(1.0, lambda: (_CHAT_Q.__setitem__(cid, _CHAT_Q.get(cid, 0) + 1), _chat_quick(cid, _u, (
+                            "THE OWL CANNOT BE RE-TESTED BY A MEMBER - it is the reference robot and its tests already exist; nothing "
+                            "was started. Its numbers: %s. Tell them now, plainly, instead of a test (and never say a test is running)." % _of)))).start()
+                    except Exception:
+                        pass
+                    continue
                 if not _rid:
                     __import__("kino_deed")._log(cid, "TEST_NAME_UNKNOWN", k)
                     # 2026-11-01 21:32 (watch): "#test Bougie contre le graphique du haut" - the name of the robot he had just
@@ -18738,7 +18777,7 @@ def _one_memory(user, c):
     except Exception:
         pass
     try:                                               # 2026-11-02: the learner (L'école de Kino), when they chose a path
-        _sb = _school_mod().block(_person(uid), c.get("lang") == "en")
+        _sb = _school_mod().block(_person(uid), c.get("lang") == "en", owner=bool(is_admin(user) or uid in OWNER_UIDS))
         if _sb:
             L.append(_sb)
     except Exception:
