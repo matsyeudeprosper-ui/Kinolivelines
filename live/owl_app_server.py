@@ -2539,7 +2539,10 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 .sincegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .sincegrid>div{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center}
 .sincegrid b{display:block;font-size:1rem}.sincegrid span{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+html.embperf .hero,html.embperf .tabbar,html.embperf #hbar,html.embperf .tab:not(#tab-hist),html.embperf #kfab,html.embperf #ktip,html.embperf #ainudge,html.embperf #sheet,html.embperf .sheet{display:none!important}
+html.embperf #tab-hist{display:block!important}html.embperf body{padding-top:0!important;padding-bottom:12px!important;background:transparent!important}
 </style></head><body>
+<script>try{if(/[?&]embed=perf/.test(location.search)){document.documentElement.classList.add('embperf');localStorage.setItem('owlTourDone','1');var _go=function(){try{tab('hist',document.getElementById('tb-hist')||[].slice.call(document.querySelectorAll('.tb')).find(function(x){return (x.getAttribute('onclick')||'').indexOf("'hist'")>=0;})||null);}catch(e){}};addEventListener('load',function(){_go();setTimeout(_go,1500);setTimeout(_go,4000);});}}catch(e){}</script>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 
 <div class="hero">
@@ -34521,7 +34524,7 @@ class H(BaseHTTPRequestHandler):
                         # 2026-10-26 (owner: "the Kino panel on all pages, Kino reachable from anywhere and knowing where the user
                         # is"): the sliding panel + the page awareness (kino_panel_inject.html) replace the floating button. The
                         # chart has its own panel (#kptab); the chat page is the chat itself.
-                        if "</body>" in _b and "id=\"kpgtab\"" not in _b and "id=\"kptab\"" not in _b:
+                        if "</body>" in _b and "id=\"kpgtab\"" not in _b and "id=\"kptab\"" not in _b and "embed=" not in self.path:
                             _first = "0"                 # 2026-10-27: day one - a new member's first visit opens Kino by himself
                             try:
                                 if not _person_main(_uk.get("id")) and plan_name(_uk) == "decouverte_trial":
@@ -34535,7 +34538,7 @@ class H(BaseHTTPRequestHandler):
             if ctype.startswith("text/html"):
                 _pp2 = [x for x in self.path.split("?")[0].split("/") if x]
                 _uq2 = user_by_token(_pp2[0]) if _pp2 else None
-                if _uq2 and ((len(_pp2) == 2 and _pp2[1] in NAV_PAGES) or (len(_pp2) == 1 and not _uq2.get("public"))):
+                if _uq2 and "embed=" not in self.path and ((len(_pp2) == 2 and _pp2[1] in NAV_PAGES) or (len(_pp2) == 1 and not _uq2.get("public"))):
                     _b2 = body.decode("utf-8") if isinstance(body, bytes) else body
                     if "</body>" in _b2 and 'id="knav"' not in _b2:
                         body = _b2.replace("</body>", open(os.path.join(DIR, "owl_nav_inject.html"), encoding="utf-8").read() + "</body>", 1)
@@ -36616,7 +36619,7 @@ class H(BaseHTTPRequestHandler):
             self._not_found()
             return
         sub = parts[1] if len(parts) > 1 else ""
-        if sub == "" and not user.get("public") and ("classic=1" not in self.path or not (is_admin(user) or user.get("id") in OWNER_UIDS)):
+        if sub == "" and not user.get("public") and ("classic=1" not in self.path or not (is_admin(user) or user.get("id") in OWNER_UIDS or "embed=perf" in self.path)):
             # 2026-11-02 (owner: "I don't want users to access the old design anymore"): ?classic=1 is the owner's alone (the Nid)
             # 2026-11-01 (owner: "the focus is Kino"; then "I'd like everyone on the new design, yet all using the Owl should
             # continue"): every member lands on Kino's home - the robots on the accounts are untouched (a page, not a switch);
