@@ -20765,6 +20765,13 @@ def _chat_build(cid, user):
                             (_rb.get("exit") or {}).get("plain_en") or (_rb.get("exit") or {}).get("plain") or "-",
                             (_rb.get("money") or {}).get("lot") or (_rb.get("money") or {}).get("use"),
                             (_rb.get("recovery") or {}).get("use"), ", ".join(str(f) for f in (_rb.get("filters") or [])) or "none")
+                        _al = _rb.get("after_loss")         # 2026-11-02 00:04 (watch): left out here, Kino could not see the flip
+                        if isinstance(_al, dict):           # that WAS saved and sent it back to the builder four times
+                            _now_rules += "; AFTER A STOP-OUT (the next trade only): direction %s, entry %s, stop %s, target %s R" % (
+                                _al.get("direction"), (_al.get("entry") or {}).get("plain_en") or (_al.get("entry") or {}).get("use"),
+                                (_al.get("stop") or {}).get("use") if _al.get("stop") else "the normal one", _al.get("target"))
+                        else:
+                            _now_rules += "; after a stop-out: nothing special (no after_loss rule)"
                     except Exception:
                         _now_rules = "?"
                     _nothing = not (ans.get("made") or [])
