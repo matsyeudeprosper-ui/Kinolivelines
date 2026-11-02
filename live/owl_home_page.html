@@ -161,6 +161,48 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--text2);font-weight:600;fon
 .brow:active,.trade:active{background:var(--surface2)}.cta:active{transform:scale(.98)}
 @media (hover:hover){.brow:hover{background:var(--surface2)}}
 @media (prefers-reduced-motion:reduce){.wrap>*,.halo,.trt i,.state.on i{animation:none!important}.seg .thumb{transition:none}}
+
+/* 2026-11-02 (owner: "professional, modern, premium - first impression matters"): one card language, depth, calmer type */
+:root{--grad:linear-gradient(135deg,#8b7cff,#6a5cff 55%,#5b8cff);--r:22px;--hl:inset 0 1px 0 rgba(255,255,255,.05)}
+:root[data-theme="light"]{--hl:inset 0 1px 0 rgba(255,255,255,.9)}
+body{font-feature-settings:"cv11","tnum";letter-spacing:-.005em}
+body:before{content:"";position:fixed;left:50%;top:-140px;width:140vw;max-width:900px;height:420px;transform:translateX(-50%);pointer-events:none;z-index:0;
+ background:radial-gradient(50% 60% at 50% 30%,#7c6cff2e,transparent 70%)}
+:root[data-theme="light"] body:before{background:radial-gradient(50% 60% at 50% 30%,#7c6cff1a,transparent 70%)}
+.wrap{position:relative;z-index:1;padding-top:12px}
+.money,.kino,.board,.card,.myr,.rc{border-radius:var(--r);box-shadow:var(--hl)}
+.money{padding:20px 20px 16px;border-color:#7c6cff33;box-shadow:var(--hl),0 1px 0 rgba(255,255,255,.02),0 24px 60px -20px rgba(0,0,0,.6),0 0 0 1px rgba(124,108,255,.06)}
+:root[data-theme="light"] .money{border-color:#7c6cff2a;box-shadow:var(--hl),0 20px 50px -24px rgba(40,50,90,.28)}
+.lbl{font-size:12.5px;letter-spacing:.01em}
+.bal{font-size:46px;letter-spacing:-.045em;margin:12px 0 4px;font-weight:800}
+.bal small{font-size:24px;font-weight:700;color:var(--muted)}
+.chg{font-size:14.5px}.chg span.p{font-size:13px}
+.state{font-size:11.5px;letter-spacing:.01em;padding:6px 11px 6px 10px;backdrop-filter:blur(8px)}
+.seg{border-radius:14px}.seg button{font-size:13px;padding:9px 0}
+.stats{margin-top:16px;padding-top:14px}
+.stat b{font-size:17px;letter-spacing:-.02em}.stat span{font-size:11.5px;letter-spacing:.01em;margin-top:1px}
+.alinks{margin-top:16px;padding-top:13px}.alinks a{color:var(--text2)}
+.kino{padding:18px 18px 16px}.kino:before{width:0}
+.av{width:50px;height:50px;flex-basis:50px;border-radius:50%;box-shadow:0 0 0 1px #7c6cff33,0 0 28px -4px #7c6cff80}
+.who b{font-size:16.5px;letter-spacing:-.01em}.st{font-size:12.5px}
+.msg{font-size:15px;line-height:1.55;margin:14px 0 14px;color:var(--text)}
+.cta{border-radius:15px;padding:14px;font-size:15px;letter-spacing:-.005em;background:var(--grad);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 26px -8px rgba(106,92,255,.7)}
+h2{font-size:11.5px;letter-spacing:.12em;margin:28px 2px 10px;color:var(--muted)}
+h2 a{font-size:13px;color:var(--text2)}h2 a:after{content:" ›"}
+.bsum{padding:14px 16px 6px}.bsum span{font-size:11.5px;padding:4px 10px}
+.brow{padding:14px 16px}.bn{font-size:15px;letter-spacing:-.01em}
+.ri{background:linear-gradient(180deg,var(--surface3),var(--surface2));box-shadow:var(--hl)}
+.bres b{font-size:15.5px;letter-spacing:-.02em}
+.badd{font-size:14px}.badd:last-child{color:#b4a9ff}
+.rc .rv{font-size:22px;letter-spacing:-.03em;margin-top:2px}.rc .rs{font-size:12.5px}
+.tag{font-size:11.5px;padding:4px 10px}.tag.k{background:#7c6cff14}.tag.on{background:#2ecc7112}
+.kmark{color:#b4a9ff;font-weight:700;margin-right:5px}
+.trade{border-radius:16px}
+.foot{margin-top:28px;font-size:11.5px;opacity:.9}
+.skel{border-radius:10px}
+.mtop .lbl{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mtop .state{flex:none}
+:root[data-theme="light"] .seg .thumb{background:#fff;box-shadow:0 1px 4px rgba(20,30,50,.12)}
 </style></head><body>
 <div class="wrap">
  <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="compte#formules">&nbsp;</a></div>
@@ -382,7 +424,7 @@ function render(d){
   :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';
  document.getElementById('h-pick').textContent=T('Créés par Kino','Made by Kino');document.getElementById('h-pick-all').textContent=T('La place','Marketplace');
  const K=d.picks||[];
- document.getElementById('picks').innerHTML=K.length?K.map(p=>'<a class="rc'+(K.length===1?' solo':'')+'" href="'+B+'place"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+esc(p.name)+'</div></div>'+
+ document.getElementById('picks').innerHTML=K.length?K.map(p=>'<a class="rc'+(K.length===1?' solo':'')+'" href="'+B+'place"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+(p.by_kino?'<span class="kmark">✦</span>':'')+esc(p.name)+'</div></div>'+
   (p.trades?'<div class="rv num '+cls(p.net)+'">'+money(p.net)+'</div><div class="rs">'+p.trades+' trades · '+T('passé, pas une promesse','past, not a promise')+'</div>':'<div class="rs">'+esc(p.blurb)+'</div>')+
   (p.access==='active'?'<span class="tag on">'+T('Actif chez toi','Active for you')+'</span>':p.access==='invite'?'<span class="tag k">'+T('Sur invitation','By invitation')+'</span>':'<span class="tag">'+T('Ouvert','Open')+'</span>')+'</a>').join('')
   :'<div class="rc solo empty">'+T('La place s’ouvre bientôt.','The marketplace opens soon.')+'</div>';
