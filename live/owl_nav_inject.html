@@ -204,5 +204,14 @@ body.k-sec .hero{display:none!important}
    c.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 16px 4px;padding:14px 16px;border-radius:18px;background:var(--surface);border:1px solid '+(on?'rgba(46,204,113,.35)':'var(--border2)')+';text-decoration:none;color:var(--text);font-family:Inter,system-ui,sans-serif';
    c.innerHTML='<span><small style="display:block;color:var(--muted);font-size:12px">'+T('Sur ton compte réel','On your live account')+'</small><b style="font-size:16px">'+(d.account.robot||'L’Owl')+' · '+(on?T('actif','running'):T('en pause','paused'))+'</b></span><span style="color:'+(on?'#2ecc71':'var(--muted)')+';font-weight:700;font-size:14px">'+T('Sa page ›','Its page ›')+'</span>';
    var tgt=document.querySelector('main')||document.querySelector('.wrap')||document.body;tgt.insertBefore(c,tgt.firstChild);}
+  /* 2026-11-02 (owner: "where is the tester button?"): the two things this page is for, right at its top */
+  if(sub==='mesrobots'&&!document.getElementById('kacts')){var w=document.createElement('div');w.id='kacts';
+   w.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px 6px;font-family:Inter,system-ui,sans-serif';
+   var bs='display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;border-radius:16px;font-weight:700;font-size:14.5px;text-decoration:none;';
+   w.innerHTML='<a href="/'+tok+'/tests" style="'+bs+'background:var(--kgrad);color:#fff;box-shadow:0 10px 26px rgba(124,108,255,.35)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'+T('Tester un robot','Test a robot')+'</a>'+
+    '<a href="#" id="kactk" style="'+bs+'background:var(--surface);border:1px solid var(--border2);color:var(--text)">＋ '+T('Nouveau robot','New robot')+'</a>';
+   var tg2=document.querySelector('main')||document.querySelector('.wrap')||document.body,first=document.querySelector('a[href$="/robot?id=owl"]');
+   if(first&&first.parentNode)first.parentNode.insertBefore(w,first.nextSibling);else tg2.insertBefore(w,tg2.firstChild);
+   document.getElementById('kactk').onclick=function(e){e.preventDefault();var u='/'+tok+'/atelier'+(d&&d.cid?'?c='+encodeURIComponent(d.cid)+'&':'?')+'ask='+encodeURIComponent(T('J’aimerais construire un nouveau robot.','I’d like to build a new robot.'));location.href=u;};}
  }).catch(function(){});
 }catch(e){}})();</script>
