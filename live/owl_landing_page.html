@@ -88,20 +88,20 @@ details p{margin:-4px 0 14px;color:var(--text2);font-size:14px}
 @media (min-width:560px){h1{font-size:40px}.hero{padding-top:40px}.cta{max-width:380px;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){.wrap>*,.live i{animation:none!important}}
 /* Kino at work: a chat extract, then a real test of a robot he made */
-.chat{display:grid;gap:10px;padding:16px 16px 14px}
-.bub{max-width:88%;padding:11px 14px;border-radius:18px;font-size:14.5px;line-height:1.5}
+.chat{display:grid;gap:10px;padding:16px 16px 14px}.chat>*{min-width:0;max-width:100%}
+.bub{max-width:88%;overflow-wrap:anywhere;padding:11px 14px;border-radius:18px;font-size:14.5px;line-height:1.5}
 .bub.me{justify-self:end;background:var(--grad);color:#fff;border-bottom-right-radius:6px}
 .bub.ki{justify-self:start;background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:6px}
 .kwho{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-bottom:4px}.kwho canvas{width:18px;height:18px}
-.res{justify-self:start;width:100%;margin-top:2px;padding:14px;border-radius:18px;background:var(--surface);border:1px solid #7c6cff44;box-shadow:var(--hl),0 16px 40px -20px rgba(0,0,0,.6)}
-.rh{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.res{justify-self:stretch;width:auto;margin-top:2px;padding:14px;border-radius:18px;background:var(--surface);border:1px solid #7c6cff44;box-shadow:var(--hl),0 16px 40px -20px rgba(0,0,0,.6)}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .rh b{color:var(--text);font-size:13.5px}
 .rbig{font-size:34px;font-weight:800;letter-spacing:-.04em;line-height:1.1;margin:8px 0 2px}
-.rrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
-.rsp{width:120px;height:44px;flex:none}
+.rrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}.rrow>div{min-width:0}
+.rsp{width:120px;max-width:100%;height:44px;flex:0 1 120px}
 .badge{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;font-weight:700;color:#b4a9ff;padding:5px 10px;border-radius:99px;background:#7c6cff14;border:1px solid #7c6cff44}
 .badge.no{color:var(--warn);background:#e8c55a12;border-color:#e8c55a44}
-.ccap{font-size:12px;color:var(--muted);margin-top:4px;padding:0 2px}#rtiles{white-space:nowrap}
+.ccap{font-size:12px;color:var(--muted);margin-top:4px;padding:0 2px}
 [hidden]{display:none!important}
 </style></head><body>
 <div class="wrap">
@@ -129,13 +129,13 @@ details p{margin:-4px 0 14px;color:var(--text2);font-size:14px}
  </div>
  <div class="ccap" data-en="A typical exchange. The result card is a real test of a robot Kino made, read from its test file.">Un échange type. La carte de résultat est un vrai test d’un robot fait par Kino, lue dans son fichier de test.</div>
 
- <h2 data-en="And with real money">Et avec du vrai argent</h2>
+ <h2 data-en="A Kino robot, on real money">Un robot de Kino, en argent réel</h2>
  <div class="card proof" id="proof" hidden>
   <div class="plbl"><span id="psince"></span><span class="live" id="plive" hidden><i></i><span data-en="Live">En direct</span></span></div>
   <div class="pbig" id="pbig"></div>
   <div class="pt"><div><b id="pn"></b><span data-en="trades">trades</span></div><div><b id="pwr"></b><span data-en="winners">gagnants</span></div><div><b id="pbal"></b><span data-en="today">aujourd’hui</span></div></div>
   <div class="pnote" id="pworst" style="color:var(--text2)"></div>
-  <div class="pnote" data-en="The nest's own money, every trade shown as it happened. Deposits and withdrawals don't count. There are red days too: nothing is guaranteed, and past results promise nothing about the next ones.">L’argent du nid lui-même, chaque trade montré tel qu’il s’est passé. Dépôts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n’est garanti, et les résultats passés ne promettent pas les suivants.</div>
+  <div class="pnote" data-en="The Owl is the robot Kino runs on the nest's own money; every trade shown as it happened. Deposits and withdrawals don't count. There are red days too: nothing is guaranteed, and past results promise nothing about the next ones.">L’Owl est le robot que Kino fait tourner sur l’argent du nid ; chaque trade montré tel qu’il s’est passé. Dépôts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n’est garanti, et les résultats passés ne promettent pas les suivants.</div>
  </div>
 
  <h2 data-en="How it works">Comment ça marche</h2>
@@ -201,7 +201,7 @@ function money(v){v=Number(v||0);return (v>=0?'+':'−')+'$'+Math.abs(v).toFixed
 function paint(){if(!D)return;var w=D.witness,P=document.getElementById('proof');
  if(w&&w.n){P.hidden=false;var ret=w.ret!=null?' ('+(w.ret>=0?'+':'−')+Math.abs(w.ret).toFixed(1)+' %)':'';
   var ds=w.start?new Date((Number(w.start)>1e9?Number(w.start):Date.parse(w.start)/1000)*1000):null;
-  document.getElementById('psince').textContent=(EN?'Real account · since ':'Compte réel · depuis le ')+(ds?ds.toLocaleDateString(EN?'en':'fr',{day:'numeric',month:'long',year:'numeric'}):'');
+  document.getElementById('psince').textContent=(EN?'L’Owl · the nest’s real account since ':'L’Owl · le vrai compte du nid depuis le ')+(ds?ds.toLocaleDateString(EN?'en':'fr',{day:'numeric',month:'long',year:'numeric'}):'');
   var ww=w.worst_week||{},wl=[];
   if(ww.net!=null)wl.push((EN?'worst week ':'pire semaine ')+money(ww.net)+(ww.pct!=null?' ('+(ww.pct>=0?'+':'−')+Math.abs(ww.pct).toFixed(1)+' %)':''));
   if(w.max_loss_streak)wl.push((EN?'worst run ':'pire série ')+w.max_loss_streak+(EN?' losses in a row':' pertes de suite'));
