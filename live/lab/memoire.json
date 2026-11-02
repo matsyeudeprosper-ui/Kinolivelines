@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-02T01:30:58Z",
+ "updated": "2026-11-02T04:35:40Z",
  "hypotheses": [
   {
    "id": "more_conts_with_brakes",
@@ -133,7 +133,8 @@
     "2026-10-28: after a loss: gap <15 44 tr 23% -63.28; 15-60 63 tr 57% -5.25; >60 35 tr 31% -77.91. After a win: <15 47% -10.5; 15-60 62% +23.5; >60 51% -43.6. Window 15-60 matters most after a loss. ch350+nf06+wait15 +63.3 (h +46.2/+26.8) hole 73.9 (no hole gain). Request loss_gap_size.",
     "2026-10-29: lab robot 10-28/29: 19 tr +18.27; two biggest losses -5.37/-7.11 held 7-8 min, restarted minutes after a loss (catch-up chain). Real gap: <15 min 80 tr 34% -73.76, 15-60 97 tr ~+18, 1-3 h 39 tr -83.14. Unchanged (one new real trade).",
     "2026-10-31 12:00 veille: 34 new closes: gap 15-60 min 16 tr 11 won +12.43 per 0.01; <15 min 7 tr 2 won -0.69. Real gap 15-30 40 tr 62% +20.54 (h 64/62 agree), 30-60 62 tr 58% +15.23, <15 80 tr 34% -73.76 (h 37/31), 1-3 h 40 tr 38% -78.79. Holds.",
-    "2026-11-02 01:30 veille (labo ask, pile cont_rested): 66 tr 58% vs 44% but +9.39 PF 1.06, halves 74%/46% - second half fading. After a win 31 tr 65% +38.65; after a loss 35 tr 51% -29.26 (h 69/41). The same-way-after-pause edge sits after a win; after a loss the pause alone is not enough. Count edge holds, money weakening."
+    "2026-11-02 01:30 veille (labo ask, pile cont_rested): 66 tr 58% vs 44% but +9.39 PF 1.06, halves 74%/46% - second half fading. After a win 31 tr 65% +38.65; after a loss 35 tr 51% -29.26 (h 69/41). The same-way-after-pause edge sits after a win; after a loss the pause alone is not enough. Count edge holds, money weakening.",
+    "2026-11-02 04:35 veille: first trade of the week, FLIP-BOS SELL after ~67 h pause (Fri win), 04:00 entry, won +0.94 per 0.01. Long pause again harmless for flips (one trade, peu)."
    ],
    "next": "cont_wait when built, test it split by previous result (after a win vs after a loss, ties loss_gap_size); re-read on src=filtre once real_pool_split exists. Watch whether the pile's second half keeps falling."
   },
@@ -166,7 +167,8 @@
     "2026-10-26: 08:03 BOS SELL (pace 1.219, gap 63 min after the 07:00 loss, h1 i=0, dist 351) held 33 min, lost -3.65 per 0.01: second slow loss in a row today. dur 30-60 now 40 tr 42% -63.10 PF 0.53 (h 46/41 agree). trail_prot 2 does not touch the 42 d money (+0.0 full).",
     "2026-10-28: real dur 30-60 41 tr 44% -60.82 PF 0.54 (h 41/46 agree). Other account 10-26/27 winners lasted 58-122 min with stops 142-347 pts.",
     "2026-10-29: real dur 30-60 42 tr 45% -55.86 PF 0.58 (h 41/48). Lab robot biggest win +17.51 held 262 min.",
-    "2026-10-31 12:00 veille: 34 closes since 10-26 08:00 (reference account 22, lab robot 11): held 30-60 min 8 tr 7 won +11.89 per 0.01 - against. Real dur 30-60 now 47 tr 51% -32.03 PF 0.76, halves 41%/57% (17/30) disagree (was 42 tr 45% -55.86 PF 0.58 on 10-29). The second half no longer says it."
+    "2026-10-31 12:00 veille: 34 closes since 10-26 08:00 (reference account 22, lab robot 11): held 30-60 min 8 tr 7 won +11.89 per 0.01 - against. Real dur 30-60 now 47 tr 51% -32.03 PF 0.76, halves 41%/57% (17/30) disagree (was 42 tr 45% -55.86 PF 0.58 on 10-29). The second half no longer says it.",
+    "2026-11-02 04:35 veille: Monday 04:00 FLIP-BOS SELL held 35 min, won +0.94 per 0.01 (stop 106 pts, pace 1.675). One more 30-60 min win against the hypothesis (peu)."
    ]
   },
   {
@@ -3609,6 +3611,15 @@
     "requests cont_wait/gap_max/loss_gap_size still open, not in harness"
    ],
    "saw": "Pile cont_rested 66 tr 58% net +9.39 PF 1.06 hole 83.85, halves 74%/46% (27/39) - fading. After a win 31 tr 65% +38.65 (h 65/64); after a loss 35 tr 51% -29.26 (h 69/41). 14 h 3 tr 0 won -23.25 (peu). Win rate holds, money does not; the pause helps after a win only. Answered ask; no harness run (dial not built), no pile, no proposal."
+  },
+  {
+   "t": "2026-11-02T04:35:40Z",
+   "looked": [
+    "wake_context (1 real close; total 274; twin noday 8 tr +29.86 unchanged; no open ask)",
+    "bos_journal_u477508138 last row: FLIP-BOS SELL entry 04:00 Mon, first of the week (gap ~67 h after Fri win), pace 1.675, storm 1, stop 106 pts, held 35.4 min, won +1.88 at 0.02 (+0.94 per 0.01), h1/m15 fields not in row",
+    "scrutiny --streaks, --by hour, --by nerv, --by storm"
+   ],
+   "saw": "First trade after the weekend: a nervous night reversal, tight stop, held 35 min, small win. Fits 'flips survive a long pause' (rested_cont 10-26) and adds one more 30-60 min win against slow_trade; tight stop earned little (wide_stops_carry). 04 h 11 tr 36% -8.72 (peu); nerv 1.3-1.85 65 tr 54% -46.67 (avg loss 5.79 vs win 3.63); storm=1 65 tr 46% -90.67 PF 0.58 (h 42/52). No harness run, no pile, no proposal. One trade: hint only."
   }
  ],
  "lessons": [
