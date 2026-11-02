@@ -13917,8 +13917,9 @@ def robot_story(user, rid, en=False):
         chats = _robot_chats(rid, None if is_admin(user) else uids)
     chats.sort(key=lambda kv: str(kv[1].get("updated") or ""), reverse=True)   # "updated" is an ISO date
     cid, c = chats[0] if chats else (None, {})
-    if en is None:                         # no language asked: the robot's conversation decides
-        en = c.get("lang") == "en"
+    if en is None:                         # no language asked: the language he writes in, else the conversation's
+        _ul = next(((m.get("ear") or {}).get("lang") for m in reversed(c.get("msgs") or []) if m.get("role") == "user" and (m.get("ear") or {}).get("lang")), None)
+        en = (_ul or c.get("lang")) == "en"
     T = (lambda f, e: e if en else f)
     rb = c.get("robot") or {}
     msgs = c.get("msgs") or []
@@ -16109,8 +16110,20 @@ def _result_event(c, res):
         r = res or {}
         nm = (c.get("robot") or {}).get("name") or "the robot"
         figs = ", ".join("%s %s" % (k, r.get(k)) for k in ("net", "trades", "win_rate", "max_loss_streak", "cc_dd", "days") if r.get(k) is not None)
-        return ("TEST RESULT ARRIVED for '%s' (the test of this conversation's robot, on past prices): %s. Tell them now in your "
-                "own words, the figures exactly as given, with your honest take." % (nm, figs or "see the result card"))
+        # 2026-11-02 (watch): the v18 test went flat at -61.62 and Kino guessed "it stopped itself, I can't see why" - it was the
+        # safety stop of the robot's money ('simple' stops the robot for good at -60 $, like a real account). He is told.
+        _stop = ""
+        try:
+            _mu = ((c.get("robot") or {}).get("money") or {}).get("use") or "simple"
+            _kn = float(((json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8")).get("packages") or {}).get(_mu) or {}).get("kill_net") or 0)
+            if _kn and float(r.get("net") or 0) <= _kn * 0.97:
+                _stop = (" IMPORTANT: this test STOPPED the robot for good once it was %.0f $ down - the safety stop of its money "
+                         "('%s' stops at %.0f $, as on a real account). After that point it no longer traded, so the rest of the "
+                         "period is flat (a second half at 0 is that). Say it plainly; the loss came before the stop." % (abs(_kn), _mu, _kn))
+        except Exception:
+            pass
+        return ("TEST RESULT ARRIVED for '%s' (the test of this conversation's robot, on past prices): %s.%s Tell them now in your "
+                "own words, the figures exactly as given, with your honest take." % (nm, figs or "see the result card", _stop))
     except Exception:
         return None
 
