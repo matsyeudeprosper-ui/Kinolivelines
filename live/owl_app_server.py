@@ -13468,7 +13468,10 @@ def robot_runner_kick():
             return
         import subprocess
         st = os.path.join(os.path.dirname(DIR), "study")
-        subprocess.Popen(["pythonw", "robot_runner.py"], cwd=st, creationflags=0x08000000 | 0x00004000)   # below normal: bots + chat first
+        try:            # 2026-11-02 (watch): out of the app's job, so an app restart does not take a running test with it
+            subprocess.Popen(["pythonw", "robot_runner.py"], cwd=st, creationflags=0x08000000 | 0x00004000 | 0x01000000)
+        except Exception:
+            subprocess.Popen(["pythonw", "robot_runner.py"], cwd=st, creationflags=0x08000000 | 0x00004000)   # below normal: bots + chat first
     except Exception:
         pass
 
@@ -37470,6 +37473,16 @@ if __name__ == "__main__":
     threading.Thread(target=_tts_warm, daemon=True).start()
     threading.Thread(target=_luck_hold_loop, daemon=True).start()      # 2026-10-21 item 1: Kino gets the machine first
     threading.Thread(target=_commit_loop, daemon=True).start()         # 2026-10-23 engine 1: commitments verified, broken ones said
+
+    def _resume_tests():
+        """2026-11-02 (watch): the v19 test sat 'queued' 45 min with no runner after an app restart - a queued test resumes"""
+        time.sleep(90)
+        try:
+            if any(r.get("stage") == "queued" or r.get("retest") or r.get("range_jobs") for r in robot_reg().get("robots") or []):
+                robot_runner_kick()
+        except Exception:
+            pass
+    threading.Thread(target=_resume_tests, daemon=True).start()
     try:                                                               # 2026-11-01: his site (Mastodon home, shop) up with the app,
         sys.path.insert(0, os.path.join(DIR, "robots")) if os.path.join(DIR, "robots") not in sys.path else None
         __import__("kino_fedi").start()                                # not ~5 min later at the first urge tick
