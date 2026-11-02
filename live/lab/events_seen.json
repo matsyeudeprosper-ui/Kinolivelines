@@ -40,7 +40,8 @@
   "gap_max",
   "loss_gap_size",
   "chase_size",
-  "battery_pb_reproduce"
+  "battery_pb_reproduce",
+  "pile_field_dist"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -62,6 +63,7 @@
   "ask_1792783843_flip_day",
   "ask_1792843213_loss_quick15",
   "ask_1792904411_europe",
-  "ask_1792990818_day_after_loss"
+  "ask_1792990818_day_after_loss",
+  "ask_1793583077_cont_rested"
  ]
 }

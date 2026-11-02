@@ -835,6 +835,74 @@
     "mechanism: plausible - NY-open hours on BTC are whipsaw-prone, so stops are hit more there - but not tested out of sample; hour choice is in-sample",
     "overlap: same trades as an hour-skip of 13-17 UTC, cut by stake instead of by refusal"
    ]
+  },
+  {
+   "id": "pb_x_ch350_nc3_q1316",
+   "date": "2026-11-02",
+   "verdict": "doute",
+   "fr": "Tous les réglages voisins gagnent : pas un réglage chanceux. Mais le robot gagne surtout parce qu'il trade quatre fois moins, et il perd encore sur la deuxième moitié et sur les vrais trades (−18 $). Ce qui m'inquiète le plus : sur 69 jours il fait maintenant 9 $ de moins que le robot actuel, et avec 1 $ de frais par trade il perd 42 $.",
+   "en": "Every neighbouring setting still gains, so this is not a lucky dial. But the robot gains mostly by trading four times less, and it still loses on the second half and on the real trades (−$18). What worries me most: over 69 days it now does $9 worse than today's robot, and with $1 of cost per trade it loses $42.",
+   "checks": [
+    "replay tonight (data moved since the context snapshot): variant +40.74 / hole 43.7 / 59 trades vs deployed -93.85 / 219.7 / 260 trades",
+    "dose chase: 250 -> +45.51 (h1 +33.3, h2 +3.9); 350 -> +40.74; 450 -> +26.58 (h2 -18.2). No sign flip, gently worse as the filter loosens",
+    "dose n_cont: 2 -> +28.63 (h2 -10.1); 3 -> +40.74; 4 -> +46.32 (h2 -8.2). No sign flip, monotone",
+    "dose quarter stake 13-17 UTC: 1.0 (no stake cut) -> +7.10, h2 -48.77, hole 66; 0.5 -> +29.54, h2 -25.03; 0.25 -> +40.74, h2 -13.15. The stake cut carries most of the second-half rescue - same finding as pb_w_ch350_nf06_ny1316q",
+    "halves: variant's own h1 +45.5 on only 17 trades, h2 -13.15 on 40. Gain vs deployed is in both halves but comes from not trading (deployed loses in both)",
+    "shapes: byref base and valere identical (+75.86 / -72.36) - no split between capped and uncapped",
+    "long window (69 d): diff -9.1 vs deployed (verdict C), first half -81.91, second +133.5; pretest yesterday said +36.74 - flipped sign in one night. A loss there = doubt",
+    "real trades: diff +87.09 vs the real outcome, but variant net on them is -18.2 over 36 trades",
+    "concentration: top 3 wins 19.91 + 18.8 + 17.3 = 56 > the whole net 40.74; worst loss only -8.94. Remove the 3 best trades and the robot is negative",
+    "drag: --drag 1 -> -41.76 net, hole 93.8, h2 -70.03: the robot loses at $1 a trade (still far ahead of deployed, which trades 4x more)",
+    "past: no registry/archive entry at these settings, no twin; sibling pb_w_ch350_nf06_ny1316q (same package + sleepy-market floor) got doute yesterday for the same reasons",
+    "mechanism: plausible - refusing to chase a move that already ran 350 points avoids late entries, and the NY-open quarter limits whipsaw losses - but the hours are picked in-sample",
+    "overlap: old pieces recombined (chase 350 + 13-17 quarter); new only in dropping the floor and n_cont 3, which moves net by about +/-10",
+    "runs used: 8 (idea, chase 250/450, n_cont 2/4, stake 0.5, stake 1.0, drag 1)"
+   ]
+  },
+  {
+   "id": "pb_x_ch350_nc3_fl05",
+   "date": "2026-11-02",
+   "verdict": "doute",
+   "fr": "Les réglages voisins gagnent aussi, et la demi-mise après une perte aide vraiment. Mais le robot gagne surtout en tradant quatre fois moins, et deux trades (19 $ et 20 $) font plus que tout son gain. Sur 69 jours, l'avance est tombée à zéro en une nuit. Ce qui m'inquiète le plus : avec 1 $ de frais par trade, il perd 84 $.",
+   "en": "Neighbouring settings also gain, and the half stake after a loss really helps. But the robot gains mostly by trading four times less, and two trades ($19 and $20) make more than its whole gain. Over 69 days the lead fell to zero in one night. What worries me most: with $1 of cost per trade it loses $84.",
+   "checks": [
+    "replay tonight (data moved since the snapshot, and again during the session): variant +21.42 / hole 49.6 / 60 trades (380 blocked) vs deployed -95.87 / 219.7 / 260",
+    "dose chase: 300 -> +11.95 (h2 -21.7); 350 -> +21.42; 400 -> +10.47 (h2 -33.9). No sign flip, but 350 is a peak: gain halves one step either side",
+    "dose flip-after-loss stake: 1.0 -> +7.10 (h2 -48.8, hole 66); 0.5 -> +21.42 (hole 50); 0.25 -> +29.19 (h2 -24.0, hole 41). Monotone toward skipping those trades; the stake piece is worth ~+14 and the hole 66 -> 50, mostly second half",
+    "halves: variant own h1 +45.3 on 18 trades, h2 negative at every dose tried (-13 to -49). Gain vs deployed is in both halves only because deployed loses more in both",
+    "shapes: byref uncapped and capped identical (+62.19 / -57.16) - the cap never bites, no extra evidence",
+    "long window (69 d): diff +0.21 (pretest yesterday +32.27), first half -55.77, second +110.33 - not a loss, but the lead melted to nothing in one night and the older half loses",
+    "real trades: diff +68.26 vs the real outcome, but variant net on them is still -37.03 over 36 trades - it loses less, it does not win",
+    "concentration: two h1 trades 18.80 + 19.91 = 38.7 > whole net 21.42; remove them and the robot is negative",
+    "drag: --drag auto not charged (no measured gap on 30 trades yet), same as raw; --drag 1 -> -83.53, hole 116.6, h2 -92.3. Still ahead of deployed, which trades 4x more, but the robot itself loses at $1 a trade",
+    "past: no registry/archive verdict at these settings, no twin. = pb_t_ch350_fl05_nf06 (doute 10-29) minus the sleepy floor, plus n_cont 3 (sibling pb_x_ch350_nc3_q1316 doute today: n_cont moves net about +/-10)",
+    "mechanism: plausible - a change of direction right after a loss is the robot's weakest trade (real flips after a loss won 35%), so half stake there; chase 350 avoids late entries. But 'more trades the same way' is misleading: the package trades 60 times vs 260",
+    "overlap: old pieces recombined (trend filter + chase 350 + half stake on loss flips); nothing new beyond dropping the floor",
+    "runs used: 7 (idea, chase 300/400, flip stake 1.0/0.25, drag auto, drag 1)"
+   ]
+  },
+  {
+   "id": "pb_x_ch350_nf06_nc2",
+   "date": "2026-11-02",
+   "verdict": "bloque",
+   "fr": "Presque tout le gain vient des freins, qui font trader le robot quatre fois moins ; les deux trades de plus n'ajoutent qu'environ 13 $. Avec 1 $ de frais par trade, il perd 111 $, plus que le robot actuel. Sur 69 jours, il fait 25 $ de moins que le robot actuel. Pour changer d'avis : un gain qui tient à 1 $ par trade, et pas de perte sur 69 jours.",
+   "en": "Almost all the gain comes from the brakes, which make the robot trade four times less; the two extra trades add only about $13. With $1 of cost per trade it loses $111, more than today's robot. Over 69 days it does $25 worse than today's robot. To change my mind: a gain that holds at $1 a trade, and no loss over 69 days.",
+   "checks": [
+    "replay tonight (data moved since the snapshot): variant -3.53 / hole 61.81 / 55 trades (371 blocked) vs deployed -95.87 / 219.74 / 260 (context said -12.47 vs -63.05) - read diffs, not levels",
+    "dose n_cont (brakes kept): 1 -> -16.59 / hole 70.15 / 51 tr; 2 -> -3.53 / 61.81; 3 -> +9.45 / 61.46. Smooth slope, no sign flip, ~13 $ a step - matches the pretest ladder (-1 / +9 / +25 shifted)",
+    "brakes vs extra trades: n_cont 2 without chase and pace floor -57.77 / hole 84.59 / 67 tr; with them -3.53 - the chase 350 + floor 0.6 pair carries ~54 $, the 'two more trades' ~13 $",
+    "brake doses: chase 300 -3.30, 350 -3.53, 400 -15.60; floor 0.7 -4.29 - flat around the chosen dose, no knife edge",
+    "halves: variant own h1 +32.35 (17 tr, 65% won) / h2 -44.23 (36 tr, 42% won); every neighbour loses h2 (-42 to -53). Beats deployed in both halves only because deployed loses more",
+    "shapes: context byref uncapped and capped identical (+50.58 / -46.6) - the cap never bites, no extra evidence",
+    "long window 69 d (context): verdict C, diff -25.33 vs deployed, hole 157.93 deeper, h1 -56.36 / h2 +79.18 - a loss, not just weaker; the chercheur's own text said +8 the night before",
+    "real trades (context): 33 of 120 kept, net -44.71 (+60.58 vs real) - loses less, does not win",
+    "concentration: top trades +19.91, +17.30 (= 37 > whole net of n_cont 3); the gain vs deployed is ~200 refused losers, spread, not one trade",
+    "drag: --drag auto came back raw (drag None, no measured gap on 30 trades yet); --drag 1 -> -110.59 / hole 126.56, h2 -102.73, verdict C vs deployed -94.41. Unlike the siblings (nc3_q1316, nc3_fl05: still ahead of deployed at $1), this one falls BEHIND today's robot",
+    "past: cont23 (two/three more trades after a loss) rejected C (-52 / -58); flip1 deployed found one extra trade best. Siblings pb_x_ch350_nc3_q1316 and pb_x_ch350_nc3_fl05 doute today; pb_t_ch350 brake family doubted 10-29 to 11-01. No twin, not archived, history A x1",
+    "mechanism: the brakes have one (no chasing a 350-point run, no trading a sleeping market); 'two more trades the same way' has none of its own beyond the numbers, and lost before as cont23",
+    "overlap: = the chase 350 + floor 0.6 pair already doubted several times, plus cont23 at a smaller dose - old ideas in new clothes",
+    "runs used: 8 (idea drag auto, idea drag 1, n_cont 1, n_cont 3, n_cont 2 without brakes, chase 300, chase 400, floor 0.7)"
+   ]
   }
  ]
 }

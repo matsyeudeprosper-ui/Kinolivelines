@@ -5098,7 +5098,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-01",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-02"
   },
   {
    "id": "pb_x_ch350_nf06_nc2",
@@ -5127,7 +5129,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-01",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-02"
   },
   {
    "id": "pb_x_ch350_nc3_q1316",
@@ -5154,7 +5158,7 @@
    },
    "by": "chercheur",
    "date": "2026-11-01",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 52.85,
     "worst": 43.74,
@@ -5179,7 +5183,9 @@
      "diff_net": 87.09,
      "diff_worst": -66.04
     }
-   }
+   },
+   "verdict": "A",
+   "done": "2026-11-02"
   },
   {
    "id": "pb_x_ch350_nc3_fl05",
@@ -5200,7 +5206,7 @@
    },
    "by": "chercheur",
    "date": "2026-11-01",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 28.55,
     "worst": 49.61,
@@ -5225,7 +5231,184 @@
      "diff_net": 68.26,
      "diff_worst": -56.46
     }
-   }
+   },
+   "verdict": "A",
+   "done": "2026-11-02"
+  },
+  {
+   "id": "pb_y_q1316_fh05",
+   "family": "argent",
+   "title_fr": "Garder tous les trades, miser moins aux heures et moments risqués",
+   "title_en": "Keep every trade, bet less at the risky hours and moments",
+   "why_fr": "Au lieu de refuser des trades, le robot les prend tous mais mise un quart de 13 h à 17 h UTC et moitié sur un changement de sens en marché nerveux. Face au filtre seul : +49 $ sur 42 jours, +51 $ sur 69, trou de 39 au lieu de 78, autant de trades.",
+   "why_en": "Instead of refusing trades, the robot takes them all but bets a quarter from 13:00 to 17:00 UTC and half on a change of direction in a nervous market. Against the filter alone: +$49 over 42 days, +$51 over 69, hole 39 instead of 78, same number of trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "flip_hot_size": 0.5,
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25
+   },
+   "pretest": {
+    "net": 6.99,
+    "worst": 39.18,
+    "h1": -1.85,
+    "h2": 67.63,
+    "base_net": -42.12,
+    "base_worst": 78.43
+   },
+   "by": "chercheur",
+   "date": "2026-11-02",
+   "status": "pending"
+  },
+  {
+   "id": "pb_y_q1316_fh05_nc3",
+   "family": "argent",
+   "title_fr": "Miser moins aux moments risqués, et récolter plus quand la tendance tient",
+   "title_en": "Bet less at risky moments, and harvest more while the trend holds",
+   "why_fr": "La même mise réduite (un quart de 13 h à 17 h, moitié sur un changement de sens nerveux), plus jusqu'à trois trades de plus dans le même sens. Face au filtre seul sur 42 jours : +60 $, mieux sur les deux moitiés (+15 et +61), trou 45 au lieu de 78. Pas encore testé sur 69 jours.",
+   "why_en": "The same reduced stake (a quarter 13:00-17:00, half on a nervous change of direction), plus up to three more trades the same way. Against the filter alone over 42 days: +$60, better on both halves (+15 and +61), hole 45 instead of 78. Not yet tested over 69 days.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 3,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "flip_hot_size": 0.5,
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25
+   },
+   "pretest": {
+    "net": 18.07,
+    "worst": 45.32,
+    "h1": 15.37,
+    "h2": 61.49,
+    "base_net": -42.12,
+    "base_worst": 78.43
+   },
+   "by": "chercheur",
+   "date": "2026-11-02",
+   "status": "pending"
+  },
+  {
+   "id": "pb_y_q1216_fh05",
+   "family": "argent",
+   "title_fr": "Miser un quart de midi à 17 h, garder tous les trades",
+   "title_en": "Bet a quarter from noon to 17:00, keep every trade",
+   "why_fr": "Le critique craignait qu'un décalage d'une heure casse le gain. J'ai élargi d'une heure vers midi (les trades réels de midi perdent aussi, 13 trades, 31 % gagnés) : face au filtre seul, +54 $ sur 42 jours au lieu de +49, trou 34 au lieu de 78.",
+   "why_en": "The critic feared that moving one hour would break the gain. I widened by one hour towards noon (real noon trades lose too, 13 trades, 31 % won): against the filter alone, +$54 over 42 days instead of +49, hole 34 instead of 78.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "flip_hot_size": 0.5,
+    "size_hours": [
+     12,
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25
+   },
+   "pretest": {
+    "net": 12.32,
+    "worst": 33.55,
+    "h1": -4.24,
+    "h2": 75.35,
+    "base_net": -42.12,
+    "base_worst": 78.43
+   },
+   "by": "chercheur",
+   "date": "2026-11-02",
+   "status": "pending"
+  },
+  {
+   "id": "pb_y_q1316_fl05",
+   "family": "argent",
+   "title_fr": "Miser moins de 13 h à 17 h et après une perte qui change de sens",
+   "title_en": "Bet less 13:00-17:00 and on a change of direction after a loss",
+   "why_fr": "Même idée de mise réduite, mais la moitié va au changement de sens juste après une perte (le trade le plus faible des comptes réels : 35 % gagnés). Face au filtre seul : +43 $ sur 42 jours, +47 $ sur 69, trou 43 au lieu de 78, autant de trades.",
+   "why_en": "Same reduced-stake idea, but the half goes to the change of direction right after a loss (the weakest trade on the real accounts: 35 % won). Against the filter alone: +$43 over 42 days, +$47 over 69, hole 43 instead of 78, same number of trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "flip_loss_size": 0.5,
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25
+   },
+   "pretest": {
+    "net": 1.23,
+    "worst": 43.02,
+    "h1": -1.57,
+    "h2": 55.18,
+    "base_net": -42.12,
+    "base_worst": 78.43
+   },
+   "by": "chercheur",
+   "date": "2026-11-02",
+   "status": "pending"
+  },
+  {
+   "id": "pb_y_q1316",
+   "family": "rythme",
+   "title_fr": "Miser un quart de 13 h à 17 h UTC, rien d'autre",
+   "title_en": "Bet a quarter from 13:00 to 17:00 UTC, nothing else",
+   "why_fr": "La pièce seule, derrière le filtre en place, sans aucun frein : pour savoir ce qu'elle apporte à elle seule. Face au filtre seul : +39 $ sur 42 jours, +43 $ sur 69, trou 48 au lieu de 78. Sur les vrais trades, 13 h et 16 h perdent 103 $ en 23 trades.",
+   "why_en": "The piece alone, behind the filter in place, with no brake at all: to know what it brings by itself. Against the filter alone: +$39 over 42 days, +$43 over 69, hole 48 instead of 78. On the real trades, 13:00 and 16:00 lose $103 in 23 trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25
+   },
+   "pretest": {
+    "net": -3.06,
+    "worst": 47.54,
+    "h1": -2.99,
+    "h2": 56.89,
+    "base_net": -42.12,
+    "base_worst": 78.43
+   },
+   "by": "chercheur",
+   "date": "2026-11-02",
+   "status": "pending"
   }
  ]
 }

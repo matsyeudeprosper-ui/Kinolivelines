@@ -649,6 +649,17 @@
    "why_fr": "Ce soir, la carte de « deux freins et demi-mise de 12 h à 17 h » montre 18 trades ; le même réglage lancé seul en garde 59, et le critique écrit trois fois « les chiffres de la carte ne se retrouvent pas ». Tant que les deux ne se retrouvent pas, on juge des idées sur des nombres qu'on ne sait pas refaire.",
    "why_en": "Tonight the card of 'two brakes and half stake 12:00-17:00' shows 18 trades; the same setting run alone keeps 59, and the critic writes three times 'the card numbers do not reproduce'. Until the two agree, we judge ideas on numbers nobody can redo.",
    "status": "open"
+  },
+  {
+   "id": "pile_field_dist",
+   "date": "2026-11-02",
+   "title_fr": "Pouvoir faire une pile selon la largeur du stop",
+   "title_en": "Allow a pile by the width of the stop",
+   "what_fr": "Ajouter aux faits d'une pile la distance du stop en points à l'entrée (champ « dist », de 0 à 2000), avec les mêmes opérateurs que les autres (< <= > >= between). Rien ne change pour les piles existantes.",
+   "what_en": "Add to the facts of a pile the stop distance in points at entry (field 'dist', 0 to 2000), with the same operators as the others (< <= > >= between). Nothing changes for existing piles.",
+   "why_fr": "Sur 283 vrais trades, les stops de 250 à 400 points gagnent (54 trades, 61 % gagnés, +32 $, les deux moitiés d'accord) et ceux de 150 à 250 perdent (80 trades, -95 $). Je veux poser cette question aux membres, mais la largeur du stop n'est pas un fait de pile aujourd'hui.",
+   "why_en": "On 283 real trades, stops of 250 to 400 points win (54 trades, 61 % won, +$32, both halves agree) and those of 150 to 250 lose (80 trades, -$95). I want to put this question to members, but the stop width is not a pile fact today.",
+   "status": "open"
   }
  ]
 }
