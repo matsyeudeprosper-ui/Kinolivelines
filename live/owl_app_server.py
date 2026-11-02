@@ -234,26 +234,26 @@ MANIFEST = json.dumps({
 SW = (
     "const OFF='<!doctype html><html lang=fr><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>OwlNest</title><style>body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px}b{display:block;font-size:1.2rem;margin-bottom:8px}p{color:#8a9bb0;font-size:.95rem;line-height:1.5;margin:0 0 18px}a{display:inline-block;background:#3b82f6;color:#fff;text-decoration:none;padding:12px 22px;border-radius:12px;font-weight:700}</style></head><body><div><b>Pas de connexion</b><p>Le hibou n\\'arrive pas &agrave; joindre le serveur. V&eacute;rifiez votre r&eacute;seau, puis r&eacute;essayez.</p><a href=\"javascript:location.reload()\">R&eacute;essayer</a></div></body></html>';"
     "self.addEventListener('install',e=>{self.skipWaiting();"
-    "e.waitUntil(caches.open('owl1').then(c=>Promise.allSettled(['./','chart','manifest.json','icon192.png','/fonts/inter.woff2']"
+    "e.waitUntil(caches.open('owl2').then(c=>Promise.allSettled(['home','chart','manifest.json','icon192.png','/fonts/inter.woff2']"
     ".map(u=>fetch(u).then(r=>{if(r&&r.ok)return c.put(u,r);}).catch(()=>{})))));});"
     "self.addEventListener('activate',e=>e.waitUntil("
-    "clients.claim()));"
+    "caches.keys().then(ks=>Promise.all(ks.filter(k=>k!=='owl2').map(k=>caches.delete(k)))).then(()=>clients.claim())));"
     "self.addEventListener('fetch',e=>{"
     "if(e.request.method==='GET'&&(/\\/fonts\\//.test(e.request.url)||/icon\\d+m?\\.png$/.test(e.request.url))){"
-    "e.respondWith(caches.match(e.request).then(m=>m||fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();caches.open('owl1').then(c=>c.put(e.request,cp));}return r;})));return;}"
+    "e.respondWith(caches.match(e.request).then(m=>m||fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();caches.open('owl2').then(c=>c.put(e.request,cp));}return r;})));return;}"
     # 2026-10-17 (owner's sign-up test): a form POST is a navigation too; racing it against the 4 s cache fallback
     # ended on the offline page while the server was fine. The worker only handles GET navigations now.
     "if(e.request.mode==='navigate'&&e.request.method==='GET'&&!/owlnest\\.apk|apk\\.json|\\/activate|\\/verif/.test(e.request.url)){"
     # 2026-10-04 (owner): fresh first - a change must show on the FIRST open;
     # the cached page only steps in when the network is slow (4 s) or gone
     "const net=fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();"
-    "caches.open('owl1').then(c=>c.put(e.request,cp));}return r;}).catch(()=>null);"
+    "caches.open('owl2').then(c=>c.put(e.request,cp));}return r;}).catch(()=>null);"
     "const slow=new Promise(res=>setTimeout(()=>res(null),4000));"
     "e.respondWith(Promise.race([net,slow]).then(r=>r||caches.match(e.request).then(m=>m||net))"
     ".then(r=>r||new Response(OFF,{headers:{'Content-Type':'text/html;charset=utf-8'}})));}});"
     "self.addEventListener('message',e=>{if(e.data&&e.data.type==='refresh'){"
     "e.waitUntil(fetch(e.data.url,{cache:'no-store'}).then(r=>{if(r&&r.ok){"
-    "return caches.open('owl1').then(c=>c.put(e.data.url,r.clone()));}}).catch(()=>{})"
+    "return caches.open('owl2').then(c=>c.put(e.data.url,r.clone()));}}).catch(()=>{})"
     ".then(()=>{if(e.source)e.source.postMessage({type:'refreshed'});}));}});"
     "self.addEventListener('push',e=>{let d={};"
     "try{d=e.data.json()}catch(x){}"
@@ -29203,7 +29203,31 @@ def _member_pkg(uid):
     return "manual"
 
 
+_HOME_CACHE = {}
+
+
 def home_kino_data(user):
+    """2026-11-02 (owner: "not loading"): cached 60 s per member, refreshed in the background - the page never waits long"""
+    uid = user.get("id")
+    hit = _HOME_CACHE.get(uid)
+    if hit and time.time() - hit[0] < 60:
+        return hit[1]
+    if hit:
+        if not hit[2]:
+            hit[2] = True
+            def _bg(u=user, k=uid):
+                try:
+                    _HOME_CACHE[k] = [time.time(), _home_kino_data(u), False]
+                except Exception:
+                    _HOME_CACHE[k][2] = False
+            threading.Thread(target=_bg, daemon=True).start()
+        return hit[1]
+    v = _home_kino_data(user)
+    _HOME_CACHE[uid] = [time.time(), v, False]
+    return v
+
+
+def _home_kino_data(user):
     """2026-11-01 (owner: "the focus is not the Owl anymore, it's Kino"): everything the Kino home shows, in one call -
     his status and mood, his last words to the member, what he pursues with them, their robots, the robots he created
     (the Owl among them: on invitation, active for the family), the plan and what is left of it"""
@@ -29262,11 +29286,7 @@ def home_kino_data(user):
                 nd = json.load(open(_f, encoding="utf-8"))
                 if nd.get("balance") is None:
                     continue
-                _rb = ""
-                try:
-                    _rb = ((acct_robot_block(_user_by_id(_u) or user, False) or {}).get("current") or {}).get("name_fr") or ""
-                except Exception:
-                    pass
+                _rb = "L'Owl"                  # 2026-11-02: acct_robot_block here cost ~12 s a call; the account's robot is the Owl
                 out["account"] = {"uid": _u, "real": bool(nd.get("real")), "balance": nd.get("balance"), "today": nd.get("today"),
                                   "week": nd.get("week"), "month": nd.get("month"), "open": len(nd.get("open_list") or []),
                                   "robot": _rb, "auto": bool(((_user_by_id(_u) or {}).get("mode") == "auto") and (_user_by_id(_u) or {}).get("trade"))}
