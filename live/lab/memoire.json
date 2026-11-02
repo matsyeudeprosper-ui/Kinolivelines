@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-02T04:35:40Z",
+ "updated": "2026-11-02T06:05:00Z",
  "hypotheses": [
   {
    "id": "more_conts_with_brakes",
@@ -134,7 +134,8 @@
     "2026-10-29: lab robot 10-28/29: 19 tr +18.27; two biggest losses -5.37/-7.11 held 7-8 min, restarted minutes after a loss (catch-up chain). Real gap: <15 min 80 tr 34% -73.76, 15-60 97 tr ~+18, 1-3 h 39 tr -83.14. Unchanged (one new real trade).",
     "2026-10-31 12:00 veille: 34 new closes: gap 15-60 min 16 tr 11 won +12.43 per 0.01; <15 min 7 tr 2 won -0.69. Real gap 15-30 40 tr 62% +20.54 (h 64/62 agree), 30-60 62 tr 58% +15.23, <15 80 tr 34% -73.76 (h 37/31), 1-3 h 40 tr 38% -78.79. Holds.",
     "2026-11-02 01:30 veille (labo ask, pile cont_rested): 66 tr 58% vs 44% but +9.39 PF 1.06, halves 74%/46% - second half fading. After a win 31 tr 65% +38.65; after a loss 35 tr 51% -29.26 (h 69/41). The same-way-after-pause edge sits after a win; after a loss the pause alone is not enough. Count edge holds, money weakening.",
-    "2026-11-02 04:35 veille: first trade of the week, FLIP-BOS SELL after ~67 h pause (Fri win), 04:00 entry, won +0.94 per 0.01. Long pause again harmless for flips (one trade, peu)."
+    "2026-11-02 04:35 veille: first trade of the week, FLIP-BOS SELL after ~67 h pause (Fri win), 04:00 entry, won +0.94 per 0.01. Long pause again harmless for flips (one trade, peu).",
+    "2026-11-02 06:05 veille: BOS SELL 04:51 after 15.6-min pause (after flip win) won +1.33; BOS SELL 05:13 re-entered 8 min after that win lost -2.84 (held 30.6 min); BOS BUY 05:44 re-entered 26 s after the loss lost -1.82. Real gap <15 min 82 tr 33% -78.42 PF 0.55 (h 36/30 ok); 15-30 41 tr 63% +21.87 (h 64/63); 30-60 62 tr 58% +15.23; 1-3 h 40 tr 38% -78.79. Holds."
    ],
    "next": "cont_wait when built, test it split by previous result (after a win vs after a loss, ties loss_gap_size); re-read on src=filtre once real_pool_split exists. Watch whether the pile's second half keeps falling."
   },
@@ -3620,6 +3621,15 @@
     "scrutiny --streaks, --by hour, --by nerv, --by storm"
    ],
    "saw": "First trade after the weekend: a nervous night reversal, tight stop, held 35 min, small win. Fits 'flips survive a long pause' (rested_cont 10-26) and adds one more 30-60 min win against slow_trade; tight stop earned little (wide_stops_carry). 04 h 11 tr 36% -8.72 (peu); nerv 1.3-1.85 65 tr 54% -46.67 (avg loss 5.79 vs win 3.63); storm=1 65 tr 46% -90.67 PF 0.58 (h 42/52). No harness run, no pile, no proposal. One trade: hint only."
+  },
+  {
+   "t": "2026-11-02T06:05:00Z",
+   "looked": [
+    "wake_context (2 real closes; scrutiny total 277 incl. a 06:01 close; twin noday 8 tr +29.86 unchanged; labo empty; no open ask)",
+    "bos_journal_u477508138 last 3 rows: BOS SELL 04:51 gap 15.6 min won +1.33; BOS SELL 05:13 gap 8 min after a win lost -2.84 held 30.6 min; BOS BUY 05:44 gap 26 s after a loss, nerv 1.62, lost -1.82",
+    "scrutiny --by gap --by kind"
+   ],
+   "saw": "Morning sequence fits rested_cont exactly: 15-min pause won, two <15 min re-entries lost. Gap <15 min 82 tr 33% -78.42 PF 0.55 (h 36/30 ok); 15-30 41 tr 63% +21.87 PF 1.39 (h 64/63); 30-60 62 tr 58% +15.23 (h 63/53); 1-3 h 40 tr 38% -78.79; >3 h 51 tr 51% -32.95. Kind: BOS 131 tr 50% -43.34 (h 57/43), FLIP 144 tr 45% -92.48. Pause dial already covered by wait proposals and piles quick/loss_quick15: no harness run, no pile, no proposal. slow_trade: one 30-60 min hold lost this time (05:13)."
   }
  ],
  "lessons": [
