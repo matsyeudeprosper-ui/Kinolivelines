@@ -31773,7 +31773,7 @@ a{color:#9fc2de}.k{background:#121a25;border:1px solid #1f2a38;border-radius:18p
 <input id="code" name="code" maxlength="6" placeholder="ABC123" autocapitalize="characters">
 <div class="h" id="ch">Re&ccedil;u du Owl sur Telegram (Automatique, Signal, Strat&eacute;gie).</div>
 <label for="buy">Pas de code ? Acheter en crypto</label>
-<select id="buy" name="buy"><option value="">&mdash; j&#8217;ai un code &mdash;</option><option value="manual">Signal &middot; $29 / 30 jours</option><option value="strategy">Strat&eacute;gie &middot; $49 / 30 jours</option></select>
+<select id="buy" name="buy"><option value="">&mdash; j&#8217;ai un code &mdash;</option><option value="manual">Essentiel &middot; $19 / 30 jours</option><option value="strategy">Pro &middot; $49 / 30 jours</option><option value="premium">Premium &middot; $119 / 30 jours</option></select>
 <div class="h">NOWPayments ouvre une page : USDT, BTC ou autre. Votre compte s&#8217;active d&egrave;s que le paiement est confirm&eacute;.</div>
 <label for="name">Votre pr&eacute;nom</label>
 <input id="name" name="name" required maxlength="30" placeholder="Pr&eacute;nom">
@@ -32775,7 +32775,7 @@ html:not([lang=en]) [data-l=en]{display:none!important}
 <div data-l="fr">
 <h2>Conditions</h2>
 <p><b>Ce que c&#8217;est.</b> OwlNest vend un logiciel et un service de copie. Ce n&#8217;est ni du conseil, ni de la gestion d&#8217;investissement.</p>
-<p><b>Les offres.</b> La d&eacute;mo est gratuite. Signal ($29) et Strat&eacute;gie ($49) durent 30 jours ; Automatique est sur invitation, &agrave; prix fixe chaque mois. Le prix est celui affich&eacute; dans l&#8217;application et sur la page des offres.</p>
+<p><b>Les offres.</b> D&eacute;couverte est gratuit. Essentiel ($19), Pro ($49) et Premium ($119) durent 30 jours ; Automatique est sur invitation, &agrave; prix fixe chaque mois. Le prix est celui affich&eacute; dans l&#8217;application et sur la page des offres.</p>
 <p><b>Paiement.</b> En crypto dans l&#8217;application, ou par code. On paie &agrave; l&#8217;avance, pour la p&eacute;riode choisie.</p>
 <p><b>Pas de reconduction automatique.</b> Signal et Strat&eacute;gie ne se renouvellent jamais tout seuls : &agrave; la fin des 30 jours, c&#8217;est &agrave; vous de renouveler, par un nouveau paiement ou un code. Sans cela, l&#8217;acc&egrave;s s&#8217;arr&ecirc;te.</p>
 <p><b>Aucune part de vos gains.</b> Le prix est fixe, quel que soit votre r&eacute;sultat. Vos gains restent &agrave; vous.</p>
@@ -32787,7 +32787,7 @@ html:not([lang=en]) [data-l=en]{display:none!important}
 <div data-l="en">
 <h2>Terms</h2>
 <p><b>What this is.</b> OwlNest sells software and a copy service. It is not investment advice or investment management.</p>
-<p><b>The plans.</b> The demo is free. Signal ($29) and Strategy ($49) last 30 days; Automatic is by invitation, at a fixed monthly price. The price is the one shown in the app and on the plans page.</p>
+<p><b>The plans.</b> Discovery is free. Essential ($19), Pro ($49) and Premium ($119) last 30 days; Automatic is by invitation, at a fixed monthly price. The price is the one shown in the app and on the plans page.</p>
 <p><b>Payment.</b> In crypto inside the app, or with a code. You pay in advance, for the period you choose.</p>
 <p><b>No automatic renewal.</b> Signal and Strategy never renew by themselves: at the end of the 30 days it is up to you to renew, with a new payment or a code. Without that, access stops.</p>
 <p><b>No share of your gains.</b> The price is fixed, whatever your result. Your gains stay yours.</p>
@@ -33670,7 +33670,7 @@ def _code_page(mode, login, pwd, name=""):
     buy = "" if mode == "renew" else (
         "<label for=\"buy\">Pas de code ? Acheter en crypto</label>"
         "<select id=\"buy\" name=\"buy\"><option value=\"\">&mdash; j&#8217;ai un code &mdash;</option>"
-        "<option value=\"manual\">Signal &middot; $29 / 30 jours</option><option value=\"strategy\">Strat&eacute;gie &middot; $49 / 30 jours</option></select>"
+        "<option value=\"manual\">Essentiel &middot; $19 / 30 jours</option><option value=\"strategy\">Pro &middot; $49 / 30 jours</option><option value=\"premium\">Premium &middot; $119 / 30 jours</option></select>"
         "<div class=\"h\">NOWPayments ouvre une page : USDT, BTC ou autre. Votre compte s&#8217;active d&egrave;s que le paiement est confirm&eacute;.</div>")
     js = ("<script>function mode(p){var m=document.getElementById('mt5');if(m){m.style.display=p==='family'?'':'none';"
           "var s=document.getElementById('server');if(s)s.required=(p==='family');}}mode('family');"
