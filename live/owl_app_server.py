@@ -29757,7 +29757,7 @@ def _home_kino_data(user):
     his status and mood, his last words to the member, what he pursues with them, their robots, the robots he created
     (the Owl among them: on invitation, active for the family), the plan and what is left of it"""
     uid = user.get("id")
-    out = {"name": user.get("name") or "", "lang": "fr"}
+    out = {"name": "" if user.get("public") else (user.get("name") or ""), "lang": "fr", "public": bool(user.get("public"))}
     try:
         _d = kino_day(user)
         out["status"] = _d.get("status") or {}
@@ -36711,8 +36711,8 @@ class H(BaseHTTPRequestHandler):
             if pu is None:
                 self._not_found()
                 return
-            self.send_response(302)
-            self.send_header("Location", f"/{pu['token']}/")
+            self.send_response(302)        # 2026-11-02: "Regarder" opens the Owl's live card, in the new design
+            self.send_header("Location", f"/{pu['token']}/robot?id=owl&tab=live" if len(parts) > 1 and parts[1] == "live" else f"/{pu['token']}/home")
             self.end_headers()
             return
         if not parts and self.headers.get("Sec-Fetch-Site") == "none" and "?" not in self.path and not admin_cookie_ok(self.headers):
@@ -36745,13 +36745,13 @@ class H(BaseHTTPRequestHandler):
             self._not_found()
             return
         sub = parts[1] if len(parts) > 1 else ""
-        if sub == "" and not user.get("public") and ("classic=1" not in self.path or not (is_admin(user) or user.get("id") in OWNER_UIDS or "embed=perf" in self.path)):
+        if sub == "" and ("classic=1" not in self.path or not (is_admin(user) or user.get("id") in OWNER_UIDS or "embed=perf" in self.path)):
             # 2026-11-02 (owner: "I don't want users to access the old design anymore"): ?classic=1 is the owner's alone (the Nid)
             # 2026-11-01 (owner: "the focus is Kino"; then "I'd like everyone on the new design, yet all using the Owl should
             # continue"): every member lands on Kino's home - the robots on the accounts are untouched (a page, not a switch);
             # the account and its robot are the home's first card, the full dashboard stays at ?classic=1
-            self.send_response(302)
-            self.send_header("Location", "/%s/home" % parts[0])
+            self.send_response(302)        # 2026-11-02: the public demo too; the app's ?twa= version rides along
+            self.send_header("Location", "/%s/home%s" % (parts[0], ("?" + self.path.split("?", 1)[1]) if "?" in self.path else ""))
             self.end_headers()
             return
         if sub == "compte":                              # 2026-11-02 (owner): the account page of the new design

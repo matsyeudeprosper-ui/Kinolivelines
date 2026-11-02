@@ -198,6 +198,11 @@ h2 a{font-size:13px;color:var(--text2)}h2 a:after{content:" ›"}
 .rc .rv{font-size:22px;letter-spacing:-.03em;margin-top:2px}.rc .rs{font-size:12.5px}
 .tag{font-size:11.5px;padding:4px 10px}.tag.k{background:#7c6cff14}.tag.on{background:#2ecc7112}
 .kmark{color:#b4a9ff;font-weight:700;margin-right:5px}
+.ref{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 10px 10px 12px;border-radius:16px;border:1px solid #7c6cff44;background:linear-gradient(135deg,#7c6cff14,var(--surface));box-shadow:var(--hl)}
+.ref .gi{flex:none;width:30px;height:30px;border-radius:10px;background:#7c6cff1c;display:grid;place-items:center;font-size:15px}
+.ref .tx{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--text2);line-height:1.3}
+.ref a{flex:none;font-size:13.5px;font-weight:800;color:#b4a9ff;padding:6px 4px;white-space:nowrap}.ref a:after{content:" ›"}
+.ref button{flex:none;border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;padding:4px 6px;cursor:pointer}
 .trade{border-radius:16px}
 .foot{margin-top:28px;font-size:11.5px;opacity:.9}
 .skel{border-radius:10px}
@@ -216,6 +221,9 @@ h2 a{font-size:13px;color:var(--text2)}h2 a:after{content:" ›"}
  </section>
 
 
+ <div id="apkcard" class="card" hidden style="margin-top:14px"><div class="rn" id="apk-t"></div><div class="rs" id="apk-b" style="margin:4px 0 12px"></div>
+  <div style="display:flex;gap:8px"><a class="cta" id="apk-go" href="/owlnest.apk" style="flex:1.4;padding:12px;font-size:14px"></a><button class="chip" id="apk-no" type="button" style="flex:1;border-radius:14px;font-weight:700;font-size:14px;text-align:center"></button></div></div>
+ <div id="refnudge" hidden></div>
  <div id="school"></div>
 
  <h2><span id="h-board">Tes robots</span><a href="mesrobots" id="h-board-all">Tout voir</a></h2>
@@ -363,6 +371,7 @@ function render(d){
  try{window.dispatchEvent(new HashChangeEvent('hashchange'));}catch(e){}   // the shell's bar re-reads the name
  const P=d.plan||{};document.getElementById('plan').textContent=EN?(P.label_en||'Plan'):(P.label||'Formule');
  moneyCard();
+ try{refNudge(d);}catch(e){}try{apkCheck();}catch(e){}
  /* without a trading account, Kino is the first thing on the page */
  if(!d.account){const k=document.getElementById('kino');k.style.marginTop='0';}
  const st=d.status||{};document.getElementById('status').textContent=(EN?st.en:st.fr)||T('disponible','available');
@@ -437,6 +446,26 @@ function render(d){
  document.getElementById('foot').innerHTML=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.')+
   ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>';
 }
+/* 2026-11-02 (owner: "the install and referral banners, at the right time for the right people, like the old design") */
+try{var _tq=new URLSearchParams(location.search).get('twa');if(_tq)sessionStorage.setItem('owlTwa',_tq);}catch(e){}
+async function apkCheck(){const c=document.getElementById('apkcard');if(!c||c.dataset.done)return;c.dataset.done=1;
+ const and=/Android/i.test(navigator.userAgent);let twa='';try{twa=sessionStorage.getItem('owlTwa')||'';}catch(e){}
+ if(!and&&!twa)return;let j=null;try{j=await (await fetch('/apk.json',{cache:'no-store'})).json();}catch(e){}
+ if(!j||!j.versionCode)return;const T_=document.getElementById('apk-t'),B_=document.getElementById('apk-b'),G=document.getElementById('apk-go'),N=document.getElementById('apk-no');
+ N.onclick=()=>{try{localStorage.setItem('owlApkDis',String(Date.now()));}catch(e){}c.hidden=true;};
+ if(twa){if(+j.versionCode<=+twa)return;T_.textContent=T('Une nouvelle version de l’application','A new version of the app');
+  B_.textContent=T('Version '+j.version+'. Touche, puis installe : elle se pose par-dessus l’ancienne, rien à désinstaller.','Version '+j.version+'. Tap, then install: it goes over the old one, nothing to uninstall.');
+  G.textContent=T('Mettre à jour','Update');N.textContent=T('Plus tard','Later');c.hidden=false;return;}
+ let dis=0;try{dis=+localStorage.getItem('owlApkDis')||0;}catch(e){}if(Date.now()-dis<14*86400000)return;
+ T_.textContent=T('OwlNest en vraie application','OwlNest as a real app');
+ B_.textContent=T('Plus rapide à ouvrir, sa propre icône, sans barre de navigateur. Android demande une fois d’autoriser l’installation.','Faster to open, its own icon, no browser bar. Android asks once to allow the install.');
+ G.textContent=T('Installer l’application','Install the app');N.textContent=T('Non merci','No thanks');c.hidden=false;}
+function refNudge(d){const el=document.getElementById('refnudge');if(!el)return;const A=d.account||{},S=A.since||{};
+ const up=(+S.net||0)>0||(+A.today||0)>0,key='owlRefNudge:'+B;let last=0;try{last=parseInt(localStorage.getItem(key)||'0',10)||0;}catch(e){}
+ if(!up||Date.now()-last<14*86400000||d.owner){el.hidden=true;return;}
+ el.hidden=false;el.innerHTML='<div class="ref"><div class="gi">🎁</div><div class="tx">'+(d.public?T('Le robot est dans le vert. Ouvre un compte, invite un ami : 50 % de son premier mois pour toi.','The robot is in the green. Open an account, invite a friend: 50 % of their first month is yours.'):T('Parrainez : 50 % pour vous','Refer a friend: 50 %'))+'</div>'+
+  '<a href="'+(d.public?'/offres':B+'parrainage')+'">'+(d.public?T('Ouvrir','Open'):T('Partager','Share'))+'</a><button type="button" aria-label="'+T('Fermer','Close')+'">×</button></div>';
+ el.querySelector('button').onclick=()=>{try{localStorage.setItem(key,String(Date.now()));}catch(e){}el.hidden=true;};}
 load();setInterval(load,60000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
 let RW=0;addEventListener('resize',()=>{clearTimeout(RW);RW=setTimeout(()=>{if(D&&D.account)paintChart();},150);});
