@@ -3,9 +3,9 @@
 <meta charset="utf-8"><meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#070a10">
-<title>Rencontre Kino · OwlNest</title>
+<title>Kino · ton associé IA pour le trading · OwlNest</title>
 <meta name="description" content="Parle avec Kino, l'IA qui construit ton robot de trading avec toi, le teste sur de vrais prix et te dit la vérité. Sans compte.">
-<meta property="og:title" content="Rencontre Kino · ton associé IA pour le trading">
+<meta property="og:title" content="Kino, ton associé IA pour le trading"><meta property="og:image" content="%%ORIGIN%%/static/og_card.png"><meta property="og:url" content="%%ORIGIN%%/">
 <meta property="og:description" content="Parle-lui maintenant, sans compte. Il construit ton robot, le teste sur de vrais prix et contre le hasard.">
 <link rel="icon" href="/icon192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +34,10 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:6
 .hero .g1{width:620px;height:620px;left:-220px;top:-200px;background:radial-gradient(closest-side,rgba(124,108,255,.22),transparent)}
 .hero .g2{width:560px;height:560px;right:-160px;top:60px;background:radial-gradient(closest-side,rgba(34,211,238,.14),transparent)}
 .hgrid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.pres{position:relative;width:128px;height:128px;margin:0 auto 18px;border-radius:50%;box-shadow:0 0 0 1px rgba(124,108,255,.25),0 0 60px -8px rgba(124,108,255,.6)}
+.pres canvas{display:block;width:100%;height:100%}
+@media (min-width:901px){.pres{margin-left:0}}
+.kav canvas.kpres{width:42px;height:42px;display:block}
 .pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--tx2);padding:6px 13px;border-radius:99px;border:1px solid var(--line2);background:rgba(15,21,32,.8)}
 .pill i{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px rgba(0,168,132,.18)}
 h1{font-size:clamp(38px,5.6vw,64px);line-height:1.02;letter-spacing:-.04em;margin:20px 0 18px;font-weight:900}
@@ -135,22 +139,23 @@ footer{border-top:1px solid rgba(255,255,255,.05);padding:28px 0 110px;color:var
  section{padding:64px 0}.live{flex-direction:column;align-items:flex-start}.stick{display:block}.nr a.lo{display:none}}
 </style></head><body>
 <nav><div class="wrap"><a class="brand" href="/"><img src="/icon192.png" alt="">OwlNest</a>
- <div class="nr"><a class="lo" href="/" data-t="login">Se connecter</a><button class="lg" id="lg">EN</button></div></div></nav>
+ <div class="nr"><a class="lo" href="/connexion" data-t="login">Se connecter</a><button class="lg" id="lg">EN</button></div></div></nav>
 
 <header class="hero"><div class="glow g1"></div><div class="glow g2"></div>
  <div class="wrap hgrid">
   <div class="hcopy">
+   <div class="pres"><canvas class="kpres" aria-hidden="true"></canvas></div>
    <span class="pill"><i></i><span data-t="pill">Kino est en ligne, maintenant</span></span>
-   <h1><span data-t="h1a">Parle à Kino.</span><br><span class="g" data-t="h1b">Il construit ton robot de trading.</span></h1>
-   <p class="lead" data-t="lead">Raconte-lui ta méthode avec tes mots. Il la transforme en robot, la teste sur des mois de vrais prix et contre le hasard, et te dit franchement si ça tient.</p>
-   <div class="ctas"><a class="btn p" href="/offres" data-t="cta1">Essayer gratuitement · 7 jours</a><a class="btn" href="#talk" id="talkb" data-t="cta2">Lui parler ici</a></div>
+   <h1><span class="g" data-t="h1a">Kino,</span> <span data-t="h1b">ton associé IA pour le trading.</span></h1>
+   <p class="lead" data-t="lead">Tu lui racontes ton idée. Il la construit en robot, la teste sur de vrais prix, et te dit la vérité — même quand ça perd.</p>
+   <div class="ctas"><a class="btn p" href="/offres" data-t="cta1" onclick="try{fn('kino_trial_open')}catch(e){}">Essayer Kino gratuitement</a><a class="btn" href="#talk" id="talkb" data-t="cta2">Lui parler ici</a></div>
    <div class="trust"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-t="t1">7 jours gratuits</span></span>
     <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-t="t2">Sans carte bancaire</span></span>
     <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-t="t3">Tu gardes la main</span></span></div>
   </div>
   <div id="talk">
    <div class="phone"><div class="scr"><div class="notch"></div>
-    <div class="ah"><span class="bk">‹</span><div class="kav">🦉<i></i></div>
+    <div class="ah"><span class="bk">‹</span><div class="kav"><canvas class="kpres" aria-hidden="true"></canvas><i></i></div>
      <div class="ttl"><b>Kino <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg></b><small id="st">en ligne</small></div>
      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div>
     <div class="chat" id="log"></div>
@@ -227,19 +232,21 @@ footer{border-top:1px solid rgba(255,255,255,.05);padding:28px 0 110px;color:var
 <div class="final"><div class="wrap">
  <h2 data-t="h2e">Ton idée mérite un vrai test.</h2>
  <p class="sub" data-t="s2e">En quelques minutes, Kino peut te dire si elle tient. Sept jours pour essayer, sans carte.</p>
- <a class="btn p" href="/offres" data-t="cta3">Essayer Kino gratuitement</a>
+ <a class="btn p" href="/offres" data-t="cta3" onclick="try{fn('offers_cta')}catch(e){}">Essayer Kino gratuitement</a>
 </div></div>
 
 <footer><div class="wrap" id="foot"></div></footer>
 <div class="stick" id="stick"><a class="btn p" href="/offres" data-t="cta4">Essayer Kino gratuitement · 7 jours</a></div>
 
+<script>%%PRESENCE%%</script>
 <script>
+function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}} fn(location.pathname==='/demo'?'meet':'landing');
 let EN=(navigator.language||'').slice(0,2)!=='fr';try{const s=localStorage.getItem('owlLang');if(s)EN=s==='en';}catch(e){}
 const $=id=>document.getElementById(id), T=(f,e)=>EN?e:f;
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const EN_T={pill:'Kino is online, right now',h1a:'Talk to Kino.',h1b:'He builds your trading robot.',
- lead:'Tell him your method in your own words. He turns it into a robot, tests it on months of real prices and against luck, and tells you straight whether it holds up.',
- cta1:'Try it free · 7 days',cta2:'Talk to him here',t1:'7 days free',t2:'No credit card',t3:'You stay in control',login:'Sign in',
+const EN_T={pill:'Kino is online, right now',h1a:'Kino,',h1b:'your AI partner for trading.',
+ lead:'Tell him your idea. He builds it into a robot, tests it on real prices, and tells you the truth — even when it loses.',
+ cta1:'Try Kino for free',cta2:'Talk to him here',t1:'7 days free',t2:'No credit card',t3:'You stay in control',login:'Sign in',
  under:'A real conversation with Kino, exactly as in the app.',k1:'When you join',h2a:'From your idea to a tested robot, in one conversation.',
  s2a:'No code, no jargon. You talk, Kino builds, tests and watches with you.',st1:'You describe your method',sp1:'Like to a friend who knows. Kino asks the right questions and builds your robot piece by piece.',
  mk1:'I buy when price breaks back above the last high, stop under the low, target twice the risk.',mk2:'Got it. I’ll build it that way and test it on 6 months of Bitcoin.',

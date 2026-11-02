@@ -30260,6 +30260,13 @@ def ai_pulse():
     return out
 
 
+def _meet_page(origin):
+    """2026-11-02: the meeting page (the front door and /demo) with Kino's presence inlined and the site origin filled in"""
+    return (open(os.path.join(DIR, "owl_meet_page.html"), encoding="utf-8").read()
+            .replace("%%PRESENCE%%", open(os.path.join(DIR, "kino_presence.js"), encoding="utf-8").read())
+            .replace("%%ORIGIN%%", origin))
+
+
 def _landing_robot():
     """the robot Kino made for the place with the best real test: name, market, the test's figures and window, the random
     control's verdict. Only listed, visible, unpaused robots by the nest; nothing about the recipe, no robot count."""
@@ -36692,7 +36699,10 @@ class H(BaseHTTPRequestHandler):
             # 2026-11-01 (owner: "think deeper what the demo becomes"): the demo is meeting Kino - a conversation without an
             # account (kino_meet), what he does, and a robot he made working live at /demo/live
             fn_count("meet_open")
-            self._send(open(os.path.join(DIR, "owl_meet_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            _host = self.headers.get("Host") or "owlnest.local"
+            _proto = "https" if (self.headers.get("X-Forwarded-Proto") == "https"
+                                 or "127.0.0.1" not in _host and "localhost" not in _host) else "http"
+            self._send(_meet_page(f"{_proto}://{_host}"), "text/html; charset=utf-8")
             return
         if parts and parts[0] == "demo":
             # front door to the showcase: no password, straight to the
@@ -36714,17 +36724,19 @@ class H(BaseHTTPRequestHandler):
                 self.send_header("Location", f"/{_su['token']}/")
                 self.end_headers()
                 return
-        if not parts or parts[0] == "join":
+        if not parts or parts[0] in ("join", "connexion"):
             # front door: no token -> the welcome/sign-up screen
             _host = self.headers.get("Host") or "owlnest.local"
             _proto = "https" if (self.headers.get("X-Forwarded-Proto") == "https"
                                  or "127.0.0.1" not in _host and "localhost" not in _host) else "http"
             _lp = JOIN_PAGE
-            try:                                     # 2026-11-02 (owner: "redesign the landing page"): the new front door
-                _lp = open(os.path.join(DIR, "owl_landing_page.html"), encoding="utf-8").read().replace(
-                    "%%PRESENCE%%", open(os.path.join(DIR, "kino_presence.js"), encoding="utf-8").read())
-            except Exception:
-                pass
+            if "connexion" not in parts:            # 2026-11-02 (owner: "make the demo page the main page"): the meeting
+                try:                                 # page is the front door; the old welcome page keeps the sign-in form
+                    _lp = _meet_page(f"{_proto}://{_host}")
+                except Exception:
+                    pass
+            else:
+                _lp = _lp.replace("</body>", "<script>try{show('v-login')}catch(e){}</script></body>")
             self._send(_lp.replace("%%ORIGIN%%", f"{_proto}://{_host}").replace("%%CONTACT%%", nest_config().get("contact_url") or "/activate").replace("%%TGBOT%%", nest_config().get("tg_bot") or "Kino_owl_bot"),
                        "text/html; charset=utf-8")
             return
