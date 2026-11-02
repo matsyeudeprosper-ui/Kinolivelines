@@ -2,112 +2,301 @@
 <html lang="fr" translate="no" class="notranslate"><head>
 <meta charset="utf-8"><meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0f14">
-<title>Rencontre Kino</title>
-<meta name="description" content="Parle avec Kino, l'IA qui construit et teste ton robot de trading avec toi. Sans compte.">
+<meta name="theme-color" content="#070a10">
+<title>Rencontre Kino · OwlNest</title>
+<meta name="description" content="Parle avec Kino, l'IA qui construit ton robot de trading avec toi, le teste sur de vrais prix et te dit la vérité. Sans compte.">
+<meta property="og:title" content="Rencontre Kino · ton associé IA pour le trading">
+<meta property="og:description" content="Parle-lui maintenant, sans compte. Il construit ton robot, le teste sur de vrais prix et contre le hasard.">
 <link rel="icon" href="/icon192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* 2026-11-01 (owner: "think deeper what the demo becomes"): the demo is meeting Kino - a real conversation without an account,
-   what he does for a member, and a robot he made working live (the old demo, one tap away). Chat: POST /meet_chat. */
-:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;--text:#e8eef4;
- --text2:#c6d3df;--muted:#8a9bb0;--up:#2ecc71;--grad:linear-gradient(135deg,#7c6cff,#22d3ee);--sh:0 18px 50px rgba(0,0,0,.45)}
-@media (prefers-color-scheme:light){:root{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;
- --border2:#d5dce7;--text:#121722;--text2:#3b4658;--muted:#6a7588;--sh:0 12px 34px rgba(20,30,50,.10)}}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}
-body{font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:inherit}.wrap{max-width:640px;margin:0 auto;padding:20px 16px 50px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;text-decoration:none}.brand img{width:30px;height:30px;border-radius:9px}
-.lg{font-size:13px;padding:6px 12px;border-radius:99px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer}
-.hero{text-align:center;margin:10px 0 22px}
-.av{width:76px;height:76px;margin:0 auto 14px;border-radius:24px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800;font-size:34px;box-shadow:0 14px 40px #7c6cff55}
-h1{font-size:30px;letter-spacing:-.03em;margin:0 0 8px}.sub{color:var(--text2);margin:0 auto;max-width:480px}
-.chat{background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:var(--sh);overflow:hidden}
-.log{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:180px;max-height:52vh;overflow-y:auto}
-.b{max-width:85%;padding:11px 14px;border-radius:16px;white-space:pre-wrap;line-height:1.5}
-.b.k{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:6px}
-.b.m{align-self:flex-end;background:linear-gradient(135deg,#6d5df5,#1fb9d4);color:#fff;border-bottom-right-radius:6px}
-.typing{align-self:flex-start;color:var(--muted);font-size:13px;padding:4px 6px}
-.sugg{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}
-.sugg span{font-size:13px;padding:8px 12px;border-radius:99px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);cursor:pointer}
-form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border);background:var(--surface)}
-input{flex:1;padding:13px 14px;border-radius:14px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:inherit}
-button.send{padding:0 18px;border-radius:14px;border:0;background:var(--grad);color:#fff;font-weight:700;cursor:pointer}
-.left{font-size:12px;color:var(--muted);text-align:center;padding:0 0 10px}
-.cta{display:block;text-align:center;margin:18px 0 8px;padding:15px;border-radius:14px;background:var(--grad);color:#fff;font-weight:700;text-decoration:none;box-shadow:0 10px 28px #7c6cff44}
-h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:32px 4px 12px}
-.grid{display:grid;gap:10px}.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px}
-.card b{display:block;margin-bottom:3px}.card span{color:var(--text2);font-size:14px}
-.live{display:flex;align-items:center;justify-content:space-between;gap:12px;text-decoration:none}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px #2ecc7122;margin-right:6px}
-.foot{margin-top:26px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+/* 2026-11-01 (owner: "the demo page is one of our most important pages - premium, modern, each element built with care; the
+   chat should look like what they will actually use"): the meeting page. The phone in the hero IS the app's chat - same
+   avatar, header, wallpaper, bubbles, ticks and composer as the Atelier - and the conversation in it is real (POST
+   /meet_chat, kino_meet). Then: what happens when you join, Kino vs a general assistant, the plans, a robot he made live. */
+:root{--bg:#070a10;--bg2:#0b1018;--card:#0f1520;--card2:#131b28;--line:#1c2535;--line2:#263247;--tx:#eef2f8;--tx2:#c3cede;--mut:#8592a8;
+ --acc:#00a884;--vio:#7c6cff;--cy:#22d3ee;--grad:linear-gradient(135deg,#7c6cff 0%,#22d3ee 100%);--gold:#e8c55a;--up:#2ecc71;--down:#ff6b6b;
+ --wa-bg:#0b141a;--wa-in:#1f2c34;--wa-out:#144d42;--wa-txt:#e9edef;--wa-meta:rgba(233,237,239,.6);--wa-tick:#53bdeb;--wa-bar:#111b21}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}button{font:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.glow{position:absolute;pointer-events:none;border-radius:50%;filter:blur(10px)}
+/* nav */
+nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(16px);background:rgba(7,10,16,.72);border-bottom:1px solid rgba(255,255,255,.05)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}.brand img{width:30px;height:30px;border-radius:9px}
+.nr{display:flex;align-items:center;gap:10px}.nr a.lo{font-size:14px;color:var(--tx2);font-weight:600}
+.lg{font-size:13px;font-weight:700;padding:7px 12px;border-radius:99px;border:1px solid var(--line2);background:var(--card);color:var(--tx2);cursor:pointer}
+/* hero */
+.hero{position:relative;padding:56px 0 40px;overflow:hidden}
+.hero .g1{width:620px;height:620px;left:-220px;top:-200px;background:radial-gradient(closest-side,rgba(124,108,255,.22),transparent)}
+.hero .g2{width:560px;height:560px;right:-160px;top:60px;background:radial-gradient(closest-side,rgba(34,211,238,.14),transparent)}
+.hgrid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--tx2);padding:6px 13px;border-radius:99px;border:1px solid var(--line2);background:rgba(15,21,32,.8)}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px rgba(0,168,132,.18)}
+h1{font-size:clamp(38px,5.6vw,64px);line-height:1.02;letter-spacing:-.04em;margin:20px 0 18px;font-weight:900}
+h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(17px,2vw,19px);color:var(--tx2);margin:0 0 28px;max-width:540px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:15px 24px;border-radius:14px;font-weight:700;font-size:15.5px;border:1px solid var(--line2);background:var(--card);color:var(--tx);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn.p{border:0;background:var(--grad);color:#fff;box-shadow:0 12px 34px rgba(124,108,255,.38)}
+.trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:24px;font-size:13.5px;color:var(--mut)}
+.trust span{display:inline-flex;align-items:center;gap:7px}.trust svg{width:16px;height:16px;color:var(--acc)}
+/* the phone = the app's chat */
+.phone{position:relative;justify-self:center;width:min(392px,100%);border-radius:44px;padding:10px;background:linear-gradient(160deg,#2a3346,#11161f);
+ box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06) inset}
+.scr{border-radius:35px;overflow:hidden;background:var(--wa-bg);display:flex;flex-direction:column;height:min(640px,78vh);position:relative}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:96px;height:24px;border-radius:99px;background:#05070b;z-index:3}
+.ah{display:flex;align-items:center;gap:10px;padding:40px 14px 11px;background:var(--wa-bar);border-bottom:2px solid var(--acc)}
+.ah .bk{color:var(--wa-meta);font-size:22px;line-height:1;width:16px}
+.kav{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#6d5cf6,#3b82f6);font-size:21px;position:relative;box-shadow:0 4px 14px rgba(109,92,246,.35)}
+.kav i{position:absolute;right:0;bottom:1px;width:11px;height:11px;border-radius:50%;background:var(--acc);border:2px solid var(--wa-bar)}
+.ttl{flex:1;line-height:1.2}.ttl b{display:flex;align-items:center;gap:5px;font-size:16.5px;color:var(--acc);font-weight:800}
+.ttl b svg{width:14px;height:14px}.ttl small{font-size:12.5px;color:var(--acc);font-weight:600}
+.ah .ic{color:var(--wa-meta);width:22px;height:22px}
+.chat{flex:1;overflow-y:auto;padding:10px 12px 14px;background-color:var(--wa-bg);
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.045' stroke-width='1.4' stroke-linecap='round'%3E%3Cpath d='M18 30v22M14 36h8v10h-8zM46 20v16M42 24h8v6h-8zM120 112l14-14 10 8 14-18M30 120a10 10 0 1 0 20 0a10 10 0 1 0-20 0M36 118h.1M44 118h.1M96 30l6 10h-12zM70 80h20M80 70v20M128 40a6 6 0 1 0 12 0a6 6 0 1 0-12 0M12 92l10 6-10 6M140 140h10M100 140v-12'/%3E%3C/g%3E%3C/svg%3E");scrollbar-width:none}
+.chat::-webkit-scrollbar{display:none}
+.day{display:flex;justify-content:center;margin:4px 0 10px}.day span{background:var(--wa-in);color:var(--wa-meta);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px}
+.m{display:flex;margin:3px 0;animation:pop .28s cubic-bezier(.2,.8,.2,1) both}.m.me{justify-content:flex-end}.m.gap{margin-top:10px}
+.bub{position:relative;max-width:84%;padding:7px 10px 8px;border-radius:9px;font-size:15px;line-height:1.42;color:var(--wa-txt);white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px .5px rgba(0,0,0,.18)}
+.m.ai .bub{background:var(--wa-in);border-left:3px solid var(--acc)}.m.me .bub{background:var(--wa-out)}
+.m.ai.tail .bub{border-top-left-radius:0}.m.me.tail .bub{border-top-right-radius:0}
+.m.me.tail .bub:before{content:"";position:absolute;right:-7px;top:0;border-top:9px solid var(--wa-out);border-right:8px solid transparent}
+.meta{float:right;margin:9px -2px -5px 12px;font-size:11px;line-height:1;color:var(--wa-meta);display:inline-flex;align-items:center;gap:3px}
+.meta svg{width:16px;height:11px;color:var(--wa-tick)}
+.typ{display:inline-flex;gap:4px;padding:4px 2px}.typ i{width:7px;height:7px;border-radius:50%;background:var(--wa-meta);animation:bl 1.2s infinite}.typ i:nth-child(2){animation-delay:.15s}.typ i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+@keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.sug{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:10px 0 2px}
+.sug span{font-size:14px;font-weight:700;color:var(--acc);background:var(--wa-in);padding:9px 13px;border-radius:18px;cursor:pointer;box-shadow:0 1px .5px rgba(0,0,0,.2)}
+.comp{display:flex;align-items:flex-end;gap:7px;padding:8px 9px 10px;background:transparent}
+.cbox{flex:1;display:flex;align-items:center;gap:6px;background:var(--wa-in);border-radius:24px;padding:4px 6px 4px 12px}
+.cbox .plus{color:var(--wa-meta);font-size:24px;line-height:1}
+.cbox input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--wa-txt);font:inherit;font-size:15px;padding:9px 2px}
+.cbox input::placeholder{color:var(--wa-meta)}
+.send{width:46px;height:46px;flex:none;border-radius:50%;border:0;background:var(--acc);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.send svg{width:20px;height:20px}.send:disabled{opacity:.55}
+.left{font-size:11.5px;color:var(--wa-meta);text-align:center;padding:0 0 8px}
+.under{text-align:center;font-size:13px;color:var(--mut);margin-top:14px}
+/* sections */
+section{position:relative;padding:84px 0;border-top:1px solid rgba(255,255,255,.05)}
+.kick{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
+h2{font-size:clamp(28px,3.8vw,44px);line-height:1.08;letter-spacing:-.035em;margin:0 0 14px;font-weight:900}
+.sub{color:var(--tx2);max-width:620px;margin:0 0 40px;font-size:17px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:24px;padding:24px;display:flex;flex-direction:column}
+.sn{width:34px;height:34px;border-radius:11px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:900;margin-bottom:16px}
+.step h3{margin:0 0 6px;font-size:19px;letter-spacing:-.02em}.step p{margin:0 0 18px;color:var(--tx2);font-size:15px}
+.mock{margin-top:auto;border-radius:16px;background:var(--wa-bg);border:1px solid var(--line);padding:12px;font-size:13.5px}
+.mock .bub{max-width:92%;font-size:13.5px}
+.res{background:var(--card2);border:1px solid var(--line2);border-radius:14px;padding:12px}
+.res .r1{display:flex;justify-content:space-between;align-items:baseline}.res .big{font-size:22px;font-weight:900;letter-spacing:-.02em}
+.res small{color:var(--mut);font-size:12px}.res svg{width:100%;height:46px;margin:6px 0 2px}
+.luck{margin-top:8px;font-size:12.5px;color:var(--tx2)}.lb{display:flex;gap:2px;margin-top:6px;height:18px;align-items:flex-end}.lb i{flex:1;height:16px;border-radius:2px;background:#263247}.lb i.k{background:var(--acc)}
+.ex{display:inline-block;margin-top:8px;font-size:11px;color:var(--mut);border:1px dashed var(--line2);border-radius:99px;padding:2px 9px}
+.gh{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border:1px solid rgba(167,139,250,.35);border-radius:14px;padding:12px}
+.gh b{display:block;font-size:14px}.gh small{color:var(--mut);font-size:12px}.gh .st{font-size:12px;font-weight:700;color:var(--acc);display:flex;align-items:center;gap:6px}
+.gh .st i{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px rgba(0,168,132,.18)}
+/* compare */
+.cmp{border:1px solid var(--line);border-radius:24px;overflow:hidden;background:var(--card)}
+.cr{display:grid;grid-template-columns:1.4fr 1fr 1fr;align-items:center;border-top:1px solid var(--line)}.cr:first-child{border-top:0}
+.cr>div{padding:16px 20px;font-size:15px}.cr.h>div{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);background:var(--card2)}
+.cr .k{color:var(--tx);font-weight:700;background:rgba(124,108,255,.06)}.cr.h .k{color:#b9adff}
+.yes{color:var(--acc);font-weight:800}.no{color:var(--mut)}
+/* plans */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.plan{position:relative;border:1px solid var(--line);border-radius:24px;padding:26px;background:var(--card);display:flex;flex-direction:column}
+.plan.hl{border:0;background:linear-gradient(var(--card),var(--card)) padding-box,var(--grad) border-box;border:1.5px solid transparent;box-shadow:0 24px 60px rgba(124,108,255,.18)}
+.plan .tag{position:absolute;top:-12px;left:26px;font-size:12px;font-weight:800;color:#fff;background:var(--grad);padding:4px 12px;border-radius:99px}
+.plan h3{margin:0;font-size:18px}.price{font-size:40px;font-weight:900;letter-spacing:-.03em;margin:10px 0 2px}.price small{font-size:15px;color:var(--mut);font-weight:600}
+.plan ul{list-style:none;padding:0;margin:16px 0 22px;display:grid;gap:9px;font-size:14.5px;color:var(--tx2)}
+.plan li{display:flex;gap:9px}.plan li:before{content:"✓";color:var(--acc);font-weight:900}
+.plan .btn{margin-top:auto}
+.fine{font-size:13px;color:var(--mut);margin-top:18px}
+/* live robot */
+.live{display:flex;align-items:center;gap:20px;justify-content:space-between;border:1px solid var(--line);border-radius:24px;padding:24px 26px;background:linear-gradient(120deg,rgba(0,168,132,.08),transparent 60%),var(--card)}
+.live b{font-size:19px;letter-spacing:-.02em}.live p{margin:4px 0 0;color:var(--tx2);font-size:15px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--up);box-shadow:0 0 0 5px rgba(46,204,113,.15);margin-right:9px;vertical-align:1px}
+/* faq */
+details{border-top:1px solid var(--line);padding:18px 0}details:last-child{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:700;font-size:16.5px;list-style:none;display:flex;justify-content:space-between;gap:16px}summary::-webkit-details-marker{display:none}
+summary:after{content:"+";color:var(--mut);font-size:22px;line-height:1}details[open] summary:after{content:"−"}
+details p{color:var(--tx2);margin:10px 0 0;max-width:760px}
+.final{text-align:center;padding:90px 0}.final h2{max-width:720px;margin:0 auto 14px}.final .sub{margin:0 auto 30px}
+footer{border-top:1px solid rgba(255,255,255,.05);padding:28px 0 110px;color:var(--mut);font-size:13px;text-align:center;line-height:1.7}footer a{text-decoration:underline}
+.stick{position:fixed;left:12px;right:12px;bottom:12px;z-index:30;display:none;transform:translateY(120%);transition:transform .3s}
+.stick.on{transform:none}.stick .btn{width:100%;padding:16px}
+@media (max-width:900px){.hgrid{grid-template-columns:1fr;gap:36px}.hero{padding-top:34px}.hcopy{text-align:center}.lead{margin-left:auto;margin-right:auto}
+ .ctas,.trust{justify-content:center}.steps,.plans{grid-template-columns:1fr}.cr{grid-template-columns:1.25fr .9fr .9fr}.cr>div{padding:13px 12px;font-size:14px}
+ section{padding:64px 0}.live{flex-direction:column;align-items:flex-start}.stick{display:block}.nr a.lo{display:none}}
 </style></head><body>
-<div class="wrap">
- <div class="top"><a class="brand" href="/"><img src="/icon192.png" alt="">OwlNest</a><button class="lg" id="lg">EN</button></div>
- <div class="hero"><div class="av">K</div><h1 id="h1">Rencontre Kino</h1>
-  <p class="sub" id="sub">Ton associé IA pour le trading. Pose-lui une question, raconte-lui ta méthode : il te répond, ici, sans compte.</p></div>
+<nav><div class="wrap"><a class="brand" href="/"><img src="/icon192.png" alt="">OwlNest</a>
+ <div class="nr"><a class="lo" href="/" data-t="login">Se connecter</a><button class="lg" id="lg">EN</button></div></div></nav>
 
- <div class="chat">
-  <div class="log" id="log"></div>
-  <div class="sugg" id="sugg"></div>
-  <form id="f"><input id="tx" maxlength="500" autocomplete="off"><button class="send" id="sb">→</button></form>
-  <div class="left" id="left"></div>
+<header class="hero"><div class="glow g1"></div><div class="glow g2"></div>
+ <div class="wrap hgrid">
+  <div class="hcopy">
+   <span class="pill"><i></i><span data-t="pill">Kino est en ligne, maintenant</span></span>
+   <h1><span data-t="h1a">Parle à Kino.</span><br><span class="g" data-t="h1b">Il construit ton robot de trading.</span></h1>
+   <p class="lead" data-t="lead">Raconte-lui ta méthode avec tes mots. Il la transforme en robot, la teste sur des mois de vrais prix et contre le hasard, et te dit franchement si ça tient.</p>
+   <div class="ctas"><a class="btn p" href="/offres" data-t="cta1">Essayer gratuitement · 7 jours</a><a class="btn" href="#talk" id="talkb" data-t="cta2">Lui parler ici</a></div>
+   <div class="trust"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-t="t1">7 jours gratuits</span></span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-t="t2">Sans carte bancaire</span></span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span data-t="t3">Tu gardes la main</span></span></div>
+  </div>
+  <div id="talk">
+   <div class="phone"><div class="scr"><div class="notch"></div>
+    <div class="ah"><span class="bk">‹</span><div class="kav">🦉<i></i></div>
+     <div class="ttl"><b>Kino <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg></b><small id="st">en ligne</small></div>
+     <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div>
+    <div class="chat" id="log"></div>
+    <div class="comp"><div class="cbox"><span class="plus">+</span><input id="tx" maxlength="500" autocomplete="off" enterkeyhint="send"></div>
+     <button class="send" id="sb" aria-label="Envoyer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg></button></div>
+    <div class="left" id="left"></div>
+   </div></div>
+   <div class="under" data-t="under">Une vraie conversation avec Kino, exactement comme dans l’app.</div>
+  </div>
  </div>
- <a class="cta" id="cta" href="/offres">Essayer Kino gratuitement · 7 jours</a>
+</header>
 
- <h2 id="h-do">Avec un compte, il va plus loin</h2>
- <div class="grid" id="does"></div>
+<section><div class="wrap">
+ <div class="kick" data-t="k1">Quand tu le rejoins</div>
+ <h2 data-t="h2a">De ton idée à un robot testé, en une conversation.</h2>
+ <p class="sub" data-t="s2a">Pas de code, pas de jargon. Tu parles, Kino construit, teste et veille avec toi.</p>
+ <div class="steps">
+  <div class="step"><div class="sn">1</div><h3 data-t="st1">Tu racontes ta méthode</h3><p data-t="sp1">Comme à un ami qui s’y connaît. Kino pose les bonnes questions et construit ton robot pièce par pièce.</p>
+   <div class="mock"><div class="m me tail"><div class="bub" data-t="mk1">J’achète quand le prix repasse au-dessus du dernier sommet, stop sous le creux, objectif 2 fois le risque.</div></div>
+    <div class="m ai gap"><div class="bub" data-t="mk2">Compris. Je le construis comme ça, et je le teste sur 6 mois de Bitcoin.</div></div></div></div>
+  <div class="step"><div class="sn">2</div><h3 data-t="st2">Il le teste pour de vrai</h3><p data-t="sp2">Des mois de vrais prix, puis 100 robots tirés au hasard. Si ton résultat tient de la chance, il te le dit.</p>
+   <div class="mock"><div class="res"><div class="r1"><small data-t="rk">Test sur vrais prix</small><span class="big" style="color:var(--up)">+48,20 $</span></div>
+    <svg viewBox="0 0 200 46" preserveAspectRatio="none"><defs><linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs>
+     <path d="M0 40 L20 36 L35 38 L55 30 L70 32 L90 24 L110 27 L130 18 L150 20 L170 11 L200 6 L200 46 L0 46Z" fill="url(#gc)"/><path d="M0 40 L20 36 L35 38 L55 30 L70 32 L90 24 L110 27 L130 18 L150 20 L170 11 L200 6" fill="none" stroke="#2ecc71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <small data-t="rs">112 trades · 54 % gagnés · pire série −4</small>
+    <div class="luck" data-t="lk">Contre le hasard : meilleur que 96 robots sur 100</div><div class="lb" id="lb"></div></div>
+    <span class="ex" data-t="ex">exemple d’écran</span></div></div>
+  <div class="step"><div class="sn">3</div><h3 data-t="st3">Il veille avec toi</h3><p data-t="sp3">Ton robot tourne d’abord en argent fictif, en direct. Kino suit chaque trade, te prévient et se souvient de tout.</p>
+   <div class="mock"><div class="gh"><div><b data-t="g1">Mode fantôme · ton robot</b><small data-t="g2">Argent fictif, prix en direct</small></div><span class="st"><i></i><span data-t="g3">en marche</span></span></div>
+    <div class="m ai gap" style="margin-top:10px"><div class="bub" data-t="mk3">Ton robot vient d’entrer à l’achat. Le stop est sous le creux, comme tu voulais.</div></div>
+    <span class="ex" data-t="ex2">exemple d’écran</span></div></div>
+ </div>
+</div></section>
 
- <h2 id="h-live">Un robot créé par Kino, en direct</h2>
- <a class="card live" href="/demo/live"><div><b><span class="dot"></span><span id="lv-t">L’Owl, sur un vrai compte de démonstration</span></b>
-  <span id="lv-s">Regarde-le travailler en ce moment : trades, solde, ce qu’il attend.</span></div><span aria-hidden="true">›</span></a>
+<section><div class="wrap">
+ <div class="kick" data-t="k2">Pourquoi Kino</div>
+ <h2 data-t="h2b">Un assistant répond. Kino travaille avec toi.</h2>
+ <p class="sub" data-t="s2b">Les assistants généraux sont brillants pour répondre à une question. Kino est fait pour une seule chose : ton trading, avec toi, dans la durée.</p>
+ <div class="cmp" id="cmp"></div>
+</div></section>
 
- <div class="foot" id="foot"></div>
-</div>
+<section><div class="wrap">
+ <div class="kick" data-t="k3">Les formules</div>
+ <h2 data-t="h2c">Commence gratuitement. Reste si ça t’aide.</h2>
+ <p class="sub" data-t="s2c">Pas de renouvellement automatique : tu repaies seulement si tu veux continuer.</p>
+ <div class="plans">
+  <div class="plan"><h3 data-t="p0">Découverte</h3><div class="price">0 $<small data-t="p0s"> · 7 jours</small></div>
+   <ul><li data-t="p0a">Kino à fond pendant 7 jours</li><li data-t="p0b">Ton premier robot, en mode fantôme</li><li data-t="p0c">2 tests sur de vrais prix</li></ul>
+   <a class="btn" href="/offres" data-t="pb0">Commencer</a></div>
+  <div class="plan hl"><span class="tag" data-t="ptag">Le plus choisi</span><h3>Pro</h3><div class="price">49 $<small data-t="pm"> / 30 jours</small></div>
+   <ul><li data-t="p2a">1 200 réponses de Kino par mois</li><li data-t="p2b">Tests illimités, tous les marchés</li><li data-t="p2c">30 minutes d’appel vocal avec Kino</li><li data-t="p2d">Suivi de ton compte et alertes</li></ul>
+   <a class="btn p" href="/offres" data-t="pb2">Choisir Pro</a></div>
+  <div class="plan"><h3>Essentiel</h3><div class="price">19 $<small data-t="pm2"> / 30 jours</small></div>
+   <ul><li data-t="p1a">400 réponses de Kino par mois</li><li data-t="p1b">5 tests de robot par mois</li><li data-t="p1c">Les alertes du robot sur ton téléphone</li></ul>
+   <a class="btn" href="/offres" data-t="pb1">Choisir Essentiel</a></div>
+ </div>
+ <p class="fine" data-t="pf">Paiement en crypto ou PayPal. Premium (119 $) : Kino à son meilleur et les prix de ton propre courtier. Le trading comporte un risque de perte ; aucun résultat n’est garanti.</p>
+</div></section>
+
+<section><div class="wrap">
+ <a class="live" href="/demo/live"><div><b><span class="dot"></span><span data-t="lv1">Un robot créé par Kino, en direct</span></b><p data-t="lv2">L’Owl travaille en ce moment sur un vrai compte de démonstration : ses trades, son solde, ce qu’il attend.</p></div>
+  <span class="btn" data-t="lv3">Regarder</span></a>
+</div></section>
+
+<section><div class="wrap">
+ <div class="kick" data-t="k4">Questions</div>
+ <h2 data-t="h2d">Ce qu’on nous demande</h2>
+ <details><summary data-t="q1">Kino est-il un humain ?</summary><p data-t="a1">Non, c’est une intelligence artificielle, et il le dit toujours. Mais il parle simplement, se souvient de toi et de ta méthode, et t’écrit quand il a quelque chose d’utile à dire.</p></details>
+ <details><summary data-t="q2">Est-ce que Kino va me faire gagner de l’argent ?</summary><p data-t="a2">Personne d’honnête ne peut le promettre. Ce qu’il fait : éliminer les idées qui ne tiennent pas, te montrer le vrai risque avant de commencer, et t’éviter de décider sur un coup de nerfs.</p></details>
+ <details><summary data-t="q3">Il touche à mon compte ?</summary><p data-t="a3">Jamais sans ton accord. Il construit, teste et surveille ; mettre un robot sur ton compte reste toujours ta décision.</p></details>
+ <details><summary data-t="q4">Je n’y connais rien. C’est pour moi ?</summary><p data-t="a4">Oui. Kino parle sans jargon, montre des exemples et explique chaque chiffre. Tu peux même lui demander ce qu’est un « stop ».</p></details>
+</div></section>
+
+<div class="final"><div class="wrap">
+ <h2 data-t="h2e">Ton idée mérite un vrai test.</h2>
+ <p class="sub" data-t="s2e">En quelques minutes, Kino peut te dire si elle tient. Sept jours pour essayer, sans carte.</p>
+ <a class="btn p" href="/offres" data-t="cta3">Essayer Kino gratuitement</a>
+</div></div>
+
+<footer><div class="wrap" id="foot"></div></footer>
+<div class="stick" id="stick"><a class="btn p" href="/offres" data-t="cta4">Essayer Kino gratuitement · 7 jours</a></div>
+
 <script>
 let EN=(navigator.language||'').slice(0,2)!=='fr';try{const s=localStorage.getItem('owlLang');if(s)EN=s==='en';}catch(e){}
-const T=(f,e)=>EN?e:f, $=id=>document.getElementById(id);
+const $=id=>document.getElementById(id), T=(f,e)=>EN?e:f;
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const EN_T={pill:'Kino is online, right now',h1a:'Talk to Kino.',h1b:'He builds your trading robot.',
+ lead:'Tell him your method in your own words. He turns it into a robot, tests it on months of real prices and against luck, and tells you straight whether it holds up.',
+ cta1:'Try it free · 7 days',cta2:'Talk to him here',t1:'7 days free',t2:'No credit card',t3:'You stay in control',login:'Sign in',
+ under:'A real conversation with Kino, exactly as in the app.',k1:'When you join',h2a:'From your idea to a tested robot, in one conversation.',
+ s2a:'No code, no jargon. You talk, Kino builds, tests and watches with you.',st1:'You describe your method',sp1:'Like to a friend who knows. Kino asks the right questions and builds your robot piece by piece.',
+ mk1:'I buy when price breaks back above the last high, stop under the low, target twice the risk.',mk2:'Got it. I’ll build it that way and test it on 6 months of Bitcoin.',
+ st2:'He really tests it',sp2:'Months of real prices, then 100 random robots. If your result is luck, he tells you.',rk:'Test on real prices',
+ rs:'112 trades · 54% won · worst streak −4',lk:'Against luck: better than 96 robots out of 100',ex:'sample screen',ex2:'sample screen',
+ st3:'He watches with you',sp3:'Your robot first runs with pretend money, live. Kino follows every trade, warns you and remembers everything.',
+ g1:'Ghost mode · your robot',g2:'Pretend money, live prices',g3:'running',mk3:'Your robot just bought. The stop is under the low, as you wanted.',
+ k2:'Why Kino',h2b:'An assistant answers. Kino works with you.',s2b:'General assistants are brilliant at answering a question. Kino is made for one thing: your trading, with you, over time.',
+ k3:'Plans',h2c:'Start free. Stay if it helps.',s2c:'No automatic renewal: you pay again only if you want to go on.',p0:'Discovery',p0s:' · 7 days',
+ p0a:'Kino at full speed for 7 days',p0b:'Your first robot, in ghost mode',p0c:'2 tests on real prices',pb0:'Start',ptag:'Most chosen',pm:' / 30 days',pm2:' / 30 days',
+ p2a:'1,200 Kino replies a month',p2b:'Unlimited tests, every market',p2c:'30 minutes of voice calls with Kino',p2d:'Your account followed, with alerts',pb2:'Choose Pro',
+ p1a:'400 Kino replies a month',p1b:'5 robot tests a month',p1c:'The robot’s alerts on your phone',pb1:'Choose Essential',
+ pf:'Pay by crypto or PayPal. Premium ($119): Kino at his best and your own broker’s prices. Trading carries a risk of loss; no result is guaranteed.',
+ lv1:'A robot Kino made, live',lv2:'The Owl is working right now on a real demo account: its trades, its balance, what it waits for.',lv3:'Watch',
+ k4:'Questions',h2d:'What people ask us',q1:'Is Kino a human?',a1:'No, he is an artificial intelligence, and he always says so. But he talks simply, remembers you and your method, and writes to you when he has something useful to say.',
+ q2:'Will Kino make me money?',a2:'Nobody honest can promise that. What he does: drop the ideas that don’t hold up, show you the real risk before you start, and keep you from deciding on a nervous impulse.',
+ q3:'Does he touch my account?',a3:'Never without your OK. He builds, tests and watches; putting a robot on your account is always your decision.',
+ q4:'I know nothing about trading. Is it for me?',a4:'Yes. Kino talks without jargon, shows examples and explains every number. You can even ask him what a “stop” is.',
+ h2e:'Your idea deserves a real test.',s2e:'In a few minutes Kino can tell you whether it holds. Seven days to try, no card.',cta3:'Try Kino for free',cta4:'Try Kino free · 7 days'};
+const FR={};document.querySelectorAll('[data-t]').forEach(el=>FR[el.dataset.t]=el.textContent);
 let H=[],busy=false;
-function hello(){return T('Salut, moi c’est Kino. Je suis une IA, et je bosse avec des traders : on transforme leur idée en robot, je la teste sur de vrais prix, et je leur dis franchement si ça tient. Et toi, tu trades quoi ?',
- 'Hi, I’m Kino. I’m an AI and I work with traders: we turn their idea into a robot, I test it on real prices, and I tell them straight whether it holds up. What do you trade?');}
-function paint(){
- document.documentElement.lang=EN?'en':'fr';$('lg').textContent=EN?'FR':'EN';
- $('h1').textContent=T('Rencontre Kino','Meet Kino');
- $('sub').textContent=T('Ton associé IA pour le trading. Pose-lui une question, raconte-lui ta méthode : il te répond, ici, sans compte.','Your AI partner for trading. Ask him anything, tell him your method: he answers right here, no account needed.');
- $('tx').placeholder=T('Écris à Kino…','Write to Kino…');
- $('cta').textContent=T('Essayer Kino gratuitement · 7 jours','Try Kino free · 7 days');
- $('h-do').textContent=T('Avec un compte, il va plus loin','With an account, he goes further');
- const D=[[T('Il construit ton robot en parlant','He builds your robot as you talk'),T('Ta méthode, avec tes mots : entrées, stop, objectif, taille, même « après une perte, je fais l’inverse ».','Your method in your words: entries, stop, target, size, even “after a loss, I reverse”.')],
-  [T('Il le teste pour de vrai','He really tests it'),T('Des mois de vrais prix, puis 100 robots au hasard. Si c’est de la chance, il le dit.','Months of real prices, then 100 random robots. If it’s luck, he says so.')],
-  [T('Il veille avec toi','He watches with you'),T('Mode fantôme en argent fictif, suivi de ton compte, alertes. Jamais rien sans ton accord.','Ghost mode with pretend money, your account followed, alerts. Never anything without your OK.')],
-  [T('Il se souvient de toi','He remembers you'),T('Ta méthode, tes erreurs, tes objectifs. Il t’écrit quand il a quelque chose à dire.','Your method, your mistakes, your goals. He writes when he has something to say.')]];
- $('does').innerHTML=D.map(x=>'<div class="card"><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></div>').join('');
- $('h-live').textContent=T('Un robot créé par Kino, en direct','A robot Kino made, live');
- $('lv-t').textContent=T('L’Owl, sur un vrai compte de démonstration','The Owl, on a real demo account');
- $('lv-s').textContent=T('Regarde-le travailler en ce moment : trades, solde, ce qu’il attend.','Watch it work right now: trades, balance, what it waits for.');
+function hello(){return T('Salut, moi c’est Kino 👋 Je suis une IA, et je bosse avec des traders : on transforme leur idée en robot, je la teste sur de vrais prix, et je leur dis franchement si ça tient.\n\nEt toi, tu trades quoi ?',
+ 'Hi, I’m Kino 👋 I’m an AI and I work with traders: we turn their idea into a robot, I test it on real prices, and I tell them straight whether it holds up.\n\nWhat do you trade?');}
+function hm(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+const TICK='<svg viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l3 3 6-7M6 9l1 1 7-8"/></svg>';
+function render(){const L=$('log');let prev=null,h='<div class="day"><span>'+T('Aujourd’hui','Today')+'</span></div>';
+ H.forEach(m=>{const me=m.who==='me',tail=prev!==m.who;h+='<div class="m '+(me?'me':'ai')+(tail?' tail':'')+(tail&&prev?' gap':'')+'"><div class="bub">'+esc(m.text)+
+  '<span class="meta">'+(m.t||'')+(me?' '+TICK:'')+'</span></div></div>';prev=m.who;});
+ if(busy)h+='<div class="m ai'+(prev!=='kino'?' tail gap':'')+'"><div class="bub"><span class="typ"><i></i><i></i><i></i></span></div></div>';
+ if(H.length<=1&&!busy){const S=[T('Tu peux tester ma stratégie ?','Can you test my strategy?'),T('C’est quoi, un robot de trading ?','What is a trading robot?'),T('En quoi tu es différent de ChatGPT ?','How are you different from ChatGPT?')];
+  h+='<div class="sug">'+S.map(s=>'<span>'+esc(s)+'</span>').join('')+'</div>';}
+ L.innerHTML=h;L.querySelectorAll('.sug span').forEach(el=>el.onclick=()=>{$('tx').value=el.textContent;send();});L.scrollTop=L.scrollHeight;
+ $('st').textContent=busy?T('écrit…','typing…'):T('en ligne','online');}
+async function send(){const t=$('tx').value.trim();if(!t||busy)return;
+ H.push({who:'me',text:t,t:hm()});$('tx').value='';busy=true;render();
+ let j=null;try{const r=await fetch('/meet_chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({h:H.slice(-8).map(x=>({who:x.who,text:x.text}))})});j=await r.json();}catch(x){}
+ busy=false;
+ if(j&&j.ok)H.push({who:'kino',text:j.reply,t:hm()});
+ else H.push({who:'kino',t:hm(),text:j&&j.err==='limit'?T('On a bien discuté pour aujourd’hui ! Pour continuer, et que je construise vraiment ton robot, c’est l’essai gratuit de 7 jours, juste à côté.','We’ve had a good talk for today! To go on, and have me actually build your robot, it’s the free 7-day trial, right there.')
+  :T('Je n’arrive pas à répondre là, réessaie dans un instant.','I can’t answer right now, try again in a moment.')});
+ $('left').textContent=j&&j.left!=null&&j.left>0?T(j.left+' message(s) gratuit(s) aujourd’hui · ensuite, l’essai de 7 jours',j.left+' free message(s) today · then the 7-day trial'):'';
+ render();}
+$('sb').onclick=send;$('tx').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send();}});
+function paint(){document.documentElement.lang=EN?'en':'fr';$('lg').textContent=EN?'FR':'EN';
+ document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;el.textContent=EN?(EN_T[k]||FR[k]):FR[k];});
+ $('tx').placeholder=T('Écris ton idée…','Write your idea…');
+ const R=[[T('Construit et teste ton robot sur de vrais prix','Builds and tests your robot on real prices'),1,0],[T('Te dit quand un résultat est de la chance','Tells you when a result is luck'),1,0],
+  [T('Se souvient de ta méthode et de tes décisions','Remembers your method and decisions'),1,0],[T('Suit ton compte et te prévient','Follows your account and warns you'),1,0],
+  [T('T’écrit de lui-même quand c’est utile','Writes to you on his own when it helps'),1,0],[T('Répond à toutes sortes de questions','Answers all kinds of questions'),1,1]];
+ $('cmp').innerHTML='<div class="cr h"><div></div><div class="k">Kino</div><div>'+T('Assistant général','General assistant')+'</div></div>'+
+  R.map(r=>'<div class="cr"><div>'+esc(r[0])+'</div><div class="k yes">✓</div><div class="'+(r[2]?'yes':'no')+'">'+(r[2]?'✓':'—')+'</div></div>').join('');
  $('foot').innerHTML=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.')+
   '<br><a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a> · <a href="/mentions-legales'+(EN?'?lang=en':'')+'">'+T('Mentions légales','Legal notice')+'</a>';
- const S=[T('Tu peux tester ma stratégie ?','Can you test my strategy?'),T('C’est quoi, un robot de trading ?','What is a trading robot?'),T('En quoi tu es différent de ChatGPT ?','How are you different from ChatGPT?')];
- $('sugg').innerHTML=H.length>1?'':S.map(s=>'<span>'+esc(s)+'</span>').join('');
- document.querySelectorAll('#sugg span').forEach(el=>el.onclick=()=>{$('tx').value=el.textContent;send();});
- render();}
-function render(){const L=$('log');
- L.innerHTML=H.map(m=>'<div class="b '+(m.who==='kino'?'k':'m')+'">'+esc(m.text)+'</div>').join('')+(busy?'<div class="typing">'+T('Kino écrit…','Kino is typing…')+'</div>':'');
- L.scrollTop=L.scrollHeight;}
-async function send(e){if(e)e.preventDefault();const t=$('tx').value.trim();if(!t||busy)return;
- H.push({who:'me',text:t});$('tx').value='';busy=true;$('sugg').innerHTML='';render();
- let j=null;try{const r=await fetch('/meet_chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({h:H.slice(-8)})});j=await r.json();}catch(x){}
- busy=false;
- if(j&&j.ok){H.push({who:'kino',text:j.reply});}
- else{H.push({who:'kino',text:j&&j.err==='limit'?T('On a bien discuté pour aujourd’hui ! Pour continuer - et que je construise vraiment ton robot - c’est l’essai gratuit de 7 jours, juste en dessous.','We’ve had a good talk for today! To go on - and have me actually build your robot - it’s the free 7-day trial, just below.')
-  :T('Je n’arrive pas à répondre là, réessaie dans un instant.','I can’t answer right now, try again in a moment.')});}
- if(j&&j.left!=null)$('left').textContent=j.left>0?T(j.left+' message(s) gratuit(s) restant(s) aujourd’hui',j.left+' free message(s) left today'):'';
- render();}
-$('f').onsubmit=send;
-$('lg').onclick=()=>{EN=!EN;try{localStorage.setItem('owlLang',EN?'en':'fr');}catch(e){}if(H.length<=1)H=[{who:'kino',text:hello()}];paint();};
-H=[{who:'kino',text:hello()}];paint();
+ if(H.length<=1)H=[{who:'kino',text:hello(),t:hm()}];render();}
+$('lg').onclick=()=>{EN=!EN;try{localStorage.setItem('owlLang',EN?'en':'fr');}catch(e){}paint();};
+$('lb').innerHTML=[5,7,6,9,8,11,10,12,9,13,11,14,12,10,13,9,11,8,10,7,9,6,7,5,16].map((h,i)=>'<i style="height:'+h+'px;align-self:flex-end"'+(i===24?' class="k"':'')+'></i>').join('');
+const io=new IntersectionObserver(es=>es.forEach(e=>$('stick').classList.toggle('on',!e.isIntersecting)),{threshold:0});io.observe(document.querySelector('.hero'));
+paint();
 </script>
 </body></html>
