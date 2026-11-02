@@ -64,6 +64,38 @@ def _procs():
         return []
 
 
+def _groups():
+    """2026-11-02 (owner: "Kino was supposed to pick up that cpu and clean up - why did he do nothing"): 234 small hidden
+    test browsers ate the processor and never showed among the heaviest single programs. Counted by name, a swarm shows."""
+    try:
+        out = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+                              "Get-Process | Group-Object Name | Sort-Object Count -Descending | Select-Object -First 8 Name,Count,"
+                              "@{n='MB';e={[int](($_.Group | Measure-Object WorkingSet64 -Sum).Sum/1MB)}} | ConvertTo-Json -Compress"],
+                             capture_output=True, text=True, timeout=60)
+        G = json.loads(out.stdout or "[]")
+        return G if isinstance(G, list) else [G]
+    except Exception:
+        return []
+
+
+# a body reflex, not a decision: hidden test browsers left behind by a finished screenshot/check script (headless, a
+# throw-away profile in a Temp folder, open 30 min or more). Never his own browser (Playwright / KinoWorld profiles).
+_REFLEX = os.path.join(HERE, "kino_reflex.ps1")   # the reflex itself (a script file: no quoting traps)
+
+
+def reflex_clean(min_age=30):
+    try:
+        out = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", _REFLEX, "-MinAge", str(min_age)],
+                             capture_output=True, text=True, timeout=120)
+        n = int((out.stdout or "0").strip().splitlines()[-1] or 0)
+    except Exception:
+        n = 0
+    if n:
+        _S["reflex"] = (time.time(), n)
+        _log("REFLEX closed %d leftover hidden test browsers" % n)
+    return n
+
+
 def write_checkup():
     """the check-up in his world (called from the app every minute; works every 10 min; folder sizes hourly in background)"""
     now = time.time()
@@ -88,6 +120,17 @@ def write_checkup():
         L.append("Raw: " + json.dumps(d.get("raw") or {}))
     except Exception as e:
         L.append("body signals unavailable: %s" % e)
+    reflex_clean()
+    if _S.get("reflex") and now - _S["reflex"][0] < 86400:
+        L.append("")
+        L.append("Your body cleaned itself at %s UTC: it closed %d hidden test browsers left open by a finished check "
+                 "(they were eating the processor). Nothing for you to do - tell the owner if he asks why things were slow." % (
+                     time.strftime("%H:%M", time.gmtime(_S["reflex"][0])), _S["reflex"][1]))
+    G = _groups()
+    if G:
+        L.append("")
+        L.append("Programs counted by name (name, how many, MB together) - a swarm of small ones shows here:")
+        L += ["  %s x%s, %s MB" % (g.get("Name"), g.get("Count"), g.get("MB")) for g in G]
     P = _procs()
     if P:
         L.append("")
