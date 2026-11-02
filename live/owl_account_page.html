@@ -51,6 +51,8 @@ h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu
 
  <div id="acct"></div>
 
+ <div id="dash"></div>
+
  <h2 id="h-kino">Avec Kino</h2>
  <div class="card" id="kino"></div>
 
@@ -93,6 +95,17 @@ function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
   '<small style="color:var(--muted)">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week)+'</span></small></div>'+
   (A.auto?'<span class="tag">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div>'+
   '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><a class="btn g" href="'+B+'?classic=1">'+T('Tableau de bord complet','Full dashboard')+'</a><a class="btn g" href="'+B+'wealth">'+T('Patrimoine','Wealth')+'</a></div></div>':'';
+ // 2026-11-02 (owner: "merge the old and new design so nothing is lost"): every part of the robot dashboard has its row here
+ $('dash').innerHTML='<h2>'+T('Ton robot et tes résultats','Your robot and results')+'</h2><div class="card">'+
+  row('dash',T('Aujourd’hui','Today'),T('Le robot en ce moment, ta journée, les alertes','The robot right now, your day, alerts'),B+'?classic=1#home')+
+  row('dash',T('En direct','Live'),T('Le marché, le scanner, le labo, le robot','The market, the scanner, the lab, the robot'),B+'?classic=1#marche')+
+  row('dash',T('Performance','Performance'),T('Jour par jour, signaux, statistiques, derniers trades','Day by day, signals, stats, latest trades'),B+'?classic=1#hist')+
+  row('wallet',T('Patrimoine','Wealth'),T('Ton argent, tes poches, tes dépôts','Your money, your pockets, your deposits'),B+'wealth')+'</div>'+
+  '<h2>'+T('Réglages','Settings')+'</h2><div class="card">'+
+  row('help',T('Notifications et application','Notifications and app'),T('Alertes, installation, code d’accès','Alerts, install, access code'),B+'?classic=1#set')+
+  row('gift',T('Formules et paiements','Plans and payments'),T('Changer de formule, historique','Change plan, history'),B+'?classic=1#offres')+
+  row('chat',T('La place des robots','The robot marketplace'),T('Les robots créés par Kino et par les membres','Robots made by Kino and by members'),B+'place')+
+  (d.owner?row('brain',T('Le Nid','The Nest'),T('Tous les comptes, administration','All accounts, administration'),B+'?classic=1#nid')+row('brain',T('Le monde de Kino','Kino’s world'),T('Son ordinateur, ses publications, ses gains','His computer, his posts, his earnings'),B+'kinoworld'):'')+'</div>';
  $('h-kino').textContent=T('Avec Kino','With Kino');
  $('kino').innerHTML=row('chat',T('Ta conversation','Your conversation'),T('Reprendre où vous en étiez','Pick up where you left off'),B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):''))+
   row('brain',T('Kino et toi','Kino and you'),T('Ce qu’il retient de toi, ce qu’il poursuit','What he remembers, what he pursues'),B+'kino')+

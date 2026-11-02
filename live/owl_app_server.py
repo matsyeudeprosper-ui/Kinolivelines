@@ -34030,7 +34030,8 @@ class H(BaseHTTPRequestHandler):
         try:                                             # 2026-11-02 (owner): one bottom menu on every page of the new design
             if ctype.startswith("text/html"):
                 _pp2 = [x for x in self.path.split("?")[0].split("/") if x]
-                if len(_pp2) == 2 and _pp2[1] in NAV_PAGES and user_by_token(_pp2[0]):
+                _uq2 = user_by_token(_pp2[0]) if _pp2 else None
+                if _uq2 and ((len(_pp2) == 2 and _pp2[1] in NAV_PAGES) or (len(_pp2) == 1 and not _uq2.get("public"))):
                     _b2 = body.decode("utf-8") if isinstance(body, bytes) else body
                     if "</body>" in _b2 and 'id="knav"' not in _b2:
                         body = _b2.replace("</body>", open(os.path.join(DIR, "owl_nav_inject.html"), encoding="utf-8").read() + "</body>", 1)
