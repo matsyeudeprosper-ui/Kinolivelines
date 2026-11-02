@@ -163,10 +163,10 @@ function talk(d,ask){return B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):'
 function tabsOf(d){const acc=d.kind==='account';
  return [['over',T('Aperçu','Overview')],['perf',T('Performance','Performance')]].concat(acc?[['live',T('En direct','Live')],['tests',T('Preuves','Proof')]]:[['tests',T('Tests','Tests')],['story',T('Histoire','Story')]]);}
 function hero(d){const R=d.result,acc=d.kind==='account';
- const st=acc?(d.live?['ok',T('Trade sur ton compte','Trading on your account')]:['',T('En pause sur ton compte','Paused on your account')])
+ const st=acc?(d.live?['ok',d.public?T('Trade sur le compte du nid','Trading on the nest’s account'):T('Trade sur ton compte','Trading on your account')]:['',T('En pause sur ton compte','Paused on your account')])
   :d.running&&!R?['run',T('Test en cours','Testing')]:d.live?['ok',T('En vrai','Live')]:R?(Number(R.net)>=0?['ok',T('Testé · gagne','Tested · wins')]:['bad',T('Testé · perd','Tested · loses')]):['',T('Pas encore testé','Not tested yet')];
  return '<div class="hero slim"><div class="hrow"><div class="ri">'+(acc?'<span style="font-size:24px">🦉</span>':'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/></svg>')+'</div>'+
-  '<div style="min-width:0"><div class="nm">'+esc(d.name)+'</div><div class="sub">'+esc(d.market)+(acc?' · '+T('sur ton compte réel','on your live account'):' · v'+esc(d.rev)+' · '+T('construit avec Kino','built with Kino'))+'</div>'+
+  '<div style="min-width:0"><div class="nm">'+esc(d.name)+'</div><div class="sub">'+esc(d.market)+(acc?' · '+(d.public?T('sur le compte du nid','on the nest’s account'):T('sur ton compte réel','on your live account')):' · v'+esc(d.rev)+' · '+T('construit avec Kino','built with Kino'))+'</div>'+
   '<div style="margin-top:8px"><span class="pill '+st[0]+'"><i></i>'+esc(st[1])+'</span></div></div></div></div>'+
   '<div class="tabs" role="tablist">'+tabsOf(d).map(x=>'<button role="tab" data-t="'+x[0]+'" class="'+(TAB===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>';}
 function overview(d){const N=d.next||{},R=d.result,acc=d.kind==='account';

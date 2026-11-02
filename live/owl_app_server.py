@@ -9673,7 +9673,7 @@ function offersSheet(){fnb('offers');
   '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Chaque formule vient avec Kino, l\u2019intelligence artificielle de l\u2019app : un vrai trader et un compagnon, qui lit les march\u00e9s avec vous, transforme vos id\u00e9es en robots en quelques phrases et se souvient de vous. Le reste, vous le d\u00e9couvrirez avec lui.','Every plan comes with Kino, the app\u2019s built-in AI: a real trader and a companion, who reads the markets with you, turns your ideas into robots in a few sentences and remembers you. The rest you\u2019ll discover with him.')+'</p>'+
   tier('free',T2('D\u00e9couverte','Discovery'),T2('Gratuit','Free'),
    T2('Rencontrez Kino aujourd\u2019hui, sans payer','Meet Kino today, for free'),
-   [T2('Kino \u00e0 fond pendant 7 jours, puis 5 r\u00e9ponses par jour','Kino at full speed for 7 days, then 5 replies a day')+ic(T2('Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour.','He stays after the trial: same Kino, same memory, just fewer messages a day.')),
+   [T2('Kino \u00e0 fond pendant 7 jours, puis 5 r\u00e9ponses par jour pour rester en contact','Kino at full speed for 7 days, then 5 replies a day to stay in touch')+ic(T2('Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour.','He stays after the trial: same Kino, same memory, just fewer messages a day.')),
     T2('Votre premier robot construit avec Kino, en mode fant\u00f4me sur les vrais prix','Your first robot built with Kino, in ghost mode on live prices')+ic(T2('Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime.','Ghost mode trades pretend money on live prices: you watch your idea work without risking a cent.')),
     T2('2 tests de robot par mois, le graphique et les prix en direct','2 robot tests a month, the chart and live prices'),
     T2('Votre m\u00e9moire avec Kino gard\u00e9e au moins 90 jours','Your memory with Kino kept at least 90 days')].concat(P.exness_ref?[T2('Pour trader aux m\u00eames prix que le robot : ','To trade at the robot\u2019s prices: ')+'<a href="'+_escS(P.exness_ref)+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">'+T2('votre compte Exness avec notre lien','your Exness account with our link')+'</a>']:[]),
@@ -14012,6 +14012,7 @@ def _owl_story(user, en):
     return {"ok": True, "id": "owl", "kind": "account", "name": "L'Owl", "market": "BTCUSD", "rev": None, "rules": rules, "steps": steps,
             "rules_hidden": not (_mine or _shown), "can_vis": _mine, "rules_shown": _shown,
             "step": next((i for i, x in enumerate(steps) if not x["done"]), len(steps)), "next": nxt, "running": False, "live": live,
+            "public": bool(user.get("public")),      # 2026-11-02: a visitor reads "le compte du nid", not "ton compte"
             "result": None, "full": None, "cid": _person_main(uid), "versions": 0, "timeline": [], "lang": "en" if en else "fr",
             "package": pk.get("label") or "", "max_day": pk.get("max_trades_day") or None, "m15": bool(pk.get("m15_gate"))}
 
@@ -15613,6 +15614,19 @@ def _chat_member(user, c):
                 L.append("ALSO ON THIS ACCOUNT, on %s: robot '%s' - %s. REAL money, same account, not a ghost." % (
                     _mx.get("sym"), _mx.get("name_fr") or _mx.get("id"),
                     "running now" if _mx.get("alive") else ("starting" if _mx.get("ok") else "waiting: " + str(_mx.get("why") or ""))))
+            try:                                 # 2026-11-02 (Valère asked "can you see its filters?" - Kino named one that does not exist)
+                import owl_package as _OPk
+                _pk = _OPk.for_account(uid) or {}
+                _fl = []
+                if _pk.get("m15_gate"):
+                    _fl.append("15-minute trend must agree with the trade")
+                if _pk.get("max_trades_day"):
+                    _fl.append("at most %s trades a day" % _pk.get("max_trades_day"))
+                L.append("filters on this account's robot (from its real package): %s. The 'En direct' card shows six checks (Sens clair, Bon cote, "
+                         "Calme, Eveille, 15 min dans le sens, Trades du jour); you do NOT see their live state here - if they ask which one holds "
+                         "the robot, point them to the En direct tab or ask for a screenshot; never guess a filter." % (", ".join(_fl) or "the Owl's own: trend, side, storm, awake"))
+            except Exception:
+                pass
             L.append("may switch robot themselves: %s" % ("yes (Robots > Le robot de ce compte, trading password)" if A.get("can") else
                                                           "no (this account's robot is set by the nest)"))
             ch = [x.get("name_fr") or x.get("id") for x in A.get("choices") or []]
@@ -32268,7 +32282,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <div style="font-size:.86rem;color:var(--text2);margin:2px 4px 10px;line-height:1.55">Dans chaque formule, il y a Kino : l&#8217;intelligence artificielle int&eacute;gr&eacute;e &agrave; l&#8217;app. Pas un simple assistant : un vrai trader, qui lit les march&eacute;s avec vous, transforme vos id&eacute;es en robots en quelques phrases et se souvient de vous d&#8217;un jour &agrave; l&#8217;autre. Un compagnon plut&ocirc;t qu&#8217;un outil. Pour le reste, on vous laisse le d&eacute;couvrir.</div>
 <div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
 <div class="ft"><b>D&eacute;couverte &middot; gratuit</b>
-<span>Kino, votre ami trader, &agrave; fond pendant 7 jours, puis 5 r&eacute;ponses par jour. Votre premier robot construit avec lui, en mode fant&ocirc;me sur les vrais prix. Un pr&eacute;nom et un mot de passe suffisent.</span></div></div>
+<span>Kino, votre ami trader, &agrave; fond pendant 7 jours, puis 5 r&eacute;ponses par jour pour rester en contact. Votre premier robot construit avec lui, en mode fant&ocirc;me sur les vrais prix. Un pr&eacute;nom et un mot de passe suffisent.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--up)">$19</div>
 <div class="ft"><b>Essentiel &middot; 30 jours</b>
 <span>Kino au quotidien (400 r&eacute;ponses par mois) et les signaux du robot sur votre t&eacute;l&eacute;phone. 5 tests de robot par mois. Aucun compte MT5 &agrave; confier.</span></div></div>
@@ -32277,7 +32291,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <span>Kino 1 200 r&eacute;ponses par mois et 30 minutes d&#8217;appel. Tests illimit&eacute;s sur Bitcoin, l&#8217;or, le Nasdaq ; l&#8217;atelier complet et la place des robots ; le graphique complet et la m&eacute;thode.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">$119</div>
 <div class="ft"><b>Premium &middot; 30 jours</b>
-<span>Tout Pro, plus les prix de votre propre courtier branch&eacute;s pour vous, Kino &agrave; son meilleur (600 r&eacute;ponses par mois) et 60 minutes d&#8217;appel.</span></div></div>
+<span>Tout Pro, plus les prix de votre propre courtier branch&eacute;s pour vous, Kino &agrave; son meilleur (son cerveau le plus fort : 600 r&eacute;ponses par mois) et 60 minutes d&#8217;appel.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
 <span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
@@ -32598,13 +32612,13 @@ var EN={
 "OwlNest vend un logiciel et un service de copie — pas de conseil ni de gestion d’investissement.": "OwlNest sells software and a copy service — not investment advice or management.",
 "La démo est gratuite, toujours, et Découverte aussi. Les formules se paient à l’avance et se renouvellent à la main, jamais toutes seules.": "The demo is free, always, and so is Discovery. Plans are paid in advance and renewed by hand, never by themselves.",
 "Découverte · gratuit": "Discovery · free",
-"Kino, votre ami trader, à fond pendant 7 jours, puis 5 réponses par jour. Votre premier robot construit avec lui, en mode fantôme sur les vrais prix. Un prénom et un mot de passe suffisent.": "Kino, your trading friend, at full speed for 7 days, then 5 replies a day. Your first robot built with him, in ghost mode on live prices. A first name and a password are enough.",
+"Kino, votre ami trader, à fond pendant 7 jours, puis 5 réponses par jour pour rester en contact. Votre premier robot construit avec lui, en mode fantôme sur les vrais prix. Un prénom et un mot de passe suffisent.": "Kino, your trading friend, at full speed for 7 days, then 5 replies a day to stay in touch. Your first robot built with him, in ghost mode on live prices. A first name and a password are enough.",
 "Essentiel · 30 jours": "Essential · 30 days",
 "Kino au quotidien (400 réponses par mois) et les signaux du robot sur votre téléphone. 5 tests de robot par mois. Aucun compte MT5 à confier.": "Kino every day (400 replies a month) and the robot’s signals on your phone. 5 robot tests a month. No MT5 account to hand over.",
 "Pro · 30 jours": "Pro · 30 days",
 "Kino 1 200 réponses par mois et 30 minutes d’appel. Tests illimités sur Bitcoin, l’or, le Nasdaq ; l’atelier complet et la place des robots ; le graphique complet et la méthode.": "Kino 1,200 replies a month and 30 minutes of calls. Unlimited tests on Bitcoin, gold, the Nasdaq; the full workshop and the robot place; the full chart and the method.",
 "Premium · 30 jours": "Premium · 30 days",
-"Tout Pro, plus les prix de votre propre courtier branchés pour vous, Kino à son meilleur (600 réponses par mois) et 60 minutes d’appel.": "All of Pro, plus your own broker’s prices connected for you, Kino at his best (600 replies a month) and 60 minutes of calls.",
+"Tout Pro, plus les prix de votre propre courtier branchés pour vous, Kino à son meilleur (son cerveau le plus fort : 600 réponses par mois) et 60 minutes d’appel.": "All of Pro, plus your own broker’s prices connected for you, Kino at his best (his strongest brain: 600 replies a month) and 60 minutes of calls.",
 "Kino, l’IA trader de l’app, est dans chaque formule. Les formules payantes se paient à l’avance, en crypto dans l’app ou par code, et ne se renouvellent jamais toutes seules : à la fin des 30 jours, vous revenez simplement à Découverte, avec Kino et votre mémoire.": "Kino, the app’s trading AI, is in every plan. Paid plans are paid in advance, in crypto in the app or with a code, and never renew by themselves: after 30 days you simply go back to Discovery, with Kino and your memory.",
 "Dans chaque formule, il y a Kino : l’intelligence artificielle intégrée à l’app. Pas un simple assistant : un vrai trader, qui lit les marchés avec vous, transforme vos idées en robots en quelques phrases et se souvient de vous d’un jour à l’autre. Un compagnon plutôt qu’un outil. Pour le reste, on vous laisse le découvrir.": "In every plan there is Kino: the AI built into the app. Not just an assistant: a real trader who reads the markets with you, turns your ideas into robots in a few sentences and remembers you from one day to the next. A companion rather than a tool. The rest, we’ll let you discover.",
 "Nos offres": "Our plans",
@@ -33332,7 +33346,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
     tiers = (
         tier("free", "D&eacute;couverte", "Gratuit",
              "Kino d&egrave;s aujourd&#8217;hui, sans payer",
-             ["Kino, votre ami trader, &agrave; fond pendant 7 jours, puis 5 r&eacute;ponses par jour "
+             ["Kino, votre ami trader, &agrave; fond pendant 7 jours, puis 5 r&eacute;ponses par jour pour rester en contact "
               + info("Il reste avec vous apr\u00e8s l\u2019essai : m\u00eame Kino, m\u00eame m\u00e9moire, juste moins de messages par jour."),
               "Votre premier robot construit avec Kino, en mode fant&ocirc;me sur les vrais prix "
               + info("Le mode fant\u00f4me trade de l\u2019argent fictif sur les prix en direct : vous voyez votre id\u00e9e travailler sans risquer un centime."),
@@ -33364,7 +33378,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
              "Votre courtier, et Kino &agrave; son meilleur",
              ["Les prix de votre propre courtier, branch&eacute;s pour vous "
               + info("Le Owl branche le flux de prix de votre courtier sur notre serveur, sous 48 h apr\u00e8s le paiement."),
-              "Kino &agrave; son meilleur, 600 r&eacute;ponses par mois et 60 minutes d&#8217;appel par mois",
+              "Kino &agrave; son meilleur (son cerveau le plus fort), 600 r&eacute;ponses par mois et 60 minutes d&#8217;appel par mois",
               "Vos tests passent en priorit&eacute; ; Pro inclus"],
              "var(--accent-soft)")
         + tier("family", "Automatique", "Famille<span>sur invitation</span>",
