@@ -38,6 +38,11 @@ body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bot
 /* a page's own sticky strip (Patrimoine tabs) sticks under the bar, not behind it; its repeated title and back arrow go */
 .wrap > nav:not(#knav),body > nav:not(#knav){top:calc(58px + env(safe-area-inset-top,0px))!important}
 .k-dup{display:none!important}
+#ktip{top:calc(64px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:12px!important;left:auto!important;
+ border-radius:14px 4px 14px 14px!important;z-index:62!important;box-shadow:0 12px 36px rgba(0,0,0,.45)!important;animation:ktipIn .3s ease-out}
+@keyframes ktipIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#kbk.unread .av i{background:#ff5c7a!important;box-shadow:0 0 0 0 rgba(255,92,122,.6);animation:kbkP 1.6s infinite}
+@keyframes kbkP{70%{box-shadow:0 0 0 7px rgba(255,92,122,0)}100%{box-shadow:0 0 0 0 rgba(255,92,122,0)}}
 .tabbar,#hbar,#kpgtab{display:none!important}
 /* the robot dashboard: its brand row is the bar now; the balance banner becomes a card, and only on "Aujourd'hui" */
 .hero .topline{display:none!important}
@@ -60,6 +65,7 @@ body.k-sec .hero{display:none!important}
  var seg=location.pathname.split('/').filter(Boolean),tok=seg[0],sub=seg[1]||'',dash=sub==='';
  var en=false;try{en=(localStorage.getItem('owlLang')||document.documentElement.lang)==='en';}catch(e){}
  var T=function(f,e){return en?e:f;};
+ try{localStorage.setItem('owlTourDone','1');}catch(e){}
  var TITLES={home:[T('Accueil','Home'),''],compte:[T('Compte','Account'),T('Ta formule, ton compte, tes réglages','Your plan, account and settings')],
   mesrobots:[T('Mes robots','My robots'),T('Construits avec Kino · leurs résultats','Built with Kino · their results')],
   place:[T('La place','Marketplace'),T('Les robots créés par Kino et les membres','Robots made by Kino and members')],
@@ -89,6 +95,18 @@ body.k-sec .hero{display:none!important}
  if(dash){['acctchip','hbell','chartlink'].forEach(function(id){var x=document.getElementById(id);if(x)A.appendChild(x);});}
  if(sub==='home'){var tp=document.querySelector('.wrap > .top');if(tp){var pl=tp.querySelector('.plan');if(pl)A.appendChild(pl);tp.classList.add('k-folded');}}
  if(sub==='wealth'){['back','h1'].forEach(function(i){var x=document.getElementById(i);if(x)x.classList.add('k-dup');});}
+ function dedupe(){if(dash)return;var bt=(document.getElementById('kbt').textContent||'').trim().toLowerCase();if(!bt)return;
+  [].slice.call(document.querySelectorAll('h1,h2')).forEach(function(h){if(h.closest('#kbar,#knav,#kpgpn')||h.classList.contains('k-dup'))return;
+   if(h.getBoundingClientRect().top>280)return;var t=(h.textContent||'').trim().toLowerCase();if(!t||t.indexOf(bt)!==0)return;
+   h.classList.add('k-dup');var nx=h.nextElementSibling;
+   if(nx&&nx.children.length===0&&(nx.textContent||'').trim().length<90&&!/[0-9]/.test(nx.textContent))nx.classList.add('k-dup');
+   for(var row=h.parentElement,k=0;k<3&&row&&row!==document.body;k++,row=row.parentElement){
+    var bk=[].slice.call(row.querySelectorAll('a,button')).filter(isBack);if(bk.length){bk.forEach(function(x){x.classList.add('k-dup');});
+     var rest=[].slice.call(row.querySelectorAll('a,button')).filter(function(x){return !x.classList.contains('k-dup')&&x.offsetParent!==null;});
+     var txtLeft=[].slice.call(row.querySelectorAll('*')).some(function(x){return x.children.length===0&&!x.closest('.k-dup')&&!x.closest('a,button')&&(x.textContent||'').trim()&&x.offsetParent!==null;});
+     if(!txtLeft&&rest.length<=2){rest.forEach(function(x){A.insertBefore(x,A.firstChild);});row.classList.add('k-dup');}break;}}});
+  /* a lone back arrow at the top of a main page: the bottom menu does that job */
+  [].slice.call(document.querySelectorAll('a,button')).forEach(function(x){if(!x.closest('#kbar,#knav,#kpgpn')&&isBack(x)&&x.getBoundingClientRect().top<200&&(x.textContent||'').trim().length<3)x.classList.add('k-dup');});}
  if(sub==='compte'){var h1=document.getElementById('ttl');if(h1)h1.classList.add('k-folded');}
  /* Kino, everywhere: his panel slides open; on pages without it, his conversation */
  document.getElementById('kbk').onclick=function(){var t=document.getElementById('kpgtab');if(t){t.click();return;}
@@ -100,8 +118,12 @@ body.k-sec .hero{display:none!important}
    if(['home','marche','hist','set','nid'].indexOf(h)<0||typeof tab!=='function')return;
    var b=document.getElementById('tb-'+h)||[].slice.call(document.querySelectorAll('.tb')).find(function(x){return (x.getAttribute('onclick')||'').indexOf("'"+h+"'")>=0;});
    tab(h,b||null);if(h==='marche'&&typeof mxView==='function')setTimeout(function(){mxView('market',true)},50);title();};
-  window.addEventListener('hashchange',go);if(sec()==='nid')setTimeout(go,300);}
- title();window.addEventListener('hashchange',title);setTimeout(title,1500);
+  window.addEventListener('hashchange',go);if(sec()!=='home'){setTimeout(go,300);setTimeout(go,1600);}}
+ function ktip(t){var x=(t.textContent||'').slice(0,80),k='ktip:'+x,was=false;try{was=!!sessionStorage.getItem(k);sessionStorage.setItem(k,'1');}catch(e){}
+  document.getElementById('kbk').classList.add('unread');if(was)t.remove();}
+ var kt0=document.getElementById('ktip');if(kt0)ktip(kt0);
+ new MutationObserver(function(ms){ms.forEach(function(m){[].forEach.call(m.addedNodes,function(n){if(n.id==='ktip')ktip(n);});});}).observe(document.body,{childList:true});
+ title();window.addEventListener('hashchange',title);setTimeout(title,1500);dedupe();setTimeout(dedupe,1600);
  fetch('/'+tok+'/home_data').then(function(r){return r.json()}).then(function(d){
   if(d&&d.cid){var k=document.querySelector('#knav a[data-p="atelier"]');if(k)k.href='/'+tok+'/atelier?c='+encodeURIComponent(d.cid);}
   /* each robot has its own performance: the robot running on the account is the first card of "Mes robots" */

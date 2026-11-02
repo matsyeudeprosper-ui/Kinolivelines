@@ -6447,6 +6447,7 @@ function renderPlan(d){
  (function(){const c=document.getElementById('expcard');if(!c)return;
   const had=P.family_until||P.manual_until||P.strategy_until;const active=P.family||P.manual||P.strategy;
   if(d.is_master||!had||active||P.pending_pay){c.style.display='none';return;}
+  {const rc=document.getElementById('renewcard');if(rc&&rc.style.display==='block'){c.style.display='none';return;}}  // 2026-11-02: never two expiry cards
   const last=P.family_until>=Math.max(P.manual_until||0,P.strategy_until||0)?'family':(P.strategy_until>=(P.manual_until||0)?'strategy':'manual');
   const L={family:en?'Automatic':'Automatique',manual:en?'Essential':'Essentiel',strategy:'Pro',premium:'Premium'}[last];
   document.getElementById('exp-t').textContent=en?'Your '+L+' period has ended':'Votre p\u00e9riode '+L+' est termin\u00e9e';
@@ -9481,6 +9482,7 @@ function renewBanner(d){
    :(en?'Renewing adds 30 days from the current end \u2014 no interruption.':'Renouveler ajoute 30 jours \u00e0 la fin actuelle \u2014 sans coupure.');
   b.textContent=en?'Renew':'Renouveler';b.onclick=()=>buyPkg(best.k);}
  el.style.display='block';
+ {const ec=document.getElementById('expcard');if(ec)ec.style.display='none';}
 }
 async function loadSignals(){
  const sec=document.getElementById('sig-sec'),el=document.getElementById('siglist');if(!sec||!el)return;
@@ -29324,7 +29326,7 @@ def _home_kino_data(user):
                 _rb = "L'Owl"                  # 2026-11-02: acct_robot_block here cost ~12 s a call; the account's robot is the Owl
                 out["account"] = {"uid": _u, "real": bool(nd.get("real")), "balance": nd.get("balance"), "today": nd.get("today"),
                                   "week": nd.get("week"), "month": nd.get("month"), "open": len(nd.get("open_list") or []),
-                                  "robot": _rb, "auto": bool(((_user_by_id(_u) or {}).get("mode") == "auto") and (_user_by_id(_u) or {}).get("trade"))}
+                                  "robot": _rb, "auto": bool(acct_auto(_user_by_id(_u)))}   # 2026-11-02: was mode+trade - said "actif" on a paused account
                 break
     except Exception:
         pass
