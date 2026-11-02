@@ -280,6 +280,19 @@
    "note": "41 trades, 37 % gagnés contre 49 % pour les autres ; les deux moitiés sont d’accord.",
    "status": "proposed",
    "proposal": "pb_w_ch350_nf06_ny1316"
+  },
+  {
+   "id": "ask_1793583077_cont_rested",
+   "seed": "cont_rested",
+   "seed_fr": "Un trade de plus dans le même sens, pris après une pause",
+   "seed_en": "One more trade the same way, taken after a pause",
+   "by": "labo",
+   "date": "2026-11-02",
+   "note": "66 trades, 58 % gagnés contre 44 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answered": "2026-11-02T01:30:58Z",
+   "answer_fr": "À moitié vrai. Soixante-six trades : six sur dix gagnés contre quatre sur dix et demi pour les autres, mais l'argent suit à peine (environ plus neuf dollars) et la moitié récente ne gagne plus que quatre et demi sur dix (soixante-quatorze puis quarante-six pour cent). La pause marche après un gain : trente et un trades, deux sur trois gagnés, environ plus trente-neuf. Après une perte, non : trente-cinq trades, un sur deux, environ moins vingt-neuf. L'après-midi (14-16 h) perd encore (peu). Le moteur n'a toujours pas le réglage « pause seulement avant un trade de plus dans le même sens » (cont_wait) : pas de proposition, j'attends.",
+   "answer_en": "Half true. Sixty-six trades: six in ten won against four and a half in ten for the rest, but the money barely follows (about plus nine dollars) and the recent half wins only four and a half in ten (seventy-four then forty-six percent). The pause works after a win: thirty-one trades, two in three won, about plus thirty-nine. After a loss it does not: thirty-five trades, one in two, about minus twenty-nine. The afternoon (2-4 pm) still loses (few). The engine still lacks the 'pause only before one more same-way trade' dial (cont_wait): no proposal, waiting."
   }
  ]
 }
