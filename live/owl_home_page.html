@@ -57,7 +57,7 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
 .kino{position:relative;margin-top:14px;border-radius:22px;padding:16px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
 .kino:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad)}
 .who{display:flex;align-items:center;gap:12px}
-.av{position:relative;width:44px;height:44px;border-radius:14px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:22px;flex:0 0 44px}
+.av{position:relative;width:46px;height:46px;border-radius:50%;background:transparent;display:grid;place-items:center;color:#fff;font-size:22px;flex:0 0 44px}
 .av em{position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:50%;background:#ff5c7a;border:2px solid var(--surface);display:none}
 .av.new em{display:block}
 .who b{font-size:16px}.st{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text2)}
@@ -122,14 +122,14 @@ h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;f
 .skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
 @keyframes sk{50%{opacity:.5}}
 .foot{margin:26px 2px 0;font-size:11.5px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
-</style></head><body>
+.kface{display:block;width:100%;height:100%}.kblink{animation:kblk 5.2s infinite;transform-origin:50px 50px}@keyframes kblk{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}@media (prefers-reduced-motion:reduce){.kblink{animation:none}}</style></head><body>
 <div class="wrap">
  <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="compte#formules">&nbsp;</a></div>
 
  <div id="acct"><div class="money"><div class="lbl skel" style="width:40%">…</div><div class="bal skel" style="width:60%">…</div><div class="spark skel"></div></div></div>
 
  <section class="kino" id="kino">
-  <div class="who"><div class="av" id="kav">🦉<em></em></div><div><b>Kino</b><div class="st"><span class="dot"></span><span id="status">…</span></div></div><span class="when" id="when"></span></div>
+  <div class="who"><div class="av" id="kav"><svg class="kface" viewBox="0 0 100 100" aria-hidden="true"><defs><radialGradient id="klg4" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".25" stop-color="#22d3ee"/><stop offset=".85" stop-color="#7c6cff"/><stop offset="1" stop-color="#1b1640"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#klg4)"/><g class="kblink"><ellipse cx="39" cy="50" rx="5.2" ry="8.2" fill="#0b0f14"/><ellipse cx="61" cy="50" rx="5.2" ry="8.2" fill="#0b0f14"/><circle cx="40.8" cy="46.8" r="1.8" fill="#fff"/><circle cx="62.8" cy="46.8" r="1.8" fill="#fff"/></g></svg><em></em></div><div><b>Kino</b><div class="st"><span class="dot"></span><span id="status">…</span></div></div><span class="when" id="when"></span></div>
   <div class="msg" id="msg"><span class="skel">Kino réfléchit à ce qu’il va te dire…</span></div>
   <a class="cta" id="talk" href="atelier"><span id="talk-t">Parler à Kino</span> <span aria-hidden="true">→</span></a>
  </section>
