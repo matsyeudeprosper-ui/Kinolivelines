@@ -17675,6 +17675,13 @@ def _kino_act(cid, user, act, en=False):
         elif act == "test" and c.get("robot"):
             t0 = c.get("test") or {}
             same = t0.get("state") == "queued" and t0.get("rev") == c.get("rev") and (t0.get("sym") or "BTCUSD") == (c["robot"].get("market") or "BTCUSD")
+            if same:                                     # 2026-11-02 (watch): a withdrawn test left "queued" here while the
+                try:                                     # robot was back to draft - "already in the queue" for an hour, nothing ran
+                    _rr = next((x for x in robot_reg().get("robots") or [] if x.get("id") == t0.get("rid")), None) if t0.get("rid") else None
+                    if _rr is not None and _rr.get("stage") not in ("queued", "running", "building", "testing"):
+                        same = False
+                except Exception:
+                    pass
             if same:
                 line = ("This test is already in the queue." if en else "Ce test est déjà dans la file d'attente.")
             else:

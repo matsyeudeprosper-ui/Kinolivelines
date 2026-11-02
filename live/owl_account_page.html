@@ -115,7 +115,7 @@ function paint(){const d=D||{};document.documentElement.lang=EN?'en':'fr';
  document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',(b.dataset.l==='en')===EN));
  const lt=document.documentElement.getAttribute('data-theme')==='light';document.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',(b.dataset.t==='light')===lt));
  $('h-help').textContent=T('Aide','Help');
- $('help').innerHTML=row('help',T('Une question ?','A question?'),T('Demande à Kino, il connaît l’app par cœur','Ask Kino, he knows the app by heart'),B+'atelier?ask='+encodeURIComponent(T('J’ai une question sur l’app.','I have a question about the app.')))+
+ $('help').innerHTML=row('help',T('Une question ?','A question?'),T('Demande à Kino, il connaît l’app par cœur','Ask Kino, he knows the app by heart'),B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):''))+
   row('doc',T('Conditions de vente','Terms of sale'),'','/cgv'+(EN?'?lang=en':''),1)+row('doc',T('Confidentialité','Privacy'),'','/confidentialite'+(EN?'?lang=en':''),1)+row('doc',T('Mentions légales','Legal notice'),'','/mentions-legales'+(EN?'?lang=en':''),1);
  $('lo').textContent=T('Se déconnecter','Sign out');
  $('foot').textContent=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.');
