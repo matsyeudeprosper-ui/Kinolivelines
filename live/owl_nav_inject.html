@@ -82,7 +82,7 @@ body.k-sec .hero{display:none!important}
   return ({tests:'mesrobots',place:'mesrobots',wealth:'compte',parrainage:'compte',kino:'compte',rentabilite:'compte'}[sub])||sub||'home';}
  function title(){var t=dash?(DT[sec()]||DT.home):(TITLES[sub||'home']||[document.title,'']);
   if(!dash&&(sub==='home'||sub==='')){var h=new Date().getHours();var n=(document.getElementById('nm')||{}).textContent||'';
-   t=[(h<5||h>=18?T('Bonsoir','Good evening'):T('Bonjour','Hello'))+(n.trim()?', '+n.trim():''),T('Kino et ton trading, en un coup d’œil','Kino and your trading at a glance')];}
+   t=[(h<5||h>=18?T('Bonsoir','Good evening'):T('Bonjour','Hello'))+(n.trim()?', '+n.trim().split(/\s+/)[0]:''),T('Kino et ton trading, en un coup d’œil','Kino and your trading at a glance')];}
   document.getElementById('kbt').textContent=t[0];document.getElementById('kbs').textContent=t[1]||'';
   document.body.classList.toggle('k-sec',dash&&sec()!=='home');
   document.querySelectorAll('#knav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-p')===key());});}

@@ -29289,6 +29289,8 @@ def _home_kino_data(user):
         last = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and str(m.get("text") or "").strip()), None)
         if last:
             out["last"] = {"text": str(last.get("text"))[:600], "t": float(last.get("t") or 0)}
+            _mine = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+            out["last"]["new"] = not _mine or float(_mine.get("t") or 0) < out["last"]["t"]
     except Exception:
         pass
     try:
@@ -29332,6 +29334,26 @@ def _home_kino_data(user):
                 out["account"] = {"uid": _u, "real": bool(nd.get("real")), "balance": nd.get("balance"), "today": nd.get("today"),
                                   "week": nd.get("week"), "month": nd.get("month"), "open": len(nd.get("open_list") or []),
                                   "robot": _rb, "auto": bool(acct_auto(_user_by_id(_u)))}   # 2026-11-02: was mode+trade - said "actif" on a paused account
+                try:
+                    _A = out["account"]
+                    _cv = [float(x) for x in (nd.get("curve30") or []) if x is not None]
+                    if len(_cv) > 80:
+                        _st = len(_cv) / 80.0
+                        _cv = [_cv[int(k * _st)] for k in range(80)] + [_cv[-1]]
+                    _A["curve"] = [round(x, 2) for x in _cv]
+                    _ss = nd.get("since_start") or {}
+                    _A["since"] = {"net": _ss.get("net"), "days": _ss.get("days"), "n": _ss.get("n"), "won": _ss.get("won"),
+                                   "first": _ss.get("first")}
+                    _ms = sorted((nd.get("months") or {}).items())
+                    _ym = time.strftime("%Y-%m", time.gmtime())
+                    _prev = [kv for kv in _ms if kv[0] < _ym]
+                    if _prev:
+                        _A["last_month"] = {"ym": _prev[-1][0], "net": round(sum(float(x.get("p") or 0) for x in _prev[-1][1]), 2)}
+                    _A["broker"] = str(nd.get("srv") or "").split("-")[0]
+                    _po = plan_of(_user_by_id(_u) or user)
+                    _A["ended"] = bool(_po.get("family_expired")) and not (_po.get("family") or _po.get("manual") or _po.get("strategy"))
+                except Exception:
+                    pass
                 break
     except Exception:
         pass

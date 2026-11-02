@@ -9,86 +9,121 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
 <style>
-/* 2026-11-01 (owner: "the focus is not the Owl anymore, it's Kino - show off Kino, professional and modern"): the member's
-   home. Kino first: what he is doing, his last words, what he pursues with you; then your robots, the robots he created
-   (the Owl among them), your plan. Data: home_data. Same tokens as the Atelier. */
+/* 2026-11-01 (owner: "the focus is not the Owl anymore, it's Kino"): the member's home.
+   2026-11-02 (owner: "is that the best home screen ever? redesign it to look its best"): one glance answers the three
+   questions a member opens the app with - how is my money, is my robot working, what does Kino have for me - then
+   everything else is one tap away. Money card first (balance, period switch, the real curve, the robot's true state),
+   Kino second (his latest words, unread dot, quick asks), icon shortcuts, robots as swipeable cards. Data: home_data. */
 :root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;
  --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--accent:#7c6cff;--accent2:#22d3ee;--up:#2ecc71;--down:#ff6b6b;--warn:#e8c55a;
  --grad:linear-gradient(135deg,#7c6cff,#22d3ee);--sh:0 18px 50px rgba(0,0,0,.45)}
 :root[data-theme="light"]{--bg:#f3f6fa;--surface:#fff;--surface2:#f6f8fc;--surface3:#eef2f8;--border:#e3e8f0;--border2:#d5dce7;
  --text:#121722;--text2:#3b4658;--muted:#6a7588;--sh:0 12px 34px rgba(20,30,50,.10)}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text)}
-body{font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:84px}
-a{color:inherit;text-decoration:none}
-.wrap{max-width:640px;margin:0 auto;padding:18px 16px 24px}
-.top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 18px}
+body{font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:84px}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 24px}
+.top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 14px}
 .hello{font-size:13px;color:var(--muted)}.hello b{display:block;font-size:20px;color:var(--text);letter-spacing:-.02em}
 .plan{font-size:12px;padding:5px 11px;border-radius:99px;border:1px solid var(--border2);color:var(--text2);background:var(--surface)}
-.hero{position:relative;overflow:hidden;border-radius:22px;padding:20px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--sh)}
-.hero:before{content:"";position:absolute;inset:-60% -30% auto auto;width:340px;height:340px;background:radial-gradient(closest-side,#7c6cff33,transparent)}
-.who{position:relative;display:flex;align-items:center;gap:12px}
-.av{width:48px;height:48px;border-radius:15px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;flex:0 0 48px}
-.who b{font-size:17px}.st{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px #2ecc7122}
-.msg{position:relative;margin:16px 0 4px;padding:14px 16px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);
- color:var(--text);white-space:pre-wrap;max-height:9.5em;overflow:hidden}
-.msg:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.4em;background:linear-gradient(transparent,var(--surface2))}
-.when{position:relative;font-size:12px;color:var(--muted);margin-bottom:14px}
-.cta{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:14px;
- background:var(--grad);color:#fff;font-weight:700;font-size:15px;border:0;box-shadow:0 10px 28px #7c6cff44;cursor:pointer}
-.chips{position:relative;display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.chip{font-size:13px;padding:8px 12px;border-radius:99px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);cursor:pointer}
-h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:28px 4px 10px;font-weight:700;display:flex;justify-content:space-between}
-h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600}
-a.card:not(.row){display:block}.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px}
-.goal{font-size:15px;color:var(--text)}.goal small{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
-.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.rb{display:flex;align-items:center;gap:12px}.ri{width:38px;height:38px;border-radius:12px;background:var(--surface3);display:grid;place-items:center;flex:0 0 38px;font-size:18px}
-.rn{font-weight:600}.rs{font-size:12.5px;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
 .pos{color:var(--up)}.neg{color:var(--down)}
-.tag{font-size:11.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);white-space:nowrap}
+/* the money card */
+.money{position:relative;overflow:hidden;border-radius:24px;padding:18px 18px 14px;background:
+ radial-gradient(120% 90% at 100% 0%,#7c6cff26,transparent 60%),radial-gradient(90% 70% at 0% 100%,#22d3ee14,transparent 60%),var(--surface);
+ border:1px solid var(--border);box-shadow:var(--sh)}
+.mtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.lbl{font-size:12.5px;color:var(--muted);font-weight:500}
+.state{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 10px 5px 9px;border-radius:99px;
+ border:1px solid var(--border2);background:var(--surface2);white-space:nowrap}
+.state i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.state.on{color:var(--up);border-color:#2ecc7155}.state.on i{background:var(--up);animation:pl 1.8s infinite}
+.state.off{color:var(--text2)}.state.end{color:var(--warn);border-color:#e8c55a55}.state.end i{background:var(--warn)}
+@keyframes pl{0%{box-shadow:0 0 0 0 #2ecc7188}70%{box-shadow:0 0 0 7px #2ecc7100}100%{box-shadow:0 0 0 0 #2ecc7100}}
+.bal{font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.1;margin:10px 0 4px}
+.bal small{font-size:22px;color:var(--muted);font-weight:700;margin-left:3px}
+.chg{font-size:14px;font-weight:600;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.chg span.p{font-size:12.5px;color:var(--muted);font-weight:500}
+.spark{display:block;width:100%;height:78px;margin:12px 0 10px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;border-radius:13px;background:var(--surface2);border:1px solid var(--border)}
+.seg button{border:0;background:transparent;border-radius:9px;padding:8px 0;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{padding:10px 11px;border-radius:13px;background:var(--surface2);border:1px solid var(--border)}
+.stat b{display:block;font-size:15px;font-weight:700}.stat span{font-size:11.5px;color:var(--muted)}
+.renew{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:11px 12px;border-radius:14px;
+ background:#e8c55a12;border:1px solid #e8c55a44;font-size:13px;color:var(--text2)}
+.renew a{flex:none;font-weight:700;font-size:13px;padding:8px 12px;border-radius:10px;background:var(--grad);color:#fff}
+/* Kino */
+.kino{position:relative;margin-top:14px;border-radius:22px;padding:16px;background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.kino:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad)}
+.who{display:flex;align-items:center;gap:12px}
+.av{position:relative;width:44px;height:44px;border-radius:14px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:22px;flex:0 0 44px}
+.av em{position:absolute;right:-3px;top:-3px;width:12px;height:12px;border-radius:50%;background:#ff5c7a;border:2px solid var(--surface);display:none}
+.av.new em{display:block}
+.who b{font-size:16px}.st{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text2)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--up)}
+.when{margin-left:auto;font-size:11.5px;color:var(--muted);white-space:nowrap;align-self:flex-start}
+.msg{margin:12px 0 12px;color:var(--text);font-size:14.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:14px;
+ background:var(--grad);color:#fff;font-weight:700;font-size:15px;border:0;box-shadow:0 10px 28px #7c6cff40;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font-size:13px;padding:8px 12px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);cursor:pointer;white-space:nowrap}
+/* shortcuts */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 4px 11px;border-radius:16px;background:var(--surface);border:1px solid var(--border);
+ font-size:12px;font-weight:600;color:var(--text2);text-align:center}
+.tile svg{width:22px;height:22px;stroke:var(--accent2)}
+.tile:active,.card:active,.rc:active{transform:scale(.98)}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:26px 2px 10px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+h2 a{text-transform:none;letter-spacing:0;color:var(--accent2);font-weight:600;font-size:13px}
+.card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:15px 16px;margin-bottom:10px}
+.goal{font-size:14.5px;color:var(--text)}
+.empty{color:var(--muted);font-size:14px}.empty b{color:var(--text)}
+/* robots, swipeable */
+.rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}.rail::-webkit-scrollbar{display:none}
+.rc{flex:0 0 78%;max-width:300px;scroll-snap-align:start;display:flex;flex-direction:column;gap:8px;padding:15px;border-radius:18px;background:var(--surface);border:1px solid var(--border)}
+.rc.solo{flex-basis:100%;max-width:none}
+.rh{display:flex;align-items:center;gap:10px}.ri{width:34px;height:34px;border-radius:11px;background:var(--surface3);display:grid;place-items:center;flex:0 0 34px}
+.ri svg{width:18px;height:18px;stroke:var(--text2)}
+.rn{font-weight:700;font-size:14.5px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.rs{font-size:12.5px;color:var(--muted)}
+.rv{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.tag{align-self:flex-start;font-size:11.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);white-space:nowrap}
 .tag.k{border-color:#7c6cff66;color:#b4a9ff}.tag.on{border-color:#2ecc7166;color:var(--up)}
-.empty{color:var(--muted);font-size:14px}
-.empty b{color:var(--text)}
-.bar{height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--grad)}
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);
- border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
-nav.tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);min-width:58px;padding:4px 0}
-nav.tabs a.on{color:var(--text)}nav.tabs svg{width:22px;height:22px}
-nav.tabs a.k span.kd{width:24px;height:24px;border-radius:8px;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
-.skel{color:transparent;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
+.planrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar{height:5px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:var(--grad)}
+.skel{color:transparent!important;background:var(--surface3);border-radius:8px;animation:sk 1.2s infinite}
 @keyframes sk{50%{opacity:.5}}
-.foot{margin:26px 4px 0;font-size:12px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
+.foot{margin:26px 2px 0;font-size:11.5px;color:var(--muted);line-height:1.6}.foot a{text-decoration:underline}
 </style></head><body>
 <div class="wrap">
  <div class="top"><div class="hello"><span id="hi">Bonjour</span><b id="nm">&nbsp;</b></div><a class="plan" id="plan" href="?classic=1#offres">&nbsp;</a></div>
 
- <section class="hero">
-  <div class="who"><div class="av">K</div><div><b>Kino</b><div class="st"><span class="dot"></span><span id="status">…</span></div></div></div>
+ <div id="acct"><div class="money"><div class="lbl skel" style="width:40%">…</div><div class="bal skel" style="width:60%">…</div><div class="spark skel"></div></div></div>
+
+ <section class="kino" id="kino">
+  <div class="who"><div class="av" id="kav">🦉<em></em></div><div><b>Kino</b><div class="st"><span class="dot"></span><span id="status">…</span></div></div><span class="when" id="when"></span></div>
   <div class="msg" id="msg"><span class="skel">Kino réfléchit à ce qu’il va te dire…</span></div>
-  <div class="when" id="when"></div>
   <a class="cta" id="talk" href="atelier"><span id="talk-t">Parler à Kino</span> <span aria-hidden="true">→</span></a>
   <div class="chips" id="chips"></div>
  </section>
 
- <div id="acct"></div>
+ <div class="tiles" id="tiles"></div>
+
+ <h2><span id="h-rob">Tes robots</span><a href="mesrobots" id="h-rob-all">Tout voir</a></h2>
+ <div class="rail" id="robots"><div class="rc solo skel" style="height:110px"></div></div>
 
  <h2><span id="h-goal">Ce qu’il poursuit avec toi</span></h2>
  <div class="card" id="goal"><div class="goal skel">…</div></div>
 
- <h2><span id="h-rob">Tes robots</span><a href="mesrobots" id="h-rob-all">Tout voir</a></h2>
- <div id="robots"><div class="card skel">…</div></div>
-
  <h2><span id="h-pick">Créés par Kino</span><a href="place" id="h-pick-all">La place</a></h2>
- <div id="picks"><div class="card skel">…</div></div>
+ <div class="rail" id="picks"><div class="rc solo skel" style="height:110px"></div></div>
 
  <h2><span id="h-plan">Ta formule</span></h2>
  <div class="card" id="plancard"><div class="skel">…</div></div>
 
  <div class="foot" id="foot"></div>
 </div>
-
-
 
 <script>
 const B=location.pathname.replace(/home\/?$/,'');
@@ -97,62 +132,104 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 function ago(t){if(!t)return'';const m=Math.round((Date.now()/1000-t)/60);
  if(m<1)return T('à l’instant','just now');if(m<60)return T('il y a '+m+' min',m+' min ago');const h=Math.round(m/60);
  if(h<24)return T('il y a '+h+' h',h+' h ago');const d=Math.round(h/24);return T('il y a '+d+' j',d+' d ago');}
-function money(v){if(v==null)return'';const n=Number(v);return(n>=0?'+':'−')+Math.abs(n).toFixed(2)+' $';}
-function go(q){location.href=B+'atelier'+(q?'#q='+encodeURIComponent(q):'');}
+function money(v){if(v==null)return'—';const n=Number(v);return(n>=0?'+':'−')+'$'+Math.abs(n).toFixed(2);}
+const cls=v=>Number(v||0)>=0?'pos':'neg';
+const ICO={today:'<path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6.3 6.3 4.9 4.9M19.1 19.1l-1.4-1.4M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/><circle cx="12" cy="12" r="4"/>',
+ live:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',perf:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-7"/>',
+ wealth:'<rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/>',
+ robot:'<rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6"/>'};
+const svg=k=>'<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICO[k]+'</svg>';
+let D=null,PER='month';
+function spark(cv){if(!cv||cv.length<2)return '';const W=320,H=78,p=4,mn=Math.min(...cv),mx=Math.max(...cv),r=(mx-mn)||1;
+ const pts=cv.map((v,i)=>[p+i*(W-2*p)/(cv.length-1),p+(H-2*p)*(1-(v-mn)/r)]);const up=cv[cv.length-1]>=cv[0];
+ const c=up?'#2ecc71':'#ff6b6b',l=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+ const last=pts[pts.length-1];
+ return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">'+
+  '<stop offset="0" stop-color="'+c+'" stop-opacity=".28"/><stop offset="1" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs>'+
+  '<path d="'+l+' L'+last[0].toFixed(1)+' '+H+' L'+p+' '+H+' Z" fill="url(#sg)"/><path d="'+l+'" fill="none" stroke="'+c+'" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'+
+  '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="3.5" fill="'+c+'"/></svg>';}
+function moneyCard(){const A=D.account;const el=document.getElementById('acct');
+ if(!A){el.innerHTML='';return;}
+ const S=A.since||{},start=Number(A.balance||0)-Number(S.net||0);
+ const P={day:[A.today,T('aujourd’hui','today')],week:[A.week,T('cette semaine','this week')],month:[A.month,T('ce mois-ci','this month')],
+  all:[S.net,S.days?T('en '+S.days+' jours','in '+S.days+' days'):T('depuis le début','since the start')]}[PER];
+ const pct=PER==='all'&&start>0?' ('+(S.net>=0?'+':'−')+Math.abs(100*S.net/start).toFixed(1)+' %)':'';
+ const st=A.ended?['end',T('Période terminée','Period ended')]:A.auto?['on',(A.robot||'Robot')+T(' · actif',' · running')]:['off',(A.robot||'Robot')+T(' · en pause',' · paused')];
+ const b=Number(A.balance||0).toFixed(2).split('.');
+ const wr=S.n?Math.round(100*(S.won||0)/S.n):null;
+ const LM=A.last_month;const mN=LM?new Date(LM.ym+'-15').toLocaleDateString(EN?'en':'fr',{month:'long'}):'';
+ el.innerHTML='<div class="money"><div class="mtop"><span class="lbl">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+(A.broker?' · '+esc(A.broker):'')+'</span>'+
+  '<a class="state '+st[0]+'" href="'+B+'?classic=1#set"><i></i>'+esc(st[1])+'</a></div>'+
+  '<div class="bal num">$'+b[0]+'<small>.'+b[1]+'</small></div>'+
+  '<div class="chg num"><span class="'+cls(P[0])+'">'+money(P[0])+pct+'</span><span class="p">'+esc(P[1])+'</span></div>'+
+  spark(A.curve)+
+  '<div class="seg" role="tablist">'+[['day',T('Jour','Day')],['week',T('Semaine','Week')],['month',T('Mois','Month')],['all',T('Début','Start')]]
+   .map(x=>'<button role="tab" data-p="'+x[0]+'" class="'+(x[0]===PER?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+
+  '<div class="stats">'+
+   '<div class="stat"><b class="num '+cls(A.month)+'">'+money(A.month)+'</b><span>'+T('Ce mois','This month')+'</span></div>'+
+   '<div class="stat"><b class="num '+(LM?cls(LM.net):'')+'">'+(LM?money(LM.net):'—')+'</b><span>'+(LM?esc(mN.charAt(0).toUpperCase()+mN.slice(1)):T('Mois dernier','Last month'))+'</span></div>'+
+   '<div class="stat"><b class="num">'+(wr==null?'—':wr+' %')+'</b><span>'+T('Trades gagnants','Winning trades')+'</span></div></div>'+
+  (A.ended?'<div class="renew"><span>'+T('Ta période Automatique est terminée : le robot ne trade plus pour toi.','Your Automatic period has ended: the robot no longer trades for you.')+'</span><a href="'+B+'?classic=1#home">'+T('Renouveler','Renew')+'</a></div>':'')+
+  (A.open?'<div class="renew" style="background:#2ecc710f;border-color:#2ecc7144"><span>'+A.open+' '+T('trade(s) en cours','open trade(s)')+'</span><a href="'+B+'?classic=1#marche">'+T('Voir','See')+'</a></div>':'')+
+  '</div>';
+ el.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{PER=x.dataset.p;try{localStorage.setItem('homePer',PER);}catch(e){}moneyCard();});}
 async function load(){
  let d;try{d=await (await fetch(B+'home_data',{cache:'no-store'})).json();}catch(e){setTimeout(load,4000);return;}
- EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
+ D=d;EN=d.lang==='en';document.documentElement.lang=EN?'en':'fr';
+ {const A0=d.account||{};let sv=null;try{sv=localStorage.getItem('homePer');}catch(e){}
+  /* early in a month with nothing traded yet, the story since the start says more than a row of zeros */
+  PER=sv||(!Number(A0.month||0)&&!Number(A0.today||0)?'all':'month');}
  const hr=new Date().getHours();
  document.getElementById('hi').textContent=hr<5||hr>=18?T('Bonsoir','Good evening'):T('Bonjour','Hello');
  document.getElementById('nm').textContent=d.name||'';
+ try{window.dispatchEvent(new HashChangeEvent('hashchange'));}catch(e){}   // the shell's bar re-reads the name
  const P=d.plan||{};document.getElementById('plan').textContent=EN?(P.label_en||'Plan'):(P.label||'Formule');
+ moneyCard();
+ /* without a trading account, Kino is the first thing on the page */
+ if(!d.account){const k=document.getElementById('kino');k.style.marginTop='0';}
  const st=d.status||{};document.getElementById('status').textContent=(EN?st.en:st.fr)||T('disponible','available');
- const ms=document.getElementById('msg');
- if(d.last){ms.textContent=d.last.text;document.getElementById('when').textContent=T('Son dernier message · ','His last message · ')+ago(d.last.t);}
+ const ms=document.getElementById('msg'),fresh=d.last&&d.last.new;
+ if(d.last){ms.textContent=d.last.text;document.getElementById('when').textContent=ago(d.last.t);}
  else{ms.textContent=T('Salut, moi c’est Kino. Raconte-moi comment tu trades, ou l’idée qui te trotte dans la tête : je la transforme en robot, je la teste sur de vrais prix, et je te dis honnêtement si ça tient.',
   'Hi, I’m Kino. Tell me how you trade, or the idea on your mind: I turn it into a robot, test it on real prices, and tell you honestly whether it holds up.');}
+ document.getElementById('kav').classList.toggle('new',!!fresh);
  const talk=document.getElementById('talk');talk.href=B+'atelier'+(d.cid?'?c='+encodeURIComponent(d.cid):'');
- document.getElementById('talk-t').textContent=d.last?T('Répondre à Kino','Reply to Kino'):T('Parler à Kino','Talk to Kino');
+ document.getElementById('talk-t').textContent=fresh?T('Lire et répondre','Read and reply'):d.last?T('Continuer avec Kino','Continue with Kino'):T('Parler à Kino','Talk to Kino');
  const C=[[T('Construis mon robot','Build my robot'),T('J’aimerais construire un robot avec ma méthode.','I’d like to build a robot from my method.')],
   [T('Teste une idée','Test an idea'),T('J’ai une idée à tester sur de vrais prix.','I have an idea to test on real prices.')],
+  [T('Explique mes résultats','Explain my results'),T('Explique-moi mes résultats en mots simples.','Explain my results in plain words.')],
   [T('Tu fais quoi ?','What are you up to?'),T('Tu fais quoi en ce moment ?','What are you up to right now?')]];
  document.getElementById('chips').innerHTML=C.map((c,i)=>'<span class="chip" data-i="'+i+'">'+esc(c[0])+'</span>').join('');
  document.querySelectorAll('.chip').forEach(el=>el.onclick=()=>{location.href=talk.href+(talk.href.includes('?')?'&':'?')+'ask='+encodeURIComponent(C[+el.dataset.i][1]);});
- const A=d.account;
- const SC=A?'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:-2px;margin-bottom:10px">'+
-  [[T('Aujourd’hui','Today'),'?classic=1#home','☀️'],[T('En direct','Live'),'?classic=1#marche','📈'],[T('Performance','Performance'),'?classic=1#hist','📊']]
-  .map(x=>'<a class="card" style="margin:0;padding:12px 10px;text-align:center;font-size:13px;font-weight:600" href="'+B+x[1]+'"><div style="font-size:20px;margin-bottom:4px">'+x[2]+'</div>'+esc(x[0])+'</a>').join('')+'</div>':'';
- document.getElementById('acct').innerHTML=A?'<h2><span>'+T('Ton compte','Your account')+'</span><a href="'+B+'?classic=1">'+T('Tableau de bord','Dashboard')+'</a></h2>'+
-  '<a class="card" href="'+B+'?classic=1"><div class="row"><div><div class="rs">'+(A.real?T('Compte réel','Live account'):T('Compte démo','Demo account'))+'</div>'+
-  '<div style="font-size:26px;font-weight:800;letter-spacing:-.02em">'+Number(A.balance||0).toFixed(2)+' $</div>'+
-  '<div class="rs">'+T('Aujourd’hui ','Today ')+'<span class="'+((A.today||0)>=0?'pos':'neg')+'">'+money(A.today||0)+'</span> · '+T('Semaine ','Week ')+'<span class="'+((A.week||0)>=0?'pos':'neg')+'">'+money(A.week||0)+'</span>'+' · '+T('Mois ','Month ')+'<span class="'+((A.month||0)>=0?'pos':'neg')+'">'+money(A.month||0)+'</span>'+
-  (A.open?' · '+A.open+' '+T('trade(s) ouvert(s)','open trade(s)'):'')+'</div></div>'+
-  (A.robot&&A.auto?'<span class="tag on">'+esc(A.robot)+' '+T('actif','running')+'</span>':'')+'</div></a>'+SC:'';
- document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');
- document.getElementById('goal').innerHTML=d.goal?'<div class="goal"><small>'+T('Son objectif pour toi','His goal for you')+'</small>'+esc(d.goal)+'</div>'
-  :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';
+ const TL=d.account?[['today',T('Aujourd’hui','Today'),'?classic=1#home'],['live',T('En direct','Live'),'?classic=1#marche'],['perf',T('Performance','Performance'),'?classic=1#hist'],['wealth',T('Patrimoine','Wealth'),'wealth']]
+  :[['robot',T('Mes robots','My robots'),'mesrobots'],['live',T('Le marché','Market'),'?classic=1#marche'],['perf',T('Les tests','Tests'),'tests'],['wealth',T('Formules','Plans'),'?classic=1#offres']];
+ document.getElementById('tiles').innerHTML=TL.map(x=>'<a class="tile" href="'+B+x[2]+'">'+svg(x[0])+esc(x[1])+'</a>').join('');
  document.getElementById('h-rob').textContent=T('Tes robots','Your robots');document.getElementById('h-rob-all').textContent=T('Tout voir','See all');
  const R=d.robots||[];
  document.getElementById('robots').innerHTML=R.length?R.map(r=>{const t=r.test||{};
-  return '<a class="card row" href="'+B+'mesrobots"><div class="rb"><div class="ri">🤖</div><div><div class="rn">'+esc(r.name)+'</div><div class="rs">'+
-  (t.trades!=null?(T('Dernier test : ','Last test: ')+'<span class="'+(t.net>=0?'pos':'neg')+'">'+money(t.net)+'</span> · '+t.trades+' trades'):T('Pas encore testé','Not tested yet'))+
-  '</div></div></div><span class="tag">'+esc(r.why||T('en test','testing'))+'</span></a>';}).join('')
-  :'<div class="card empty">'+T('Pas encore de robot. <b>Raconte ta méthode à Kino</b> : il le construit avec toi, en parlant.','No robot yet. <b>Tell Kino your method</b>: he builds it with you, as you talk.')+'</div>';
+  return '<a class="rc'+(R.length===1?' solo':'')+'" href="'+B+'mesrobots"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+esc(r.name)+'</div></div>'+
+  (t.trades!=null?'<div class="rv num '+cls(t.net)+'">'+money(t.net)+'</div><div class="rs">'+T('Dernier test','Last test')+' · '+t.trades+' trades'+(t.win_rate!=null?' · '+Math.round(100*t.win_rate)+' % '+T('gagnants','winners'):'')+'</div>'
+   :'<div class="rs">'+T('Pas encore testé','Not tested yet')+'</div>')+
+  (r.why?'<span class="tag">'+esc(r.why)+'</span>':'')+'</a>';}).join('')
+  :'<a class="rc solo" href="'+talk.href+'"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+T('Ton premier robot','Your first robot')+'</div></div>'+
+   '<div class="rs">'+T('Raconte ta méthode à Kino : il le construit avec toi, en parlant, et le teste sur de vrais prix.','Tell Kino your method: he builds it with you as you talk, and tests it on real prices.')+'</div><span class="tag k">'+T('Commencer →','Start →')+'</span></a>';
+ document.getElementById('h-goal').textContent=T('Ce qu’il poursuit avec toi','What he’s pursuing with you');
+ document.getElementById('goal').innerHTML=d.goal?'<div class="goal">'+esc(d.goal)+'</div>'
+  :'<div class="empty">'+T('Parle-lui de ta façon de trader : il se fixera un objectif <b>avec toi</b>, et il s’y tiendra.','Tell him how you trade: he will set a goal <b>with you</b>, and stick to it.')+'</div>';
  document.getElementById('h-pick').textContent=T('Créés par Kino','Made by Kino');document.getElementById('h-pick-all').textContent=T('La place','Marketplace');
  const K=d.picks||[];
- document.getElementById('picks').innerHTML=K.length?K.map(p=>'<a class="card" href="'+B+'place"><div class="row"><div class="rn">'+esc(p.name)+'</div>'+
-  (p.access==='active'?'<span class="tag on">'+T('Actif chez toi','Active for you')+'</span>':p.access==='invite'?'<span class="tag k">'+T('Sur invitation','By invitation')+'</span>':'<span class="tag">'+T('Ouvert','Open')+'</span>')+
-  '</div><div class="rs" style="margin-top:6px">'+esc(p.blurb)+'</div>'+(p.trades?'<div class="rs" style="margin-top:6px">'+T('Test : ','Test: ')+'<span class="'+(p.net>=0?'pos':'neg')+'">'+money(p.net)+'</span> · '+p.trades+' trades · '+T('passé, pas une promesse','past, not a promise')+'</div>':'')+'</a>').join('')
-  :'<div class="card empty">'+T('La place s’ouvre bientôt.','The marketplace opens soon.')+'</div>';
+ document.getElementById('picks').innerHTML=K.length?K.map(p=>'<a class="rc'+(K.length===1?' solo':'')+'" href="'+B+'place"><div class="rh"><div class="ri">'+svg('robot')+'</div><div class="rn">'+esc(p.name)+'</div></div>'+
+  (p.trades?'<div class="rv num '+cls(p.net)+'">'+money(p.net)+'</div><div class="rs">'+p.trades+' trades · '+T('passé, pas une promesse','past, not a promise')+'</div>':'<div class="rs">'+esc(p.blurb)+'</div>')+
+  (p.access==='active'?'<span class="tag on">'+T('Actif chez toi','Active for you')+'</span>':p.access==='invite'?'<span class="tag k">'+T('Sur invitation','By invitation')+'</span>':'<span class="tag">'+T('Ouvert','Open')+'</span>')+'</a>').join('')
+  :'<div class="rc solo empty">'+T('La place s’ouvre bientôt.','The marketplace opens soon.')+'</div>';
  document.getElementById('h-plan').textContent=T('Ta formule','Your plan');
  const left=P.replies_left,cap=P.month!=null?P.month:P.replies,per=P.month!=null?T('ce mois','this month'):T('aujourd’hui','today');
- document.getElementById('plancard').innerHTML='<div class="row"><div><div class="rn">'+esc(EN?P.label_en:P.label)+'</div><div class="rs">'+
+ document.getElementById('plancard').innerHTML='<div class="planrow"><div><div class="rn">'+esc(EN?P.label_en:P.label)+'</div><div class="rs">'+
   (cap==null?T('Kino sans limite','Kino without limit'):(T('Réponses de Kino ','Kino replies ')+per+' : '+(left==null?cap:left)+' / '+cap))+
   '</div></div><a class="tag k" href="'+B+'?classic=1#offres">'+T('Changer','Change')+'</a></div>'+
   (cap!=null&&left!=null?'<div class="bar"><i style="width:'+Math.max(2,Math.min(100,100*left/cap))+'%"></i></div>':'');
  document.getElementById('foot').innerHTML=T('Kino est une intelligence artificielle. Rien ici n’est un conseil en investissement ; le trading comporte un risque de perte.','Kino is an artificial intelligence. Nothing here is investment advice; trading carries a risk of loss.')+
-  ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>'+
-  (d.family||d.owner?' · <a href="'+B+'?classic=1">'+T('Tableau de bord du robot','Robot dashboard')+'</a>':'');
+  ' <a href="/cgv'+(EN?'?lang=en':'')+'">'+T('CGV','Terms')+'</a> · <a href="/confidentialite'+(EN?'?lang=en':'')+'">'+T('Confidentialité','Privacy')+'</a>';
 }
 load();setInterval(load,60000);
 </script>
