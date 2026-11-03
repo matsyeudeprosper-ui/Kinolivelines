@@ -17854,9 +17854,17 @@ def _chat_oops(cid, en, e=None, retry=None):
         _rc(); _plain = __import__("kino_deed").plain(e, "en" if en else "fr", twice=(retry is not None))
     except Exception:
         _plain = "Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?"
-    _chat_mut(cid, lambda c: _chat_msg(c, "ai", chips=[], err=True, text=(
-        "Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?")
-        if e is None else _plain))
+    _txt = ("Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?") \
+        if e is None else _plain
+
+    # 2026-11-03 18:10 UTC (owner: "is he okay?"): two turns failed in the same second and both posted the same "I tripped
+    # twice" bubble. One apology per failure: the same error line within 2 minutes is not posted again.
+    def _put(cc):
+        _la = next((m for m in reversed(cc.get("msgs") or []) if m.get("role") == "ai"), None)
+        if _la and _la.get("err") and _la.get("text") == _txt and time.time() - float(_la.get("t") or 0) < 120:
+            return
+        _chat_msg(cc, "ai", chips=[], err=True, text=_txt)
+    _chat_mut(cid, _put)
 
 
 CHAT_IMG = os.path.join(DIR, "robots", "chats", "img")

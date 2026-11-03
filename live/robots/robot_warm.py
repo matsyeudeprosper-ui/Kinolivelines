@@ -436,13 +436,20 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
     # 2026-10-26 21:38-22:36 UTC: "Sonnet 5.5's safeguards flagged this message ... sometimes happens with safe, normal
     # conversations" - 24 of the owner's chart-chat turns in a row came back empty (a member message unanswered 95 s). The
     # same call once more on the other model instead of silence.
-    if txt is None and tm.get("flagged") and model != "opus" and getattr(_TL, "member", False):   # their message, not a wake-up
+    # 2026-11-03 18:09-18:10 UTC: flagged on OPUS (the owner's model) twice - no retry existed that way, he "tripped twice".
+    # A flag on one model is retried once on the other, whichever it was.
+    if txt is None and tm.get("flagged") and getattr(_TL, "member", False) and not getattr(_TL, "flag_retry", False):
+        _alt = "sonnet" if model == "opus" else "opus"
         if log:
             try:
-                io.open(log, "a", encoding="utf-8").write("\n--- safeguards flagged on %s: retry on opus ---\n" % model)
+                io.open(log, "a", encoding="utf-8").write("\n--- safeguards flagged on %s: retry on %s ---\n" % (model, _alt))
             except Exception:
                 pass
-        return ask_text(system, user, "opus", timeout, log, on_text, warm=False)
+        _TL.flag_retry = True
+        try:
+            return ask_text(system, user, _alt, timeout, log, on_text, warm=False)
+        finally:
+            _TL.flag_retry = False
     return txt
 
 
