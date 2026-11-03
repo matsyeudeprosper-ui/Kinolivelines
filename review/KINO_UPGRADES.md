@@ -19,11 +19,15 @@ Owner's principle (2026-11-03): no "if X do Y" rules. Engines that work like a p
 | 11-03 | Fields: notes per new field (learned / unclear / next question) | engine | robots/kino_fields.py |
 | 11-03 | Beliefs held and defended, changed for a reason | wording of an existing engine | kino_beliefs.block |
 
-## In progress (owner "go", 11-03 evening)
+## Done 11-03 evening (owner "go" - proper engines)
 
-1. Trust: latitude per kind of action, learned from what the person approves, corrects or undoes (decays over weeks); replaces the single fixed-step number.
-2. Conflict check inside the action path: before he acts, his action is compared with the person's notebook; a conflict turns it into a question, not a silent act. Replaces the fixed sentence.
-3. Patterns in any record: hypotheses from a person's own records, re-checked on new data, only survivors kept; replaces the hard-coded 4-hour trade buckets.
+| What | Kind | Where |
+|---|---|---|
+| Trust per kind of act (order:open / close / modify, robot, build, auto): Beta belief from approvals and corrections credited to his acts of the last 30 min, 14-day fade. Replaces the single fixed-step number | engine | robots/kino_trust.py, fed by kino_read about_kino_act |
+| Conflict check in the act path: an order he sends alone is checked against the person's notebook; a conflict becomes a confirm card with the reason. The fixed "say it out loud" sentence is removed | engine | robots/kino_conflict.py, _order_direct |
+| Patterns in any record: hunches from slices of a person's records, re-checked on new records only, dropped after failing; adapters per source (trades first). Replaces the 4-hour trade buckets | engine | robots/kino_patterns.py |
+
+Known limits: an undo (person closing or changing his act right after) is not yet counted as a correction; the conflict check runs for orders only (not robot switches yet); patterns need about 12+ records and found nothing on the owner's last 30 trades (correct: no strong pattern).
 
 ## Next (proposed)
 
