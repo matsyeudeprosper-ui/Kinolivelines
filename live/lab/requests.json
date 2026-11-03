@@ -660,6 +660,17 @@
    "why_fr": "Sur 283 vrais trades, les stops de 250 à 400 points gagnent (54 trades, 61 % gagnés, +32 $, les deux moitiés d'accord) et ceux de 150 à 250 perdent (80 trades, -95 $). Je veux poser cette question aux membres, mais la largeur du stop n'est pas un fait de pile aujourd'hui.",
    "why_en": "On 283 real trades, stops of 250 to 400 points win (54 trades, 61 % won, +$32, both halves agree) and those of 150 to 250 lose (80 trades, -$95). I want to put this question to members, but the stop width is not a pile fact today.",
    "status": "open"
+  },
+  {
+   "id": "htf_capture_check",
+   "date": "2026-11-03",
+   "title_fr": "Vérifier que la petite tendance d'une heure notée à l'entrée est à jour",
+   "title_en": "Check that the one-hour small trend written at entry is fresh",
+   "what_fr": "Comparer, pour les trades du 2 et du 3 novembre, la valeur « h1 i » de la colonne htf_entry du journal avec la petite tendance interne d'une heure reconstruite à partir des bougies d'une minute à la même heure. Écrire le résultat (d'accord / pas d'accord, trade par trade) dans un petit rapport. Si elle est figée, la corriger. Rien d'autre ne change.",
+   "what_en": "For the trades of 2 and 3 November, compare the 'h1 i' value in the journal's htf_entry column with the one-hour internal small trend rebuilt from one-minute candles at the same time. Write the result (agree / disagree, trade by trade) in a short report. If it is frozen, fix it. Nothing else changes.",
+   "why_fr": "Depuis lundi matin, la vingtaine de trades fermés montrent tous « h1 i = 1 » (petite tendance à la hausse), alors que le prix a baissé d'environ 1 750 points. La mesure du quart d'heure était déjà restée figée en octobre. Ma piste la plus nette (« quand l'heure va déjà dans notre sens, on perd » : 6 sur 6 perdus depuis le 26) repose sur cette mesure.",
+   "why_en": "Since Monday morning, all of the twenty or so closed trades show 'h1 i = 1' (small trend up), while price fell about 1,750 points. The quarter-hour reading had already stayed frozen in October. My clearest lead ('when the hour already points our way, we lose': 6 of 6 lost since the 26th) rests on this reading.",
+   "status": "open"
   }
  ]
 }
