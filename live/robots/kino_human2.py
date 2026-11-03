@@ -29,7 +29,7 @@ def _jl(p, d):
 
 
 # ---- 1 trust: slow, earned, per person ------------------------------------------------------------------------------
-def trust_note(person, kind, what=""):
+def _old_trust_note(person, kind, what=""):
     """kind: 'approved' (he let it stand / said good / acted on it) or 'corrected' (premature, wrong, why did you...)"""
     if kind not in ("approved", "corrected"):
         return
@@ -44,7 +44,17 @@ def trust_note(person, kind, what=""):
         os.replace(tmp, STORE)
 
 
+def trust_note(person, kind, what=""):
+    import kino_trust as KT
+    return KT.react(person, kind, what)
+
+
 def trust_line(person):
+    import kino_trust as KT
+    return KT.block(person)
+
+
+def _old_trust_line(person):
     P = _jl(STORE, {}).get(person) or {}
     if not P.get("log"):
         return ""
@@ -127,6 +137,19 @@ def noticed(uid, nest_dir):
             % (len(T), lo[0], lo[0] + 4, lo[1][1], lo[1][0], hi[0], hi[0] + 4, hi[1][1], hi[1][0], st))
 
 
+def patterns_line(person, uid, nest_dir):
+    """4 (rebuilt 11-03): patterns in his own record via kino_patterns - found, re-checked on new data, survivors only.
+    Each source is an adapter; trades are the first one."""
+    try:
+        import kino_patterns as KP
+        nd = _jl(os.path.join(nest_dir, uid + ".json"), {})
+        if nd.get("trades"):
+            KP.update(person, "trades", KP.from_trades(nd), " $")
+        return KP.block(person)
+    except Exception:
+        return ""
+
+
 # ---- 6 tone ---------------------------------------------------------------------------------------------------------
 def tone_line(person):
     try:
@@ -154,6 +177,6 @@ def busy_line():
 
 
 def block(person, uid, cid, nest_dir):
-    L = [x for x in (trust_line(person), owed_line(uid, cid), timeline(person, uid, nest_dir), noticed(uid, nest_dir),
+    L = [x for x in (trust_line(person), owed_line(uid, cid), timeline(person, uid, nest_dir), patterns_line(person, uid, nest_dir),
                      tone_line(person), busy_line()) if x]
     return "\n".join(L)

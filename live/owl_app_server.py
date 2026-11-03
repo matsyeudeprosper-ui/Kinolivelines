@@ -15695,10 +15695,6 @@ def _one_fresh(user, c):
         _wy = _KWy.block(_person(uid), "en" if c.get("lang") == "en" else "fr")
         if _wy:
             L.append(_wy)
-            # (2) what he asked vs what you would rather do: a person who disagrees with a clear instruction says so, once,
-            # out loud - he does not quietly do otherwise
-            L.append("If what you are about to do differs from one of these instructions of his (even for a good reason of your own), "
-                     "say it to him plainly in one line and let him decide - never quietly do it your way instead.")
     except Exception:
         pass
     try:                                               # 2026-11-03 (human map 1,2,3,4,6,10): trust earned, what he owes, today's
@@ -20043,6 +20039,17 @@ def _order_direct(cid, user, v, en, c):
     req, txt = _order_parse(uid, v)
     if req is None:
         return say_(("Kino's order not sent: %s." if en else "Ordre de Kino pas passé : %s.") % txt)
+    try:                                       # 2026-11-03 (kino_conflict): his act held up against the person's own words
+        _rc()
+        import kino_conflict as _KCf
+        _cf = _KCf.check(_rc().W, _person(uid), "%s (%s)" % (txt, v), _one_facts(user, c or {})[:1500],
+                         log=os.path.join(DIR, "robots", "kino_conflict.log"))
+        if _cf:
+            say_(("\u26a0\ufe0f Before sending this, a doubt: %s - I'm asking instead of doing it." if en else
+                  "\u26a0\ufe0f Avant de l'envoyer, un doute : %s - je te demande au lieu de le faire.") % _cf["why"])
+            return _order_card(cid, user, v, en)
+    except Exception:
+        pass
     mx = float(((c or {}).get("auto_trade") or {}).get("max_lot") or 0)
     if mx and float(req.get("lot") or 0) > mx + 1e-9:
         return say_(("Kino's order not sent: lot %s is above the %s maximum you gave him." if en else
@@ -20897,6 +20904,13 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     try:                                               # 2026-10-31 (kino_affect): what he did on this turn, for noticing himself
         if not event and say:
             __import__("kino_affect").note_turn(_person(uid), _mdl, _careful, bool(locals().get("_rewrote")))
+    except Exception:
+        pass
+    try:                                               # 2026-11-03 (kino_trust): what he does on his own waits for their reaction
+        import kino_trust as _KTr
+        for _k0, _v0 in acts:
+            if _k0 in ("ordre", "robot", "construire", "auto") and not (event and not say and _k0 != "ordre"):
+                _KTr.did(_person(uid), _KTr.act_kind(_k0, _v0), _v0)
     except Exception:
         pass
     for k, v in acts:
