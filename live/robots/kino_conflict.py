@@ -39,3 +39,37 @@ def check(W, person, act_text, situation="", log=None):
     if isinstance(j, dict) and j.get("conflict") is True and str(j.get("why") or "").strip():
         return {"with": str(j.get("with") or "")[:80], "why": " ".join(str(j["why"]).split())[:240]}
     return None
+
+
+QUOTE = """Kino is about to send a message to a person. Does the message RESTATE one of that person's own instructions (from their
+notebook) in a way that differs from their NEWEST word - a condition they dropped, a word they changed (e.g. "fully" when they
+said a close is enough), a level, a timeframe? Paraphrase is fine if the meaning is the same; a message that does not restate
+their instructions is fine; putting today's actual number on their rule (the level it gives right now) is fine. JSON only: {"misquote": true|false, "which": "topic", "theirs": "their newest wording, short",
+"why": "one line: what the message says differently"}"""
+
+
+def _stems(t):
+    import re
+    return set(w[:6] for w in re.findall(r"[a-zà-ÿ]{4,}", str(t).lower())) - {"that", "this", "with", "your", "have", "will", "from", "then", "what", "when", "they", "just", "dans", "pour", "avec", "mais", "plus", "tout"}
+
+
+def misquote(W, person, say, log=None):
+    """-> None, or {"which", "theirs", "why"} when his message restates their instruction differently from their newest word.
+    Only messages that share several words with a notebook entry are checked (cheap gate, then a small model)."""
+    try:
+        import kino_ways as KW
+        items = KW.entries(person)
+    except Exception:
+        items = []
+    if not items or not str(say or "").strip():
+        return None
+    sw = _stems(say)
+    near = [x for x in items if len(sw & _stems(x["topic"] + " " + x["said"])) >= 2]
+    if not near:
+        return None
+    book = "\n".join("- %s: %s" % (x["topic"], x["said"]) for x in sorted(near, key=lambda x: x["t"]))
+    j = W.ask_json(QUOTE, "THEIR NOTEBOOK (newest word per topic):\n%s\n\nKINO'S MESSAGE:\n%s\n\nJSON only." % (book, str(say)[:1500]),
+                   models=("haiku", "sonnet"), timeout=25, log=log, warm=False)
+    if isinstance(j, dict) and j.get("misquote") is True and str(j.get("why") or "").strip():
+        return {"which": str(j.get("which") or "")[:80], "theirs": str(j.get("theirs") or "")[:240], "why": " ".join(str(j["why"]).split())[:240]}
+    return None

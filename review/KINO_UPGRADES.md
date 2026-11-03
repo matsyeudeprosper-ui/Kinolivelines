@@ -39,6 +39,12 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 
 "Let me check" that comes back already exists (the `regarde` lookup: 17:32 "let me check" -> 17:34 answer); a deeper multi-step "work it out" stays next.
 
+## Done 11-03 21:xx
+
+| What | Kind | Where |
+|---|---|---|
+| Hearing himself misquote: a message that restates the person's rule differently from their newest word (an added "fully", a "1-minute" they never said) is rewritten once in their wording before it goes out | engine | kino_conflict.misquote, _one_turn |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

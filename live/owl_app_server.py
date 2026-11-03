@@ -20889,6 +20889,20 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _CHAT_PENDING[cid] = True
         except Exception:
             pass
+    try:                                               # 2026-11-03 (kino_conflict.misquote): he heard himself misquote them
+        if say:
+            import kino_conflict as _KCq
+            _mq = _KCq.misquote(W, _person(uid), say, log=os.path.join(DIR, "robots", "kino_conflict.log"))
+            if _mq:
+                _KO._log(cid, "MISQUOTE", "%s | %s" % (_mq["why"], say[:120]))
+                r5 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
+                              model=_mdl, note=("Your draft restates his instruction differently from his newest word (%s): %s. His newest "
+                                                "wording: \"%s\". Write your message again, saying his rule the way HE says it now. Your draft: « %s »"
+                                                % (_mq["which"], _mq["why"], _mq["theirs"], say[:600])))
+                if r5 and r5.get("say"):
+                    say = r5["say"]
+    except Exception:
+        pass
     build = any(k == "construire" for k, _ in acts) and bool(say) and cid not in _CHAT_B and cid not in _CHAT_BUILDING
     # 2026-11-03 06:43 UTC (watch, owner autotrading): the same turn sent "Vendre 0.01 ..." to the desk AND said "no entry
     # yet, nothing is open" - the prose contradicted the act. The act is the server's fact: when this turn sends an order
