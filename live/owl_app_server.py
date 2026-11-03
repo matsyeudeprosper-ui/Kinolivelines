@@ -17602,7 +17602,18 @@ _CTX = {}          # cid -> (t, pieces, owl, markets, memory, member) - prepared
 def _ctx_prefetch(user, cid):
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
-        _CTX[cid] = (time.time(), _chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
+        _tt, _out = [], []                   # 2026-11-03: each piece timed (robots/kino_ctx.log) - 10-15 s per member turn
+        for _nm, _fn in (("pieces", lambda: _chat_pieces(user)), ("owl", _ai_owl), ("markets", lambda: _chat_markets(user)),
+                         ("memory", lambda: _chat_memory(user, cid)), ("member", lambda: _chat_member(user, c))):
+            _t1 = time.time()
+            _out.append(_fn())
+            _tt.append("%s=%.1f" % (_nm, time.time() - _t1))
+        try:
+            io.open(os.path.join(DIR, "robots", "kino_ctx.log"), "a", encoding="utf-8").write(
+                "%s %s prefetch %s%s" % (time.strftime("%m-%d %H:%M:%S"), cid, " ".join(_tt), chr(10)))
+        except Exception:
+            pass
+        _CTX[cid] = tuple([time.time()] + _out)
         _chat_prewarm(user, c, _CTX[cid][1:])
     except Exception:
         pass
