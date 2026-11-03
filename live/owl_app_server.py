@@ -15573,6 +15573,9 @@ def _pkg_watch():
         pass
 
 
+_ARB_CACHE = {}                 # (uid, admin) -> (t, acct_robot_block) for Kino's member context (30 s)
+
+
 def _chat_member(user, c):
     """2026-10-19 (owner: "it should have great knowledge of the app since it lives there"): THIS member's situation in
     plain facts for the AI - plan, account, the robot on it, what they may choose, where the chat's robot stands.
@@ -15596,7 +15599,15 @@ def _chat_member(user, c):
     except Exception:
         pass
     try:
-        A = acct_robot_block(user, is_admin(user))
+        # 2026-11-03 (watch, owner autotrading): Kino's context took 10-13 s per turn, most of it this block (robots page data:
+        # package, results, markets); for his facts a 30-s-old copy is the same facts. Cached per login, 30 s.
+        _k = (uid, bool(is_admin(user)))
+        _h = _ARB_CACHE.get(_k)
+        if _h and time.time() - _h[0] < 30:
+            A = _h[1]
+        else:
+            A = acct_robot_block(user, is_admin(user))
+            _ARB_CACHE[_k] = (time.time(), A)
         lv = A.get("live") or {}
         if A.get("can") or lv.get("n"):
             L.append("trading account: yes - robot on it now: %s%s%s" % (
@@ -19176,7 +19187,7 @@ def _one_memory(user, c):
         if _auto_on(c):                                # 2026-10-26 21:25: he said "hit Confirm on the card" while in auto mode
             _ax = c.get("auto_trade") or {}
             _un = float(_ax.get("until") or 0)
-            L.append("TU ES EN MODE SEUL %s%s : tes #ordre partent DIRECTEMENT chez le broker, sans carte ni Confirmer." % (
+            L.append("IL T'A DEMANDÉ DE PASSER SES ORDRES POUR LUI %s%s, selon ses propres règles : un #ordre part vers son outil de trading sans la carte Confirmer." % (
                 ("jusqu'à ce qu'il dise stop" if _un - time.time() > 30 * 86400 else "jusqu'à %s UTC" % time.strftime("%H:%M", time.gmtime(_un))),
                 (" (lot max %s)" % _ax["max_lot"]) if _ax.get("max_lot") else ""))
     except Exception:
@@ -19912,6 +19923,13 @@ def _auto_watch_loop():
             if len(cs) < 6:
                 continue
             lc = cs[-1]
+            # 2026-11-03 (owner: "can he see my filtre silence chart?" - his rule lives on that chart, Kino watched raw minutes
+            # and "missed" a close the silence chart had made): the silence candles, built like the chart page builds them
+            try:
+                import owl_chart_feed as _Fw
+                _sk = _Fw.build([{"time": x[0], "open": x[1], "high": x[2], "low": x[3], "close": x[4]} for x in cs[-400:]])
+            except Exception:
+                _sk = []
             for uid, cid in list(m.items()):
                 try:                                   # 2026-10-26 (speed): the chat is re-read only when its file changed
                     _mt = os.path.getmtime(_chat_path(cid))
@@ -19942,14 +19960,25 @@ def _auto_watch_loop():
                 up = {1: "up", -1: "down"}
                 pb = j.get("pb") or {}
                 ev = ("%s - a chart candle just closed (%s UTC, open/high/low/close %s). Last 6 closed candles: %s. Owl structure: trend %s, "
-                      "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He gave you permission to trade ON YOUR OWN "
-                      "(no card) until %s UTC%s: an #ordre goes straight to the broker. Act ONLY if HIS OWN rules (what he told you) say so "
+                      "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He asked you to place his orders for him, "
+                      "by his own written rules, until %s UTC%s: an #ordre line is sent to his trading tool without the confirm card. Act ONLY if HIS OWN rules (what he told you) say so "
                       "right now - one #ordre line and one short line saying what you did and why. Otherwise answer only: …") % (
                     AUTO_EV, time.strftime("%H:%M", time.gmtime(lc[0])), "/".join(f(z) for z in lc[1:5]),
                     " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])), "/".join(f(z) for z in x[1:5])) for x in cs[-6:]),
                     up.get(j.get("trend"), "none"), f(j["next_bos"]) if j.get("next_bos") else "-", f(j["invalid"]) if j.get("invalid") else "-",
                     up.get(pb.get("trend"), "none"), f(pb["next_bos"]) if pb.get("next_bos") else "-",
                     time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "")
+                try:
+                    _fmt = lambda c_: "%s %s" % (time.strftime("%H:%M", time.gmtime(float(c_["time"] if isinstance(c_, dict) else c_[0]))),
+                                                 "/".join(f(c_[z] if isinstance(c_, dict) else c_[i]) for i, z in enumerate(("open", "high", "low", "close"), 1)))
+                    _new = bool(_sk) and len(_sk) != last.get("sc:" + cid)
+                    last["sc:" + cid] = len(_sk)
+                    if _sk:
+                        ev += (" HIS CHART - filtre silence, the view he trades on (a candle shows only when its close commits beyond the last shown "
+                               "one; 'the first candle close of my lower timeframe' means THESE candles, not raw minutes): last closed %s; before: %s. "
+                               "A new silence candle closed this minute: %s." % (_fmt(_sk[-1]), " | ".join(_fmt(c_) for c_ in _sk[-6:-1]), "YES" if _new else "no"))
+                except Exception:
+                    pass
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
 
                 def _arun(cid=cid, u=u, ev=ev):
