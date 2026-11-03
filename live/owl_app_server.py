@@ -19734,7 +19734,7 @@ def _desk_facts(uid):
 def _order_parse(uid, v):
     """Kino's '#ordre ...' line -> (req for the desk, plain words) or (None, why)"""
     s0 = str(v or "").lower().replace("entrée", "entree")
-    kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(sl|tp|lot|entree|entry|ticket)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0)}
+    kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(sl|tp|lot|entree|entry|ticket|rr)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0)}
     st = _desk_state(uid) or {}
     P = st.get("open") or []
     tk = int(kv.get("ticket") or 0)
@@ -19755,10 +19755,20 @@ def _order_parse(uid, v):
     m = re.search(r"\b(achat|acheter|achete|buy|vente|vendre|vends|sell)\b", s0)
     if m:
         d = 1 if m.group(1) in ("achat", "acheter", "achete", "buy") else -1
+        # 2026-11-03 14:36 UTC (watch): "1R target 77678 from the market price" filled at 77225 with the stop at 77000 - a 2R
+        # target, priced from a stale guess. rr=<R>: the server sets the target from the REAL fill (_order_direct)
+        if kv.get("rr") and kv.get("sl") and not kv.get("tp"):
+            try:
+                _pxl = float((_jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}).get("candles")[-1][4])
+                kv["tp"] = round(_pxl + d * kv["rr"] * abs(_pxl - kv["sl"]), 2)
+            except Exception:
+                pass
         if not (kv.get("sl") and kv.get("tp") and kv.get("lot")):
             return None, "il manque le lot, le stop ou l'objectif"
         e = kv.get("entree") or kv.get("entry") or 0
         req = {"d": d, "sl": kv["sl"], "tp": kv["tp"], "entry": e, "lot": kv["lot"], "add": 1}
+        if kv.get("rr") and not e:
+            req["_rr"] = kv["rr"]
         return req, "%s %s lot %s, stop %s, objectif %s%s" % ("Acheter" if d == 1 else "Vendre", f0(kv["lot"]),
                                                              ("en attente à %s" % f0(e)) if e else "au prix du marché",
                                                              f0(kv["sl"]), f0(kv["tp"]), " (en plus de la position ouverte)" if P else "")
@@ -19844,7 +19854,19 @@ def _order_direct(cid, user, v, en, c):
                  % (int(time.time() - _l[1]), txt))
             return
         _AUTO_SENT[uid] = (_k, time.time())
+        _rr = req.pop("_rr", None)
         r = _desk_send(uid, req)
+        try:                                   # rr=: the target re-set from the real fill, R x (fill - stop)
+            if _rr and r and r[0] and isinstance(r[1], dict) and r[1].get("price"):
+                _fp = float(r[1]["price"]); _sl = float(req["sl"]); _d = int(req["d"])
+                _tp = round(_fp + _d * float(_rr) * abs(_fp - _sl), 2)
+                if abs(_tp - float(req["tp"])) > 0.5:
+                    _po = next((o for o in ((_desk_state(uid) or {}).get("open") or []) if abs(float(o.get("e") or 0) - _fp) < 1.0), None)
+                    if _po:
+                        _desk_send(uid, {"modify": 1, "sl": _sl, "tp": _tp, "ticket": _po.get("ticket")})
+                        txt += " -> objectif %.0f (%gR depuis l'entr\u00e9e r\u00e9elle %.0f)" % (_tp, float(_rr), _fp)
+        except Exception:
+            pass
     if r is None:
         line = ("🤖 Kino sent: %s - no answer from the trading tool yet, check the chart." if en else
                 "🤖 Kino a envoyé : %s - pas encore de réponse de l'outil, regarde le graphique.") % txt

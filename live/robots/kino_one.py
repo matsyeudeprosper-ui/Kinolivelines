@@ -114,6 +114,7 @@ Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que 
 #ordre sl=<prix> tp=<prix> [ticket=<n>]          déplace le stop et/ou l'objectif d'une position ouverte
 #ordre fermer [ticket=<n>] [lot=<lot>]           ferme une position (en entier, ou seulement ce lot)
 #ordre achat|vente lot=<lot> sl=<prix> tp=<prix> [entree=<prix>]   ouvre un trade (au marché, ou en attente à ce prix) ; ça s'ajoute s'il y en a déjà un
+#ordre achat|vente lot=<lot> sl=<prix> rr=<R>    au marché, objectif à R fois le risque, calculé sur le VRAI prix d'entrée (préfère-le à tp= quand sa règle dit 1R / 2R)
 #ordre annuler                                   annule l'ordre en attente
 #gestion breakeven on | #gestion breakeven off   son outil gère seul, à chaque seconde, ses positions ouvertes : le stop
                                                  passe au prix d'entrée dès que le prix est à mi-chemin de l'objectif -
