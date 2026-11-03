@@ -19407,6 +19407,7 @@ def _one_memory(user, c):
 
 
 _ONE_PRE = {}
+_PRE_CHAIN = {}
 
 _CHART_SEEN = {}        # uid -> {t, v, panel}: what the member's chart page shows right now (2026-10-26)
 
@@ -20295,12 +20296,21 @@ def chat_order(user, body):
     return {"ok": True, "done": ok, "info": info}
 
 
-def _one_prefetch(user, cid):
+def _one_prefetch(user, cid, chain=True):
     try:
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
         _ONE_PRE[cid] = (time.time(), _one_facts(user, c), _one_memory(user, c))
+        # 2026-11-03 (speed, measured: 0.6-1 s of context with it ready, 4-5 s without): while he is trading for them or they
+        # were in the app in the last 30 min, keep it ready - refreshed every 100 s, one chain per chat
+        if chain and (_auto_on(c) or time.time() - _LAST_SEEN.get(user.get("id"), 0) < 1800) and not _PRE_CHAIN.get(cid):
+            _PRE_CHAIN[cid] = True
+
+            def _again(u=user, k=cid):
+                _PRE_CHAIN.pop(k, None)
+                _one_prefetch(u, k)
+            threading.Timer(100, _again).start()
     except Exception:
-        pass
+        _PRE_CHAIN.pop(cid, None)
 
 # ---- 2026-10-25 (owner: "a blind test"): old Kino vs the one mind on the owner's real messages ----
 ONE_BLIND = os.path.join(DIR, "robots", "one_blind.json")
