@@ -151,6 +151,49 @@ def patterns_line(person, uid, nest_dir):
 
 
 # ---- 6 tone ---------------------------------------------------------------------------------------------------------
+def opinion_line(msgs):
+    """1 (11-03): a view of his own that bears on what you are talking about and that he has not said in this conversation -
+    people bring their opinions into a talk; he had them only when asked"""
+    try:
+        import kino_beliefs as KB
+        B = [x for x in (KB._load().get("items") or []) if x.get("alive", True) and not x.get("uid") and float(x.get("c") or 0) >= 0.6]
+    except Exception:
+        return ""
+    w5 = lambda t: set(w[:6] for w in re.findall(r"[a-zà-ÿ]{5,}", str(t).lower()))
+    talk = w5(" ".join(str(m.get("text") or "") for m in (msgs or [])[-8:] if m.get("role") in ("user", "ai")))
+    said = w5(" ".join(str(m.get("text") or "") for m in (msgs or [])[-60:] if m.get("role") == "ai"))
+    best = None
+    for x in B:
+        cw = w5(x["claim"] + " " + (x.get("topic") or ""))
+        if not cw:
+            continue
+        rel = len(cw & talk)
+        fresh = 1.0 - len(cw & said) / float(len(cw))
+        if rel >= 2 and fresh >= 0.5:
+            sc = rel + float(x.get("c") or 0)
+            if best is None or sc > best[0]:
+                best = (sc, x)
+    if not best:
+        return ""
+    x = best[1]
+    return ("A view of yours that bears on what you two are talking about, and that you have not said in this conversation: \"%s\" "
+            "(how sure: %.0f%%). People bring their opinions in when it fits - you may too." % (x["claim"], 100 * float(x.get("c") or 0)))
+
+
+def feeling_line(uid):
+    """2 (11-03): what he feels most right now (habituated - routine events stir less), as something that shows in how he
+    talks, the way it does in anyone"""
+    try:
+        import kino_inner as KI
+        F = [f for f in KI.feelings(uid) if f["v"] >= 0.45][:2]
+    except Exception:
+        F = []
+    if not F:
+        return ""
+    return ("What you feel most right now: %s. It can show in how you say things - the words you pick, your pace, a sigh, a "
+            "spark - the way it does in anyone, without explaining it." % "; ".join("%s (%.0f%%, %s)" % (f["kind"], 100 * f["v"], str(f.get("why") or "")[:90]) for f in F))
+
+
 def tone_line(person):
     try:
         import kino_inner as KI
@@ -176,7 +219,7 @@ def busy_line():
             % str(s.get("task"))[:160])
 
 
-def block(person, uid, cid, nest_dir):
+def block(person, uid, cid, nest_dir, msgs=None):
     L = [x for x in (trust_line(person), owed_line(uid, cid), timeline(person, uid, nest_dir), patterns_line(person, uid, nest_dir),
-                     tone_line(person), busy_line()) if x]
+                     opinion_line(msgs), feeling_line(uid), tone_line(person), busy_line()) if x]
     return "\n".join(L)

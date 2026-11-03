@@ -58,8 +58,16 @@ def feel(kind, delta, uid=None, why=""):
         F = d.setdefault("feel", {})
         cur = F.get(key) or {"v": 0, "t": time.time()}
         v0 = _decayed(cur["v"], cur["t"], kind)
-        v = max(0.0, min(1.0, v0 + float(delta) * ((1.0 - v0) if delta > 0 else 1.0)))
-        F[key] = {"v": round(v, 3), "t": time.time(), "why": str(why)[:160] or cur.get("why", "")}
+        dl = float(delta)
+        # 2026-11-03 (owner: "emotional range" - he was "surprised 0.93" and "sad 0.82" at every routine candle close):
+        # HABITUATION - the same kind of feeling stirred again and again within the hour moves him less each time (the
+        # tenth candle is not a surprise); a change of kind, or a quiet hour, gives the full force back
+        now = time.time()
+        hk = [t for t in (cur.get("hits") or []) if now - float(t) < 3600]
+        if dl > 0:
+            dl = dl / (1.0 + 0.6 * len(hk))
+        v = max(0.0, min(1.0, v0 + dl * ((1.0 - v0) if dl > 0 else 1.0)))
+        F[key] = {"v": round(v, 3), "t": now, "why": str(why)[:160] or cur.get("why", ""), "hits": (hk + [now])[-12:] if dl > 0 else hk}
     _mut(f)
 
 

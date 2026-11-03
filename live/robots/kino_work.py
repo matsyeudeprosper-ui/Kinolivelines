@@ -88,6 +88,15 @@ def _world_view():
         L.append("size of your world: %.0f MB" % size)
     except Exception:
         pass
+    try:                                       # 2026-11-03: fields people brought you that you do not understand well yet
+        import kino_fields as KF
+        F = KF._load()
+        rows = ["%s (still unclear to you: %s)" % (k, "; ".join(v.get("unclear") or []) or "-") for k, v in
+                sorted(F.items(), key=lambda kv: -float(kv[1].get("t") or 0))[:4] if v.get("unclear")]
+        if rows:
+            L.append("fields people brought you that you are still learning (you could read up on one with your browser): " + " | ".join(rows))
+    except Exception:
+        pass
     return "\n".join(L)
 
 
