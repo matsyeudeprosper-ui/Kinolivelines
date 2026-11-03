@@ -22456,6 +22456,13 @@ def _night_idea_shift(u):
     say = str(rp["say"]).strip()[:900]
     best = rp.get("best") if isinstance(rp.get("best"), str) else None
     bside = next((r["side"] for r in rows if r.get("formula") == best), "buy")
+    # 2026-11-03 01:02 UTC (watch): the report said "nothing to try yet" yet asked to send, with a "best" idea, a "Try it" chip
+    # and an idea card under it - a bubble contradicting its own cards. The docstring's rule, as a mechanism: a night idea
+    # reaches the member only when it is genuinely promising - its best row beats at least 70 of 100 random draws (the bar
+    # the variants path already uses before testing one for real). Nothing promising = nothing said; the rows stay recorded.
+    _br = next((r for r in rows if r.get("formula") == best), None)
+    if not _br or (_br.get("beats_random_pct") or 0) < 70:
+        return
 
     def put(cc):
         _chat_msg(cc, "ai", text=say, chips=[str(x)[:60] for x in (rp.get("chips") or [])[:3]], night=True, quick=True,
@@ -22509,6 +22516,9 @@ def _night_shift_variants(u):
         # own robot untouched; the result comes in the morning (companion step (1b))
         try:
             best = rep.get("best") if isinstance(rep, dict) else None
+            if not best:                     # 2026-11-03: the brain missed a 75-vs-20 variant; the rows name the best themselves
+                _tp = max((r for r in rows[1:] if r.get("formula")), key=lambda r: r.get("beats_random_pct") or 0, default=None)
+                best = _tp["formula"] if _tp else None
             br = next((r for r in rows[1:] if r.get("formula") == best), None)
             if best and br and not os.path.exists(TESTS_PAUSED) and (br.get("beats_random_pct") or 0) >= 70 \
                     and (br.get("beats_random_pct") or 0) > (rows[0].get("beats_random_pct") or 0):
@@ -22519,6 +22529,27 @@ def _night_shift_variants(u):
         if rep and rep.get("send") and str(rep.get("say") or "").strip():
             say = str(rep["say"]).strip()[:900]
             best = rep.get("best") if isinstance(rep.get("best"), str) else None
+            # 2026-11-03 (watch, same family as the night ideas): a "best" variant that does not beat 70 of 100 random draws
+            # is not news - the bubble would carry a "Try it" chip and a card under a text saying nothing is worth trying.
+            # Without a best (a plain "none beats yours") the report may still go.
+            _bv = next((r for r in rows[1:] if r.get("formula") == best), None) if best else None
+            if best and (not _bv or (_bv.get("beats_random_pct") or 0) < 70):
+                best = None
+                rep = dict(rep, chips=[x for x in (rep.get("chips") or []) if not re.search(r"(try|essa|teste)", str(x), re.I)])
+            if not best:                     # the rows decide, not the prose: the top variant that qualifies is the best
+                _top = max((r for r in rows[1:] if r.get("formula")), key=lambda r: r.get("beats_random_pct") or 0, default=None)
+                if _top and (_top.get("beats_random_pct") or 0) >= 70 and (_top.get("beats_random_pct") or 0) > (rows[0].get("beats_random_pct") or 0):
+                    best, _bv = _top["formula"], _top
+
+            # 2026-11-03 01:02 UTC (watch): the prose said "nothing new, nothing to try" while the rows said a variant beat
+            # 75 of 100 random draws against 20 for the original. The numbers are the server's, not the brain's: when a
+            # variant qualifies, the bubble carries them in one plain line after the prose, whatever the prose says.
+            if best and _bv:
+                _o = int(rows[0].get("beats_random_pct") or 0); _b = int(_bv.get("beats_random_pct") or 0)
+                _lg = _rc().member_lang(c, c.get("lang") or "fr", dominant=True)
+                _fact = ("Numbers: your version beats %d of 100 random robots; the variant \"%s\" beats %d." if _lg == "en" else
+                         "Chiffres : ta version bat %d robots sur 100 au hasard ; la variante \"%s\" en bat %d.") % (_o, str(_bv.get("why") or best)[:80], _b)
+                say = (say + chr(10) + chr(10) + _fact)[:1100]
 
             def put(cc):
                 _chat_msg(cc, "ai", text=say, chips=[str(ch)[:60] for ch in (rep.get("chips") or [])[:3]], night=True, quick=True,
