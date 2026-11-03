@@ -15593,6 +15593,22 @@ def _pb_top_line(j):
         return ""
 
 
+def _chart_struct_line(j):
+    """2026-11-03 17:53 UTC (owner: "the SL should always be at the glowing dot - the invalidated level formed by the recent BOS"):
+    what his LOWER chart draws, by the names on his screen - the glowing dots (low = teal under price, high = orange above),
+    the BOS line (dashed, with the diamond) - so a stop can be put exactly where he points."""
+    try:
+        f = lambda z: "%.0f" % float(z)
+        hm = lambda t: time.strftime("%H:%M", time.gmtime(float(t)))
+        D = [d for d in (j.get("dots") or []) if d and len(d) > 2][-4:]
+        dots = " | ".join("%s %s %s" % (hm(d[0]), "low dot" if d[2] == 1 else "high dot", f(d[1])) for d in D) or "none"
+        return ("HIS LOWER CHART'S STRUCTURE (what he sees drawn): glowing dots, newest last: %s; BOS line (dashed, diamond): %s; "
+                "trend %s. When he says 'the glowing dot' / 'the level formed by the recent BOS', it is one of THESE numbers."
+                % (dots, f(j["next_bos"]) if j.get("next_bos") else "none", {1: "up", -1: "down"}.get(j.get("trend"), "none")))
+    except Exception:
+        return ""
+
+
 _ARB_CACHE = {}                 # (uid, admin) -> (t, acct_robot_block) for Kino's member context (30 s)
 
 
@@ -15614,6 +15630,9 @@ def _chat_member(user, c):
             _tl = _pb_top_line(_j)
             if _tl:
                 L.append(_tl)
+            _sl = _chart_struct_line(_j)
+            if _sl:
+                L.append(_sl)
     except Exception:
         pass
     try:
@@ -20060,6 +20079,9 @@ def _auto_watch_loop():
                     _tl = _pb_top_line(j)
                     if _tl:
                         ev += " " + _tl
+                    _sl2 = _chart_struct_line(j)
+                    if _sl2:
+                        ev += " " + _sl2
                     if _said:
                         ev += " WHAT HE TOLD YOU IN THE LAST HOURS (his exact words, oldest first - the LATEST instruction on a point replaces the earlier one): " +                               " || ".join("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), str(x.get("text"))[:220].replace(chr(10), " ")) for x in _said)
                 except Exception:
