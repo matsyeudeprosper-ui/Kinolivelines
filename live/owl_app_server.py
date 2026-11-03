@@ -15576,19 +15576,35 @@ def _pkg_watch():
 def _pb_top_line(j):
     """2026-11-03 17:34 UTC (owner: "how far is the next trade?" - Kino: "I don't have that candle's low in front of me"): the TOP
     chart of his screen is the pullback chart (feed j["pb"]); its last closed candle is "the move candle" of his rule. Its
-    high/low and the last few, in plain numbers, for the watch and for every chat turn while auto-trade is on."""
+    high/low and the last few, in plain numbers, for the watch and for every chat turn while auto-trade is on.
+    23:3x UTC (owner: "that's a red candle right now, why didn't you take it" - the 23:29 first red was missed): each top
+    candle is one lower candle at a structure time, and pullback_view ALWAYS adds the newest lower candle as the last one - a
+    stand-in replaced every minute unless it becomes a structure point. This line called that stand-in "its latest candle",
+    so the real move candle (23:22, closed bullish at 23:23) read as "before it". Now: the last REAL top candle and the
+    moment it closed, the stand-in named as such, and the lower-chart candles that closed since, in order with their colour -
+    what he sees on the screen, not a decision."""
     try:
-        pc = [x for x in ((j.get("pb") or {}).get("candles") or []) if x and len(x) > 4][-4:]
-        if not pc:
+        pc = [x for x in ((j.get("pb") or {}).get("candles") or []) if x and len(x) > 4][-5:]
+        if len(pc) < 2:
             return ""
         f = lambda z: "%.0f" % float(z)
-        mv = pc[-1]
-        return ("TOP CHART of his screen (the pullback chart): its latest candle %s UTC is %s (open %s, high %s, low %s, close %s); "
-                "(low %s, high %s). Read his trigger ONLY from his own words below - do not invent a level he did not name. "
-                "Before it: %s." % (time.strftime("%H:%M", time.gmtime(mv[0])), "bullish" if float(mv[4]) >= float(mv[1]) else "bearish",
-                                    f(mv[1]), f(mv[2]), f(mv[3]), f(mv[4]), f(mv[3]), f(mv[2]),
-                                    " | ".join("%s %s/%s/%s/%s" % (time.strftime("%H:%M", time.gmtime(x[0])), f(x[1]), f(x[2]), f(x[3]), f(x[4]))
-                                               for x in pc[:-1])))
+        hm = lambda t: time.strftime("%H:%M", time.gmtime(float(t)))
+        col = lambda x: "bullish" if float(x[4]) >= float(x[1]) else "bearish"
+        now = time.time()
+        _lw = [x for x in (j.get("candles") or []) if x and len(x) > 4]
+        stand = bool(_lw) and int(float(pc[-1][0])) == int(float(_lw[-1][0]))     # the newest lower candle, added as a stand-in
+        mv, fm = (pc[-2], pc[-1]) if stand else (pc[-1], None)
+        t_close = float(mv[0]) + 60                    # a top candle is one lower candle: it closed a minute after it opened
+        low = [x for x in _lw if float(x[0]) >= t_close and float(x[0]) + 60 <= now]
+        since = " | ".join("%s %s (close %s)" % (hm(x[0]), "RED" if float(x[4]) < float(x[1]) else "green", f(x[4])) for x in low[:8])
+        return ("TOP CHART of his screen (the pullback chart): its last REAL candle started %s and CLOSED at %s UTC, %s (open %s, high %s, "
+                "low %s, close %s) - the last real top candle. %sLower-chart candles that closed since that top close at %s, in order: %s. "
+                "Before it on the top chart: %s. Read his trigger ONLY from his own words below - do not invent a level he did not name."
+                % (hm(mv[0]), hm(t_close), col(mv), f(mv[1]), f(mv[2]), f(mv[3]), f(mv[4]),
+                   ("(The top candle drawn after it, %s, is only the newest lower candle shown as a stand-in - it is replaced every minute "
+                    "unless it becomes a structure point; it is NOT a closed top candle.) " % hm(fm[0])) if fm else "", hm(t_close),
+                   since or "none yet", " | ".join("%s %s %s/%s/%s/%s" % (hm(x[0]), col(x), f(x[1]), f(x[2]), f(x[3]), f(x[4]))
+                                                   for x in pc[:(-2 if fm else -1)]) or "-"))
     except Exception:
         return ""
 
