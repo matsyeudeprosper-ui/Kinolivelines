@@ -15582,6 +15582,17 @@ def _chat_member(user, c):
     Their own data only; nothing about the machinery."""
     uid = user.get("id")
     L = []
+    try:                                     # 2026-11-03 (owner: "maybe it looks at normal M1 closes, not my chart's candles?")
+        if _auto_on(c):
+            _j = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
+            _cs = [x for x in (_j.get("candles") or []) if float(x[0]) + 60 <= time.time()][-8:]
+            if _cs:
+                _f = lambda z: ("%.0f" % float(z))
+                L.append("HIS CHART'S LAST CLOSED CANDLES (the silence-filter candles he trades on and you watch - NOT fixed 1-minute "
+                         "candles; time UTC open/high/low/close): " + " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])),
+                         "/".join(_f(z) for z in x[1:5])) for x in _cs) + ". Judge his rules on THESE, the same as your watch does.")
+    except Exception:
+        pass
     try:
         L.append("plan: Signal %s, Stratégie %s, Automatique %s%s" % tuple(["yes" if has(uid, k) else "no" for k in ("manual", "strategy", "family")]
                                                                         + [" (the nest's owner)" if is_admin(user) else ""]))
@@ -19787,15 +19798,17 @@ def _auto_on(c):
     return bool(a.get("on")) and time.time() < float(a.get("until") or 0)
 
 
-def _desk_send(uid, req, wait=20.0):
+def _desk_send(uid, req, wait=45.0):
     """hand one request to the desk (owl_manual_trader) and wait for its answer -> (ok, info) or None if it did not answer"""
     rp = os.path.join(DIR, "manual_order_result_%s.json" % uid)
     try:
         os.remove(rp)
     except Exception:
         pass
-    with open(os.path.join(DIR, "manual_order_%s.json" % uid), "w") as f:
+    _of = os.path.join(DIR, "manual_order_%s.json" % uid)   # 2026-11-03: written whole, then renamed - the desk read it half-written
+    with open(_of + ".tmp", "w") as f:
         json.dump(dict(req, ts=time.time(), by=uid, kino=1), f)
+    os.replace(_of + ".tmp", _of)
     for _ in range(int(wait * 2)):
         time.sleep(0.5)
         res = _jload(rp, None)
