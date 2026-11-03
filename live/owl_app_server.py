@@ -20750,6 +20750,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _commit_harvest_bg(cid, user, {"say": say}, {}, event)
         if notify:
             _companion_deliver(user, cid, say, important)
+        else:                                          # 2026-11-03 (owner: "like WhatsApp, a push for new messages")
+            _kino_msg_push(user, cid, say)
     try:
         open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f one=1\n" % (
             time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), (r["first"] + _tctx1) if r.get("first") else -1,
@@ -21564,6 +21566,32 @@ def _companion_push(user, n):
     queue_push(uid, "📞 Kino t'appelle" if _ring else "Kino", n["text"][:160],
                path="atelier?c=" + n["cid"] + (("&call=" + (_rk[1] if _rk else "1")) if _ring else ""), sticky=bool(n.get("important")), urgent=bool(n.get("important")), tag="atelier")
     n["pushed"] = int(time.time())
+
+
+def _kino_msg_push(user, cid, text):
+    """2026-11-03 (owner: "with WhatsApp you get a push with new messages - can we have it for Kino?"): any message Kino posts
+    that the member is not looking at gets a push, like a messenger: not when that conversation is open (they see it), not
+    while they are in the app (the unread dot shows it), not in their quiet hours; at night only if they wrote in the last
+    15 min (awake, waiting). One notification per conversation, replaced by the next (tag)."""
+    try:
+        uid = user.get("id")
+        sn = _CHAT_SEEN.get(uid)
+        if sn and time.time() - sn[0] < 45 and sn[1] == cid:
+            return
+        if time.time() - _LAST_SEEN.get(uid, 0) < 120:
+            return
+        h = _local_hour(uid)
+        _q = ((_mem_get(uid).get("prefs") or {}).get("quiet"))
+        if _q and ((_q[0] <= h < _q[1]) if _q[0] < _q[1] else (h >= _q[0] or h < _q[1])):
+            return
+        if (h >= 22 or h < 8) and not _active_hour(uid, h):
+            c = _chat_load(user, cid) or {}
+            lu = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") == "user"] or [0])
+            if time.time() - lu > 900:
+                return
+        queue_push(uid, "Kino", str(text)[:160].replace(chr(10), " "), path="atelier?c=" + cid, tag="kino-" + cid)
+    except Exception:
+        pass
 
 
 def _companion_deliver(user, cid, text, important=False):
