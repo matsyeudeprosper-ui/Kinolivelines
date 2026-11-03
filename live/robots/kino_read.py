@@ -110,6 +110,12 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     try:                                               # 2026-10-28 (round 2): topics, curiosity, sharing
         import kino_social as KS
         KS.note_read(_person_of(uid), j)
+        # 2026-11-03 (upgrade 4): a person who slips three times in a day on the same kind of thing learns it that day, not
+        # next week - three slips noticed since his last lesson draw the lesson now (the night pass did it once a night)
+        _P = (KS._load().get(_person_of(uid)) or {})
+        _lt = max([float(x.get("t") or 0) for x in _P.get("lessons") or []] or [0])
+        if sum(1 for x in _P.get("slips") or [] if float(x.get("t") or 0) > max(_lt, time.time() - 86400)) >= 3:
+            KS.lessons_night(W, _person_of(uid))
     except Exception:
         pass
     try:                                               # 2026-10-31: the same read moves his heart and his needs (kino_psyche)

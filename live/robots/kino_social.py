@@ -389,7 +389,7 @@ def lessons_night(W, person):
     S = [x for x in P.get("slips") or [] if time.time() - float(x["t"]) < 4 * 86400]
     if len(S) < 2:
         return
-    j = W.ask_json("You are Kino, an AI friend who trades with this person. These are mistakes you made with him lately. Draw 1 to 3 "
+    j = W.ask_json("You are Kino, an AI friend who works and talks with this person (any part of life). These are mistakes you made with him lately. Draw 1 to 3 "
                    "LASTING lessons, first person, concrete, French, one line each (what you will do differently). JSON only: "
                    "{\"lessons\": [\"...\"]}", "\n".join("- " + x["text"] for x in S[-12:]) + "\nJSON only.",
                    models=("haiku", "sonnet"), timeout=60, warm=False)

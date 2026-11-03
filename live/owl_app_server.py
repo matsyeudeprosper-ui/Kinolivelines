@@ -15672,6 +15672,70 @@ def kino_ways_api(user, body):
                                   sorted(_KW.entries(pid), key=lambda x: -x["t"])]}
 
 
+def _one_fresh(user, c):
+    """2026-11-03 (speed + 4 upgrades): what changes with every message, built at the moment of the reply - cheap.
+    His gut read of them; their ways notebook; how he has been sounding; how much attention they have right now; where the
+    last conversation stopped when this one is new."""
+    uid = user.get("id")
+    cid = c.get("id")
+    L = []
+    try:                                               # 2026-10-28 (engine 2): his gut read of them right now
+        import kino_person as _KPr
+        _br = _KPr.block_one(c.get("uid") or uid, cid)
+        if _br:
+            L.append(_br)
+    except Exception:
+        pass
+    try:                                               # kino_ways: how this person does and wants things, newest word
+        import kino_ways as _KWy
+        _wy = _KWy.block(_person(uid), "en" if c.get("lang") == "en" else "fr")
+        if _wy:
+            L.append(_wy)
+            # (2) what he asked vs what you would rather do: a person who disagrees with a clear instruction says so, once,
+            # out loud - he does not quietly do otherwise
+            L.append("If what you are about to do differs from one of these instructions of his (even for a good reason of your own), "
+                     "say it to him plainly in one line and let him decide - never quietly do it your way instead.")
+    except Exception:
+        pass
+    try:                                               # he hears himself
+        _vm = _voice_mirror(c)
+        if _vm:
+            L.append(_vm)
+    except Exception:
+        pass
+    try:                                               # (3) how much attention they have right now - measured, not a word limit
+        now = time.time()
+        U = [m for m in (c.get("msgs") or [])[-12:] if m.get("role") == "user" and now - float(m.get("t") or 0) < 1800]
+        if U:
+            w = sum(len(str(m.get("text") or "").split()) for m in U) / float(len(U))
+            busy = []
+            nd = _jload(os.path.join(DIR, "nest_data", uid + ".json"), {}) or {}
+            if nd.get("open_list"):
+                busy.append("a trade of his is open right now")
+            if _auto_on(c):
+                busy.append("you are trading for him")
+            L.append("His attention right now: his last %d messages in 30 min averaged %d words%s. A person next to someone busy says the one "
+                     "thing that matters and keeps the rest for when he asks." % (len(U), w, (" - " + ", ".join(busy)) if busy else ""))
+    except Exception:
+        pass
+    try:                                               # (5) a new conversation picks up where the last one stopped
+        if len([m for m in (c.get("msgs") or []) if m.get("role") in ("user", "ai")]) < 4:
+            best = None
+            for ch in (chat_list(user).get("chats") or [])[:8]:
+                if ch.get("id") == cid:
+                    continue
+                cc = json.load(open(_chat_path(ch["id"]), encoding="utf-8"))
+                M = [m for m in cc.get("msgs") or [] if m.get("role") in ("user", "ai") and str(m.get("text") or "").strip()]
+                if M and (best is None or float(M[-1].get("t") or 0) > best[0]):
+                    best = (float(M[-1].get("t") or 0), M[-6:])
+            if best and time.time() - best[0] < 3 * 86400:
+                L.append("Where your last conversation with him stopped (%s UTC, another thread): " % time.strftime("%d/%m %H:%M", time.gmtime(best[0])) +
+                         " | ".join("%s: %s" % ("him" if m.get("role") == "user" else "you", " ".join(str(m["text"]).split())[:160]) for m in best[1]))
+    except Exception:
+        pass
+    return "\n".join(L)
+
+
 _ARB_CACHE = {}                 # (uid, admin) -> (t, acct_robot_block) for Kino's member context (30 s)
 
 
@@ -19026,26 +19090,8 @@ def _one_memory(user, c):
                      " | ".join(x["text"][:220] for x in _mo))
     except Exception:
         pass
-    try:                                               # 2026-10-28 (engine 2): his gut read of them right now
-        import kino_person as _KPr
-        _br = _KPr.block_one(c.get("uid") or uid, cid)
-        if _br:
-            L.append(_br)
-    except Exception:
-        pass
-    try:                                               # 2026-11-03 (kino_ways): how this person does and wants things, newest word
-        import kino_ways as _KWy
-        _wy = _KWy.block(_person(uid), "en" if c.get("lang") == "en" else "fr")
-        if _wy:
-            L.append(_wy)
-    except Exception:
-        pass
-    try:                                               # 2026-11-03: he hears himself today, the way a person notices a habit
-        _vm = _voice_mirror(c)
-        if _vm:
-            L.append(_vm)
-    except Exception:
-        pass
+    # 2026-11-03 (speed): his gut read, the ways notebook, how he sounds and the person's attention change with every
+    # message - they are built fresh in _one_fresh(), so this heavy part can be prepared ahead (_one_prefetch)
     try:                                               # 2026-10-28: what he noticed last night about his own way of talking
         _tc = _jload(os.path.join(DIR, "robots", "kino_tics.json"), {}) or {}
         if _tc.get("text") and time.time() - float(_tc.get("t") or 0) < 3 * 86400:
@@ -20555,16 +20601,22 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             pass
         _tc0 = time.time()
-        _pre = _ONE_PRE.pop(cid, None)
+        _pre = _ONE_PRE.get(cid)
         _split = "pre"
-        if _pre and not event and time.time() - _pre[0] < 25:
-            _ff, _mm1 = _pre[1], _pre[2]
+        if _pre and time.time() - _pre[0] < 120:
+            _ff, _mm1 = _one_facts(user, c), _pre[2]          # facts (trades, balance) always fresh; the heavy memory prepared
         else:                                  # 2026-11-03: each part timed (kino_timing.log "split=") to find the slow one
             _ts0 = time.time(); _ff = _one_facts(user, c)
             _ts1 = time.time(); _mm1 = _one_memory(user, c)
             _split = "facts%.1f/mem%.1f" % (_ts1 - _ts0, time.time() - _ts1)
         _ts2 = time.time()
         _nn = _one_now(user, c)
+        try:
+            _fr = _one_fresh(user, c)
+            if _fr:
+                _mm1 = (_mm1 + "\n" + _fr) if _mm1 else _fr
+        except Exception:
+            pass
         _split += "/now%.1f" % (time.time() - _ts2)
         _tctx1 = time.time() - _tc0
         # 2026-10-27 (owner: profitable plans): small talk ("ok", "merci", a thumb) after a message that asked nothing is
@@ -20933,6 +20985,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _KO._log(cid, "ACT_ERROR", "%s %s %s" % (k, v, type(e).__name__))
     if build:
         threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
+    try:                                               # 2026-11-03 (speed): the next reply's heavy part, prepared now
+        threading.Timer(3.0, _one_prefetch, args=(user, cid)).start()
+    except Exception:
+        pass
     if say:
         if uid not in ONE_TEST_UIDS:
             _commit_harvest_bg(cid, user, {"say": say}, {}, event)
@@ -21777,7 +21833,11 @@ def _kino_msg_push(user, cid, text):
             lu = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") == "user"] or [0])
             if time.time() - lu > 900:
                 return
-        queue_push(uid, "Kino", str(text)[:160].replace(chr(10), " "), path="atelier?c=" + cid, tag="kino-" + cid)
+        _lines = [ln.strip() for ln in str(text).splitlines() if ln.strip()]
+        _act = next((ln.lstrip("\u2192 ").strip() for ln in _lines if ln.startswith("\u2192")), "")
+        _first = re.split(r"(?<=[.!?])\s", " ".join(_lines))[0] if _lines else ""
+        _body = (_act + " \u00b7 " + _first) if _act else " ".join(_lines)
+        queue_push(uid, "Kino", _body[:170], path="atelier?c=" + cid, tag="kino-" + cid)
     except Exception:
         pass
 
