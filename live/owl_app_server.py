@@ -19923,13 +19923,6 @@ def _auto_watch_loop():
             if len(cs) < 6:
                 continue
             lc = cs[-1]
-            # 2026-11-03 (owner: "can he see my filtre silence chart?" - his rule lives on that chart, Kino watched raw minutes
-            # and "missed" a close the silence chart had made): the silence candles, built like the chart page builds them
-            try:
-                import owl_chart_feed as _Fw
-                _sk = _Fw.build([{"time": x[0], "open": x[1], "high": x[2], "low": x[3], "close": x[4]} for x in cs[-400:]])
-            except Exception:
-                _sk = []
             for uid, cid in list(m.items()):
                 try:                                   # 2026-10-26 (speed): the chat is re-read only when its file changed
                     _mt = os.path.getmtime(_chat_path(cid))
@@ -19959,7 +19952,9 @@ def _auto_watch_loop():
                 f = lambda z: ("%.0f" % float(z)) if abs(float(z)) >= 1000 else ("%g" % float(z))
                 up = {1: "up", -1: "down"}
                 pb = j.get("pb") or {}
-                ev = ("%s - a chart candle just closed (%s UTC, open/high/low/close %s). Last 6 closed candles: %s. Owl structure: trend %s, "
+                ev = ("%s - a candle of HIS chart just closed (%s UTC, open/high/low/close %s) - these ARE the candles he trades on: his chart's silence filter, "
+                      "a candle shows only when its close commits beyond the last shown one; they are NOT fixed 1-minute candles, never call them that "
+                      "(say 'a candle of your chart'). Last 6 closed candles: %s. Owl structure: trend %s, "
                       "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He asked you to place his orders for him, "
                       "by his own written rules, until %s UTC%s: an #ordre line is sent to his trading tool without the confirm card. Act ONLY if HIS OWN rules (what he told you) say so "
                       "right now - one #ordre line and one short line saying what you did and why. Otherwise answer only: …") % (
@@ -19968,17 +19963,6 @@ def _auto_watch_loop():
                     up.get(j.get("trend"), "none"), f(j["next_bos"]) if j.get("next_bos") else "-", f(j["invalid"]) if j.get("invalid") else "-",
                     up.get(pb.get("trend"), "none"), f(pb["next_bos"]) if pb.get("next_bos") else "-",
                     time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "")
-                try:
-                    _fmt = lambda c_: "%s %s" % (time.strftime("%H:%M", time.gmtime(float(c_["time"] if isinstance(c_, dict) else c_[0]))),
-                                                 "/".join(f(c_[z] if isinstance(c_, dict) else c_[i]) for i, z in enumerate(("open", "high", "low", "close"), 1)))
-                    _new = bool(_sk) and len(_sk) != last.get("sc:" + cid)
-                    last["sc:" + cid] = len(_sk)
-                    if _sk:
-                        ev += (" HIS CHART - filtre silence, the view he trades on (a candle shows only when its close commits beyond the last shown "
-                               "one; 'the first candle close of my lower timeframe' means THESE candles, not raw minutes): last closed %s; before: %s. "
-                               "A new silence candle closed this minute: %s." % (_fmt(_sk[-1]), " | ".join(_fmt(c_) for c_ in _sk[-6:-1]), "YES" if _new else "no"))
-                except Exception:
-                    pass
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
 
                 def _arun(cid=cid, u=u, ev=ev):
