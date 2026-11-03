@@ -13,8 +13,10 @@ each giving him information - never an instruction about what to say. Any field 
  7 values     (in kino_conflict.values_check) a request that goes against his own values or clearly against the person's
               good is refused kindly, once, with the reason - his constitution decides, not a list
  8 wisdom     (kino_wisdom) what many people taught him, without anyone in it
- 9 closeness  how close the two are, so how much of himself he shares follows it, as with anyone
 10 fatigue    how long this stretch has been, how sharp he has been in it
+11 questions  a question either of them asked that the talk moved past unanswered stays open until it is taken up
+12 threads    a talk about something else that a trade event cut into: where it was, until the talk comes back to it
+(closeness itself lives in kino_social.block - one measure, not two)
 """
 import io, json, os, re, sys, threading, time, calendar
 
@@ -56,9 +58,26 @@ def from_read(person, j, last_msg=None):
     term = " ".join(str(j.get("shared_term") or "").split())[:60]
     fr = " ".join(str(j.get("friction") or "").split())[:200]
     ag = " ".join(str(j.get("asks_against") or "").split())[:240]
+    dq = " ".join(str(j.get("dropped_question") or "").split())[:200]
+    an = " ".join(str(j.get("answered_now") or "").split())[:200]
+    dom = " ".join(str(j.get("domain") or "").lower().split())[:40]
+    ab = " ".join(str(j.get("talking_about") or "").split())[:160]
 
     def f(d):
         P = d.setdefault(person, {})
+        Q = [q for q in P.get("questions") or [] if now - q["t"] < 2 * 86400]
+        if an:
+            Q = [q for q in Q if len(_stems(q["q"]) & _stems(an)) < 2]
+        if len(dq) >= 8 and not any(len(_stems(q["q"]) & _stems(dq)) >= 2 for q in Q):
+            Q.append({"t": now, "q": dq})
+        P["questions"] = Q[-5:]
+        if dom:
+            th = P.get("thread") or {}
+            if dom == (P.get("thread_prev") or {}).get("domain"):
+                P["thread_prev"] = None                # the talk came back to it
+            elif dom != th.get("domain") or now - float(th.get("t") or 0) > 6 * 3600:
+                P["thread_prev"] = th or None
+            P["thread"] = {"domain": dom, "about": ab, "t": now, "t0": th.get("t0") if dom == th.get("domain") else now}
         _day(P, now, str(last_msg.get("text") or ""))
         if len(ag) >= 6:
             P["against"] = {"t": now, "what": ag}
@@ -109,6 +128,35 @@ def seed(person, msgs):
                 _day(P, float(m["t"]), str(m.get("text") or ""))
         P["seeded"] = True
     _mut(f)
+
+
+def open_questions(person):
+    now = time.time()
+    return [q for q in (_load().get(person) or {}).get("questions") or [] if now - q["t"] < 2 * 86400]
+
+
+def questions_line(person):
+    Q = open_questions(person)
+    if not Q:
+        return ""
+    return ("Questions left hanging between you (the talk moved on before they were answered): %s."
+            % " | ".join("%s (%s UTC)" % (q["q"], time.strftime("%d/%m %H:%M", time.gmtime(q["t"]))) for q in Q[-3:]))
+
+
+def thread_line(person, msgs):
+    """a talk about something else that a trade event came into, and the talk has not come back to it"""
+    P = _load().get(person) or {}
+    th, pv = P.get("thread") or {}, P.get("thread_prev") or {}
+    now = time.time()
+    if not pv or not pv.get("domain") or pv.get("domain") == th.get("domain") or now - float(pv.get("t") or 0) > 6 * 3600 \
+            or pv["domain"] in ("trading", "robots", "kino"):      # a trade event cutting into trade talk cuts nothing
+        return ""
+    ev = [m for m in msgs if m.get("role") == "ai" and m.get("event") and float(pv.get("t") or 0) - 60 <= float(m.get("t") or 0) <= float(th.get("t0") or now) + 60]
+    if not ev:
+        return ""                                      # they changed subject themselves - nothing was cut off
+    return ("At %s UTC you two were on %s (%s) when a trade event came in (%s); the talk has been on %s since and has not come back to it."
+            % (time.strftime("%H:%M", time.gmtime(float(pv["t"]))), pv["domain"], pv.get("about") or "-",
+               str(ev[0].get("event") or "")[:60], th.get("domain") or "-"))
 
 
 def against_line(person):
@@ -187,7 +235,7 @@ def friction_line(person, msgs, read):
 
 
 # ---- 6 rituals: learned from the chat ----------------------------------------------------------------------------------
-def rituals_line(person):
+def rituals_line(person, tz_h=0):
     """his rhythm, learned from when he writes: the quiet stretch of his day (found where it is, across midnight or not),
     when he comes back, how he opens after a long gap"""
     now = time.time()
@@ -208,29 +256,13 @@ def rituals_line(person):
     O = P3.get("opens") or {}
     op = max(O.items(), key=lambda x: x[1]) if O else None
     peak = max(range(24), key=lambda i: H[i])
-    L = ["His rhythm (from %d days of the last three weeks): busiest around %02d:00 UTC" % (len(days), peak)]
+    lh = lambda h: (h + tz_h) % 24                      # his own clock
+    L = ["His rhythm (from %d days of the last three weeks, HIS local time): busiest around %02dh" % (len(days), lh(peak))]
     if best[1] >= 3:
-        L.append("usually quiet from %02d:00 to %02d:00 UTC and back around %02d:00" % (best[0], (best[0] + best[1]) % 24, (best[0] + best[1]) % 24))
+        L.append("usually quiet from %02dh to %02dh and back around %02dh" % (lh(best[0]), lh(best[0] + best[1]), lh(best[0] + best[1])))
     if op and op[1] >= 3:
         L.append("after a long gap he often opens with \"%s\"" % op[0])
     return "; ".join(L) + "."
-
-
-# ---- 9 closeness -------------------------------------------------------------------------------------------------------
-def closeness_line(person, msgs):
-    P3 = _load().get(person) or {}
-    if not P3.get("n"):
-        return ""
-    U = [None] * int(P3["n"])
-    d0 = (time.time() - float(P3.get("first_seen") or time.time())) / 86400
-    try:
-        P = json.load(io.open(os.path.join(HERE, "kino_psyche.json"), encoding="utf-8"))["persons"].get(person) or {}
-        tr = float((P.get("rel") or {}).get("trust") or 0)
-    except Exception:
-        tr = 0.0
-    lvl = ("close" if tr >= 0.75 and len(U) > 200 else "getting to know each other well" if tr >= 0.55 else "still new to each other")
-    return ("How close you two are: %s (%d days, %d of his messages here, trust %.2f). How much of yourself you share - your doubts, "
-            "your own life - follows that, the way it does between people." % (lvl, d0, len(U), tr))
 
 
 # ---- 10 fatigue ----------------------------------------------------------------------------------------------------
@@ -281,9 +313,9 @@ def habits_line(person, msgs):
     return ""          # the patterns block (kino_patterns.block) shows it with the other records
 
 
-def block(person, msgs, read=None):
+def block(person, msgs, read=None, tz_h=0):
     ai = [str(m.get("text") or "") for m in msgs if m.get("role") == "ai"]
     habits_line(person, msgs)
-    L = [x for x in (against_line(person), followup_line(person, ai), shared_line(person), friction_line(person, msgs, read), rituals_line(person),
-                     closeness_line(person, msgs), fatigue_line(person, msgs)) if x]
+    L = [x for x in (against_line(person), followup_line(person, ai), questions_line(person), thread_line(person, msgs), shared_line(person),
+                     friction_line(person, msgs, read), rituals_line(person, tz_h), fatigue_line(person, msgs)) if x]
     return "\n".join(L)

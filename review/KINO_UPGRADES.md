@@ -66,6 +66,16 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 | Opening up gradually: closeness from days known, messages across all chats and relationship trust; how much of himself he shares follows it | engine | kino_human3.closeness_line |
 | Tiredness: a long stretch without a real break (25 min gap) with his slips in it; either can call a pause | engine | kino_human3.fatigue_line |
 
+## Done 11-03 late (round 4) - checked against what already exists first
+
+Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), what he said about himself (kino_said), closeness (kino_social.block), timing his own messages to their hours (_active_hour, kino_urge).
+
+| What | Kind | Where |
+|---|---|---|
+| Questions left hanging, both ways: a question either of them asked that the talk moved past stays open (2 days) until the read sees it answered or taken up | engine | kino_read 'dropped_question' / 'answered_now', kino_human3.questions_line |
+| A talk cut off by a trade event: where it was (topic, what about) until the talk comes back to it; nothing when they changed subject themselves or it was trade talk | engine | kino_human3.thread_line |
+| Duplicate closeness line removed (kino_social already measures it); rhythm now in the person's own clock | fix | kino_human3 |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

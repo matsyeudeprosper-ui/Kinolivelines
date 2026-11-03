@@ -15714,7 +15714,11 @@ def _one_fresh(user, c):
     try:                                               # 2026-11-03 (kino_human3): their life ahead, your shared words, friction,
         import kino_person as _KP3, kino_human3 as _KH3    # how your days go, how close you are, how long this stretch has been
         _rd3 = ((_KP3._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
-        _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3)
+        try:
+            _tzh = (_local_hour(uid) - time.gmtime().tm_hour) % 24
+        except Exception:
+            _tzh = 0
+        _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
         import kino_wisdom as _KWs                     # what many people taught him, nobody in it

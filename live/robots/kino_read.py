@@ -51,6 +51,8 @@ Read him RIGHT NOW. JSON only:
  "upcoming_when": "when it is, as he said it, in English: 'today', 'tonight', 'tomorrow', 'in 3 days', 'this week', or a date YYYY-MM-DD; else empty",
  "shared_term": "a word, nickname or expression that has become THEIRS (he reused one of Kino's words, or they both use a coined name for a thing); else empty",
  "friction": "if there was tension between him and Kino in these last messages (he got irritated, Kino was cold or stubborn, a dispute): what, briefly; else empty",
+ "dropped_question": "a question asked by EITHER of them in these exchanges that the talk moved past without it being answered (not one asked in the very last message): who asked - 'he asked' or 'Kino asked' - and the question; else empty",
+ "answered_now": "if one of the QUESTIONS LEFT OPEN EARLIER (given above) was just answered or taken up: its words; else empty",
  "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
@@ -93,6 +95,13 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         _vals = " | ".join([str(x) for x in (_cn.get("values") or [])] + [str(x) for x in (_cn.get("refuse") or [])])[:1200]
     except Exception:
         pass
+    try:
+        import kino_human3 as _KH3q
+        _oq = " | ".join(q["q"] for q in _KH3q.open_questions(_person_of(uid)))
+    except Exception:
+        _oq = ""
+    if _oq:
+        _vals = (_vals or "-") + "\nQUESTIONS LEFT OPEN EARLIER: " + _oq
     user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
         cues or "-", "-" if local_hour is None else "%02dh" % local_hour, ("KINO'S VALUES: %s\n" % _vals) if _vals else "",
         ("TRUE FACTS ABOUT KINO HIMSELF (measured by the app - when Kino states these, it is NOT a slip): %s\n" % _kt) if _kt else "",
