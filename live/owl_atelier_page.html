@@ -393,7 +393,7 @@ header .kav .kpres{width:42px!important;height:42px!important}.kl .kpres,.rpso .
   <header>
    <a class="ib" href="home" id="bk" aria-label="Retour"><svg><use href="#back"/></svg></a>
    <div class="kav" onclick="location.href='kino'"><canvas class="kpres"></canvas><i></i></div><div class="ttl" id="ttl" onclick="renameSh()"><b><span id="tn">Kino</span></b><small id="ts">en ligne</small></div>
-   <button class="ib" onclick="callStart()" aria-label="Appeler Kino" title="Appeler Kino" style="font-size:18px">📞</button><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button><button class="ib" onclick="moreSh(this)" aria-label="Plus" title="Plus" style="font-size:20px;font-weight:800">⋮</button>
+   <button class="ib" onclick="callStart()" aria-label="Appeler Kino" title="Appeler Kino" style="font-size:18px">📞</button><a class="ib" id="chartb" href="chart" aria-label="Ouvrir le graphique" title="Le graphique"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 4v4M8 16v4M16 3v3M16 14v5"/><rect x="6" y="8" width="4" height="8" rx="1"/><rect x="14" y="6" width="4" height="8" rx="1"/></svg></a><button class="ib" onclick="histSh()" aria-label="Mes conversations"><svg><use href="#hist"/></svg></button><button class="ib" onclick="moreSh(this)" aria-label="Plus" title="Plus" style="font-size:20px;font-weight:800">⋮</button>
    <button class="ring" onclick="bpSh()" aria-label="Le plan du robot"><svg viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="rf" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg><b id="rn">0/6</b></button>
   </header>
   <div id="srch"><button onclick="srchClose()" aria-label="Fermer">←</button><input id="sq" placeholder="Chercher dans la conversation" oninput="srchRun()" enterkeyhint="search"><small id="sn"></small><button onclick="srchStep(-1)" aria-label="Précédent">⌃</button><button onclick="srchStep(1)" aria-label="Suivant">⌄</button><button class="sall" onclick="srchAll()" aria-label="Partout">🌐</button></div>
@@ -2454,7 +2454,7 @@ function tGuess(btn,g){const w=btn.closest('.tgs');try{localStorage.setItem(w.da
 <button class="chg" onclick="callEnd()" aria-label="Raccrocher">✆</button></div>
 <div id="fsc"><div class="fh"><button onclick="fsClose()" aria-label="Fermer">✕</button><b id="fst"></b><button onclick="fsZoom(1)" aria-label="Zoomer">＋</button><button onclick="fsZoom(-1)" aria-label="Dézoomer">－</button><button onclick="fsPlay()" aria-label="Rejouer">▶</button></div><canvas id="fcv"></canvas><div class="fz" id="fzh">Pince pour zoomer · glisse pour te déplacer</div></div>
 <style>/* 2026-10-26: inside the chart's Kino panel - no back arrow, no side plan, no footnote */
-html[data-emb] #bk,html[data-emb] aside.bp,html[data-emb] #hint{display:none!important}</style>
+html[data-emb] #bk,html[data-emb] #chartb,html[data-emb] aside.bp,html[data-emb] #hint{display:none!important}</style>
 <script>try{if(window.top!==window)document.documentElement.setAttribute('data-emb','1');   /* 2026-11-02: inside a frame = the Kino panel (the page drops ?embed=1 from its address before this runs) */}catch(e){}</script>
 <!-- kino_presence.js (inlined, keep in sync) -->
 <script>/* kino_presence.js (2026-11-02, owner: "a consciousness-style glowing effect, reacting, alive" - chose Synapse).
