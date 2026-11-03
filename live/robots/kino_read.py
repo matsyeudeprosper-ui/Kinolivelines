@@ -141,7 +141,8 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         _ak = str(j.get("about_kino_act") or "").lower().strip()
         if _ak in ("approved", "corrected"):
             import kino_human2 as KH2
-            KH2.trust_note(_person_of(uid), _ak, " ".join(str(next((m.get("text") for m in reversed(M) if m.get("role") == "user"), "")).split())[:120])
+            _lu = next((m for m in reversed(M) if m.get("role") == "user"), {}) or {}
+            KH2.trust_note(_person_of(uid), _ak, " ".join(str(_lu.get("text") or "").split())[:120], said_at=_lu.get("t"))
     except Exception:
         pass
     try:                                               # 2026-11-03 (kino_fields): a field new to him - he learns it, like anyone

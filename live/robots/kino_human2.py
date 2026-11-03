@@ -44,9 +44,9 @@ def _old_trust_note(person, kind, what=""):
         os.replace(tmp, STORE)
 
 
-def trust_note(person, kind, what=""):
+def trust_note(person, kind, what="", said_at=None):
     import kino_trust as KT
-    return KT.react(person, kind, what)
+    return KT.react(person, kind, what, said_at=said_at)
 
 
 def trust_line(person):

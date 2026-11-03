@@ -69,15 +69,17 @@ def _decay(k, now):
     k["a"], k["b"], k["t"] = float(k.get("a", 0)) * f, float(k.get("b", 0)) * f, now
 
 
-def react(person, reaction, said=""):
-    """the person's reaction ('approved' / 'corrected') to what he did in the last 30 minutes"""
+def react(person, reaction, said="", said_at=None):
+    """the person's reaction ('approved' / 'corrected') to what he did in the last 30 minutes. said_at = when they wrote it:
+    only acts he had done BEFORE that message can be what they react to (2026-11-03 21:58: a "Cool" read with the earlier
+    correction still in view was credited as a correction of an act done after it)"""
     if reaction not in ("approved", "corrected"):
         return []
     now = time.time()
     with _LOCK:
         d = _load()
         P = d.get(person) or {}
-        pend = [x for x in P.get("pending") or [] if now - x["t"] < WINDOW]
+        pend = [x for x in P.get("pending") or [] if now - x["t"] < WINDOW and (said_at is None or x["t"] <= float(said_at))]
         if not pend:
             return []
         K = P.setdefault("kinds", {})
@@ -91,7 +93,7 @@ def react(person, reaction, said=""):
                 k["b"] += 1.5                       # a correction weighs more than a nod, like for anyone
             k["log"] = (k.get("log") or [])[-9:] + [{"t": now, "r": reaction, "said": str(said)[:120]}]
             hit.append(kd)
-        P["pending"] = []                           # this reaction answered them
+        P["pending"] = [x for x in P.get("pending") or [] if x not in pend]    # this reaction answered those
         d[person] = P
         _save(d)
     return hit
