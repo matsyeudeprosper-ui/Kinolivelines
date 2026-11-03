@@ -19981,11 +19981,13 @@ def _auto_watch_loop():
                     # at 06:45 he had changed the rule to "the very first candle close of that chart"; Kino agreed, then his own
                     # working note kept the older "close fully under the move candle's low" and he skipped the red close.
                     # His rules are not a summary any more: his own words since he gave Kino the desk, verbatim, latest wins.
-                    _t0 = float(a.get("t") or 0)
-                    _said = [x for x in (c.get("msgs") or []) if x.get("role") == "user" and float(x.get("t") or 0) >= _t0 - 600
-                             and str(x.get("text") or "").strip()][-10:]
+                    # 08:49 UTC: renewing the desk for 3 h reset this window and dropped his 06:45 and 08:04 rules - the
+                    # window is his last 6 hours of messages, whatever the renewals
+                    _t0 = time.time() - 6 * 3600
+                    _said = [x for x in (c.get("msgs") or []) if x.get("role") == "user" and float(x.get("t") or 0) >= _t0
+                             and str(x.get("text") or "").strip()][-14:]
                     if _said:
-                        ev += " WHAT HE TOLD YOU SINCE HE GAVE YOU THE DESK (his exact words, oldest first - the LATEST instruction on a point replaces the earlier one): " +                               " || ".join("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), str(x.get("text"))[:220].replace(chr(10), " ")) for x in _said)
+                        ev += " WHAT HE TOLD YOU IN THE LAST HOURS (his exact words, oldest first - the LATEST instruction on a point replaces the earlier one): " +                               " || ".join("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), str(x.get("text"))[:220].replace(chr(10), " ")) for x in _said)
                 except Exception:
                     pass
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
