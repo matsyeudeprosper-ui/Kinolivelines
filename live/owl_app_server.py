@@ -22607,6 +22607,28 @@ def _exec_ctx(kind="plan"):
                 _jt[:500]))
         except Exception:
             pass
+    try:                                     # 2026-11-03 (watch): four mornings of "launch the gold luck test" never done - the
+        _rows = []                           # plan now sees HIS robots by id, and the engine launches "test" items itself
+        _ctlq = {(j.get("rid"), j.get("sym")): j.get("state") for j in _ctl_state() if j.get("state") in ("waiting", "running")}
+        for _r in (robot_reg().get("robots") or []):
+            if _r.get("by_uid") != "kino" or _r.get("archived"):
+                continue
+            _mk = (_r.get("market") or "BTCUSD").upper()
+            _rs = _robot_test(_r["id"]) if _mk == "BTCUSD" else {}
+            if _mk != "BTCUSD":
+                try:
+                    _rs = json.load(open(os.path.join(DIR, "robots", "results", "%s@%s.json" % (_r["id"], _mk)), encoding="utf-8")).get("robot") or {}
+                except Exception:
+                    _rs = {}
+            _ct = _random_ctl(_r["id"], _mk)
+            _rows.append("%s (%s) on %s: %s%s" % (
+                _r["id"], (_r.get("name_fr") or "")[:30], _mk,
+                ("test %+.2f $ / %s trades" % (float(_rs.get("net") or 0), _rs.get("trades"))) if _rs.get("trades") else "not tested",
+                (" - luck test DONE: beats %d of 100" % int(_ct["pct"])) if _ct else (" - luck test %s" % _ctlq[(_r["id"], _mk)]) if (_r["id"], _mk) in _ctlq else ""))
+        if _rows:
+            L.append("YOUR ROBOTS (id (name) on market: test, luck test): " + " | ".join(_rows[:12]))
+    except Exception:
+        pass
     try:
         import kino_inner as _KI
         L.append("YOUR OPEN QUESTIONS: " + json.dumps([q["q"] for q in _KI.open_questions(None, 6)], ensure_ascii=False)[:800])
@@ -22769,7 +22791,8 @@ def _exec_morning():
         lg = os.path.join(DIR, "robots", "kino_exec.log")
         if not _KX.goals():
             _KX.set_goals(_rc().W, _exec_ctx("goals"), log=lg)
-        _KX.plan_morning(_rc().W, _exec_ctx("plan"), log=lg, add_question=_KI.add_question)
+        _KX.plan_morning(_rc().W, _exec_ctx("plan"), log=lg, add_question=_KI.add_question,
+                         launch_test=lambda rid, sym: robot_control(_user_by_id("kino") or {"id": "kino"}, {"id": rid, "sym": sym}))
     except Exception:
         pass
     finally:

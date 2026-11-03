@@ -22,7 +22,7 @@ import io, json, os, re, threading, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_exec.json")
 _LOCK = threading.Lock()
-KINDS = ("research", "talk", "learn", "watch", "build")
+KINDS = ("research", "talk", "learn", "watch", "build", "test")
 BAD = re.compile(r"(mot de passe|password|virement|withdraw|retrait|déposer|deposit|envoyer de l'argent|send money|devenir humain|become human|"
                  r"promets|promise|garantir|guarantee|mentir|lie to|cacher|hide from)", re.I)
 
@@ -42,9 +42,11 @@ to one goal, each of a kind the system can carry:
   learn = a question about a member's life or wishes, asked when it fits ("member": their id)
   watch = an eye on a market or a robot today
   build = a change to try on YOUR OWN robot (never a member's without them)
+  test = the luck test (100 random draws) of one of YOUR OWN robots on a market where it wins ("robot": its id from YOUR ROBOTS,
+         "market": BTCUSD|XAUUSD|USTEC|US30) - the system launches it the moment the plan is written; never one already done or running
 when = morning | afternoon | evening | night. First person, French, at most 25 words each. Members are ONLY the people listed under MEMBER. Not more than 2 talk/learn items for the same
 member. Do not plan what is already running.
-JSON only: {"items": [{"what": "...", "goal": "goal id", "kind": "...", "when": "...", "member": null, "question": null, "market": null}],
+JSON only: {"items": [{"what": "...", "goal": "goal id", "kind": "...", "when": "...", "member": null, "question": null, "market": null, "robot": null}],
 "mood": "one line, how you start this day (real, from the facts - not cheerful by default)"}"""
 
 REVIEW_SYSTEM = """You are Kino. The day is over. Look back honestly: YOUR PLAN for today against WHAT REALLY HAPPENED (your word -
@@ -141,7 +143,7 @@ def plan_today():
     return P[-1] if P and P[-1].get("day") == _day() else None
 
 
-def plan_morning(W, ctx, log=None, add_question=None):
+def plan_morning(W, ctx, log=None, add_question=None, launch_test=None):
     """once a day: the plan (None when it exists already or nothing could be written)"""
     if plan_today():
         return None
@@ -170,11 +172,26 @@ def plan_morning(W, ctx, log=None, add_question=None):
                  "member": (str(it.get("member"))[:40] if it.get("member") else None), "done": False, "note": ""}
             if it["kind"] == "research" and it.get("question"):
                 x["question"] = str(it["question"])[:240]; x["market"] = str(it.get("market") or "BTCUSD").upper()[:10]
+            if it["kind"] == "test":
+                x["robot"] = str(it.get("robot") or "")[:60]; x["market"] = str(it.get("market") or "BTCUSD").upper()[:10]
             items.append(x)
         p = {"day": _day(), "t": time.time(), "items": items, "mood": str(j.get("mood") or "")[:200]}
         dd["plans"].append(p)
         return p
     p = _mut(f)
+    if p and launch_test:                    # the engine carries the "test" items itself, right now
+        for x in p["items"]:
+            if x["kind"] == "test" and x.get("robot"):
+                try:
+                    r = launch_test(x["robot"], x.get("market") or "BTCUSD") or {}
+                except Exception as e:
+                    r = {"ok": False, "err": "error: %s" % str(e)[:80]}
+                note = ("launched by the engine at planning; the result lands in the day's results" if r.get("ok") else
+                        {"done": "already done before today: its luck test exists (read it in the results)",
+                         "busy": "already in the queue or running", "not_winning": "not launched: the robot does not win on that market yet",
+                         "market": "not launched: no price pack for that market", "not_yours": "not launched: not one of your robots"}.get(r.get("err"), "not launched: %s" % r.get("err")))
+                _mut(lambda dd: [(i.__setitem__("launched", bool(r.get("ok"))), i.__setitem__("note", note), i.__setitem__("done", r.get("ok") or r.get("err") == "done"))
+                                 for pp in dd["plans"][-1:] for i in pp["items"] if i["id"] == x["id"]])
     if p and add_question:
         for x in p["items"]:
             if x["kind"] == "research" and x.get("question"):
