@@ -29835,14 +29835,22 @@ def home_kino_data(user):
     if hit and time.time() - hit[0] < 60:
         return hit[1]
     if hit:
-        if not hit[2]:
-            hit[2] = True
+        # 2026-11-03 (owner: "Kino's last message on the home is still very old"): a refresh that hung kept its flag forever,
+        # so the stale copy never left (std: 07:45 copy served at 08:16). The flag is now the refresh's start time; one
+        # older than 90 s no longer blocks a new refresh, and a failure is written down.
+        if not hit[2] or time.time() - float(hit[2]) > 90:
+            hit[2] = time.time()
             def _bg(u=user, k=uid):
                 try:
                     _HOME_CACHE[k] = [time.time(), _home_kino_data(u), False]
                     _home_save(k, _HOME_CACHE[k][1])
-                except Exception:
+                except Exception as e:
                     _HOME_CACHE[k][2] = False
+                    try:
+                        io.open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
+                            "%s home_data %s %s: %s%s" % (time.strftime("%Y-%m-%d %H:%M:%S"), k, type(e).__name__, str(e)[:200], chr(10)))
+                    except Exception:
+                        pass
             threading.Thread(target=_bg, daemon=True).start()
         return hit[1]
     try:                                   # 2026-11-02: after a restart the first build took 19 s - show the last copy meanwhile
