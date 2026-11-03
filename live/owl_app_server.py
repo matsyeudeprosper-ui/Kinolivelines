@@ -15609,6 +15609,42 @@ def _chart_struct_line(j):
         return ""
 
 
+
+
+def _voice_mirror(c):
+    """2026-11-03 (owner: "genuine human"): a person half-hears their own habits - the phrase they keep repeating, how often
+    they said sorry, how dense their talk got. What his own messages of the last 24 h sound like, measured, as information;
+    the night review (kino_tics.json) came a day late. No instruction: he decides what to do with what he hears."""
+    now = time.time()
+    M = [m for m in (c.get("msgs") or [])[-120:] if m.get("role") == "ai" and str(m.get("text") or "").strip()
+         and now - float(m.get("t") or 0) < 86400]
+    if len(M) < 6:
+        return ""
+    # the server's own lines ("-> Order sent ...") are not his voice
+    T = [chr(10).join(ln for ln in str(m["text"]).splitlines() if not ln.lstrip().startswith("\u2192")) for m in M]
+    grams = {}
+    for t in T:
+        w = re.findall(r"[a-zà-ÿ']+", t.lower())
+        seen = set()
+        for i in range(len(w) - 3):
+            g = " ".join(w[i:i + 4])
+            if g not in seen:
+                seen.add(g)
+                grams[g] = grams.get(g, 0) + 1
+    rep = [g for g, n in sorted(grams.items(), key=lambda x: -x[1]) if n >= 3][:5]
+    sorry = sum(1 for t in T if re.search(r"\b(sorry|my bad|my fault|désolé|pardon|ma faute|mon erreur|je me suis trompé)\b", t, re.I))
+    nums = sum(len(re.findall(r"\d[\d.,]*", t)) for t in T) / float(len(T))
+    words = sum(len(t.split()) for t in T) / float(len(T))
+    L = ["How your own messages to him sounded over the last 24 h (%d messages, measured - like hearing yourself): about %d words and %.0f numbers each"
+         % (len(T), words, nums)]
+    if sorry >= 3:
+        L.append("you apologised or owned a mistake in %d of them" % sorry)
+    if rep:
+        L.append("phrases you kept coming back to: " + "; ".join('"%s" (%dx)' % (g, grams[g]) for g in rep))
+    return "; ".join(L) + "."
+
+
+
 _ARB_CACHE = {}                 # (uid, admin) -> (t, acct_robot_block) for Kino's member context (30 s)
 
 
@@ -18970,6 +19006,19 @@ def _one_memory(user, c):
             L.append(_br)
     except Exception:
         pass
+    try:                                               # 2026-11-03 (kino_ways): how this person does and wants things, newest word
+        import kino_ways as _KWy
+        _wy = _KWy.block(_person(uid), "en" if c.get("lang") == "en" else "fr")
+        if _wy:
+            L.append(_wy)
+    except Exception:
+        pass
+    try:                                               # 2026-11-03: he hears himself today, the way a person notices a habit
+        _vm = _voice_mirror(c)
+        if _vm:
+            L.append(_vm)
+    except Exception:
+        pass
     try:                                               # 2026-10-28: what he noticed last night about his own way of talking
         _tc = _jload(os.path.join(DIR, "robots", "kino_tics.json"), {}) or {}
         if _tc.get("text") and time.time() - float(_tc.get("t") or 0) < 3 * 86400:
@@ -20480,11 +20529,16 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             pass
         _tc0 = time.time()
         _pre = _ONE_PRE.pop(cid, None)
+        _split = "pre"
         if _pre and not event and time.time() - _pre[0] < 25:
             _ff, _mm1 = _pre[1], _pre[2]
-        else:
-            _ff, _mm1 = _one_facts(user, c), _one_memory(user, c)
+        else:                                  # 2026-11-03: each part timed (kino_timing.log "split=") to find the slow one
+            _ts0 = time.time(); _ff = _one_facts(user, c)
+            _ts1 = time.time(); _mm1 = _one_memory(user, c)
+            _split = "facts%.1f/mem%.1f" % (_ts1 - _ts0, time.time() - _ts1)
+        _ts2 = time.time()
         _nn = _one_now(user, c)
+        _split += "/now%.1f" % (time.time() - _ts2)
         _tctx1 = time.time() - _tc0
         # 2026-10-27 (owner: profitable plans): small talk ("ok", "merci", a thumb) after a message that asked nothing is
         # answered by the small model with the light facts (no chart levels, news, inner life) - about 10x cheaper
@@ -20860,9 +20914,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         else:                                          # 2026-11-03 (owner: "like WhatsApp, a push for new messages")
             _kino_msg_push(user, cid, say)
     try:
-        open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f one=1\n" % (
+        open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f one=1 split=%s\n" % (
             time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), (r["first"] + _tctx1) if r.get("first") else -1,
-            r["total"] + _tctx1, _tctx1))
+            r["total"] + _tctx1, _tctx1, locals().get("_split", "-")))
     except Exception:
         pass
 

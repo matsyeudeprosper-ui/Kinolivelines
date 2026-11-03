@@ -225,6 +225,16 @@ def unknown_figures(say, ctx):
         tol = max(0.6, 0.03 * v)
         if not any(abs(k - v) <= tol for k in known):
             bad.append(m.group(1).strip())
+    # 2026-11-03 (owner, a day of wrong levels: 76370, 77000 as "your dot"): a price LEVEL he names (a 4-6 digit number - a
+    # stop, a high, a dot) must be one he was given, rounded the way people say "around 76700". Years, times and his own
+    # sentence numbers are not levels.
+    for m in re.finditer(r"(?<![\d.,:/])(\d{4,6}(?:[.,]\d{1,2})?)(?![\d:/%$])", str(say)):
+        v = _num(m.group(1))
+        if v is None or v < 1000 or 1900 <= v <= 2100:
+            continue
+        tol = max(2.0, 0.0007 * v)
+        if not any(abs(k - v) <= tol for k in known):
+            bad.append(m.group(1).strip())
     return bad
 
 

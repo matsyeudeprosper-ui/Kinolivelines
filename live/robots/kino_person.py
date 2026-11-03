@@ -212,6 +212,8 @@ def block_one(uid, cid):
         s += " Il mélange français et anglais en ce moment."
     if r.get("confused"):
         s += " Ton dernier message l'a laissé perplexe : il n'a pas suivi."
+    if r.get("see"):                                   # 2026-11-03: he sees something you have not said - a person asks, looks again
+        s += " Il semble voir quelque chose que toi tu n'as pas dit ou pas vu : %s." % r["see"]
     if r.get("calls") in ("no", "optional"):
         s += (" Son dernier message se suffit à lui-même : il clôt l'échange, rien n'appelle une réponse." if r["calls"] == "no" else
               " Son dernier message n'appelle pas vraiment de réponse.")

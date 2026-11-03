@@ -271,3 +271,6 @@ live/robots/kino_permits.json.tmp
 live/robots/kino_school.json
 live/robots/kino_school.json.tmp
 live/home_cache/
+live/robots/kino_ways.json
+live/robots/kino_ways.json.tmp
+live/robots/kino_ways.log

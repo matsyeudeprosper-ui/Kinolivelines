@@ -24,6 +24,7 @@ Read him RIGHT NOW. JSON only:
  "his_intention": "something HE said he will do himself (watch a film, trade more by hand, test later...), with when if he said it; else empty",
  "shared_plan": "a plan the two of them agreed to do TOGETHER (what, when); else empty",
  "gave_kino": "something he just taught, gave or trusted Kino with (his method, a rule, a tip, his trust); else empty",
+ "they_see": "if his last messages show he sees something Kino has not said or seems to miss (he urges 'now' / 'go', says 'you missed it', points at something, sounds surprised Kino did not act or did not notice): what he seems to see, in a few words; else empty",
  "teaching_moment": "yes|no - is this a moment where a question back would make him think more than an explanation (he just made a decision worth looking at, he asked why, he is close to seeing it himself)",
  "lang_mix": "fr|en|mixed - the language(s) of his last messages",
  "calls_for_answer": "yes|optional|no - does his LAST message call for an answer, or does it close the exchange by itself (a 'cool', a 'thx', a thumbs-up after a goodbye)", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
@@ -96,6 +97,7 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     r["confused"] = str(j.get("confused") or "").lower().startswith("y")
     r["teach"] = str(j.get("teaching_moment") or "").lower().startswith("y")
     r["mix"] = str(j.get("lang_mix") or "").lower().strip()[:6]
+    r["see"] = " ".join(str(j.get("they_see") or "").split())[:200]
     try:
         r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
     except Exception:
@@ -124,6 +126,13 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             KDP.note_assumes(_person_of(uid), j.get("assumes"))
     except Exception:
         pass
+    _gk = " ".join(str(j.get("gave_kino") or "").split())[:240]
+    if len(_gk) >= 6:                                  # 2026-11-03 (kino_ways): what he taught goes into his notebook, newest wins
+        try:
+            import kino_ways as KW
+            KW.learn(W, _person_of(uid), M, hint=_gk, log=os.path.join(HERE, "kino_ways.log"))
+        except Exception:
+            pass
     try:                                               # 2026-10-31 (kino_selfmodel 2): what he seems to think of Kino
         import kino_selfmodel as KSF
         KSF.on_read(_person_of(uid), uid, j)
