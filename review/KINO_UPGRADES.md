@@ -49,6 +49,8 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 
 | Weekly self-review of his own behaviour: his Sunday look back now reads the record of his week (reactions to his acts by kind, slips and lessons, misquotes caught, acts held back, what people taught him) and writes the ONE thing about how he behaves that he wants to change, and how he will notice | engine link | kino_human2.week_mirror, kino_work WEEKLY |
 
+| Reflection driven by what nags, not the calendar (owner: "do humans wait for a day to review?"): corrections, slips, misquotes, held-back acts and undos stir an unresolved nag (weighted, fades in a day); in a quiet moment (10 min without talk, nothing running) a high nag brings him back to it and he settles 1-2 resolves in his own words; the same situation coming back reinforces a resolve ("being tested right now"), unused resolves fade in days. Replaces the "3 slips" trigger; the Sunday look back stays as an optional habit | engine | robots/kino_rumination.py, _urge_tick, kino_read |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

@@ -15704,6 +15704,13 @@ def _one_fresh(user, c):
             L.append(_h2)
     except Exception:
         pass
+    try:                                               # 2026-11-03 (kino_rumination): what he resolved, what still nags
+        import kino_rumination as _KRm
+        _rb = _KRm.block(_person(uid))
+        if _rb:
+            L.append(_rb)
+    except Exception:
+        pass
     try:                                               # (8) a field new to him: what he has learned of it, what he does not know yet
         import kino_person as _KPf, kino_fields as _KFf
         _rd = ((_KPf._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
@@ -20055,6 +20062,10 @@ def _order_direct(cid, user, v, en, c):
         _cf = _KCf.check(_rc().W, _person(uid), "%s (%s)" % (txt, v), _one_facts(user, c or {})[:1500],
                          log=os.path.join(DIR, "robots", "kino_conflict.log"))
         if _cf:
+            try:
+                __import__("kino_rumination").stir(_person(uid), "held_back", "I nearly sent an order against what he said: " + _cf["why"])
+            except Exception:
+                pass
             say_(("\u26a0\ufe0f Before sending this, a doubt: %s - I'm asking instead of doing it." if en else
                   "\u26a0\ufe0f Avant de l'envoyer, un doute : %s - je te demande au lieu de le faire.") % _cf["why"])
             return _order_card(cid, user, v, en)
@@ -20897,6 +20908,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _mq = _KCq.misquote(W, _person(uid), say, log=os.path.join(DIR, "robots", "kino_conflict.log"))
             if _mq:
                 _KO._log(cid, "MISQUOTE", "%s | %s" % (_mq["why"], say[:120]))
+                try:
+                    __import__("kino_rumination").stir(_person(uid), "misquote", "I almost restated his rule wrongly: " + _mq["why"])
+                except Exception:
+                    pass
                 r5 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
                               model=_mdl, note=("Your draft restates his instruction differently from his newest word (%s): %s. His newest "
                                                 "wording: \"%s\". Write your message again, saying his rule the way HE says it now. Your draft: « %s »"
@@ -24256,6 +24271,9 @@ def _followups_due(pm, now):
 _MAIL_T = {}
 
 
+_RUM_BUSY = {}
+
+
 def _urge_tick():
     """2026-10-28: every minute, for each person with a main thread on the one mind - does the wish to talk tip over now?"""
     _rc()
@@ -24282,6 +24300,21 @@ def _urge_tick():
             if cid in _CHAT_B or _CHAT_Q.get(cid) or cid in _CHAT_WAIT:
                 continue
             M = c.get("msgs") or []
+            try:                                       # 2026-11-03 (kino_rumination): a quiet moment for this person
+                _lm = max([float(x.get("t") or 0) for x in M[-6:]] or [0])
+                if now - _lm > 600 and not _RUM_BUSY.get(pm):
+                    import kino_rumination as _KRq
+                    if _KRq.nag(pm) >= _KRq.QUIET_AT:
+                        _RUM_BUSY[pm] = True
+
+                        def _ru(p=pm):
+                            try:
+                                _KRq.quiet(_rc().W, p, log=os.path.join(DIR, "robots", "kino_rumination.log"))
+                            finally:
+                                _RUM_BUSY.pop(p, None)
+                        threading.Thread(target=_ru, daemon=True).start()
+            except Exception:
+                pass
             lu = max([float(m.get("t") or 0) for m in M if m.get("role") == "user"] or [0])
             own = [float(m.get("t") or 0) for m in M if m.get("role") == "ai" and m.get("event") and m.get("text")]
             ctx = {"in_talk": _in_talk(uid, c), "their_hour": _active_hour(pm),
@@ -36554,8 +36587,10 @@ class H(BaseHTTPRequestHandler):
                 try:                                 # 2026-11-03 (kino_trust): redoing his act by hand is a soft correction
                     if req["close"] or req["modify"]:
                         _rc()
-                        __import__("kino_trust").undone(_person(u.get("id")), ("order:open", "order:modify"),
-                                                         "closed it by hand" if req["close"] else "moved its stop/target by hand")
+                        if __import__("kino_trust").undone(_person(u.get("id")), ("order:open", "order:modify"),
+                                                            "closed it by hand" if req["close"] else "moved its stop/target by hand"):
+                            __import__("kino_rumination").stir(_person(u.get("id")), "undone",
+                                                               "he redid my order by hand (%s)" % ("closed it" if req["close"] else "moved its stop/target"))
                 except Exception:
                     pass
                 if req["close"]:

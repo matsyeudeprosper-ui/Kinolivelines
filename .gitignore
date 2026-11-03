@@ -283,3 +283,6 @@ live/robots/kino_patterns.json
 live/robots/kino_patterns.json.tmp
 live/robots/kino_conflict.log
 live/robots/kino_trust.json.old_schema
+live/robots/kino_rumination.json
+live/robots/kino_rumination.json.tmp
+live/robots/kino_rumination.log
