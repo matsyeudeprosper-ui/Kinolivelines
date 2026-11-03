@@ -20650,7 +20650,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _pre = _ONE_PRE.get(cid)
         _split = "pre"
         if _pre and time.time() - _pre[0] < 120:
+            _tf0 = time.time()
             _ff, _mm1 = _one_facts(user, c), _pre[2]          # facts (trades, balance) always fresh; the heavy memory prepared
+            _split = "pre/facts%.1f" % (time.time() - _tf0)
         else:                                  # 2026-11-03: each part timed (kino_timing.log "split=") to find the slow one
             _ts0 = time.time(); _ff = _one_facts(user, c)
             _ts1 = time.time(); _mm1 = _one_memory(user, c)
