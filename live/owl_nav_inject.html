@@ -80,7 +80,7 @@ body{padding-top:calc(58px + env(safe-area-inset-top,0px))!important;padding-bot
 #knav a.kmid.unread .kd{position:relative}#knav a.kmid.unread .kd:after{content:"";position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:#ff5c7a;border:2px solid var(--bg)}
 #kbk.unread .av i{background:#ff5c7a!important;box-shadow:0 0 0 0 rgba(255,92,122,.6);animation:kbkP 1.6s infinite}
 @keyframes kbkP{70%{box-shadow:0 0 0 7px rgba(255,92,122,0)}100%{box-shadow:0 0 0 0 rgba(255,92,122,0)}}
-.tabbar,#hbar,#kpgtab{display:none!important}
+.tabbar,#hbar,#kpgtab,#owlnav{display:none!important}
 /* the robot dashboard: its brand row is the bar now; the balance banner becomes a card, and only on "Aujourd'hui" */
 .hero .topline{display:none!important}
 .hero{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:22px!important;margin:14px 14px 0!important;
@@ -115,6 +115,7 @@ body.k-sec .hero{display:none!important}
   if(OLD){location.replace('/'+tok+'/'+OLD);return;}}
  var TITLES={home:[T('Accueil','Home'),''],compte:[T('Compte','Account'),T('Ta formule, ton compte, tes réglages','Your plan, account and settings')],
   mesrobots:[T('Mes robots','My robots'),T('Construits avec Kino · leurs résultats','Built with Kino · their results')],
+  robots:[T('Robots','Robots'),T('Le robot de ton compte · tests · labo','Your account’s robot · tests · lab')],
   place:[T('La place','Marketplace'),T('Les robots créés par Kino et les membres','Robots made by Kino and members')],
   tests:[T('Tests','Tests'),T('Résultats, preuves, tests de chance','Results, proofs, luck tests')],kino:[T('Kino et toi','Kino and you'),T('Ce qu’il retient, ce qu’il poursuit','What he remembers, what he pursues')],
   wealth:[T('Patrimoine','Wealth'),T('Ton argent, tes poches, tes dépôts','Your money, pockets and deposits')],parrainage:[T('Parrainage','Referral'),T('50 % du premier mois de chaque ami','50% of each friend’s first month')],

@@ -29777,7 +29777,7 @@ def _member_pkg(uid):
 
 
 _HOME_CACHE = {}
-NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot", "ecole")
+NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot", "ecole", "robots")   # 2026-11-03: the cockpit too
 
 
 def home_kino_data(user):
