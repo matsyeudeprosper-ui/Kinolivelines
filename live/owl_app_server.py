@@ -15645,6 +15645,33 @@ def _voice_mirror(c):
 
 
 
+def kino_ways_api(user, body):
+    """2026-11-03: the member sees and corrects his notebook (kino_ways) - list / drop / edit one entry, in his words"""
+    _rc()
+    import kino_ways as _KW
+    pid = _person(user.get("id"))
+    act = str(body.get("act") or "list")
+    if act in ("drop", "edit"):
+        tp = str(body.get("topic") or "")
+        txt = " ".join(str(body.get("said") or "").split())[:300]
+
+        def f(d):
+            P = d.get(pid) or {}
+            for x in list(P.get("items") or []):
+                if x.get("topic") == tp:
+                    if act == "drop":
+                        P["items"].remove(x)
+                    elif txt:
+                        x.setdefault("prev", []).append({"said": x["said"], "t": x["t"]})
+                        x.update({"said": txt, "t": time.time(), "by_hand": True})
+        with _KW._LOCK:
+            d = _KW._load()
+            f(d)
+            _KW._save(d)
+    return {"ok": True, "items": [{"topic": x["topic"], "said": x["said"], "t": int(x["t"])} for x in
+                                  sorted(_KW.entries(pid), key=lambda x: -x["t"])]}
+
+
 _ARB_CACHE = {}                 # (uid, admin) -> (t, acct_robot_block) for Kino's member context (30 s)
 
 
@@ -35097,7 +35124,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "chat_why", "chat_luck_cancel", "kino_wish",
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "kino_ways", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "school", "robot_rules_vis", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
@@ -35123,7 +35150,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
+                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "kino_ways": kino_ways_api, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
                        "replay_get": replay_get, "replay_bars": replay_bars, "school": school, "robot_rules_vis": robot_rules_vis, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
