@@ -15584,7 +15584,7 @@ def _pb_top_line(j):
         f = lambda z: "%.0f" % float(z)
         mv = pc[-1]
         return ("TOP CHART of his screen (the pullback chart): its latest candle %s UTC is %s (open %s, high %s, low %s, close %s); "
-                "its low %s and high %s are the levels to read his 'move candle' rule against, unless he named another candle. "
+                "(low %s, high %s). Read his trigger ONLY from his own words below - do not invent a level he did not name. "
                 "Before it: %s." % (time.strftime("%H:%M", time.gmtime(mv[0])), "bullish" if float(mv[4]) >= float(mv[1]) else "bearish",
                                     f(mv[1]), f(mv[2]), f(mv[3]), f(mv[4]), f(mv[3]), f(mv[2]),
                                     " | ".join("%s %s/%s/%s/%s" % (time.strftime("%H:%M", time.gmtime(x[0])), f(x[1]), f(x[2]), f(x[3]), f(x[4]))
