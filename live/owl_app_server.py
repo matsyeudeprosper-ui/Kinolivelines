@@ -20580,8 +20580,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _KO._log(cid, "ACT_CHECK_ERROR", "%s %s" % (type(e).__name__, e))
         except Exception:
             pass
-    if say and event:                                  # they wrote while he was thinking of writing: their message comes first
-        try:
+    if say and event and not any(k == "ordre" for k, _ in acts):   # they wrote while he was thinking: their message first -
+        try:                                           # but never drop the words of a turn that sends an order (09:33 UTC: the
+                                                       # flip buy went out and its explanation was dropped)
             _cn = json.load(open(_chat_path(cid), encoding="utf-8"))
             if any(x.get("role") in ("user", "show", "image", "doc") and float(x.get("t") or 0) > _seen_t for x in _cn.get("msgs") or []):
                 _KO._log(cid, "EVENT_DROPPED", say[:120])
