@@ -17644,7 +17644,20 @@ def _ctx_get(user, cid, c):
         x = _CTX.pop(cid, None)
         if x and time.time() - x[0] < 20:
             return x[1:]
-    return (_chat_pieces(user), _ai_owl(), _chat_markets(user), _chat_memory(user, cid), _chat_member(user, c))
+    # 2026-11-03 (watch): 15 s of context on a member turn even with the account block cached - each piece is timed here
+    # (robots/kino_ctx.log) so the slow one is named, not guessed
+    _tt, _out = [], []
+    for _nm, _fn in (("pieces", lambda: _chat_pieces(user)), ("owl", _ai_owl), ("markets", lambda: _chat_markets(user)),
+                     ("memory", lambda: _chat_memory(user, cid)), ("member", lambda: _chat_member(user, c))):
+        _t1 = time.time()
+        _out.append(_fn())
+        _tt.append("%s=%.1f" % (_nm, time.time() - _t1))
+    try:
+        io.open(os.path.join(DIR, "robots", "kino_ctx.log"), "a", encoding="utf-8").write(
+            ("%s %s rebuilt %s (prefetch %s)" % (time.strftime("%m-%d %H:%M:%S"), cid, " ".join(_tt), "ran" if th is not None else "none")) + chr(10))
+    except Exception:
+        pass
+    return tuple(_out)
 
 
 def _read_them(user, cid):
