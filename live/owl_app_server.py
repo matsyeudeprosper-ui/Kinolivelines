@@ -27689,6 +27689,30 @@ def _spoken(text, lang="fr"):
     return t
 
 
+_DELIVERY = {"amused": "a smile in the voice, light, a short laugh if it fits", "happy": "warm and bright", "proud": "quietly pleased",
+             "excited": "a little faster, energy", "relieved": "an easy breath out, relaxed", "curious": "interested, leaning in",
+             "tender": "soft and slow", "sad": "lower and slower, a small sigh", "worried": "careful, a little tense, slower",
+             "frustrated": "short, a contained sigh", "stung": "quieter, shorter", "embarrassed": "a bit sheepish, a small laugh at himself",
+             "surprised": "a lift of surprise at the start", "tired": "slower, softer, a little flat", "calm": "even and unhurried",
+             "lonely": "warm, a little quiet"}
+
+
+def _voice_delivery(uid=None):
+    """2026-11-03 (owner: "his voice - hesitation, laughter"): how he SOUNDS follows what he feels, the way a voice does in a
+    person - the strongest feeling alive now (habituated, kino_inner) becomes a delivery note for the speech model."""
+    try:
+        _rc()
+        import kino_inner as _KIv2
+        F = [f for f in _KIv2.feelings(uid) if f["v"] >= 0.35][:2]
+    except Exception:
+        F = []
+    notes = [_DELIVERY[f["kind"]] for f in F if f["kind"] in _DELIVERY]
+    if not notes:
+        return ""
+    return ("How you sound right now, because of how you feel (%s): %s. Natural hesitations (a pause, \"hmm\", restarting a "
+            "sentence) where a person would make them." % (", ".join(f["kind"] for f in F), "; ".join(notes)))
+
+
 def _tts_mp3(text, lang="fr", voice=None):
     """2026-10-19 (owner list-4 item 8): text -> mp3 with the configured voice service ({"provider": "azure", "key",
     "region", "voice_fr", "voice_en"} or {"provider": "openai", "key", "voice"}); cached by text; None when not set up"""
@@ -27704,13 +27728,16 @@ def _tts_mp3(text, lang="fr", voice=None):
     os.makedirs(TTS_CACHE, exist_ok=True)
     if voice in KINO_VOICES and cf.get("provider") == "openai":
         cf = dict(cf, voice=voice)
-    fn = os.path.join(TTS_CACHE, hashlib.sha1(("%s|%s|%s|%s" % (cf.get("provider"), lang, cf.get("voice"), text)).encode("utf-8")).hexdigest() + ".mp3")
+    fn = os.path.join(TTS_CACHE, hashlib.sha1(("%s|%s|%s|%s|%s" % (cf.get("provider"), lang, cf.get("voice"), text, _voice_delivery()[:80])).encode("utf-8")).hexdigest() + ".mp3")
     if os.path.exists(fn):
         return open(fn, "rb").read()
     if cf.get("provider") == "openai":
         body = {"model": cf.get("model") or "gpt-4o-mini-tts", "voice": cf.get("voice") or "ash", "input": text, "response_format": "mp3"}
-        if cf.get("instructions") and "mini-tts" in body["model"]:
-            body["instructions"] = cf["instructions"] + (" Speak English." if lang == "en" else " Parle en français, accent naturel de France.")
+        if "mini-tts" in body["model"]:
+            _dv = _voice_delivery()
+            _bi = (cf.get("instructions") or "") + (" " + _dv if _dv else "")
+            if _bi.strip():
+                body["instructions"] = _bi.strip() + (" Speak English." if lang == "en" else " Parle en français, accent naturel de France.")
         rq = urllib.request.Request("https://api.openai.com/v1/audio/speech", data=json.dumps(body).encode(),
                                     headers={"Authorization": "Bearer " + key, "Content-Type": "application/json",
                                              # 2026-10-20: with Python's default user agent OpenAI answered in 11-20+ s (timeouts = no
@@ -28728,6 +28755,12 @@ def live_session(user, body):
     except Exception:
         cf = {}
     _ins = _live_instructions_one(user, c) if c.get("brain") == "one" else _live_instructions(user, c)
+    try:
+        _dv = _voice_delivery(user.get("id"))
+        if _dv:
+            _ins += "\n\n" + _dv
+    except Exception:
+        pass
     if c.get("brain") == "openai":                   # 2026-10-24 (seamless prototype): the back of the head works while you speak
         _ins += ("\n\nKINO-O SEAMLESS MODE. During this call, PREPARED ANSWERS arrive in your instructions every few seconds: the questions "
                  "likely to come next, already answered from the real data. When the member asks one of them (or close to it), answer AT "

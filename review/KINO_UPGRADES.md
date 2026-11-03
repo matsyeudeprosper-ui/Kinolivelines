@@ -45,6 +45,8 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 |---|---|---|
 | Hearing himself misquote: a message that restates the person's rule differently from their newest word (an added "fully", a "1-minute" they never said) is rewritten once in their wording before it goes out | engine | kino_conflict.misquote, _one_turn |
 
+| Voice follows feeling: his strongest live feeling (habituated) becomes a delivery note for read-aloud (gpt-4o-mini-tts instructions, in the cache key) and for live calls (realtime instructions); natural hesitations where a person makes them | engine link | _voice_delivery, _tts_mp3, live_session |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
@@ -52,4 +54,3 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 - Emotional range in his words (not only reports of feelings).
 - Many members at once: a test with 5+ synthetic members to prove no mixing.
 - Getting up to speed in a field: active learning (asking, reading with his browser, checking he understood).
-- Voice: hesitation and laughter on calls (TTS side).
