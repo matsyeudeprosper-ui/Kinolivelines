@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-02T20:00:23Z",
+ "updated": "2026-11-03T06:00:23Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -231,7 +231,8 @@
     "2026-10-31 12:00 veille: h1 internal = 0 on 33 of 34 closes since 10-26 (all 0 except one, 10-29 15:47 BUY h1 i=1 same way, lost -5.73 as predicted). The 0 bucket: 19 won of 34. No test possible this week. m15 trend reads -1 on nearly every trade since 10-08: capture may be stale (doubt).",
     "2026-11-02 07:30 veille: h1 internal non-zero again from Monday (i=1 on all 7 closes today). u477508138 since 10-26: h1 same 2 tr 0 won -3.78 per 0.01 (10-29 BUY, 11-02 05:44 BUY), opp 6 tr 4 won +0.49, zero 30 tr 19 won +19.49. As predicted in count, flat in money (peu). Capture alive again: the real-trade test can resume.",
     "2026-11-02 13:00 veille: 5 more closes, h1 i=1 on all: FLIP BUY 08:40 the same way lost -4.50 (0.02); 4 sells against it 2 won (+2.23, +2.82 / -1.45, -2.07). Since 10-26: same 3 tr 0 won, opp 10 tr 6 won, ~flat in money (peu). As predicted in count; the edge is in avoiding 'same'.",
-    "2026-11-02 20:00 veille: evening, h1 i=1 still; two sells against it: 18:32 FLIP (storm) L -2.29, 18:44 BOS W +3.26 at 0.02. Since 10-26: same 3 tr 0 won, opp 12 tr 7 won (peu)."
+    "2026-11-02 20:00 veille: evening, h1 i=1 still; two sells against it: 18:32 FLIP (storm) L -2.29, 18:44 BOS W +3.26 at 0.02. Since 10-26: same 3 tr 0 won, opp 12 tr 7 won (peu).",
+    "2026-11-03 06:00 veille: night 20:20-04:28, h1 i=1 on all 7: three FLIP BUY the same way all lost (-4.63, -4.95, -6.30 at 0.02); four sells against it 1 won (+2.42 / -1.97, -5.91, -4.55). Since 10-26: same 6 tr 0 won (~-14 per 0.01), opp 16 tr 8 won (~-5 per 0.01). Count as predicted; opp no longer earns. Doubt: h1 i=1 unchanged ~22 h while price fell ~1,700 pts (78,150 -> 76,430) - check capture is not stale like m15 was."
    ],
    "next": "Wait for h1_int_size / late_wave_size to be built; then test refusal and half stake."
   },
@@ -3725,6 +3726,15 @@
     "bos_journal_u477508138 last row + twin_noday.log"
    ],
    "saw": "BOS SELL 18:44 -> 19:40 TP, gap 7.4 min after a loss, pace 1.83 (very nervous, storm 0), stop 196 pts (the 150-250 band that loses on real), h1 internal opposite, W +3.26 at 0.02. Twin took the same trade +3.16: 11 tr 8W/3L +15.32. Against rested_cont and the stop-band picture on one trade; for h1_internal_late. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-03T06:00:23Z",
+   "looked": [
+    "wake_context (7 real closes 20:32-05:31, 294 total; twin noday 11 tr +15.32 -> 18 tr -10.84; labo empty; no open ask)",
+    "bos_journal_u477508138 last 7 rows: kind, dir, gap, pace, stop, h1 internal",
+    "scrutiny --by hour"
+   ],
+   "saw": "All night entries (20:20-04:28), choppy: BUY/SELL alternating, 4 FLIP 1 won, 3 BOS 0 won, net ~-21.95 pooled (-27.06 at 0.02 on u477508138). Two stopped in 1-2 min (20:36 FLIP SELL, 03:05 BOS SELL). Twin noday took all 7 (-26.16): night is not safe by itself; 'night flips win' contradicted again (1 of 4). h1 same-way buys 3/3 lost (6/6 since 10-26). 294 tr 47% -171.37 PF 0.74. Hours 20-21 h 18 tr 33% -27.07. No run, no pile, no proposal - waiting for h1_int_size and a capture check."
   }
  ],
  "lessons": [
