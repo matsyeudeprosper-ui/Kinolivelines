@@ -42,8 +42,8 @@ to one goal, each of a kind the system can carry:
   learn = a question about a member's life or wishes, asked when it fits ("member": their id)
   watch = an eye on a market or a robot today
   build = a change to try on YOUR OWN robot (never a member's without them)
-  test = the luck test (100 random draws) of one of YOUR OWN robots on a market where it wins ("robot": its id from YOUR ROBOTS,
-         "market": BTCUSD|XAUUSD|USTEC|US30) - the system launches it the moment the plan is written; never one already done or running
+  test = the luck test (100 random draws) of a robot of the lab on a market where it wins ("robot": its id from ROBOTS YOU MAY
+         TEST, "market": BTCUSD|XAUUSD|USTEC|US30) - the system launches it the moment the plan is written; never one already done or running
 when = morning | afternoon | evening | night. First person, French, at most 25 words each. Members are ONLY the people listed under MEMBER. Not more than 2 talk/learn items for the same
 member. Do not plan what is already running.
 JSON only: {"items": [{"what": "...", "goal": "goal id", "kind": "...", "when": "...", "member": null, "question": null, "market": null, "robot": null}],

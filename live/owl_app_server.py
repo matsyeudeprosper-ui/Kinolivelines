@@ -20550,6 +20550,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             pass
     build = any(k == "construire" for k, _ in acts) and bool(say) and cid not in _CHAT_B and cid not in _CHAT_BUILDING
+    # 2026-11-03 06:43 UTC (watch, owner autotrading): the same turn sent "Vendre 0.01 ..." to the desk AND said "no entry
+    # yet, nothing is open" - the prose contradicted the act. The act is the server's fact: when this turn sends an order
+    # with auto-trade on, the bubble ends with it in one plain line, whatever the prose says.
+    try:
+        _ords = [v for k, v in acts if k == "ordre" and v]
+        if _ords and say and _auto_on(_chat_load(user, cid) or c):
+            say = (say + chr(10) + chr(10) + (("→ Order sent to your trading tool: %s" if en else "→ Ordre envoyé à ton outil : %s") % str(_ords[-1])[:140]))[:1600]
+    except Exception:
+        pass
 
     def put(cc):
         if say:
@@ -22626,7 +22635,8 @@ def _exec_ctx(kind="plan"):
                 ("test %+.2f $ / %s trades" % (float(_rs.get("net") or 0), _rs.get("trades"))) if _rs.get("trades") else "not tested",
                 (" - luck test DONE: beats %d of 100" % int(_ct["pct"])) if _ct else (" - luck test %s" % _ctlq[(_r["id"], _mk)]) if (_r["id"], _mk) in _ctlq else ""))
         if _rows:
-            L.append("YOUR ROBOTS (id (name) on market: test, luck test): " + " | ".join(_rows[:12]))
+            L.append("ROBOTS YOU MAY TEST - the lab's robots, built with the owner under his login; you may launch their luck test yourself "
+                     "(id (name) on market: test, luck test): " + " | ".join(_rows[:12]))
     except Exception:
         pass
     try:
