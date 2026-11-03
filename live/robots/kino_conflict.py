@@ -18,11 +18,15 @@ things done (their notebook). Does the act go AGAINST one of their instructions 
 a different size, something they said not to do, or something they said to do differently? Only a real contradiction
 counts; an act their words do not cover is NOT a conflict; an act that follows their newest word is NOT a conflict even
 if an older word said otherwise.
+His OWN WORDS count too (2026-11-03, watch 17:50: "I'm holding off - do you want that wide stop?" went out WITH the order):
+if the message he sends with the act says he is holding off, waiting, or asks the person whether / how to do it, or if the act
+depends on a question he asked them that is not answered yet, the act goes against his own words - a conflict (with = 'my own
+words'; why = what he said vs what the act does). Words that simply announce the act ("taking the sell") are no conflict.
 JSON only: {"conflict": true|false, "with": "the topic of their instruction it contradicts, or ''",
  "why": "one plain line, to the person, saying what differs (e.g. 'you said the stop goes on the dot at 77185, this one is at 77000')"}"""
 
 
-def check(W, person, act_text, situation="", log=None):
+def check(W, person, act_text, situation="", log=None, words="", pending=""):
     """-> None (no conflict / nothing to check) or {"with", "why"}"""
     try:
         import kino_ways as KW
@@ -35,14 +39,16 @@ def check(W, person, act_text, situation="", log=None):
         vals = "\n".join("- " + str(v) for v in list(_cn.get("values") or []) + list(_cn.get("refuse") or []))
     except Exception:
         pass
-    if not items and not vals:
+    if not items and not vals and not words and not pending:
         return None
     book = "\n".join("- %s: %s (said %s UTC)" % (x["topic"], x["said"], time.strftime("%d/%m %H:%M", time.gmtime(x["t"])))
                      for x in sorted(items, key=lambda x: x["t"]))
     if vals:
         book = (book or "(empty)") + "\n\nKINO'S OWN VALUES (an act against these is a conflict too - with = 'my values'; a standing permission the person gave in their notebook IS their OK):\n" + vals
     j = W.ask_json(SYSTEM, "THEIR NOTEBOOK (oldest first; the newest word on a topic is the one that holds):\n%s\n\n"
-                           "THE SITUATION NOW (facts): %s\n\nTHE ACT HE IS ABOUT TO DO: %s\n\nJSON only." % (book, str(situation)[:1500], act_text),
+                           "THE SITUATION NOW (facts): %s\n\nTHE ACT HE IS ABOUT TO DO: %s\n\nTHE MESSAGE HE SENDS WITH IT: %s\n\n"
+                           "HIS QUESTIONS TO THEM NOT ANSWERED YET: %s\n\nJSON only." % (book or "(empty)", str(situation)[:1500], act_text,
+                                                                         str(words or "-")[:1200], str(pending or "-")[:600]),
                    models=("haiku", "sonnet"), timeout=30, log=log, warm=False)
     if isinstance(j, dict) and j.get("conflict") is True and str(j.get("why") or "").strip():
         return {"with": str(j.get("with") or "")[:80], "why": " ".join(str(j["why"]).split())[:240]}

@@ -20063,7 +20063,7 @@ def _desk_send(uid, req, wait=45.0):
 _AUTO_SENT, _AUTO_LK = {}, {}
 
 
-def _order_direct(cid, user, v, en, c):
+def _order_direct(cid, user, v, en, c, words=""):
     """auto mode: Kino's #ordre goes straight to the desk - within the lot cap he was given"""
     uid = user.get("id")
     say_ = lambda t: _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=t))
@@ -20075,8 +20075,16 @@ def _order_direct(cid, user, v, en, c):
     try:                                       # 2026-11-03 (kino_conflict): his act held up against the person's own words
         _rc()
         import kino_conflict as _KCf
+        _pq = []                               # his questions to them since their last message - not answered yet
+        for _m in reversed((c or {}).get("msgs") or []):
+            if _m.get("role") == "user":
+                break
+            if _m.get("role") == "ai" and "?" in str(_m.get("text") or ""):
+                _pq.append(" ".join(str(_m["text"]).split())[:300])
         _cf = _KCf.check(_rc().W, _person(uid), "%s (%s)" % (txt, v), _one_facts(user, c or {})[:1500],
-                         log=os.path.join(DIR, "robots", "kino_conflict.log"))
+                         log=os.path.join(DIR, "robots", "kino_conflict.log"),
+                         words=chr(10).join(l for l in str(words or "").splitlines() if not l.lstrip().startswith("\u2192")),
+                         pending=" | ".join(reversed(_pq)))
         if _cf:
             try:
                 __import__("kino_rumination").stir(_person(uid), "held_back", "I nearly sent an order against what he said: " + _cf["why"])
@@ -21083,7 +21091,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             elif k == "ordre":
                 _cfr = _chat_load(user, cid) or c
                 if _auto_on(_cfr):
-                    threading.Thread(target=_order_direct, args=(cid, user, v, en, _cfr), daemon=True).start()
+                    threading.Thread(target=_order_direct, args=(cid, user, v, en, _cfr, say or ""), daemon=True).start()
                 else:
                     _order_card(cid, user, v, en)
                 _KO._log(cid, "ACT_ORDER", v[:160])

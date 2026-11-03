@@ -28,7 +28,9 @@ for f in glob.glob(os.path.join(LIVE, "robots", "chats", "*.json")):
         continue
     M += [dict(m, _cid=c.get("id")) for m in c.get("msgs") or [] if now - float(m.get("t") or 0) < H * 3600]
 M.sort(key=lambda m: float(m.get("t") or 0))
-ai = [m for m in M if m.get("role") == "ai" and m.get("text")]
+# 2026-11-03: the server's own "→ Order sent to your trading tool" lines are not his voice (they made 53 "repeats" an hour)
+_voice = lambda t: "\n".join(l for l in str(t).splitlines() if not l.lstrip().startswith("→"))
+ai = [dict(m, text=_voice(m["text"])) for m in M if m.get("role") == "ai" and m.get("text")]
 own = [m for m in ai if m.get("event")]
 rep = [m for m in ai if not m.get("event")]
 us = [m for m in M if m.get("role") == "user" and m.get("text")]
@@ -45,14 +47,20 @@ for i, m in enumerate(M):
         if nxt and nxt.get("role") == "ai" and float(nxt.get("t") or 0) - float(m.get("t") or 0) < 300:
             answered += 1
 # repeated 4-word phrases within the same hour (a repeat a person would not make)
+# (2026-11-03: a repeated sentence counted once, not once per overlapping 4 words; error bubbles are not his voice)
 seen, repeats = {}, 0
 for m in ai:
+    if m.get("err"):
+        continue
     t = float(m.get("t") or 0)
     ws = re.findall(r"[a-zà-ÿ0-9']+", str(m["text"]).lower())
+    run = False
     for i in range(len(ws) - 3):
         g = " ".join(ws[i:i + 4])
-        if g in seen and t - seen[g] < 3600 and not re.search(r"\d", g):
+        hit = g in seen and t - seen[g] < 3600 and not re.search(r"\d", g)
+        if hit and not run:
             repeats += 1
+        run = hit
         seen[g] = t
 R = {
     "hours": H, "his_msgs": len(us), "kino_replies": len(rep), "kino_own": len(own),

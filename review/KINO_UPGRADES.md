@@ -84,6 +84,13 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | The intuition is told what "short" means in the check (under 40 characters) | fix | kino_read 'next' |
 | TRIED AND DROPPED: showing the intuition its own guess record. Replay on 24 real points: old 10/24, new 10/24 (always-"long" 12/24) - no effect; his answer length is not predictable from the talk (when it guessed short: short 17, long 15) | measured null | - |
 
+## Done 11-03 late (round 6)
+
+| What | Kind | Where |
+|---|---|---|
+| His hand follows his mouth: before an order goes out on its own, the words he sends with it and his questions to the person not yet answered are part of the check - "I'm holding off, do you want that wide stop?" sent WITH the order (17:50) now becomes a question card. Tested 4 cases: the 17:50 one held, a plain "taking the sell" passes, an unrelated old question passes, an unanswered sizing question holds | engine (kino_conflict own words) | kino_conflict.check(words, pending), _order_direct |
+| Watch metric fixed: "4-word repeats" counted the server's "-> Order sent" lines, error bubbles and every overlapping 4 words of one repeated sentence (48) - now repeated phrases in his voice (14 in 12 h, mostly "the first red candle") | measurement | review/kino_humanity.py |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
