@@ -58,6 +58,7 @@ def from_read(person, j, last_msg=None):
     term = " ".join(str(j.get("shared_term") or "").split())[:60]
     fr = " ".join(str(j.get("friction") or "").split())[:200]
     ag = " ".join(str(j.get("asks_against") or "").split())[:240]
+    ra = " ".join(str(j.get("re_asked") or "").split())[:240]
     dq = " ".join(str(j.get("dropped_question") or "").split())[:200]
     an = " ".join(str(j.get("answered_now") or "").split())[:200]
     dom = " ".join(str(j.get("domain") or "").lower().split())[:40]
@@ -81,6 +82,8 @@ def from_read(person, j, last_msg=None):
         _day(P, now, str(last_msg.get("text") or ""))
         if len(ag) >= 6:
             P["against"] = {"t": now, "what": ag}
+        if len(ra) >= 8:
+            P["misreads"] = (P.get("misreads") or [])[-19:] + [{"t": now, "what": ra}]
         if len(up) >= 6:
             due = _due(when, now)
             U = P.setdefault("upcoming", [])
@@ -157,6 +160,20 @@ def thread_line(person, msgs):
     return ("At %s UTC you two were on %s (%s) when a trade event came in (%s); the talk has been on %s since and has not come back to it."
             % (time.strftime("%H:%M", time.gmtime(float(pv["t"]))), pv["domain"], pv.get("about") or "-",
                str(ev[0].get("event") or "")[:60], th.get("domain") or "-"))
+
+
+def misread_line(person):
+    now = time.time()
+    R = [x for x in (_load().get(person) or {}).get("misreads") or [] if now - x["t"] < 7 * 86400]
+    if not R:
+        return ""
+    fresh = [x for x in R if now - x["t"] < 2 * 3600]
+    L = []
+    if fresh:
+        L.append("He just had to ask you twice (%s UTC): %s." % (time.strftime("%H:%M", time.gmtime(fresh[-1]["t"])), fresh[-1]["what"]))
+    if len(R) >= 2:
+        L.append("Questions of his you misread this week: %d (e.g. %s)." % (len(R), " | ".join(x["what"][:90] for x in R[-2:])))
+    return " ".join(L)
 
 
 def against_line(person):
@@ -316,6 +333,6 @@ def habits_line(person, msgs):
 def block(person, msgs, read=None, tz_h=0):
     ai = [str(m.get("text") or "") for m in msgs if m.get("role") == "ai"]
     habits_line(person, msgs)
-    L = [x for x in (against_line(person), followup_line(person, ai), questions_line(person), thread_line(person, msgs), shared_line(person),
+    L = [x for x in (against_line(person), misread_line(person), followup_line(person, ai), questions_line(person), thread_line(person, msgs), shared_line(person),
                      friction_line(person, msgs, read), rituals_line(person, tz_h), fatigue_line(person, msgs)) if x]
     return "\n".join(L)

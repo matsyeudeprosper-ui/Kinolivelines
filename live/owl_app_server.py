@@ -15737,6 +15737,14 @@ def _one_fresh(user, c):
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
+        try:                                           # kino_asks: what he usually asks in the situation they are in now
+            import kino_asks as _KAs
+            _dst = _desk_state((_thread_user(cid, user) or user).get("id")) or {}
+            _ka = _KAs.line(_person(uid), "a trade is open" if _dst.get("open") else "no trade is open")
+            if _ka:
+                L.append(_ka)
+        except Exception:
+            pass
         import kino_wisdom as _KWs                     # what many people taught him, nobody in it
         _ws = _KWs.block(" ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-6:]))
         if _ws:
@@ -20136,9 +20144,13 @@ def _order_direct(cid, user, v, en, c, words=""):
                     _po = next((o for o in ((_desk_state(uid) or {}).get("open") or []) if abs(float(o.get("e") or 0) - _fp) < 1.0), None)
                     if _po:
                         _desk_send(uid, {"modify": 1, "sl": _sl, "tp": _tp, "ticket": _po.get("ticket")})
+                        req["_tp_fill"] = _tp
                         txt += " -> objectif %.0f (%gR depuis l'entr\u00e9e r\u00e9elle %.0f)" % (_tp, float(_rr), _fp)
         except Exception:
             pass
+    if r and r[0] and req.get("d"):                   # 2026-11-03 (kino_lookback): he glances back at what landed
+        threading.Thread(target=_look_back, args=(cid, user, dict(req), (r[1] or {}).get("price") if isinstance(r[1], dict) else None, en),
+                         daemon=True).start()
     if r is None:
         line = ("🤖 Kino sent: %s - no answer from the trading tool yet, check the chart." if en else
                 "🤖 Kino a envoyé : %s - pas encore de réponse de l'outil, regarde le graphique.") % txt
@@ -20150,6 +20162,39 @@ def _order_direct(cid, user, v, en, c, words=""):
     try:
         import kino_one as _KOa
         _KOa._log(cid, "AUTO_ORDER", "%s -> %s" % (v[:120], r))
+    except Exception:
+        pass
+
+
+def _look_back(cid, user, meant, fill, en):
+    """2026-11-03 (owner list 7 item 1): a person who just acted glances back to see it went as meant. A few seconds after his
+    order, what the account shows is held against what he sent (kino_lookback.compare); when it differs, he is told what he
+    found - and says what he wants about it. Landed as meant: nothing to say."""
+    uid = user.get("id")
+    try:
+        _rc()
+        import kino_lookback as _KLb
+        if meant.get("_tp_fill"):
+            meant["tp"] = meant["_tp_fill"]
+        o, diff = None, ["not checked"]
+        for _ in range(4):                             # the snapshot is written every few seconds
+            time.sleep(5)
+            st = _desk_state(uid) or {}
+            o, diff = _KLb.compare(meant, st.get("open") or [], entry=fill)
+            if not diff:
+                break
+        _KO = __import__("kino_one")
+        _KO._log(cid, "LOOKBACK", "%s -> %s" % ({k: meant.get(k) for k in ("d", "lot", "sl", "tp")}, diff or "as meant"))
+        if not diff:
+            return
+        __import__("kino_rumination").stir(_person(uid), "lookback", "after my order: " + "; ".join(diff))
+        ev = ("LOOK BACK - 20 seconds after the order you sent (%s %s lot, stop %s, target %s), you glanced at his account: %s. "
+              "It may have closed already, or not landed as you meant. Say what you found and what you do about it, plainly; "
+              "if it is nothing, '…'." % ("buy" if int(meant.get("d") or 0) == 1 else "sell", meant.get("lot"), meant.get("sl"),
+                                         meant.get("tp"), "; ".join(diff)))
+        u = _user_by_id(uid) or user
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        _chat_quick(cid, u, ev)
     except Exception:
         pass
 

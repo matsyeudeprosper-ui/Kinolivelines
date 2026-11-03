@@ -24,7 +24,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 STORE = os.path.join(HERE, "kino_rumination.json")
 _LOCK = threading.Lock()
-W_KIND = {"correction": 1.0, "undone": 0.7, "misquote": 0.6, "slip": 0.6, "held_back": 0.4, "surprise": 0.3}
+W_KIND = {"correction": 1.0, "undone": 0.7, "misquote": 0.6, "slip": 0.6, "misread": 0.5, "lookback": 0.6, "held_back": 0.4, "surprise": 0.3}
 NAG_HALF = 86400.0
 RES_HALF = 4 * 86400.0
 QUIET_AT = 1.6          # a nag this high comes back to him in the next quiet moment

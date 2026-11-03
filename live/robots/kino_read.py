@@ -53,6 +53,8 @@ Read him RIGHT NOW. JSON only:
  "friction": "if there was tension between him and Kino in these last messages (he got irritated, Kino was cold or stubborn, a dispute): what, briefly; else empty",
  "dropped_question": "a question asked by EITHER of them in these exchanges that the talk moved past without it being answered (not one asked in the very last message): who asked - 'he asked' or 'Kino asked' - and the question; else empty",
  "answered_now": "if one of the QUESTIONS LEFT OPEN EARLIER (given above) was just answered or taken up: its words; else empty",
+ "re_asked": "if his last message asks AGAIN something he already asked, because Kino's answer missed what he meant (e.g. 'yes but your bet is...?'): what he meant vs what Kino answered, briefly; else empty",
+ "his_question_kind": "if his last message is a question to Kino: its kind in 2-5 plain words, reusing one of HIS USUAL QUESTION KINDS (given above) when it is the same thing; else empty",
  "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
@@ -102,6 +104,13 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         _oq = ""
     if _oq:
         _vals = (_vals or "-") + "\nQUESTIONS LEFT OPEN EARLIER: " + _oq
+    try:                                               # 2026-11-03 (kino_asks): his own vocabulary of questions
+        import kino_asks as _KAk
+        _kk = _KAk.kinds(_person_of(uid))
+        if _kk:
+            _vals = (_vals or "-") + "\nHIS USUAL QUESTION KINDS: " + ", ".join(_kk[:40])
+    except Exception:
+        pass
     user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
         cues or "-", "-" if local_hour is None else "%02dh" % local_hour, ("KINO'S VALUES: %s\n" % _vals) if _vals else "",
         ("TRUE FACTS ABOUT KINO HIMSELF (measured by the app - when Kino states these, it is NOT a slip): %s\n" % _kt) if _kt else "",
@@ -163,6 +172,24 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             import kino_human2 as KH2
             _lu = next((m for m in reversed(M) if m.get("role") == "user"), {}) or {}
             KH2.trust_note(_person_of(uid), _ak, " ".join(str(_lu.get("text") or "").split())[:120], said_at=_lu.get("t"))
+    except Exception:
+        pass
+    try:                                               # 2026-11-03 (kino_asks / misread): what he asks in which situation; asked twice
+        _lu2 = next((m for m in reversed(M) if m.get("role") == "user"), {}) or {}
+        _qk = " ".join(str(j.get("his_question_kind") or "").split())[:50]
+        if _qk:
+            import kino_asks as _KAn
+            try:
+                _st = json.load(open(os.path.join(HERE, "..", "manual_state_%s.json" % uid), encoding="utf-8"))
+                _fresh = time.time() - float(_st.get("updated") or 0) < 120
+                _sit = "a trade is open" if _fresh and _st.get("open") else "no trade is open"
+            except Exception:
+                _sit = "no trade is open"
+            _KAn.note(_person_of(uid), _qk, _sit, _lu2.get("t"))
+        _ra = " ".join(str(j.get("re_asked") or "").split())[:240]
+        if len(_ra) >= 8:
+            import kino_rumination as _KRr
+            _KRr.stir(_person_of(uid), "misread", "he had to ask twice: " + _ra)
     except Exception:
         pass
     try:                                               # 2026-11-03 (kino_human3): their life ahead, their words, friction, days
