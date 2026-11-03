@@ -15679,6 +15679,10 @@ def _one_fresh(user, c):
     uid = user.get("id")
     cid = c.get("id")
     L = []
+    try:
+        _rc()                                          # the robots folder on the import path (kino_ways, kino_person)
+    except Exception:
+        pass
     try:                                               # 2026-10-28 (engine 2): his gut read of them right now
         import kino_person as _KPr
         _br = _KPr.block_one(c.get("uid") or uid, cid)
