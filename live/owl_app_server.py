@@ -29834,6 +29834,22 @@ def _home_kino_data(user):
         out["status"], out["mood"] = {}, ""
     try:
         cid = _person_main(uid)
+        # 2026-11-03 (owner: "the home shows an old message, not the latest"): Valère had opened a new conversation; the card
+        # kept the MAIN thread's last words. Kino's latest words across the person's open threads win, and the button opens
+        # that thread. The main thread stays the fallback when nothing newer exists.
+        try:
+            _best = (0.0, cid)
+            for _ch in (chat_list(user).get("chats") or [])[:12]:
+                _cc = json.load(open(_chat_path(_ch["id"]), encoding="utf-8"))
+                if _cc.get("archived"):
+                    continue
+                _la = next((m for m in reversed(_cc.get("msgs") or []) if m.get("role") == "ai" and str(m.get("text") or "").strip()), None)
+                if _la and float(_la.get("t") or 0) > _best[0]:
+                    _best = (float(_la.get("t") or 0), _ch["id"])
+            if _best[1]:
+                cid = _best[1]
+        except Exception:
+            pass
         out["cid"] = cid
         c = json.load(open(_chat_path(cid), encoding="utf-8")) if cid else {}
         out["lang"] = "en" if c.get("lang") == "en" else "fr"
