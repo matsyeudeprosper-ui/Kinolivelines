@@ -47,6 +47,8 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 
 | Voice follows feeling: his strongest live feeling (habituated) becomes a delivery note for read-aloud (gpt-4o-mini-tts instructions, in the cache key) and for live calls (realtime instructions); natural hesitations where a person makes them | engine link | _voice_delivery, _tts_mp3, live_session |
 
+| Weekly self-review of his own behaviour: his Sunday look back now reads the record of his week (reactions to his acts by kind, slips and lessons, misquotes caught, acts held back, what people taught him) and writes the ONE thing about how he behaves that he wants to change, and how he will notice | engine link | kino_human2.week_mirror, kino_work WEEKLY |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

@@ -223,3 +223,74 @@ def block(person, uid, cid, nest_dir, msgs=None):
     L = [x for x in (trust_line(person), owed_line(uid, cid), timeline(person, uid, nest_dir), patterns_line(person, uid, nest_dir),
                      opinion_line(msgs), feeling_line(uid), tone_line(person), busy_line()) if x]
     return "\n".join(L)
+
+
+
+# ---- weekly self-review: the evidence of how he behaved this week (2026-11-03, owner: "next") ------------------------
+def week_mirror(days=7):
+    """what the record says about his own behaviour this week, across people (counts, no private content): trust moves by
+    kind of act, his slips and the lessons he drew, his misquotes caught, his acts held back as doubts, what people taught
+    him. For his weekly look back - he reads it and decides what he wants to change about himself."""
+    now = time.time()
+    t0 = now - days * 86400
+    L = []
+    try:
+        import kino_trust as KT
+        T = KT._load()
+        up = down = 0
+        kinds = {}
+        for person, P in T.items():
+            for kd, k in (P.get("kinds") or {}).items():
+                for x in k.get("log") or []:
+                    if float(x.get("t") or 0) > t0:
+                        kinds.setdefault(kd, [0, 0])
+                        if x.get("r") == "approved":
+                            kinds[kd][0] += 1
+                            up += 1
+                        else:
+                            kinds[kd][1] += 1
+                            down += 1
+        if kinds:
+            L.append("Reactions to what you did on your own: %d approvals, %d corrections or undos - by kind: %s."
+                     % (up, down, ", ".join("%s +%d/-%d" % (k, v[0], v[1]) for k, v in sorted(kinds.items()))))
+    except Exception:
+        pass
+    try:
+        import kino_social as KS
+        S = KS._load()
+        sl = [x for P in S.values() if isinstance(P, dict) for x in (P.get("slips") or []) if float(x.get("t") or 0) > t0]
+        ls = [x for P in S.values() if isinstance(P, dict) for x in (P.get("lessons") or []) if float(x.get("t") or 0) > t0]
+        if sl:
+            L.append("Your slips noticed this week: %d. Examples: %s." % (len(sl), " | ".join(x["text"][:110] for x in sl[-4:])))
+        if ls:
+            L.append("Lessons you drew: %s." % " | ".join(x["text"][:140] for x in ls[-4:]))
+    except Exception:
+        pass
+    try:
+        mq = cf = 0
+        with io.open(os.path.join(HERE, "kino_one.log"), encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if " MISQUOTE " in line:
+                    mq += 1
+        import glob
+        for fn in glob.glob(os.path.join(HERE, "chats", "*.json")):
+            try:
+                c = json.load(io.open(fn, encoding="utf-8"))
+            except Exception:
+                continue
+            for m in c.get("msgs") or []:
+                if m.get("role") == "sys" and float(m.get("t") or 0) > t0 and ("un doute" in str(m.get("text")) or "a doubt" in str(m.get("text"))):
+                    cf += 1
+        if mq or cf:
+            L.append("Times you restated someone's rule differently from their newest word (caught before sending): %d; acts you held "
+                     "back because they went against what someone told you: %d." % (mq, cf))
+    except Exception:
+        pass
+    try:
+        W = _jl(os.path.join(HERE, "kino_ways.json"), {})
+        ch = sum(1 for P in W.values() for x in (P.get("items") or []) if float(x.get("t") or 0) > t0)
+        if ch:
+            L.append("Things people taught you about how they want things, new or changed this week: %d." % ch)
+    except Exception:
+        pass
+    return "\n".join(L)

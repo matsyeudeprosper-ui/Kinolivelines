@@ -136,7 +136,16 @@ def due(person, ctx, now=None):
             and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):
         def _mark(dd, _wk=_wk):
             dd["review_week"] = _wk
-            dd["next_task"] = {"do": WEEKLY, "project": "", "why": "my weekly look back"}
+            _wm = ""
+            try:                               # 2026-11-03: the evidence of how he behaved with people this week
+                import kino_human2 as KH2
+                _wm = KH2.week_mirror()
+            except Exception:
+                pass
+            dd["next_task"] = {"do": WEEKLY + ((" ALSO - how I behaved with people this week, from the record (read it as a person "
+                                                "reads their own week, and write in the same diary entry the ONE thing about how I "
+                                                "behave that I want to change, and how I will notice if I do): " + _wm) if _wm else ""),
+                               "project": "", "why": "my weekly look back"}
         _mut(_mark)
         return True
     today = time.strftime("%Y-%m-%d", time.gmtime(now))
