@@ -15573,6 +15573,26 @@ def _pkg_watch():
         pass
 
 
+def _pb_top_line(j):
+    """2026-11-03 17:34 UTC (owner: "how far is the next trade?" - Kino: "I don't have that candle's low in front of me"): the TOP
+    chart of his screen is the pullback chart (feed j["pb"]); its last closed candle is "the move candle" of his rule. Its
+    high/low and the last few, in plain numbers, for the watch and for every chat turn while auto-trade is on."""
+    try:
+        pc = [x for x in ((j.get("pb") or {}).get("candles") or []) if x and len(x) > 4][-4:]
+        if not pc:
+            return ""
+        f = lambda z: "%.0f" % float(z)
+        mv = pc[-1]
+        return ("TOP CHART of his screen (the pullback chart): its latest candle %s UTC is %s (open %s, high %s, low %s, close %s); "
+                "its low %s and high %s are the levels to read his 'move candle' rule against, unless he named another candle. "
+                "Before it: %s." % (time.strftime("%H:%M", time.gmtime(mv[0])), "bullish" if float(mv[4]) >= float(mv[1]) else "bearish",
+                                    f(mv[1]), f(mv[2]), f(mv[3]), f(mv[4]), f(mv[3]), f(mv[2]),
+                                    " | ".join("%s %s/%s/%s/%s" % (time.strftime("%H:%M", time.gmtime(x[0])), f(x[1]), f(x[2]), f(x[3]), f(x[4]))
+                                               for x in pc[:-1])))
+    except Exception:
+        return ""
+
+
 _ARB_CACHE = {}                 # (uid, admin) -> (t, acct_robot_block) for Kino's member context (30 s)
 
 
@@ -15591,6 +15611,9 @@ def _chat_member(user, c):
                 L.append("HIS CHART'S LAST CLOSED CANDLES (the silence-filter candles he trades on and you watch - NOT fixed 1-minute "
                          "candles; time UTC open/high/low/close): " + " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])),
                          "/".join(_f(z) for z in x[1:5])) for x in _cs) + ". Judge his rules on THESE, the same as your watch does.")
+            _tl = _pb_top_line(_j)
+            if _tl:
+                L.append(_tl)
     except Exception:
         pass
     try:
@@ -20034,6 +20057,9 @@ def _auto_watch_loop():
                     _said = [x for x in (c.get("msgs") or []) if x.get("role") == "user" and float(x.get("t") or 0) >= _t0
                              and str(x.get("text") or "").strip()][-14:]
                     ev += " FACT: " + _BE_FACT + "."
+                    _tl = _pb_top_line(j)
+                    if _tl:
+                        ev += " " + _tl
                     if _said:
                         ev += " WHAT HE TOLD YOU IN THE LAST HOURS (his exact words, oldest first - the LATEST instruction on a point replaces the earlier one): " +                               " || ".join("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), str(x.get("text"))[:220].replace(chr(10), " ")) for x in _said)
                 except Exception:
