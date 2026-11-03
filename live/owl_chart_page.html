@@ -284,6 +284,7 @@ body.othsym #autobadge,body.othsym #meteo,body.othsym #sigseg,body.othsym #wkseg
 
 /* 2026-10-13: inside the app's terminal view */
 html.embed #back{display:none!important}
+#kph .kpopen{width:auto!important;padding:0 12px!important;font-size:12.5px;font-weight:700;white-space:nowrap;border-radius:99px}
 </style><style>/* 2026-10-26 (owner: "remove the Kinos floating on the screen, they block my chart view") */#askkino,#kfab,#kask,#ktip,#ainudge{display:none!important}</style>
 </head><body><script>try{if(window.top!==window)document.documentElement.classList.add('embed');}catch(e){}</script>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
@@ -3675,7 +3676,7 @@ async function askKino(){var b=document.getElementById('askkino');b.disabled=tru
 <div id="kpn" aria-hidden="true">
  <div class="kph" id="kph"><div class="kpg"></div>
   <div class="kpt">🦉 Kino<small><i></i><span id="kpst">voit ton graphique</span></small></div>
-  <a class="kpb" id="kpfull" href="#" target="_top" aria-label="Plein écran" title="Plein écran">↗</a>
+  <a class="kpb kpopen" id="kpfull" href="#" target="_top" aria-label="Ouvrir le chat" title="Ouvrir le chat">Ouvrir le chat ↗</a>
   <button class="kpb" onclick="kpToggle(false)" aria-label="Fermer" title="Fermer">✕</button>
  </div>
  <div class="kpw" id="kpw">…</div>
