@@ -76,6 +76,14 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | A talk cut off by a trade event: where it was (topic, what about) until the talk comes back to it; nothing when they changed subject themselves or it was trade talk | engine | kino_human3.thread_line |
 | Duplicate closeness line removed (kino_social already measures it); rhythm now in the person's own clock | fix | kino_human3 |
 
+## Done 11-03 late (round 5) - from the watch numbers
+
+| What | Kind | Where |
+|---|---|---|
+| Surprise scaled by how unlikely the outcome was with THAT person: P(what came / what he guessed) learned from his earlier checked guesses; a coin flip surprises no one, a rare outcome surprises more. Owner (std): 29 "my read was off" -> 4 | engine | kino_surprise._people |
+| The intuition is told what "short" means in the check (under 40 characters) | fix | kino_read 'next' |
+| TRIED AND DROPPED: showing the intuition its own guess record. Replay on 24 real points: old 10/24, new 10/24 (always-"long" 12/24) - no effect; his answer length is not predictable from the talk (when it guessed short: short 17, long 15) | measured null | - |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

@@ -14,7 +14,7 @@ and a thought he can bring up - that is how a person NOTICES things instead of b
 
 Each surprise is written once (kino_surprise.json keeps what was seen) and shown 24 h in the prompt (SURPRISES).
 """
-import io, json, os, threading, time
+import io, json, math, os, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_surprise.json")
@@ -64,12 +64,26 @@ def _people(d, KI, KP, humans):
     for uid, u in P.items():
         if humans is not None and uid not in humans:
             continue
+        # 2026-11-03 (watch: "I thought he'd answer short, it came long" three times a night, about the same person): surprise
+        # is how UNLIKELY the outcome was given what he has seen of this person - when his guess has been a coin flip with
+        # someone, the "wrong" side of the coin surprises no one. P(what came | what he guessed), learned from the earlier
+        # checked guesses (smoothed); only a truly unlikely outcome surprises, and the more unlikely, the stronger.
+        PR = [x for x in (u.get("preds") or []) if x.get("checked")]
         for p in (u.get("preds") or [])[-10:]:
             if p.get("checked") and p.get("right") is False and now - float(p.get("t") or 0) < 86400:
                 key = "pred:%s:%d" % (uid, int(p["t"]))
-                _emit(d, key, uid, "Je pensais que %s répondrait %s, et c'est venu %s. Ma lecture était à côté." % (
+                if key in d["seen"]:
+                    continue
+                before = [x for x in PR if float(x["t"]) < float(p["t"]) and x.get("next") == p.get("next")]
+                pr = (sum(1 for x in before if x.get("actual") == p.get("actual")) + 1.0) / (len(before) + 3.0)
+                if pr >= 0.3:
+                    d["seen"][key] = now               # it happens often enough with him - not a surprise
+                    continue
+                k = min(3.0, -math.log(pr, 2) - 1.0)   # 0.25 -> 1, 0.125 -> 2, rarer -> 3
+                _emit(d, key, uid, "Je pensais que %s répondrait %s, et c'est venu %s - avec lui, ça n'arrive qu'environ %d fois sur 10 quand je pense ça." % (
                     uid, {"short": "court", "long": "long", "silent": "par un silence"}.get(p.get("next"), p.get("next")),
-                    {"short": "court", "long": "long", "silent": "un silence"}.get(p.get("actual"), p.get("actual"))), ("curiosity", 0.08), 0.25, KI, "people")
+                    {"short": "court", "long": "long", "silent": "un silence"}.get(p.get("actual"), p.get("actual")), max(1, round(pr * 10))),
+                      ("curiosity", 0.05 * k), 0.15 * k, KI, "people")
         M = u.get("msgs") or []
         # 2026-10-28: one person, several logins (persons.json) - absent only if ALL his logins are quiet, said once
         try:

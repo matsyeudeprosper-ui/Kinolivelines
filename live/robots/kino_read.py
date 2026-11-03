@@ -31,7 +31,7 @@ Read him RIGHT NOW. JSON only:
  "calls_for_answer": "yes|optional|no - does his LAST message call for an answer, or does it close the exchange by itself (a 'cool', a 'thx', a thumbs-up after a goodbye)", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
- "next": "short|long|silent - how he will most likely answer Kino's next message",
+ "next": "short|long|silent - how he will most likely answer Kino's next message (short = under 40 characters, about 7 words; silent = nothing for 30 min)",
  "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty",
  "joke_fell_flat": "if Kino tried to be funny and it fell flat or annoyed him: that Kino line, word for word; else empty",
  "domain": "what the talk is about right now, 1-3 words: trading, robots, kino, news, his life, family, health - or, when it is about a trade, a business, a craft or a skill, THAT field by name (e.g. 'bakery', 'car repair', 'real estate', 'cooking')",
