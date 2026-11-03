@@ -97,6 +97,30 @@ def react(person, reaction, said=""):
     return hit
 
 
+def undone(person, kinds, how=""):
+    """the person redid what he had just done (closed or changed his order by hand within the window): a softer correction -
+    someone redoing your work is a signal, not always a reproach (a hand close can also be a profit taken)"""
+    now = time.time()
+    with _LOCK:
+        d = _load()
+        P = d.get(person) or {}
+        pend = [x for x in P.get("pending") or [] if now - x["t"] < WINDOW and x["kind"] in kinds]
+        if not pend:
+            return []
+        K = P.setdefault("kinds", {})
+        hit = []
+        for kd in sorted(set(x["kind"] for x in pend)):
+            k = K.setdefault(kd, {"a": 0.0, "b": 0.0, "t": now, "log": []})
+            _decay(k, now)
+            k["b"] += 0.75
+            k["log"] = (k.get("log") or [])[-9:] + [{"t": now, "r": "undone", "said": str(how)[:120]}]
+            hit.append(kd)
+        P["pending"] = [x for x in P.get("pending") or [] if x not in pend]
+        d[person] = P
+        _save(d)
+    return hit
+
+
 def reading(person, kind):
     """(room 0-1, how sure 0-1, n) for that kind of act; room 0.5 with no history"""
     k = ((_load().get(person) or {}).get("kinds") or {}).get(kind)

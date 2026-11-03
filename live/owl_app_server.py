@@ -19792,6 +19792,16 @@ def _desk_robot_set(cid, user, v, en, c):
     pth = os.path.join(DIR, "desk_robot_%s.json" % uid)
     old = _desk_robot_cfg(uid)
     s0 = str(v or "").strip()
+    try:                                       # 2026-11-03 (kino_conflict): a robot switch held up against their own words
+        _rc()
+        import kino_conflict as _KCr
+        _cf = _KCr.check(_rc().W, _person(uid), "switch the robot on his account: #robot %s (current: %s)" % (s0, old.get("name") or "none"),
+                         log=os.path.join(DIR, "robots", "kino_conflict.log"))
+        if _cf:
+            return say_(("\u26a0\ufe0f I was about to change your robot, but a doubt: %s. Say yes and I do it." if en else
+                         "\u26a0\ufe0f J'allais changer ton robot, mais un doute : %s. Dis oui et je le fais.") % _cf["why"])
+    except Exception:
+        pass
     if re.match(r"(?i)^(off|stop|arr[eê]te?r?)\b", s0):
         json.dump({"on": False, "t": time.time(), "id": old.get("id"), "name": old.get("name"), "lot": old.get("lot")}, open(pth, "w"))
         return say_(("🤖 Robot «%s» stopped." if en else "🤖 Robot « %s » arrêté.") % (old.get("name") or "-"))
@@ -36476,6 +36486,13 @@ class H(BaseHTTPRequestHandler):
                        "modify": q.get("modify", [""])[0],
                        "close": q.get("close", [""])[0],
                        "ts": time.time(), "by": u.get("id")}
+                try:                                 # 2026-11-03 (kino_trust): redoing his act by hand is a soft correction
+                    if req["close"] or req["modify"]:
+                        _rc()
+                        __import__("kino_trust").undone(_person(u.get("id")), ("order:open", "order:modify"),
+                                                         "closed it by hand" if req["close"] else "moved its stop/target by hand")
+                except Exception:
+                    pass
                 if req["close"]:
                     # close the running position at market, on demand
                     try:

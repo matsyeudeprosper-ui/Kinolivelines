@@ -29,6 +29,16 @@ Owner's principle (2026-11-03): no "if X do Y" rules. Engines that work like a p
 
 Known limits: an undo (person closing or changing his act right after) is not yet counted as a correction; the conflict check runs for orders only (not robot switches yet); patterns need about 12+ records and found nothing on the owner's last 30 trades (correct: no strong pattern).
 
+## Done 11-03 late
+
+| What | Kind | Where |
+|---|---|---|
+| A hand close or a stop/target change right after his order counts as a soft correction of that kind of act | engine (trust) | kino_trust.undone, member order route |
+| A robot switch he does on his own is checked against the person's notebook; a doubt becomes a question | engine (conflict) | _desk_robot_set |
+| Isolation test: 5 made-up people, notebook / trust / patterns stay apart, field notes hold no names | test | live/review/test_kino_isolation.py (passes) |
+
+"Let me check" that comes back already exists (the `regarde` lookup: 17:32 "let me check" -> 17:34 answer); a deeper multi-step "work it out" stays next.
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
