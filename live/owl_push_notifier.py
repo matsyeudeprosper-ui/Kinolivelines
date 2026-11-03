@@ -135,7 +135,10 @@ def maybe_health():
                 continue
             if f in ("bos_state_half.json", "bos_state_sniper.json"):
                 continue                       # retired accounts
-            lb = json.load(open(os.path.join(DIR, f), encoding="utf-8")).get("last_bar")
+            _bs = json.load(open(os.path.join(DIR, f), encoding="utf-8"))
+            if _bs.get("killed"):
+                continue                       # 2026-11-03: stopped by its safety line on purpose (Dad, 11-02 18:44 UTC) - not late
+            lb = _bs.get("last_bar")
             if lb and now - float(lb) > 600:
                 # 2026-10-15: a MARKET bot (bos_state_<acct>_<SYM>.json) sees no candle while its market is shut
                 # (nights, weekends): late only if its market's own feed has a candle 10+ min newer than the bot's
