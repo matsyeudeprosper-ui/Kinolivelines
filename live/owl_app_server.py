@@ -19801,6 +19801,7 @@ def _order_card(cid, user, v, en):
 
 # ---- 2026-10-26 (owner: "let him auto trade if I allow him - then no card confirmation"): Kino trades alone, on permission
 AUTO_EV = "AUTO-TRADE WATCH"
+_BE_FACT = "a stop moved to the entry makes the worst case ABOUT zero, never exactly zero (spread, a jump past the stop); never say a trade 'can't lose' (he corrected this at 08:47 and said it again at 15:43 on 11-03)"
 
 
 def _auto_on(c):
@@ -20021,6 +20022,7 @@ def _auto_watch_loop():
                     _t0 = time.time() - 6 * 3600
                     _said = [x for x in (c.get("msgs") or []) if x.get("role") == "user" and float(x.get("t") or 0) >= _t0
                              and str(x.get("text") or "").strip()][-14:]
+                    ev += " FACT: " + _BE_FACT + "."
                     if _said:
                         ev += " WHAT HE TOLD YOU IN THE LAST HOURS (his exact words, oldest first - the LATEST instruction on a point replaces the earlier one): " +                               " || ".join("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), str(x.get("text"))[:220].replace(chr(10), " ")) for x in _said)
                 except Exception:
@@ -22147,7 +22149,7 @@ def _companion_tick():
                         if prog >= 0.5 and ts.get("mid") != keys_open[0]:
                             ts["mid"] = keys_open[0]
                             ev = ("LIVE TRADE, THEY ARE WATCHING IN THE APP: the %s on %s is %d%% of the way to its target (%+.2f $ now, open %d min). "
-                                  "Say one short natural line like a friend next to them (no promise it will get there)." % (
+                                  "Say one short natural line like a friend next to them (no promise it will get there; %s)." % (_BE_FACT, 
                                       "buy" if dd == 1 else "sell", o.get("sym"), int(prog * 100), o.get("pl") or 0, (now - int(o.get("t") or now)) / 60))
                     ts["open"], ts["closed"] = keys_open, last_cl.get("pid")
                 tl = [t for t in (m.get("trade_log") or []) if now - t < 86400]
