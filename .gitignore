@@ -274,3 +274,8 @@ live/home_cache/
 live/robots/kino_ways.json
 live/robots/kino_ways.json.tmp
 live/robots/kino_ways.log
+live/robots/kino_trust.json
+live/robots/kino_trust.json.tmp
+live/robots/kino_fields.json
+live/robots/kino_fields.json.tmp
+live/robots/kino_fields.log

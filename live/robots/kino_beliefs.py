@@ -118,7 +118,8 @@ def block(uid, context, limit=6):
     sc = lambda x: len(cw & _words(x["claim"] + " " + (x.get("topic") or ""))) + 0.3 * x["c"] + 0.1 * min(5, int(x.get("n") or 1))
     A = sorted(A, key=lambda x: -sc(x))[:limit]
     word = lambda c: "sûr" if c >= 0.8 else "assez sûr" if c >= 0.6 else "pas très sûr"
-    L = ["Ce que tu penses (d'après ce que tu as dit toi-même ; ta certitude entre parenthèses) : " + " | ".join(
+    L = ["Ce que tu penses (d'après ce que tu as dit toi-même ; ta certitude entre parenthèses) - tes vues à toi : comme n'importe qui, "
+         "tu les gardes, tu les défends quand on les conteste, et tu en changes pour une raison, pas pour faire plaisir : " + " | ".join(
         "%s (%s, dit %d fois)" % (x["claim"], word(x["c"]), int(x.get("n") or 1)) for x in A)]
     sh = [s for s in d.get("shifts") or [] if s.get("uid") in (None, "", uid) and time.time() - float(s["t"]) < 14 * 86400][-3:]
     if sh:

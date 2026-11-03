@@ -24,6 +24,7 @@ Read him RIGHT NOW. JSON only:
  "his_intention": "something HE said he will do himself (watch a film, trade more by hand, test later...), with when if he said it; else empty",
  "shared_plan": "a plan the two of them agreed to do TOGETHER (what, when); else empty",
  "gave_kino": "something he just taught, gave or trusted Kino with (his method, a rule, a tip, his trust); else empty",
+ "about_kino_act": "approved|corrected|none - did his last messages approve something Kino DID or decided on its own (let it stand, said good, built on it) or correct it (premature, wrong, why did you, not like that)?",
  "they_see": "if his last messages show he sees something Kino has not said or seems to miss (he urges 'now' / 'go', says 'you missed it', points at something, sounds surprised Kino did not act or did not notice): what he seems to see, in a few words; else empty",
  "teaching_moment": "yes|no - is this a moment where a question back would make him think more than an explanation (he just made a decision worth looking at, he asked why, he is close to seeing it himself)",
  "lang_mix": "fr|en|mixed - the language(s) of his last messages",
@@ -33,7 +34,7 @@ Read him RIGHT NOW. JSON only:
  "next": "short|long|silent - how he will most likely answer Kino's next message",
  "laughed_at": "if his last message shows he found something Kino said funny: that Kino line, word for word; else empty",
  "joke_fell_flat": "if Kino tried to be funny and it fell flat or annoyed him: that Kino line, word for word; else empty",
- "domain": "what the talk is about right now, ONE word: trading|robots|his life|family|work|health|news|kino|other",
+ "domain": "what the talk is about right now, 1-3 words: trading, robots, kino, news, his life, family, health - or, when it is about a trade, a business, a craft or a skill, THAT field by name (e.g. 'bakery', 'car repair', 'real estate', 'cooking')",
  "in_passing": "something about his life he mentioned in passing that a friend would be curious about (a person, a plan, a worry); else empty",
  "shared": "how much his last message confides about himself: none|a little|a lot",
  "talking_about": "what 'it', 'the test', 'that trade', 'your robot' refer to RIGHT NOW in this talk - name the exact thing (whose robot, which trade)",
@@ -98,6 +99,7 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     r["teach"] = str(j.get("teaching_moment") or "").lower().startswith("y")
     r["mix"] = str(j.get("lang_mix") or "").lower().strip()[:6]
     r["see"] = " ".join(str(j.get("they_see") or "").split())[:200]
+    r["domain"] = " ".join(str(j.get("domain") or "").lower().split())[:40]
     try:
         r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
     except Exception:
@@ -130,6 +132,20 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         KDP.on_reply(_person_of(uid), j, _tl)
         if j.get("assumes"):
             KDP.note_assumes(_person_of(uid), j.get("assumes"))
+    except Exception:
+        pass
+    try:                                               # 2026-11-03 (kino_human2 1): trust earned from what he approves / corrects
+        _ak = str(j.get("about_kino_act") or "").lower().strip()
+        if _ak in ("approved", "corrected"):
+            import kino_human2 as KH2
+            KH2.trust_note(_person_of(uid), _ak, " ".join(str(next((m.get("text") for m in reversed(M) if m.get("role") == "user"), "")).split())[:120])
+    except Exception:
+        pass
+    try:                                               # 2026-11-03 (kino_fields): a field new to him - he learns it, like anyone
+        _dm = " ".join(str(j.get("domain") or "").lower().split())[:40]
+        if _dm and _dm not in ("trading", "robots", "kino", "news", "other", "his life", "family", "health"):
+            import kino_fields as KF
+            KF.learn(W, _dm, M, log=os.path.join(HERE, "kino_fields.log"))
     except Exception:
         pass
     _gk = " ".join(str(j.get("gave_kino") or "").split())[:240]

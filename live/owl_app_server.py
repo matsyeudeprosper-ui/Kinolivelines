@@ -15701,6 +15701,21 @@ def _one_fresh(user, c):
                      "say it to him plainly in one line and let him decide - never quietly do it your way instead.")
     except Exception:
         pass
+    try:                                               # 2026-11-03 (human map 1,2,3,4,6,10): trust earned, what he owes, today's
+        import kino_human2 as _KH2                     # timeline, patterns in their record, his felt tone, what he is busy with
+        _h2 = _KH2.block(_person(uid), uid, cid, os.path.join(DIR, "nest_data"))
+        if _h2:
+            L.append(_h2)
+    except Exception:
+        pass
+    try:                                               # (8) a field new to him: what he has learned of it, what he does not know yet
+        import kino_person as _KPf, kino_fields as _KFf
+        _rd = ((_KPf._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
+        _fb = _KFf.block(_rd.get("domain")) if time.time() - float(_rd.get("t") or 0) < 3600 else ""
+        if _fb:
+            L.append(_fb)
+    except Exception:
+        pass
     try:                                               # he hears himself
         _vm = _voice_mirror(c)
         if _vm:
