@@ -29,10 +29,18 @@ def check(W, person, act_text, situation="", log=None):
         items = KW.entries(person)
     except Exception:
         items = []
-    if not items:
+    vals = ""
+    try:                                               # 2026-11-03 (human3 7): his own values count too
+        _cn = __import__("json").load(open(os.path.join(HERE, "kino_identity.json"), encoding="utf-8")).get("constitution") or {}
+        vals = "\n".join("- " + str(v) for v in list(_cn.get("values") or []) + list(_cn.get("refuse") or []))
+    except Exception:
+        pass
+    if not items and not vals:
         return None
     book = "\n".join("- %s: %s (said %s UTC)" % (x["topic"], x["said"], time.strftime("%d/%m %H:%M", time.gmtime(x["t"])))
                      for x in sorted(items, key=lambda x: x["t"]))
+    if vals:
+        book = (book or "(empty)") + "\n\nKINO'S OWN VALUES (an act against these is a conflict too - with = 'my values'; a standing permission the person gave in their notebook IS their OK):\n" + vals
     j = W.ask_json(SYSTEM, "THEIR NOTEBOOK (oldest first; the newest word on a topic is the one that holds):\n%s\n\n"
                            "THE SITUATION NOW (facts): %s\n\nTHE ACT HE IS ABOUT TO DO: %s\n\nJSON only." % (book, str(situation)[:1500], act_text),
                    models=("haiku", "sonnet"), timeout=30, log=log, warm=False)

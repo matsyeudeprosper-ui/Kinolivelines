@@ -46,7 +46,12 @@ Read him RIGHT NOW. JSON only:
  "assumes": "what his last message shows he takes as TRUE right now about his account, trades, robots or tests (in plain words); empty if nothing",
  "of_kino": "what his last message shows he THINKS or FEELS ABOUT KINO himself (trusts his calls, doubts him, finds him reliable, likes him, is annoyed by him...), plain words; empty if it shows nothing about Kino",
  "of_kino_aspect": "competence|reliability|warmth - which side of Kino that is about; empty if nothing",
- "of_kino_val": -1.0 to 1.0 (how badly or well he sees Kino on that side; 0 if nothing)}
+ "of_kino_val": -1.0 to 1.0 (how badly or well he sees Kino on that side; 0 if nothing),
+ "upcoming": "something coming up in HIS life he mentioned (an exam, a trip, a doctor visit, a meeting, a delivery, a match) that a friend would ask about afterwards; else empty",
+ "upcoming_when": "when it is, as he said it, in English: 'today', 'tonight', 'tomorrow', 'in 3 days', 'this week', or a date YYYY-MM-DD; else empty",
+ "shared_term": "a word, nickname or expression that has become THEIRS (he reused one of Kino's words, or they both use a coined name for a thing); else empty",
+ "friction": "if there was tension between him and Kino in these last messages (he got irritated, Kino was cold or stubborn, a dispute): what, briefly; else empty",
+ "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -82,8 +87,14 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             pass
     except Exception:
         pass
-    user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
-        cues or "-", "-" if local_hour is None else "%02dh" % local_hour,
+    _vals = ""
+    try:                                               # 2026-11-03 (human3 7): his own values, to hold a request up to
+        _cn = json.load(open(os.path.join(HERE, "kino_identity.json"), encoding="utf-8")).get("constitution") or {}
+        _vals = " | ".join([str(x) for x in (_cn.get("values") or [])] + [str(x) for x in (_cn.get("refuse") or [])])[:1200]
+    except Exception:
+        pass
+    user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
+        cues or "-", "-" if local_hour is None else "%02dh" % local_hour, ("KINO'S VALUES: %s\n" % _vals) if _vals else "",
         ("TRUE FACTS ABOUT KINO HIMSELF (measured by the app - when Kino states these, it is NOT a slip): %s\n" % _kt) if _kt else "",
         _transcript(M))
     try:
@@ -143,6 +154,11 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             import kino_human2 as KH2
             _lu = next((m for m in reversed(M) if m.get("role") == "user"), {}) or {}
             KH2.trust_note(_person_of(uid), _ak, " ".join(str(_lu.get("text") or "").split())[:120], said_at=_lu.get("t"))
+    except Exception:
+        pass
+    try:                                               # 2026-11-03 (kino_human3): their life ahead, their words, friction, days
+        import kino_human3 as KH3
+        KH3.from_read(_person_of(uid), j, next((m for m in reversed(M) if m.get("role") == "user"), None))
     except Exception:
         pass
     try:                                               # 2026-11-03 (kino_fields): a field new to him - he learns it, like anyone

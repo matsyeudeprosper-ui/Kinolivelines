@@ -112,6 +112,17 @@ def quiet(W, person, log=None):
         P["open"] = []                      # worked through - what comes next starts a new nag
         P["last"] = {"t": now, "how": " ".join(str(j.get("how_it_sits") or "").split())[:200]}
         _save(d)
+    try:                                               # 2026-11-03 (kino_wisdom): the same lesson from two people becomes general
+        import kino_wisdom as KWi
+        try:
+            _pm = json.load(io.open(os.path.join(HERE, "persons.json"), encoding="utf-8"))
+            names = set(_pm.values()) | set(_pm.keys())
+        except Exception:
+            names = set()
+        for r in new:
+            KWi.offer(W, person, r["text"], names=names, log=log)
+    except Exception:
+        pass
     return new
 
 

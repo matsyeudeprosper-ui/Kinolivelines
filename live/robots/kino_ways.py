@@ -88,6 +88,7 @@ def learn(W, person, msgs, hint="", log=None):
             old = idx.get(_norm(s.get("topic_was"))) or idx.get(_norm(tp))
             if old is not None:
                 if _norm(old["said"]) == _norm(sd):
+                    old["seen"] = now                  # said again: the memory is fresh again
                     continue
                 old.setdefault("prev", []).append({"said": old["said"], "t": old["t"]})
                 old["prev"] = old["prev"][-5:]
@@ -110,6 +111,12 @@ def learn(W, person, msgs, hint="", log=None):
     return changed
 
 
+def sureness(x, now=None):
+    """2026-11-03 (human3 3): memory fades unless the thing is heard again - 1.0 fresh, half after 3 weeks"""
+    now = now or time.time()
+    return 0.5 ** ((now - float(x.get("seen") or x["t"])) / (21 * 86400.0))
+
+
 def block(person, lang="fr"):
     """for the one mind: the notebook, newest first, with what changed in the last hour"""
     items = sorted(entries(person), key=lambda x: -x["t"])
@@ -120,11 +127,14 @@ def block(person, lang="fr"):
     L = []
     for x in items[:20]:
         new = now - x["t"] < 3600
-        L.append("- %s: \"%s\" (%s %s UTC%s)" % (x["topic"], x["said"], "said" if en else "dit le",
+        sure = sureness(x, now)
+        hazy = "" if sure >= 0.6 else (", long ago and not heard since - you hold it less surely" if en else
+                                      ", il y a longtemps et pas réentendu depuis - tu en es moins sûr")
+        L.append("- %s: \"%s\" (%s %s UTC%s%s)" % (x["topic"], x["said"], "said" if en else "dit le",
                                                   time.strftime("%d/%m %H:%M", time.gmtime(x["t"])),
                                                   (", CHANGED %d min ago - before it was: \"%s\"" % ((now - x["t"]) / 60, x["prev"][-1]["said"][:120])
                                                    if en else ", CHANGÉ il y a %d min - avant : \"%s\"" % ((now - x["t"]) / 60, x["prev"][-1]["said"][:120]))
-                                                  if new and x.get("prev") else (" - NEW" if en else " - NOUVEAU") if new else ""))
+                                                  if new and x.get("prev") else (" - NEW" if en else " - NOUVEAU") if new else "", hazy))
     head = ("WHAT HE TOLD YOU ABOUT HOW HE DOES AND WANTS THINGS (his notebook - his newest word on each point replaces the older one; "
             "act on THESE versions):" if en else
             "CE QU'IL T'A DIT DE SA FAÇON DE FAIRE ET DE CE QU'IL VEUT (son carnet - son dernier mot sur un point remplace l'ancien ; "

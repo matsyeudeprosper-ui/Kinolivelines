@@ -15711,6 +15711,18 @@ def _one_fresh(user, c):
             L.append(_rb)
     except Exception:
         pass
+    try:                                               # 2026-11-03 (kino_human3): their life ahead, your shared words, friction,
+        import kino_person as _KP3, kino_human3 as _KH3    # how your days go, how close you are, how long this stretch has been
+        _rd3 = ((_KP3._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
+        _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3)
+        if _h3:
+            L.append(_h3)
+        import kino_wisdom as _KWs                     # what many people taught him, nobody in it
+        _ws = _KWs.block(" ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-6:]))
+        if _ws:
+            L.append(_ws)
+    except Exception:
+        pass
     try:                                               # (8) a field new to him: what he has learned of it, what he does not know yet
         import kino_person as _KPf, kino_fields as _KFf
         _rd = ((_KPf._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}

@@ -51,6 +51,21 @@ Known limits: an undo (person closing or changing his act right after) is not ye
 
 | Reflection driven by what nags, not the calendar (owner: "do humans wait for a day to review?"): corrections, slips, misquotes, held-back acts and undos stir an unresolved nag (weighted, fades in a day); in a quiet moment (10 min without talk, nothing running) a high nag brings him back to it and he settles 1-2 resolves in his own words; the same situation coming back reinforces a resolve ("being tested right now"), unused resolves fade in days. Replaces the "3 slips" trigger; the Sunday look back stays as an optional habit | engine | robots/kino_rumination.py, _urge_tick, kino_read |
 
+## Done 11-03 late: what people naturally do (list 3, all 10)
+
+| What | Kind | Where |
+|---|---|---|
+| Learns preferences from BEHAVIOUR, not only words: how the person answers his messages (length, numbers, ends with a question, hour, weekday) becomes patterns that are re-checked on new data. First real finding on the owner: he answers 95% of the time when Kino ends with a question, 66% otherwise; less often 00-04 UTC | engine (adapter on kino_patterns) | kino_human3.habits_line |
+| Follow-ups on their life: something coming up they mention (an exam, a trip) is held with a due time; when it has happened he sees it once until he has asked | engine | kino_read 'upcoming', kino_human3.followup_line |
+| Imperfect memory: a notebook word not heard again fades (half after 3 weeks) and is shown as held less surely; saying it again makes it fresh | engine | kino_ways.sureness |
+| Shared language: words that became theirs grow with use | engine | kino_read 'shared_term', kino_human3.shared_line |
+| Repair after friction: a tense moment is kept for 12 h with what happened since and how they seem now | engine | kino_read 'friction', kino_human3.friction_line |
+| Learned rhythm: their busiest hour, their quiet stretch (found across midnight), how they open after a long gap - from all their chats (seeded from history; owner: busiest 17:00, quiet 03-07 UTC) | engine | kino_human3._day / rituals_line |
+| Saying no from his own values: his constitution (values + refuse) is held up to each request (intuition read) and to each act he does on his own (conflict check); a standing OK in their notebook counts as their OK (tested: owner auto trade at step 1 passes, unasked order is held) | engine link | kino_read 'asks_against', kino_conflict.check, against_line |
+| Experience across people with nobody in it: a resolve settled with one person that matches another person's resolve becomes one general lesson (no names, no digits, checked against every member name) | engine | robots/kino_wisdom.py, kino_rumination.quiet |
+| Opening up gradually: closeness from days known, messages across all chats and relationship trust; how much of himself he shares follows it | engine | kino_human3.closeness_line |
+| Tiredness: a long stretch without a real break (25 min gap) with his slips in it; either can call a pause | engine | kino_human3.fatigue_line |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
