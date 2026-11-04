@@ -15737,6 +15737,17 @@ def _one_fresh(user, c):
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
+        try:                                           # kino_cases: past cases of his rules; a rule that reads two ways
+            import kino_cases as _KCf2
+            _sf, _gf = _KCf2.chart_situation() if _auto_on(c) else ("", "")
+            _cbf = _KCf2.cases_block(_person(uid), _gf, " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-4:]))
+            if _cbf:
+                L.append(_cbf)
+            _fk = _KCf2.forks_line(_person(uid), [str(m.get("text") or "") for m in (c.get("msgs") or []) if m.get("role") == "ai"])
+            if _fk:
+                L.append(_fk)
+        except Exception:
+            pass
         if _auto_on(c):                                # kino_entries: his own tally of this session's entries
             import kino_entries as _KEb
             _eb = _KEb.block(_person(uid), max(float((c.get("auto_trade") or {}).get("t") or 0), time.time() - 12 * 3600))
@@ -20375,6 +20386,14 @@ def _auto_watch_loop():
                     _said = [x for x in (c.get("msgs") or []) if x.get("role") == "user" and float(x.get("t") or 0) >= _t0
                              and str(x.get("text") or "").strip()][-14:]
                     ev += " FACT: " + _BE_FACT + "."
+                    try:                               # 2026-11-04 (kino_cases): the closest past cases of his rules
+                        import kino_cases as _KCw
+                        _sw, _gw = _KCw.chart_situation(now)
+                        _cb = _KCw.cases_block(_person(uid), _gw, "entry trigger first candle")
+                        if _cb:
+                            ev += " " + _cb.replace(chr(10), " ") + " (NOW: %s, signature %s)" % (_sw, _gw)
+                    except Exception:
+                        pass
                     _tl = _pb_top_line(j)
                     if _tl:
                         ev += " " + _tl
@@ -20400,6 +20419,10 @@ def _auto_watch_loop():
                                     r = _KEn.review(_rc().W, pm, rules, *per, log=os.path.join(DIR, "robots", "kino_entries.log"))
                                     if r and r["called_for"] and r["kino"] not in ("took", "open_trade", "not_applicable"):
                                         __import__("kino_rumination").stir(pm, "missed_entry", "%s %s: %s" % (r["at"], r["kino"], r["why"]))
+                                        _KCp = __import__("kino_cases")    # practice: the miss, worked through, is a case of his own
+                                        _sp, _gp = _KCp.situation_of(per[0], per[1])
+                                        _KCp.add_case(pm, "entry trigger", "%s at %s (%s): %s" % ("should have entered" if r["kino"] == "missed" else r["kino"], r["at"], r["side"], r["why"]),
+                                                      _sp, _gp, "my practice", float(per[0][1]))
                                 except Exception:
                                     pass
                             threading.Thread(target=_rv, daemon=True).start()

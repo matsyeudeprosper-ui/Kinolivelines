@@ -110,6 +110,17 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Order cards expire after 10 min or when he decides a newer order (a 30-min-old card made him skip 01:07) | fix | _order_cards_expire |
 | Tonight measured (11-03 18:00 -> 11-04 00:48, 11 periods with an entry due): took 1; 3 blocked correctly by an open trade; the rest missed / held back / refused. Labels vary a little run to run. Post-fix misses (00:15, 00:25) come from reading the rule as "the first candle, only if red/green" - asked the owner which he means | measurement | kino_entries replay |
 
+## Done 11-04 (list 9) - learning a rule from its cases
+
+| What | Kind | Where |
+|---|---|---|
+| Casebook: moments the person confirmed or corrected how a rule applied (his word) and his own worked misses (my practice), each with the situation then and a chart signature (colours after the top close); the closest cases are read by the candle watch and every reply | engine | robots/kino_cases.py, kino_read 'case', auto watch, _one_fresh |
+| Asking when a rule reads two ways: a new/changed notebook entry is checked for a real fork; the two readings wait until he asks, once (tested: the old "first red candle" wording forks, the clarified rule does not) | engine | kino_cases.ambiguity / forks_line, kino_read after kino_ways.learn |
+| Practice: a miss from the session's hindsight review becomes a worked case of his own | engine link | auto watch _rv -> kino_cases.add_case |
+| Stress -> judgement: MEASURED first, not built - 1 correction, 6 entries due tonight, none after a correction: nothing to conclude; rerun review/stress_check.py later | measurement | live/review/stress_check.py |
+| Owner's entry rule clarified twice tonight (first OR second lower candle after the top close, whichever is the right colour; never later) - in his notebook and rules list with his words | data | kino_ways.json, kino_rules.json |
+| rr= provisional target: live price, then at least 0.4% away (two refusals) | fix | _order_parse |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

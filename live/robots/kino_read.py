@@ -9,7 +9,7 @@ Here: right after a message of theirs, a fast intuition pass (small model, no to
 measured cues and writes the read into kino_person (with the "next" guess, checked later against what really came - the
 hit rate is part of what he sees). The one mind gets it as his gut feeling, which can be wrong. No rule about what to say.
 """
-import json, os, sys, time
+import calendar, json, os, re, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
@@ -53,6 +53,9 @@ Read him RIGHT NOW. JSON only:
  "friction": "if there was tension between him and Kino in these last messages (he got irritated, Kino was cold or stubborn, a dispute): what, briefly; else empty",
  "dropped_question": "a question asked by EITHER of them in these exchanges that the talk moved past without it being answered (not one asked in the very last message): who asked - 'he asked' or 'Kino asked' - and the question; else empty",
  "answered_now": "if one of the QUESTIONS LEFT OPEN EARLIER (given above) was just answered or taken up: its words; else empty",
+ "case": "if his last messages CONFIRM or CORRECT how Kino applied one of his rules at a concrete moment ('that red was the one', 'you should have taken it', 'not that candle', 'yes, exactly'): which rule (a few words), the moment (HH:MM UTC if it shows) and what he says is right, in his sense; else empty",
+ "case_rule": "the rule that case is about, 2-5 words; else empty",
+ "case_at": "HH:MM UTC of the moment the case is about, if it shows; else empty",
  "re_asked": "if his last message asks AGAIN something he already asked, because Kino's answer missed what he meant (e.g. 'yes but your bet is...?'): what he meant vs what Kino answered, briefly; else empty",
  "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
@@ -167,6 +170,23 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             KH2.trust_note(_person_of(uid), _ak, " ".join(str(_lu.get("text") or "").split())[:120], said_at=_lu.get("t"))
     except Exception:
         pass
+    try:                                               # 2026-11-04 (kino_cases): a moment he confirmed or corrected becomes a case
+        _cs = " ".join(str(j.get("case") or "").split())[:260]
+        if len(_cs) >= 10:
+            import kino_cases as _KCs
+            _lu3 = next((m for m in reversed(M) if m.get("role") == "user"), {}) or {}
+            _at = None
+            _mh = re.match(r"(\d{1,2}):(\d{2})", str(j.get("case_at") or ""))
+            if _mh:
+                _g = time.gmtime(float(_lu3.get("t") or time.time()))
+                _at = calendar.timegm((_g.tm_year, _g.tm_mon, _g.tm_mday, int(_mh.group(1)), int(_mh.group(2)), 0))
+                if _at > float(_lu3.get("t") or time.time()) + 300:
+                    _at -= 86400
+            _sit, _sig = _KCs.chart_situation(_at or _lu3.get("t"))
+            _KCs.add_case(_person_of(uid), j.get("case_rule") or "", _cs, _sit, _sig, "his word", _lu3.get("t"))
+            _KCs.settle_fork(_person_of(uid), str(_lu3.get("text") or ""))
+    except Exception:
+        pass
     try:                                               # 2026-11-03: he had to ask twice
         _ra = " ".join(str(j.get("re_asked") or "").split())[:240]
         if len(_ra) >= 8:
@@ -190,7 +210,16 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     if len(_gk) >= 6:                                  # 2026-11-03 (kino_ways): what he taught goes into his notebook, newest wins
         try:
             import kino_ways as KW
-            KW.learn(W, _person_of(uid), M, hint=_gk, log=os.path.join(HERE, "kino_ways.log"))
+            _chg = KW.learn(W, _person_of(uid), M, hint=_gk, log=os.path.join(HERE, "kino_ways.log"))
+            try:                                       # 2026-11-04 (kino_cases): can the new word be read two ways?
+                import kino_cases as _KCa
+                _book = "\n".join("- %s: %s" % (x["topic"], x["said"]) for x in KW.entries(_person_of(uid)))
+                for _tp in [t_ for t_ in (_chg or []) if not t_.startswith("-")][:2]:
+                    _it = next((x for x in KW.entries(_person_of(uid)) if x["topic"] == _tp), None)
+                    if _it:
+                        _KCa.ambiguity(W, _person_of(uid), _tp, _it["said"], _book, log=os.path.join(HERE, "kino_cases.log"))
+            except Exception:
+                pass
         except Exception:
             pass
     try:                                               # 2026-10-31 (kino_selfmodel 2): what he seems to think of Kino
