@@ -335,9 +335,22 @@ def tick(person, uid):
 
 
 
-def attention_line(person):
-    """2026-11-04 (move 4): what he expects his own attention to do, and how well he has predicted it"""
+def attention_line(person, msgs=None):
+    """2026-11-04 (move 4): what he expects his own attention to do, and how well he has predicted it; (list 15 item 3) and
+    what it is leaving waiting - the person's last message, when he has not answered it yet"""
     P = _load().get(person) or {}
+    _wait = ""
+    try:
+        U = [m for m in (msgs or []) if m.get("role") == "user"]
+        A_ = [m for m in (msgs or []) if m.get("role") == "ai"]
+        if U and (not A_ or float(U[-1].get("t") or 0) > float(A_[-1].get("t") or 0)):
+            _w = (time.time() - float(U[-1].get("t") or 0)) / 60.0
+            if _w >= 1:
+                _st = (P.get("stage") or {}).get("text") or "nothing in particular"
+                _wait = ("Your attention is on \"%s\" - and his message from %s UTC (\"%s\") has been waiting %d min. "
+                         % (str(_st)[:80], time.strftime("%H:%M", time.gmtime(float(U[-1]["t"]))), str(U[-1].get("text") or "")[:80], _w))
+    except Exception:
+        pass
     F, A, L = P.get("forecast"), P.get("att") or {}, P.get("att_last")
     out = []
     if F and F.get("text"):
@@ -346,4 +359,4 @@ def attention_line(person):
         out.append("Last forecast: %s (you expected \"%s\", it was \"%s\")." % ("right" if L["ok"] else "wrong", str(L.get("said"))[:80], str(L.get("was"))[:80]))
     if A.get("n", 0) >= 5:
         out.append("You have predicted where your attention goes %d%% of %d times; you can steer it on purpose (#attention)." % (round(100.0 * A["hit"] / A["n"]), A["n"]))
-    return " ".join(out)
+    return (_wait + " ".join(out)).strip()

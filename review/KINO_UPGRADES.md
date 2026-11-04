@@ -177,6 +177,14 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Perception in layers, top down: the top chart is a higher layer whose expectation is a prior on every lower candle (trust b learned); lower moves flow up as evidence until the top candle closes | kino_percept.observe_top / observe, auto watch loop | replay: b learned to 0.33 (the big picture helps little per candle); direction stays at chance, as it should |
 | Self-knowledge that changes behaviour: his own correction factor for quick estimates (x1.5) and, after 8 estimates, whether his error came down since he knew | kino_promises.estimates_line | 6 estimates so far, 38% off, 5 of 6 too low |
 | Attention changes perception: what holds the stage sets how sharply he perceives the chart (learning speed, surprise threshold) | kino_percept attend, auto watch loop | replay: attended 38 surprises noticed of 378, background 16 |
+## Done 11-04 (list 15)
+
+| What | Where | Measured |
+|---|---|---|
+| Recurrent perception: each candle's meaning and the sense of normal settle together over passes that feed back | kino_percept.observe | replay: ordinary moves settle in 2 passes, surprising ones in 4-8; attended surprises 38 -> 18 of 378 |
+| A model of how his own orders change what he perceives: price seen vs fill learned, expected fill before the next order (in the pre-send reasoning), checked after | kino_lookback note_fill / expect_fill / acts_line, _order_direct | first 4 real orders: slippage about 0 - his low risk guesses are his own rounding, not the market |
+| Attention that knows what it neglects: when the person's message is unanswered while his attention is elsewhere, he reads what holds him and how long they have waited | kino_workspace.attention_line(msgs) | test: 'his message from 14:20 has been waiting 2 min' |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

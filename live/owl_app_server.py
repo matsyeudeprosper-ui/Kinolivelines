@@ -15759,7 +15759,7 @@ def _one_fresh(user, c):
                 _spl = __import__("kino_space").describe(_person(uid), _KIsp.feelings(uid))
             except Exception:
                 _spl = ""
-            for _ln in (_spl, _KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid)),
+            for _ln in (_spl, __import__("kino_lookback").acts_line() if _auto_on(c) else "", _KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid), c.get("msgs") or []),
                         _KPe.line("btc_chart", "his chart") if _auto_on(c) else "", _KAl.line()):
                 if _ln:
                     L.append(_ln)
@@ -20213,9 +20213,17 @@ def _order_direct(cid, user, v, en, c, words=""):
             _act += (" - NOTE: the target number above is provisional; right after the fill the server re-sets the target to "
                      "exactly %gR of the real stop distance from the real fill price, so the R multiple is %g by construction" % (req["_rr"], req["_rr"]))
         _sit = ""
+        _FX = {}
         try:
             _jc = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
             _pxc = float(_jc.get("px") or 0)
+            try:                                       # list 15 item 2: what his order will do to the price he gets
+                _ef, _es, _en = __import__("kino_lookback").expect_fill(_pxc, int(req.get("d") or 0))
+                _FX.update(seen=_pxc, exp=_ef)
+                if _en:
+                    _sit += "YOUR MODEL OF YOUR OWN ORDERS: at market you are usually filled %+.1f points from the price you see (from %d orders) - expected fill about %.1f. " % (_es, _en, _ef)
+            except Exception:
+                pass
             _sit = "%s %s COMPUTED: price %.1f, stop %s, distance %.0f points, risk about %.2f $ at %s lot. " % (
                 _pb_top_line(_jc), _chart_struct_line(_jc), _pxc, req.get("sl"), abs(_pxc - float(req.get("sl") or _pxc)),
                 abs(_pxc - float(req.get("sl") or _pxc)) * float(req.get("lot") or 0), req.get("lot"))
@@ -20286,6 +20294,11 @@ def _order_direct(cid, user, v, en, c, words=""):
                         txt += " -> objectif %.0f (%gR depuis l'entr\u00e9e r\u00e9elle %.0f)" % (_tp, float(_rr), _fp)
         except Exception:
             pass
+    try:                                               # list 15 item 2: the fill he got against the price he saw
+        if r and r[0] and isinstance(r[1], dict) and r[1].get("price") and _FX.get("seen") and req.get("d"):
+            __import__("kino_lookback").note_fill(_FX["seen"], r[1]["price"], req["d"], _FX.get("exp"))
+    except Exception:
+        pass
     try:                                               # kino_promises: the risk he quoted before the fill vs the real one
         if r and r[0] and isinstance(r[1], dict) and r[1].get("risk") is not None and words:
             __import__("kino_promises").note_estimate(_person(uid), "risk in $ quoted before the fill", words, r[1]["risk"])

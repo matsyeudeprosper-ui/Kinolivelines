@@ -103,6 +103,21 @@ def observe(stream, t, close, attend=0.5):
             spread = S["s"] or abs(move) or 1.0
             e = move - guess
             z = e / max(spread, 1e-6)
+            # 2026-11-04 (list 15 item 1, recurrence): the percept is not one pass - what the move means and how wide "normal"
+            # is right now are settled together, each pass feeding the next (a big move widens the sense of normal a little,
+            # which lowers how surprising it reads, and so on until it settles); attention lets more of the move in
+            # (the first version recomputed the same number twice - no feedback. Now the reading of each pass changes the next:
+            # how surprising the move reads widens the sense of normal, which changes how surprising it reads, until they agree)
+            z_k = e / max(spread, 1e-6)
+            passes = 1
+            for passes in range(2, 9):
+                sp_k = spread * (1 + 0.15 * (0.5 + attend) * max(0.0, abs(z_k) - 1.0))
+                z_n = e / max(sp_k, 1e-6)
+                if abs(z_n - z_k) < 0.02:
+                    z_k = z_n
+                    break
+                z_k = z_n
+            z = z_k
             if S["n"] >= 20:
                 S["dir_n"] += 1
                 S["dir_ok"] += 1 if (guess >= 0) == (move >= 0) else 0
@@ -112,7 +127,7 @@ def observe(stream, t, close, attend=0.5):
                 S["att"][key] += 1
                 S["att"][key + "_sur"] += 1 if sur else 0
                 out = {"t": float(t), "guess": round(guess, 1), "spread": round(spread, 1), "move": round(move, 1), "z": round(z, 2),
-                       "prior": round(prior, 1), "attend": round(attend, 2), "surprise": sur}
+                       "prior": round(prior, 1), "attend": round(attend, 2), "surprise": sur, "passes": passes}
                 S["recent"] = (S["recent"] + [out])[-30:]
             # the loop: the error updates what he expects next, and how much he trusts the big picture's prior
             norm = S["last_move"] ** 2 + prior ** 2 + spread ** 2
