@@ -132,6 +132,15 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Auto order clashing with the owner's rules goes back to him to correct and send once (10:35 flip lost to an expired card) | fix | _order_direct |
 | Owner's first-entry stop rule: the tip (next BOS on the lower chart), not the top candle high | data | kino_ways / kino_rules |
 
+## Done 11-04 (list 11)
+
+| What | Kind | Where |
+|---|---|---|
+| Thinking aloud when unsure and the person is watching (in the app, or wrote in the last 15 min): a close call goes out as one #hesite line before acting; sure cases are acted on; alone he decides alone | engine | _watching_note, auto event, kino_one #hesite |
+| Asking to see their screen: when the read senses he sees something Kino does not, Kino knows screen and numbers can differ (redraws, lag) and can ask for a screenshot instead of defending his numbers | engine link | kino_person.block_one |
+| Off his game: everything that went wrong is kept 24 h even after he worked it through; 3+ in 3 h shows as a run he can feel, name, slow down for or pause | engine | kino_rumination hist + block |
+| His clock: "#auto on jusqua=20:00" is HIS time, converted (20:00 Paris -> 19:00 UTC; it was 19:06 from "8 hours") | fix | _auto_set, kino_one |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

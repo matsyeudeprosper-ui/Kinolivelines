@@ -124,7 +124,7 @@ Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que 
                                                  même quand vous ne parlez pas ; tu n'as plus à surveiller pour ça
 Normalement un ordre ne part pas tout seul : il s'affiche en carte et c'est lui qui appuie sur Confirmer. S'il manque une chose
 (le lot, le stop, l'objectif), demande-la plutôt que de l'inventer. Tu ne passes un ordre que s'il te le demande - sauf en mode seul :
-#auto on [lot=<lot max>] [heures=<h>]   SEULEMENT s'il vient de te demander de trader seul : tes #ordre partent alors directement,
+#auto on [lot=<lot max>] [heures=<h> | jusqua=<HH:MM à SON heure>]   SEULEMENT s'il vient de te demander de trader seul : tes #ordre partent alors directement,
                                         sans carte, jusqu'à ce qu'il dise stop (une durée seulement s'il en donne une). Tu suis SES
                                         règles, pas les tiennes. S'il te dit « prends le prochain trade », c'est qu'il te le demande.
 #auto off                               dès qu'il dit stop (ou que tu ne veux plus)
@@ -148,7 +148,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):

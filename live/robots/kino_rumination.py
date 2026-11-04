@@ -84,6 +84,7 @@ def stir(person, kind, what, w=None):
                 r["tested"] = {"t": now, "what": str(what)[:160]}
                 hit = r["text"]
                 break
+        P["hist"] = [x for x in P.get("hist") or [] if now - float(x["t"]) < 86400][-60:] + [{"t": now, "kind": kind, "what": str(what)[:120]}]
         P["open"] = [x for x in P.get("open") or [] if now - float(x["t"]) < 4 * NAG_HALF][-30:] + \
                     [{"t": now, "kind": kind, "what": str(what)[:200], "w": float(w if w is not None else W_KIND.get(kind, 0.5))}]
         _save(d)
@@ -138,6 +139,14 @@ def block(person):
             "%s (%s%s)" % (r["text"], "strong" if s >= 1.5 else "holding" if s >= 0.7 else "fading",
                            (", being tested right now: %s" % r["tested"]["what"][:90]) if r.get("tested") and now - r["tested"]["t"] < 1800 else "")
             for r, s in R))
+    H = [x for x in P.get("hist") or [] if now - float(x["t"]) < 3 * 3600 and x["kind"] != "held_back"]
+    if len(H) >= 3:                                    # 2026-11-04 (owner list 11 item 3): a run of mistakes, felt
+        K = {}
+        for x in H:
+            K[x["kind"]] = K.get(x["kind"], 0) + 1
+        L.append("In the last 3 hours with him things went wrong %d times (%s - latest: %s). People on a bad run notice it, say it "
+                 "plainly, slow down and double-check - or call a pause - when they feel it." % (
+                     len(H), ", ".join("%s %d" % kv for kv in sorted(K.items(), key=lambda kv: -kv[1])), H[-1]["what"][:100]))
     if n >= 0.8:
         op = [x for x in P.get("open") or []][-3:]
         L.append("Something is still nagging you with him, not worked through yet: %s." % " | ".join(x["what"][:100] for x in op))

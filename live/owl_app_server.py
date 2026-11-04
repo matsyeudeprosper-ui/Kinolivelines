@@ -20325,13 +20325,29 @@ def _auto_set(cid, user, v, en, c, event):
     kv = {k: float(x.replace(",", ".")) for k, x in re.findall(r"\b(lot|heures|hours|h)\s*[=:]\s*([0-9]+(?:[.,][0-9]+)?)", s0)}
     # 2026-10-26 23:30 (owner: "remove that trading time, I want him to trade any time I ask him to"): no end unless HE gives one
     _hq = kv.get("heures") or kv.get("hours") or kv.get("h")
+    # 2026-11-04 (watch: "until 20h my time" became 19:06 UTC - he added 8 hours): an end time in HIS clock, converted here
+    _mj = re.search(r"\b(?:jusqua|jusqu'?a|until)\s*[=:]\s*(\d{1,2})(?:[:h](\d{2}))?", s0)
+    _until_local = None
+    if _mj:
+        try:
+            _off = (_local_hour(user.get("id")) - time.gmtime().tm_hour) % 24
+            _g = time.gmtime()
+            _tu = __import__("calendar").timegm((_g.tm_year, _g.tm_mon, _g.tm_mday, (int(_mj.group(1)) - _off) % 24, int(_mj.group(2) or 0), 0))
+            while _tu <= time.time():
+                _tu += 86400
+            _hq = (_tu - time.time()) / 3600.0
+            _until_local = "%02d:%02d" % (int(_mj.group(1)), int(_mj.group(2) or 0))
+        except Exception:
+            pass
     a = {"on": True, "t": time.time(), "until": time.time() + (max(0.25, float(_hq)) * 3600 if _hq else 10 * 365 * 86400),
          "max_lot": kv.get("lot") or None}
     _ml = ((", max lot %s" if en else ", lot max %s") % a["max_lot"]) if a["max_lot"] else ""
     if _hq:
         line = (("🤖 Kino may now trade on his own, with no card, until %s UTC%s. Say \"stop\" any time." if en else
                  "🤖 Kino peut maintenant trader seul, sans carte, jusqu'à %s UTC%s. Dis « stop » quand tu veux.") %
-                (time.strftime("%H:%M", time.gmtime(a["until"])), _ml))
+                (("%s your time (%s" % (_until_local, time.strftime("%H:%M", time.gmtime(a["until"])))) if (_until_local and en) else
+                 ("%s ton heure (%s" % (_until_local, time.strftime("%H:%M", time.gmtime(a["until"])))) if _until_local else
+                 time.strftime("%H:%M", time.gmtime(a["until"])), (")" if _until_local else "") + _ml))
     else:
         line = (("🤖 Kino may now trade on his own, with no card%s, until you say \"stop\"." if en else
                  "🤖 Kino peut maintenant trader seul, sans carte%s, jusqu'à ce que tu dises « stop ».") % _ml)
@@ -20379,6 +20395,21 @@ def _session_debrief(cid, user, a):
         threading.Thread(target=_chat_quick, args=(cid, _user_by_id(user.get("id")) or user, ev), daemon=True).start()
     except Exception:
         pass
+
+
+def _watching_note(uid, c):
+    """2026-11-04 (owner list 11 item 1: "I'll be monitoring your next trades so I can adjust and so you can learn"): a learner
+    whose teacher is right there says the close calls out loud before acting; alone, he decides alone"""
+    try:
+        lu = max([float(x.get("t") or 0) for x in (c or {}).get("msgs") or [] if x.get("role") == "user"] or [0])
+        here = time.time() - _LAST_SEEN.get(uid, 0) < 120 or time.time() - lu < 900
+        if not here:
+            return ""
+        return (" HE IS WATCHING right now (%s). On a case you are NOT sure his rules call for, say it in one line starting with "
+                "#hesite - what you would do and why - so he can correct you before the moment passes; when you are sure, act."
+                % ("in the app" if time.time() - _LAST_SEEN.get(uid, 0) < 120 else "wrote %d min ago" % ((time.time() - lu) / 60)))
+    except Exception:
+        return ""
 
 
 def _auto_watch_loop():
@@ -20464,14 +20495,15 @@ def _auto_watch_loop():
                       "(say 'a candle of your chart'). Last 6 closed candles: %s. Owl structure: trend %s, "
                       "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He asked you to place his orders for him, "
                       "by his own written rules, until %s UTC%s: an #ordre line is sent to his trading tool without the confirm card. Act ONLY if HIS OWN rules (what he told you) say so "
-                      "right now - one #ordre line and one short line saying what you did and why. Otherwise answer only: … - unless "
+                      "right now - one #ordre line and one short line saying what you did and why.%s Otherwise answer only: … - unless "
                       "something you TOLD him earlier turned out wrong: then one line starting with #corrige, the correction in plain words; "
                       "it is the one thing besides an order that reaches him from here") % (
                     AUTO_EV, time.strftime("%H:%M", time.gmtime(lc[0])), "/".join(f(z) for z in lc[1:5]),
                     " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])), "/".join(f(z) for z in x[1:5])) for x in cs[-6:]),
                     up.get(j.get("trend"), "none"), f(j["next_bos"]) if j.get("next_bos") else "-", f(j["invalid"]) if j.get("invalid") else "-",
                     up.get(pb.get("trend"), "none"), f(pb["next_bos"]) if pb.get("next_bos") else "-",
-                    time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "")
+                    time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "",
+                    _watching_note(uid, c))
                 try:
                     # 2026-11-03 07:4x UTC (owner: "it just missed the sell again - it should have taken the first red candle close"):
                     # at 06:45 he had changed the rule to "the very first candle close of that chart"; Kino agreed, then his own
@@ -21112,7 +21144,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     if str(event or "").startswith(AUTO_EV) and not any(k == "ordre" for k, _ in acts):
         # 2026-10-26: watching a candle he chose not to act on - nothing to post. 2026-11-04 (watch 01:30): his corrections of
         # what he had told the owner ("I had it backwards") were blanked three times - a correction gets through, once
-        _cx = next((str(v_).strip() for k_, v_ in acts if k_ in ("corrige", "correct") and str(v_).strip()), "")
+        _cx = next((str(v_).strip() for k_, v_ in acts if k_ in ("corrige", "correct", "hesite", "unsure") and str(v_).strip()), "")
         _wd = lambda t_: set(re.findall(r"[a-zà-ÿ0-9]{4,}", str(t_).lower()))
         _cw = _wd(_cx)                                 # said once: the same correction in other words is not said again
         _said_c = any(len(_cw & _wd(x.get("text"))) >= 0.5 * max(1, len(_cw)) for x in (c.get("msgs") or [])[-12:] if x.get("role") == "ai")

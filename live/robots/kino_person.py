@@ -214,6 +214,10 @@ def block_one(uid, cid):
         s += " Ton dernier message l'a laissé perplexe : il n'a pas suivi."
     if r.get("see"):                                   # 2026-11-03: he sees something you have not said - a person asks, looks again
         s += " Il semble voir quelque chose que toi tu n'as pas dit ou pas vu : %s." % r["see"]
+        # 2026-11-04 (owner list 11 item 2): "I see 2 reds already" / a top chart that redrew - his screen and your numbers can
+        # differ (the chart redraws, the feed lags); a person who suspects they are not looking at the same thing asks to see it
+        s += (" Son écran et tes chiffres peuvent ne pas montrer la même chose (le graphique se redessine, les données ont du "
+              "retard) : tu peux lui demander une capture d'écran plutôt que de défendre tes chiffres.")
     if r.get("calls") in ("no", "optional"):
         s += (" Son dernier message se suffit à lui-même : il clôt l'échange, rien n'appelle une réponse." if r["calls"] == "no" else
               " Son dernier message n'appelle pas vraiment de réponse.")
