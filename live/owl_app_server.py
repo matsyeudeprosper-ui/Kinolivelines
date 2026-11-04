@@ -19714,7 +19714,14 @@ def _chart_levels_facts():
         # 2026-10-27 (owner: "we only look at the LAST CLOSED candle of the top chart - bullish, we wait for a sell below"):
         # he had the top chart's trend and levels, never its candles, and sent a buy after a bullish top candle
         try:
-            _pc = [x for x in (j["pb"].get("candles") or []) if len(x) >= 6][-3:]
+            # 2026-11-04 (watch 19:18: "a top candle just closed bullish at 80201", taken back a minute later): the last candle of
+            # the feed's top chart is only the newest lower candle shown as a stand-in - this line called it "the last closed
+            # candle" in every reply. Only REAL top candles here (same rule as the watch: kino_entries.real_tops)
+            _all = [x for x in (j["pb"].get("candles") or []) if len(x) >= 6]
+            _lw = [x for x in (j.get("candles") or []) if x and len(x) > 4]
+            if _all and _lw and int(float(_all[-1][0])) == int(float(_lw[-1][0])):
+                _all = _all[:-1]
+            _pc = _all[-3:]
             if _pc:
                 _d = lambda x: "HAUSSIÈRE" if float(x[4]) > float(x[1]) else ("BAISSIÈRE" if float(x[4]) < float(x[1]) else "neutre")
                 x = _pc[-1]
