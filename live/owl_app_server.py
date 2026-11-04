@@ -15737,14 +15737,6 @@ def _one_fresh(user, c):
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
-        try:                                           # kino_asks: what he usually asks in the situation they are in now
-            import kino_asks as _KAs
-            _dst = _desk_state((_thread_user(cid, user) or user).get("id")) or {}
-            _ka = _KAs.line(_person(uid), "a trade is open" if _dst.get("open") else "no trade is open")
-            if _ka:
-                L.append(_ka)
-        except Exception:
-            pass
         import kino_wisdom as _KWs                     # what many people taught him, nobody in it
         _ws = _KWs.block(" ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-6:]))
         if _ws:

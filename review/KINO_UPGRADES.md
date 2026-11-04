@@ -91,6 +91,15 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | His hand follows his mouth: before an order goes out on its own, the words he sends with it and his questions to the person not yet answered are part of the check - "I'm holding off, do you want that wide stop?" sent WITH the order (17:50) now becomes a question card. Tested 4 cases: the 17:50 one held, a plain "taking the sell" passes, an unrelated old question passes, an unanswered sizing question holds | engine (kino_conflict own words) | kino_conflict.check(words, pending), _order_direct |
 | Watch metric fixed: "4-word repeats" counted the server's "-> Order sent" lines, error bubbles and every overlapping 4 words of one repeated sentence (48) - now repeated phrases in his voice (14 in 12 h, mostly "the first red candle") | measurement | review/kino_humanity.py |
 
+## Done 11-03/04 (list 7)
+
+| What | Kind | Where |
+|---|---|---|
+| LIVE FIX: the top-chart line called the stand-in candle (the newest lower candle, always added by pullback_view) "its latest candle", so the real move candle (23:22, closed bullish 23:23) read as "before it" and the 23:29 first red was missed. Now: last REAL top candle + when it closed, the stand-in named, and the lower candles closed since, in order with colour. Replayed at 23:31:15: "...23:23 green, 23:25 green, 23:27 green, 23:29 RED" | fix | _pb_top_line |
+| Glancing back after acting: 5-20 s after his order, what the account shows is held against what he sent (side, size, stop, target - target as re-set from the fill); a difference wakes him to say what he found and stirs a nag | engine | robots/kino_lookback.py, _look_back, _order_direct |
+| Noticing he had to be asked twice: the read flags a re-ask with what was meant vs what he answered (real 22:55 "yes but your bet...?" caught; 22:54 not); shown while fresh + count this week; stirs a nag | engine | kino_read 're_asked', kino_human3.misread_line, kino_rumination 'misread' |
+| TRIED AND DROPPED: learning what he usually asks per situation. 526 questions seeded from 3 weeks; trained on all but the last 3 days, the top-3 per situation predicted 2 of 41 recent questions (top-3 overall: 1/41); 164 kinds, his questions follow the day's work | measured null | - |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
