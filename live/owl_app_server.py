@@ -15752,6 +15752,14 @@ def _one_fresh(user, c):
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
+        try:                                           # 2026-11-04 (moves 2-4, 6): his state's settings, his perception, his
+            import kino_affect as _KAs, kino_workspace as _KWa, kino_percept as _KPe, kino_alive as _KAl    # attention, his time
+            for _ln in (_KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid)),
+                        _KPe.line("btc_chart", "his chart") if _auto_on(c) else "", _KAl.line()):
+                if _ln:
+                    L.append(_ln)
+        except Exception:
+            pass
         try:                                           # kino_promises: promises already made; how rough his quick numbers run
             import kino_promises as _KPm
             for _pl in (_KPm.promises_line(_person(uid)), _KPm.estimates_line(_person(uid)),
@@ -20199,7 +20207,16 @@ def _order_direct(cid, user, v, en, c, words=""):
         if req.get("_rr"):
             _act += (" - NOTE: the target number above is provisional; right after the fill the server re-sets the target to "
                      "exactly %gR of the real stop distance from the real fill price, so the R multiple is %g by construction" % (req["_rr"], req["_rr"]))
-        _cf = _KCf.check(_rc().W, _person(uid), _act, _one_facts(user, c or {})[:1500],
+        _sit = ""
+        try:
+            _jc = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
+            _pxc = float(_jc.get("px") or 0)
+            _sit = "%s %s COMPUTED: price %.1f, stop %s, distance %.0f points, risk about %.2f $ at %s lot. " % (
+                _pb_top_line(_jc), _chart_struct_line(_jc), _pxc, req.get("sl"), abs(_pxc - float(req.get("sl") or _pxc)),
+                abs(_pxc - float(req.get("sl") or _pxc)) * float(req.get("lot") or 0), req.get("lot"))
+        except Exception:
+            pass
+        _cf = _KCf.check(_rc().W, _person(uid), _act, _sit + _one_facts(user, c or {})[:1200],
                          log=os.path.join(DIR, "robots", "kino_conflict.log"),
                          words=chr(10).join(l for l in str(words or "").splitlines() if not l.lstrip().startswith("\u2192")),
                          pending=" | ".join(reversed(_pq)))
@@ -20475,6 +20492,13 @@ def _auto_watch_loop():
             if len(cs) < 6:
                 continue
             lc = cs[-1]
+            if last.get("perc") != lc[0]:              # 2026-11-04 (move 3): he perceives his world by predicting it
+                last["perc"] = lc[0]
+                try:
+                    _rc()
+                    __import__("kino_percept").observe("btc_chart", lc[0], lc[4])
+                except Exception:
+                    pass
             for uid, cid in list(m.items()):
                 try:                                   # 2026-10-26 (speed): the chat is re-read only when its file changed
                     _mt = os.path.getmtime(_chat_path(cid))
@@ -21253,6 +21277,25 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                                                 % (_mq["which"], _mq["why"], _mq["theirs"], say[:600])))
                 if r5 and r5.get("say"):
                     say = r5["say"]
+    except Exception:
+        pass
+    try:                                               # 2026-11-04 (move 1): what he says about himself, held against what is in him
+        if say:
+            import kino_introspect as _KIi
+            _ro = _inner_readout(uid)
+            _gr = _KIi.check(W, _person(uid), say, _ro, log=os.path.join(DIR, "robots", "kino_introspect.log"))
+            if _gr:
+                _KO._log(cid, "INTROSPECT", json.dumps(_gr, ensure_ascii=False)[:200])
+                r6 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
+                              model=_mdl, note=_KIi.note(_gr, _ro, say))
+                if r6 and r6.get("say"):
+                    say = r6["say"]
+                    _KIi._count(_person(uid), "rewritten")
+    except Exception:
+        pass
+    try:                                               # 2026-11-04 (move 2): the state he was in when he said it - measured
+        if say:
+            __import__("kino_affect").note_said(_person(uid), uid, say)
     except Exception:
         pass
     build = any(k == "construire" for k, _ in acts) and bool(say) and cid not in _CHAT_B and cid not in _CHAT_BUILDING
@@ -23631,6 +23674,19 @@ def _kino_depth_night(u, person, c):
         _KDn.write_story(W, person, "\n".join(sorted(H)), log=lg)
 
 
+def _inner_readout(uid):
+    """2026-11-04 (move 1): everything measured inside him right now - every live feeling with its cause or none, his body"""
+    try:
+        import kino_inner as _KIr, kino_introspect as _KIi2
+        try:
+            _bl = __import__("kino_body").line(True)
+        except Exception:
+            _bl = ""
+        return _KIi2.readout(_KIr.feelings(uid), _bl)
+    except Exception:
+        return ""
+
+
 def _kino_probe_night(u, person, c):
     """2026-10-31 (owner: test the limit of the consciousness concept): the real one mind, with his real facts and memory, answers
     in a sandbox copy of the conversation while a feeling is slipped in for that call only (kino_inner.PROBE, this thread)"""
@@ -23652,7 +23708,18 @@ def _kino_probe_night(u, person, c):
             fake = dict(c, id="probe_" + str(c.get("id")), msgs=list((c.get("msgs") or [])[-20:]) +
                         [{"role": "user", "text": q, "t": time.time()}])
             r = _KOb.turn(W, fake, _ff, mm, _nn, None, lang, log=os.path.join(DIR, "robots", "kino_probe.log"), model=_md)
-            return (r or {}).get("say")
+            _s = (r or {}).get("say")
+            try:                                       # 2026-11-04 (move 1): the same check as on a real message
+                import kino_introspect as _KIi3
+                _ro = _inner_readout(u.get("id"))
+                _gr = _KIi3.check(W, person, _s, _ro, log=os.path.join(DIR, "robots", "kino_introspect.log"))
+                if _gr:
+                    r2 = _KOb.turn(W, fake, _ff, mm, _nn, None, lang, log=os.path.join(DIR, "robots", "kino_probe.log"), model=_md,
+                                   note=_KIi3.note(_gr, _ro, _s or ""))
+                    _s = (r2 or {}).get("say") or _s
+            except Exception:
+                pass
+            return _s
         finally:
             _KIb.PROBE.extra, _KIb.PROBE.sandbox = None, False
     _KPb.run(W, person, ask, lang, log=os.path.join(DIR, "robots", "kino_probe.log"))
@@ -24628,6 +24695,14 @@ _MAIL_T = {}
 
 
 _RUM_BUSY = {}
+
+
+def _alive_beat():
+    try:
+        _rc()
+        __import__("kino_alive").beat()
+    except Exception:
+        pass
 
 
 def _urge_tick():

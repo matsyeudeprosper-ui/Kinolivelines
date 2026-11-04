@@ -36,7 +36,8 @@ MODULES = ("kino_one", "kino_read", "kino_psyche", "kino_depth", "kino_selfmodel
            "kino_probe", "kino_belief", "kino_urge", "kino_episodes", "kino_inner",
            # 2026-11-04: the engines added since the first review (metacognition, agency, learning from cases)
            "kino_rumination", "kino_cases", "kino_trust", "kino_conflict", "kino_lookback", "kino_entries", "kino_promises",
-           "kino_patterns", "kino_ways", "kino_wisdom", "kino_human2", "kino_human3")
+           "kino_patterns", "kino_ways", "kino_wisdom", "kino_human2", "kino_human3",
+           "kino_introspect", "kino_percept", "kino_alive", "kino_affect")
 THEORY_WORDS = r"(?i)\b(global workspace|baars|dehaene|graziano|attention schema|damasio|seth|beast machine|consciousness|conscious|" \
                r"indicator|butlin|homeostasis|allostasis|interoception|default mode|nisbett|wilson|ignition)\b"
 

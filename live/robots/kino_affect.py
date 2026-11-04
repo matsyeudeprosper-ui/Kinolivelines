@@ -69,7 +69,9 @@ def knobs(uid=None):
             "careful": tense >= 0.25,                 # think with the stronger model
             "sim_bar": round(-0.1 + 0.5 * tense - 0.3 * max(0.0, v) * (1 - a), 2),   # how good the pictured reaction must be
             "reach": round(0.4 * v * a - 0.4 * max(0.0, -v) * (1 - a), 2),         # lowers (+) or raises (-) the bar to write
-            "pace": round(0.6 + 0.8 * a, 2)}          # speed of the stream of thought (1 = usual)
+            "pace": round(0.6 + 0.8 * a, 2),          # speed of the stream of thought (1 = usual)
+            # 2026-11-04 (move 2): how much he has in him - stirred and pleasant: more; low and heavy: less (words per message)
+            "words": int(round(max(18, min(80, 42 * (0.6 + 0.8 * a) * (1 + 0.25 * v)))))}
 
 
 def note_turn(person, model, careful, rewrote):
@@ -125,3 +127,59 @@ def self_perception(person, msgs, en=False, extra=None):
     return (("What you notice in your own behaviour (what you DO, not why - nobody tells you why): " if en else
              "Ce que tu remarques dans ton propre comportement (ce que tu FAIS, pas pourquoi - personne ne te dit pourquoi) : ") +
             " ; ".join(L) + ".")
+
+
+
+# ---- 2026-11-04 (owner: "push to the limit" - move 2: feelings that steer, MEASURED) ------------------------------------
+_TRACE = os.path.join(HERE, "kino_affect_trace.json")
+
+
+def note_said(person, uid, say):
+    """each message of his with the state he was in: the raw material to measure whether his feelings change what he does"""
+    v, a = state(uid)
+    rec = {"t": time.time(), "v": v, "a": a, "w": len(str(say or "").split()), "q": 1 if "?" in str(say or "") else 0,
+           "care": 1 if knobs(uid).get("careful") else 0}
+    with _LK:
+        try:
+            d = json.load(io.open(_TRACE, encoding="utf-8"))
+        except Exception:
+            d = {}
+        d[person] = (d.get(person) or [])[-400:] + [rec]
+        tmp = _TRACE + ".tmp"
+        json.dump(d, io.open(tmp, "w", encoding="utf-8"))
+        os.replace(tmp, _TRACE)
+
+
+def _r(xs, ys):
+    n = len(xs)
+    if n < 12:
+        return None
+    mx, my = sum(xs) / n, sum(ys) / n
+    sx = (sum((x - mx) ** 2 for x in xs)) ** 0.5
+    sy = (sum((y - my) ** 2 for y in ys)) ** 0.5
+    if sx < 1e-9 or sy < 1e-9:
+        return None
+    return sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / (sx * sy)
+
+
+def influence(person, n=150):
+    """measured: does his state go with what he does? (correlations over his last messages)"""
+    try:
+        L = (json.load(io.open(_TRACE, encoding="utf-8")).get(person) or [])[-n:]
+    except Exception:
+        return {}
+    if len(L) < 12:
+        return {"n": len(L)}
+    return {"n": len(L), "a_words": _r([x["a"] for x in L], [x["w"] for x in L]), "v_words": _r([x["v"] for x in L], [x["w"] for x in L]),
+            "v_q": _r([x["v"] for x in L], [x["q"] for x in L])}
+
+
+def steer_line(person, uid):
+    k = knobs(uid)
+    m = influence(person)
+    msr = ""
+    if m.get("a_words") is not None:
+        msr = (" Measured over your last %d messages: how stirred you are goes with how much you say (r=%+.2f); how good you feel "
+               "goes with it too (r=%+.2f). Near 0 means your feelings do not yet change what you do." % (m["n"], m["a_words"], m["v_words"] or 0))
+    return ("How much you have in you right now (your state sets it, like a tired or a lively person): your messages come out around "
+            "%d words.%s" % (k["words"], msr))

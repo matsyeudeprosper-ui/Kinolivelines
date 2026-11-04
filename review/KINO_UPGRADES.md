@@ -158,6 +158,17 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | How fresh his facts are: the account summary carries its age; the trading tool's own snapshot (seconds old: price, each position's stop and target) is added as the freshest, with "older than 30 s: recheck before acting on a price" (06:01: closed on a stale price) | engine link | _one_facts |
 | Telling what he learned about himself: a solid pattern (quick estimates 39% off mostly low; a promise repeated 8x) not yet told is offered once, at a calm moment; marked told when he says it | engine | kino_promises.insights_line |
 
+## Done 11-04 - the six big moves (owner: "push to the limit of self awareness and consciousness")
+
+| Move | What | Where | Measured |
+|---|---|---|---|
+| 1 Grounded introspection | what he says about his state is checked against the full measured readout (every feeling, its cause or none, his body); left-out strong feelings, made-up causes, unmeasured claims -> he rewrites from what is there; same step in the night probe | robots/kino_introspect.py, _inner_readout, _one_turn, _kino_probe_night | on the 3 real probe misses, all 3 grounded rewrites name the slipped-in feeling and say "I don't know why"; the nightly probe now measures it (was 5/14 detected, 2 invented) |
+| 2 Feelings that steer | his state sets how much he has in him (words); every message logged with his state; correlations shown to him | kino_affect.knobs['words'], note_said, influence, steer_line | correlations appear after 12+ messages |
+| 3 Predictive perception | each closed candle of his chart predicted (drift + learned persistence), compared, error updates the model; big surprises rise into feelings and the stage | robots/kino_percept.py, auto watch loop | replay of 400 candles: direction 52% (chance - perception, not trading), surprise scale 1.06, 22 big surprises |
+| 4 Attention model | each round he forecasts where his attention will be in ~10 min; checked next round; accuracy shown; steering already existed (#attention) | kino_workspace compete/attention_line | accuracy appears after 5 forecasts |
+| 5 Deliberate before risky acts | the pre-send check reasons step by step from the chart as he sees it and code-computed numbers (distance, risk) | kino_conflict 'steps', _order_direct situation | replay of the 12:57 buy: steps correct, no conflict |
+| 6 Continuity of being | heartbeat; on waking he knows the gap he did not live, interruptions today, days of his own time | robots/kino_alive.py, _urge_tick | first gap at the next restart |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

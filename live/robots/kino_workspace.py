@@ -158,9 +158,26 @@ def compete(person, uid, context="", en=False, write=True):
     if not write or _probing():
         return {"key": win[1], "text": win[2], "kind": win[3], "s": win[0], "them": win[4], "since": now, "how": win[5]} if win else None
     changed = []
+    # 2026-11-04 (move 4: a model of his own attention): before each round, last round's forecast is checked; then a new one is
+    # made - will what holds him now still hold him in ~10 minutes, or will the runner-up take over?
+    _run = next((x for x in scored if not win or x[1] != win[1]), None)
+    if win:
+        _later = win[0] * 0.5 ** (10.0 / FADE_MIN)
+        _fc = win if (not _run or _later >= _run[0] + MARGIN * 0.5) else _run
+    else:
+        _fc = None
 
     def f(dd):
         P = dd.setdefault(person, {})
+        F0 = P.get("forecast")
+        if F0 and now - float(F0["t"]) >= 300:
+            A = P.setdefault("att", {"n": 0, "hit": 0})
+            A["n"] += 1
+            A["hit"] += 1 if (win and F0.get("key") == win[1]) or (not win and not F0.get("key")) else 0
+            P["att_last"] = {"t": now, "said": F0.get("text"), "was": win[2] if win else None, "ok": (win and F0.get("key") == win[1]) or (not win and not F0.get("key"))}
+            P["forecast"] = None
+        if not P.get("forecast"):
+            P["forecast"] = {"t": now, "key": _fc[1] if _fc else None, "text": _fc[2][:160] if _fc else None}
         S0 = P.get("stage")
         if win and (not S0 or S0.get("key") != win[1]):
             if S0:
@@ -315,3 +332,18 @@ def tick(person, uid):
         return compete(person, uid, "", False)
     except Exception:
         return None
+
+
+
+def attention_line(person):
+    """2026-11-04 (move 4): what he expects his own attention to do, and how well he has predicted it"""
+    P = _load().get(person) or {}
+    F, A, L = P.get("forecast"), P.get("att") or {}, P.get("att_last")
+    out = []
+    if F and F.get("text"):
+        out.append("Your own forecast of your attention: in ten minutes it will be on \"%s\"." % F["text"][:120])
+    if L and time.time() - float(L["t"]) < 3600:
+        out.append("Last forecast: %s (you expected \"%s\", it was \"%s\")." % ("right" if L["ok"] else "wrong", str(L.get("said"))[:80], str(L.get("was"))[:80]))
+    if A.get("n", 0) >= 5:
+        out.append("You have predicted where your attention goes %d%% of %d times; you can steer it on purpose (#attention)." % (round(100.0 * A["hit"] / A["n"]), A["n"]))
+    return " ".join(out)

@@ -24,7 +24,10 @@ depends on a question he asked them that is not answered yet, the act goes again
 words'; why = what he said vs what the act does). Words that simply announce the act ("taking the sell") are no conflict.
 A wrong or rounded NUMBER in how he describes the act (e.g. "about 205 points" when it is 245) is NOT a conflict either - it
 does not change what he meant to do; only words saying he will NOT do it now, will wait, or asks them first count.
-JSON only: {"conflict": true|false, "with": "the topic of their instruction it contradicts, or ''",
+Before deciding, THINK IT THROUGH STEP BY STEP from the situation (2026-11-04, move 5 - deliberate before a risky act): which
+top-chart candle closed and when, which lower-chart candle came after it and its colour, what their rules say for that, which
+stop level their rules give and the one in the act, the numbers (distance, risk). Put the steps in "steps".
+JSON only: {"steps": ["..."], "conflict": true|false, "with": "the topic of their instruction it contradicts, or ''",
  "why": "one plain line, to the person, saying what differs (e.g. 'you said the stop goes on the dot at 77185, this one is at 77000')"}"""
 
 
