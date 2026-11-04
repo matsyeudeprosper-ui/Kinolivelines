@@ -60,10 +60,19 @@ def add_case(person, rule, verdict, situation="", sig="", source="his word", t=N
     _mut(f)
 
 
+def settled_line(person):
+    x = (_load().get(person) or {}).get("settled")
+    if not x or time.time() - x["t"] > 7 * 86400:
+        return ""
+    return ("How his older and newer instructions fit together, as you understand it (the newer one counts; if a moment falls exactly "
+            "between the two, ask him): " + " | ".join(x["lines"]) + ".")
+
+
 def cases_block(person, sig="", topic_text=""):
     C = (_load().get(person) or {}).get("cases") or []
+    _st = settled_line(person)
     if not C:
-        return ""
+        return _st
     tw = _stems(topic_text)
 
     def score(c):
@@ -74,7 +83,7 @@ def cases_block(person, sig="", topic_text=""):
         s += 1.0 if c["source"] == "his word" else 0
         return s + float(c["t"]) / 1e10
     best = sorted(C, key=score, reverse=True)[:4]
-    return ("Past cases of his rules (how they were applied in a real moment - %s; when one looks like now, it shows what he means):\n%s"
+    return (_st + "\n" if _st else "") + ("Past cases of his rules (how they were applied in a real moment - %s; when one looks like now, it shows what he means):\n%s"
             % ("his word beats your own practice cases", "\n".join(
                 "- [%s, %s UTC%s] %s%s" % (c["source"], time.strftime("%d/%m %H:%M", time.gmtime(c["t"])), (", " + c["sig"]) if c.get("sig") else "",
                                           c["verdict"], (" - situation: " + c["situation"][:200]) if c.get("situation") else "") for c in best)))
@@ -113,10 +122,11 @@ def forks_line(person, ai_texts):
             if not x["asked"] and len(_stems(x["ask"]) & said) >= max(2, 0.4 * len(_stems(x["ask"]))):
                 x["asked"] = True
     _mut(f)
-    F = [x for x in (_load().get(person) or {}).get("forks") or [] if not x["asked"] and now - x["t"] < 86400]
+    F = [x for x in (_load().get(person) or {}).get("forks") or [] if not x["asked"] and now - x["t"] < 3 * 86400]
     if not F:
         return ""
-    return ("A rule of his can be read two ways and you have not asked him yet: %s. A person who will act on it asks once, plainly."
+    return ("Something he told you can be read two ways, or two of his instructions do not fit together, and you have not asked him "
+            "yet: %s. A person who will act on it asks once, plainly, at a calm moment."
             % " | ".join("%s - (a) %s / (b) %s - e.g. \"%s\"" % (x["topic"], x["a"], x["b"], x["ask"]) for x in F[-2:]))
 
 
@@ -166,3 +176,48 @@ def situation_of(top, lower):
     txt = "top candle closed %s at %s UTC; lower candles after it: %s" % (col, time.strftime("%H:%M", time.gmtime(float(top[1]))),
                                                                           ", ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(t)), c) for t, c, _ in lower[:4]) or "none")
     return txt, chart_sig(col, cl)
+
+
+
+# ---- 2026-11-04 (owner list 13 item 1): one picture of their method - where two of their instructions disagree ----------
+CONTRA = """Below is everything a person told Kino about how they want things done: an older rules list and a newer notebook (with
+dates). Hold it as ONE picture. Where do two of their instructions really DISAGREE - they would lead to different actions in
+the same situation (e.g. "flip on a close beyond the stop" vs "flip when a candle closes entirely beyond the stop")? Only real
+clashes: name ONE concrete situation and the DIFFERENT action each instruction gives in it. Two instructions about different
+things (when the stop moves vs which ladder step comes next; what a card shows vs where the stop goes) do NOT clash - they fit
+together. Not wording either. If the newer one clearly replaces the older one on purpose, put it in "settled" instead. Usually
+there are none or one.
+JSON only: {"clashes": [{"topic": "a few words", "situation": "the one concrete situation", "a": "instruction A (with its date)
+-> the action it gives", "b": "instruction B (with its date) -> the different action", "ask": "one short plain question to them"}],
+"settled": ["older X is replaced by newer Y", ...]}"""
+
+
+def contradictions(W, person, rules, book, log=None):
+    """rules: [(t, text)]; book: [(t, topic, said)] -> the open clashes become forks he asks about, once"""
+    txt = "OLDER RULES LIST:\n%s\n\nNOTEBOOK:\n%s" % (
+        "\n".join("- (%s) %s" % (time.strftime("%d/%m %H:%M", time.gmtime(t)), x) for t, x in rules) or "-",
+        "\n".join("- (%s) %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(t)), tp, x) for t, tp, x in book) or "-")
+    j = W.ask_json(CONTRA, txt + "\n\nJSON only.", models=("sonnet", "haiku"), timeout=90, log=log, warm=False)
+    if not isinstance(j, dict):
+        return []
+    new = []
+    for c in (j.get("clashes") or [])[:3]:
+        if not str((c or {}).get("ask") or "").strip():
+            continue
+        q = {"t": time.time(), "topic": "rules disagree: " + " ".join(str(c.get("topic") or "").split())[:50],
+             "a": str(c.get("a") or "")[:200], "b": str(c.get("b") or "")[:200], "ask": " ".join(str(c["ask"]).split())[:240], "asked": False}
+        new.append(q)
+
+    st = [" ".join(str(x).split())[:260] for x in (j.get("settled") or [])[:4] if str(x).strip()]
+
+    def f(d):
+        P = d.setdefault(person, {})
+        if st:                                         # how the older and newer words fit, as he understands it
+            P["settled"] = {"t": time.time(), "lines": st}
+        F = P.get("forks") or []
+        for q in new:
+            if not any(len(_stems(x["a"] + x["b"]) & _stems(q["a"] + q["b"])) >= 4 for x in F if not x.get("settled")):
+                F.append(q)
+        P["forks"] = F[-8:]
+    _mut(f)
+    return new

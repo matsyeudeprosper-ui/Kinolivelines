@@ -112,3 +112,36 @@ def estimates_line(person):
     if not out:
         return ""
     return "How your quick estimates compare with the real numbers measured after: " + "; ".join(out) + "."
+
+
+
+def insights_line(person, ai_texts):
+    """2026-11-04 (owner list 13 item 3): a solid pattern he found in himself and has not told the person - a person who finds
+    one often says it once, in passing, at a calm moment; it builds trust and lets the other check it"""
+    D = _load().get(person) or {}
+    told = D.get("told") or {}
+    said = _stems(" ".join(ai_texts[-3:]))
+    found = []
+    for kind, L in (D.get("estimates") or {}).items():
+        L = L[-12:]
+        if len(L) >= 4:
+            err = sum(abs(x["said"] - x["real"]) / max(0.01, abs(x["real"])) for x in L) / len(L)
+            low = sum(1 for x in L if x["said"] < x["real"])
+            if err >= 0.25:
+                found.append(("est:" + kind, "your %s are off by about %d%% (%s)" % (kind, round(100 * err),
+                                                                                  "mostly too low" if low > len(L) / 2 else "mostly too high")))
+    for x in D.get("promises") or []:
+        if x["n"] >= 5:
+            found.append(("prom:" + x["text"][:40], "you repeated the same promise %d times (\"%s\")" % (x["n"], x["text"][:80])))
+    out = []
+    for key, txt in found:
+        if key in told:
+            continue
+        if len(_stems(txt) & said) >= 3:              # he just said it - told
+            _mut(lambda d, key=key: d.setdefault(person, {}).setdefault("told", {}).__setitem__(key, time.time()))
+            continue
+        out.append(txt)
+    if not out:
+        return ""
+    return ("Something you have found out about yourself with him and not told him: %s. People who notice a pattern in themselves "
+            "often say it once, in passing, when the moment is calm - and what they will do about it." % "; ".join(out[:2]))

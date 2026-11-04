@@ -15754,7 +15754,8 @@ def _one_fresh(user, c):
             L.append(_h3)
         try:                                           # kino_promises: promises already made; how rough his quick numbers run
             import kino_promises as _KPm
-            for _pl in (_KPm.promises_line(_person(uid)), _KPm.estimates_line(_person(uid))):
+            for _pl in (_KPm.promises_line(_person(uid)), _KPm.estimates_line(_person(uid)),
+                        _KPm.insights_line(_person(uid), [str(m.get("text") or "") for m in (c.get("msgs") or []) if m.get("role") == "ai"])):
                 if _pl:
                     L.append(_pl)
         except Exception:
@@ -18726,13 +18727,28 @@ def _one_facts(user, c):
             L.append("Sur ce compte depuis le %s : %s trades, %s gagnés, %+.2f $ net. Il s'arrête tout seul à -60 $ net depuis le début (marge restante %.2f $)." % (
                 ss.get("first"), ss.get("n"), ss.get("won"), float(ss.get("net") or 0), 60 + float(ss.get("net") or 0)))
         ol = nd.get("open_list") or []
+        try:                                           # 2026-11-04 (owner list 13 item 2): how old this summary is
+            _nda = time.time() - datetime.fromisoformat(str(nd.get("updated_utc"))).timestamp()
+        except Exception:
+            _nda = None
+        _ndl = (" (résumé du compte d'il y a %d s)" % _nda) if _nda is not None else ""
+        try:                                           # the trading tool's own snapshot is the freshest: stop, target, price, its age
+            _dst = _desk_state(((_thread_user((c or {}).get("id"), user) if (c or {}).get("id") else None) or user).get("id"))
+            if _dst:
+                _da = time.time() - float(_dst.get("updated") or 0)
+                L.append("SON OUTIL DE TRADING, il y a %d s (le plus frais) : prix %s ; %s." % (_da, _dst.get("px"), " ; ".join(
+                    "%s %s lot entré à %s, stop %s, objectif %s, %+.2f $" % ("vente" if int(o.get("d") or 0) == -1 else "achat", o.get("lot"), o.get("e"),
+                                                                             o.get("sl"), o.get("tp"), float(o.get("pl") or 0)) for o in (_dst.get("open") or [])[:4])
+                    or "aucune position ouverte") + (" Plus vieux que 30 s : revérifie avant d'agir sur un prix." if _da > 30 else ""))
+        except Exception:
+            pass
         if ol:
-            L.append("Trades ouverts à cette minute : " + " ; ".join(
+            L.append(("Trades ouverts%s : " % _ndl) + " ; ".join(
                 "%s %s %s lot, entré à %s, prix %s, résultat en cours %+.2f $, depuis %s UTC" % (
                     "vente" if str(x.get("d")) == "V" else "achat", str(x.get("sym") or "BTCUSD"), x.get("lot"), x.get("e"), x.get("cur"),
                     float(x.get("pl") or 0), time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0)))) for x in ol[:4]) + ".")
         else:
-            L.append("Aucun trade ouvert à cette minute.")
+            L.append("Aucun trade ouvert%s." % _ndl)
         try:                                           # 2026-10-26 07:19 (watch): "I don't have the closing line" - the list is newest
             _tt = [x for x in (nd.get("trades") or []) if isinstance(x, dict)][:4]     # first, its time is the text field "w"
             if _tt:

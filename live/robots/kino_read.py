@@ -241,6 +241,13 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             try:                                       # 2026-11-04 (kino_cases): can the new word be read two ways?
                 import kino_cases as _KCa
                 _book = "\n".join("- %s: %s" % (x["topic"], x["said"]) for x in KW.entries(_person_of(uid)))
+                if _chg:                               # one picture: does the change clash with anything else he said?
+                    try:
+                        _rl = json.load(open(os.path.join(HERE, "kino_rules.json"), encoding="utf-8")).get(_person_of(uid)) or []
+                        _KCa.contradictions(W, _person_of(uid), [(float(x.get("t") or 0), x.get("text")) for x in _rl],
+                                            [(x["t"], x["topic"], x["said"]) for x in KW.entries(_person_of(uid))], log=os.path.join(HERE, "kino_cases.log"))
+                    except Exception:
+                        pass
                 for _tp in [t_ for t_ in (_chg or []) if not t_.startswith("-")][:2]:
                     _it = next((x for x in KW.entries(_person_of(uid)) if x["topic"] == _tp), None)
                     if _it:

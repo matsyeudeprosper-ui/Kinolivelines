@@ -150,6 +150,14 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Which of their changes worked: closed trades kept in a ledger; results since each recent rule change shown (fills from the next trade) | engine | kino_human3.note_trade / rules_outcome_line |
 | Asking why (owner: "he barely asks why - humans do when appropriate", "smarter than a human: only for a good reason"): the read notices a decision/plan/opinion stated without its reason, scores how much a friend would want to know (low when obvious, trivial, a routine instruction, or inferable) and works out the likely reason first; a high score with no guessable reason is a moment to ask, checking the guess rather than a bare why. Tested: "stop trading gold" after a losing streak 0.3 (inferred, no ask); "moving back to Kinshasa" 0.8 (ask). Also the why of his rules, kept next to the rule; and how often he asks at all, heard in his voice mirror | engine | kino_read 'unexplained'/'why_interest'/'likely_reason', kino_human3.why_moment_line / why_line, kino_ways 'why', _voice_mirror |
 
+## Done 11-04 (list 13)
+
+| What | Kind | Where |
+|---|---|---|
+| One picture of their method: when the notebook changes, the older rules list + notebook are read as one; a real clash (one situation, two different actions) becomes a question he asks once; "newer replaces older" readings are shown as his understanding. First version flagged 2 false clashes (different subjects) - tightened; run-to-run variance remains | engine | kino_cases.contradictions / settled_line, kino_read |
+| How fresh his facts are: the account summary carries its age; the trading tool's own snapshot (seconds old: price, each position's stop and target) is added as the freshest, with "older than 30 s: recheck before acting on a price" (06:01: closed on a stale price) | engine link | _one_facts |
+| Telling what he learned about himself: a solid pattern (quick estimates 39% off mostly low; a promise repeated 8x) not yet told is offered once, at a calm moment; marked told when he says it | engine | kino_promises.insights_line |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
