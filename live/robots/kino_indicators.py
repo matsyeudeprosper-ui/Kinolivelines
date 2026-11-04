@@ -33,7 +33,10 @@ INDICATORS = [
     ("AE-2", "Embodiment: modelling output-input contingencies, including some systematic effects, and using this model in perception or control"),
 ]
 MODULES = ("kino_one", "kino_read", "kino_psyche", "kino_depth", "kino_selfmodel", "kino_workspace", "kino_stream", "kino_body",
-           "kino_probe", "kino_belief", "kino_urge", "kino_episodes", "kino_inner")
+           "kino_probe", "kino_belief", "kino_urge", "kino_episodes", "kino_inner",
+           # 2026-11-04: the engines added since the first review (metacognition, agency, learning from cases)
+           "kino_rumination", "kino_cases", "kino_trust", "kino_conflict", "kino_lookback", "kino_entries", "kino_promises",
+           "kino_patterns", "kino_ways", "kino_wisdom", "kino_human2", "kino_human3")
 THEORY_WORDS = r"(?i)\b(global workspace|baars|dehaene|graziano|attention schema|damasio|seth|beast machine|consciousness|conscious|" \
                r"indicator|butlin|homeostasis|allostasis|interoception|default mode|nisbett|wilson|ignition)\b"
 
