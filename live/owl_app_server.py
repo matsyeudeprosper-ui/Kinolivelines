@@ -15737,6 +15737,11 @@ def _one_fresh(user, c):
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
+        if _auto_on(c):                                # kino_entries: his own tally of this session's entries
+            import kino_entries as _KEb
+            _eb = _KEb.block(_person(uid), max(float((c.get("auto_trade") or {}).get("t") or 0), time.time() - 12 * 3600))
+            if _eb:
+                L.append(_eb)
         import kino_wisdom as _KWs                     # what many people taught him, nobody in it
         _ws = _KWs.block(" ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-6:]))
         if _ws:
@@ -20349,7 +20354,9 @@ def _auto_watch_loop():
                       "(say 'a candle of your chart'). Last 6 closed candles: %s. Owl structure: trend %s, "
                       "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He asked you to place his orders for him, "
                       "by his own written rules, until %s UTC%s: an #ordre line is sent to his trading tool without the confirm card. Act ONLY if HIS OWN rules (what he told you) say so "
-                      "right now - one #ordre line and one short line saying what you did and why. Otherwise answer only: …") % (
+                      "right now - one #ordre line and one short line saying what you did and why. Otherwise answer only: … - unless "
+                      "something you TOLD him earlier turned out wrong: then one line starting with #corrige, the correction in plain words; "
+                      "it is the one thing besides an order that reaches him from here") % (
                     AUTO_EV, time.strftime("%H:%M", time.gmtime(lc[0])), "/".join(f(z) for z in lc[1:5]),
                     " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])), "/".join(f(z) for z in x[1:5])) for x in cs[-6:]),
                     up.get(j.get("trend"), "none"), f(j["next_bos"]) if j.get("next_bos") else "-", f(j["invalid"]) if j.get("invalid") else "-",
@@ -20374,6 +20381,28 @@ def _auto_watch_loop():
                         ev += " " + _sl2
                     if _said:
                         ev += " WHAT HE TOLD YOU IN THE LAST HOURS (his exact words, oldest first - the LATEST instruction on a point replaces the earlier one): " +                               " || ".join("%s: %s" % (time.strftime("%H:%M", time.gmtime(float(x.get("t") or 0))), str(x.get("text"))[:220].replace(chr(10), " ")) for x in _said)
+                except Exception:
+                    pass
+                try:                                   # 2026-11-04 (kino_entries): a top-chart period just ended - review it
+                    import kino_entries as _KEn
+                    _rt = _KEn.real_tops(j)
+                    _tk = int(float(_rt[-1][0])) if _rt else None
+                    if _tk and last.get("top:" + cid) and last["top:" + cid] != _tk:
+                        _per = _KEn.periods(j, c.get("msgs") or [], float(last["top:" + cid]) + 60 - 1, until=now)
+                        if _per:
+                            def _rv(per=_per[-1], uid=uid, pm=_person(uid)):
+                                try:
+                                    import kino_ways as _KWe
+                                    rules = chr(10).join("- %s: %s (said %s UTC)" % (x["topic"], x["said"], time.strftime("%d/%m %H:%M", time.gmtime(x["t"])))
+                                                         for x in sorted(_KWe.entries(pm), key=lambda x: x["t"]))
+                                    r = _KEn.review(_rc().W, pm, rules, *per, log=os.path.join(DIR, "robots", "kino_entries.log"))
+                                    if r and r["called_for"] and r["kino"] not in ("took", "open_trade", "not_applicable"):
+                                        __import__("kino_rumination").stir(pm, "missed_entry", "%s %s: %s" % (r["at"], r["kino"], r["why"]))
+                                except Exception:
+                                    pass
+                            threading.Thread(target=_rv, daemon=True).start()
+                    if _tk:
+                        last["top:" + cid] = _tk
                 except Exception:
                     pass
                 _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
@@ -20959,7 +20988,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             pass
     if str(event or "").startswith(AUTO_EV) and not any(k == "ordre" for k, _ in acts):
-        say = ""                                       # 2026-10-26: watching a candle he chose not to act on - nothing to post
+        # 2026-10-26: watching a candle he chose not to act on - nothing to post. 2026-11-04 (watch 01:30): his corrections of
+        # what he had told the owner ("I had it backwards") were blanked three times - a correction gets through, once
+        _cx = next((str(v_).strip() for k_, v_ in acts if k_ in ("corrige", "correct") and str(v_).strip()), "")
+        _prev = " ".join(str(x.get("text") or "") for x in (c.get("msgs") or [])[-8:] if x.get("role") == "ai")
+        say = _cx if _cx and _cx[:40].lower() not in _prev.lower() else ""
     _sim = None
     if say and len(say) >= 40 and _mdl != "haiku":
         try:                                           # 2026-10-31 (kino_depth 1): he pictures how they will take it, before sending
@@ -21039,7 +21072,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     try:
         _ords = [v for k, v in acts if k == "ordre" and v]
         if _ords and say and _auto_on(_chat_load(user, cid) or c):
-            say = (say + chr(10) + chr(10) + (("→ Order sent to your trading tool: %s" if en else "→ Ordre envoyé à ton outil : %s") % str(_ords[-1])[:140]))[:1600]
+            say = (say + chr(10) + chr(10) + (("→ Sending to your trading tool: %s (its answer shows just below)" if en else "→ Envoi à ton outil : %s (sa réponse s'affiche juste en dessous)") % str(_ords[-1])[:140]))[:1600]
     except Exception:
         pass
 

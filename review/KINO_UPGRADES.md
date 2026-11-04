@@ -100,6 +100,16 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Noticing he had to be asked twice: the read flags a re-ask with what was meant vs what he answered (real 22:55 "yes but your bet...?" caught; 22:54 not); shown while fresh + count this week; stirs a nag | engine | kino_read 're_asked', kino_human3.misread_line, kino_rumination 'misread' |
 | TRIED AND DROPPED: learning what he usually asks per situation. 526 questions seeded from 3 weeks; trained on all but the last 3 days, the top-3 per situation predicted 2 of 41 recent questions (top-3 overall: 1/41); 164 kinds, his questions follow the day's work | measured null | - |
 
+## Done 11-04 (list 8)
+
+| What | Kind | Where |
+|---|---|---|
+| A correction of what he told them gets through: auto-watch replies stay silent unless an order - or a #corrige line (his 01:30 "I had it backwards" was blanked 3x) | engine link | kino_one ACT_RE, auto event text, _one_turn |
+| Not saying "sent" before the tool answered: the server's line is now "Sending to your trading tool ... (its answer shows just below)" | fix | _one_turn |
+| Session tally in hindsight: each finished top-chart period is reviewed by a small model against the person's OWN notebook rules, the candles and what he did (took / late / missed / refused / held_back / open_trade); he reads the tally while trading for them; a miss stirs a nag | engine | robots/kino_entries.py, auto watch loop, _one_fresh |
+| Order cards expire after 10 min or when he decides a newer order (a 30-min-old card made him skip 01:07) | fix | _order_cards_expire |
+| Tonight measured (11-03 18:00 -> 11-04 00:48, 11 periods with an entry due): took 1; 3 blocked correctly by an open trade; the rest missed / held back / refused. Labels vary a little run to run. Post-fix misses (00:15, 00:25) come from reading the rule as "the first candle, only if red/green" - asked the owner which he means | measurement | kino_entries replay |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
