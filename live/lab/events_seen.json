@@ -41,7 +41,8 @@
   "loss_gap_size",
   "chase_size",
   "battery_pb_reproduce",
-  "pile_field_dist"
+  "pile_field_dist",
+  "htf_capture_check"
  ],
  "asks_answered": [
   "ask_1790670647",

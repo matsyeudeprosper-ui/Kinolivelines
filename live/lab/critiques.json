@@ -903,6 +903,74 @@
     "overlap: = the chase 350 + floor 0.6 pair already doubted several times, plus cont23 at a smaller dose - old ideas in new clothes",
     "runs used: 8 (idea drag auto, idea drag 1, n_cont 1, n_cont 3, n_cont 2 without brakes, chase 300, chase 400, floor 0.7)"
    ]
+  },
+  {
+   "id": "pb_y_q1216_fh05",
+   "date": "2026-11-03",
+   "verdict": "doute",
+   "fr": "Miser un quart de midi à 17 h ne change rien sur la première moitié (1 $ de moins) : tout le gain vient de la mauvaise semaine de fin octobre. Décalé d'une heure, le gain perd environ 10 $ mais reste positif. Ce qui m'inquiète : sur les vrais trades le robot perd toujours 43 $ ; à 1 $ par trade, il perd 48 $.",
+   "en": "Staking a quarter from noon to 17:00 changes nothing in the first half ($1 worse): the whole gain comes from the bad last week of October. One hour earlier or later, the gain loses about $10 but stays positive. What worries me: on the real trades the robot still loses $43, and at $1 a trade it loses $48 over 42 days.",
+   "checks": [
+    "reproduction: harness tonight idea +26.71 / 70 tr / hole 33.55 (h1 +36.52 / h2 -1.17), base -110.96 / 277 tr; card said +19.94 / 67 tr - a few bars moved, read diffs not levels",
+    "fair reference: direction filter alone -26.17 / 69 tr / hole 78.43 (h1 +42.32 / h2 -60.82); filter + half stake on nervous change of direction -28.54 / hole 67.85 (h1 +37.86 / h2 -51.23). The nervous-flip half stake is worth ~-2 $: the quarter stake 12-17 carries the whole +55",
+    "dose quarter stake 12-17: 1.0 -> -28.54 / hole 68; 0.5 -> +10.14 / hole 42 (h2 -16.02); 0.25 -> +26.71 / hole 34. Monotone, no sign flip - but monotone toward not trading these hours, and skipping 12-16 was bloque (pb_v_ch350_nf06_skipny, -29 $ vs brakes over 69 d)",
+    "window: 11-16 -> +16.70 / hole 40.55 (h1 +30.16 / h2 -4.83); 13-18 -> +17.32 / hole 35.68 (h1 +34.83 / h2 -9.31). Both still far above the filter alone, no knife-edge; 12-17 is the peak by ~10 $",
+    "halves: vs filter + nervous-flip half stake, the quarter adds h1 -1.34 / h2 +50.06 - carried entirely by the second half, i.e. the 23-27 Oct losing run. Same pattern as every US-hours sibling since 10-31",
+    "shapes: card byref base and capped account identical (+83.11 / -84.88) - this replay has no daily cap, shape tells nothing",
+    "concentration: the increment is many cut losers, not one winner - biggest single saving -16.92 -> -4.23 (+12.7), then -9.24 -> -2.31; the idea's best trade (+17.30) sits outside the window and is unchanged. But all savings fall 15-30 Oct",
+    "long window (card): 69 d +49.65 vs base, verdict B, h1 -70.49 / h2 +193.61 - a loss on the first half, a doubt by the owner's rule",
+    "real trades (card): 35 of 123 kept, net -42.86 (+65.64 vs real outcome) - the robot still loses on the real trades",
+    "drag: auto unresolved (drag None, raw +26.71). At $1/trade -48.38 / hole 75.23 (h1 +4.50 / h2 -53.10): the package loses; the quarter stake adds no trades, so drag hurts the filter, not this piece",
+    "past: no registry/archive entry, no twin. Siblings: pb_w_ch350_fh05_ny1316q and pb_w_ch350_nf06_ny1316q (doute 11-01, 13-17 quarter), pb_v_ch350_cost5_ny05 (doute 10-31), pb_v_ch350_nf06_skipny (bloque)",
+    "overlap: the 13-17 quarter already doubted twice, widened one hour, chase brake dropped - old idea in new clothes; it answers the window-shift worry (it holds) but not the halves worry",
+    "mechanism: plausible (US-open hours on this market whipsaw, stops hit more) - chercheur cites 13 real noon trades at 31 % won; small sample, untested outside late October",
+    "runs used: 8 (idea, filter alone, filter + nervous-flip half, hour 0.5, window 11-16, window 13-18, drag 1, drag auto)"
+   ]
+  },
+  {
+   "id": "pb_y_q1316_fh05",
+   "date": "2026-11-03",
+   "verdict": "doute",
+   "fr": "La même idée que celle de midi à 17 h, une heure plus courte. Face au filtre seul elle gagne 49 $ sur 42 jours, mais tout vient de la seconde moitié (la mauvaise fin octobre) ; la première est 1,50 $ moins bonne. Commencer à 14 h au lieu de 13 h efface plus de la moitié du gain. Sur 69 jours, la première moitié perd 61 $.",
+   "en": "The same idea as the noon-to-17:00 one, one hour shorter. Against the trend filter alone it earns $49 over 42 days, but all of it in the second half (the bad end of October); the first half is $1.50 worse. Starting at 14:00 instead of 13:00 erases more than half the gain. Over 69 days, the first half is $61 worse than today's rules.",
+   "checks": [
+    "reproduction: harness tonight idea +18.88 / 69 tr / hole 39.18 (h1 +36.41 / h2 -9.32), base -96.84 (card +13.47 / 67 tr / hole 33.05; base moved -63 -> -103 between runs, new bars - read diffs, not levels)",
+    "fair reference: trend filter alone -30.60 / 68 tr / hole 78.43 (h1 +37.89 / h2 -64.21). Idea vs filter: +49.5 net, hole 78 -> 39, same trades - matches the card's claim",
+    "halves: increment h1 -1.48 / h2 +54.89 - carried entirely by the second half (23-27 Oct losing run), same pattern as pb_y_q1216_fh05 and every US-hours sibling since 10-31",
+    "dose stake 13-17: 0.5 -> +5.99 / hole 46.39 (h2 -22.01); 0.25 -> +18.88 / hole 39.18. Monotone toward not trading these hours (skip 12-16 was bloque, pb_v_ch350_nf06_skipny)",
+    "dose window: 14-17 at 0.25 -> -9.38 / hole 52.40 (h2 -37.58): dropping the 13:00 hour removes 28 of the 49 $ - the gain leans on one hour; still +21 vs filter, no sign flip on the increment. Last night 13-18 gave +17.3 and 12-17 +26.7 on that run: 13:00 is the load-bearing hour",
+    "shapes: card byref base and capped account identical (+76.64 / -81.65) - this replay has no daily cap, shape tells nothing",
+    "concentration: increment is cut losers, not one winner, but two cuts do half the work: -16.92 -> -4.23 (+12.7) and -16.27 -> -4.07 (+12.2), both mid/late Oct; best trade +17.30 is outside the window and unchanged",
+    "long window (card): 69 d +53.53 vs base, verdict B, h1 -61.28 / h2 +188.28 - a loss on the first half, a doubt by the owner's rule",
+    "real trades (card): 35 of 123 kept, net -46.37 (+62.13 vs real outcome) - still a losing robot on the real trades",
+    "drag: at $1/trade -63.46 / 66 tr / hole 83.93 (h1 +0.14 / h2 -63.82). The stake cut adds no trades, so drag hurts the filter package, not this piece; the package loses at $1 a trade. Drag auto not run (unresolved the last nights)",
+    "past: no registry/archive entry, no twin. 13-17 quarter already doubted three times (pb_w_ch350_cost5_ny1316, pb_w_ch350_fh05_ny1316q, pb_w_ch350_nf06_ny1316q, 11-01), 12-17 doubted this morning (pb_y_q1216_fh05)",
+    "overlap: old idea in new clothes - the 13-17 quarter stake on the trend filter, without the chase/pace brakes; nervous-flip half stake worth ~-2 $ last night",
+    "mechanism: plausible (US open on this market whipsaws, break entries get stopped) - but the hours were chosen on these same days, and the effect sits on 13:00 and late October",
+    "runs used: 5 (filter alone, idea, stake 0.5, window 14-17, drag 1)"
+   ]
+  },
+  {
+   "id": "pb_y_q1316_fh05_nc3",
+   "date": "2026-11-03",
+   "verdict": "bloque",
+   "fr": "La mise réduite de 13 h à 17 h, déjà jugée douteuse, plus trois trades de plus dans le même sens. L'ajout gagne 11 $, mais un seul trade de 19 $ fait tout, il perd sur la seconde moitié, trou de 45 au lieu de 39. Sur 69 jours et les vrais trades : rien. Pour changer d'avis : gagner sur les deux moitiés et sur 69 jours, sans ce trade.",
+   "en": "The reduced stake from 13:00 to 17:00, already doubted, plus three more trades the same way. Tonight the addition earns $11, but one single $19 trade does it all; it loses in the second half and digs the hole deeper (45 instead of 39). Over 69 days and on the real trades: nothing. To change my mind: the addition wins in both halves and over 69 days, without that trade.",
+   "checks": [
+    "runs: 5 usable (same-way trades 1 / 2 / 3 / 4, and 3 at $1 a trade); 3 earlier launches aborted with no numbers. A stray lab/critic.py call of mine at 11:25 UTC (killed) rewrote critic_context.json for this same idea and let a nested session write a 0-run entry here; this entry replaces it",
+    "isolating the piece (same night, same data): n_cont 1 (= pb_y_q1316_fh05) +18.88 / hole 39.18 / 69 tr (h1 +36.41 / h2 -7.88); n_cont 3 +29.96 / hole 45.32 / 75 tr (h1 +53.63 / h2 -15.46). Increment +11.1, hole +6.1 deeper, +6 trades; h1 +17.2 / h2 -7.6",
+    "dose: n_cont 2 +25.82 / hole 34.30 (h1 +38.46 / h2 -4.44); n_cont 4 identical to 3 to the cent (a fourth never fires). Net rises monotonically, but 2 -> 3 is h1 +15.2 / h2 -11.0 and hole 34 -> 45: the halves disagree",
+    "concentration: the 2 -> 3 step brings one new +18.80 trade (h1) - bigger than the whole +11.1 increment over n_cont 1. Without it the piece is about -8",
+    "nights: the card (context snapshot) had this idea at +11.28 vs its parent's +13.47, i.e. the piece at -2.2; tonight +11.1 after a few bars moved - the sign of the piece moves with the data",
+    "halves: the package itself still loses its second half (-15.46), and loses more of it than the parent (-7.88); the gain vs deployed is the 13-17 quarter on late October, already doubted",
+    "shapes: byref uncapped and capped identical (+74.45 / -74.41) - no daily cap bites, shape tells nothing",
+    "long window 69 d (card): diff +53.19 vs parent +53.53 - the piece adds -0.34; first half -50.66 vs deployed",
+    "real trades (card): net -46.41 / diff +62.09 vs parent -46.37 / +62.13 - the extra trades never fire on the real record; the robot still loses there",
+    "drag: --drag 1 -> -56.94 / hole 105.07 / 75 tr (h1 +34.16 / h2 -75.84). Six extra trades cost ~$6, so the piece keeps ~+5 at $1 a trade - all of it the one +18.80 trade; the package itself loses at $1 a trade",
+    "past: cont23 (two/three more trades the same way after a loss) rejected (-52 / -58 over 42 d); flip1 deployed, one extra trade best; pb_x_ch350_nf06_nc2 bloque 11-02 and the n_cont 3 siblings 11-02 found n_cont moves net +/-10. No twin, not archived, history 1 night",
+    "mechanism: the 13-17 quarter has a plausible one (US-open whipsaw); 'three more trades the same way' has none of its own, and the registry measured the opposite",
+    "overlap: = pb_y_q1316_fh05 (doute today) plus cont23; a twin would duel the same trades as the parent's, plus six - the parent can carry its own twin"
+   ]
   }
  ]
 }

@@ -5268,7 +5268,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-02",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-03"
   },
   {
    "id": "pb_y_q1316_fh05_nc3",
@@ -5303,7 +5305,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-02",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-03"
   },
   {
    "id": "pb_y_q1216_fh05",
@@ -5339,7 +5343,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-02",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-03"
   },
   {
    "id": "pb_y_q1316_fl05",
@@ -5374,7 +5380,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-02",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-03"
   },
   {
    "id": "pb_y_q1316",
@@ -5408,7 +5416,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-02",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-03"
   }
  ]
 }
