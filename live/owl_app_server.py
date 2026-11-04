@@ -20230,6 +20230,23 @@ _CONF_RETRY = {}     # cid -> last time an order clashing with the person's rule
 
 
 def _order_direct(cid, user, v, en, c, words=""):
+    """2026-11-04 15:54 UTC (a restart killed an auto sell between his decision and the tool's answer): while an order is on
+    its way, robots/order_inflight.json says so - restart.ps1 waits for it to clear before stopping the app"""
+    _fl = os.path.join(DIR, "robots", "order_inflight.json")
+    try:
+        json.dump({"t": time.time(), "cid": cid, "order": str(v)[:120]}, open(_fl, "w", encoding="utf-8"))
+    except Exception:
+        pass
+    try:
+        return _order_direct_inner(cid, user, v, en, c, words)
+    finally:
+        try:
+            os.remove(_fl)
+        except Exception:
+            pass
+
+
+def _order_direct_inner(cid, user, v, en, c, words=""):
     """auto mode: Kino's #ordre goes straight to the desk - within the lot cap he was given"""
     uid = user.get("id")
     say_ = lambda t: _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=t))
@@ -30786,7 +30803,44 @@ _HOME_CACHE = {}
 NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot", "ecole", "robots")   # 2026-11-03: the cockpit too
 
 
+def _home_last(user):
+    """2026-11-04 (owner, screenshot 15:50: the home showed Kino's 15:18 words while he had written at 15:36, 15:48, 15:53): the
+    rest of the home may come from a cached copy, his LAST WORDS never do - read fresh on every load from the chats (parsed
+    again only when a file changed, so it is cheap): his latest words across the person's open threads"""
+    uid = user.get("id")
+    me = _person(uid)
+    best = None
+    import glob as _g
+    for p in _g.glob(os.path.join(CHAT_DIR, "*.json")):
+        try:
+            c = _chat_ro(p)
+        except Exception:
+            continue
+        if c.get("archived") or not c.get("uid") or (c.get("uid") != uid and _person(c.get("uid")) != me):
+            continue
+        la = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "ai" and str(m.get("text") or "").strip()), None)
+        if la and (best is None or float(la.get("t") or 0) > best[0]):
+            mine = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+            best = (float(la.get("t") or 0), c.get("id"), la, mine, c.get("lang"))
+    if not best:
+        return {}
+    t, cid, la, mine, lang = best
+    return {"cid": cid, "lang": "en" if lang == "en" else "fr",
+            "last": {"text": str(la.get("text"))[:600], "t": t, "new": not mine or float(mine.get("t") or 0) < t}}
+
+
 def home_kino_data(user):
+    v = _home_kino_data_cached(user)
+    try:
+        f = _home_last(user)
+        if f and f["last"]["t"] >= float(((v or {}).get("last") or {}).get("t") or 0):
+            v = dict(v or {}, **f)
+    except Exception:
+        pass
+    return v
+
+
+def _home_kino_data_cached(user):
     """2026-11-02 (owner: "not loading"): cached 60 s per member, refreshed in the background - the page never waits long"""
     uid = user.get("id")
     hit = _HOME_CACHE.get(uid)

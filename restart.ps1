@@ -71,6 +71,17 @@ if (($What -eq "all" -or $What -eq "app") -and -not $SkipCheck) {
     }
 }
 
+# ---- 1c. an order on its way? (2026-11-04 15:54 UTC: a restart killed Kino's auto sell between his decision and the
+# trading tool's answer - the sell never went out). robots\order_inflight.json is written when an order starts and removed
+# when the tool has answered; while it is there (and younger than 2 min) the app is not stopped - we wait for it.
+if (($What -eq "all" -or $What -eq "app") -and -not $SkipCheck) {
+    $fl = Join-Path $LIVE "robots\order_inflight.json"
+    for ($i = 0; $i -lt 24 -and (Test-Path $fl) -and (((Get-Date) - (Get-Item $fl).LastWriteTime).TotalSeconds -lt 120); $i++) {
+        if ($i -eq 0) { Say "an order is on its way to the trading tool - waiting for its answer before restarting..." }
+        Start-Sleep -Seconds 5
+    }
+}
+
 # ---- 2. what is running now -------------------------------------------
 function Running($pattern) {
     Get-CimInstance Win32_Process -Filter "Name like 'python%'" |
