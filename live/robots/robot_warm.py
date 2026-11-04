@@ -367,7 +367,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
     cold = p is None
     if p is None:
         p = _spawn(sp, model)             # cold: ~12 s more
-    tm = {"t0": time.time(), "first": None}   # 2026-10-23 (owner: "check response time"): where the seconds go, per call
+    tm = {"t0": time.time(), "first": None, "src": _caller()}   # 2026-11-04: src read HERE (the reader thread cannot see who asked)  # 2026-10-23 (owner: "check response time"): where the seconds go, per call
     try:                                  # the one answering now goes back to normal priority
         import ctypes
         ctypes.windll.kernel32.SetPriorityClass(int(p._handle), 0x00000020)
@@ -406,7 +406,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                             {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else "",
                              "err": (str(j.get("result") or "")[:200] if j.get("is_error") else None),
                              "cold": cold, "ttft_ms": int(((tm["first"] or time.time()) - tm["t0"]) * 1000), "ms": int((time.time() - tm["t0"]) * 1000),
-                             "out": len(str(j.get("result") or "")), "src": _caller(),
+                             "out": len(str(j.get("result") or "")), "src": tm.get("src") or "",
                              # 2026-11-04 (cost): what was paid in full, written to the cache, read from it
                              "tin": (j.get("usage") or {}).get("input_tokens"), "tcw": (j.get("usage") or {}).get("cache_creation_input_tokens"),
                              "tcr": (j.get("usage") or {}).get("cache_read_input_tokens"), "tout": (j.get("usage") or {}).get("output_tokens")}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
