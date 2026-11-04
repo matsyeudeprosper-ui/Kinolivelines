@@ -20760,7 +20760,7 @@ def _auto_watch_loop():
                       "a candle shows only when its close commits beyond the last shown one; they are NOT fixed 1-minute candles, never call them that "
                       "(say 'a candle of your chart'). Last 6 closed candles: %s. Owl structure: trend %s, "
                       "next BOS %s, protected point %s; pullback chart: trend %s, next BOS %s. He asked you to place his orders for him, "
-                      "by his own written rules, until %s UTC%s: an #ordre line is sent to his trading tool without the confirm card. Act ONLY if HIS OWN rules (what he told you) say so "
+                      "by his own written rules, %s%s: an #ordre line is sent to his trading tool without the confirm card. Act ONLY if HIS OWN rules (what he told you) say so "
                       "right now - one #ordre line and one short line saying what you did and why.%s Otherwise answer only: … - unless "
                       "something you TOLD him earlier turned out wrong: then one line starting with #corrige, the correction in plain words; "
                       "it is the one thing besides an order that reaches him from here") % (
@@ -20768,7 +20768,14 @@ def _auto_watch_loop():
                     " | ".join("%s %s" % (time.strftime("%H:%M", time.gmtime(x[0])), "/".join(f(z) for z in x[1:5])) for x in cs[-6:]),
                     up.get(j.get("trend"), "none"), f(j["next_bos"]) if j.get("next_bos") else "-", f(j["invalid"]) if j.get("invalid") else "-",
                     up.get(pb.get("trend"), "none"), f(pb["next_bos"]) if pb.get("next_bos") else "-",
-                    time.strftime("%H:%M", time.gmtime(float(a["until"]))), (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "",
+                    # 2026-11-04 21:4x (owner asked "should I ask him to start auto trading?"): "until you say stop" is stored 10
+                    # years ahead and this line printed only its hour - every candle told him auto ended at 19:18, and he
+                    # believed his window was over. No end = said as no end; and an older end time in his notebook no longer counts
+                    ("ON with NO end time - it runs until he says stop (an older end time in his notebook or rules no longer applies)"
+                     if float(a["until"]) - time.time() > 30 * 86400 else
+                     "until %s UTC (%s)" % (time.strftime("%H:%M", time.gmtime(float(a["until"]))),
+                                            time.strftime("%d/%m", time.gmtime(float(a["until"]))))),
+                    (", max lot %s" % a["max_lot"]) if a.get("max_lot") else "",
                     _watching_note(uid, c))
                 try:
                     # 2026-11-03 07:4x UTC (owner: "it just missed the sell again - it should have taken the first red candle close"):
