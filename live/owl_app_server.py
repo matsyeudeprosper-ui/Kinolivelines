@@ -21122,6 +21122,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _ts0 = time.time(); _ff = _one_facts(user, c)
             _ts1 = time.time(); _mm1 = _one_memory(user, c)
             _split = "facts%.1f/mem%.1f" % (_ts1 - _ts0, time.time() - _ts1)
+        # 2026-11-04 (owner: "start cutting the cost without destroying Kino's progress" - measured: $62 of $79 a day were full
+        # turns, most of them his watch over a candle): watching a candle for someone does not need his whole life in mind. On a
+        # watch event the heavy memory (his story, episodes, relationships, the wider world) stays out; what he decides with stays
+        # in: the fresh facts (their rules list, trades, balance), their notebook, the cases, his attention and tally (fresh part),
+        # and the chart lines the event carries. Same model, same judgement - a much smaller read.
+        if str(event or "").startswith(AUTO_EV):
+            try:
+                open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write(
+                    "%s %s SLIM_WATCH memory left out: %d chars\n" % (time.strftime("%m-%d %H:%M:%S"), cid, len(_mm1 or "")))
+            except Exception:
+                pass
+            _mm1 = ""
         _ts2 = time.time()
         _nn = _one_now(user, c)
         try:
