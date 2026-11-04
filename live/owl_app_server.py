@@ -21108,6 +21108,33 @@ def _light_facts(f):
     return "\n".join(x for x in str(f or "").split("\n") if not x.startswith(_HEAVY))
 
 
+# 2026-11-04 (cost, owner standing order "don't stop tuning"): a watch turn read 21k chars to answer "…" 98 times in 100. Out of
+# it: what the watch EVENT already carries (past cases of his rules, how his older and newer words fit), and what does not
+# decide a candle by his manual rules (the robots he built and their backtests, the Owl's rules, Kino's own paper robot,
+# weekday stats, the out-of-focus list). His rules, notebook, trades, balance and the chart all stay.
+_WATCH_BLOCKS = ("Past cases of his rules", "Les robots qu'il a construits", "The robots he built")   # header + its "- " lines
+_WATCH_DROP = ("Ce robot, tel qu'il est", "This robot, as it is",
+               "Aucun test de ce robot", "No test of this robot", "Ses règles : entrée", "Its rules: entry", "Ton robot à toi",
+               "Your own robot", "Le robot de cette conversation", "The robot of this conversation",
+               "Ses vrais trades fermés des 60 derniers jours", "His real closed trades of the last 60 days",
+               "How his older and newer instructions fit together", "Also in the back of your mind")
+
+
+def _watch_trim(text):
+    out, skip = [], False
+    for x in str(text or "").split("\n"):
+        if x.startswith(_WATCH_BLOCKS):
+            skip = True                               # the block: its header and its "- " lines
+            continue
+        if skip and x.startswith("- "):
+            continue
+        skip = False
+        if x.startswith(_WATCH_DROP):
+            continue
+        out.append(x)
+    return "\n".join(out)
+
+
 # 2026-10-28 (owner: "is he replying exactly like a human? are we off 'if X do Y'?"): 42 of his own messages in 2 days came
 # from code triggers. A friend tells you your trade closed, his test result, what he promised - any time. He does not send a
 # bulletin (busy hour coming, a market headline, a ghost trade, a morning brief, a diary, an end-of-day report) to someone who
@@ -21261,6 +21288,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             pass
         _split += "/now%.1f" % (time.time() - _ts2)
         if str(event or "").startswith(AUTO_EV):         # 2026-11-04 (cost): what a watch turn reads, part by part
+            _ff, _mm1 = _watch_trim(_ff), _watch_trim(_mm1)
             try:
                 open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write(
                     "%s %s WATCH_SIZE facts %d, fresh %d, now %d chars\n" % (time.strftime("%m-%d %H:%M:%S"), cid, len(_ff or ""), len(_mm1 or ""), len(_nn or "")))
