@@ -15,7 +15,7 @@ import os, re, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "kino_focus.log")
-BUDGET = 6500          # characters of the fresh part in focus
+BUDGET = 9500          # characters of the fresh part in focus (6500 left only the pinned lines in: 5 of 33 on 11-04)
 
 # the beginnings of lines that are never pushed out
 PINNED = ("He asks you to remember", "He asks you to remember. You searched", "Ta lecture de lui", "Your read of him",
