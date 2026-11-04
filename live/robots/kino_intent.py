@@ -94,12 +94,32 @@ def _open(p, now):
 
 
 # ------------------------------------------------------------------ birth
-def harvest_due(person, last_member_t, last_ai_t, now=None):
-    """a quiet moment after a real exchange, not too often"""
+def usual_gap(msgs):
+    """this person's own pace: the typical wait between Kino's message and their answer, measured on their recent replies"""
+    G, last_ai = [], None
+    for m in (msgs or [])[-120:]:
+        t = float(m.get("t") or 0)
+        if m.get("role") == "ai" and m.get("text"):
+            last_ai = t
+        elif m.get("role") == "user" and last_ai and 0 < t - last_ai < 3 * 3600:
+            G.append(t - last_ai)
+            last_ai = None
+    if len(G) < 4:
+        return None
+    G.sort()
+    return G[len(G) // 2]
+
+
+def harvest_due(person, last_member_t, last_ai_t, now=None, gap=None):
+    """a quiet moment after a real exchange, not too often. gap: this person's usual answer time (usual_gap)"""
     now = now or time.time()
-    if not last_member_t or last_ai_t < last_member_t:
-        return False                                  # he has not answered yet: the talk is not over
-    if now - max(last_member_t, last_ai_t) < QUIET_MIN * 60:
+    if not last_member_t:
+        return False
+    # 2026-11-04 23:3x (watch): "he has not answered yet" blocked the most common ending - the member's "Ok" that Kino rightly
+    # left as the last word. (owner: "what about 20 minutes?") - no fixed wait: the talk feels over when the silence is clearly
+    # longer than this person's own pace (about three of their usual gaps), the way you sense it with someone you know
+    quiet = max(8 * 60, min(90 * 60, 3 * gap)) if gap else QUIET_MIN * 60
+    if now - max(last_member_t, last_ai_t) < quiet:
         return False
     p = _load().get(person) or {}
     if float(p.get("harvest_lu") or 0) >= last_member_t:

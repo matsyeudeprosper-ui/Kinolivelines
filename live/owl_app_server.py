@@ -25257,7 +25257,7 @@ def _urge_tick():
                 for _ix in _KIt.ripe(pm, now):
                     _KU.add(pm, _KIt.urge_text(_ix), w=_KIt.weight(pm, _ix["kind"]))
                 _la = max([float(m.get("t") or 0) for m in M if m.get("role") == "ai" and m.get("text")] or [0])
-                if not _INTENT_BUSY.get(pm) and _KIt.harvest_due(pm, lu, _la, now):
+                if not _INTENT_BUSY.get(pm) and _KIt.harvest_due(pm, lu, _la, now, gap=_KIt.usual_gap(M)):
                     _INTENT_BUSY[pm] = True
 
                     def _hv(p=pm, M=M, lg=c.get("lang") or "fr", ow=ow, c=c):
