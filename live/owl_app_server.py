@@ -13810,6 +13810,46 @@ def robot_update(user, body):
 ROBOT_TEST_MIN = 5          # one robot next to its parent on the 42-day bench, minutes (measured 4-5)
 
 
+_PB_NAMES = re.compile(r"\bpb_(dir|live_dir|trend|open|high|low|close)\b")
+
+
+def _robot_custom(r, reg):
+    """does this robot read the pullback chart (the 'tendance-fond' filter, or a pb_* name in a formula)?"""
+    try:
+        ids = set()
+        for k, v in (r.get("parts") or {}).items():
+            if isinstance(v, list):
+                ids |= set(map(str, v))
+            elif isinstance(v, dict):
+                ids |= {str(x) for x in v.values() if x}
+            elif v:
+                ids.add(str(v))
+        if "tendance-fond" in ids:
+            return True
+        for pc in reg.get("pieces") or []:
+            if pc.get("id") in ids and (_PB_NAMES.search(json.dumps(pc.get("rule") or {}))
+                                        or (pc.get("engine") or {}).get("gate") == "trend"):
+                return True
+    except Exception:
+        pass
+    return False
+
+
+def _custom_test_gate(user, r, reg):
+    """2026-11-04 (owner): tests on the pullback chart are part of the custom chart add-on, a number a month per plan.
+    None = go (and the test is counted), else the refusal"""
+    if is_admin(user) or not _robot_custom(r, reg):
+        return None
+    _pn = plan_name(user)
+    _who = _person(user.get("id"))
+    left = _PL.custom_tests_left(_who, _pn)
+    if left == 0:
+        return {"ok": False, "err": "plan_custom", "plan": _pn, "cap": _PL.info(_pn).get("custom_tests"),
+                "label": _PL.info(_pn).get("label")}
+    _PL.note_custom_test(_who)
+    return None
+
+
 def robot_test(user, body):
     """the member starts the test of their robot; it joins the queue (one test at a time)"""
     reg = robot_reg()
@@ -13832,6 +13872,9 @@ def robot_test(user, body):
     if r.get("stage") in ("tested", "paper", "demo", "real") and body.get("again"):
         if r.get("retest"):
             return {"ok": True, "already": True}
+        _g = _custom_test_gate(user, r, reg)
+        if _g:
+            return _g
         r["retest"] = True
         r["queued_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         _robot_save(reg)
@@ -13841,6 +13884,9 @@ def robot_test(user, body):
         return {"ok": True, "already": True, "minutes": ROBOT_TEST_MIN}
     if r.get("stage") not in ("draft", "error"):
         return {"ok": False, "err": "state"}
+    _g = _custom_test_gate(user, r, reg)
+    if _g:
+        return _g
     r["stage"] = "queued"
     r["queued_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     _robot_save(reg)
@@ -14556,6 +14602,9 @@ def robot_test_market(user, body):
         return {"ok": True, "already": True, "job": same["id"]}
     if len(mine_open) >= 6 and not is_admin(user):
         return {"ok": False, "err": "too_many"}
+    _g = _custom_test_gate(user, r, reg)
+    if _g:
+        return _g
     term = None
     try:
         term = next((u.get("terminal") for u in users() if u.get("id") == src), None)
@@ -22090,7 +22139,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             # 2026-10-20: asked about their account -> the account card comes with the answer, never "tu veux que je te le montre ?"
             try:
                 _lu = next((str(m.get("text") or "") for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), "")
-                if q.get("say") and not _cards and not event and re.search(r"(compte|solde|balance|account|combien j['’]ai|how much (do )?i have)", _lu, re.I):
+                if q.get("say") and not _cards and not event and re.search(r"\b(compte|solde|balance|account|combien j['’]ai|how much (do )?i have)\b", _lu, re.I):
                     _cards.append({"kind": "account", "args": {}})
             except Exception:
                 pass
@@ -23561,7 +23610,7 @@ def _night_shift_variants(u):
             _bv = next((r for r in rows[1:] if r.get("formula") == best), None) if best else None
             if best and (not _bv or (_bv.get("beats_random_pct") or 0) < 70):
                 best = None
-                rep = dict(rep, chips=[x for x in (rep.get("chips") or []) if not re.search(r"(try|essa|teste)", str(x), re.I)])
+                rep = dict(rep, chips=[x for x in (rep.get("chips") or []) if not re.search(r"\b(try|essa|teste)", str(x), re.I)])
             if not best:                     # the rows decide, not the prose: the top variant that qualifies is the best
                 _top = max((r for r in rows[1:] if r.get("formula")), key=lambda r: r.get("beats_random_pct") or 0, default=None)
                 if _top and (_top.get("beats_random_pct") or 0) >= 70 and (_top.get("beats_random_pct") or 0) > (rows[0].get("beats_random_pct") or 0):
@@ -30896,6 +30945,49 @@ def _member_pkg(uid):
 
 _HOME_CACHE = {}
 NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot", "ecole", "robots")   # 2026-11-03: the cockpit too
+
+
+def _custom_chart_ok(user):
+    """2026-11-04: the custom chart (silence filter, pullback chart, the structure drawn on them) is part of Pro and Premium"""
+    try:
+        return is_admin(user) or bool(_PL.info(plan_name(user)).get("custom_chart"))
+    except Exception:
+        return False
+
+
+_CUSTOM_KEYS = ("dots", "marks", "breaks", "pb", "trend", "choch", "next_bos", "invalid", "next_bos_t", "invalid_t", "bos_dir",
+                "flip_bos", "flip_bos_t", "flip_bos_dir", "flip_bos_ready", "bos_ready", "int_trend", "int_bos", "int_inv", "int_dots",
+                "int_bos_t", "int_inv_t", "int_since", "int_choch", "int_bos_dir", "int_flip_bos", "int_flip_bos_t",
+                "int_flip_bos_dir", "int_flip_bos_ready", "int_win", "int_brk_1h", "int_awake", "int_state", "int_bos_ready",
+                "int_marks", "kept", "moves_2h")
+
+
+def _plain_chart(d):
+    """the chart for a plan without the custom chart: plain 1-minute candles, none of the custom structure (never the custom
+    candles: when the feed has no plain candles yet, the chart is empty rather than custom)"""
+    out = {k: v for k, v in d.items() if k not in _CUSTOM_KEYS and k != "candles" and k != "plain"}
+    out["candles"] = list(d.get("plain") or [])
+    out["custom"] = False
+    out["custom_plans"] = "Pro, Premium"
+    return out
+
+
+_DEMAND = {"t": 0, "d": {}}
+
+
+def _chart_demand(sym):
+    """someone is looking at this market - the multi feed keeps it at full speed (chart_multi/demand.json)"""
+    now = time.time()
+    _DEMAND["d"][sym] = now
+    if now - _DEMAND["t"] < 30:
+        return
+    _DEMAND["t"] = now
+    try:
+        p = os.path.join(DIR, "chart_multi", "demand.json")
+        json.dump({k: v for k, v in _DEMAND["d"].items() if now - v < 6 * 3600}, open(p + ".tmp", "w", encoding="utf-8"))
+        os.replace(p + ".tmp", p)
+    except Exception:
+        pass
 
 
 def _home_last(user):
@@ -38354,6 +38446,10 @@ class H(BaseHTTPRequestHandler):
                 _full = "true" if _cv == "full" else "false"
                 _tier = "observer" if _cv == "obs" else "member"
                 _htf = _full
+                # 2026-11-04: the custom chart (filters, pullback chart, higher charts, structure) is Pro / Premium
+                _cust = _custom_chart_ok(user)
+                if not _cust:
+                    _full = "false"; _htf = "false"
                 # 2026-10-08 (owner): ?src=eq = the Progression screen. Its
                 # structure is the admin's only (same rule as the card).
                 _eq = "src=eq" in (self.path.split("?", 1)[1] if "?" in self.path else "")
@@ -38366,7 +38462,8 @@ class H(BaseHTTPRequestHandler):
                     _htf = "false"
                 self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full)
                            .replace("%%HTF%%", _htf).replace("%%TIER%%", _tier)
-                           .replace("%%EQ%%", "true" if _eq else "false"),
+                           .replace("%%EQ%%", "true" if _eq else "false")
+                           .replace("%%CUSTOM%%", "true" if (_cust or _eq) else "false"),
                            "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
@@ -38378,6 +38475,10 @@ class H(BaseHTTPRequestHandler):
                 import urllib.parse as _uph
                 _qh = _uph.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
                 _tf = (_qh.get("tf", ["H1"])[0] or "H1").upper()
+                # 2026-11-04: the higher charts are built with the silence filter - part of the custom chart (Pro, Premium)
+                if not _custom_chart_ok(user):
+                    self._send(json.dumps({"err": "custom_chart", "tf": {}}), "application/json")
+                    return
                 if _tf == "ALL":
                     _hs = chart_sym(self.path)
                     _h = json.load(open(os.path.join(DIR, "chart_multi", _hs + "_htf.json") if _hs
@@ -38821,6 +38922,13 @@ class H(BaseHTTPRequestHandler):
             d["symbols"] = [{"sym": x["sym"], "fr": x["fr"], "en": x["en"], "robot": x["robot"]} for x in _syms]
             d["sym"] = _sm["sym"]; d["scale"] = _sm["scale"]; d["digits"] = _sm["digits"]
             d["sym_fr"] = _sm["fr"]; d["sym_en"] = _sm["en"]; d["robot_market"] = bool(_sm["robot"])
+            # 2026-11-04 (owner: the custom chart becomes a paid add-on - Pro, Premium): without it, the plain 1-minute candles
+            # and no custom structure. Any viewer marks the market as in use (the multi feed keeps it live; unwatched markets slow down)
+            _chart_demand(_sm["sym"])
+            if _custom_chart_ok(user):
+                d["custom"] = True
+            else:
+                d = _plain_chart(d)
             tr = []
             uid = user.get("id")
             try:

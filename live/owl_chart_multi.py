@@ -33,6 +33,26 @@ SYMS = [("XAUUSD", "Or", "Gold"), ("XAGUSD", "Argent", "Silver"), ("USOIL", "Pé
         ("EURUSD", "Euro / Dollar", "Euro / Dollar"), ("GBPUSD", "Livre / Dollar", "Pound / Dollar"),
         ("USDJPY", "Dollar / Yen", "Dollar / Yen")]
 CYCLE_S = 10
+# 2026-11-04 (owner: the custom chart costs CPU - compute it where it is used): a market nobody looked at for IDLE_AFTER s and
+# with no robot plugged on it is rebuilt every IDLE_EVERY s instead of every cycle (the server writes chart_multi/demand.json)
+IDLE_AFTER = 1800
+IDLE_EVERY = 120
+
+
+def _busy_markets(now):
+    """markets to keep at full speed: viewed recently, or a robot plugged on them (its bot reads the pullback chain)"""
+    out = set()
+    try:
+        out |= {k for k, v in json.load(open(os.path.join(OUTD, "demand.json"), encoding="utf-8")).items()
+                if now - float(v) < IDLE_AFTER}
+    except Exception:
+        pass
+    try:
+        for plugs in (json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8")).get("market_plugs") or {}).values():
+            out |= set((plugs or {}).keys())
+    except Exception:
+        return None          # unknown -> everything at full speed
+    return out
 
 
 def log(m):
@@ -105,9 +125,14 @@ def main():
     json.dump({"updated": int(time.time()), "symbols": meta}, open(os.path.join(OUTD, "meta.json"), "w", encoding="utf-8"))
     log("multi feed up: %d markets" % len(inst))
     last_fix = 0.0
+    last_tick = {}
     while True:
         t0 = time.time()
+        busy = _busy_markets(t0)
         for sym, m in inst.items():
+            if busy is not None and sym not in busy and t0 - last_tick.get(sym, 0) < IDLE_EVERY:
+                continue
+            last_tick[sym] = t0
             try:
                 m.tick_once()
             except Exception as e:

@@ -1083,6 +1083,10 @@ def tick_once():
              "vol_now": round(_vn, 1), "vol_ref": round(_vr, 1),
              "spread": round(float(tick.ask - tick.bid), 2),
              "raw": len(R) - 1, "kept": len(kept),
+             # 2026-11-04 (owner: the custom chart becomes a paid add-on): the plain 1-minute candles, same shape, for the
+             # plans without the custom chart - closed bars only
+             "plain": [[int(x["time"]), round(float(x["open"]), 2), round(float(x["high"]), 2), round(float(x["low"]), 2),
+                        round(float(x["close"]), 2), 1 if x["close"] >= x["open"] else -1] for x in R[:-1][-KEEP_LAST:]],
              "candles": win, "live": live, "dots": dots, "pb": _pb,
              "marks": marks, "trend": trend, "choch": choch,
              # 2026-10-01 (owner): EVERY break, continuations

@@ -402,6 +402,7 @@ html.embed #back{display:none!important}
 <div id="livedot"></div>
 <div id="htfwrap"><canvas id="cvh"></canvas><div class="tag"><b id="htftag">H1</b><i id="htfsub"></i></div><button id="htfback">Live</button><div id="htfgrip"></div></div>
 <canvas id="cv"></canvas>
+<a id="custnote" style="display:none;position:fixed;left:10px;bottom:10px;z-index:8;padding:6px 11px;border-radius:99px;background:rgba(10,17,28,.86);border:1px solid rgba(255,255,255,.12);color:#c9d6e4;font-size:.72rem;text-decoration:none">Bougies normales &middot; graphique custom avec Pro ou Premium</a>
 <script>window.BUILD='%%BUILD%%';</script>
 <div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
  background:linear-gradient(180deg,rgba(8,14,22,.94),rgba(8,14,22,.995));
@@ -451,6 +452,7 @@ const tok=location.pathname.split('/').filter(x=>x)[0];
 // zone; the annotated structure is for the admin's browser only.
 const FULL=%%FULL%%;   // 2026-10-05 (owner): decided by the account being VIEWED (Strategie or the owner's own pages), never by what this browser remembers
 const HTFOK=%%HTF%%;   // two timeframes belong to Strategie only: nobody else sees the menu or the panel
+const CUSTOM=%%CUSTOM%%;   // 2026-11-04 (owner): the custom chart (filters, pullback chart, higher charts, structure) is a Pro / Premium add-on; below, plain 1-minute candles
 const EQ=%%EQ%%;   // 2026-10-08 (owner): the Progression screen - this page drawing the ACCOUNT's result candles (one per trade) instead of BTC
 // money labels in EQ mode, price labels otherwise
 // 2026-10-12 (owner): the chart switches market. Other markets come from owl_chart_multi.py with prices
@@ -640,6 +642,7 @@ function ctPaint(){const b=document.getElementById('cttype'),l=document.getEleme
 document.getElementById('cttype').onclick=()=>{try{localStorage.setItem('owlChartType',CTPB()?'silence':'pb');}catch(e){}
  viewOff=0;seen.first=true;ctPaint();toolsMenu(false);toolsDot();load();};
 if(!FULL){const cb=document.getElementById('cttype');if(cb)cb.style.display='none';}
+if(!CUSTOM&&!EQ){const cn=document.getElementById('custnote');if(cn){cn.href='/'+tok+'/compte#formules';cn.textContent=CL?'Normal candles · custom chart with Pro or Premium':'Bougies normales · graphique custom avec Pro ou Premium';cn.style.display='block';}}
 (function(){const b=document.getElementById('legend');if(b)b.onclick=()=>{toolsMenu(false);lvLegend();};})();
 function toolsMenu(on){const m=document.getElementById('toolsmenu'),b=document.getElementById('tools');if(on===undefined)on=!m.classList.contains('on');m.classList.toggle('on',on);b.setAttribute('aria-expanded',on?'true':'false');}
 function toolsDot(){const d=document.getElementById('tools-dot');if(d)d.style.display=(RULER.on||PAST||HT.on||CTPB())?'block':'none';}

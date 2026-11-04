@@ -29,19 +29,22 @@ _LOCK = threading.Lock()
 # 2026-11-04 (owner: "both" - cut the cost AND price it in): "auto_h" = hours a month Kino may trade on his own for the member.
 # Watching a chart is his most expensive work (measured ~1.3 $ an hour after the 11-04 cuts, ~2.5-3 $ before), so it is sized
 # per plan to leave a margin: 0 below Pro (1 h to try it during the trial), 10 h on Pro, 40 h on Premium, the owner unlimited.
+# 2026-11-04 (owner: "our custom chart behind a pay wall ... maybe this way it won't take days for backtesting"): "custom_chart" =
+# the silence filter, the pullback chart, the higher charts and the structure drawn on them (Pro, Premium); below, plain candles.
+# "custom_tests" = robot tests a month that use the pullback chart (its states are the slow part of a test: ~50 ms a bar).
 PLAN_INFO = {
     "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 5, "tests": 2, "voice": 0,
-                         "markets": False, "background": False, "auto_h": 0},
+                         "markets": False, "background": False, "auto_h": 0, "custom_chart": False, "custom_tests": 0},
     "decouverte_trial": {"label": "Découverte · essai", "label_en": "Discovery · trial", "usd": 0, "replies": 30, "tests": 2,
-                         "voice": 0, "markets": False, "background": True, "auto_h": 1},
+                         "voice": 0, "markets": False, "background": True, "auto_h": 1, "custom_chart": False, "custom_tests": 0},
     "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": None, "month": 400, "tests": 5, "voice": 0,
-                         "markets": False, "background": True, "auto_h": 0},
+                         "markets": False, "background": True, "auto_h": 0, "custom_chart": False, "custom_tests": 0},
     "pro":              {"label": "Pro", "label_en": "Pro", "usd": 49, "replies": None, "month": 1200, "tests": None, "voice": 30,
-                         "markets": True, "background": True, "auto_h": 10},
+                         "markets": True, "background": True, "auto_h": 10, "custom_chart": True, "custom_tests": 10},
     "premium":          {"label": "Premium", "label_en": "Premium", "usd": 119, "replies": None, "month": 600, "tests": None, "voice": 60,
-                         "markets": True, "background": True, "own_broker": True, "auto_h": 40},
+                         "markets": True, "background": True, "own_broker": True, "auto_h": 40, "custom_chart": True, "custom_tests": 40},
     "owner":            {"label": "Propriétaire", "label_en": "Owner", "usd": 0, "replies": None, "tests": None, "voice": None,
-                         "markets": True, "background": True, "auto_h": None},
+                         "markets": True, "background": True, "auto_h": None, "custom_chart": True, "custom_tests": None},
 }
 ORDER = ("decouverte", "decouverte_trial", "essentiel", "pro", "premium", "owner")
 PACK = {"msgs-300": {"usd": 9, "n": 300}}       # 2026-11-01: a top-up when the month runs out
@@ -142,6 +145,28 @@ def auto_left_h(uid, plan):
     if cap is None:
         return None
     return max(0.0, float(cap) - auto_used_h(uid))
+
+
+def custom_tests_used(uid):
+    return int(((_load().get(uid) or {}).get("ctests") or {}).get(_month(), 0))
+
+
+def note_custom_test(uid):
+    with _LOCK:
+        d = _load()
+        T = d.setdefault(uid, {}).setdefault("ctests", {})
+        T[_month()] = int(T.get(_month(), 0)) + 1
+        for old in sorted(T)[:-3]:
+            T.pop(old, None)
+        _save(d)
+
+
+def custom_tests_left(uid, plan):
+    """robot tests on the pullback chart left this month (None = unlimited)"""
+    cap = info(plan).get("custom_tests")
+    if cap is None:
+        return None
+    return max(0, int(cap) - custom_tests_used(uid))
 
 
 def replies_today(uid, tz_off_min=0):
@@ -275,5 +300,8 @@ if __name__ == "__main__":
     assert kino_left("x", "decouverte") == 2 and kino_left("x", "owner") is None
     note_test("x")
     assert tests_left("x", "decouverte") == 1 and tests_left("x", "pro") is None
+    assert custom_tests_left("x", "essentiel") == 0 and custom_tests_left("x", "owner") is None
+    note_custom_test("x")
+    assert custom_tests_left("x", "pro") == 9
     print(describe("decouverte_trial", "x", user=u_new))
     print("ok")

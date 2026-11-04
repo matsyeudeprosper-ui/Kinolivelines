@@ -430,9 +430,12 @@ let MK=null;
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3200);}
 async function getJ(u){const r=await fetch(B+u+(u.includes('?')?'&':'?')+'t='+Date.now(),{cache:'no-store'});return r.json();}
 async function post(fn,body){const r=await fetch(B+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});const j=await r.json();
- if(j&&(j.err==='cap'||j.err==='test_cap'||j.err==='plan_markets'))setTimeout(()=>limitSh(j),60);return j;}
+ if(j&&(j.err==='cap'||j.err==='test_cap'||j.err==='plan_markets'||j.err==='plan_custom'))setTimeout(()=>limitSh(j),60);return j;}
 /* 2026-10-27 (owner: plans): a limit of the member's plan, said plainly, with the way to more - never a wall of text */
 function limitSh(j){const lab=j.label||'';
+ if(j.err==='plan_custom'){/* 2026-11-04: tests on the custom (pullback) chart are a Pro / Premium add-on, a number a month */
+  shOpen('<h3 style="margin:4px 0 8px">'+T('Ce robot lit le graphique custom','This robot reads the custom chart')+'</h3><p class="sub" style="line-height:1.55">'+(j.cap?T('Ta formule compte '+j.cap+' tests par mois sur le graphique custom, et ils sont faits ce mois-ci.','Your plan counts '+j.cap+' tests a month on the custom chart, and they are done this month.'):T('Le graphique custom (reculs, filtre silence) vient avec Pro et Premium. Sans lui, ton robot peut utiliser les bougies normales.','The custom chart (pullbacks, quiet filter) comes with Pro and Premium. Without it, your robot can use normal candles.'))+'</p>'+
+   '<div class="kact"><a class="btn" style="text-decoration:none;text-align:center" target="_top" href="'+B+'#offres">'+T('Voir les formules','See the plans')+'</a></div>');return;}
  const t=j.err==='cap'?T('Kino a beaucoup parlé avec toi aujourd’hui','Kino has talked a lot with you today'):(j.err==='test_cap'?T('Tes tests de robot du mois sont faits','Your robot tests for the month are done'):T('Tester sur d’autres marchés','Testing on other markets'));
  const x=j.err==='cap'?(j.month?T('Ta formule '+lab+' compte '+j.month+' réponses par mois, et elles sont utilisées. Prends 300 messages de plus pour 9 $, ou attends le mois prochain - Kino n’oublie rien d’ici là.','Your '+lab+' plan counts '+j.month+' replies a month, and they are used. Get 300 more messages for 9 $, or wait for next month - Kino forgets nothing meanwhile.')
    :T('Ta formule '+lab+' compte '+(j.cap||'')+' réponses par jour. Kino reprend demain, il n’oublie rien d’ici là.','Your '+lab+' plan counts '+(j.cap||'')+' replies a day. Kino picks up tomorrow and forgets nothing meanwhile.'))
