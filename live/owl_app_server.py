@@ -15750,6 +15750,13 @@ def _one_fresh(user, c):
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
         if _h3:
             L.append(_h3)
+        try:                                           # kino_promises: promises already made; how rough his quick numbers run
+            import kino_promises as _KPm
+            for _pl in (_KPm.promises_line(_person(uid)), _KPm.estimates_line(_person(uid))):
+                if _pl:
+                    L.append(_pl)
+        except Exception:
+            pass
         try:                                           # kino_cases: past cases of his rules; a rule that reads two ways
             import kino_cases as _KCf2
             _sf, _gf = _KCf2.chart_situation() if _auto_on(c) else ("", "")
@@ -20239,6 +20246,11 @@ def _order_direct(cid, user, v, en, c, words=""):
                         txt += " -> objectif %.0f (%gR depuis l'entr\u00e9e r\u00e9elle %.0f)" % (_tp, float(_rr), _fp)
         except Exception:
             pass
+    try:                                               # kino_promises: the risk he quoted before the fill vs the real one
+        if r and r[0] and isinstance(r[1], dict) and r[1].get("risk") is not None and words:
+            __import__("kino_promises").note_estimate(_person(uid), "risk in $ quoted before the fill", words, r[1]["risk"])
+    except Exception:
+        pass
     if r and r[0] and req.get("d"):                   # 2026-11-03 (kino_lookback): he glances back at what landed
         threading.Thread(target=_look_back, args=(cid, user, dict(req), (r[1] or {}).get("price") if isinstance(r[1], dict) else None, en),
                          daemon=True).start()
@@ -20297,6 +20309,8 @@ def _auto_set(cid, user, v, en, c, event):
     """#auto on [lot=<max>] [heures=<h>] / #auto off - ON only right after he asked for it (his message, last 10 min)"""
     s0 = str(v or "").lower()
     if re.search(r"\b(off|stop|arr[eê]te?r?|non)\b", s0):
+        if _auto_on(c or {}):                          # 2026-11-04: he talks them through the session that just ended
+            _session_debrief(cid, user, dict((c or {}).get("auto_trade") or {}))
         _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": time.time()}),
                                    _chat_msg(cc, "sys", text="Kino no longer trades on his own." if en else "Kino ne trade plus seul.")))
         return
@@ -20332,9 +20346,39 @@ def chat_auto(user, body):
     if c is None:
         return {"ok": False, "err": "missing"}
     en = (c.get("lang") or "fr") == "en"
+    if _auto_on(c):                                    # 2026-11-04: the Stop button ends a session - he talks them through it
+        _session_debrief(c["id"], user, dict(c.get("auto_trade") or {}))
     _chat_mut(c["id"], lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": time.time()}),
                                    _chat_msg(cc, "sys", text="Kino no longer trades on his own." if en else "Kino ne trade plus seul.")))
     return {"ok": True}
+
+
+def _session_debrief(cid, user, a):
+    """2026-11-04 (owner list 10 item 1): when a session he traded for them ends, he talks them through it - the way a person
+    who traded all night for a friend sits down with them after. His own hindsight tally, his worked misses, how rough his
+    quick numbers ran, and what the tool said on each order, for him to tell in his own words."""
+    try:
+        t0 = float(a.get("t") or 0)
+        if not t0 or time.time() - t0 < 600:
+            return
+        _rc()
+        pm = _person(user.get("id"))
+        c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        tool = [" ".join(str(m.get("text") or "").split())[:160] for m in c.get("msgs") or []
+                if m.get("role") == "sys" and float(m.get("t") or 0) >= t0 and "Kino" in str(m.get("text") or "")][-25:]
+        import kino_entries as _KEd, kino_cases as _KCd, kino_promises as _KPd
+        tally = _KEd.block(pm, t0)
+        prac = [x["verdict"][:160] for x in (_KCd._load().get(pm) or {}).get("cases") or [] if x["source"] == "my practice" and x["t"] >= t0][-4:]
+        ev = ("SESSION DEBRIEF - the time he gave you to trade for him is over (%s to %s UTC). Talk him through it the way a person "
+              "who traded for a friend does afterwards: the trades and the result in plain numbers, what went wrong and why, and the "
+              "ONE thing you will do differently next time - in a few short lines, honest, no excuses. What the tool answered on "
+              "each order: %s. %s %s %s") % (
+            time.strftime("%H:%M", time.gmtime(t0)), time.strftime("%H:%M", time.gmtime(time.time())), " | ".join(tool) or "no order",
+            tally, ("Your own worked misses: " + " | ".join(prac) + ".") if prac else "", _KPd.estimates_line(pm))
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        threading.Thread(target=_chat_quick, args=(cid, _user_by_id(user.get("id")) or user, ev), daemon=True).start()
+    except Exception:
+        pass
 
 
 def _auto_watch_loop():
@@ -20401,6 +20445,7 @@ def _auto_watch_loop():
                 u = _user_by_id(uid)
                 en = (c.get("lang") or "fr") == "en"
                 if not _auto_on(c):                    # expired: say so once
+                    _session_debrief(cid, u or {"id": uid}, dict(a))
                     _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": now, "expired": True}),
                                                _chat_msg(cc, "sys", text="Kino's trading time is over: he no longer trades on his own." if en else
                                                          "Le temps donné à Kino est fini : il ne trade plus seul.")))
@@ -21327,7 +21372,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         if notify:
             _companion_deliver(user, cid, say, important)
         else:                                          # 2026-11-03 (owner: "like WhatsApp, a push for new messages")
-            _kino_msg_push(user, cid, say)
+            _kino_msg_push(user, cid, say, urgent=any(k == "urgent" for k, _ in acts))
+        try:                                           # kino_promises: a standing promise in what he just said
+            __import__("kino_promises").note_said(_person(uid), say)
+        except Exception:
+            pass
     try:
         open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s ev=%s first=%.1f total=%.1f ctx=%.2f one=1 split=%s\n" % (
             time.strftime("%m-%d %H:%M:%S"), cid, (event or "-")[:14].replace(" ", "_"), (r["first"] + _tctx1) if r.get("first") else -1,
@@ -22144,7 +22193,7 @@ def _companion_push(user, n):
     n["pushed"] = int(time.time())
 
 
-def _kino_msg_push(user, cid, text):
+def _kino_msg_push(user, cid, text, urgent=False):
     """2026-11-03 (owner: "with WhatsApp you get a push with new messages - can we have it for Kino?"): any message Kino posts
     that the member is not looking at gets a push, like a messenger: not when that conversation is open (they see it), not
     while they are in the app (the unread dot shows it), not in their quiet hours; at night only if they wrote in the last
@@ -22160,11 +22209,16 @@ def _kino_msg_push(user, cid, text):
         _q = ((_mem_get(uid).get("prefs") or {}).get("quiet"))
         if _q and ((_q[0] <= h < _q[1]) if _q[0] < _q[1] else (h >= _q[0] or h < _q[1])):
             return
+        c = _chat_load(user, cid) or {}
+        lu = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") == "user"] or [0])
         if (h >= 22 or h < 8) and not _active_hour(uid, h):
-            c = _chat_load(user, cid) or {}
-            lu = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") == "user"] or [0])
-            if time.time() - lu > 900:
+            if time.time() - lu > 900 and not urgent:
                 return
+        # 2026-11-04 (owner list 10 item 2): ~26 of his own messages rang the owner's phone while he slept. Someone trading for
+        # a friend who is away keeps notes and wakes them only for what matters - when they have not written for 30 min,
+        # his routine messages wait in the chat; the ones he marks #urgent still ring
+        if time.time() - lu > 1800 and not urgent:
+            return
         _lines = [ln.strip() for ln in str(text).splitlines() if ln.strip()]
         _act = next((ln.lstrip("\u2192 ").strip() for ln in _lines if ln.startswith("\u2192")), "")
         _first = re.split(r"(?<=[.!?])\s", " ".join(_lines))[0] if _lines else ""

@@ -116,6 +116,9 @@ Ses trades à la main (seulement si « SES TRADES À LA MAIN » est dans ce que 
 #ordre achat|vente lot=<lot> sl=<prix> tp=<prix> [entree=<prix>]   ouvre un trade (au marché, ou en attente à ce prix) ; ça s'ajoute s'il y en a déjà un
 #ordre achat|vente lot=<lot> sl=<prix> rr=<R>    au marché, objectif à R fois le risque, calculé sur le VRAI prix d'entrée (préfère-le à tp= quand sa règle dit 1R / 2R)
 #ordre annuler                                   annule l'ordre en attente
+#urgent                                          seulement s'il doit le savoir TOUT DE SUITE même s'il n'est pas là (quelque chose
+                                                 a cassé, une grosse perte, une décision que lui seul peut prendre) - sinon ton
+                                                 message l'attend tranquillement, sans sonner son téléphone
 #gestion breakeven on | #gestion breakeven off   son outil gère seul, à chaque seconde, ses positions ouvertes : le stop
                                                  passe au prix d'entrée dès que le prix est à mi-chemin de l'objectif -
                                                  même quand vous ne parlez pas ; tu n'as plus à surveiller pour ça
@@ -145,7 +148,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):

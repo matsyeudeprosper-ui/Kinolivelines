@@ -121,6 +121,17 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Owner's entry rule clarified twice tonight (first OR second lower candle after the top close, whichever is the right colour; never later) - in his notebook and rules list with his words | data | kino_ways.json, kino_rules.json |
 | rr= provisional target: live price, then at least 0.4% away (two refusals) | fix | _order_parse |
 
+## Done 11-04 (list 10)
+
+| What | Kind | Where |
+|---|---|---|
+| Session debrief: when a session he traded ends (time out, #auto off, Stop button) he talks them through it in his own words - result, what went wrong, the one thing he changes - from his hindsight tally, worked misses, tool answers and estimate error | engine | _session_debrief |
+| Away = quiet: after 30 min without a word from them, his routine messages wait in the chat; only what he marks #urgent (something broke, a big loss, a decision only they can take) rings the phone | engine | _kino_msg_push(urgent), kino_one #urgent |
+| Promises said once: standing promises ("from now on...", "I'll only...") read from each message and counted; he sees which he already made and how often he repeated them (owner: "I'll only say sent once..." x8 tonight) | engine | robots/kino_promises.py |
+| Rough estimates known: the risk he quotes before the fill vs the real one after; he sees how far off his quick numbers run (tonight: 34% off, mostly too low) | engine | kino_promises.note_estimate, _order_direct |
+| Auto order clashing with the owner's rules goes back to him to correct and send once (10:35 flip lost to an expired card) | fix | _order_direct |
+| Owner's first-entry stop rule: the tip (next BOS on the lower chart), not the top candle high | data | kino_ways / kino_rules |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
