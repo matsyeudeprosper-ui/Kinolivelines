@@ -20508,8 +20508,23 @@ def _session_debrief(cid, user, a):
               "each order: %s. %s %s %s") % (
             time.strftime("%H:%M", time.gmtime(t0)), time.strftime("%H:%M", time.gmtime(time.time())), " | ".join(tool) or "no order",
             tally, ("Your own worked misses: " + " | ".join(prac) + ".") if prac else "", _KPd.estimates_line(pm))
-        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
-        threading.Thread(target=_chat_quick, args=(cid, _user_by_id(user.get("id")) or user, ev), daemon=True).start()
+        _uu = _user_by_id(user.get("id")) or user
+
+        def _run(ev=ev, uu=_uu):
+            # 2026-11-04 19:07 UTC (watch): the first real debrief came back "no answer" from a busy machine and was lost -
+            # event turns are not retried, so this one tries once more if no word of his has appeared 90 s later
+            t_ask = time.time()
+            for _try in range(2):
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                _chat_quick(cid, uu, ev)
+                time.sleep(90)
+                try:
+                    _c2 = json.load(open(_chat_path(cid), encoding="utf-8"))
+                    if any(m.get("role") == "ai" and float(m.get("t") or 0) > t_ask for m in _c2.get("msgs") or []):
+                        return
+                except Exception:
+                    return
+        threading.Thread(target=_run, daemon=True).start()
     except Exception:
         pass
 
