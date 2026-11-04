@@ -20146,6 +20146,9 @@ def _desk_send(uid, req, wait=45.0):
 _AUTO_SENT, _AUTO_LK = {}, {}
 
 
+_CONF_RETRY = {}     # cid -> last time an order clashing with the person's rules went back to Kino to correct (2026-11-04)
+
+
 def _order_direct(cid, user, v, en, c, words=""):
     """auto mode: Kino's #ordre goes straight to the desk - within the lot cap he was given"""
     uid = user.get("id")
@@ -20180,6 +20183,20 @@ def _order_direct(cid, user, v, en, c, words=""):
                 __import__("kino_rumination").stir(_person(uid), "held_back", "I nearly sent an order against what he said: " + _cf["why"])
             except Exception:
                 pass
+            # 2026-11-04 10:35 (watch): a valid flip went out with the wrong stop; the doubt was right ("flip and stop share
+            # 78469") but the card expired and the flip was lost. A person told "wrong stop" fixes it and sends - so a clash
+            # with the person's RULES goes back to him once to correct now; a clash with his OWN words (he said he waits /
+            # asks) stays a question. One retry per 2 minutes, then a card as before.
+            if "own words" not in str(_cf.get("with") or "").lower() and _auto_on(c or {}) and time.time() - _CONF_RETRY.get(cid, 0) > 120:
+                _CONF_RETRY[cid] = time.time()
+                say_(("\u26a0\ufe0f Not sent yet: %s - correcting it." if en else "\u26a0\ufe0f Pas encore envoyé : %s - je corrige.") % _cf["why"])
+                _uu = _user_by_id(uid) or user
+                _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+                threading.Thread(target=_chat_quick, args=(cid, _uu, (
+                    "%s - CORRECTION NEEDED NOW: the order you just tried (%s) was NOT sent, because it goes against his rules: %s. "
+                    "If the trade is still valid by his rules, send the corrected #ordre line now with one short line; if it is no "
+                    "longer valid (the moment passed, price moved past the stop), answer only: …") % (AUTO_EV, v, _cf["why"])), daemon=True).start()
+                return
             say_(("\u26a0\ufe0f Before sending this, a doubt: %s - I'm asking instead of doing it." if en else
                   "\u26a0\ufe0f Avant de l'envoyer, un doute : %s - je te demande au lieu de le faire.") % _cf["why"])
             return _order_card(cid, user, v, en)
