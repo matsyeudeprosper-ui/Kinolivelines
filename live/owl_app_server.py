@@ -21153,6 +21153,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         except Exception:
             pass
         _split += "/now%.1f" % (time.time() - _ts2)
+        if str(event or "").startswith(AUTO_EV):         # 2026-11-04 (cost): what a watch turn reads, part by part
+            try:
+                open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write(
+                    "%s %s WATCH_SIZE facts %d, fresh %d, now %d chars\n" % (time.strftime("%m-%d %H:%M:%S"), cid, len(_ff or ""), len(_mm1 or ""), len(_nn or "")))
+            except Exception:
+                pass
         _tctx1 = time.time() - _tc0
         # 2026-10-27 (owner: profitable plans): small talk ("ok", "merci", a thumb) after a message that asked nothing is
         # answered by the small model with the light facts (no chart levels, news, inner life) - about 10x cheaper

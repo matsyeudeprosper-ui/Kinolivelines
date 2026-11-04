@@ -323,7 +323,9 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     if fil:
         P.append(("WHERE YOUR HEAD WAS (your own note, %s): " if en else "OÙ TU EN ÉTAIS (ta note à toi, %s) : ") % (
             ("%d min ago" if en else "il y a %d min") % max(1, (time.time() - float(md.get("t") or time.time())) / 60)) + fil)
-    P.append(("THE CONVERSATION (UTC times):\n" if en else "LA CONVERSATION (heures UTC) :\n") + (transcript(chat.get("msgs"), lang=lang) or "(nothing yet)"))
+    # 2026-11-04 (cost): a watch over a candle needs what was said lately, not the whole evening - 16 messages, not 40
+    _n = 16 if str(event or "").startswith("AUTO-TRADE WATCH") else 40
+    P.append(("THE CONVERSATION (UTC times):\n" if en else "LA CONVERSATION (heures UTC) :\n") + (transcript(chat.get("msgs"), n=_n, lang=lang) or "(nothing yet)"))
     if event:
         P.append(("Nobody wrote to you. What is happening: %s\nWrite only if you really want to tell them something; otherwise answer: …" if en else
                   "Personne ne t'a écrit. Ce qui se passe : %s\nÉcris seulement si tu as vraiment envie de lui dire quelque chose ; sinon réponds : …") % event)
