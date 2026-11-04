@@ -51,7 +51,7 @@ def check(W, person, act_text, situation="", log=None, words="", pending=""):
                            "THE SITUATION NOW (facts): %s\n\nTHE ACT HE IS ABOUT TO DO: %s\n\nTHE MESSAGE HE SENDS WITH IT: %s\n\n"
                            "HIS QUESTIONS TO THEM NOT ANSWERED YET: %s\n\nJSON only." % (book or "(empty)", str(situation)[:1500], act_text,
                                                                          str(words or "-")[:1200], str(pending or "-")[:600]),
-                   models=("haiku", "sonnet"), timeout=30, log=log, warm=False)
+                   models=("haiku", "sonnet"), timeout=30, log=log, warm=True)     # 04:0x: a cold process cost 33 s before the order
     if isinstance(j, dict) and j.get("conflict") is True and str(j.get("why") or "").strip():
         return {"with": str(j.get("with") or "")[:80], "why": " ".join(str(j["why"]).split())[:240]}
     return None

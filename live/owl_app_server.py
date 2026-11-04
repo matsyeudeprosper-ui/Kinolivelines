@@ -21026,7 +21026,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     _sim = None
     # 2026-11-04 02:12 (watch): three corrections of a wrong thing he had told the owner were pictured as "frustrating" and the
     # re-written turn (a silent candle check again) came back as "…" - a correction is said even when it is uncomfortable
-    if say and len(say) >= 40 and _mdl != "haiku" and not _is_corr:
+    # 04:0x (watch): on the 03:39 late sell the imagined-reaction rewrite took ~60 s BEFORE the order left - an order on a
+    # candle he watches for them is time-critical; his words go as written
+    _auto_ord = str(event or "").startswith(AUTO_EV) and any(k == "ordre" for k, _ in acts)
+    if say and len(say) >= 40 and _mdl != "haiku" and not _is_corr and not _auto_ord:
         try:                                           # 2026-10-31 (kino_depth 1): he pictures how they will take it, before sending
             import kino_depth as _KDs, kino_psyche as _KPr2
             _rd2 = ((_KPr2._load().get("persons") or {}).get(_person(uid)) or {}).get("read") or {}
