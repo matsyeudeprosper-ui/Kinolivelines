@@ -20007,8 +20007,12 @@ def _order_parse(uid, v):
         # target, priced from a stale guess. rr=<R>: the server sets the target from the REAL fill (_order_direct)
         if kv.get("rr") and kv.get("sl") and not kv.get("tp"):
             try:
-                _pxl = float((_jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}).get("candles")[-1][4])
-                kv["tp"] = round(_pxl + d * kv["rr"] * abs(_pxl - kv["sl"]), 2)
+                # 2026-11-04 (watch, 23:34 sell refused "il faut TP < 77786 < SL"): the provisional target came from the last
+                # CLOSED candle (77813) - with a 9-point stop it sat above the live price and the tool refused the order. Priced
+                # from the LIVE price now; the real target is re-set from the fill anyway
+                _jb = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
+                _pxl = float(_jb.get("px") or (_jb.get("live") or [0, 0, 0, 0, 0])[4] or _jb.get("candles")[-1][4])
+                kv["tp"] = round(_pxl + d * kv["rr"] * max(abs(_pxl - kv["sl"]), 1.0), 2)
             except Exception:
                 pass
         if not (kv.get("sl") and kv.get("tp") and kv.get("lot")):
