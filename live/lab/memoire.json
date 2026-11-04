@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-03T07:30:58Z",
+ "updated": "2026-11-04T13:01:03Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -123,7 +123,8 @@
     "2026-10-31: ch350+cost5 vs brakes ch350+nf06: 42 d +29.26 vs -1.07 hole 58.3 vs 70.2 (h +1.1/+29.4, 11/25 tr); 69 d +100.74 vs +78.29 (h -1.1/+23.6, 32/31 tr). Halves agree in money only weakly; proposed pb_w_ch350_cost5. +13-16 half: +56.69 hole 40.0 (h +1.6/+25.8 vs ch350+cost5).",
     "2026-11-01: ch350+cost5+nc3 +28.62 hole 63.7 vs ch350+cost5 +29.26 (10-31): extra same-way trades add nothing among wide stops (h2 -28.2 vs -19.2).",
     "2026-11-02: real 283 tr by stop width: 250-400 pts 54 tr 61% +31.87 PF 1.21 (h 60/62); 150-250 80 tr 42% -95.19 PF 0.55 (h 48/38); <100 69 tr -23.71; >=400 13 tr -50.68 (peu). Test on brakes 42 d: refuse stops under ~200 (cost 3.5) +25.21 vs -14.05, under ~233 (cost 3) +17.98, but only 16-18 trades (5 in h1): not evidence.",
-    "2026-11-02 14:30 veille: twin noday FLIP-BOS BUY stop ~760 pts (risk 15.18, ~3x usual) held 13 h 45 lost -15.21 - the >=400 band again (real 13 tr -50.68). 'Wide carries' holds for 250-400 only; very wide is another animal (peu)."
+    "2026-11-02 14:30 veille: twin noday FLIP-BOS BUY stop ~760 pts (risk 15.18, ~3x usual) held 13 h 45 lost -15.21 - the >=400 band again (real 13 tr -50.68). 'Wide carries' holds for 250-400 only; very wide is another animal (peu).",
+    "2026-11-04 13:00 veille: BOS BUY 04:48 stop 563 pts (storm 1, pace 1.54) won +9.01 in 48 min: a >=400 win (band 14 tr 43% -41.67, peu). 250-400 2/2 W (+6.91, +5.23): band 59 tr 59% +29.49 PF 1.18 (h 63/56). 150-250 2/2 small W, band 88 tr 44% -96.55 PF 0.57 still the leak."
    ]
   },
   {
@@ -233,7 +234,8 @@
     "2026-11-02 13:00 veille: 5 more closes, h1 i=1 on all: FLIP BUY 08:40 the same way lost -4.50 (0.02); 4 sells against it 2 won (+2.23, +2.82 / -1.45, -2.07). Since 10-26: same 3 tr 0 won, opp 10 tr 6 won, ~flat in money (peu). As predicted in count; the edge is in avoiding 'same'.",
     "2026-11-02 20:00 veille: evening, h1 i=1 still; two sells against it: 18:32 FLIP (storm) L -2.29, 18:44 BOS W +3.26 at 0.02. Since 10-26: same 3 tr 0 won, opp 12 tr 7 won (peu).",
     "2026-11-03 06:00 veille: night 20:20-04:28, h1 i=1 on all 7: three FLIP BUY the same way all lost (-4.63, -4.95, -6.30 at 0.02); four sells against it 1 won (+2.42 / -1.97, -5.91, -4.55). Since 10-26: same 6 tr 0 won (~-14 per 0.01), opp 16 tr 8 won (~-5 per 0.01). Count as predicted; opp no longer earns. Doubt: h1 i=1 unchanged ~22 h while price fell ~1,700 pts (78,150 -> 76,430) - check capture is not stale like m15 was.",
-    "2026-11-03 07:30 veille: FLIP-BOS SELL 06:08 -> 06:30 SL, pace 0.906 calm, gap 36 min after a loss, stop 261 pts (250-400 band), h1 t=-1 i=1 (sell against internal = favoured side), L -5.26 at 0.02. Since 10-26: same 6 tr 0 won, opp 17 tr 8 won; sells against it since 20:20 yesterday 1 of 5. h1 i=1 now unchanged ~25 h while price fell ~1,750 pts; m15 i stuck at -1/0 too: stale-capture doubt grows. Do not lean on the 'opp' side until the capture is checked."
+    "2026-11-03 07:30 veille: FLIP-BOS SELL 06:08 -> 06:30 SL, pace 0.906 calm, gap 36 min after a loss, stop 261 pts (250-400 band), h1 t=-1 i=1 (sell against internal = favoured side), L -5.26 at 0.02. Since 10-26: same 6 tr 0 won, opp 17 tr 8 won; sells against it since 20:20 yesterday 1 of 5. h1 i=1 now unchanged ~25 h while price fell ~1,750 pts; m15 i stuck at -1/0 too: stale-capture doubt grows. Do not lean on the 'opp' side until the capture is checked.",
+    "2026-11-04 13:00 veille: 11 closes, 8 W, +34.55 at 0.02. h1 same-way buys (i=1): 07:30 W +6.91, 13:27 W +3.38, 23:23 L -2.42 = 2/3, the 6-loss streak broke. Sells against internal: 12:01 L, 22:28 L, 00:13 W, 00:18 W, 00:35 W = 3/5. h1 i moved 1 -> 0 at the 04:48 entry (capture not frozen), h1 t=-1 still ~9.4 days old while price rose 76.4k -> 78.5k; m15 turned t=+1 fresh before 11:56. Hint weakens (peu); status kept until the night pools it."
    ],
    "next": "Wait for h1_int_size / late_wave_size to be built; then test refusal and half stake."
   },
@@ -3741,6 +3743,11 @@
    "t": "2026-11-03T07:30:58Z",
    "looked": ["wake_context (1 real close 06:30, 295 total; twin noday 18 tr -10.84 -> 19 tr -16.14; labo empty; no open ask)", "bos_journal_u477508138 last 3 rows: kind, gap, pace, stop, htf_entry"],
    "saw": "FLIP-BOS SELL entry 06:08 (night, 36 min after the 05:31 loss = rested), pace 0.906 calm, storm 0, stop 261 pts, h1 internal opposite (favoured), held 22.8 min, L -5.26 at 0.02. Twin noday took it too. Against rested_cont, the 250-400 stop band and the 'opp' side of h1_internal_late on one trade; fits only 'reversals lose' (FLIP-BOS). Since 20:20 yesterday 8 closes, 1 won. htf h1 i=1 unchanged ~25 h: capture may be stale. 295 tr 46% -176.63 PF 0.73. No run, no pile, no proposal. Requested htf_capture_check."
+  },
+  {
+   "t": "2026-11-04T13:01:03Z",
+   "looked": ["wake_context (11 real closes 11-03 11:07 -> 11-04 12:11, 306 total; twin noday 19 tr -16.14 -> 24 tr -9.92; labo empty; no open ask)", "bos_journal_u477508138 last 13 rows: kind, dir, pace, stop, htf_entry", "scrutiny --by kind, --by dist"],
+   "saw": "8 W / 3 L, +34.55 at 0.02. BOS 4/4 +18.48 (night nervous wide-stop wins 00:35 stop 335 +5.23, 04:48 stop 563 storm 1 +9.01). FLIP-BOS 4/7 +6.07; calm flips (<0.7) 1/4. h1 same-way buys (i=1) 07:30 W, 13:27 W, 23:23 L = 2/3: the 6-loss streak broke. Sells against internal 3/5. h1 internal moved 1 -> 0 at the 04:48 entry (capture not frozen), but h1 t=-1 is ~9.4 days old while price rose 76.4k -> 78.5k. Totals: FLIP-BOS 161 tr 44% -114.43 (h 46/42), BOS 143 tr 51% -28.21; stop 150-250 88 tr -96.55, 250-400 59 tr +29.49, >=400 14 tr -41.67. No 13-16 h trade yet today. No run, no pile, no proposal: nothing new reaches 30."
   }
  ],
  "lessons": [
@@ -3819,6 +3826,7 @@
   "Very wide stops (>=400 pts) and holds >3 h lose on real and on twin noday (11-02 -15.21): worth a max-stop / max-hold request?",
   "Real accounts: watch the 13-16 h closes from 11-02 on.",
   "battery_pb_reproduce: compare cards to harness numbers.",
-  "Capped ideas parked (no daily cap since 10-14)."
+  "Capped ideas parked (no daily cap since 10-14).",
+  "h1 htf: internal moves (1 -> 0 on 11-04 04:48) but trend t=-1 has held ~9 days while price rose: stale field or real structure? Settle before trusting h1_internal_late."
  ]
 }
