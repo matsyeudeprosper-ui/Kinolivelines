@@ -20653,6 +20653,23 @@ def _auto_watch_loop():
                     _order_cards_expire(cid)           # 2026-11-04: a card left waiting is not a pending trade
                 if last.get(cid) == lc[0] or _CHAT_Q.get(cid) or cid in _CHAT_B or not u:
                     continue
+                # 2026-11-04 (owner: "start" - cost): one position at a time, and the flip only comes after the stop closed it,
+                # so while a trade is open and nothing about it changed (ticket, stop, target) a candle has nothing for him to
+                # decide - he looks at most every 10 min; any change, or the trade closing, wakes him at once
+                try:
+                    _op = (_desk_state(uid) or {}).get("open") or []
+                    if _op:
+                        _sig = tuple(sorted((str(o.get("ticket")), float(o.get("sl") or 0), float(o.get("tp") or 0)) for o in _op))
+                        _pv = last.get("opensig:" + cid)
+                        if _pv and _pv[0] == _sig and now - _pv[1] < 600:
+                            last[cid] = lc[0]
+                            last["skipped"] = int(last.get("skipped") or 0) + 1
+                            continue
+                        last["opensig:" + cid] = (_sig, now)
+                    else:
+                        last.pop("opensig:" + cid, None)
+                except Exception:
+                    pass
                 last[cid] = lc[0]
                 f = lambda z: ("%.0f" % float(z)) if abs(float(z)) >= 1000 else ("%g" % float(z))
                 up = {1: "up", -1: "down"}
