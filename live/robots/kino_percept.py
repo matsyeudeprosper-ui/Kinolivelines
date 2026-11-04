@@ -35,8 +35,15 @@ def _load():
 
 
 def _save(d):
-    tmp = STORE + ".tmp"
-    json.dump(d, io.open(tmp, "w", encoding="utf-8"), indent=1)
+    tmp = STORE + ".%d.tmp" % threading.get_ident()
+    with io.open(tmp, "w", encoding="utf-8") as f:
+        json.dump(d, f, indent=1)
+    for _ in range(40):                              # Windows: another process may hold the file for a moment
+        try:
+            os.replace(tmp, STORE)
+            return
+        except PermissionError:
+            time.sleep(0.05)
     os.replace(tmp, STORE)
 
 
@@ -172,3 +179,61 @@ def line(stream, label="his chart"):
             % (label, att, x["guess"], x["spread"], x["move"],
                "a real surprise" if x.get("surprise") else "about as expected" if abs(x["z"]) < 1 else "a bit more than expected", big,
                round(100.0 * S["dir_ok"] / S["dir_n"]), S["dir_n"], S["zsum"] / S["dir_n"]))
+
+
+# ---- 2026-11-04 (owner: "Kino is a digital person who will work in many environments, not only trading"): the same
+# perception for ANY stream of values - here, the person he talks to. Before each of their messages he has an expectation of
+# how long they will take to answer and how much they will write (in their own rhythm, on a log scale); the message comes,
+# the error updates the expectation (with the same recurrent settling and attention), and a real surprise ("he answered in
+# seconds, at length - not like him") rises into his feelings like any other. Any field: a stream is any value that recurs.
+def observe_level(stream, t, x, attend=0.5, label=""):
+    x = float(x)
+    attend = max(0.0, min(1.0, float(attend)))
+    al = ALPHA * 1.5 * (0.6 + 0.8 * attend)
+    with _LK:
+        d = _load()
+        S = d.setdefault(stream, {})
+        for k, v in (("m", None), ("s", 0.0), ("n", 0), ("t", 0), ("recent", []), ("label", label)):
+            S.setdefault(k, v)
+        if float(t) <= float(S.get("t") or 0):
+            return None
+        out = None
+        if S["m"] is not None:
+            e = x - S["m"]
+            spread = S["s"] or abs(e) or 0.5
+            z_k = e / max(spread, 1e-6)
+            for _p in range(2, 9):                   # the same recurrent settling as the chart
+                z_n = e / max(spread * (1 + 0.15 * (0.5 + attend) * max(0.0, abs(z_k) - 1.0)), 1e-6)
+                if abs(z_n - z_k) < 0.02:
+                    z_k = z_n
+                    break
+                z_k = z_n
+            if S["n"] >= 8:
+                out = {"t": float(t), "exp": round(S["m"], 3), "got": round(x, 3), "spread": round(spread, 3), "z": round(z_k, 2),
+                       "surprise": abs(z_k) >= 3.0 - 1.0 * attend}
+                S["recent"] = (S["recent"] + [out])[-20:]
+            S["m"] += al * e
+            S["s"] += al * (abs(e) - S["s"]) if S["s"] else abs(e)
+        else:
+            S["m"] = x
+        S["n"] += 1
+        S["t"] = float(t)
+        _save(d)
+    return out
+
+
+def talk_line(person):
+    """what he perceives of the person: how they answer, against what he expected (any field)"""
+    import math as _m
+    D = _load()
+    parts = []
+    for key, what, fmt in (("talk_delay:" + person, "time to answer", lambda v: "%d min" % round(_m.expm1(v)) if _m.expm1(v) >= 1 else "%d s" % round(60 * _m.expm1(v))),
+                           ("talk_words:" + person, "length", lambda v: "%d words" % round(_m.expm1(v)))):
+        R = (D.get(key) or {}).get("recent") or []
+        if not R:
+            continue
+        r = R[-1]
+        parts.append("%s: you expected about %s, it was %s%s" % (what, fmt(r["exp"]), fmt(r["got"]), " - a real surprise" if r["surprise"] else ""))
+    if not parts:
+        return ""
+    return "What you perceive of him (expectation against what came, his last message): " + "; ".join(parts) + "."

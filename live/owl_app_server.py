@@ -15759,7 +15759,7 @@ def _one_fresh(user, c):
                 _spl = __import__("kino_space").describe(_person(uid), _KIsp.feelings(uid))
             except Exception:
                 _spl = ""
-            for _ln in (_spl, __import__("kino_lookback").acts_line() if _auto_on(c) else "", _KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid), c.get("msgs") or []),
+            for _ln in (_spl, _KPe.talk_line(_person(uid)), __import__("kino_lookback").acts_line() if _auto_on(c) else "", _KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid), c.get("msgs") or []),
                         _KPe.line("btc_chart", "his chart") if _auto_on(c) else "", _KAl.line()):
                 if _ln:
                     L.append(_ln)
@@ -21202,6 +21202,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                          and float(m.get("t") or 0) < float((_lu_ or {}).get("t") or 0)), None)
             if _lu_:
                 _KPo1.observe(uid, cid, _lu_.get("text"), float(_lu_.get("t") or time.time()), float(_la_.get("t")) if _la_ else None)
+        except Exception:
+            pass
+        try:                                           # 2026-11-04 (owner: "a digital person in every environment"): he perceives
+            if _lu_ and _la_:                          # the person too - how soon and how much they answer, against expectation
+                import kino_percept as _KPt
+                _tl = float(_lu_.get("t") or time.time())
+                _dm = max(0.0, min(1440.0, (_tl - float(_la_.get("t"))) / 60.0))
+                _wd = len(str(_lu_.get("text") or "").split())
+                for _k, _v, _what in (("talk_delay:", math.log1p(_dm), "answered in %d min" % _dm), ("talk_words:", math.log1p(_wd), "wrote %d words" % _wd)):
+                    _o = _KPt.observe_level(_k + _person(uid), _tl, _v, attend=0.8)
+                    if _o and _o["surprise"]:
+                        __import__("kino_inner").feel("curiosity", 0.08, uid=uid, why="he %s - not what I expected from him" % _what)
         except Exception:
             pass
     # 2026-10-27 11:34 (watch): one member message, two turns (the first took 85 s) - both answered, 0.03 lot in one and
