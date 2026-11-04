@@ -158,6 +158,30 @@ def _log(cid, kind, msg):
         pass
 
 
+def system_watch():
+    """2026-11-04 (owner: "keep tuning the cost"): his candle watch reads the same person - who he is, how he talks - but of the
+    things he can DO only the trading ones (orders, urgent, breakeven, auto), not robots, tests, mail, the web... Built FROM
+    SELF (same words, cut), so it follows every change of SELF. ~half the size; one constant text = its own warm process."""
+    blocks = re.split(r"\n\n+", SELF)
+    out = []
+    for b in blocks:
+        if not b.startswith("Agir"):
+            out.append(b)
+            continue
+        L = b.split("\n")
+        keep = [L[0]]
+        on = False
+        for ln in L[1:]:
+            if ln.startswith("Ses trades à la main"):
+                on = True
+            if ln.startswith("Le mieux pour trader son style"):
+                on = False
+            if on or ln.startswith("Si tu dis que tu lances"):
+                keep.append(ln)
+        out.append("\n".join(keep))
+    return "\n\n".join(out)
+
+
 def system(lang="fr"):
     """stable between turns AND languages (one warm process + cache); the language goes in the message"""
     return SELF
@@ -344,7 +368,7 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
          images=None):
     """one turn of the one mind -> {"say", "acts", "fil", "first", "total", "retry"}; None when the model failed"""
     cid = chat.get("id")
-    sysp = system(lang)
+    sysp = system_watch() if str(event or "").startswith("AUTO-TRADE WATCH") else system(lang)
     user = prompt(chat, facts, memory, now_line, event, lang)
     if note:                                  # what really happened to an action he wanted, before his words go out
         user += "\n\n" + note
