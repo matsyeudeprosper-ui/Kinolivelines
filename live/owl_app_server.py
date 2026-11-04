@@ -24708,6 +24708,7 @@ def _alive_beat():
 def _urge_tick():
     """2026-10-28: every minute, for each person with a main thread on the one mind - does the wish to talk tip over now?"""
     _rc()
+    _alive_beat()                                      # 2026-11-04 (move 6): his own time, kept
     import kino_urge as _KU
     import random as _rd
     now = time.time()

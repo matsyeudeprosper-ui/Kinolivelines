@@ -14,7 +14,7 @@ That is the grounded signal: from it he can sense that something is going on in 
 Valence (-1..1) and arousal (0..1) come from his live feelings (kino_inner.feelings, which includes the night probe's slipped-
 in feeling on its own thread). Log robots/kino_affect.log (git-ignored).
 """
-import json, os, re, statistics, threading, time
+import io, json, os, re, statistics, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "kino_affect.log")
