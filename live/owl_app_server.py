@@ -20183,7 +20183,15 @@ def _order_direct(cid, user, v, en, c, words=""):
                 _fp = float(r[1]["price"]); _sl = float(req["sl"]); _d = int(req["d"])
                 _tp = round(_fp + _d * float(_rr) * abs(_fp - _sl), 2)
                 if abs(_tp - float(req["tp"])) > 0.5:
-                    _po = next((o for o in ((_desk_state(uid) or {}).get("open") or []) if abs(float(o.get("e") or 0) - _fp) < 1.0), None)
+                    # 2026-11-04 05:57 (watch): the snapshot is written every few seconds - the new position was not in it yet,
+                    # the re-set never ran and the trade kept its far provisional target. Wait for it (up to ~20 s)
+                    _po = None
+                    for _w in range(14):
+                        _po = next((o for o in ((_desk_state(uid) or {}).get("open") or []) if abs(float(o.get("e") or 0) - _fp) < 1.0), None)
+                        if _po:
+                            break
+                        time.sleep(1.5)
+                    req["_rr_fill"] = (_fp, float(_rr))
                     if _po:
                         _desk_send(uid, {"modify": 1, "sl": _sl, "tp": _tp, "ticket": _po.get("ticket")})
                         req["_tp_fill"] = _tp
@@ -20218,6 +20226,9 @@ def _look_back(cid, user, meant, fill, en):
         import kino_lookback as _KLb
         if meant.get("_tp_fill"):
             meant["tp"] = meant["_tp_fill"]
+        elif meant.get("_rr_fill"):                    # what he meant is R x the stop distance from the REAL fill, not the provisional
+            _f, _r = meant["_rr_fill"]
+            meant["tp"] = round(_f + int(meant["d"]) * _r * abs(_f - float(meant["sl"])), 2)
         o, diff = None, ["not checked"]
         for _ in range(4):                             # the snapshot is written every few seconds
             time.sleep(5)
