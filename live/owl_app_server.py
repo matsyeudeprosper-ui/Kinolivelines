@@ -20046,8 +20046,12 @@ def _desk_robot_set(cid, user, v, en, c):
     if r0 is None:
         return say_(("No robot called «%s»." if en else "Pas de robot qui s'appelle « %s ».") % (nm or "?"))
     try:
-        pkg = robot_package(dict(r0, resolved=robot_resolve(r0["id"], byid)), reg.get("pieces") or [], None, None, desk=True)
+        pkg = robot_package(dict(r0, resolved=robot_resolve(r0["id"], byid)), reg.get("pieces") or [], None, None, desk=True,
+                            custom=_custom_chart_ok(user))
     except Exception as e:
+        if str(e) == "custom_chart":
+            return say_(("🤖 «%s» trades on the custom chart, which comes with Pro and Premium." if en else
+                         "🤖 « %s » trade sur le graphique custom, qui vient avec Pro et Premium.") % (r0.get("name_fr") or r0["id"]))
         return say_(("🤖 «%s» cannot run on an account yet: %s" if en else "🤖 « %s » ne peut pas encore tourner sur un compte : %s") % (
             r0.get("name_fr") or r0["id"], str(e)[:120]))
     lot = kv.get("lot") or old.get("lot") or 0.01
@@ -30223,7 +30227,7 @@ BOT_VARIANT = {"kino": "kino", "u224016179": "valere", "demo": "demo", "infinity
 PLUG_LOG = os.path.join(DIR, "robots", "plug.log")
 
 
-def robot_package(r, pieces, account_pkg=None, own_money=None, desk=False):
+def robot_package(r, pieces, account_pkg=None, own_money=None, desk=False, custom=True):
     """a robot (resolved pieces) -> the package the live bot reads; raises ValueError when it cannot run live.
     desk=True (2026-11-01): for the member's desk (owl_manual_trader.robot_tick), which also runs the rules on the last
     trade's result (robots/robot_after.py: a target formula, the after-loss trade); the account bots do not yet.
@@ -30261,6 +30265,13 @@ def robot_package(r, pieces, account_pkg=None, own_money=None, desk=False):
     elif ex["rule"].get("target") and not isinstance(ex["rule"]["target"], str):
         pk["rr"] = float(ex["rule"]["target"])      # 2026-11-01: a target FORMULA stays in rules["exit"] (robot_live.tp_for)
     fr = [(P.get(f) or {}).get("rule") for f in F if (P.get(f) or {}).get("rule")]
+    if not custom:
+        # 2026-11-04 (owner: "below Pro lose it now"): without the custom chart add-on, no pullback filter; a formula filter
+        # reading the pullback chart is left out, and an entry / stop / exit built on it cannot run
+        pk["pb_dir_gate"] = False
+        fr = [x for x in fr if not _PB_NAMES.search(json.dumps(x))]
+        if any(_PB_NAMES.search(json.dumps(rules.get(k) or {})) for k in ("entry", "stop", "exit")):
+            raise ValueError("custom_chart")
     if fr:
         rules["filters"] = fr
     # 2026-10-22: limit/stop orders, partial closes and trailing stops run on the BENCH only - the live bot does not
@@ -30947,12 +30958,35 @@ _HOME_CACHE = {}
 NAV_PAGES = ("home", "compte", "mesrobots", "place", "tests", "kino", "wealth", "parrainage", "rentabilite", "robot", "ecole", "robots")   # 2026-11-03: the cockpit too
 
 
+# 2026-11-04 (owner: "keep them as they are"): the family accounts on real money keep everything like the admin, whatever
+# their plan shows (their family codes lapse): "Compte demo", Dépenses, Dad (bos), Infinity, Valère
+_CUSTOM_KEEP = ("demo", "expenses", "bos", "infinity", "u224016179")
+
+
 def _custom_chart_ok(user):
     """2026-11-04: the custom chart (silence filter, pullback chart, the structure drawn on them) is part of Pro and Premium"""
     try:
-        return is_admin(user) or bool(_PL.info(plan_name(user)).get("custom_chart"))
+        return is_admin(user) or (user or {}).get("id") in _CUSTOM_KEEP or bool(_PL.info(plan_name(user)).get("custom_chart"))
     except Exception:
         return False
+
+
+def _no_custom_write():
+    """2026-11-04 (owner: "below Pro lose it now"): the accounts whose bots trade without the pullback filter
+    (robots/no_custom.json, read by owl_package.for_account)"""
+    try:
+        acc = sorted(u["id"] for u in users() if u.get("id") and not _custom_chart_ok(u))
+        p = os.path.join(DIR, "robots", "no_custom.json")
+        json.dump({"updated": int(time.time()), "accounts": acc}, open(p + ".tmp", "w", encoding="utf-8"))
+        os.replace(p + ".tmp", p)
+    except Exception as e:
+        print("no_custom:", e)
+
+
+def _no_custom_loop():
+    while True:
+        _no_custom_write()
+        time.sleep(600)
 
 
 _CUSTOM_KEYS = ("dots", "marks", "breaks", "pb", "trend", "choch", "next_bos", "invalid", "next_bos_t", "invalid_t", "bos_dir",
@@ -39244,6 +39278,7 @@ if __name__ == "__main__":
         except Exception:
             pass
     threading.Thread(target=_resume_tests, daemon=True).start()
+    threading.Thread(target=_no_custom_loop, daemon=True).start()     # 2026-11-04: accounts without the custom chart add-on
     try:                                                               # 2026-11-01: his site (Mastodon home, shop) up with the app,
         sys.path.insert(0, os.path.join(DIR, "robots")) if os.path.join(DIR, "robots") not in sys.path else None
         __import__("kino_fedi").start()                                # not ~5 min later at the first urge tick

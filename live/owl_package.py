@@ -170,7 +170,25 @@ def for_account(uid, mkt=None):
     name = (market_package(uid, mkt) if mkt else None) or (raw.get("accounts") or {}).get(uid, "base")
     out = _resolve(name, raw.get("packages") or {})
     out["package"] = name
+    # 2026-11-04 (owner: "below Pro lose it now, admin not affected"): the pullback chart is part of the custom chart add-on.
+    # The app lists the accounts without it (robots/no_custom.json); their bots trade without the pullback filter.
+    if uid in _no_custom():
+        out["pb_dir_gate"] = False
     return out
+
+
+_NC = {"t": 0.0, "s": frozenset()}
+
+
+def _no_custom():
+    if time.time() - _NC["t"] >= TTL:
+        _NC["t"] = time.time()
+        try:
+            with open(os.path.join(DIR, "robots", "no_custom.json"), encoding="utf-8") as f:
+                _NC["s"] = frozenset(json.load(f).get("accounts") or [])
+        except Exception:
+            pass                      # missing / broken: keep the last list
+    return _NC["s"]
 
 
 def error():
