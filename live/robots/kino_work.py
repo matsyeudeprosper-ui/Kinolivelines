@@ -149,6 +149,13 @@ def due(person, ctx, now=None):
         _mut(_mark)
         return True
     today = time.strftime("%Y-%m-%d", time.gmtime(now))
+    try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
+        import kino_wallet as KWa
+        _al = KWa.allowance()
+        if _al["day"] and _al["left"] <= 0.05:
+            return False
+    except Exception:
+        pass
     S = [s for s in d.get("sessions") or [] if s.get("day") == today]
     if len(S) >= SESSIONS_DAY + 2:                     # (two more a day can go to looking after his body)
         return False
@@ -334,6 +341,12 @@ def _mind(person, uid):
         Q = [q for q in (KI._load().get("questions") or []) if not q.get("done")][-5:]
         if Q:
             L.append("YOUR OPEN QUESTIONS: " + " | ".join(str(q.get("q") or q.get("text") or "")[:120] for q in Q))
+    except Exception:
+        pass
+    try:                                       # 2026-11-05: the owner's direction for his work (robots/kino_direction.json)
+        _dr = json.load(open(os.path.join(HERE, "kino_direction.json"), encoding="utf-8")).get("text")
+        if _dr:
+            L.append("DIRECTION: " + _dr)
     except Exception:
         pass
     try:

@@ -26,7 +26,8 @@ def cfg():
         c = json.load(open(CFG, encoding="utf-8"))
     except Exception:
         c = {}
-    return {"share": float(c.get("share", 0.5)), "vps_month_usd": c.get("vps_month_usd")}
+    return {"share": float(c.get("share", 0.5)), "vps_month_usd": c.get("vps_month_usd"),
+            "work_usd_day": float(c.get("work_usd_day") or 0)}       # 2026-11-05: his promotion work budget (owner: $3)
 
 
 def _load():
@@ -139,7 +140,38 @@ def gap():
         return 0.0
 
 
+def allowance():
+    """2026-11-05 (owner: $3 a day for his promotion work, apart from his debt): {"day", "used", "left"} - his own work and posts
+    today against what the owner gives him to work with. The debt stays on record; it no longer freezes him."""
+    try:
+        day = float(cfg().get("work_usd_day") or 0)
+        used = float(status().get("ai_today") or 0)
+        return {"day": day, "used": round(used, 2), "left": round(max(0.0, day - used), 2)}
+    except Exception:
+        return {"day": 0.0, "used": 0.0, "left": 0.0}
+
+
+def allowance_line(en=False):
+    a = allowance()
+    if not a["day"]:
+        return ""
+    if en:
+        return ("Your work budget: Matsy gives you %.2f $ a day to make yourself known and find paying work (your own thinking at "
+                "your computer and your posts) - used today %.2f $, left %.2f $. It is yours to use; your balance above stays on "
+                "record but it is not a reason to stop working - working is how it turns around." % (a["day"], a["used"], a["left"]))
+    return ("Ton budget de travail : Matsy te donne %.2f $ par jour pour te faire connaître et trouver du travail payé (ta réflexion "
+            "à ton ordinateur et tes publications) - utilisé aujourd'hui %.2f $, reste %.2f $. Il est à toi ; ton solde reste noté, "
+            "mais ce n'est pas une raison d'arrêter de travailler - c'est en travaillant qu'il remonte." % (a["day"], a["used"], a["left"]))
+
+
 def line(en=False):
+    """his money, and (2026-11-05) the work budget he has to use"""
+    a = allowance_line(en)
+    b = _line(en)
+    return (b + " " + a).strip() if b else a
+
+
+def _line(en=False):
     try:
         s = status()
     except Exception:
