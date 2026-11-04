@@ -339,8 +339,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     P = []
     P.append(("NOW: " if en else "MAINTENANT : ") + now_line)
     if en:
-        P.append("He writes mostly in English: answer in English, same person, same voice - and if he mixes in French, you can too, "
-                 "naturally, like bilingual friends do.")
+        P.append("He writes mostly in English: answer in English, same person, same voice - and if he mixes French into his own "
+                 "message, you can too, naturally, like bilingual friends do.")
     P.append(("WHAT IS TRUE THIS MINUTE (measured by the app):\n" if en else "CE QUI EST VRAI À CETTE MINUTE (mesuré par l'appli) :\n") + (facts or "-"))
     if memory:
         P.append(("WHAT YOU REMEMBER:\n" if en else "CE DONT TU TE SOUVIENS :\n") + memory)
@@ -361,6 +361,10 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "leave him the last word - write only … or just a #reaction.)" if en else
                  "À toi. (Comme entre amis : si son message clôt l'échange et que tu n'as rien de vrai à ajouter, tu peux lui laisser le "
                  "dernier mot - écris seulement …, ou juste un #reaction.)")
+        # 2026-11-04 21:05 (watch): after "Lol" (no words to read a language from) he answered in French in an English chat -
+        # the English line sits at the top of a long prompt under a French system; it is said again where the reply starts
+        if en:
+            P.append("(He is writing in English: answer in English - French only if his own last message is in French.)")
     return "\n\n".join(P)
 
 
