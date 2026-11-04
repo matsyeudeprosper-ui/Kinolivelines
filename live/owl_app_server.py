@@ -21134,6 +21134,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             except Exception:
                 pass
             _mm1 = ""
+            # the event itself carries the chart (top candle, lower candles since, BOS levels): the facts' own chart, news,
+            # his day and feelings stay out too - their rules list, trades, balance stay (19:3x: memory alone cut only ~24%)
+            _ff = _light_facts(_ff)
         _ts2 = time.time()
         _nn = _one_now(user, c)
         try:
