@@ -221,3 +221,41 @@ def contradictions(W, person, rules, book, log=None):
         P["forks"] = F[-8:]
     _mut(f)
     return new
+
+
+
+# ---- 2026-11-04 (watch 15:01: "you still remember how we escalate the R and lot?" - "I remember the word step, not the
+# numbers", while the ladder sat in his notebook): recall is a search, not a wait. Asked to remember, a person stops and goes
+# looking - here through everything he holds about this person: their notebook, their rules list, the casebook, his promises.
+# What matches comes to the front of his mind. Any field.
+import re as _re
+RECALL_RE = _re.compile(r"\b(remember|recall|forgot|forget|you know how|souviens|rappelles?|rappeler|oubli[eé]|tu sais comment)\b", _re.I)
+
+
+def recall(person, text, rules=()):
+    if not text or not RECALL_RE.search(text):
+        return ""
+    q = _stems(text) - {"remem", "recall", "forgo", "forge", "souvi", "rappe", "oubli", "still", "encor"}
+    hits = []
+    try:
+        import kino_ways as KW
+        for x in KW.entries(person):
+            sc = len(q & _stems(x["topic"] + " " + x["said"]))
+            if sc:
+                hits.append((sc, "his notebook (%s UTC): %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["topic"], x["said"])))
+    except Exception:
+        pass
+    for r in rules or []:
+        sc = len(q & _stems(r.get("text")))
+        if sc:
+            hits.append((sc, "his rules list: %s" % r.get("text")))
+    for c in (_load().get(person) or {}).get("cases") or []:
+        sc = len(q & _stems(c["rule"] + " " + c["verdict"]))
+        if sc:
+            hits.append((sc - 0.5, "a case (%s): %s" % (c["source"], c["verdict"])))
+    hits.sort(key=lambda x: -x[0])
+    if not hits:
+        return ("He asks you to remember something. You searched everything you hold about him (notebook, rules, cases) and found "
+                "nothing that matches - say so plainly, do not rebuild it from guesswork.")
+    return ("He asks you to remember. You searched everything you hold about him - here is what you FIND (use it; this is your "
+            "memory, not a guess):\n- " + "\n- ".join(h[1][:400] for h in hits[:4]))

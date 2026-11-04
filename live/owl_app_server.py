@@ -15710,6 +15710,14 @@ def _one_fresh(user, c):
     except Exception:
         pass
     _mk(2)
+    try:                                               # 2026-11-04: asked to remember, he searches what he holds - first
+        _lu7 = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+        if _lu7 and time.time() - float(_lu7.get("t") or 0) < 1800:
+            _rcl = __import__("kino_cases").recall(_person(uid), str(_lu7.get("text") or ""), _rules_of(uid))
+            if _rcl:
+                L.append(_rcl)
+    except Exception:
+        pass
     try:                                               # 2026-10-28 (engine 2): his gut read of them right now
         import kino_person as _KPr
         _br = _KPr.block_one(c.get("uid") or uid, cid)
@@ -15749,7 +15757,9 @@ def _one_fresh(user, c):
             _tzh = (_local_hour(uid) - time.gmtime().tm_hour) % 24
         except Exception:
             _tzh = 0
+        _mk("6tz")
         _h3 = _KH3.block(_person(uid), c.get("msgs") or [], _rd3, _tzh)
+        _mk("6h3")
         if _h3:
             L.append(_h3)
         try:                                           # 2026-11-04 (moves 2-4, 6): his state's settings, his perception, his
@@ -15765,6 +15775,7 @@ def _one_fresh(user, c):
                     L.append(_ln)
         except Exception:
             pass
+        _mk("6mind")
         try:                                           # kino_promises: promises already made; how rough his quick numbers run
             import kino_promises as _KPm
             for _pl in (_KPm.promises_line(_person(uid)), _KPm.estimates_line(_person(uid)),
@@ -15773,6 +15784,7 @@ def _one_fresh(user, c):
                     L.append(_pl)
         except Exception:
             pass
+        _mk("6prom")
         try:                                           # kino_cases: past cases of his rules; a rule that reads two ways
             import kino_cases as _KCf2
             _sf, _gf = _KCf2.chart_situation() if _auto_on(c) else ("", "")
@@ -15784,6 +15796,7 @@ def _one_fresh(user, c):
                 L.append(_fk)
         except Exception:
             pass
+        _mk("6cases")
         if _auto_on(c):                                # kino_entries: his own tally of this session's entries
             import kino_entries as _KEb
             _eb = _KEb.block(_person(uid), max(float((c.get("auto_trade") or {}).get("t") or 0), time.time() - 12 * 3600))
