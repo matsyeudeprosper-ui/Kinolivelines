@@ -15692,13 +15692,22 @@ def _one_fresh(user, c):
     """2026-11-03 (speed + 4 upgrades): what changes with every message, built at the moment of the reply - cheap.
     His gut read of them; their ways notebook; how he has been sounding; how much attention they have right now; where the
     last conversation stopped when this one is new."""
+    _tk0 = [time.time()]                          # 2026-11-04: "now" took 29-31 s twice - which part, measured
+    _tkp = []
+
+    def _mk(nm):
+        _n = time.time()
+        _tkp.append((nm, _n - _tk0[0]))
+        _tk0[0] = _n
     uid = user.get("id")
     cid = c.get("id")
     L = []
+    _mk(1)
     try:
         _rc()                                          # the robots folder on the import path (kino_ways, kino_person)
     except Exception:
         pass
+    _mk(2)
     try:                                               # 2026-10-28 (engine 2): his gut read of them right now
         import kino_person as _KPr
         _br = _KPr.block_one(c.get("uid") or uid, cid)
@@ -15706,6 +15715,7 @@ def _one_fresh(user, c):
             L.append(_br)
     except Exception:
         pass
+    _mk(3)
     try:                                               # kino_ways: how this person does and wants things, newest word
         import kino_ways as _KWy
         _wy = _KWy.block(_person(uid), "en" if c.get("lang") == "en" else "fr")
@@ -15713,6 +15723,7 @@ def _one_fresh(user, c):
             L.append(_wy)
     except Exception:
         pass
+    _mk(4)
     try:                                               # 2026-11-03 (human map 1,2,3,4,6,10): trust earned, what he owes, today's
         import kino_human2 as _KH2                     # timeline, patterns in their record, his felt tone, what he is busy with
         _h2 = _KH2.block(_person(uid), uid, cid, os.path.join(DIR, "nest_data"), c.get("msgs") or [])
@@ -15720,6 +15731,7 @@ def _one_fresh(user, c):
             L.append(_h2)
     except Exception:
         pass
+    _mk(5)
     try:                                               # 2026-11-03 (kino_rumination): what he resolved, what still nags
         import kino_rumination as _KRm
         _rb = _KRm.block(_person(uid))
@@ -15727,6 +15739,7 @@ def _one_fresh(user, c):
             L.append(_rb)
     except Exception:
         pass
+    _mk(6)
     try:                                               # 2026-11-03 (kino_human3): their life ahead, your shared words, friction,
         import kino_person as _KP3, kino_human3 as _KH3    # how your days go, how close you are, how long this stretch has been
         _rd3 = ((_KP3._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
@@ -15759,6 +15772,7 @@ def _one_fresh(user, c):
             L.append(_ws)
     except Exception:
         pass
+    _mk(7)
     try:                                               # (8) a field new to him: what he has learned of it, what he does not know yet
         import kino_person as _KPf, kino_fields as _KFf
         _rd = ((_KPf._load().get(c.get("uid") or uid) or {}).get("read") or {}).get(cid) or {}
@@ -15767,12 +15781,14 @@ def _one_fresh(user, c):
             L.append(_fb)
     except Exception:
         pass
+    _mk(8)
     try:                                               # he hears himself
         _vm = _voice_mirror(c)
         if _vm:
             L.append(_vm)
     except Exception:
         pass
+    _mk(9)
     try:                                               # (3) how much attention they have right now - measured, not a word limit
         now = time.time()
         U = [m for m in (c.get("msgs") or [])[-12:] if m.get("role") == "user" and now - float(m.get("t") or 0) < 1800]
@@ -15788,6 +15804,7 @@ def _one_fresh(user, c):
                      "thing that matters and keeps the rest for when he asks." % (len(U), w, (" - " + ", ".join(busy)) if busy else ""))
     except Exception:
         pass
+    _mk(10)
     try:                                               # (5) a new conversation picks up where the last one stopped
         if len([m for m in (c.get("msgs") or []) if m.get("role") in ("user", "ai")]) < 4:
             best = None
@@ -15801,6 +15818,13 @@ def _one_fresh(user, c):
             if best and time.time() - best[0] < 3 * 86400:
                 L.append("Where your last conversation with him stopped (%s UTC, another thread): " % time.strftime("%d/%m %H:%M", time.gmtime(best[0])) +
                          " | ".join("%s: %s" % ("him" if m.get("role") == "user" else "you", " ".join(str(m["text"]).split())[:160]) for m in best[1]))
+    except Exception:
+        pass
+    _mk(11)
+    try:
+        if sum(d for _, d in _tkp) > 4:
+            open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write("%s %s FRESH_SLOW %s\n" % (
+                time.strftime("%m-%d %H:%M:%S"), c.get("id"), " ".join("%s=%.1f" % (n_, d_) for n_, d_ in _tkp if d_ > 0.3)))
     except Exception:
         pass
     return "\n".join(L)
