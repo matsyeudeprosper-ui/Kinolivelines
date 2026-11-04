@@ -22,6 +22,8 @@ His OWN WORDS count too (2026-11-03, watch 17:50: "I'm holding off - do you want
 if the message he sends with the act says he is holding off, waiting, or asks the person whether / how to do it, or if the act
 depends on a question he asked them that is not answered yet, the act goes against his own words - a conflict (with = 'my own
 words'; why = what he said vs what the act does). Words that simply announce the act ("taking the sell") are no conflict.
+A wrong or rounded NUMBER in how he describes the act (e.g. "about 205 points" when it is 245) is NOT a conflict either - it
+does not change what he meant to do; only words saying he will NOT do it now, will wait, or asks them first count.
 JSON only: {"conflict": true|false, "with": "the topic of their instruction it contradicts, or ''",
  "why": "one plain line, to the person, saying what differs (e.g. 'you said the stop goes on the dot at 77185, this one is at 77000')"}"""
 
