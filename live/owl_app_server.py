@@ -20464,6 +20464,22 @@ def _auto_set(cid, user, v, en, c, event):
             _until_local = "%02d:%02d" % (int(_mj.group(1)), int(_mj.group(2) or 0))
         except Exception:
             pass
+    # 2026-11-04 (owner: price it in): Kino trading on his own is counted in hours per month by plan (owl_plans auto_h)
+    try:
+        _pu = _thread_user(cid, user) or user
+        _left = _PL.auto_left_h(_pu.get("id"), plan_name(_pu))
+    except Exception:
+        _left = None
+    if _left is not None:
+        if _left < 0.05:
+            _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=(
+                "Kino trading on his own is part of Pro (10 hours a month) and Premium (40 hours a month) - none left on this plan "
+                "this month. He can still prepare each trade as a card for you to confirm." if en else
+                "Kino qui trade seul fait partie de Pro (10 heures par mois) et Premium (40 heures par mois) - plus d'heures sur cette "
+                "formule ce mois-ci. Il peut toujours te préparer chaque trade en carte à confirmer.")))
+            return
+        if not _hq or float(_hq) > _left:
+            _hq = _left                                # never past what the plan has left this month
     a = {"on": True, "t": time.time(), "until": time.time() + (max(0.25, float(_hq)) * 3600 if _hq else 10 * 365 * 86400),
          "max_lot": kv.get("lot") or None}
     _ml = ((", max lot %s" if en else ", lot max %s") % a["max_lot"]) if a["max_lot"] else ""
@@ -20642,6 +20658,19 @@ def _auto_watch_loop():
                     continue
                 u = _user_by_id(uid)
                 en = (c.get("lang") or "fr") == "en"
+                try:                                   # 2026-11-04 (price it in): the hours he watches for them, counted by plan
+                    _tk_ = last.get("autot:" + cid)
+                    last["autot:" + cid] = now
+                    if _tk_ and now - _tk_ < 120:
+                        last["autoacc:" + cid] = float(last.get("autoacc:" + cid) or 0) + (now - _tk_)
+                    if float(last.get("autoacc:" + cid) or 0) >= 60:
+                        _PL.note_auto(uid, last.pop("autoacc:" + cid))
+                        _lf = _PL.auto_left_h(uid, plan_name(u or {"id": uid}))
+                        if _lf is not None and _lf <= 0:
+                            a = dict(a, until=now - 1)     # the plan's hours are used up: the session ends like a time-out
+                            c = dict(c, auto_trade=a)
+                except Exception:
+                    pass
                 if not _auto_on(c):                    # expired: say so once
                     _session_debrief(cid, u or {"id": uid}, dict(a))
                     _chat_mut(cid, lambda cc: (cc.__setitem__("auto_trade", {"on": False, "t": now, "expired": True}),

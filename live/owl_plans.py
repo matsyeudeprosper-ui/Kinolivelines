@@ -26,19 +26,22 @@ _LOCK = threading.Lock()
 # sized so a member who uses all of them still leaves a margin (measured: ~0.11 $ a message on Sonnet, ~0.02-0.03 on the small
 # model the plans below Premium use once the owner's blind lean test passed). Free tiers keep a small daily allowance.
 # Bought message packs ("extra") come on top of the month and do not expire.
+# 2026-11-04 (owner: "both" - cut the cost AND price it in): "auto_h" = hours a month Kino may trade on his own for the member.
+# Watching a chart is his most expensive work (measured ~1.3 $ an hour after the 11-04 cuts, ~2.5-3 $ before), so it is sized
+# per plan to leave a margin: 0 below Pro (1 h to try it during the trial), 10 h on Pro, 40 h on Premium, the owner unlimited.
 PLAN_INFO = {
     "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 5, "tests": 2, "voice": 0,
-                         "markets": False, "background": False},
+                         "markets": False, "background": False, "auto_h": 0},
     "decouverte_trial": {"label": "Découverte · essai", "label_en": "Discovery · trial", "usd": 0, "replies": 30, "tests": 2,
-                         "voice": 0, "markets": False, "background": True},
+                         "voice": 0, "markets": False, "background": True, "auto_h": 1},
     "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": None, "month": 400, "tests": 5, "voice": 0,
-                         "markets": False, "background": True},
+                         "markets": False, "background": True, "auto_h": 0},
     "pro":              {"label": "Pro", "label_en": "Pro", "usd": 49, "replies": None, "month": 1200, "tests": None, "voice": 30,
-                         "markets": True, "background": True},
+                         "markets": True, "background": True, "auto_h": 10},
     "premium":          {"label": "Premium", "label_en": "Premium", "usd": 119, "replies": None, "month": 600, "tests": None, "voice": 60,
-                         "markets": True, "background": True, "own_broker": True},
+                         "markets": True, "background": True, "own_broker": True, "auto_h": 40},
     "owner":            {"label": "Propriétaire", "label_en": "Owner", "usd": 0, "replies": None, "tests": None, "voice": None,
-                         "markets": True, "background": True},
+                         "markets": True, "background": True, "auto_h": None},
 }
 ORDER = ("decouverte", "decouverte_trial", "essentiel", "pro", "premium", "owner")
 PACK = {"msgs-300": {"usd": 9, "n": 300}}       # 2026-11-01: a top-up when the month runs out
@@ -117,6 +120,28 @@ def _day(tz_off_min=0, now=None):
 
 def _month(now=None):
     return time.strftime("%Y-%m", time.gmtime(now or time.time()))
+
+
+def auto_used_h(uid):
+    """hours Kino traded on his own for this member this month"""
+    return float(((_load().get(uid) or {}).get("auto") or {}).get(_month(), 0)) / 3600.0
+
+
+def note_auto(uid, seconds):
+    with _LOCK:
+        d = _load()
+        r = d.setdefault(uid, {})
+        a = r.setdefault("auto", {})
+        a[_month()] = float(a.get(_month(), 0)) + float(seconds)
+        _save(d)
+
+
+def auto_left_h(uid, plan):
+    """hours of auto-trading left this month (None = unlimited)"""
+    cap = info(plan).get("auto_h")
+    if cap is None:
+        return None
+    return max(0.0, float(cap) - auto_used_h(uid))
 
 
 def replies_today(uid, tz_off_min=0):
