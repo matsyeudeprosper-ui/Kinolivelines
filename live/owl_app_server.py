@@ -19626,6 +19626,12 @@ def _one_memory(user, c):
             L.append("IL T'A DEMANDÉ DE PASSER SES ORDRES POUR LUI %s%s, selon ses propres règles : un #ordre part vers son outil de trading sans la carte Confirmer." % (
                 ("jusqu'à ce qu'il dise stop" if _un - time.time() > 30 * 86400 else "jusqu'à %s UTC" % time.strftime("%H:%M", time.gmtime(_un))),
                 (" (lot max %s)" % _ax["max_lot"]) if _ax.get("max_lot") else ""))
+            # 2026-11-04 22:00 (watch): asked "with a one-hour chart open you check once an hour?", he said yes - false. The
+            # watch reads the app's own feed of his lower chart, not his screen
+            L.append("COMMENT TU SURVEILLES (vrai, mesuré dans l'appli) : tu te réveilles à chaque bougie qui se ferme sur SON graphique "
+                     "du bas (le graphique filtré du Bitcoin, calculé par l'appli) - des écarts irréguliers, d'une minute à plusieurs. "
+                     "Ce qu'il a ouvert à l'écran (une heure, M15...) ne change RIEN pour toi : l'appli lit ce graphique même s'il ferme "
+                     "son téléphone.")
     except Exception:
         pass
     return "\n".join(L)
