@@ -266,6 +266,18 @@ def describe(plan, uid=None, tz_off_min=0, user=None, lang="fr"):
     tl = tests_left(uid, plan) if uid else None
     if tl is not None:
         parts.append(("%d robot tests left this month" if lang == "en" else "encore %d tests de robot ce mois") % tl)
+    # 2026-11-04 (owner: the custom chart is a paid add-on): so Kino can say why a member sees plain candles or why a test on the
+    # pullback chart is refused - never as a bug
+    if not I.get("custom_chart"):
+        parts.append(("normal candles only - the custom chart (quiet filter, pullback chart, higher charts, structure) and robot "
+                      "tests on it come with Pro and Premium" if lang == "en" else
+                      "bougies normales seulement - le graphique custom (filtre silence, graphique des reculs, graphiques plus "
+                      "longs, structure) et les tests de robot dessus viennent avec Pro et Premium"))
+    else:
+        ct = custom_tests_left(uid, plan) if uid else None
+        if ct is not None:
+            parts.append(("%d robot tests on the custom chart left this month" if lang == "en" else
+                          "encore %d tests de robot sur le graphique custom ce mois") % ct)
     if plan == "decouverte_trial" and user:
         dleft = max(0, int((trial_end(user) - time.time()) // 86400) + 1)
         parts.append(("trial: %d days left" if lang == "en" else "essai : encore %d jours") % dleft)

@@ -24216,7 +24216,9 @@ def _kino_night_mind():
                 except Exception:
                     pass
                 try:                                  # 2026-10-31 (kino_probe): does he notice a feeling slipped in without a cause
-                    _kino_probe_night(_u, _p, _ch[0])
+                    # 2026-11-04 (owner "go for all", cost): ~3-4 $ a run - every 3rd night, not every night
+                    if int(time.time() // 86400) % 3 == 0:
+                        _kino_probe_night(_u, _p, _ch[0])
                 except Exception:
                     pass
                 try:                                  # 2026-10-31 (kino_indicators): monthly outside review against the checklist

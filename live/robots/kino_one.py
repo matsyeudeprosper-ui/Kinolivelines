@@ -377,8 +377,9 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
     if note:                                  # what really happened to an action he wanted, before his words go out
         user += "\n\n" + note
     try:                                      # 2026-11-04 (cost): a watch turn wrote 19k tokens a call - the last one, to read
-        if str(event or "").startswith("AUTO-TRADE WATCH"):
-            open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "last_watch_prompt.txt"), "w", encoding="utf-8").write(
+        if str(event or "").startswith("AUTO-TRADE WATCH") or not event:
+            open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "last_watch_prompt.txt" if event else "last_reply_prompt.txt"),
+                 "w", encoding="utf-8").write(
                 "SYSTEM %d chars | USER %d chars\n\n%s" % (len(sysp), len(user), user))
     except Exception:
         pass

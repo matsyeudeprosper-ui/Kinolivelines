@@ -310,3 +310,4 @@ live/robots/kino_acts.json
 live/robots/kino_acts.json.tmp
 live/robots/order_inflight.json
 live/robots/last_watch_prompt.txt
+live/robots/last_reply_prompt.txt
