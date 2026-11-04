@@ -21295,8 +21295,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _split += "/now%.1f" % (time.time() - _ts2)
         if str(event or "").startswith(AUTO_EV):         # 2026-11-04 (cost): what a watch turn reads, part by part
             try:                                         # the untrimmed parts, for the A/B replay of the trim (review)
-                json.dump({"t": time.time(), "ff": _ff, "mm": _mm1, "nn": _nn, "event": event, "lang": lang},
-                          open(os.path.join(DIR, "robots", "last_watch_full.json"), "w", encoding="utf-8"), ensure_ascii=False)
+                _wf = {"t": time.time(), "ff": _ff, "mm": _mm1, "nn": _nn, "event": event, "lang": lang}
+                json.dump(_wf, open(os.path.join(DIR, "robots", "last_watch_full.json"), "w", encoding="utf-8"), ensure_ascii=False)
+                # 2026-11-04 (A/B inconclusive: the replay mixed tonight's facts with this morning's candles): every watch turn
+                # as it was, rolling (~last 400), so real entry moments can be replayed with what he really saw
+                _wa = os.path.join(DIR, "robots", "watch_archive.jsonl")
+                open(_wa, "a", encoding="utf-8").write(json.dumps(_wf, ensure_ascii=False) + "\n")
+                if os.path.getsize(_wa) > 12 * 1024 * 1024:
+                    _wl = open(_wa, encoding="utf-8").read().splitlines()[-400:]
+                    open(_wa, "w", encoding="utf-8").write("\n".join(_wl) + "\n")
             except Exception:
                 pass
             _ff, _mm1 = _watch_trim(_ff), _watch_trim(_mm1)
