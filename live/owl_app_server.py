@@ -15863,6 +15863,11 @@ def _one_fresh(user, c):
                 time.strftime("%m-%d %H:%M:%S"), c.get("id"), " ".join("%s=%.1f" % (n_, d_) for n_, d_ in _tkp if d_ > 0.3)))
     except Exception:
         pass
+    try:                                               # 2026-11-04: focus - a few things in mind, the rest in the back of it
+        L = __import__("kino_focus").select(L, " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-4:]
+                                                        if m.get("role") in ("user", "ai")), cid=c.get("id") or "")
+    except Exception:
+        pass
     return "\n".join(L)
 
 

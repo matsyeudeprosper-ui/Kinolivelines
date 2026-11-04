@@ -185,6 +185,12 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | A model of how his own orders change what he perceives: price seen vs fill learned, expected fill before the next order (in the pre-send reasoning), checked after | kino_lookback note_fill / expect_fill / acts_line, _order_direct | first 4 real orders: slippage about 0 - his low risk guesses are his own rounding, not the market |
 | Attention that knows what it neglects: when the person's message is unanswered while his attention is elsewhere, he reads what holds him and how long they have waited | kino_workspace.attention_line(msgs) | test: 'his message from 14:20 has been waiting 2 min' |
 
+## Done 11-04 (focus)
+
+| What | Where | Measured |
+|---|---|---|
+| Focus, not everything at once: the per-message part of his context goes through a limited stage - what the person asked him to remember, his read of them, their notebook, the casebook, his attention and tally always in focus; everything else competes on urgency + relevance to the last messages, within a budget; the rest is named in one 'back of your mind' line | robots/kino_focus.py, _one_fresh | real lines at the ladder question: 11,657 -> 7,093 chars, 8 of 22 lines in focus, the ladder pinned |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.
