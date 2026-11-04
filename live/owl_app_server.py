@@ -21294,6 +21294,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             pass
         _split += "/now%.1f" % (time.time() - _ts2)
         if str(event or "").startswith(AUTO_EV):         # 2026-11-04 (cost): what a watch turn reads, part by part
+            try:                                         # the untrimmed parts, for the A/B replay of the trim (review)
+                json.dump({"t": time.time(), "ff": _ff, "mm": _mm1, "nn": _nn, "event": event, "lang": lang},
+                          open(os.path.join(DIR, "robots", "last_watch_full.json"), "w", encoding="utf-8"), ensure_ascii=False)
+            except Exception:
+                pass
             _ff, _mm1 = _watch_trim(_ff), _watch_trim(_mm1)
             try:
                 open(os.path.join(DIR, "robots", "kino_timing.log"), "a", encoding="utf-8").write(
