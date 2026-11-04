@@ -20101,7 +20101,13 @@ def _order_direct(cid, user, v, en, c, words=""):
                 break
             if _m.get("role") == "ai" and "?" in str(_m.get("text") or ""):
                 _pq.append(" ".join(str(_m["text"]).split())[:300])
-        _cf = _KCf.check(_rc().W, _person(uid), "%s (%s)" % (txt, v), _one_facts(user, c or {})[:1500],
+        # 2026-11-04 00:50 (watch): a right buy held back as "the target 77326 is 2.4R, not 2R" - that number is only the
+        # provisional one; with rr= the server re-sets the target to R x the stop distance from the REAL fill right after
+        _act = "%s (%s)" % (txt, v)
+        if req.get("_rr"):
+            _act += (" - NOTE: the target number above is provisional; right after the fill the server re-sets the target to "
+                     "exactly %gR of the real stop distance from the real fill price, so the R multiple is %g by construction" % (req["_rr"], req["_rr"]))
+        _cf = _KCf.check(_rc().W, _person(uid), _act, _one_facts(user, c or {})[:1500],
                          log=os.path.join(DIR, "robots", "kino_conflict.log"),
                          words=chr(10).join(l for l in str(words or "").splitlines() if not l.lstrip().startswith("\u2192")),
                          pending=" | ".join(reversed(_pq)))
