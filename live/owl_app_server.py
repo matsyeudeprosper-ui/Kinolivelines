@@ -16085,6 +16085,35 @@ def _chat_member(user, c):
     return out
 
 
+_GHOST_CACHE = {}    # chat path -> ((mtime, size), uid, ghosts)
+_CHAT_RO = {}        # chat path -> ((mtime, size), parsed chat) - READ-ONLY copies for loops that scan every chat
+
+
+def _chat_ro(p):
+    """2026-11-04 (CPU): a chat parsed again only when its file changed - for loops that only READ (never mutate the result)"""
+    st = os.stat(p)
+    k = (st.st_mtime, st.st_size)
+    h = _CHAT_RO.get(p)
+    if h and h[0] == k:
+        return h[1]
+    c = json.load(open(p, encoding="utf-8"))
+    _CHAT_RO[p] = (k, c)
+    return c
+
+
+def _chat_ghosts(p):
+    """2026-11-04 (owner: "will you fix that cpu issue?" - profile: _state_data parsed all ~100 chats, 4.3 MB, on every Kino turn
+    and every candle check): the owner and the ghosts of one chat, parsed again only when the file has changed"""
+    st = os.stat(p)
+    k = (st.st_mtime, st.st_size)
+    h = _GHOST_CACHE.get(p)
+    if h and h[0] == k:
+        return h[1], h[2]
+    cc = json.load(open(p, encoding="utf-8"))
+    _GHOST_CACHE[p] = (k, cc.get("uid"), cc.get("ghosts") or [])
+    return _GHOST_CACHE[p][1], _GHOST_CACHE[p][2]
+
+
 def _state_data(uid, c=None):
     """2026-10-24 (Kino v2 engine 3): the real state of THEIR robots, from the registry, the results files, the luck status, the
     chats' ghosts and the account - assembled by code, formatted by kino_facts.state_block"""
@@ -16097,12 +16126,12 @@ def _state_data(uid, c=None):
         import glob as _g
         for p in _g.glob(os.path.join(CHAT_DIR, "*.json")):
             try:
-                cc = json.load(open(p, encoding="utf-8"))
+                _cu, _cg = _chat_ghosts(p)
             except Exception:
                 continue
-            if cc.get("uid") != uid:
+            if _cu != uid:
                 continue
-            for g in cc.get("ghosts") or []:
+            for g in _cg:
                 _gt = g.get("t0") or g.get("since") or g.get("started")
                 _gs = time.strftime("%d/%m", time.gmtime(float(_gt))) if _gt else ""
                 if g.get("rid"):
@@ -16338,7 +16367,7 @@ def _recent_ai_texts(uid, hours=18):
         import glob as _g
         for p in _g.glob(os.path.join(CHAT_DIR, "*.json")):
             try:
-                c = json.load(open(p, encoding="utf-8"))
+                c = _chat_ro(p)
             except Exception:
                 continue
             if c.get("uid") != uid:
@@ -19361,7 +19390,7 @@ def _one_memory(user, c):
             try:
                 if os.path.getmtime(os.path.join(CHAT_DIR, _f)) < _day0:
                     continue
-                _cc = json.load(open(os.path.join(CHAT_DIR, _f), encoding="utf-8"))
+                _cc = _chat_ro(os.path.join(CHAT_DIR, _f))
             except Exception:
                 continue
             _ou = _cc.get("uid")
@@ -20756,7 +20785,7 @@ def _blind_cases(uid, n=14, days=3, one=False):
     uids = set(_person_uids(uid)) | {uid} if one else {uid}
     for pth in _g.glob(os.path.join(CHAT_DIR, "*.json")):
         try:
-            c = json.load(open(pth, encoding="utf-8"))
+            c = _chat_ro(pth)
         except Exception:
             continue
         if c.get("uid") not in uids or (c.get("brain") == "one") != bool(one):
