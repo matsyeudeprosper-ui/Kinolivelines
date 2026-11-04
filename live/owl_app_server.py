@@ -15690,7 +15690,7 @@ def kino_ways_api(user, body):
                                   sorted(_KW.entries(pid), key=lambda x: -x["t"])]}
 
 
-def _one_fresh(user, c):
+def _one_fresh(user, c, slim=False):
     """2026-11-03 (speed + 4 upgrades): what changes with every message, built at the moment of the reply - cheap.
     His gut read of them; their ways notebook; how he has been sounding; how much attention they have right now; where the
     last conversation stopped when this one is new."""
@@ -15865,7 +15865,8 @@ def _one_fresh(user, c):
         pass
     try:                                               # 2026-11-04: focus - a few things in mind, the rest in the back of it
         L = __import__("kino_focus").select(L, " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-4:]
-                                                        if m.get("role") in ("user", "ai")), cid=c.get("id") or "")
+                                                        if m.get("role") in ("user", "ai")), cid=c.get("id") or "",
+                                            budget=5000 if slim else 9500)      # 2026-11-04 (cost): a watch turn keeps less in focus
     except Exception:
         pass
     return "\n".join(L)
@@ -21147,7 +21148,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _ts2 = time.time()
         _nn = _one_now(user, c)
         try:
-            _fr = _one_fresh(user, c)
+            _fr = _one_fresh(user, c, slim=str(event or "").startswith(AUTO_EV))
             if _fr:
                 _mm1 = (_mm1 + "\n" + _fr) if _mm1 else _fr
         except Exception:
