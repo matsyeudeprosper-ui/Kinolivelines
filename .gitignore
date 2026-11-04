@@ -313,3 +313,5 @@ live/robots/last_watch_prompt.txt
 live/robots/last_reply_prompt.txt
 live/robots/last_watch_full.json
 live/robots/watch_archive.jsonl
+live/robots/kino_intents.json
+live/robots/kino_intent.log

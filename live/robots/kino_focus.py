@@ -23,6 +23,7 @@ PINNED = ("He asks you to remember", "He asks you to remember. You searched", "T
           "His attention right now", "Your own hindsight on this session", "Your attention is on")
 # urgency of the other kinds, by how their line begins (unknown lines get 0.4)
 URGENCY = (
+    ("THINGS YOU WANT TO DO WITH OR FOR HIM", 0.7),     # 2026-11-04 kino_intent: his own intentions toward them
     ("His recent request sits against what you stand for", 1.0), ("He just had to ask you twice", 0.95),
     ("Questions left hanging", 0.8), ("He just said this without the reason", 0.75), ("In his life, something he told you", 0.75),
     ("Something he told you can be read two ways", 0.85), ("Earlier (", 0.6), ("Something is still nagging", 0.55),

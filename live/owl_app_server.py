@@ -15774,6 +15774,13 @@ def _one_fresh(user, c, slim=False):
             L.append(_br)
     except Exception:
         pass
+    try:                                               # 2026-11-04 (kino_intent): what he wants to do with or for them
+        if not slim:
+            _bi = __import__("kino_intent").block(_person(uid))
+            if _bi:
+                L.append(_bi)
+    except Exception:
+        pass
     _mk(3)
     try:                                               # kino_ways: how this person does and wants things, newest word
         import kino_ways as _KWy
@@ -21434,6 +21441,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 lm_["answered"] = True
         _chat_mut(cid, _rest)
         _KO._log(cid, "REST", "he chose not to answer")
+    try:                                               # 2026-11-04 (kino_intent): what became of his intentions this turn
+        import kino_intent as _KIe
+        if str(event or "").startswith("WISH TO TALK"):
+            _KIe.after_wish(event, say)
+        elif not event:
+            _lux = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+            if _lux:
+                _KIe.on_member(_person(uid), _lux.get("text"), float(_lux.get("t") or time.time()))
+            if say:
+                _KIe.note_said_in_talk(_person(uid), say)
+    except Exception:
+        pass
     if str(event or "").startswith("WISH TO TALK") and not say:
         try:                                           # 2026-10-31 (will): he wanted to talk and held it in - that costs a little
             import kino_psyche as _KPsc
@@ -25024,6 +25043,13 @@ def _alive_beat():
         pass
 
 
+_INTENT_BUSY = {}       # person -> an intention harvest is running (kino_intent)
+# the memory lines an intention can grow from beyond tonight's talk: their goal, his research, decisions, open threads, his word
+_INTENT_ABOUT = ("Son but", "His goal", "Tes recherches en cours", "Your research", "Décisions prises ensemble", "Decisions taken together",
+                 "Ce que tu lui as dit que tu ferais", "What you told him you would do", "Questions left hanging", "Sa vie", "His life",
+                 "Ce qu'il a dit en passant", "Ce que tu attends", "Your projects", "Coming up for him soon", "In his life, something he told you")
+
+
 def _urge_tick():
     """2026-10-28: every minute, for each person with a main thread on the one mind - does the wish to talk tip over now?"""
     _rc()
@@ -25223,6 +25249,30 @@ def _urge_tick():
                                 elif not _sw["crossed"] and _sw["dist"] < 60 and _sw["key"] not in _seen:
                                     _seen.add(_sw["key"])
                                     _KU.add(pm, "SETUP WATCH - his method on the live chart, as you read it: %s." % _sw["text"], w=0.55 if ctx["in_talk"] else 0.1)
+            except Exception:
+                pass
+            try:                                       # 2026-11-04 (owner: "he waits for my turn... no invitation"): his intentions
+                import kino_intent as _KIt             # toward this person - born in a quiet moment, ripe when they make sense
+                _KIt.settle(pm, now)
+                for _ix in _KIt.ripe(pm, now):
+                    _KU.add(pm, _KIt.urge_text(_ix), w=_KIt.weight(pm, _ix["kind"]))
+                _la = max([float(m.get("t") or 0) for m in M if m.get("role") == "ai" and m.get("text")] or [0])
+                if not _INTENT_BUSY.get(pm) and _KIt.harvest_due(pm, lu, _la, now):
+                    _INTENT_BUSY[pm] = True
+
+                    def _hv(p=pm, M=M, lg=c.get("lang") or "fr", ow=ow, c=c):
+                        try:
+                            import kino_one as _KOi
+                            _ab = ""                   # what they are after together - where invitations and proposals come from
+                            try:
+                                _ab = "\n".join(ln for ln in str(_one_memory(ow, c) or "").split("\n") if ln.startswith(_INTENT_ABOUT))[:1500]
+                            except Exception:
+                                pass
+                            _KIt.harvest(_rc().W, p, _KOi.transcript(M, n=40, lang=lg), about=_ab or None,
+                                         log=os.path.join(DIR, "robots", "kino_intent.log"))
+                        finally:
+                            _INTENT_BUSY.pop(p, None)
+                    threading.Thread(target=_hv, daemon=True).start()
             except Exception:
                 pass
             if ctx["their_hour"]:
