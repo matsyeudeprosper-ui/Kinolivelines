@@ -20991,10 +20991,17 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         # 2026-10-26: watching a candle he chose not to act on - nothing to post. 2026-11-04 (watch 01:30): his corrections of
         # what he had told the owner ("I had it backwards") were blanked three times - a correction gets through, once
         _cx = next((str(v_).strip() for k_, v_ in acts if k_ in ("corrige", "correct") and str(v_).strip()), "")
-        _prev = " ".join(str(x.get("text") or "") for x in (c.get("msgs") or [])[-8:] if x.get("role") == "ai")
-        say = _cx if _cx and _cx[:40].lower() not in _prev.lower() else ""
+        _wd = lambda t_: set(re.findall(r"[a-zà-ÿ0-9]{4,}", str(t_).lower()))
+        _cw = _wd(_cx)                                 # said once: the same correction in other words is not said again
+        _said_c = any(len(_cw & _wd(x.get("text"))) >= 0.5 * max(1, len(_cw)) for x in (c.get("msgs") or [])[-12:] if x.get("role") == "ai")
+        say = _cx if _cx and not _said_c else ""
+        _is_corr = bool(say)
+    else:
+        _is_corr = False
     _sim = None
-    if say and len(say) >= 40 and _mdl != "haiku":
+    # 2026-11-04 02:12 (watch): three corrections of a wrong thing he had told the owner were pictured as "frustrating" and the
+    # re-written turn (a silent candle check again) came back as "…" - a correction is said even when it is uncomfortable
+    if say and len(say) >= 40 and _mdl != "haiku" and not _is_corr:
         try:                                           # 2026-10-31 (kino_depth 1): he pictures how they will take it, before sending
             import kino_depth as _KDs, kino_psyche as _KPr2
             _rd2 = ((_KPr2._load().get("persons") or {}).get(_person(uid)) or {}).get("read") or {}
