@@ -20035,6 +20035,21 @@ def _order_parse(uid, v):
     return None, "ordre pas compris"
 
 
+def _order_cards_expire(cid, only=None):
+    """order cards still waiting for a tap become 'old' (the confirm route refuses them) - nothing is pending any more"""
+    def put(cc):
+        for x in cc.get("msgs") or []:
+            a = x.get("args") or {}
+            if x.get("role") == "card" and x.get("kind") == "order" and a.get("status") == "wait" and (only is None or a.get("oid") == only):
+                a["status"] = "old"
+                x["text"] = str(x.get("text") or "").replace("waiting for his Confirm tap", "EXPIRED, not sent (prices moved)").replace(
+                    "attend qu'il appuie sur Confirmer", "EXPIRÉE, pas envoyée (les prix ont bougé)")
+    try:
+        _chat_mut(cid, put)
+    except Exception:
+        pass
+
+
 def _order_card(cid, user, v, en):
     """Kino asked for an order: a card he confirms - nothing reaches the broker without his tap"""
     uid = user.get("id")
@@ -20047,6 +20062,12 @@ def _order_card(cid, user, v, en):
         _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Order not prepared: %s." if en else "Ordre pas préparé : %s.") % txt))
         return
     oid = "o%d" % int(time.time() * 1000)
+    _order_cards_expire(cid)                           # a newer order replaces any card still waiting
+
+    def _stale(oid=oid):                               # 2026-11-04 (watch): the 00:50 card sat "waiting" for 30 min and Kino let
+        time.sleep(600)                                # the 01:07 buy pass as if a buy were pending - a market order card goes
+        _order_cards_expire(cid, only=oid)             # stale with the price (the confirm route already refused it after 600 s)
+    threading.Thread(target=_stale, daemon=True).start()
     _chat_mut(cid, lambda cc: _chat_msg(cc, "card", kind="order", text=("order card: %s - waiting for his Confirm tap" if en else "carte d'ordre : %s - attend qu'il appuie sur Confirmer") % txt, args={"oid": oid, "req": req, "txt": txt, "t": int(time.time()), "status": "wait",
                                                                        "title": "📝 " + ("Order from Kino" if en else "Ordre préparé par Kino")}))
 
@@ -20092,6 +20113,7 @@ def _order_direct(cid, user, v, en, c, words=""):
     req, txt = _order_parse(uid, v)
     if req is None:
         return say_(("Kino's order not sent: %s." if en else "Ordre de Kino pas passé : %s.") % txt)
+    _order_cards_expire(cid)                           # 2026-11-04: his new decision replaces any card still waiting
     try:                                       # 2026-11-03 (kino_conflict): his act held up against the person's own words
         _rc()
         import kino_conflict as _KCf
@@ -20313,6 +20335,9 @@ def _auto_watch_loop():
                                                _chat_msg(cc, "sys", text="Kino's trading time is over: he no longer trades on his own." if en else
                                                          "Le temps donné à Kino est fini : il ne trade plus seul.")))
                     continue
+                if any(x.get("role") == "card" and x.get("kind") == "order" and (x.get("args") or {}).get("status") == "wait"
+                       and now - float((x.get("args") or {}).get("t") or now) > 600 for x in (c.get("msgs") or [])[-60:]):
+                    _order_cards_expire(cid)           # 2026-11-04: a card left waiting is not a pending trade
                 if last.get(cid) == lc[0] or _CHAT_Q.get(cid) or cid in _CHAT_B or not u:
                     continue
                 last[cid] = lc[0]
