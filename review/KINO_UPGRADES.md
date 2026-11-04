@@ -1,4 +1,4 @@
-# Kino upgrades — log and next steps
+# Kino upgrades â€” log and next steps
 
 Owner's principle (2026-11-03): no "if X do Y" rules. Engines that work like a person, in any field of life, not just trading.
 
@@ -7,12 +7,12 @@ Owner's principle (2026-11-03): no "if X do Y" rules. Engines that work like a p
 | Date | What | Kind | Where |
 |---|---|---|---|
 | 11-03 | Ways notebook: what each person taught him about how they do and want things; newest word wins; editable | engine | robots/kino_ways.py, chat menu "Ce que tu m'as appris" |
-| 11-03 | They see: his intuition notices what the person sees that he hasn't said | sense | kino_read they_see → kino_person |
+| 11-03 | They see: his intuition notices what the person sees that he hasn't said | sense | kino_read they_see â†’ kino_person |
 | 11-03 | Hearing himself: words, numbers, apologies, repeated phrases over 24 h | measurement | _voice_mirror |
 | 11-03 | Price levels checked against what he was given | check | kino_one.unknown_figures |
 | 11-03 | Speed: heavy memory prepared ahead (every 100 s while active); fresh parts at reply time | engine | _one_prefetch, _one_fresh |
 | 11-03 | Attention: how much the person can take in right now | measurement | _one_fresh |
-| 11-03 | Lessons drawn the same day after 3 slips | engine (extended) | kino_read → kino_social.lessons_night |
+| 11-03 | Lessons drawn the same day after 3 slips | engine (extended) | kino_read â†’ kino_social.lessons_night |
 | 11-03 | New conversation sees where the last one stopped | sense | _one_fresh |
 | 11-03 | Push leads with the action | ux | _kino_msg_push |
 | 11-03 | Owed (open commitments), today's timeline, slow mood as tone, what he is busy with | senses | robots/kino_human2.py |
@@ -169,6 +169,14 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | 5 Deliberate before risky acts | the pre-send check reasons step by step from the chart as he sees it and code-computed numbers (distance, risk) | kino_conflict 'steps', _order_direct situation | replay of the 12:57 buy: steps correct, no conflict |
 | 6 Continuity of being | heartbeat; on waking he knows the gap he did not live, interruptions today, days of his own time | robots/kino_alive.py, _urge_tick | first gap at the next restart |
 
+## Done 11-04 (list 14) - aimed at the reviewer's zeros
+
+| What | Where | Measured |
+|---|---|---|
+| Feelings with a shape: every feeling a point on pleasant / stirred / in control; his state a weighted point, read as a blend ("between careful and restless") with its drift over the hour; in his readout so the grounding check uses it | robots/kino_space.py, _inner_readout, _one_fresh | his live state now: pleasant -0.05, stirred 0.66, in control 0.43 |
+| Perception in layers, top down: the top chart is a higher layer whose expectation is a prior on every lower candle (trust b learned); lower moves flow up as evidence until the top candle closes | kino_percept.observe_top / observe, auto watch loop | replay: b learned to 0.33 (the big picture helps little per candle); direction stays at chance, as it should |
+| Self-knowledge that changes behaviour: his own correction factor for quick estimates (x1.5) and, after 8 estimates, whether his error came down since he knew | kino_promises.estimates_line | 6 estimates so far, 38% off, 5 of 6 too low |
+| Attention changes perception: what holds the stage sets how sharply he perceives the chart (learning speed, surprise threshold) | kino_percept attend, auto watch loop | replay: attended 38 surprises noticed of 378, background 16 |
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

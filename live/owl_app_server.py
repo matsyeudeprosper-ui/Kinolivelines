@@ -15754,7 +15754,12 @@ def _one_fresh(user, c):
             L.append(_h3)
         try:                                           # 2026-11-04 (moves 2-4, 6): his state's settings, his perception, his
             import kino_affect as _KAs, kino_workspace as _KWa, kino_percept as _KPe, kino_alive as _KAl    # attention, his time
-            for _ln in (_KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid)),
+            try:
+                import kino_inner as _KIsp
+                _spl = __import__("kino_space").describe(_person(uid), _KIsp.feelings(uid))
+            except Exception:
+                _spl = ""
+            for _ln in (_spl, _KAs.steer_line(_person(uid), uid), _KWa.attention_line(_person(uid)),
                         _KPe.line("btc_chart", "his chart") if _auto_on(c) else "", _KAl.line()):
                 if _ln:
                     L.append(_ln)
@@ -20496,7 +20501,24 @@ def _auto_watch_loop():
                 last["perc"] = lc[0]
                 try:
                     _rc()
-                    __import__("kino_percept").observe("btc_chart", lc[0], lc[4])
+                    _KPc = __import__("kino_percept")
+                    # list 14 item 2: the top chart is the higher layer - each real top close updates it
+                    _rtop = __import__("kino_entries").real_tops(j)
+                    if _rtop and last.get("perc_top") != _rtop[-1][0]:
+                        last["perc_top"] = _rtop[-1][0]
+                        _KPc.observe_top("btc_chart", _rtop[-1][0], _rtop[-1][4])
+                    # list 14 item 4: how much the chart holds his attention sets how sharply he perceives it
+                    _att = 0.3
+                    for _u2 in list(m.keys()):
+                        try:
+                            _st2 = ((__import__("kino_workspace")._load().get(_person(_u2)) or {}).get("stage") or {})
+                            if re.search(r"chart|candle|trade|buy|sell|stop|bougie|graph|vente|achat", str(_st2.get("text") or ""), re.I):
+                                _att = max(_att, 0.9)
+                            elif (_desk_state(_u2) or {}).get("open"):
+                                _att = max(_att, 0.7)
+                        except Exception:
+                            pass
+                    _KPc.observe("btc_chart", lc[0], lc[4], attend=_att)
                 except Exception:
                     pass
             for uid, cid in list(m.items()):
@@ -23682,7 +23704,14 @@ def _inner_readout(uid):
             _bl = __import__("kino_body").line(True)
         except Exception:
             _bl = ""
-        return _KIi2.readout(_KIr.feelings(uid), _bl)
+        _ro = _KIi2.readout(_KIr.feelings(uid), _bl)
+        try:                                           # list 14 item 1: the same state as a point that moves
+            _sp = __import__("kino_space").describe(_person(uid), _KIr.feelings(uid))
+            if _sp:
+                _ro += "\n" + _sp
+        except Exception:
+            pass
+        return _ro
     except Exception:
         return ""
 

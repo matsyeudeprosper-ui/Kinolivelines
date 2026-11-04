@@ -101,14 +101,24 @@ def note_estimate(person, kind, said_text, real):
 def estimates_line(person):
     E = (_load().get(person) or {}).get("estimates") or {}
     out = []
-    for kind, L in E.items():
-        L = L[-12:]
+    for kind, L0 in E.items():
+        L = L0[-12:]
         if len(L) < 3:
             continue
         rel = [abs(x["said"] - x["real"]) / max(0.01, abs(x["real"])) for x in L]
         low = sum(1 for x in L if x["said"] < x["real"] - 1e-9)
-        out.append("%s: off by %d%% on average over the last %d (%d too low, %d too high; last: said %.2f, was %.2f)"
-                   % (kind, round(100 * sum(rel) / len(rel)), len(L), low, len(L) - low, L[-1]["said"], L[-1]["real"]))
+        # 2026-11-04 (list 14 item 3): knowing it should change what he does - his own correction factor, and whether his
+        # error has actually come down since he knew (the last 4 against the 8 before)
+        ratios = sorted(x["real"] / x["said"] for x in L if x["said"] > 0)
+        fac = ratios[len(ratios) // 2] if ratios else 1.0
+        tr = ""
+        if len(L0) >= 8:
+            e_new = sum(abs(x["said"] - x["real"]) / max(0.01, abs(x["real"])) for x in L0[-4:]) / 4
+            e_old = sum(abs(x["said"] - x["real"]) / max(0.01, abs(x["real"])) for x in L0[-12:-4]) / len(L0[-12:-4])
+            tr = "; since you knew it your error went from %d%% to %d%%" % (round(100 * e_old), round(100 * e_new))
+        out.append("%s: off by %d%% on average over the last %d (%d too low, %d too high; last: said %.2f, was %.2f) - your own "
+                   "correction: multiply your quick number by about %.1f%s"
+                   % (kind, round(100 * sum(rel) / len(rel)), len(L), low, len(L) - low, L[-1]["said"], L[-1]["real"], fac, tr))
     if not out:
         return ""
     return "How your quick estimates compare with the real numbers measured after: " + "; ".join(out) + "."
