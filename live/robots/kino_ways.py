@@ -130,7 +130,7 @@ def block(person, lang="fr"):
         sure = sureness(x, now)
         hazy = "" if sure >= 0.6 else (", long ago and not heard since - you hold it less surely" if en else
                                       ", il y a longtemps et pas réentendu depuis - tu en es moins sûr")
-        L.append("- %s: \"%s\" (%s %s UTC%s%s)" % (x["topic"], x["said"], "said" if en else "dit le",
+        L.append("- %s: \"%s\"%s (%s %s UTC%s%s)" % (x["topic"], x["said"], (" - why: " + x["why"]) if x.get("why") else "", "said" if en else "dit le",
                                                   time.strftime("%d/%m %H:%M", time.gmtime(x["t"])),
                                                   (", CHANGED %d min ago - before it was: \"%s\"" % ((now - x["t"]) / 60, x["prev"][-1]["said"][:120])
                                                    if en else ", CHANGÉ il y a %d min - avant : \"%s\"" % ((now - x["t"]) / 60, x["prev"][-1]["said"][:120]))

@@ -141,6 +141,15 @@ Already there, NOT rebuilt: his own repeated phrases (tics / _voice_mirror), wha
 | Off his game: everything that went wrong is kept 24 h even after he worked it through; 3+ in 3 h shows as a run he can feel, name, slow down for or pause | engine | kino_rumination hist + block |
 | His clock: "#auto on jusqua=20:00" is HIS time, converted (20:00 Paris -> 19:00 UTC; it was 19:06 from "8 hours") | fix | _auto_set, kino_one |
 
+## Done 11-04 (list 12) - and asking why like a sharp person
+
+| What | Kind | Where |
+|---|---|---|
+| A name corrected once stays corrected: corrections of what he calls things are kept; before a message goes out, the old name becomes theirs ("1-minute candle" -> "candle of your chart") | engine | kino_read 'renamed', kino_human3.apply_names, _one_turn |
+| A loss is not always a mistake: each closed trade carries the hindsight verdict on its entry; a trade that followed the rules and lost is the market, a slip is his | engine link | trade-closed event, kino_entries |
+| Which of their changes worked: closed trades kept in a ledger; results since each recent rule change shown (fills from the next trade) | engine | kino_human3.note_trade / rules_outcome_line |
+| Asking why (owner: "he barely asks why - humans do when appropriate", "smarter than a human: only for a good reason"): the read notices a decision/plan/opinion stated without its reason, scores how much a friend would want to know (low when obvious, trivial, a routine instruction, or inferable) and works out the likely reason first; a high score with no guessable reason is a moment to ask, checking the guess rather than a bare why. Tested: "stop trading gold" after a losing streak 0.3 (inferred, no ask); "moving back to Kinshasa" 0.8 (ask). Also the why of his rules, kept next to the rule; and how often he asks at all, heard in his voice mirror | engine | kino_read 'unexplained'/'why_interest'/'likely_reason', kino_human3.why_moment_line / why_line, kino_ways 'why', _voice_mirror |
+
 ## Next (proposed)
 
 - Thinking before speaking on hard questions: "let me check" that really comes back with the answer.

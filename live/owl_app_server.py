@@ -15655,6 +15655,8 @@ def _voice_mirror(c):
          % (len(T), words, nums)]
     if sorry >= 3:
         L.append("you apologised or owned a mistake in %d of them" % sorry)
+    _qs = sum(1 for t in T if "?" in t)                # 2026-11-04 (owner: "he barely asks why"): how much he asks, heard
+    L.append("you asked him something in %d of them" % _qs)
     if rep:
         L.append("phrases you kept coming back to: " + "; ".join('"%s" (%dx)' % (g, grams[g]) for g in rep))
     return "; ".join(L) + "."
@@ -21211,6 +21213,14 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _CHAT_PENDING[cid] = True
         except Exception:
             pass
+    try:                                               # 2026-11-04: a name he was corrected on becomes theirs before it goes out
+        if say:
+            _say_n = __import__("kino_human3").apply_names(_person(uid), say)
+            if _say_n != say:
+                _KO._log(cid, "RENAMED", say[:80])
+                say = _say_n
+    except Exception:
+        pass
     try:                                               # 2026-11-03 (kino_conflict.misquote): he heard himself misquote them
         if say:
             import kino_conflict as _KCq
@@ -22763,6 +22773,18 @@ def _companion_tick():
                             max(0, (now - _ce) / 60), time.strftime("%H:%M", time.gmtime(_ce)),
                             last_cl.get("p") or 0, last_cl.get("dur"), "buy" if last_cl.get("dir") == "A" else "sell", streak,
                             "wins" if (last_cl.get("p") or 0) > 0 else "losses", nd.get("today") or 0, nd.get("week") or 0))
+                        try:                           # 2026-11-04 (owner list 12 items 2-3): the trade into his ledger; and
+                            _rc()                      # whether its entry followed the rules - a correct trade that loses is not a mistake
+                            import kino_human3 as _KH3t, kino_entries as _KEt
+                            _t0 = _ce - 60 * float(last_cl.get("dur") or 0)
+                            _KH3t.note_trade(_person(uid), _ce, last_cl.get("p") or 0, _t0)
+                            _rv = [x for x in (_KEt._load().get(_person(uid)) or []) if x["called_for"] and float(x["t"]) <= _t0 + 60]
+                            _rv = _rv[-1] if _rv and _t0 - float(_rv[-1]["t"]) < 3600 else None
+                            ev += (" Your hindsight check on this trade's entry: %s (%s)." % (_rv["kino"], _rv["why"][:160]) if _rv else
+                                   " Your hindsight check has not reviewed this entry yet - judge it yourself: did it follow his rules?") + \
+                                  " A trade that followed his rules and lost is the market, not a mistake; a slip of yours is yours."
+                        except Exception:
+                            pass
                     if not ev and main and now - _LAST_SEEN.get(uid, 0) < 150:
                         # 2026-10-19 (owner next-list item 2): they are in the app with a trade open - Kino sits beside them;
                         # it speaks when the trade goes well (halfway to the target), stays quiet when it goes badly

@@ -53,6 +53,11 @@ Read him RIGHT NOW. JSON only:
  "friction": "if there was tension between him and Kino in these last messages (he got irritated, Kino was cold or stubborn, a dispute): what, briefly; else empty",
  "dropped_question": "a question asked by EITHER of them in these exchanges that the talk moved past without it being answered (not one asked in the very last message): who asked - 'he asked' or 'Kino asked' - and the question; else empty",
  "answered_now": "if one of the QUESTIONS LEFT OPEN EARLIER (given above) was just answered or taken up: its words; else empty",
+ "unexplained": "if his last message states a decision, a preference, a plan, an opinion or a change of mind WITHOUT the reason (any part of life): what, in a few words; else empty",
+ "why_interest": 0.0 to 1.0 (how much a friend who knows him would genuinely want to know why - high when it surprises given what they know of him or when the reason would matter later; low for the obvious, the trivial, and routine instructions to Kino such as trade, stop or build, and LOW when the reason can be worked out from what the talk already shows),
+ "likely_reason": "if something is unexplained: the most likely reason, worked out from everything the talk shows about him - or empty if it truly cannot be guessed",
+ "renamed": "if his last messages correct the NAME Kino uses for something (e.g. 'they are not 1-minute candles, they are my chart's candles'): 'old name => his name'; else empty",
+ "rule_reason": "if his last message explains WHY one of his rules is the way it is: 'the rule in a few words => the reason'; else empty",
  "case": "if his last messages CONFIRM or CORRECT how Kino applied one of his rules at a concrete moment ('that red was the one', 'you should have taken it', 'not that candle', 'yes, exactly'): which rule (a few words), the moment (HH:MM UTC if it shows) and what he says is right, in his sense; else empty",
  "case_rule": "the rule that case is about, 2-5 words; else empty",
  "case_at": "HH:MM UTC of the moment the case is about, if it shows; else empty",
@@ -185,6 +190,28 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             _sit, _sig = _KCs.chart_situation(_at or _lu3.get("t"))
             _KCs.add_case(_person_of(uid), j.get("case_rule") or "", _cs, _sit, _sig, "his word", _lu3.get("t"))
             _KCs.settle_fork(_person_of(uid), str(_lu3.get("text") or ""))
+    except Exception:
+        pass
+    try:                                               # 2026-11-04: a name corrected once; the why of a rule
+        _rn = str(j.get("renamed") or "")
+        if "=>" in _rn:
+            import kino_human3 as _KH3n
+            _KH3n.add_name(_person_of(uid), *[p_.strip(" '\"") for p_ in _rn.split("=>", 1)])
+        _rr = str(j.get("rule_reason") or "")
+        if "=>" in _rr:
+            import kino_ways as _KWr
+            _rt, _ry = [p_.strip() for p_ in _rr.split("=>", 1)]
+            _rs = set(w_[:6] for w_ in re.findall(r"[a-zà-ÿ]{4,}", _rt.lower()))
+
+            def _fw(d, _rs=_rs, _ry=_ry):
+                for it in (d.get(_person_of(uid)) or {}).get("items") or []:
+                    if len(_rs & set(w_[:6] for w_ in re.findall(r"[a-zà-ÿ]{4,}", (it["topic"] + " " + it["said"]).lower()))) >= 2:
+                        it["why"] = _ry[:240]
+                        return
+            with _KWr._LOCK:
+                _dw = _KWr._load()
+                _fw(_dw)
+                _KWr._save(_dw)
     except Exception:
         pass
     try:                                               # 2026-11-03: he had to ask twice

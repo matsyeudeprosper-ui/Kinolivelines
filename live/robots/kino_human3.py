@@ -59,6 +59,12 @@ def from_read(person, j, last_msg=None):
     fr = " ".join(str(j.get("friction") or "").split())[:200]
     ag = " ".join(str(j.get("asks_against") or "").split())[:240]
     ra = " ".join(str(j.get("re_asked") or "").split())[:240]
+    ux = " ".join(str(j.get("unexplained") or "").split())[:200]
+    lr = " ".join(str(j.get("likely_reason") or "").split())[:200]
+    try:
+        wi = float(j.get("why_interest") or 0)
+    except Exception:
+        wi = 0.0
     dq = " ".join(str(j.get("dropped_question") or "").split())[:200]
     an = " ".join(str(j.get("answered_now") or "").split())[:200]
     dom = " ".join(str(j.get("domain") or "").lower().split())[:40]
@@ -82,6 +88,8 @@ def from_read(person, j, last_msg=None):
         _day(P, now, str(last_msg.get("text") or ""))
         if len(ag) >= 6:
             P["against"] = {"t": now, "what": ag}
+        if len(ux) >= 6 and wi >= 0.6:                 # 2026-11-04 (owner: "he barely asks why - humans do when appropriate")
+            P["why_moment"] = {"t": now, "what": ux, "w": wi, "guess": lr}
         if len(ra) >= 8:
             P["misreads"] = (P.get("misreads") or [])[-19:] + [{"t": now, "what": ra}]
         if len(up) >= 6:
@@ -333,6 +341,122 @@ def habits_line(person, msgs):
 def block(person, msgs, read=None, tz_h=0):
     ai = [str(m.get("text") or "") for m in msgs if m.get("role") == "ai"]
     habits_line(person, msgs)
-    L = [x for x in (against_line(person), misread_line(person), followup_line(person, ai), questions_line(person), thread_line(person, msgs), shared_line(person),
+    L = [x for x in (against_line(person), misread_line(person), names_line(person), rules_outcome_line(person), why_moment_line(person, msgs), why_line(person, ai), followup_line(person, ai), questions_line(person), thread_line(person, msgs), shared_line(person),
                      friction_line(person, msgs, read), rituals_line(person, tz_h), fatigue_line(person, msgs)) if x]
     return "\n".join(L)
+
+
+
+# ---- 2026-11-04 (owner list 12) ---------------------------------------------------------------------------------------
+# 1 a name corrected once stays corrected: "not 1-minute candles - the candles of my chart"
+def add_name(person, old, new):
+    old, new = " ".join(str(old).split())[:60], " ".join(str(new).split())[:60]
+    if len(old) < 3 or len(new) < 3 or old.lower() == new.lower():
+        return
+
+    def f(d):
+        P = d.setdefault(person, {})
+        N = [x for x in P.get("names") or [] if x["old"].lower() != old.lower()]
+        N.append({"old": old, "new": new, "t": time.time()})
+        P["names"] = N[-20:]
+    _mut(f)
+
+
+def apply_names(person, text):
+    """his outgoing words: a name he was corrected on becomes theirs (plural first, then singular, any case)"""
+    out = str(text or "")
+    for x in (_load().get(person) or {}).get("names") or []:
+        o, n = x["old"], x["new"]
+        for oo, nn in ((o + "s", (n[:-1] + "s" if n.endswith("s") else n.replace("candle ", "candles ", 1) if "candle " in n else n + "s")), (o, n)):
+            out = re.sub(r"(?i)\b" + re.escape(oo) + r"\b", nn, out)
+    return out
+
+
+def names_line(person):
+    N = (_load().get(person) or {}).get("names") or []
+    if not N:
+        return ""
+    return "What he calls things (his word, not the one you were corrected on): " + "; ".join("\"%s\" (not \"%s\")" % (x["new"], x["old"]) for x in N[-6:]) + "."
+
+
+# 3 his results, after each change of their rules
+def note_trade(person, t_close, pl, t_open=None):
+    def f(d):
+        P = d.setdefault(person, {})
+        T = P.setdefault("trades", [])
+        if not any(abs(float(x["t"]) - float(t_close)) < 30 for x in T):
+            T.append({"t": float(t_close), "pl": float(pl), "t0": float(t_open or t_close)})
+        P["trades"] = T[-300:]
+    _mut(f)
+
+
+def rules_outcome_line(person):
+    try:
+        import kino_ways as KW
+        items = sorted(KW.entries(person), key=lambda x: -x["t"])
+    except Exception:
+        return ""
+    T = (_load().get(person) or {}).get("trades") or []
+    now = time.time()
+    out = []
+    for x in items:
+        if now - x["t"] > 7 * 86400:
+            break
+        after = [r for r in T if r["t0"] >= x["t"]]
+        if not after:
+            continue
+        w = sum(1 for r in after if r["pl"] > 0)
+        out.append("since \"%s\" (%s UTC): %d trade%s, %d won, %+.2f $" % (x["topic"], time.strftime("%d/%m %H:%M", time.gmtime(x["t"])),
+                                                                      len(after), "" if len(after) == 1 else "s", w, sum(r["pl"] for r in after)))
+        if len(out) >= 3:
+            break
+    if not out:
+        return ""
+    return "How his trades went after each recent change of his rules (few trades say little - this is what came, not proof): " + " | ".join(out) + "."
+
+
+# 4 why a rule is the way it is - a student asks, once, at a calm moment
+def why_moment_line(person, msgs):
+    """he just said something without the reason, and it is the kind of thing a friend would want to understand - fresh for
+    15 min, gone once Kino has asked him anything since"""
+    x = (_load().get(person) or {}).get("why_moment")
+    now = time.time()
+    if not x or now - x["t"] > 900:
+        return ""
+    if any(m.get("role") == "ai" and float(m.get("t") or 0) > x["t"] and "?" in str(m.get("text") or "") for m in msgs[-6:]):
+        return ""
+    # 2026-11-04 (owner: "he is supposed to be smarter than a human - asking why must be for a good reason"): a sharp person
+    # works the reason out first; asks only what cannot be worked out, and asks it by checking the guess, not with a bare "why"
+    return ("He just said this without the reason: %s (how much you would want to know why: %.1f). %s Ask only if it truly matters "
+            "and the moment allows (not in the middle of something, not when he is busy)."
+            % (x["what"], x["w"], ("Your best guess at the reason, from what you know of him: %s - if you ask, check the guess ('is it "
+                                   "because...?') rather than a bare why; if you are fairly sure, there may be nothing to ask." % x["guess"])
+               if x.get("guess") else "You cannot work the reason out from what you know - this is the kind a sharp friend asks."))
+
+
+def why_line(person, ai_texts):
+    try:
+        import kino_ways as KW
+        items = sorted(KW.entries(person), key=lambda x: -x["t"])
+    except Exception:
+        return ""
+    now = time.time()
+    P = _load().get(person) or {}
+    asked = P.get("why_asked") or {}
+    said = _stems(" ".join(ai_texts[-4:]))
+    cand = [x for x in items if not x.get("why") and now - x["t"] < 14 * 86400 and x["topic"] not in asked]
+    try:                                               # the rules that get APPLIED (cases in his casebook) first, then the ones changed
+        import kino_cases as KC
+        used = {c["rule"].lower() for c in (KC._load().get(person) or {}).get("cases") or []}
+    except Exception:
+        used = set()
+    cand = [x for x in cand if x["topic"].lower() in used or x.get("prev")]
+    cand.sort(key=lambda x: (x["topic"].lower() in used, bool(x.get("prev")), x["t"]), reverse=True)
+    if not cand:
+        return ""
+    x = cand[0]
+    if ("why" in " ".join(ai_texts[-2:]).lower() or "pourquoi" in " ".join(ai_texts[-2:]).lower()) and len(_stems(x["topic"] + " " + x["said"]) & said) >= 2:
+        _mut(lambda d: d.setdefault(person, {}).setdefault("why_asked", {}).__setitem__(x["topic"], now))
+        return ""
+    return ("A rule of his you follow without knowing why: \"%s\" (%s). A student asks the reason once, at a calm moment, so he can apply it "
+            "to cases it does not cover - not in the middle of a trade." % (x["topic"], x["said"][:140]))
