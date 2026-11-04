@@ -406,7 +406,10 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                             {"t": int(time.time()), "m": model, "usd": j.get("total_cost_usd"), "tag": os.path.basename(log) if log else "",
                              "err": (str(j.get("result") or "")[:200] if j.get("is_error") else None),
                              "cold": cold, "ttft_ms": int(((tm["first"] or time.time()) - tm["t0"]) * 1000), "ms": int((time.time() - tm["t0"]) * 1000),
-                             "out": len(str(j.get("result") or "")), "src": _caller()}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
+                             "out": len(str(j.get("result") or "")), "src": _caller(),
+                             # 2026-11-04 (cost): what was paid in full, written to the cache, read from it
+                             "tin": (j.get("usage") or {}).get("input_tokens"), "tcw": (j.get("usage") or {}).get("cache_creation_input_tokens"),
+                             "tcr": (j.get("usage") or {}).get("cache_read_input_tokens"), "tout": (j.get("usage") or {}).get("output_tokens")}) + "\n")   # err (2026-10-23): 1 266 failures were logged as "(none)" - now we know why
                     except Exception:
                         pass
                     if j.get("is_error") and "safeguards flagged" in str(j.get("result") or ""):
