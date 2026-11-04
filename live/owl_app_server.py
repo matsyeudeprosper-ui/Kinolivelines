@@ -20017,7 +20017,9 @@ def _order_parse(uid, v):
                 # from the LIVE price now; the real target is re-set from the fill anyway
                 _jb = _jload(os.path.join(DIR, "owl_chart_btc.json"), {}) or {}
                 _pxl = float(_jb.get("px") or (_jb.get("live") or [0, 0, 0, 0, 0])[4] or _jb.get("candles")[-1][4])
-                kv["tp"] = round(_pxl + d * kv["rr"] * max(abs(_pxl - kv["sl"]), 1.0), 2)
+                # 02:31 (watch): a 35-point stop put the provisional target a few points past the price, and the price moved
+                # before the fill ("il faut SL < 76634 < TP") - provisional only, so at least 0.4% away; re-set from the fill
+                kv["tp"] = round(_pxl + d * max(kv["rr"] * abs(_pxl - kv["sl"]), 0.004 * _pxl), 2)
             except Exception:
                 pass
         if not (kv.get("sl") and kv.get("tp") and kv.get("lot")):
