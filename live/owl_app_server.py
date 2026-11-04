@@ -20553,9 +20553,12 @@ def _auto_watch_loop():
                     if last.get("mt:" + cid, (None,))[0] != _mt:
                         _c0 = json.load(open(_chat_path(cid), encoding="utf-8"))
                         last["mt:" + cid] = (_mt, _c0.get("auto_trade") or {})
+                        last["c:" + cid] = _c0
                     if not (last["mt:" + cid][1] or {}).get("on"):
                         continue
-                    c = json.load(open(_chat_path(cid), encoding="utf-8"))
+                    # 2026-11-04 (profile: the server at a full core, this line 8% of it): the 0.5 MB chat was parsed again every
+                    # 5 s while auto trading - the copy parsed when the file last changed is the same file
+                    c = last.get("c:" + cid) or json.load(open(_chat_path(cid), encoding="utf-8"))
                 except Exception:
                     continue
                 if c.get("uid") != uid:                # 2026-10-27: a shared thread is watched once, as its owner

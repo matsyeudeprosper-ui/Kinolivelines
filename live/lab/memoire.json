@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-04T13:01:03Z",
+ "updated": "2026-11-04T15:01:24Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -38,7 +38,8 @@
     "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only.",
     "2026-10-31 12:00 veille: new closes entered 13-16 h 4 tr 3 won +0.64 per 0.01 (against, peu); 08-13 h 7 tr 1 won -9.62. One week, too few to move it.",
     "2026-11-01: same bars (market closed): 42 d quarter 13-16 +44.55 hole 40.67 (pre/post 10-20 +13.1/+32.5 vs brakes). With nc3: 42 d +57.74 (h +15.0/+44.4), 69 d +108.90 vs +65.58 (h -13.9/+50.0) - 69 d first half still worse (critic doute x3). Reference account (unfiltered) since 10-26: 13-16 h 6 tr 5 won +3.69 per 0.01 - against (trop peu).",
-    "2026-11-02: on the filter alone, quarter 13-16: 42 d +39.1 (h -3.0/+56.9) hole 47.5 vs 78.4; 69 d +42.7 (h -4.6/+41.0). Half 0.5 (with fh) 42 d -4.8 vs quarter +7.0: dose slope clean. Neighbour 12-16 quarter (with fh) +12.32 hole 33.6, better than 13-16: answers 'one hour off halves it' on this package. Real 283 tr: 13 h 11 tr 18% -55.62, 16 h 12 tr 25% -47.65, 12 h 13 tr 31% -25.36."
+    "2026-11-02: on the filter alone, quarter 13-16: 42 d +39.1 (h -3.0/+56.9) hole 47.5 vs 78.4; 69 d +42.7 (h -4.6/+41.0). Half 0.5 (with fh) 42 d -4.8 vs quarter +7.0: dose slope clean. Neighbour 12-16 quarter (with fh) +12.32 hole 33.6, better than 13-16: answers 'one hour off halves it' on this package. Real 283 tr: 13 h 11 tr 18% -55.62, 16 h 12 tr 25% -47.65, 12 h 13 tr 31% -25.36.",
+    "2026-11-04 15:00 veille: 14:31 FLIP BUY W +6.07, 14:50 BOS BUY L -8.80 (net -2.73). Ref account BOS entered 12-17 h: 17 tr 7 W -50.07."
    ]
   },
   {
@@ -213,7 +214,8 @@
     "2026-11-02 06:05 veille: BOS SELL 04:51 after 15.6-min pause (after flip win) won +1.33; BOS SELL 05:13 re-entered 8 min after that win lost -2.84 (held 30.6 min); BOS BUY 05:44 re-entered 26 s after the loss lost -1.82. Real gap <15 min 82 tr 33% -78.42 PF 0.55 (h 36/30 ok); 15-30 41 tr 63% +21.87 (h 64/63); 30-60 62 tr 58% +15.23; 1-3 h 40 tr 38% -78.79. Holds.",
     "2026-11-02 07:30 veille: three quick re-entries (all <15 min): FLIP SELL 06:04 2 min after a loss won +0.53 per 0.01; BOS SELL 06:19 1 min after a win won +0.46 (held 1.7 min); BOS SELL 06:30 9 min after a win lost -0.69 (held 33 min). 2 of 3 won, net ~+0.3: mildly against, tight stops 59-68 pts, tiny money.",
     "2026-11-02 13:00 veille: quick re-entries 07:15 BOS (12 min after a loss) W +1.12, 09:36 FLIP (2 min after a loss) L -0.73, 11:18 BOS (26 s after a win) L -1.04 per 0.01; 10:01 BOS after 15 min W +1.41. Today's <15 min: 3 W / 5 L. Holds.",
-    "2026-11-02 20:00 veille: BOS SELL entry 18:44, 7.4 min after the 18:36 FLIP loss, pace 1.83 storm 0, stop 196, h1 internal opposite, held 56 min, W +3.26 at 0.02 (+1.63 per 0.01). A quick re-entry after a loss won - against; today's <15 min now 4 W / 5 L. One trade, holds."
+    "2026-11-02 20:00 veille: BOS SELL entry 18:44, 7.4 min after the 18:36 FLIP loss, pace 1.83 storm 0, stop 196, h1 internal opposite, held 56 min, W +3.26 at 0.02 (+1.63 per 0.01). A quick re-entry after a loss won - against; today's <15 min now 4 W / 5 L. One trade, holds.",
+    "2026-11-04 15:00 veille: ref account BOS <15 min after a WIN 27 tr 44% -21.51 (halves agree); 15-180 after WIN 29 tr 62% +32.93; 15-180 after LOSS 28 tr 46% -24.87. The rest helps after a win; after a loss even rested BOS lose. Today 14:50 BOS BUY 9.6 min after a win, 1017 pts above, lost -8.80."
    ],
    "next": "cont_wait when built, test it split by previous result (after a win vs after a loss, ties loss_gap_size); re-read on src=filtre once real_pool_split exists. Watch whether the pile's second half keeps falling."
   },
@@ -3741,13 +3743,29 @@
   },
   {
    "t": "2026-11-03T07:30:58Z",
-   "looked": ["wake_context (1 real close 06:30, 295 total; twin noday 18 tr -10.84 -> 19 tr -16.14; labo empty; no open ask)", "bos_journal_u477508138 last 3 rows: kind, gap, pace, stop, htf_entry"],
+   "looked": [
+    "wake_context (1 real close 06:30, 295 total; twin noday 18 tr -10.84 -> 19 tr -16.14; labo empty; no open ask)",
+    "bos_journal_u477508138 last 3 rows: kind, gap, pace, stop, htf_entry"
+   ],
    "saw": "FLIP-BOS SELL entry 06:08 (night, 36 min after the 05:31 loss = rested), pace 0.906 calm, storm 0, stop 261 pts, h1 internal opposite (favoured), held 22.8 min, L -5.26 at 0.02. Twin noday took it too. Against rested_cont, the 250-400 stop band and the 'opp' side of h1_internal_late on one trade; fits only 'reversals lose' (FLIP-BOS). Since 20:20 yesterday 8 closes, 1 won. htf h1 i=1 unchanged ~25 h: capture may be stale. 295 tr 46% -176.63 PF 0.73. No run, no pile, no proposal. Requested htf_capture_check."
   },
   {
    "t": "2026-11-04T13:01:03Z",
-   "looked": ["wake_context (11 real closes 11-03 11:07 -> 11-04 12:11, 306 total; twin noday 19 tr -16.14 -> 24 tr -9.92; labo empty; no open ask)", "bos_journal_u477508138 last 13 rows: kind, dir, pace, stop, htf_entry", "scrutiny --by kind, --by dist"],
+   "looked": [
+    "wake_context (11 real closes 11-03 11:07 -> 11-04 12:11, 306 total; twin noday 19 tr -16.14 -> 24 tr -9.92; labo empty; no open ask)",
+    "bos_journal_u477508138 last 13 rows: kind, dir, pace, stop, htf_entry",
+    "scrutiny --by kind, --by dist"
+   ],
    "saw": "8 W / 3 L, +34.55 at 0.02. BOS 4/4 +18.48 (night nervous wide-stop wins 00:35 stop 335 +5.23, 04:48 stop 563 storm 1 +9.01). FLIP-BOS 4/7 +6.07; calm flips (<0.7) 1/4. h1 same-way buys (i=1) 07:30 W, 13:27 W, 23:23 L = 2/3: the 6-loss streak broke. Sells against internal 3/5. h1 internal moved 1 -> 0 at the 04:48 entry (capture not frozen), but h1 t=-1 is ~9.4 days old while price rose 76.4k -> 78.5k. Totals: FLIP-BOS 161 tr 44% -114.43 (h 46/42), BOS 143 tr 51% -28.21; stop 150-250 88 tr -96.55, 250-400 59 tr +29.49, >=400 14 tr -41.67. No 13-16 h trade yet today. No run, no pile, no proposal: nothing new reaches 30."
+  },
+  {
+   "t": "2026-11-04T15:01:24Z",
+   "looked": [
+    "wake_context (2 real closes 14:40, 14:57; 308 total; twin noday unchanged 24 tr -9.92, both trades daytime; labo empty; no open ask)",
+    "bos_journal_u477508138 last 4 rows",
+    "ref-account BOS by gap to previous close x previous outcome x NY 12-17"
+   ],
+   "saw": "FLIP-BOS BUY 14:31 pace 1.05 stop 378 h1 int 0, W +6.07; BOS BUY 14:50 (9.6 min after that win, entry 1017 pts above the flip entry), pace 1.24 stop 451, L -8.80 in 7 min. Ref account BOS: <15 min after WIN 27 tr 12 W -21.51 (halves 13/6/-11.91 and 14/6/-9.60 agree); <15 after LOSS 11 tr 4 W -8.26; 15-180 after WIN 29 tr 18 W +32.93; 15-180 after LOSS 28 tr 13 W -24.87; NY 12-17 BOS 17 tr 7 W -50.07. Quick-retake side of rested_cont holds after wins; rested-after-loss is not good either. Under 30: hint. No run, no pile (quick/cont_rested exist), no proposal."
   }
  ],
  "lessons": [
