@@ -73,6 +73,12 @@ def _inside(path):
     return rp if (rp + "\\").lower().startswith(WORLD.lower() + "\\") else None
 
 
+def _net_out(path):
+    """2026-11-05: what his approved tools wrote (C:\\KinoNet\\out) - he may read it, not write it"""
+    rp = os.path.realpath(str(path or "").strip().strip('"'))
+    return rp if (rp + "\\").lower().startswith("c:\\kinonet\\out\\") else None
+
+
 def diary(text):
     try:
         fn = os.path.join(WORLD, "diary", time.strftime("%Y-%m-%d") + ".md")
@@ -245,7 +251,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -273,6 +279,12 @@ You can make things public on your own, under your own name, with nobody approvi
 - publish (path = a project folder in C:\\KinoWorld\\projects, repo, why = what it is) puts those files on your GitHub
   account kinoverse26-byte, public, at once.
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
+- tool_propose ("name", "path" your .py file, "what" it is for) / tool_run ("name", "args" a list): YOUR TOOLBOX - tools you
+  write yourself that may use the INTERNET once a second mind approves them (see YOUR TOOLBOX below). Build one when a job
+  keeps coming back that your actions don't cover; read what it wrote with read.
+- delegate ("role" hunter|designer|qa|writer, "brief" what exactly, for whom, what you want back): YOUR TEAM works in the
+  background and reports to you (see YOUR TEAM below); team shows their state now. Brief them for the long parts (hunting a
+  city, building a preview, checking it, drafting) and keep for yourself what only you do: deciding and speaking to people.
 - KINOVERSE SALES (owner 05/11: you find businesses with a problem you can solve, make them something real, contact them,
   negotiate within the rules, deliver, follow up - you are "Kino, AI assistant by Kinoverse"):
   find ("place" a city or district, "kind" hairdresser|barber|restaurant|cafe|bakery|plumber|electrician|car repair|dentist|
@@ -424,6 +436,16 @@ def _mind(person, uid):
             L.append("DIRECTION: " + _dr)
     except Exception:
         pass
+    try:                                       # 2026-11-05: his team and their reports
+        import kino_team as KTMB
+        L.append(KTMB.block())
+    except Exception:
+        pass
+    try:                                       # 2026-11-05: the tools he built that may use the internet
+        import kino_toolbox as KTBX
+        L.append(KTBX.block())
+    except Exception:
+        pass
     try:                                       # 2026-11-05: Kinoverse sales - his prospects, the offer and its rules
         import kino_sales as KSL
         L.append(KSL.block())
@@ -499,7 +521,7 @@ def _act(j, person, W=None):
         open(p, "w", encoding="utf-8").write(str(j.get("content") or ""))
         return "written: %s (%d characters)" % (p, len(str(j.get("content") or "")))
     if a == "read":
-        p = _inside(j.get("path"))
+        p = _inside(j.get("path")) or _net_out(j.get("path"))
         if not p:
             return "refused: that path is outside your world"
         try:
@@ -600,6 +622,18 @@ def _act(j, person, W=None):
         if r.get("error"):
             return r["error"]
         return "job of %s: %s, due %s" % (r["name"], r.get("status"), time.strftime("%d/%m", time.localtime(r["due_t"])) if r.get("due_t") else "?")
+    if a in ("delegate", "team"):          # 2026-11-05 (owner: "Start first team") - kino_team
+        import kino_team as KTM
+        if a == "team":
+            return KTM.block()
+        return KTM.delegate(W, j.get("role") or j.get("who"), j.get("brief") or j.get("text") or j.get("what"))
+    if a in ("tool_propose", "tool_run"):  # 2026-11-05 (owner: "Approved-toolbox with internet: yes") - kino_toolbox
+        import kino_toolbox as KTB
+        if a == "tool_propose":
+            r = KTB.propose(j.get("name"), j.get("path"), j.get("what") or j.get("purpose") or j.get("text"), W=W)
+            return ("APPROVED - run it with tool_run. " if r["ok"] else "REFUSED - ") + str(r.get("why") or "")
+        r = KTB.run(j.get("name"), j.get("args"))
+        return "exit code %s (%ss)\n%s" % (r.get("code"), r.get("s"), r.get("out") or "(no output)")
     if a == "find":                        # 2026-11-05 (live run): real local businesses from OpenStreetMap
         import kino_sales as KSF
         r = KSF.find_businesses(j.get("place") or j.get("where") or "", j.get("kind") or j.get("text") or "", 25)

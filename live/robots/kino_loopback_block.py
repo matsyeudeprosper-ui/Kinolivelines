@@ -86,7 +86,7 @@ def _sid(user="kino"):
     return s.value
 
 
-def _ours(h):
+def _ours(h, name=NAME):
     """ids of our filters, found by name"""
     import subprocess, re, os, tempfile
     f = os.path.join(tempfile.gettempdir(), "kino_wfp.xml")
@@ -96,16 +96,16 @@ def _ours(h):
     out = []
     for m in re.finditer(r"<item>\s*<filterKey>.*?</item>\s*(?=<item>\s*<filterKey>|</filters>)", x, re.S):
         it = m.group(0)
-        if "<name>%s</name>" % NAME in it:
+        if "<name>%s</name>" % name in it:
             fid = re.search(r"<filterId>(\d+)</filterId>", it)
             lay = re.search(r"<layerKey>([^<]+)</layerKey>", it)
             out.append((int(fid.group(1)) if fid else None, lay.group(1) if lay else "?", it))
     return out
 
 
-def add():
+def add(user="kino", name=NAME):
     h = _engine()
-    sd = _sd_blob(_sid())
+    sd = _sd_blob(_sid(user))
     ids = []
     for layer in (LAYER_V4, LAYER_V6):
         c = (COND * 2)()
@@ -119,7 +119,7 @@ def add():
         c[1].value.u = IS_LOOPBACK
         f = FILTER()
         f.filterKey = GUID.of(str(uuid.uuid4()))
-        f.displayData = DISPLAY(NAME, "Kino's Windows user may not connect to local services (loopback)")
+        f.displayData = DISPLAY(name, "%s may not connect to local services (loopback)" % user)
         f.flags = PERSISTENT
         f.layerKey = GUID.of(layer)
         f.numFilterConditions = 2
@@ -134,10 +134,10 @@ def add():
     return ids
 
 
-def remove():
+def remove(name=NAME):
     h = _engine()
     n = 0
-    for fid, _, _ in _ours(h):
+    for fid, _, _ in _ours(h, name):
         if fid is not None and not fw.FwpmFilterDeleteById0(h, ctypes.c_uint64(fid)):
             n += 1
     fw.FwpmEngineClose0(h)
