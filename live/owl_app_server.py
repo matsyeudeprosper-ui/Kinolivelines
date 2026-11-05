@@ -557,7 +557,10 @@ def sig_merge(uid, lst):
 
 
 FUNNEL_FILE = os.path.join(DIR, "owl_funnel.json")
-FUNNEL_STEPS = ("landing", "offers", "choose", "pay_created", "paid")
+FUNNEL_STEPS = ("landing", "offers", "choose", "pay_created", "paid",
+                # 2026-11-05: counted by the server since 11-01 but dropped here - Kino's results read "0 demo opens" while
+                # strangers had written him 11 demo messages; his strategy was revised on a false zero
+                "meet_open", "meet_msg", "free_signup")
 FUNNEL_CLIENT = ("landing", "offers", "choose")
 # 2026-10-11 (owner): what visitors do on the landing (anonymous, one per session)
 LANDING_EVENTS = ("proof_seen", "proof_switch", "proof_open", "demo_open", "tg_open", "faq_more", "calc_use", "kino_pitch")
@@ -593,7 +596,8 @@ def funnel_page():
         d = json.load(open(FUNNEL_FILE, encoding="utf-8"))
     except Exception:
         d = {}
-    names = ("Visites", "Offres vues", "Paquet choisi", "Paiement cr&eacute;&eacute;", "Pay&eacute;")
+    names = ("Visites", "Offres vues", "Paquet choisi", "Paiement cr&eacute;&eacute;", "Pay&eacute;",
+             "D&eacute;mo Kino ouverte", "Messages &agrave; Kino (d&eacute;mo)", "Inscriptions gratuites")
 
     def pct(a, b):
         return ("%.0f%%" % (100.0 * a / b)) if b else "&ndash;"
@@ -38215,7 +38219,13 @@ class H(BaseHTTPRequestHandler):
                 import urllib.parse as _upd, re as _red
                 _qd = _upd.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
                 _sd = ((_qd.get("src") or _qd.get("utm_source") or [""])[0] or "").lower()
-                if _red.match(r"^[a-z0-9_-]{1,16}$", _sd) and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
+                # 2026-11-05: link previews - Mastodon servers, Bluesky's card fetcher, Facebook, X... fetch the page when a post
+                # with the link goes out; 50 "visits" from his own links were mostly them. Only a browser counts
+                _uad = (self.headers.get("User-Agent") or "").lower()
+                _botd = (not _uad.startswith("mozilla/")) or any(w in _uad for w in (
+                    "bot", "crawl", "spider", "preview", "mastodon", "pleroma", "akkoma", "misskey", "cardyb", "facebookexternalhit",
+                    "twitterbot", "slurp", "embedly", "headless", "python", "curl", "http"))
+                if _red.match(r"^[a-z0-9_-]{1,16}$", _sd) and not _botd and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
                     usage_count("src_" + _sd)             # capped at 40 sources a day by usage_count
             except Exception:
                 pass
