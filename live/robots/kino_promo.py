@@ -16,6 +16,7 @@ import json, os, time, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE = os.path.dirname(HERE)
 STRATEGY = r"C:\KinoWorld\projects\promotion\strategy.md"
+CASES = r"C:\KinoWorld\projects\promotion\case_studies"
 BSKY_HANDLE = "kinoverse.bsky.social"
 DEMO = "https://owltrader.duckdns.org/demo"
 _BS = {"t": 0.0, "v": None}
@@ -82,6 +83,12 @@ def results(days=7):
     if b:
         L.append("- Bluesky now: %s followers, %s posts; on your last %s posts %s likes, %s reposts, %s replies" % (
             b["followers"], b["posts"], b["recent"], b["likes"], b["reposts"], b["replies"]))
+    try:                                      # 2026-11-05 (owner "yes"): his portfolio for the future promotion service
+        cs = [f for f in os.listdir(CASES) if f.endswith(".md")]
+        L.append("- your case studies (portfolio for the promotion service you will offer): %d written%s" % (
+            len(cs), (", latest " + sorted(cs)[-1]) if cs else " - write one when a campaign or a week of trying ends"))
+    except Exception:
+        L.append("- your case studies: none yet (%s) - write one when a campaign or a week of trying ends" % CASES)
     try:
         st = os.path.getmtime(STRATEGY)
         L.append("- your strategy (%s, last revised %s UTC): read it first, act on it, and revise it when the numbers teach you "
