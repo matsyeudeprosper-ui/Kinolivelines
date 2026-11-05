@@ -225,7 +225,24 @@ def transcript(msgs, n=40, lang="fr"):
                 if body else ("\n   " + ("WHAT IT SAYS (your summary): " if lang == "en" else "CE QU'IL DIT (ton résumé) : ") + str(m["seen"]))
                 if m.get("seen") else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
                                        "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
-        elif r in ("test", "sys", "result", "card") and tx:
+        elif r == "demo" and m.get("kind") == "moments":
+            # 2026-11-05 01:0x (watch): "Yes, that is the moment I mean" - he answered "which moment?", then said he had never
+            # sent vote cards: the cards (no text) were invisible here. What he showed them, as they saw it
+            en = lang == "en"
+            if m.get("check"):
+                wk = (m.get("week") or {}).get("mon") or ""
+                L.append("[%s] (%s)" % (_hm(m.get("t")), (
+                    "you sent them a VOTE CARD: %d moments of the robot from the week of %s, each on its own little chart - they "
+                    "vote yes or no on each (does this moment fit what they meant?)" if en else
+                    "tu lui as envoyé une CARTE DE VOTE : %d moments du robot de la semaine du %s, chacun sur son petit graphique - "
+                    "il vote oui ou non sur chacun (ce moment correspond-il à ce qu'il voulait ?)") % (len(m.get("moments") or []), wk)))
+            else:
+                L.append("[%s] (%s)" % (_hm(m.get("t")), (
+                    "you showed them a card of %d example moments on the chart: the %s signal %s on %s - about %s a day" if en else
+                    "tu lui as montré une carte de %d moments d'exemple sur le graphique : le signal %s %s sur %s - environ %s par jour") % (
+                    len(m.get("moments") or []), m.get("side") or "", ("« %s »" % m["formula"]) if m.get("formula") else "",
+                    m.get("market") or "", m.get("per_day") if m.get("per_day") is not None else "?")))
+        elif r in ("test", "sys", "result", "card", "change", "recap") and tx:
             L.append("[%s] (%s)" % (_hm(m.get("t")), tx[:240]))
     return "\n".join(L)
 
