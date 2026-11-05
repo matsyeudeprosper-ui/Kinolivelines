@@ -27,11 +27,15 @@ does not change what he meant to do; only words saying he will NOT do it now, wi
 Before deciding, THINK IT THROUGH STEP BY STEP from the situation (2026-11-04, move 5 - deliberate before a risky act): which
 top-chart candle closed and when, which lower-chart candle came after it and its colour, what their rules say for that, which
 stop level their rules give and the one in the act, the numbers (distance, risk). Put the steps in "steps".
+THEIR DIRECT ORDER OUTRANKS THEIR NOTEBOOK (2026-11-05 15:41 UTC: he wrote "Do me a favour. Take it now" and the order was blocked
+on an older rule): if in the last minutes they told him to do this act now ("take it now", "send it", "go", "buy", "flip it"),
+it is NOT a conflict - the person decided. A FLIP (the trade the other way after a stop was hit, on a candle close beyond that
+stop) follows THEIR FLIP RULE, not the entry rule: the "first candles after the top close" count does not apply to a flip.
 JSON only: {"steps": ["..."], "conflict": true|false, "with": "the topic of their instruction it contradicts, or ''",
  "why": "one plain line, to the person, saying what differs (e.g. 'you said the stop goes on the dot at 77185, this one is at 77000')"}"""
 
 
-def check(W, person, act_text, situation="", log=None, words="", pending=""):
+def check(W, person, act_text, situation="", log=None, words="", pending="", said=""):
     """-> None (no conflict / nothing to check) or {"with", "why"}"""
     try:
         import kino_ways as KW
@@ -52,8 +56,9 @@ def check(W, person, act_text, situation="", log=None, words="", pending=""):
         book = (book or "(empty)") + "\n\nKINO'S OWN VALUES (an act against these is a conflict too - with = 'my values'; a standing permission the person gave in their notebook IS their OK):\n" + vals
     j = W.ask_json(SYSTEM, "THEIR NOTEBOOK (oldest first; the newest word on a topic is the one that holds):\n%s\n\n"
                            "THE SITUATION NOW (facts): %s\n\nTHE ACT HE IS ABOUT TO DO: %s\n\nTHE MESSAGE HE SENDS WITH IT: %s\n\n"
-                           "HIS QUESTIONS TO THEM NOT ANSWERED YET: %s\n\nJSON only." % (book or "(empty)", str(situation)[:1500], act_text,
-                                                                         str(words or "-")[:1200], str(pending or "-")[:600]),
+                           "HIS QUESTIONS TO THEM NOT ANSWERED YET: %s\n\nWHAT THE PERSON WROTE IN THE LAST 15 MINUTES (their newest "
+                           "word): %s\n\nJSON only." % (book or "(empty)", str(situation)[:1500], act_text,
+                                                        str(words or "-")[:1200], str(pending or "-")[:600], str(said or "-")[:1500]),
                    models=("haiku", "sonnet"), timeout=30, log=log, warm=True)     # 04:0x: a cold process cost 33 s before the order
     if isinstance(j, dict) and j.get("conflict") is True and str(j.get("why") or "").strip():
         return {"with": str(j.get("with") or "")[:80], "why": " ".join(str(j["why"]).split())[:240]}

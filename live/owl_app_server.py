@@ -20379,10 +20379,17 @@ def _order_direct_inner(cid, user, v, en, c, words=""):
                 abs(_pxc - float(req.get("sl") or _pxc)) * float(req.get("lot") or 0), req.get("lot"))
         except Exception:
             pass
+        # 2026-11-05 15:41 UTC (owner: "Do me a favour. Take it now" - the check blocked it): what he said in the last minutes
+        _ltm = []
+        try:
+            _ltm = ["[%s] %s" % (time.strftime("%H:%M", time.gmtime(float(m.get("t") or 0))), str(m.get("text") or "")[:200])
+                    for m in (c or {}).get("msgs") or [] if m.get("role") == "user" and time.time() - float(m.get("t") or 0) < 900][-6:]
+        except Exception:
+            pass
         _cf = _KCf.check(_rc().W, _person(uid), _act, _sit + _one_facts(user, c or {})[:1200],
                          log=os.path.join(DIR, "robots", "kino_conflict.log"),
                          words=chr(10).join(l for l in str(words or "").splitlines() if not l.lstrip().startswith("\u2192")),
-                         pending=" | ".join(reversed(_pq)))
+                         pending=" | ".join(reversed(_pq)), said=chr(10).join(_ltm))
         if _cf:
             try:
                 __import__("kino_rumination").stir(_person(uid), "held_back", "I nearly sent an order against what he said: " + _cf["why"])
