@@ -15650,9 +15650,17 @@ def _pb_top_line(j):
         t_close = float(mv[0]) + 60                    # a top candle is one lower candle: it closed a minute after it opened
         low = [x for x in _lw if float(x[0]) >= t_close and float(x[0]) + 60 <= now]
         since = " | ".join("%s %s (close %s)" % (hm(x[0]), "RED" if float(x[4]) < float(x[1]) else "green", f(x[4])) for x in low[:8])
-        return ("TOP CHART of his screen (the pullback chart): its last REAL candle started %s and CLOSED at %s UTC, %s (open %s, high %s, "
-                "low %s, close %s) - the last real top candle. %sLower-chart candles that closed since that top close at %s, in order: %s. "
-                "Before it on the top chart: %s. Read his trigger ONLY from his own words below - do not invent a level he did not name."
+        # 2026-11-05 15:20 UTC (owner: "Stop missing"): after a bearish top close he skipped a buy "because too many RED candles had
+        # printed" - his rule counts the candles of the ENTRY's colour (green for a buy, red for a sell), and he counted the other
+        # colour. The count he needs, as a plain fact on the screen, not a rule of ours
+        _buy = col(mv) == "bearish"
+        _ent = [x for x in low if (float(x[4]) >= float(x[1])) == _buy]
+        _cnt = ("Since that top close: %d %s candle(s) closed (the colour of a %s entry after a %s top), %d of the other colour. "
+                % (len(_ent), "green" if _buy else "red", "buy" if _buy else "sell", col(mv), len(low) - len(_ent)))
+        return (("TOP CHART of his screen (the pullback chart): its last REAL candle started %s and CLOSED at %s UTC, %s (open %s, high %s, "
+                 "low %s, close %s) - the last real top candle. %sLower-chart candles that closed since that top close at %s, in order: %s. "
+                 + _cnt.replace("%", "%%") +
+                 "Before it on the top chart: %s. Read his trigger ONLY from his own words below - do not invent a level he did not name.")
                 % (hm(mv[0]), hm(t_close), col(mv), f(mv[1]), f(mv[2]), f(mv[3]), f(mv[4]),
                    ("(The top candle drawn after it, %s, is only the newest lower candle shown as a stand-in - it is replaced every minute "
                     "unless it becomes a structure point; it is NOT a closed top candle.) " % hm(fm[0])) if fm else "", hm(t_close),
