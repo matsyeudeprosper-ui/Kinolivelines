@@ -77,6 +77,8 @@ def _save_tokens(j, keep=None):
 def callback(code, state):
     """the redirect from X: exchange the code now; returns (ok, message for the page)"""
     p = _j(PKCE)
+    if not p and connected():                          # 2026-11-05: the browser loaded the page twice - the first one connected
+        return True, "Kino is already connected to X as @%s. You can close this page." % (_j(TOKEN).get("handle") or "?")
     if not p or not state or state != p.get("state") or time.time() - float(p.get("t") or 0) > 1800:
         return False, "This link is old or was not started here. Ask Claude for a new one."
     try:
