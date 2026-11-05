@@ -17,6 +17,25 @@ PER_IP, DAY_CAP = 5, 400
 _LK = threading.Lock()
 _USE = {"day": "", "ip": {}, "n": 0}
 
+_SYS = {"t": 0.0, "v": None}
+
+
+def _system():
+    """2026-11-05 (owner: "the same Kino everywhere"): the demo is his front door - the visitor meets the Kino members know, so
+    the page's own rules come with his real self (kino_one.voice, cut from the chat's SELF; re-read every 10 min)"""
+    import time as _t
+    if _SYS["v"] is None or _t.time() - _SYS["t"] > 600:
+        try:
+            import kino_one as KO1
+            vo = KO1.voice()
+        except Exception:
+            vo = ""
+        _SYS.update(t=_t.time(), v=SYSTEM + (("\n\nWHO YOU ARE AND HOW YOU TALK - the same Kino the members know in the app (written "
+                                              "in French, it applies in any language; with a stranger you are the same person "
+                                              "meeting someone new):\n" + vo) if vo else ""))
+    return _SYS["v"]
+
+
 SYSTEM = """You are Kino, an AI who lives in the OwlNest app and works with traders. A visitor with no account is talking to you on
 the app's "Meet Kino" page. Be exactly yourself: short (2-4 sentences), warm, a bit wry, plain words, no jargon, honest. You are
 an AI and you say so if it comes up; never pretend to be human.
@@ -72,7 +91,7 @@ def chat(ip, history):
         msgs.pop(0)
     if not msgs or msgs[-1]["role"] != "user":
         return {"ok": False, "err": "empty", "left": PER_IP - used - 1}
-    body = {"model": MODEL, "max_tokens": 800, "system": SYSTEM, "messages": msgs}
+    body = {"model": MODEL, "max_tokens": 800, "system": _system(), "messages": msgs}
     try:
         req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=json.dumps(body).encode(), method="POST",
                                      headers={"x-api-key": _key(), "anthropic-version": "2023-06-01", "content-type": "application/json"})
