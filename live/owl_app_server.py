@@ -38186,6 +38186,24 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512m.png":
             self._send(ICON512M, "image/png")
             return
+        if parts[:2] == ["x", "callback"]:
+            # 2026-11-05 (owner: Kino on X): X sends the owner back here after "Authorize" - the code lives ~30 s, exchanged now
+            try:
+                import urllib.parse as _upx
+                _rc()
+                import kino_x as _KXc
+                _qx = _upx.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                if _qx.get("error"):
+                    _okx, _msx = False, "X says: %s. Ask Claude for a new link." % (_qx["error"][0])[:60]
+                else:
+                    _okx, _msx = _KXc.callback((_qx.get("code") or [""])[0], (_qx.get("state") or [""])[0])
+            except Exception as _ex:
+                _okx, _msx = False, "Something failed (%s). Ask Claude for a new link." % repr(_ex)[:80]
+            self._send("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+                       "<title>Kino on X</title><body style='font:17px system-ui;background:#0b1118;color:#e8eef5;padding:28px'>"
+                       "<h2>%s</h2><p>%s</p>" % ("Connected" if _okx else "Not connected", __import__("html").escape(_msx)),
+                       "text/html; charset=utf-8")
+            return
         if parts == ["demo"]:
             # 2026-11-01 (owner: "think deeper what the demo becomes"): the demo is meeting Kino - a conversation without an
             # account (kino_meet), what he does, and a robot he made working live at /demo/live
