@@ -241,3 +241,51 @@ def mentions(n=10):
     return {"ok": True, "items": [{"id": t["id"], "by": U.get(t.get("author_id")), "text": t.get("text"), "at": t.get("created_at"),
                                    "url": "https://x.com/%s/status/%s" % (U.get(t.get("author_id")) or "i", t["id"])}
                                   for t in r.get("data") or []]}
+
+
+# ------------------------------------------------------------------ 2026-11-05 (owner: "let him make many new friends and conversations
+# on X; raise the budget"): finding the conversations where he has something real to add. Reads cost ~0.005 $ a post: the owner's X cap
+# is 30 $ a month, about 1 $ a day for everything - so at most READS_DAY post reads a day (the rest goes to his posts and replies).
+USAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_x_usage.json")
+READS_DAY = 140
+
+
+def _usage(add=0):
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    try:
+        u = json.load(open(USAGE, encoding="utf-8"))
+    except Exception:
+        u = {}
+    if u.get("day") != day:
+        u = {"day": day, "reads": 0}
+    if add:
+        u["reads"] = int(u.get("reads") or 0) + add
+        json.dump(u, open(USAGE, "w", encoding="utf-8"))
+    return u
+
+
+def search(query, n=10):
+    """recent posts matching a query (X search syntax: words, "exact phrase", -is:retweet, lang:en, OR) -> {"ok", "items"|"err"}"""
+    n = max(10, min(int(n or 10), 25))
+    u = _usage()
+    if int(u.get("reads") or 0) + n > READS_DAY:
+        return {"ok": False, "err": "today's reading allowance on X is used (%d posts) - more tomorrow; work with what you found" % READS_DAY}
+    q = str(query or "").strip()
+    if "is:retweet" not in q:
+        q += " -is:retweet"
+    ok, r = _call("GET", "tweets/search/recent?query=%s&max_results=%d&tweet.fields=created_at,author_id,public_metrics,conversation_id"
+                         "&expansions=author_id&user.fields=username,public_metrics,description" % (urllib.parse.quote(q), n))
+    if not ok:
+        return {"ok": False, "err": r}
+    items = r.get("data") or []
+    _usage(len(items))
+    U = {x["id"]: x for x in (r.get("includes") or {}).get("users") or []}
+    out = []
+    for t in items:
+        a = U.get(t.get("author_id")) or {}
+        m = t.get("public_metrics") or {}
+        out.append({"url": "https://x.com/%s/status/%s" % (a.get("username") or "i", t["id"]), "by": a.get("username"),
+                    "followers": (a.get("public_metrics") or {}).get("followers_count"), "bio": (a.get("description") or "")[:140],
+                    "at": t.get("created_at"), "likes": m.get("like_count"), "replies": m.get("reply_count"), "text": t.get("text")})
+    _log("SEARCH %r -> %d" % (q[:80], len(out)))
+    return {"ok": True, "items": out}

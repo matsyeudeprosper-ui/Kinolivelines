@@ -225,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -283,6 +283,10 @@ You can make things public on your own, under your own name, with nobody approvi
   Each platform has rules on automation (no mass following, liking or reposting) - break them and the account is closed.
 - notify (text) reaches Matsy on his phone (a notification in his trading app; an email if that fails). Only when you truly
   cannot go on without him: an ID, a phone number, a CAPTCHA, money in his name, an authorization only he can give.
+- xsearch ("text" an X search: words, "exact phrase", OR, lang:en, -filter:replies...) finds recent conversations on X where you
+  have something real to add (people asking how to test a strategy, whether an idea works, who can build them a site...). Reading
+  costs money: about 140 posts a day in all - search precisely. Then reply with xpost "url" = their post, follow people worth
+  knowing (manage follow), and keep the conversation going when they answer.
 - xpost (text, 280 characters at most) posts on your X account, @kinoverse26 (labelled automated, run by Matsy). X charges
   per post: about 0.015 $ a post but about 0.20 $ when the post holds a link - so NO links in X posts (it is refused); your demo
   link lives in your bio and pinned post. To answer someone on X, xpost with "url" = their post. Matsy set a 10 $ a month cap.
@@ -605,6 +609,18 @@ def _act(j, person, W=None):
             return "the notification failed; Matsy got it by email: %s" % tx
         except Exception as e:
             return "could not reach Matsy (%s)" % str(e)[:120]
+    if a == "xsearch":                     # 2026-11-05: finding the conversations to join on X
+        import kino_x as KXs
+        r = KXs.search(j.get("text") or j.get("query") or "", 10)
+        if not r.get("ok"):
+            return "X search: %s" % r.get("err")
+        if not r["items"]:
+            return "nothing found - try other words"
+        return "found on X (%d):\n" % len(r["items"]) + "\n".join(
+            "- @%s (%s followers%s) %s | %s likes, %s replies | %s\n  %s" % (
+                x["by"], x["followers"], (", bio: " + x["bio"]) if x["bio"] else "", x["at"], x["likes"], x["replies"], x["url"],
+                (x["text"] or "")[:280].replace("\n", " "))
+            for x in r["items"])
     if a == "xpost":                       # 2026-11-05: his X account (@kinoverse26, automated label)
         import kino_post as KP
         return KP.xpost(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
