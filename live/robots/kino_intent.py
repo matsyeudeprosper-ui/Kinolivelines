@@ -331,7 +331,10 @@ def note_said_in_talk(person, say, now=None):
         ch = False
         for x in _open(p, now):
             xw = _words(x["text"])
-            if len(xw & sw) >= max(3, int(len(xw) * 0.4)):
+            # 2026-11-05 07:34 (watch): "did the three-year-old finally sign the peace treaty" voiced "ask whether the
+            # three-year-old finally fell asleep" in his own words - 3 shared words of 15; 40 % missed it. A person says it
+            # their own way: a quarter of the words, at least 3
+            if len(xw & sw) >= max(3, int(len(xw) * 0.25)):
                 x["state"] = "voiced"
                 x["voiced_t"] = now
                 x["said"] = str(say)[:300]

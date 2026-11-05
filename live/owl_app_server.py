@@ -21449,8 +21449,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _lux = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
             if _lux:
                 _KIe.on_member(_person(uid), _lux.get("text"), float(_lux.get("t") or time.time()))
-            if say:
-                _KIe.note_said_in_talk(_person(uid), say)
+        # 2026-11-05 07:34 (watch): he voiced an intention on his own through a wish whose items did not carry it (and before
+        # its moment) - whatever turn he says one in, it is said, so it never comes back as a repeat
+        if say and not str(event or "").startswith("AUTO-TRADE WATCH"):
+            _KIe.note_said_in_talk(_person(uid), say)
     except Exception:
         pass
     if str(event or "").startswith("WISH TO TALK") and not say:
