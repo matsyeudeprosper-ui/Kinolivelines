@@ -330,8 +330,12 @@ def focus(on):
     _TL.prio = bool(on)
 
 
-def _wait_focus():
+def _wait_focus(log=None):
     if getattr(_TL, "prio", False) or getattr(_TL, "member", False):
+        return
+    # 2026-11-05 21:03 (watch): a member's FIRST MEETING greeting waited behind a trade turn (89 s). Only his inner life waits;
+    # anything written into a conversation (a chat log: robots/chats/<cid>.log) never does
+    if log and os.sep + "chats" + os.sep in os.path.normpath(str(log)):
         return
     t0 = time.time()
     while _FOCUS["n"] > 0 and time.time() - t0 < 60:
@@ -343,7 +347,7 @@ def _wait_focus():
 
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
-    _wait_focus()
+    _wait_focus(log)
     if getattr(_TL, "brain", None) == "openai" and time.time() > _OA_DOWN["until"]:   # 2026-10-24 (Kino-O): through OpenAI
         try:
             import robot_openai as _RO
