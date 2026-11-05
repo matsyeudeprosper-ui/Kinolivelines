@@ -27,7 +27,7 @@ LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
 _BUSY = {"on": False}
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
-SESSIONS_DAY = 10                # 2026-11-01 (owner: "always looking, always active" for money): was 6
+SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): his paced work budget is what limits him now (was 10; 12 empty sessions used it up by noon)
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
 
 
@@ -172,7 +172,7 @@ def due(person, ctx, now=None):
         _care = bool(KC.out_of_balance())
     except Exception:
         pass
-    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 3600)):
+    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 1800)):
         return False
     try:                                       # 2026-11-01 (kino_care): a body out of balance calls him to look after it
         import kino_care as KC
