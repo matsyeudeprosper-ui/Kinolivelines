@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-04T15:01:24Z",
+ "updated": "2026-11-05T03:30:47Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -3766,6 +3766,15 @@
     "ref-account BOS by gap to previous close x previous outcome x NY 12-17"
    ],
    "saw": "FLIP-BOS BUY 14:31 pace 1.05 stop 378 h1 int 0, W +6.07; BOS BUY 14:50 (9.6 min after that win, entry 1017 pts above the flip entry), pace 1.24 stop 451, L -8.80 in 7 min. Ref account BOS: <15 min after WIN 27 tr 12 W -21.51 (halves 13/6/-11.91 and 14/6/-9.60 agree); <15 after LOSS 11 tr 4 W -8.26; 15-180 after WIN 29 tr 18 W +32.93; 15-180 after LOSS 28 tr 13 W -24.87; NY 12-17 BOS 17 tr 7 W -50.07. Quick-retake side of rested_cont holds after wins; rested-after-loss is not good either. Under 30: hint. No run, no pile (quick/cont_rested exist), no proposal."
+  },
+  {
+   "t": "2026-11-05T03:30:47Z",
+   "looked": [
+    "wake_context (no new close, 308 total; twin noday unchanged 24 tr -9.92; labo empty; no open ask)",
+    "bos_journal_u477508138 tail (last close 2026-11-04T14:57 BOS LOSS)",
+    "scanner/heartbeat.jsonl last beat 2026-11-05 03:31 UTC (alive)"
+   ],
+   "saw": "Quiet: ~12.5 h without a real close and the heartbeat is alive, so no setup came rather than an outage. Nothing new to test: no run, no pile, no proposal. Waiting for the next BOS to extend the rested_cont split (quick-after-win 27 tr 12 W)."
   }
  ],
  "lessons": [
