@@ -76,8 +76,17 @@ def _save_tokens(j, keep=None):
     return d
 
 
+_CB = threading.Lock()
+
+
 def callback(code, state):
-    """the redirect from X: exchange the code now; returns (ok, message for the page)"""
+    """the redirect from X: exchange the code now; returns (ok, message for the page). 2026-11-05: phones load the page twice at
+    once - the second load got 'refused' while the first connected; one at a time, and the second sees it is done"""
+    with _CB:
+        return _callback(code, state)
+
+
+def _callback(code, state):
     p = _j(PKCE)
     if not p and connected():                          # 2026-11-05: the browser loaded the page twice - the first one connected
         return True, "Kino is already connected to X as @%s. You can close this page." % (_j(TOKEN).get("handle") or "?")
