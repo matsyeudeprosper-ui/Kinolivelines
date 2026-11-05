@@ -154,6 +154,12 @@ def due(person, ctx, now=None):
         _al = KWa.allowance()
         if _al["day"] and _al["left"] <= 0.05:
             return False
+        # 2026-11-05 (watch): 2.78 of 3 $ gone by 11:00 France - nothing left for the afternoon and evening, when traders are
+        # online. He paces it over his waking day (07:00-01:00 France, 18 h), with ~3 h of slack ahead
+        if _al["day"]:
+            _el = ((_fr.tm_hour - 7) % 24) + _fr.tm_min / 60.0
+            if _al["used"] >= _al["day"] * min(1.0, (_el + 3.0) / 18.0):
+                return False
     except Exception:
         pass
     S = [s for s in d.get("sessions") or [] if s.get("day") == today]
