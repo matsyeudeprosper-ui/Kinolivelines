@@ -29,6 +29,13 @@ _BUSY = {"on": False}
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
 SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): his paced work budget is what limits him now (was 10; 12 empty sessions used it up by noon)
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
+NIGHT_USD = 1.2                  # 2026-11-05: the night (01-07 France) hunt in the US may use this much of the new day's budget
+NIGHT_SESSIONS = 4
+NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use find in "
+              "ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), pick those with an email or a "
+              "phone and no website, check one lead against its own public page, record it, and if it is solid make the personal "
+              "preview and send ONE personal email in English (US rules: business email, footer and STOP line). Do not write to Matsy "
+              "now - he sleeps; it goes in my diary and the playbook. Finish with done and what I found.")
 
 
 def _log(line):
@@ -131,6 +138,19 @@ def due(person, ctx, now=None):
     # 2026-11-02 (watch): 'a body out of balance' used to call him in at 02:32 and 03:41 France - he emailed the owner and
     # read his inbox while calling himself drained. At night resting IS the care: nothing calls him, not even his body.
     if 1 <= _fr.tm_hour < 7:
+        # 2026-11-05 (owner: "Hunt US businesses during your night: yes"): it is daytime in the US - a few hunting sessions there,
+        # on a small slice of the new day's budget so his own morning still has money to work with
+        try:
+            import kino_wallet as KWa
+            _al = KWa.allowance()
+            _n = [s for s in d.get("sessions") or [] if s.get("night") and now - float(s["t"]) < 8 * 3600]
+            if _al["day"] and _al["used"] < NIGHT_USD and len(_n) < NIGHT_SESSIONS and \
+                    (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 2400):
+                _mut(lambda dd: dd.__setitem__("next_task", {"do": NIGHT_HUNT, "project": "Kinoverse", "why": "my night hunt in the US",
+                                                             "night": True}))
+                return True
+        except Exception:
+            pass
         return False
     _wk = time.strftime("%G-%V", _fr) if _fr.tm_wday == 6 else time.strftime("%G-%V", time.gmtime(now + 3600 - 86400))
     if ((_fr.tm_wday == 6 and _fr.tm_hour >= 18) or (_fr.tm_wday == 0 and 7 <= _fr.tm_hour < 13)) and d.get("review_week") != _wk \
@@ -715,6 +735,8 @@ def session(W, person, uid, log=None, task=None, project=""):
         task = str((ch or {}).get("do") or "").strip() if isinstance(ch, dict) else ""
         rec = {"t": t0, "day": time.strftime("%Y-%m-%d", time.gmtime(t0)), "task": task[:300], "why": str((ch or {}).get("why") or "")[:300],
                "project": str((ch or {}).get("project") or "")[:80], "steps": [], "summary": ""}
+        if isinstance(ch, dict) and ch.get("night"):
+            rec["night"] = True
         if not task:
             rec["summary"] = "nothing called him"
             _mut(lambda d: d.setdefault("sessions", []).append(rec))
