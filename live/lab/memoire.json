@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-05T10:30:00Z",
+ "updated": "2026-11-05T15:00:50Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -41,7 +41,8 @@
     "2026-11-01: same bars (market closed): 42 d quarter 13-16 +44.55 hole 40.67 (pre/post 10-20 +13.1/+32.5 vs brakes). With nc3: 42 d +57.74 (h +15.0/+44.4), 69 d +108.90 vs +65.58 (h -13.9/+50.0) - 69 d first half still worse (critic doute x3). Reference account (unfiltered) since 10-26: 13-16 h 6 tr 5 won +3.69 per 0.01 - against (trop peu).",
     "2026-11-02: on the filter alone, quarter 13-16: 42 d +39.1 (h -3.0/+56.9) hole 47.5 vs 78.4; 69 d +42.7 (h -4.6/+41.0). Half 0.5 (with fh) 42 d -4.8 vs quarter +7.0: dose slope clean. Neighbour 12-16 quarter (with fh) +12.32 hole 33.6, better than 13-16: answers 'one hour off halves it' on this package. Real 283 tr: 13 h 11 tr 18% -55.62, 16 h 12 tr 25% -47.65, 12 h 13 tr 31% -25.36.",
     "2026-11-04 15:00 veille: 14:31 FLIP BUY W +6.07, 14:50 BOS BUY L -8.80 (net -2.73). Ref account BOS entered 12-17 h: 17 tr 7 W -50.07.",
-    "2026-11-05: real pile ny_open 44 tr 39% -116.01 PF 0.36 (h 32/45). Quarter stake carries P's gain both windows."
+    "2026-11-05: real pile ny_open 44 tr 39% -116.01 PF 0.36 (h 32/45). Quarter stake carries P's gain both windows.",
+    "2026-11-05 15:00 veille: FLIP SELL 14:45 nervous (1.557) W +3.61. Pile by hour: 13 h 25% -52.24 (12), 14 h 54% -12.53 (13, halves disagree), 15 h 62% +0.02 (8), 16 h 25% -47.65 (12). Leak sits at 13 and 16 h; 14-15 flat. All under 30 per hour: hint."
    ]
   },
   {
@@ -108,7 +109,8 @@
     "2026-10-31: flip_hot_size 0.5 on brakes 42 d +13.68 vs -1.07 (h -1.1/+16.0) hole 52.6 vs 70.2. With ch350 + 13-16 quarter (no floor): 42 d +45.97 hole 37.2 (h +4.7/+44.4 vs brakes), 69 d +94.53 hole 37.2 (h -28.7/+44.9 vs brakes). Proposed pb_w_ch350_fh05_ny1316q (stake rules instead of refusals).",
     "2026-11-02: on filter + quarter 13-16: flip_hot 0.5 adds +10.1 on 42 d (hole 47.5 -> 39.2, h2 -11.0 -> -0.3) and +8.2 on 69 d. Alone with fl05 (no hours) 42 d -24.2 vs F -42.1: helps, not enough.",
     "2026-11-02 13:00 veille: two day nervous FLIP-BOS lost (08:40 BUY pace 1.446 -4.50; 09:36 SELL pace 1.331 -1.45 at 0.02), as flip_day/flip_hot predict. FLIP-BOS 147 tr 45% -97.37 PF 0.67 (h 45/45); BOS 136 tr 50% -40.81 (h 58/43).",
-    "2026-11-02 18:40 veille: evening FLIP-BOS SELL pace 1.819 storm, stop 109, 4.6 min, L -2.29 at 0.02 (twin same -2.49). Journal ref account: FLIP nervous 28 tr 15 won -3.42 (flat, fits 'earn nothing'); FLIP calm 76 tr 33 won -51.79 (contradicts 'calm flips carry' on real trades). Recheck pooled at night."
+    "2026-11-02 18:40 veille: evening FLIP-BOS SELL pace 1.819 storm, stop 109, 4.6 min, L -2.29 at 0.02 (twin same -2.49). Journal ref account: FLIP nervous 28 tr 15 won -3.42 (flat, fits 'earn nothing'); FLIP calm 76 tr 33 won -51.79 (contradicts 'calm flips carry' on real trades). Recheck pooled at night.",
+    "2026-11-05 15:00 veille: day FLIP-BOS SELL pace 1.557 storm, stop 225, 6 min, W +3.61 at 0.02 - against, one trade."
    ],
    "next": "Battery + critic on pb_y_q1316_fh05."
   },
@@ -3817,6 +3819,15 @@
     "proof drag"
    ],
    "saw": "Leak sits in fast restarts: <15 min after a loss 50 tr 26% -62.6; after a win 44 tr 45% -25 (h2 worse); 15-30 after a win 11/14 won. Stake package now beats the filter on both halves of both windows; a pause after a win adds on top of it but hurts alone."
+  },
+  {
+   "t": "2026-11-05T15:00:50Z",
+   "looked": [
+    "wake_context (1 real close 14:51; 309 total; twin noday unchanged 24 tr -9.92; labo empty; no open ask)",
+    "bos_journal_u477508138 last row",
+    "scrutiny --pile ny_open, --pile flip_hot"
+   ],
+   "saw": "FLIP-BOS SELL 14:45 pace 1.557 storm=1, stop 225, h1 t=-1 i=0, day_n 0, ~24 h after the last close (a loss), W +3.61 at 0.02 in 6 min. Against flip_nervous and ny_open on its face, one trade. ny_open pile by hour: 13 h 12 tr 25% -52.24, 14 h 13 tr 54% -12.53 (halves disagree), 15 h 8 tr 62% +0.02, 16 h 12 tr 25% -47.65: the window's leak is at its edges (13, 16), consistent with 12-16/13-16 quarter-stake results. flip_hot pile < 15 min 43 tr 42% -31.60 (halves ok). No run, no pile, no proposal."
   }
  ],
  "lessons": [
