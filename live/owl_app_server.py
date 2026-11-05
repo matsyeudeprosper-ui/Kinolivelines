@@ -25127,6 +25127,9 @@ def _urge_tick():
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
                     _KHq = __import__("kino_hands")
                     _KHq.ON_REQUEST = _kino_req_card
+                    # 2026-11-05 (owner: "whenever he needs me he can contact me by email or a push notification"): his
+                    # work desk reaches the owner's phone; the work module falls back to an email
+                    __import__("kino_work").NOTIFY = lambda tx: queue_push("kino", "Kino", tx, urgent=True, tag="kino-needs")
                     for _rq in _KHq.requests("waiting"):           # made elsewhere (another process): posted by the app itself,
                         if not _rq.get("carded"):                  # never written into a chat from outside (it was overwritten)
                             _kino_req_card(_rq)

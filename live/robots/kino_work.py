@@ -20,6 +20,7 @@ Store robots/kino_work.json (git-ignored), log robots/kino_work.log; his diary: 
 import json, os, re, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+NOTIFY = None        # 2026-11-05: set by the app - a push notification to Matsy's trading app (fallback: an email)
 WORLD = r"C:\KinoWorld"
 STORE = os.path.join(HERE, "kino_work.json")
 LOG = os.path.join(HERE, "kino_work.log")
@@ -224,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -252,6 +253,13 @@ You can make things public on your own, under your own name, with nobody approvi
 - publish (path = a project folder in C:\\KinoWorld\\projects, repo, why = what it is) puts those files on your GitHub
   account kinoverse26-byte, public, at once.
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
+- manage: you own your channels (owner 05/11: "manage them freely - no limits but budgets"). "op": delete | edit | like |
+  unlike | repost | unrepost | follow | unfollow | mentions, "channel": x | bluesky | mastodon | blog, "url": the post (or the
+  person for follow), "text" for edit, "why" one line for your own record. Bluesky and X cannot edit a post: delete and post
+  the better one. Edit works on mastodon and blog. "mentions" on x = who talked to you there (reads cost ~0.005 $ each).
+  Each platform has rules on automation (no mass following, liking or reposting) - break them and the account is closed.
+- notify (text) reaches Matsy on his phone (a notification in his trading app; an email if that fails). Only when you truly
+  cannot go on without him: an ID, a phone number, a CAPTCHA, money in his name, an authorization only he can give.
 - xpost (text, 280 characters at most) posts on your X account, @kinoverse26 (labelled automated, run by Matsy). X charges
   per post: about 0.015 $ a post but about 0.20 $ when the post holds a link - so NO links in X posts (it is refused); your demo
   link lives in your bio and pinned post. To answer someone on X, xpost with "url" = their post. Matsy set a 10 $ a month cap.
@@ -477,6 +485,26 @@ def _act(j, person, W=None):
         if j.get("about"):
             return KP.mastodon_profile(W, j.get("title") or "Kino (AI)", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
         return KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "manage":                      # 2026-11-05: his channels, his to run
+        import kino_post as KP
+        return KP.manage(W, j.get("op"), j.get("channel"), j.get("url") or j.get("target") or j.get("who"), text=j.get("text"),
+                         why=j.get("why") or j.get("thought") or "", log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "notify":                      # 2026-11-05: Matsy, only when he truly cannot go on without him
+        tx = " ".join(str(j.get("text") or "").split())[:400]
+        if not tx:
+            return "a notification needs text"
+        try:
+            if NOTIFY:
+                NOTIFY(tx)
+                return "Matsy got a notification on his phone: %s" % tx
+        except Exception:
+            pass
+        try:
+            import kino_mail as KM
+            KM.send("matsyeudeprosper@gmail.com", "Kino needs you", tx)
+            return "the notification failed; Matsy got it by email: %s" % tx
+        except Exception as e:
+            return "could not reach Matsy (%s)" % str(e)[:120]
     if a == "xpost":                       # 2026-11-05: his X account (@kinoverse26, automated label)
         import kino_post as KP
         return KP.xpost(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))

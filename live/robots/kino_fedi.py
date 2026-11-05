@@ -218,6 +218,56 @@ def post(text, reply_to=None):
     return nid
 
 
+def _targets():
+    d = _load()
+    T = {f.get("shared") or f.get("inbox") for f in (d.get("followers") or {}).values()}
+    T.update(r for r, st in (d.get("relays") or {}).items() if st == "accepted")
+    return [t for t in T if t]
+
+
+def _find(nid):
+    nid = str(nid or "").strip().rstrip("/")
+    return next((n for n in _load()["notes"] if n["id"] == nid or n["id"].rsplit("/", 1)[-1] == nid.rsplit("/", 1)[-1]), None)
+
+
+def delete(nid):
+    """2026-11-05 (owner: "he owns his channels"): his note is taken back - gone from his home, and a Delete goes to everyone who got it"""
+    n = _find(nid)
+    if not n:
+        return False
+    with _LK:
+        d = _load()
+        d["notes"] = [x for x in d["notes"] if x["id"] != n["id"]]
+        _save(d)
+    act = {"@context": AS, "id": n["id"] + "#delete-%d" % int(time.time()), "type": "Delete", "actor": ACTOR, "to": [PUBLIC],
+           "object": {"id": n["id"], "type": "Tombstone"}}
+    for t in _targets():
+        threading.Thread(target=_deliver, args=(t, act), daemon=True).start()
+    return True
+
+
+def edit(nid, text):
+    """his note, rewritten in place (Mastodon shows it as edited)"""
+    n = _find(nid)
+    if not n:
+        return False
+    with _LK:
+        d = _load()
+        for x in d["notes"]:
+            if x["id"] == n["id"]:
+                x["text"] = str(text)
+                x["updated"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                n = dict(x)
+        _save(d)
+    obj = _note(n)
+    obj["updated"] = n["updated"]
+    act = {"@context": AS, "id": n["id"] + "#update-%d" % int(time.time()), "type": "Update", "actor": ACTOR,
+           "to": obj["to"], "cc": obj["cc"], "object": obj}
+    for t in _targets():
+        threading.Thread(target=_deliver, args=(t, act), daemon=True).start()
+    return True
+
+
 def join_relays():
     """asks each relay once (Mastodon's way: Follow the Public collection); their Accept arrives in the inbox"""
     with _LK:

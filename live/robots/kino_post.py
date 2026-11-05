@@ -19,7 +19,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10, "shop": 5, "contribute": 3, "site_text": 8, "x": 8}   # per UTC day
+# 2026-11-05 (owner: "no limits but budgets"): the daily counts are gone (his money budget and his own reread pace him; the
+# platforms' own rate limits stay theirs). Kept only as a runaway guard.
+BUDGET = {"blog": 200, "github": 200, "site": 200, "bluesky": 200, "mastodon": 200, "shop": 200, "contribute": 200, "site_text": 200, "x": 200}   # per UTC day
 BSKY = "https://bsky.social/xrpc/"
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it
@@ -494,3 +496,143 @@ def mastodon_profile(W, name, about, log=None):
 
 def recent(n=12):
     return list(reversed(_load()["posts"][-n:]))
+
+
+# ------------------------------------------------------------------ 2026-11-05 (owner: "give him all abilities to manage freely the
+# channels, he owns them - no limits but budgets"): taking back, editing, liking, reposting, following - his own accounts
+def _blog_path(url):
+    m = re.search(r"/(\d{4})/(\d{2})/(\d{2})/([^/?#]+?)(?:\.html)?/?$", str(url or ""))
+    return "_posts/%s-%s-%s-%s.md" % m.groups() if m else None
+
+
+def _bsky_rkey(url):
+    m = re.search(r"/post/([^/?#]+)", str(url or "")) or re.search(r"app\.bsky\.feed\.post/([^/?#]+)", str(url or ""))
+    return m.group(1) if m else None
+
+
+def manage(W, op, channel, target, text=None, why="", log=None):
+    """op: delete | edit | like | unlike | repost | unrepost | follow | unfollow | mentions -> a sentence for him"""
+    op, channel = str(op or "").lower().strip(), str(channel or "").lower().strip()
+    if is_off():
+        return "the owner has switched your posting off for now"
+    res = None
+    try:
+        if op == "edit":
+            if channel not in ("mastodon", "blog"):
+                return "%s does not allow editing a post - delete it and post the better version instead" % channel
+            text = str(text or "").strip()
+            if not text:
+                return "an edit needs the new text"
+            if channel == "mastodon":
+                text, held = _reread(W, "mastodon", text, 1000, log)
+                if held:
+                    return held
+            ok, cw = check(W, text, log)
+            if not ok:
+                return "not edited - the check said: %s" % cw
+            if channel == "mastodon":
+                import kino_fedi as KF
+                res = "edited" if KF.edit(target, text) else "no note of yours at that address"
+            else:
+                import base64, kino_github as KG
+                path = _blog_path(target)
+                if not path:
+                    return "give the blog post's address"
+                st, d = KG._call("GET", "/repos/%s/%s/contents/%s" % (KG.ACCOUNT, BLOG, path))
+                if st != 200:
+                    return "no blog post at that address"
+                old = base64.b64decode(d["content"]).decode("utf-8", "replace")
+                fm = re.match(r"(?s)^(---.*?---\n)", old)
+                _put(BLOG, path, (fm.group(1) if fm else "---\nlayout: post\n---\n") + "\n" + text +
+                     "\n\n*Written by Kino, an AI. No human edited this post.*\n", "Kino edits: " + path[:60])
+                res = "edited (it can take a minute or two to show)"
+        elif op == "delete":
+            if channel == "bluesky":
+                tok, did, _h = _bsky_session()
+                rk = _bsky_rkey(target)
+                if not rk:
+                    return "give the Bluesky post's link"
+                _bsky("com.atproto.repo.deleteRecord", {"repo": did, "collection": "app.bsky.feed.post", "rkey": rk}, tok)
+                res = "deleted"
+            elif channel == "x":
+                import kino_x as KX
+                r = KX.delete(target)
+                res = "deleted" if r.get("ok") else "X refused: %s" % r.get("err")
+            elif channel == "mastodon":
+                import kino_fedi as KF
+                res = "deleted" if KF.delete(target) else "no note of yours at that address"
+            elif channel == "blog":
+                import kino_github as KG
+                path = _blog_path(target)
+                st, d = KG._call("GET", "/repos/%s/%s/contents/%s" % (KG.ACCOUNT, BLOG, path or "x"))
+                if not path or st != 200:
+                    return "no blog post at that address"
+                st, d = KG._call("DELETE", "/repos/%s/%s/contents/%s" % (KG.ACCOUNT, BLOG, path),
+                                 {"message": "Kino takes back: " + path[:60], "sha": d["sha"]})
+                res = "deleted" if st in (200, 204) else "GitHub refused (%s)" % st
+            else:
+                return "delete on %s is not possible from here" % channel
+        elif op in ("like", "unlike", "repost", "unrepost", "follow", "unfollow"):
+            undo = op.startswith("un")
+            base = op[2:] if undo else op
+            if channel == "x":
+                import kino_x as KX
+                r = getattr(KX, base)(target, undo=undo)
+                res = "done" if r.get("ok") else "X refused: %s%s" % (
+                    r.get("err"), " (this needs Matsy to authorize your X account again - tell him)" if "403" in str(r.get("err")) else "")
+            elif channel == "bluesky":
+                tok, did, _h = _bsky_session()
+                now_s = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
+                if base == "follow":
+                    who = str(target or "").strip().lstrip("@").split("/profile/")[-1].split("/")[0]
+                    pr = _bsky("app.bsky.actor.getProfile?actor=" + who, None, tok)
+                    if undo:
+                        fu = (pr.get("viewer") or {}).get("following")
+                        if not fu:
+                            return "you do not follow them"
+                        _bsky("com.atproto.repo.deleteRecord", {"repo": did, "collection": "app.bsky.graph.follow",
+                                                                "rkey": fu.rsplit("/", 1)[-1]}, tok)
+                    else:
+                        _bsky("com.atproto.repo.createRecord", {"repo": did, "collection": "app.bsky.graph.follow",
+                                                                "record": {"$type": "app.bsky.graph.follow", "subject": pr["did"],
+                                                                           "createdAt": now_s}}, tok)
+                    res = "done"
+                else:
+                    ref, _who = _bsky_ref(target, tok)
+                    col = "app.bsky.feed." + base
+                    if undo:
+                        th = _bsky("app.bsky.feed.getPostThread?depth=0&uri=" + ref["parent"]["uri"], None, tok)["thread"]["post"]
+                        mine = (th.get("viewer") or {}).get(base)
+                        if not mine:
+                            return "nothing to undo"
+                        _bsky("com.atproto.repo.deleteRecord", {"repo": did, "collection": col, "rkey": mine.rsplit("/", 1)[-1]}, tok)
+                    else:
+                        _bsky("com.atproto.repo.createRecord", {"repo": did, "collection": col,
+                                                                "record": {"$type": col, "subject": ref["parent"], "createdAt": now_s}}, tok)
+                    res = "done"
+            else:
+                return "%s on %s is not possible from here" % (op, channel)
+        elif op == "mentions":
+            if channel != "x":
+                return "your Bluesky and Mastodon conversations come to you by themselves (they call you to your computer)"
+            import kino_x as KX
+            r = KX.mentions(10)
+            if not r.get("ok"):
+                return "X refused: %s" % r.get("err")
+            return "who talked to you on X lately: " + (" | ".join("@%s (%s): %s - %s" % (m["by"], m["at"], m["text"][:200], m["url"])
+                                                                  for m in r["items"]) or "nobody yet")
+        else:
+            return "unknown op - use delete, edit, like, unlike, repost, unrepost, follow, unfollow or mentions"
+    except Exception as e:
+        res = "failed: %s" % str(e)[:200]
+    ok = res in ("deleted", "done") or str(res).startswith("edited")
+    d = _load()
+    d.setdefault("manage", []).append({"t": time.time(), "op": op, "channel": channel, "target": str(target)[:200], "ok": ok,
+                                       "res": str(res)[:200], "why": str(why)[:200]})
+    d["manage"] = d["manage"][-300:]
+    if op == "delete" and ok:
+        for p in d.get("posts") or []:
+            if p.get("url") and str(target).rstrip("/").endswith(str(p["url"]).rstrip("/").rsplit("/", 1)[-1]):
+                p["ok"], p["deleted"] = False, time.time()
+    _save(d)
+    return "%s %s on %s: %s" % (op, str(target)[:80], channel, res)

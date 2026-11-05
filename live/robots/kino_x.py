@@ -19,7 +19,9 @@ TOKEN = os.path.join(SECRET, "x_token.json")
 PKCE = os.path.join(SECRET, "x_pkce.json")
 LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_x.log")
 REDIRECT = "https://owltrader.duckdns.org/x/callback"
-SCOPES = "tweet.read tweet.write users.read offline.access"
+SCOPES = "tweet.read tweet.write users.read offline.access like.read like.write follows.read follows.write"
+# 2026-11-05 (owner: "all abilities to manage freely the channels, he owns them"): likes and follows added - an account
+# authorized before that keeps posting; the new abilities need one more "Authorize" by the owner (auth_url)
 API = "https://api.x.com/2/"
 _LK = threading.Lock()
 
@@ -155,3 +157,78 @@ def post(text, reply_to=None, link_ok=False):
     h = _j(TOKEN).get("handle") or "i"
     _log("POSTED %s %s" % (pid, text[:120]))
     return {"ok": True, "id": pid, "url": "https://x.com/%s/status/%s" % (h, pid)}
+
+
+# ------------------------------------------------------------------ 2026-11-05: the rest of managing his own account
+def _id(x):
+    m = re.search(r"/status/(\d+)", str(x or "")) or re.match(r"^\s*(\d+)\s*$", str(x or ""))
+    return m.group(1) if m else None
+
+
+def _call(method, path, body=None):
+    req = urllib.request.Request(API + path, data=json.dumps(body).encode() if body is not None else None, method=method)
+    req.add_header("Authorization", "Bearer " + _access())
+    if body is not None:
+        req.add_header("Content-Type", "application/json")
+    try:
+        return True, json.load(urllib.request.urlopen(req, timeout=20))
+    except urllib.error.HTTPError as e:
+        return False, "%s %s" % (e.code, e.read()[:200].decode("utf-8", "replace"))
+    except Exception as e:
+        return False, repr(e)[:200]
+
+
+def _me():
+    d = _j(TOKEN)
+    return d.get("user_id")
+
+
+def scopes():
+    return str(_j(TOKEN).get("scope") or "")
+
+
+def delete(post):
+    i = _id(post)
+    if not i:
+        return {"ok": False, "err": "not a post of yours (give its x.com link or id)"}
+    ok, r = _call("DELETE", "tweets/" + i)
+    _log("DELETE %s -> %s" % (i, "ok" if ok else r))
+    return {"ok": ok} if ok else {"ok": False, "err": r}
+
+
+def like(post, undo=False):
+    i = _id(post)
+    if not i:
+        return {"ok": False, "err": "give the post's x.com link or id"}
+    ok, r = _call("DELETE", "users/%s/likes/%s" % (_me(), i)) if undo else _call("POST", "users/%s/likes" % _me(), {"tweet_id": i})
+    return {"ok": ok} if ok else {"ok": False, "err": r}
+
+
+def repost(post, undo=False):
+    i = _id(post)
+    if not i:
+        return {"ok": False, "err": "give the post's x.com link or id"}
+    ok, r = _call("DELETE", "users/%s/retweets/%s" % (_me(), i)) if undo else _call("POST", "users/%s/retweets" % _me(), {"tweet_id": i})
+    return {"ok": ok} if ok else {"ok": False, "err": r}
+
+
+def follow(handle, undo=False):
+    h = str(handle or "").strip().lstrip("@").split("/")[-1]
+    ok, r = _call("GET", "users/by/username/" + urllib.parse.quote(h))
+    if not ok:
+        return {"ok": False, "err": r}
+    uid = (r.get("data") or {}).get("id")
+    ok, r = _call("DELETE", "users/%s/following/%s" % (_me(), uid)) if undo else _call("POST", "users/%s/following" % _me(), {"target_user_id": uid})
+    return {"ok": ok} if ok else {"ok": False, "err": r}
+
+
+def mentions(n=10):
+    """who talked to him on X lately (paid reads: ~0.005 $ each)"""
+    ok, r = _call("GET", "users/%s/mentions?max_results=%d&tweet.fields=created_at,author_id&expansions=author_id&user.fields=username" % (
+        _me(), max(5, min(int(n), 20))))
+    if not ok:
+        return {"ok": False, "err": r}
+    U = {u["id"]: u.get("username") for u in (r.get("includes") or {}).get("users") or []}
+    return {"ok": True, "items": [{"id": t["id"], "by": U.get(t.get("author_id")), "text": t.get("text"), "at": t.get("created_at"),
+                                   "url": "https://x.com/%s/status/%s" % (U.get(t.get("author_id")) or "i", t["id"])}
+                                  for t in r.get("data") or []]}
