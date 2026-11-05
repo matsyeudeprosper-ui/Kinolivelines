@@ -315,8 +315,35 @@ def partial_say(buf, key="say"):
     return "".join(out)
 
 
+_FOCUS = {"n": 0, "t": 0.0}
+_FLK = threading.Lock()
+
+
+def focus(on):
+    """2026-11-05 (owner: "the 102 s check - do 3 now"): at 15:34-15:37 a buy waited 47 s for its first word and 28 s for its
+    safety check, because mood, beliefs and memory jobs had just started cold processes beside it. While a trading turn or an
+    order is being worked (focus(True) ... focus(False)), calls from OTHER threads that are not a member's turn wait their turn
+    (up to 60 s) - a person does not daydream at the moment of the click."""
+    with _FLK:
+        _FOCUS["n"] = max(0, _FOCUS["n"] + (1 if on else -1))
+        _FOCUS["t"] = time.time()
+    _TL.prio = bool(on)
+
+
+def _wait_focus():
+    if getattr(_TL, "prio", False) or getattr(_TL, "member", False):
+        return
+    t0 = time.time()
+    while _FOCUS["n"] > 0 and time.time() - t0 < 60:
+        if time.time() - _FOCUS["t"] > 240:       # a focus never released (an exception path): it does not hold forever
+            _FOCUS["n"] = 0
+            break
+        time.sleep(0.5)
+
+
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
+    _wait_focus()
     if getattr(_TL, "brain", None) == "openai" and time.time() > _OA_DOWN["until"]:   # 2026-10-24 (Kino-O): through OpenAI
         try:
             import robot_openai as _RO

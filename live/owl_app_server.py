@@ -20328,11 +20328,19 @@ def _order_direct(cid, user, v, en, c, words=""):
         json.dump({"t": time.time(), "cid": cid, "order": str(v)[:120]}, open(_fl, "w", encoding="utf-8"))
     except Exception:
         pass
+    try:                                               # 2026-11-05: the order and its safety check go first (robot_warm.focus)
+        _rc().W.focus(True)
+    except Exception:
+        pass
     try:
         return _order_direct_inner(cid, user, v, en, c, words)
     finally:
         try:
             os.remove(_fl)
+        except Exception:
+            pass
+        try:
+            _rc().W.focus(False)
         except Exception:
             pass
 
@@ -20657,12 +20665,19 @@ def _auto_watch_loop():
     """while Kino may trade alone: every closed chart candle wakes him to look (he answers nothing unless he acts)"""
     last = {}
     time.sleep(60)
+    _pinned = [0.0]
     while True:
         time.sleep(5)
         try:
             m = _jload(os.path.join(DIR, "robots", "chart_chat.json"), {}) or {}
             if not m:
                 continue
+            if time.time() - _pinned[0] > 600:           # 2026-11-05: the pre-order safety check kept warm (it started cold: 28 s)
+                _pinned[0] = time.time()
+                try:
+                    _rc().W.pin(__import__("kino_conflict").SYSTEM, "haiku")
+                except Exception:
+                    pass
             for uid, cid in list(m.items()):          # 2026-10-26: Kino's evening look at the robot he runs for them
                 try:
                     rc = _desk_robot_cfg(uid)
@@ -21930,7 +21945,16 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         except Exception:
             pass
         if c.get("brain") == "one" or (_person(c.get("uid")) != c.get("uid") or _person_uids(c.get("uid"))[1:]) and _person_main(c.get("uid")):
-            _one_turn(cid, user, c, event, notify, important)       # 2026-10-25 one mind; 2026-10-27 always for a linked person
+            # 2026-11-05 (102 s before a buy): a trading turn - the candle watch, a live trade event, or the member talking while
+            # Kino trades for them - goes first; background mood / belief / memory calls wait for it (robot_warm.focus)
+            _foc = str(event or "").startswith((AUTO_EV, "LIVE TRADE")) or (not event and _auto_on(c))
+            if _foc:
+                _rc().W.focus(True)
+            try:
+                _one_turn(cid, user, c, event, notify, important)   # 2026-10-25 one mind; 2026-10-27 always for a linked person
+            finally:
+                if _foc:
+                    _rc().W.focus(False)
             return
         en = c.get("lang") == "en"
         c["decisions_v"] = _decisions_for(user, c)
