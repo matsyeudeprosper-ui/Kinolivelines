@@ -971,6 +971,68 @@
     "mechanism: the 13-17 quarter has a plausible one (US-open whipsaw); 'three more trades the same way' has none of its own, and the registry measured the opposite",
     "overlap: = pb_y_q1316_fh05 (doute today) plus cont23; a twin would duel the same trades as the parent's, plus six - the parent can carry its own twin"
    ]
+  },
+  {
+   "id": "debtnerv",
+   "date": "2026-11-05",
+   "verdict": "bloque",
+   "fr": "Mêmes réglages que le jumeau qui a perdu son duel le 24/10. Depuis, 4 vrais trades de plus seulement, pas les 30 demandés. Ce soir le gain (+23 $) vaut un seul gros trade, presque tout dans la première moitié. En seconde moitié, il prend les mêmes trades que « rien quand le marché est nerveux ». Pour changer d'avis : 30 nouveaux vrais trades où il bat les règles.",
+   "en": "Same settings as the twin that lost its duel on 10-24. Since then only 4 more real trades, not the 30 asked for. Tonight's gain (+$23) is about one big trade, nearly all in the first half. In the second half it takes the same trades as 'nothing when the market is nervous'. To change my mind: 30 new real trades where it beats the rules in place.",
+   "checks": [
+    "data moves between runs: harness deployed -153.39 / -169.02 (280-281 trades), idea -37.55 / -43.57 (162-163 trades, 230 refused), hole 219.74 -> 111.60, top verdict each time; battery context +22.72, hole 107.86 -> 107.08 (almost no cut)",
+    "dose: on/off switch, no dial. Neighbour = plain nervous gate (--nerv-gate) -68.65 vs idea -43.57 on the same base -169.02, hole 111.60 both - same sign, so the nervous filter is not noise, but the 'in the red' part adds only ~$25, all of it in h1",
+    "halves: harness h1 -37.87 -> 16.38 (+54), h2 -121.78 -> -60.12 (+62); battery h1 -29.52 -> 23.13 (+53), h2 -61.85 -> -60.07 (+1.8) - the battery gain is carried by h1 alone, as on 10-19 and 10-26",
+    "shapes: byref base and capped (valere) rows identical (+22.72 / -0.78) - still no independent capped result",
+    "long window: 69 d +17.64 (a little better), but h1 -77.01 / h2 +93.51 - halves of opposite sign; +68 on 10-26, -57 on 10-19: the sign flips between nights",
+    "real trades: +120.38, hole 94.57 smaller on 123 real trades (64 refused) - still the strongest point, but there were 119 at the 10-26 critique: only 4 new real trades",
+    "concentration: battery +22.72 vs single trades in the base ledger up to -18.84 / +16.21 - the 42-day gain is about one trade; the harness gain is spread (~$115 over ~118 fewer trades)",
+    "past: twin with identical cfg started 10-20, stopped 10-24 duel_lost (-53 vs -34, hole 53 vs 39); critiques 10-19 doute, 10-26 bloque (asked for 30 new real trades). Nightly verdicts since: B,B,B,C,A,A,A,B,B,A; net negative every night except 11-01 (+38.85)",
+    "mechanism: 'nervous market = breakouts fail more' has backing (registry nerv: 37% wins above normal pace vs 64% below); why being in the red should matter is still not shown - the robot is in the red most of the window, so the extra condition rarely bites",
+    "overlap: h2 identical to the plain nervous gate in both harness runs (-60.12, 79 trades, 130 refused, hole 87.46) - it is 'nerv' (registry: deployed) wearing new clothes",
+    "real gap: --drag auto came back uncharged (cfg drag None, no measured gap on 30 trades yet); --drag 1 idea -318.73 / -325.75 (153-154 trades, verdict C) vs an UNCHARGED deployed -153.39 - the harness charges the variant only, so this C is unfair; the idea trades ~45% less, so a dollar a trade would not kill it",
+    "runs: 6 (debt-nerv-gate x1, nerv-gate, debt-nerv-gate drag auto, debt-nerv-gate drag 1 x2; three ran in parallel, base drifted -153 -> -169 between runs)"
+   ]
+  },
+  {
+   "id": "nervgate",
+   "date": "2026-11-05",
+   "verdict": "bloque",
+   "fr": "Ces réglages ont déjà eu leur jumeau : il a perdu son duel le 25/10. Depuis, 4 vrais trades de plus seulement. Ce soir le gain sur 42 jours (+5 $) vaut moins qu'un seul trade ; sur 69 jours, pareil (−1 $). Le plus gros trou baisse partout ; sur les vrais trades, +110 $. Pour changer d'avis : 30 nouveaux vrais trades où il bat les règles.",
+   "en": "These settings already had their twin: it lost its duel on 10-25. Since then, only 4 more real trades. Tonight's 42-day gain (+$5) is less than one trade; over 69 days, the same (−$1). The biggest hole does shrink everywhere, and on the real trades it earns $110 more. To change my mind: 30 new real trades where it beats the rules in place.",
+   "checks": [
+    "levels: harness ~10:15 deployed -153.39 / hole 219.74 / 281 trades vs idea -62.64 / hole 111.60 / 155 trades (245 refused), +90.75, A; battery context only +5.09, hole 107.86 -> 87.82 - the battery's official comparison gives almost no money",
+    "dose: on/off switch, no dial. Softer neighbours on the same base: size_hot 0.5 -118.98 (+34.4, hole 193.29, A), size_hot 0.25 -126.35 (+27.0, hole 177.86, B), debt_nerv_gate -37.55 (+115.8, hole 111.60, A). No sign flip tonight (on 10-22 size_hot 0.5 lost -6.1: the half stake flips between nights), but 0.25 earns less than 0.5 - no clean slope toward refusing",
+    "halves: harness h1 -37.87 -> -8.70 (+29.2), h2 -121.78 -> -60.12 (+61.7) - both; battery h1 -29.52 -> -1.96 (+27.6), h2 -61.85 -> -60.07 (+1.8) - the battery gain is the first half only",
+    "shapes: byref base and capped (valere) rows identical (+5.09 / -20.04) - still no independent capped result",
+    "long window: 69 d -1.18 net, hole 108.14 smaller, verdict C (h1 -77.75 / h2 +86.94, halves of opposite sign). Better than -66.69 on 10-22, but no money gain",
+    "real trades: +110.37, hole 103.94 smaller on 123 real trades (71 refused). 10-22: +72.97 on 98; 10-26 (debtnerv critique): 119 real trades - only 4 real trades since the duel",
+    "concentration: battery +5.09 < one single trade in the base ledger (-18.84, +16.21, +15.63); harness gain spread over 126 fewer trades, the -33.08 trade is kept on both sides",
+    "past: twin with identical cfg started 2026-10-22 09:48, reached 30 trades 10-25, stopped 10-25 duel_lost; my 10-22 critique 'doute' (69 d loss, one chain); debtnerv (same family, also lost its duel) bloque 10-26 and 11-05 on the same ground. Nightly verdicts B,A,C,A,C,C,A,A,A,A,C,A - net about -60 every night except 11-01 (+20.9)",
+    "mechanism: 'nervous market = breakouts fail more' has backing (registry nerv: 37% wins just above normal pace vs 64% below) - a real cause for a smaller hole, nothing shown for more money",
+    "overlap: registry 'nerv' (refuse when nervous) is listed deployed B, yet the harness base runs with it off - it is that idea again; debtnerv shares its second-half trades exactly (h2 -60.12, 79 trades, in both runs)",
+    "real gap: --drag auto uncharged (cfg drag None, no measured gap on 30 trades yet), same +90.75; --drag 1 idea -318.73 / 153 trades vs an UNCHARGED deployed -153.39 -> printed C, uneven duel; it trades ~45% less, so a fair dollar a trade would favour it",
+    "runs: 6 (nerv-gate, nerv-gate drag 1, nerv-gate drag auto, debt-nerv-gate, size-hot 0.5, size-hot 0.25)"
+   ]
+  },
+  {
+   "id": "ext700",
+   "date": "2026-11-05",
+   "verdict": "bloque",
+   "fr": "Ce soir il gagne 5 $ en 42 jours, moins qu'un seul trade perdant évité. Il était à non dix nuits sur douze. Sur 69 jours il perd 2 $. À 600, 700 et 800 points, la première moitié perd toujours. Son jumeau a déjà perdu son duel le 24 octobre. Pour changer d'avis : un gain sur les deux moitiés et sur 69 jours, plusieurs nuits de suite.",
+   "en": "Tonight it gains $5 in 42 days, less than one losing trade avoided. It was a no ten nights out of twelve. Over 69 days it loses $2. At 600, 700 and 800 points the first half always loses: everything comes from the second. Its twin already lost its duel on 24 October. To change my mind: a gain on both halves and over 69 days, several nights running.",
+   "checks": [
+    "dose: harness (deployed rules) ext600 +18.12 (worst -13.41, verdict B), ext700 +8.99 (worst +6.70, verdict C), ext800 +34.95 (worst -19.25, B) - no sign flip overall, but not on a slope (800 blocks 5 trades and gains most -> lumpy)",
+    "halves: first half negative at every dose (600 -3.52, 700 -5.27, 800 -5.27); second half carries it all (+21.63 / +14.26 / +40.21). Battery: h1 +0.41, h2 +0.89 vs base - tiny both",
+    "shapes: battery both references identical +4.90 / worst -4.90 (no shape-dependence, but also no margin)",
+    "long window: 69 days -1.74 net, worst +6.70 deeper, h1 -5.85 / h2 +8.99 - a small loss = doubt",
+    "real trades: +5.37 on 96 real trades (26 blocked) - small positive, same size as the noise",
+    "concentration: harness gain ~ one skipped -15.70 trade (last one, 2026-11-05) offset by a cut +7.96 win in h1; battery +4.90 < one typical loss (median big loss ~6-12). One-or-two-trade gain",
+    "past: twin with exactly these settings ran 2026-10-17, reached 30 trades 10-22, stopped 10-24 duel_lost. History 10 C, 1 =, 1 A (tonight, previous C). ext300 rejected (-26); ext500 sibling is candidate B",
+    "mechanism: plausible (do not chase a move already 700 points tall in an hour, it is often spent) - but the first half says the robot was right to enter there",
+    "overlap: same filter as ext500/ext300 at another threshold, and already folded into many archived combos (ext700_k3, nosun_ext700, rr09_ext700...) - not new",
+    "drag: --drag auto unchanged (+8.99, C); --drag 1 output not comparable (variant charged vs uncharged base, -456). It trades fewer, so a per-trade charge cannot be its weakness",
+    "runs: 5 (ext 700, ext 600, ext 800, ext 700 drag auto, ext 700 drag 1)"
+   ]
   }
  ]
 }

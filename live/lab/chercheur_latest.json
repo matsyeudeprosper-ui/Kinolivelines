@@ -1,84 +1,84 @@
 {
- "date": "2026-11-02",
- "fr": "# Note du chercheur — 2026-11-02\n\n**Ce soir : garder tous les trades du filtre mais miser moins aux heures et moments risqués gagne autant que les freins, sans trader moins.**\n\n**Les verdicts.** 9 mieux sur les deux moitiés, 16 un peu mieux, 11 non. Mais le robot sans filtre touche sa limite de perte le 23 octobre et ne trade plus ensuite : ces lettres disent peu. Mes quatre idées d'hier sortent toutes mieux sur les deux moitiés face à lui. Le critique doute de deux d'entre elles et en bloque une (deux trades de plus dans le même sens) : le gain vient surtout de trader quatre fois moins, et avec 1 $ de frais par trade le robot perd. Il a raison, et c'est ce qui m'a guidé ce soir.\n\n**Ce que je crois.**\n1. Miser moins vaut mieux que refuser (renforcé) : même nombre de trades, trou deux fois plus petit.\n2. 13 h à 17 h UTC est la zone qui coûte (renforcé) : sur les vrais trades, 13 h et 16 h perdent 103 $ en 23 trades.\n3. Le changement de sens en marché nerveux mérite une demi-mise (renforcé).\n4. Les stops larges portent l'argent (renforcé), voir plus bas.\n5. Ne pas courir après un marché parti (renforcé, mais perd encore après le 20 octobre).\n6. Trois trades de plus dans le même sens (affaibli) : passager seulement.\n\n**Ce que les trades apprennent.** 283 vrais trades, 47 % gagnés, -148 $. Le seul groupe de stops qui gagne : 250 à 400 points, 54 trades, 61 % gagnés, +32 $, les deux moitiés d'accord. Ceux de 150 à 250 perdent 95 $ en 80 trades. Les trades de nuit (1 h - 2 h) gagnent 52 $ ; ceux tenus moins de 15 minutes perdent 65 $. Refuser les stops serrés derrière les freins laisse 16 à 18 trades : trop peu de trades pour conclure.\nPas de nouvelle pile : la largeur du stop n'est pas un fait de pile (je le demande), et midi-17 h recouvre la pile « ouverture de New York ».\n\n**Ce que je propose.** Cinq paquets qui gardent tous les trades du filtre en place (20 essais ce soir, face au filtre seul) :\n- un quart de 13 h à 17 h + moitié sur un changement de sens nerveux (sortie du cadre) : +49 $ sur 42 jours, +51 $ sur 69, trou 39 au lieu de 78. Première moitié un peu plus faible (-2 et -7 $). À 1 $ de frais : -71 au lieu de -145.\n- le même avec jusqu'à trois trades de plus : +60 $, mieux sur les deux moitiés (42 jours seulement).\n- le même de midi à 17 h : +54 $, trou 34.\n- moitié sur un changement de sens après une perte : +43 / +47 $.\n- le quart de 13 h à 17 h seul : +39 / +43 $.\nTout perd encore après le 20 octobre : moins, mais perd.\n\n**Ce que je demande.** Pouvoir faire une pile selon la largeur du stop, et toujours une mise réduite (pas un refus) sur les stops serrés.",
- "en": "# Researcher's note — 2026-11-02\n\n**Tonight: keeping every trade of the filter but betting less at risky hours and moments gains as much as the brakes, without trading less.**\n\n**The verdicts.** 9 better on both halves, 16 a little better, 11 no. But the unfiltered robot hits its loss limit on 23 October and stops trading: those letters say little. My four ideas from yesterday all come out better on both halves against it. The critic doubts two and blocks one (two more trades the same way): the gain comes mostly from trading four times less, and with $1 of cost per trade the robot loses. It is right, and that guided tonight.\n\n**What I believe.**\n1. Betting less beats refusing (strengthened): same number of trades, hole half as deep.\n2. 13:00-17:00 UTC is the costly zone (strengthened): on the real trades, 13:00 and 16:00 lose $103 in 23 trades.\n3. A change of direction in a nervous market deserves half a stake (strengthened).\n4. Wide stops carry the money (strengthened), see below.\n5. Do not chase a market that already ran (strengthened, but still loses after 20 October).\n6. Three more trades the same way (weakened): passenger only.\n\n**What the trades teach.** 283 real trades, 47 % won, -$148. The only stop group that wins: 250 to 400 points, 54 trades, 61 % won, +$32, both halves agree. Those of 150 to 250 lose $95 in 80 trades. Night trades (01:00-02:00) win $52; those held under 15 minutes lose $65. Refusing tight stops behind the brakes leaves 16 to 18 trades: too few trades to conclude.\nNo new pile: the stop width is not a pile fact (I am asking for it), and noon-17:00 overlaps the \"New York open\" pile.\n\n**What I propose.** Five packages that keep every trade of the filter in place (20 tests tonight, against the filter alone):\n- a quarter 13:00-17:00 + half on a nervous change of direction (out of the box): +$49 over 42 days, +$51 over 69, hole 39 instead of 78. First half a little weaker (-$2 and -$7). At $1 of cost: -71 instead of -145.\n- the same with up to three more trades: +$60, better on both halves (42 days only).\n- the same from noon to 17:00: +$54, hole 34.\n- half on a change of direction after a loss: +$43 / +$47.\n- the quarter 13:00-17:00 alone: +$39 / +$43.\nEverything still loses after 20 October: less, but loses.\n\n**What I ask for.** A pile by stop width, and still a reduced stake (not a refusal) on tight stops.",
+ "date": "2026-11-05",
+ "fr": "# Note du chercheur — 2026-11-05\n\n**Ce soir : une petite pause après un gain, ajoutée aux mises réduites, rapporte sur 42 et 69 jours sans creuser le trou.**\n\n**Les verdicts.** 5 mieux sur les deux moitiés, 15 un peu mieux, 12 non. Le robot sans filtre touche encore sa limite de perte le 23 octobre et ne trade plus : ces lettres disent peu. Le critique bloque trois idées (rien en marché nerveux, rien quand on est après une perte et que le marché s'agite, ne pas courir après 700 points) : leurs jumeaux avaient déjà perdu et il manque 30 nouveaux vrais trades. Il a raison.\n\n**Ce que je crois.**\n1. Miser moins vaut mieux que refuser (renforcé). Avec les données fraîches, les mises réduites (un quart de 13 h à 17 h, moitié sur un changement de sens nerveux) battent le filtre seul de 59 $ sur 42 jours et de 65 $ sur 69. Le trou passe de 87 à 41. La première moitié est meilleure aussi (+9 $ et +1 $), et c'est ma réponse au critique. Avec les frais réels (0,51 $ par trade) : +67 $.\n2. L'ouverture de New York coûte (renforcé) : 44 vrais trades, 39 % gagnés, -116 $.\n3. Une petite pause après un gain aide (relancé, voir plus bas).\n4. Les stops de 250 à 400 points portent l'argent (renforcé) : 60 trades, +36 $. De 150 à 250 : -97 $.\n5. Ne pas courir après un marché parti (inchangé).\n\n**Ce que les trades apprennent.** 308 vrais trades, 47 % gagnés, -155 $. Repartir moins de 15 minutes après une perte : 50 trades, 26 % gagnés, -63 $. Après un gain : 44 trades, 45 % gagnés, -25 $, et la deuxième moitié est pire. Repartir 15 à 30 minutes après un gain : 11 sur 14 gagnés (trop peu de trades). J'ai ouvert la pile « repris moins de 15 minutes après un gain » pour compter.\n\n**Ce que je propose.** 17 essais ce soir, tous face au filtre seul :\n- attendre 10 minutes après un gain : +3 $ sur 42 jours, +21 $ sur 69, mieux sur les deux moitiés, trou plus petit, +7 $ avec les frais ;\n- attendre 20 minutes : +16 $ et +17 $, même trou ; 30 minutes retombe à +7 $ ;\n- attendre 15 minutes, le réglage du milieu ;\n- attendre 15 minutes après chaque trade ;\n- hors du cadre : après la pause, permettre trois trades de plus dans le même sens (pas encore testé).\nPrudence : sans les mises réduites, la même pause coûte 18 $. Elle ne marche qu'en leur compagnie.\n\n**Ce que je demande.** Rien de nouveau. 23 demandes attendent et rien n'a été construit depuis le 26 octobre. La plus utile : une mise réduite sur les stops serrés.",
+ "en": "# Researcher's note — 2026-11-05\n\n**Tonight: a short pause after a win, added to the reduced stakes, earns over 42 and 69 days without deepening the hole.**\n\n**The verdicts.** 5 better on both halves, 15 a little better, 12 no. The unfiltered robot again hits its loss limit on 23 October and stops trading: those letters say little. The critic blocks three ideas (nothing in a nervous market, nothing when after a loss and the market is agitated, not chasing after 700 points): their twins had already lost and 30 new real trades are missing. It is right.\n\n**What I believe.**\n1. Betting less beats refusing (strengthened). With fresh data, the reduced stakes (a quarter from 13:00 to 17:00, half on a nervous change of direction) beat the filter alone by $59 over 42 days and by $65 over 69. The hole drops from 87 to 41. The first half is better too (+$9 and +$1), which is my answer to the critic. With the real costs ($0.51 per trade): +$67.\n2. The New York open costs (strengthened): 44 real trades, 39 % won, -$116.\n3. A short pause after a win helps (revived, see below).\n4. Stops of 250 to 400 points carry the money (strengthened): 60 trades, +$36. From 150 to 250: -$97.\n5. Do not chase a market that already ran (unchanged).\n\n**What the trades teach.** 308 real trades, 47 % won, -$155. Restarting less than 15 minutes after a loss: 50 trades, 26 % won, -$63. After a win: 44 trades, 45 % won, -$25, and the second half is worse. Restarting 15 to 30 minutes after a win: 11 of 14 won (too few trades). I opened the pile \"restarted less than 15 minutes after a win\" to count.\n\n**What I propose.** 17 tests tonight, all against the filter alone:\n- wait 10 minutes after a win: +$3 over 42 days, +$21 over 69, better on both halves, smaller hole, +$7 with the costs;\n- wait 20 minutes: +$16 and +$17, same hole; 30 minutes falls back to +$7;\n- wait 15 minutes, the middle setting;\n- wait 15 minutes after every trade;\n- out of the box: after the pause, allow three more trades the same way (not tested yet).\nCaution: without the reduced stakes, the same pause costs $18. It only works in their company.\n\n**What I ask for.** Nothing new. 23 requests are waiting and nothing has been built since 26 October. The most useful one: a reduced stake on tight stops.",
  "proposals": [
-  "pb_y_q1316_fh05",
-  "pb_y_q1316_fh05_nc3",
-  "pb_y_q1216_fh05",
-  "pb_y_q1316_fl05",
-  "pb_y_q1316"
+  "pb_z_q1316_fh05_ww10",
+  "pb_z_q1316_fh05_ww20",
+  "pb_z_q1316_fh05_ww15",
+  "pb_z_q1316_fh05_w15",
+  "pb_z_q1316_fh05_ww20_nc3"
  ],
- "headline_fr": "Garder tous les trades mais miser moins aux heures risquées gagne autant que les freins, sans trader moins.",
- "headline_en": "Keeping every trade but betting less at risky hours gains as much as the brakes, without trading less.",
+ "headline_fr": "Une petite pause après un gain, ajoutée aux mises réduites, rapporte sur 42 et 69 jours sans creuser le trou.",
+ "headline_en": "A short pause after a win, added to the reduced stakes, earns over 42 and 69 days without deepening the hole.",
  "beliefs": [
   {
-   "fr": "Miser moins vaut mieux que refuser des trades.",
-   "en": "Betting less beats refusing trades.",
-   "evidence": "Même nombre de trades, +49 $ sur 42 jours et +51 $ sur 69, trou 39 au lieu de 78. / Same number of trades, +$49 over 42 days and +$51 over 69, hole 39 instead of 78."
+   "fr": "Miser moins aux heures et moments risqués vaut mieux que refuser ces trades.",
+   "en": "Betting less at risky hours and moments beats refusing those trades.",
+   "evidence": "+59 $ sur 42 jours, +65 $ sur 69 face au filtre seul ; trou 41 au lieu de 87 ; les deux moitiés mieux / +$59 over 42 days, +$65 over 69; hole 41 instead of 87; both halves better"
   },
   {
-   "fr": "De 13 h à 17 h UTC, le robot perd : il doit y miser petit.",
-   "en": "From 13:00 to 17:00 UTC the robot loses: it should bet small there.",
-   "evidence": "Vrais trades : 13 h et 16 h perdent 103 $ en 23 trades ; un quart de mise : +39 $ sur 42 jours. / Real trades: 13:00 and 16:00 lose $103 in 23 trades; a quarter stake: +$39 over 42 days."
+   "fr": "L'ouverture de New York (13 h - 17 h UTC) coûte cher.",
+   "en": "The New York open (13:00-17:00 UTC) is expensive.",
+   "evidence": "44 vrais trades, 39 % gagnés, -116 $ / 44 real trades, 39 % won, -$116"
   },
   {
    "fr": "Un changement de sens en marché nerveux mérite une demi-mise.",
    "en": "A change of direction in a nervous market deserves half a stake.",
-   "evidence": "Ajoute 10 $ sur 42 jours et 8 $ sur 69, trou 48 ramené à 39. / Adds $10 over 42 days and $8 over 69, hole 48 down to 39."
+   "evidence": "fait partie des mises réduites qui gagnent ce soir / part of the reduced stakes that win tonight"
   },
   {
-   "fr": "Les trades avec un stop large portent l'argent.",
-   "en": "Trades with a wide stop carry the money.",
-   "evidence": "Stops de 250 à 400 points : 54 trades, 61 % gagnés, +32 $ ; de 150 à 250 : 80 trades, -95 $. / Stops of 250-400 points: 54 trades, 61 % won, +$32; 150-250: 80 trades, -$95."
+   "fr": "Les trades au stop de 250 à 400 points portent le robot.",
+   "en": "Trades with a 250 to 400 point stop carry the robot.",
+   "evidence": "60 trades, 60 % gagnés, +36 $ ; 150-250 points : -97 $ / 60 trades, 60 % won, +$36; 150-250 points: -$97"
   },
   {
-   "fr": "Ne pas courir après un marché déjà parti aide, mais ne suffit pas.",
-   "en": "Not chasing a market that already ran helps, but is not enough.",
-   "evidence": "Ce soir -14 $ au lieu de -42 $ sur 42 jours, mais encore -63 $ après le 20 octobre. / Tonight -$14 instead of -$42 over 42 days, but still -$63 after 20 October."
+   "fr": "Repartir trop vite après un trade coûte ; une pause de 10 à 20 minutes après un gain aide.",
+   "en": "Restarting too fast after a trade costs; a 10 to 20 minute pause after a win helps.",
+   "evidence": "après une perte : 50 trades, 26 % gagnés ; pause après un gain +3 à +16 $ sur 42 jours, +17 à +25 $ sur 69 / after a loss: 50 trades, 26 % won; pause after a win +$3 to +$16 over 42 days, +$17 to +$25 over 69"
   },
   {
-   "fr": "Trois trades de plus dans le même sens : utile seulement en passager.",
-   "en": "Three more trades the same way: useful only as a passenger.",
-   "evidence": "Le critique en bloque une version ; sur la mise réduite, +11 $ sur 42 jours. / The critic blocks one version; on the reduced stake, +$11 over 42 days."
+   "fr": "Ne pas entrer quand le prix a déjà beaucoup couru dans le sens du trade.",
+   "en": "Do not enter when the price already ran a lot the trade's way.",
+   "evidence": "perd moins, mais perd encore depuis le 20 octobre / loses less, but still loses since 20 October"
   }
  ],
  "sections": [
   {
    "title_fr": "Ce soir",
    "title_en": "Tonight",
-   "fr": "Le critique a raison : mes idées d'hier gagnaient surtout en tradant quatre fois moins. Alors j'ai cherché l'inverse : garder tous les trades du filtre en place, et seulement miser moins là où le robot perd. Ça gagne autant, avec un trou deux fois plus petit.",
-   "en": "The critic is right: yesterday's ideas gained mostly by trading four times less. So I looked for the opposite: keep every trade of the filter in place, and only bet less where the robot loses. It gains as much, with a hole half as deep."
+   "fr": "Les mises réduites (un quart de 13 h à 17 h, moitié sur un changement de sens nerveux) battent encore le filtre seul : +59 $ sur 42 jours, +65 $ sur 69, trou 41 au lieu de 87. Ce soir, la première moitié est meilleure aussi.",
+   "en": "The reduced stakes (a quarter from 13:00 to 17:00, half on a nervous change of direction) still beat the filter alone: +$59 over 42 days, +$65 over 69, hole 41 instead of 87. Tonight the first half is better too."
   },
   {
    "title_fr": "Les verdicts",
    "title_en": "The verdicts",
-   "fr": "9 mieux sur les deux moitiés, 16 un peu mieux, 11 non. Le robot sans filtre s'arrête à sa limite de perte le 23 octobre : ces résultats disent peu. Le critique doute de deux de mes idées d'hier et en bloque une (deux trades de plus dans le même sens).",
-   "en": "9 better on both halves, 16 a little better, 11 no. The unfiltered robot stops at its loss limit on 23 October: those results say little. The critic doubts two of yesterday's ideas and blocks one (two more trades the same way)."
+   "fr": "5 mieux sur les deux moitiés, 15 un peu mieux, 12 non, mais le robot sans filtre s'arrête le 23 octobre sur sa limite de perte : ces lettres disent peu. Le critique bloque trois idées dont les jumeaux avaient déjà perdu. Il a raison.",
+   "en": "5 better on both halves, 15 a little better, 12 no, but the unfiltered robot stops on 23 October at its loss limit: those letters say little. The critic blocks three ideas whose twins had already lost. It is right."
   },
   {
    "title_fr": "Ce que les trades apprennent",
    "title_en": "What the trades teach",
-   "fr": "283 vrais trades, -148 $. Les stops de 250 à 400 points gagnent (61 %, +32 $) ; ceux de 150 à 250 perdent 95 $. 13 h et 16 h UTC perdent 103 $ en 23 trades. La nuit (1 h - 2 h) gagne 52 $. Pas de nouvelle pile : la largeur du stop n'est pas encore un fait de pile.",
-   "en": "283 real trades, -$148. Stops of 250 to 400 points win (61 %, +$32); those of 150 to 250 lose $95. 13:00 and 16:00 UTC lose $103 in 23 trades. Night (01:00-02:00) wins $52. No new pile: stop width is not a pile fact yet."
+   "fr": "308 vrais trades, 47 % gagnés, -155 $. Repartir moins de 15 minutes après une perte : 26 % gagnés. Après un gain : 45 %, -25 $. Repartir 15 à 30 minutes après un gain : 11 sur 14 gagnés (trop peu de trades). Nouvelle pile : « repris moins de 15 minutes après un gain ».",
+   "en": "308 real trades, 47 % won, -$155. Restarting less than 15 minutes after a loss: 26 % won. After a win: 45 %, -$25. Restarting 15 to 30 minutes after a win: 11 of 14 won (too few trades). New pile: 'restarted less than 15 minutes after a win'."
   },
   {
    "title_fr": "Ce que je crois",
    "title_en": "What I believe",
-   "fr": "Miser moins vaut mieux que refuser. De 13 h à 17 h il faut miser petit. Un changement de sens en marché nerveux mérite une demi-mise. Les stops larges portent l'argent. Ne pas courir après le marché aide, sans suffire.",
-   "en": "Betting less beats refusing. From 13:00 to 17:00 bet small. A change of direction in a nervous market deserves half a stake. Wide stops carry the money. Not chasing the market helps, but is not enough."
+   "fr": "Miser moins vaut mieux que refuser. New York coûte. Le changement de sens nerveux mérite une demi-mise. Les stops de 250 à 400 points portent l'argent. Une petite pause après un gain aide, mais seulement avec les mises réduites : seule, elle coûte 18 $.",
+   "en": "Betting less beats refusing. New York costs. A nervous change of direction deserves half a stake. Stops of 250 to 400 points carry the money. A short pause after a win helps, but only with the reduced stakes: alone it costs $18."
   },
   {
    "title_fr": "Ce que je propose",
    "title_en": "What I propose",
-   "fr": "Cinq façons de garder tous les trades en misant moins. La meilleure : un quart de mise de 13 h à 17 h et moitié sur un changement de sens nerveux, +49 $ sur 42 jours, +51 $ sur 69, trou 39 au lieu de 78. Limite honnête : la première moitié est un peu plus faible, et tout perd encore après le 20 octobre.",
-   "en": "Five ways to keep every trade while betting less. The best: a quarter stake 13:00-17:00 and half on a nervous change of direction, +$49 over 42 days, +$51 over 69, hole 39 instead of 78. Honest limit: the first half is a little weaker, and everything still loses after 20 October."
+   "fr": "Attendre 10, 15 ou 20 minutes après un gain : +3, +13 et +16 $ sur 42 jours, +21 à +25 $ sur 69 ; 30 minutes retombe. Attendre 15 minutes après chaque trade. Hors du cadre : après la pause, permettre trois trades de plus dans le même sens.",
+   "en": "Wait 10, 15 or 20 minutes after a win: +$3, +$13 and +$16 over 42 days, +$21 to +$25 over 69; 30 minutes falls back. Wait 15 minutes after every trade. Out of the box: after the pause, allow three more trades the same way."
   },
   {
    "title_fr": "Ce que je demande",
    "title_en": "What I ask for",
-   "fr": "Pouvoir faire une pile selon la largeur du stop, pour demander aux membres si les stops serrés coûtent vraiment. Et, toujours, une mise réduite plutôt qu'un refus sur ces stops serrés.",
-   "en": "A pile by stop width, to ask members whether tight stops really cost. And, still, a reduced stake rather than a refusal on those tight stops."
+   "fr": "Rien de nouveau ce soir. 23 demandes attendent, et rien n'a été construit depuis le 26 octobre. La plus utile : miser moins sur les stops serrés au lieu de les refuser.",
+   "en": "Nothing new tonight. 23 requests are waiting, and nothing has been built since 26 October. The most useful one: bet less on tight stops instead of refusing them."
   }
  ]
 }

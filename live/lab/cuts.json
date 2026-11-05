@@ -451,7 +451,32 @@
     {
      "field": "hour",
      "op": "between",
-     "value": [13, 16]
+     "value": [
+      13,
+      16
+     ]
+    }
+   ]
+  },
+  {
+   "id": "win_quick15",
+   "title_fr": "Trade repris moins de 15 minutes après un gain",
+   "title_en": "Trade restarted less than 15 minutes after a win",
+   "by": "chercheur",
+   "date": "2026-11-05",
+   "status": "open",
+   "why_fr": "Repris moins de 15 minutes après un gain : 44 vrais trades, 45 % gagnés, -25 $, et la deuxième moitié est pire (55 % puis 36 %). Repris 15 à 30 minutes après un gain : 11 sur 14 gagnés. Le test dit qu'une petite pause après un gain aide. Cette pile dira si la hâte après un gain coûte vraiment.",
+   "why_en": "Restarted less than 15 minutes after a win: 44 real trades, 45 % won, -$25, and the second half is worse (55 % then 36 %). Restarted 15 to 30 minutes after a win: 11 of 14 won. The test says a short pause after a win helps. This pile will tell whether hurrying after a win really costs.",
+   "where": [
+    {
+     "field": "prev_win",
+     "op": "==",
+     "value": true
+    },
+    {
+     "field": "gap_min",
+     "op": "<",
+     "value": 15
     }
    ]
   }

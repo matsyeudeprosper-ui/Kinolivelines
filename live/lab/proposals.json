@@ -5419,6 +5419,203 @@
    "status": "done",
    "verdict": "A",
    "done": "2026-11-03"
+  },
+  {
+   "id": "pb_z_q1316_fh05_ww10",
+   "family": "rythme",
+   "title_fr": "Après un gain, attendre 10 minutes avant le trade suivant",
+   "title_en": "After a win, wait 10 minutes before the next trade",
+   "why_fr": "Sur les vrais trades, repartir moins de 15 minutes après un gain : 44 trades, 45 % gagnés, -25 $. Ajouté aux mises réduites (un quart de 13 h à 17 h, moitié sur un changement de sens nerveux) : +3 $ sur 42 jours, +21 $ sur 69, mieux sur les deux moitiés, trou 40 au lieu de 41, et encore +7 $ avec les frais réels.",
+   "why_en": "On the real trades, restarting less than 15 minutes after a win: 44 trades, 45 % won, -$25. Added to the reduced stakes (a quarter from 13:00 to 17:00, half on a nervous change of direction): +$3 over 42 days, +$21 over 69, better on both halves, hole 40 instead of 41, still +$7 with the real costs.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "wait_win": 10
+   },
+   "pretest": {
+    "net": 6.11,
+    "worst": 39.66,
+    "h1": 10.16,
+    "h2": 50.84,
+    "base_net": -55.48,
+    "base_worst": 87.34
+   },
+   "by": "chercheur",
+   "date": "2026-11-05",
+   "status": "pending"
+  },
+  {
+   "id": "pb_z_q1316_fh05_ww20",
+   "family": "rythme",
+   "title_fr": "Après un gain, attendre 20 minutes avant le trade suivant",
+   "title_en": "After a win, wait 20 minutes before the next trade",
+   "why_fr": "Le même avec une pause plus longue. Les vrais trades repris 15 à 30 minutes après un gain en gagnent 11 sur 14 (+21 $, trop peu de trades). Aux mises réduites : +16 $ sur 42 jours, +17 $ sur 69, même trou. 10, 15 puis 20 minutes donnent +3, +13, +16 ; 30 minutes retombe à +7.",
+   "why_en": "The same with a longer pause. Real trades restarted 15 to 30 minutes after a win won 11 of 14 (+$21, too few trades). On the reduced stakes: +$16 over 42 days, +$17 over 69, same hole. 10, 15 then 20 minutes give +3, +13, +16; 30 minutes falls back to +7.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "wait_win": 20
+   },
+   "pretest": {
+    "net": 18.8,
+    "worst": 41.5,
+    "h1": 24.69,
+    "h2": 49.0,
+    "base_net": -55.48,
+    "base_worst": 87.34
+   },
+   "by": "chercheur",
+   "date": "2026-11-05",
+   "status": "pending"
+  },
+  {
+   "id": "pb_z_q1316_fh05_ww15",
+   "family": "rythme",
+   "title_fr": "Après un gain, attendre 15 minutes avant le trade suivant",
+   "title_en": "After a win, wait 15 minutes before the next trade",
+   "why_fr": "Le réglage du milieu, pour que le critique voie les voisins. Aux mises réduites : +13 $ sur 42 jours, +25 $ sur 69. Première moitié bien meilleure (+16 et +29 $), deuxième presque pareille (+2 et -2 $), trou 44 au lieu de 41.",
+   "why_en": "The middle setting, so the critic sees the neighbours. On the reduced stakes: +$13 over 42 days, +$25 over 69. First half much better (+$16 and +$29), second about the same (+$2 and -$2), hole 44 instead of 41.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "wait_win": 15
+   },
+   "pretest": {
+    "net": 15.92,
+    "worst": 44.38,
+    "h1": 24.69,
+    "h2": 46.12,
+    "base_net": -55.48,
+    "base_worst": 87.34
+   },
+   "by": "chercheur",
+   "date": "2026-11-05",
+   "status": "pending"
+  },
+  {
+   "id": "pb_z_q1316_fh05_w15",
+   "family": "rythme",
+   "title_fr": "Attendre 15 minutes après chaque trade, gagné ou perdu",
+   "title_en": "Wait 15 minutes after every trade, won or lost",
+   "why_fr": "Sur les vrais trades, repartir moins de 15 minutes après une perte est le pire moment : 50 trades, 26 % gagnés, -63 $. La pause après tous les trades, aux mises réduites : +16 $ sur 42 jours, seulement 3 $ de plus que la pause après un gain seul.",
+   "why_en": "On the real trades, restarting less than 15 minutes after a loss is the worst moment: 50 trades, 26 % won, -$63. The pause after every trade, on the reduced stakes: +$16 over 42 days, only $3 more than the pause after a win alone.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "wait_min": 15
+   },
+   "pretest": {
+    "net": 18.7,
+    "worst": 44.38,
+    "h1": 27.47,
+    "h2": 46.12,
+    "base_net": -55.48,
+    "base_worst": 87.34
+   },
+   "by": "chercheur",
+   "date": "2026-11-05",
+   "status": "pending"
+  },
+  {
+   "id": "pb_z_q1316_fh05_ww20_nc3",
+   "family": "structure",
+   "title_fr": "Après une pause, permettre trois trades de plus dans le même sens",
+   "title_en": "After a pause, allow three more trades the same way",
+   "why_fr": "Idée hors du cadre : les trades de plus dans le même sens gagnent quand le robot s'est reposé avant (vrais trades : 62 % gagnés après 15 minutes à 3 heures de pause, 44 % repris vite). La pause de 20 minutes après un gain les rend plus reposés ; alors en permettre plus. Pas encore testé.",
+   "why_en": "Out-of-the-box idea: one more trade the same way wins when the robot rested first (real trades: 62 % won after a 15-minute to 3-hour pause, 44 % when restarted fast). The 20-minute pause after a win makes them more rested; so allow more of them. Not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 3,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "wait_win": 20
+   },
+   "by": "chercheur",
+   "date": "2026-11-05",
+   "status": "pending",
+   "pretest": {
+    "net": 8.85,
+    "worst": 44.58,
+    "h1": 40.78,
+    "h2": -38.65,
+    "base_net": -151.22,
+    "base_worst": 219.74,
+    "base_h1": -35.69,
+    "base_h2": -136.58,
+    "verdict": "A",
+    "trades": 64,
+    "at": "2026-11-05 05:06",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 35.46,
+     "diff_worst": -175.16
+    },
+    "real": {
+     "n_real": 123,
+     "trades": 39,
+     "diff_net": 67.08,
+     "diff_worst": -73.47
+    }
+   }
   }
  ]
 }
