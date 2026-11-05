@@ -135,6 +135,22 @@ def _sent_today():
     return sum(1 for p in _j(STORE, {"items": []})["items"] for h in p.get("sent") or [] if h.get("day") == day)
 
 
+_CC = {"south africa": "ZA", "afrique du sud": "ZA", "suid-afrika": "ZA", "germany": "DE", "deutschland": "DE", "allemagne": "DE",
+       "austria": "AT", "österreich": "AT", "osterreich": "AT", "autriche": "AT", "namibia": "NA", "namibie": "NA",
+       "united kingdom": "GB", "uk": "GB", "england": "GB", "great britain": "GB", "united states": "US", "usa": "US",
+       "france": "FR", "canada": "CA", "australia": "AU", "nigeria": "NG", "kenya": "KE", "ghana": "GH", "india": "IN",
+       "belgium": "BE", "belgique": "BE", "switzerland": "CH", "suisse": "CH", "spain": "ES", "italy": "IT", "netherlands": "NL"}
+
+
+def country_code(c):
+    """2026-11-05 (watch): 'South Africa' was read as 'SO' - the consent-first rule never applied to a Cape Town barber. A name
+    or a code -> the 2-letter code"""
+    s = str(c or "").strip()
+    if len(s) == 2:
+        return s.upper()
+    return _CC.get(s.lower(), s.upper()[:2])
+
+
 def outreach(W, ref, subject, body, log=None):
     """his first email (or the one follow-up) to a business in his prospect list -> a sentence for him"""
     o = offer()
@@ -151,7 +167,7 @@ def outreach(W, ref, subject, body, log=None):
     # 2026-11-05 (owner: "anywhere in the world"): the law of the reader's country. Someone who ASKED (a wanted ad, a job post,
     # a request) can always be answered. Otherwise: Germany / Austria forbid cold business email without prior consent - use
     # their own contact form; South Africa (POPIA) allows one message that only asks whether they want to hear more
-    cc = str(p.get("country") or "").strip().upper()[:2]
+    cc = country_code(p.get("country"))
     if not p.get("asked"):
         if cc in ("DE", "AT"):
             return "%s is in %s: cold email is not allowed there without their consent - use the contact form on their site" % (p["name"], cc)
