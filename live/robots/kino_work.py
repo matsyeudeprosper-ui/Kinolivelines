@@ -349,6 +349,11 @@ def _mind(person, uid):
             L.append("DIRECTION: " + _dr)
     except Exception:
         pass
+    try:                                       # 2026-11-05 (owner: "a master promoter of himself"): what his work brought back
+        import kino_promo as KPR
+        L.append(KPR.results())
+    except Exception:
+        pass
     try:
         import kino_mail as KM
         L.append(KM.block("en"))

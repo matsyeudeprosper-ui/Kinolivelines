@@ -38186,6 +38186,14 @@ class H(BaseHTTPRequestHandler):
             # 2026-11-01 (owner: "think deeper what the demo becomes"): the demo is meeting Kino - a conversation without an
             # account (kino_meet), what he does, and a robot he made working live at /demo/live
             fn_count("meet_open")
+            try:                                       # 2026-11-05 (Kino promotes himself): where this visit came from (?src=bsky...)
+                import urllib.parse as _upd, re as _red
+                _qd = _upd.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                _sd = ((_qd.get("src") or _qd.get("utm_source") or [""])[0] or "").lower()
+                if _red.match(r"^[a-z0-9_-]{1,16}$", _sd) and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
+                    usage_count("src_" + _sd)             # capped at 40 sources a day by usage_count
+            except Exception:
+                pass
             _host = self.headers.get("Host") or "owlnest.local"
             _proto = "https" if (self.headers.get("X-Forwarded-Proto") == "https"
                                  or "127.0.0.1" not in _host and "localhost" not in _host) else "http"
