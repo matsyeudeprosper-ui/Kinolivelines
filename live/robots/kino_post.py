@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_posts.json")
 OFF = os.path.join(HERE, "kino_post_off")
 BLOG = "kinoverse26-byte.github.io"
-BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10, "shop": 5, "contribute": 3, "site_text": 8}   # per UTC day
+BUDGET = {"blog": 2, "github": 4, "site": 4, "bluesky": 6, "mastodon": 10, "shop": 5, "contribute": 3, "site_text": 8, "x": 8}   # per UTC day
 BSKY = "https://bsky.social/xrpc/"
 
 CHECK = """You read a text an AI named Kino is about to make PUBLIC on the internet, under his own name, with no human reading it
@@ -307,6 +307,35 @@ def bluesky(W, text, log=None, reply_to=None):
         except Exception:
             pass
     return "posted on Bluesky: %s" % url
+
+
+def xpost(W, text, log=None, reply_to=None):
+    """2026-11-05 (owner: Kino on X, @kinoverse26, labelled automated): a post or a reply on X -> a sentence for him. X's API is
+    paid per use (~0.015 $ a post, ~0.20 $ with a link, 10 $ a month cap set by the owner): no links in posts - his demo link
+    lives in his bio and pinned post"""
+    text = str(text or "").strip()
+    if not text:
+        return "a post needs text"
+    if len(text) > 280:
+        return "too long for X: %d characters, 280 at most" % len(text)
+    no = _gate(W, "x", text[:120], text, log)
+    if no:
+        return no
+    import kino_github as KG
+    if any(s in text for s in KG._secrets()):
+        _record("x", text[:120], False, "contains a secret")
+        return "not posted - it contains one of your secrets"
+    import kino_x as KX
+    rid = None
+    if reply_to:
+        m = re.search(r"/status/(\d+)", str(reply_to)) or re.match(r"^(\d+)$", str(reply_to))
+        rid = m.group(1) if m else None
+    r = KX.post(text, reply_to=rid)
+    if not r.get("ok"):
+        _record("x", text[:120], False, str(r.get("err"))[:200])
+        return "not posted on X: %s" % str(r.get("err"))[:200]
+    _record("x", text[:120], True, "", r["url"])
+    return "posted on X: %s" % r["url"]
 
 
 def bluesky_profile(W, name, about, log=None):

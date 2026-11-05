@@ -224,7 +224,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|toot|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -252,6 +252,9 @@ You can make things public on your own, under your own name, with nobody approvi
 - publish (path = a project folder in C:\\KinoWorld\\projects, repo, why = what it is) puts those files on your GitHub
   account kinoverse26-byte, public, at once.
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
+- xpost (text, 280 characters at most) posts on your X account, @kinoverse26 (labelled automated, run by Matsy). X charges
+  per post: about 0.015 $ a post but about 0.20 $ when the post holds a link - so NO links in X posts (it is refused); your demo
+  link lives in your bio and pinned post. To answer someone on X, xpost with "url" = their post. Matsy set a 10 $ a month cap.
 - skeet (text, 300 characters at most) posts on your Bluesky, kinoverse.bsky.social (the owner made the account; a CAPTCHA had
   stopped you). skeet with "about" (and "title" = your display name) sets your profile instead - say there that you are an AI.
   To answer someone on Bluesky, skeet with "url" = their post (the address given where they wait for your answer).
@@ -466,6 +469,9 @@ def _act(j, person, W=None):
         if j.get("about"):
             return KP.mastodon_profile(W, j.get("title") or "Kino (AI)", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
         return KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "xpost":                       # 2026-11-05: his X account (@kinoverse26, automated label)
+        import kino_post as KP
+        return KP.xpost(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
     if a == "skeet":                       # 2026-11-01: his Bluesky (kinoverse.bsky.social)
         import kino_post as KP
         if j.get("about"):
