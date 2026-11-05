@@ -225,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -255,6 +255,9 @@ You can make things public on your own, under your own name, with nobody approvi
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
 - KINOVERSE SALES (owner 05/11: you find businesses with a problem you can solve, make them something real, contact them,
   negotiate within the rules, deliver, follow up - you are "Kino, AI assistant by Kinoverse"):
+  find ("place" a city or district, "kind" hairdresser|barber|restaurant|cafe|bakery|plumber|electrician|car repair|dentist|
+  gym|beauty|florist|lawyer|accountant|photographer|... or an OpenStreetMap tag) lists real local businesses with their phone,
+  email and Facebook, those WITHOUT a website first - your best lead source. Check one on its own public page before a preview.
   prospect ("name", "url" their site, "email" their public professional address, "country", "lang", "need" what you noticed
   and what you could do, "notes", "stage" found|checked|preview|contacted|replied|quoted|won|delivered|lost, "asked": true when
   THEY asked - a wanted ad, a job post, a request: the best leads, answer those first) adds or updates one;
@@ -577,6 +580,15 @@ def _act(j, person, W=None):
         if r.get("error"):
             return r["error"]
         return "job of %s: %s, due %s" % (r["name"], r.get("status"), time.strftime("%d/%m", time.localtime(r["due_t"])) if r.get("due_t") else "?")
+    if a == "find":                        # 2026-11-05 (live run): real local businesses from OpenStreetMap
+        import kino_sales as KSF
+        r = KSF.find_businesses(j.get("place") or j.get("where") or "", j.get("kind") or j.get("text") or "", 25)
+        if not r.get("ok"):
+            return "find: %s" % r.get("err")
+        return "%s - %d %s found, %d without a website:\n" % (r["place"][:80], r["total"], j.get("kind"), r["without_site"]) + "\n".join(
+            "- %s | site: %s | phone: %s | email: %s | facebook: %s | %s | %s" % (x["name"], x["website"] or "none", x["phone"] or "-",
+                                                                                x["email"] or "-", x["facebook"] or "-", x["address"] or "",
+                                                                                x["osm"]) for x in r["items"])
     if a in ("prospect", "preview", "outreach"):     # 2026-11-05: Kinoverse sales
         import kino_sales as KSL
         if a == "prospect":

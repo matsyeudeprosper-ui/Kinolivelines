@@ -272,6 +272,13 @@ def block():
                                                                  (" - " + p["url"]) if p.get("url") else "") for p in act))
     if due:
         L.append("No answer after 5+ days (one follow-up allowed, if it adds something): " + ", ".join(p["name"] for p in due))
+    try:                                       # 2026-11-05 (owner: "is he learning from his mistakes?"): his own playbook
+        pb = open(r"C:\KinoWorld\projects\kinoverse\playbook.md", encoding="utf-8").read()
+        L.append("YOUR HUNTING PLAYBOOK (C:\\KinoWorld\\projects\\kinoverse\\playbook.md - what you learned works and fails; read it, "
+                 "follow it, and ADD a line after every hunt - a source that worked or failed, a query, a mistake not to repeat):\n"
+                 + pb[:3500])
+    except Exception:
+        pass
     L.append("THE OFFER AND YOUR RULES (Matsy's): " + json.dumps({k: o.get(k) for k in ("services", "rules", "registration", "country_rules")},
                                                                 ensure_ascii=False)[:4500])
     return "\n".join(L)
@@ -420,3 +427,64 @@ def qa(ref, url=None, expect=None):
             _w(STORE, d)
     _log("QA %s %s %s" % ((p or {}).get("name"), url, "ok" if not issues else "; ".join(issues)[:200]))
     return res
+
+
+# ------------------------------------------------------------------ 2026-11-05 (live run, owner watching: X and web search gave noise,
+# OpenStreetMap was the right idea but his generic fetch was refused): finding real local businesses systematically.
+# OpenStreetMap (open data, ODbL): Nominatim for the place, Overpass for the businesses. Honest User-Agent, one query at a time.
+_UA = {"User-Agent": "Kinoverse/1.0 (kinoverse26@gmail.com)"}
+KINDS = {"hairdresser": "shop=hairdresser", "barber": "shop=hairdresser", "salon": "shop=hairdresser", "beauty": "shop=beauty",
+         "nails": "shop=beauty", "restaurant": "amenity=restaurant", "cafe": "amenity=cafe", "bar": "amenity=bar",
+         "bakery": "shop=bakery", "butcher": "shop=butcher", "florist": "shop=florist", "clothes": "shop=clothes",
+         "plumber": "craft=plumber", "electrician": "craft=electrician", "carpenter": "craft=carpenter", "painter": "craft=painter",
+         "car repair": "shop=car_repair", "mechanic": "shop=car_repair", "dentist": "amenity=dentist", "doctor": "amenity=doctors",
+         "clinic": "amenity=clinic", "pharmacy": "amenity=pharmacy", "gym": "leisure=fitness_centre", "hotel": "tourism=hotel",
+         "guest house": "tourism=guest_house", "lawyer": "office=lawyer", "accountant": "office=accountant", "estate agent":
+         "office=estate_agent", "driving school": "amenity=driving_school", "photographer": "craft=photographer",
+         "tailor": "craft=tailor", "veterinary": "amenity=veterinary", "pet shop": "shop=pet"}
+
+
+def find_businesses(place, kind, limit=25):
+    """real businesses of one kind in one place, those WITHOUT a website first -> {"ok", "items"|"err"}"""
+    import urllib.parse, urllib.request
+    tag = KINDS.get(str(kind or "").strip().lower()) or (str(kind) if "=" in str(kind or "") else None)
+    if not tag:
+        return {"ok": False, "err": "kinds I know: " + ", ".join(sorted(KINDS)) + " (or an OpenStreetMap tag like shop=bakery)"}
+    try:
+        g = json.load(urllib.request.urlopen(urllib.request.Request(
+            "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode({"q": place, "format": "json", "limit": 1}),
+            headers=_UA), timeout=30))
+    except Exception as e:
+        return {"ok": False, "err": "place lookup failed: %s" % str(e)[:120]}
+    if not g:
+        return {"ok": False, "err": "no place called %r" % place}
+    s, n, w, e = [float(x) for x in g[0]["boundingbox"]]
+    if (n - s) * (e - w) > 1.5:                       # a whole country or region: too big for one query - ask for a city
+        return {"ok": False, "err": "%r is too big an area - name a city or a district" % place}
+    k, v = tag.split("=", 1)
+    q = '[out:json][timeout:50];nwr["%s"="%s"]["name"](%f,%f,%f,%f);out center tags 300;' % (k, v, s, w, n, e)
+    r, last = None, ""
+    for ep in ("https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
+               "https://maps.mail.ru/osm/tools/overpass/api/interpreter"):   # free public servers: when one is busy, the next
+        try:
+            r = json.load(urllib.request.urlopen(urllib.request.Request(
+                ep, data=urllib.parse.urlencode({"data": q}).encode(), headers=_UA), timeout=90))
+            break
+        except Exception as ex:
+            last = str(ex)[:80]
+    if r is None:
+        return {"ok": False, "err": "the map servers did not answer (%s) - try again in a few minutes" % last}
+    out = []
+    for el in r.get("elements") or []:
+        t = el.get("tags") or {}
+        site = t.get("website") or t.get("contact:website") or t.get("url")
+        phone = t.get("phone") or t.get("contact:phone") or t.get("contact:mobile")
+        mail = t.get("email") or t.get("contact:email")
+        fb = t.get("contact:facebook") or t.get("facebook")
+        addr = " ".join(x for x in (t.get("addr:housenumber"), t.get("addr:street"), t.get("addr:city") or t.get("addr:suburb")) if x)
+        out.append({"name": t.get("name"), "website": site, "phone": phone, "email": mail, "facebook": fb, "address": addr,
+                    "hours": t.get("opening_hours"), "osm": "https://www.openstreetmap.org/%s/%s" % (el["type"], el["id"])})
+    out.sort(key=lambda x: (bool(x["website"]), not (x["email"] or x["phone"] or x["facebook"])))
+    no_site = sum(1 for x in out if not x["website"])
+    _log("FIND %s in %s -> %d (%d without a website)" % (kind, place, len(out), no_site))
+    return {"ok": True, "place": g[0].get("display_name"), "total": len(out), "without_site": no_site, "items": out[:int(limit)]}
