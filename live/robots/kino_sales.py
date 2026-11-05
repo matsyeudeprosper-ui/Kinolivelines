@@ -337,7 +337,9 @@ def jobs_block():
     return "YOUR CLIENT JOBS (what you promised, and to whom):\n" + "\n".join(L)
 
 
-_PLACEHOLDER = re.compile(r"lorem ipsum|ipsum dolor|\bTODO\b|\bTBD\b|example\.com|your (business|company) name|xxx+|\[(name|phone|address)\]", re.I)
+# 2026-11-05: "send me your business name" is real copy, not a leftover - only the bracketed / capitalised template forms count
+_PLACEHOLDER = re.compile(r"(?i:lorem ipsum|ipsum dolor|\bTODO\b|\bTBD\b|example\.com|xxx+|\[(?:your )?(?:business|company) name\]|\[(?:name|phone|address)\])"
+                          r"|Your (?:Business|Company) Name")
 
 
 def qa(ref, url=None, expect=None):
@@ -374,6 +376,9 @@ def qa(ref, url=None, expect=None):
         if e and str(e).lower() not in html.lower():
             issues.append("missing on the page: %s" % e)
     refs = set(re.findall(r"(?:href|src)=[\"']([^\"'#]+)[\"']", html, re.I))
+    # 2026-11-05: <link rel="preconnect"> / dns-prefetch name a server, not a page - fonts.gstatic.com's bare root is a 404 by design
+    refs -= set(re.findall(r"<link[^>]+rel=[\"'](?:preconnect|dns-prefetch)[\"'][^>]*href=[\"']([^\"']+)", html, re.I))
+    refs -= set(re.findall(r"<link[^>]+href=[\"']([^\"']+)[\"'][^>]*rel=[\"'](?:preconnect|dns-prefetch)", html, re.I))
     bad = []
     for h in list(refs)[:60]:
         if h.startswith(("mailto:", "tel:", "javascript:", "data:")):
