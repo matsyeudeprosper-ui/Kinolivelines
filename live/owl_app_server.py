@@ -24202,8 +24202,10 @@ def _kino_night_mind():
         _KM.reflect()
         _KM.build_playbook()
         try:              # 2026-10-20 (owner list 8 item 2): the nightly humanity exam on made-up conversations
-            import kino_exam as _KX
-            _KX.run()
+            # 2026-11-05 (cost, measured by the named log: ~23 old-engine calls, 1.35 $ a run): every 3rd night, like the probe
+            if int(time.time() // 86400) % 3 == 0:
+                import kino_exam as _KX
+                _KX.run()
         except Exception:
             pass
         try:              # 2026-10-23 (engine 2): the day's conversations become episodes; weekly, episodes become facts
