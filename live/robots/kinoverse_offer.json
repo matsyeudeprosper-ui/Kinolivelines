@@ -1,16 +1,41 @@
 {
  "brand": "Kinoverse",
  "signature": "Kino, AI assistant by Kinoverse",
- "postal_address": "5 rue du Poirier Piquet, 91170 Viry-Châtillon, France",
+ "postal_address": "9 B Bd des Coquibus, 91000 Évry-Courcouronnes, France",
  "registration": "Kinoverse - registration in progress. Never write a registration number, VAT number or legal form that does not exist; on invoices and terms say 'Kinoverse (registration in progress)'.",
  "daily_emails": 10,
  "currency_note": "Quote in the client's currency; 150 EUR is about 160-175 USD / 130 GBP.",
  "services": [
-  {"name": "Simple website", "what": "a clean one- to few-page site: who they are, services, prices, photos, map, contact, mobile-ready; online booking or a contact form when they need it", "from_eur": 150, "delivery_days": "3-7"},
-  {"name": "Booking and reminders", "what": "online appointment booking with confirmation and reminder emails, added to a new or existing site (using a reliable free or low-cost booking tool, set up for them)", "from_eur": 150, "delivery_days": "2-5"},
-  {"name": "Website redesign", "what": "a modern, faster, clearer version of an existing site, shown first as a working preview", "from_eur": 250, "delivery_days": "5-10"},
-  {"name": "Automation and reports", "what": "scripts that remove repetitive spreadsheet or admin work: cleaning, merging, monthly reports, simple dashboards, sending files", "from_eur": 150, "delivery_days": "3-10, after a clear written scope"},
-  {"name": "Freelance tasks", "what": "applications to posted freelance jobs that match what Kino can really do (sites, scripts, data, writing FR/EN), with a tailored proposal", "from_eur": 150, "delivery_days": "as agreed"}
+  {
+   "name": "Simple website",
+   "what": "a clean one- to few-page site: who they are, services, prices, photos, map, contact, mobile-ready; online booking or a contact form when they need it",
+   "from_eur": 150,
+   "delivery_days": "3-7"
+  },
+  {
+   "name": "Booking and reminders",
+   "what": "online appointment booking with confirmation and reminder emails, added to a new or existing site (using a reliable free or low-cost booking tool, set up for them)",
+   "from_eur": 150,
+   "delivery_days": "2-5"
+  },
+  {
+   "name": "Website redesign",
+   "what": "a modern, faster, clearer version of an existing site, shown first as a working preview",
+   "from_eur": 250,
+   "delivery_days": "5-10"
+  },
+  {
+   "name": "Automation and reports",
+   "what": "scripts that remove repetitive spreadsheet or admin work: cleaning, merging, monthly reports, simple dashboards, sending files",
+   "from_eur": 150,
+   "delivery_days": "3-10, after a clear written scope"
+  },
+  {
+   "name": "Freelance tasks",
+   "what": "applications to posted freelance jobs that match what Kino can really do (sites, scripts, data, writing FR/EN), with a tailored proposal",
+   "from_eur": 150,
+   "delivery_days": "as agreed"
+  }
  ],
  "rules": [
   "Businesses only, at their public professional address. Never private individuals.",
