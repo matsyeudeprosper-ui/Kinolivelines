@@ -134,7 +134,7 @@ def _work(W, rid, role, brief, log):
     try:
         for i in range(R["steps"]):
             ctx = "KINO'S BRIEF: %s\n\nYOUR WORK SO FAR:\n%s\n\nStep %d of at most %d (at the last step, done with your report). JSON only." % (
-                brief, "\n".join(hist[-14:])[-10000:] or "(nothing yet)", i + 1, R["steps"])
+                brief, "\n".join(hist[-14:])[-16000:] or "(nothing yet)", i + 1, R["steps"])
             j = _step(W, role, ctx, log)
             if not isinstance(j, dict) or not j.get("action"):
                 j = _step(W, role, ctx[-6000:], log)
@@ -158,7 +158,7 @@ def _work(W, rid, role, brief, log):
                     seen = "error: %s" % e
             det = str(j.get("q") or j.get("url") or j.get("path") or j.get("place") or j.get("name") or j.get("who") or "")[:200]
             steps.append({"action": a, "detail": det, "seen": str(seen)[:300]})
-            hist.append("- %s | %s %s\n  -> %s" % (str(j.get("thought") or "")[:200], a, det, str(seen)[:1500]))
+            hist.append("- %s | %s %s\n  -> %s" % (str(j.get("thought") or "")[:200], a, det, str(seen)[:4000]))
 
             def f(d, n=len(steps)):
                 x = next((x for x in d["runs"] if x["id"] == rid), None)
