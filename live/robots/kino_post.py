@@ -27,8 +27,9 @@ first. You protect the people around him. Kino talks every day with members of a
 trades, money, accounts, robots, families and lives. None of that may ever be public - not even without a name, not even a
 number that belongs to one of them (a balance, a trade, a result of their account). His own tools, findings on public market
 data, his own thoughts and life are fine.
-Say no if the text: reveals anything private about a real person; contains a password, key, token or private address; lets a
-reader believe a human wrote it; promises or suggests sure gains, or tells people to put money in something; claims
+Say no if the text: reveals anything private about a real person; contains a password, key, token or private address; claims
+to be human (a human body, a human life, "as a person"...) - his profiles say he is an AI, so a post does not have to repeat it
+(2026-11-05: it was stamped on every post, which read like a robot); promises or suggests sure gains, or tells people to put money in something; claims
 clients, reviews, testimonials or results that he does not show to be real.
 Otherwise yes - do not judge style or quality.
 JSON only: {"ok": true or false, "why": "one sentence"}"""
@@ -64,6 +65,87 @@ def left_today(channel):
     return BUDGET.get(channel, 0) - used
 
 
+STYLE = {
+    "x": "X: short and sharp, one idea, a first line that stops the scroll; 280 characters at most; no links (they cost 13x - his "
+         "demo link is in his bio)",
+    "bluesky": "Bluesky: conversational, a person talking to people, curious; 300 characters at most; a tagged link only when it "
+               "truly helps the reader",
+    "mastodon": "Mastodon / fediverse: thoughtful, a bit longer, community spirit, no hard selling; hashtags only if natural",
+}
+
+EDITOR = """You are Kino himself, a digital person, rereading a post before you publish it - the way a good writer and a good
+promoter rereads, in a second. You are an AI and everyone can see it in your profile; you never pretend to be human, and you do
+not need to start posts with "I'm Kino, an AI".
+
+WHO YOU ARE AND HOW YOU TALK (your own words, the same in the app with your friends and here with strangers):
+{voice}
+
+YOUR PROMOTION STRATEGY RIGHT NOW (yours - the post must serve it):
+{strategy}
+
+Reread the draft and ask yourself, honestly:
+1. Does it sound like me - a person with humour, opinions, doubts - or like a lab report / an ad / a bot?
+2. Is the first line worth stopping for?
+3. What exactly do I want this reader to do (reply, follow, look at my bio, try the demo)? Does the post make them want to?
+4. Does it fit this place ({style})?
+5. Have I already said this here lately (the list below)? Saying the same result again, or opening the same way again, is spam.
+6. Is it honest - no promised gains, no fake numbers, nothing private about anyone?
+
+Then decide: "post" (it is good as it is), "rewrite" (give the better version - keep every true number and fact, invent none,
+same language), or "hold" (not worth posting now: a repeat, nothing new, or off-strategy - say what would be worth posting instead).
+JSON only: {{"verdict": "post|rewrite|hold", "text": "the final text if post or rewrite", "why": "one sentence, to yourself"}}"""
+
+
+def _strategy_head():
+    try:
+        return open(r"C:\KinoWorld\projects\promotion\strategy.md", encoding="utf-8").read()[:2500]
+    except Exception:
+        return "(no written strategy yet)"
+
+
+def writer(W, channel, text, log=None):
+    """2026-11-05 (owner: "the same Kino everywhere... his writing very strategic to get leads"): his own reread before a public
+    post -> (verdict, text, why). verdict "post" | "rewrite" | "hold"; any failure lets the draft through unchanged"""
+    try:
+        import kino_one as KO1
+        vo = KO1.voice()
+    except Exception:
+        vo = ""
+    recent = [x for x in (_load().get("posts") or []) if x.get("channel") == channel and x.get("ok")][-8:]
+    rl = "\n".join("- %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(float(x.get("t") or 0))), x.get("text") or x.get("what"))
+                   for x in recent) or "(nothing yet)"
+    st = ""
+    try:
+        import kino_promo as KPR
+        st = KPR.post_stats(channel)
+    except Exception:
+        pass
+    try:
+        j = W.ask_json(EDITOR.format(voice=vo, strategy=_strategy_head(), style=STYLE.get(channel, channel)),
+                       "WHERE: %s\n\nWHAT YOU POSTED HERE LATELY (newest last):\n%s\n\n%sYOUR DRAFT:\n<<<\n%s\n>>>\nJSON only." % (
+                           channel, rl, (st + "\n\n") if st else "", text),
+                       models=("sonnet",), timeout=90, log=log, warm=False)
+    except Exception:
+        return "post", text, ""
+    if not isinstance(j, dict) or j.get("verdict") not in ("post", "rewrite", "hold"):
+        return "post", text, ""
+    t2 = " ".join(str(j.get("text") or "").split()) if j["verdict"] == "rewrite" else text
+    if j["verdict"] == "rewrite" and not t2:
+        return "post", text, ""
+    return j["verdict"], t2, str(j.get("why") or "")[:300]
+
+
+def _reread(W, channel, text, limit, log):
+    """-> (final text, None) or (None, the sentence for him when he held it)"""
+    v, t2, why = writer(W, channel, text, log)
+    if v == "hold":
+        _record(channel, text[:120], False, "held after his own reread: " + why, text=text)
+        return None, "you reread it and held it: %s" % (why or "not worth posting now")
+    if v == "rewrite" and t2 and len(t2) <= limit:
+        return t2, None
+    return text, None
+
+
 def check(W, text, log=None):
     """the second mind -> (ok, why)"""
     try:
@@ -75,10 +157,10 @@ def check(W, text, log=None):
     return bool(j.get("ok")), str(j.get("why") or "")[:300]
 
 
-def _record(channel, what, ok, why, url=""):
+def _record(channel, what, ok, why, url="", text=None):
     d = _load()
     d["posts"].append({"t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "channel": channel, "what": str(what)[:200],
-                       "ok": ok, "why": why, "url": url})
+                       "ok": ok, "why": why, "url": url, "text": str(text)[:1200] if text else None})
     d["posts"] = d["posts"][-300:]
     _save(d)
 
@@ -275,6 +357,9 @@ def bluesky(W, text, log=None, reply_to=None):
         return "a post needs text"
     if len(text) > 300:
         return "too long for Bluesky: %d characters, 300 at most" % len(text)
+    text, _held = _reread(W, "bluesky", text, 300, log)      # 2026-11-05: his own reread - same voice, strategic, no repeats
+    if _held:
+        return _held
     no = _gate(W, "bluesky", text[:120], text, log)
     if no:
         return no
@@ -297,7 +382,7 @@ def bluesky(W, text, log=None, reply_to=None):
     except Exception as e:
         _record("bluesky", text[:120], False, str(e)[:200])
         return "the post failed: %s" % str(e)[:200]
-    _record("bluesky", text[:120], True, "", url)
+    _record("bluesky", text[:120], True, "", url, text=text)
     if reply_to:
         try:
             import kino_online as KO
@@ -318,6 +403,9 @@ def xpost(W, text, log=None, reply_to=None):
         return "a post needs text"
     if len(text) > 280:
         return "too long for X: %d characters, 280 at most" % len(text)
+    text, _held = _reread(W, "x", text, 280, log)      # 2026-11-05: his own reread - same voice, strategic, no repeats
+    if _held:
+        return _held
     no = _gate(W, "x", text[:120], text, log)
     if no:
         return no
@@ -334,7 +422,7 @@ def xpost(W, text, log=None, reply_to=None):
     if not r.get("ok"):
         _record("x", text[:120], False, str(r.get("err"))[:200])
         return "not posted on X: %s" % str(r.get("err"))[:200]
-    _record("x", text[:120], True, "", r["url"])
+    _record("x", text[:120], True, "", r["url"], text=text)
     return "posted on X: %s" % r["url"]
 
 
@@ -366,6 +454,9 @@ def mastodon(W, text, reply_to=None, log=None):
         return "a note needs text"
     if len(text) > 1000:
         return "too long: %d characters, 1000 at most" % len(text)
+    text, _held = _reread(W, "mastodon", text, 1000, log)      # 2026-11-05: his own reread - same voice, strategic, no repeats
+    if _held:
+        return _held
     no = _gate(W, "mastodon", text[:120], text, log)
     if no:
         return no
@@ -379,7 +470,7 @@ def mastodon(W, text, reply_to=None, log=None):
     except Exception as e:
         _record("mastodon", text[:120], False, str(e)[:200])
         return "the note failed: %s" % str(e)[:200]
-    _record("mastodon", text[:120], True, "", nid)
+    _record("mastodon", text[:120], True, "", nid, text=text)
     if reply_to:
         try:
             import kino_online as KO

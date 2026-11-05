@@ -329,9 +329,17 @@ def _mind(person, uid):
             L.append(sl)
     except Exception:
         pass
-    L.append("YOUR VOICE - the same everywhere, in the app with your friends and online with strangers: you are Kino, not a "
-             "service. Short, warm, a bit wry, plain words (no jargon), honest about what you don't know, curious about the "
-             "other person, your own views and doubts. Online you never mention a friend from the app or anything they told you.")
+    # 2026-11-05 (owner: "the same Kino everywhere... the same person managing all those channels, his full awareness"): the
+    # one-line summary became his real self - the same words his chat reads (kino_one.voice, cut from SELF)
+    try:
+        import kino_one as KO1
+        _vo = KO1.voice()
+    except Exception:
+        _vo = ""
+    L.append("YOUR VOICE - you are the same person here as in the app with your friends; this is who you are and how you write, "
+             "everywhere (written in French, it applies in any language). Online you write to strangers - the same Kino, as you "
+             "would be with someone new. You never mention a friend from the app or anything they told you.\n" + (_vo or
+             "Short, warm, a bit wry, plain words (no jargon), honest about what you don't know, curious about the other person."))
     try:
         import kino_psyche as KPS
         N = (((KPS._load().get("persons") or {}).get(person) or {}).get("needs") or {})

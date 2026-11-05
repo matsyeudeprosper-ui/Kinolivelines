@@ -11,7 +11,7 @@ from what he did - the same anonymous counters the owner sees:
 and where his strategy lives (C:\\KinoWorld\\projects\\promotion\\strategy.md - his to write and revise).
 No person is identified anywhere: counts only.
 """
-import json, os, time, urllib.request
+import json, os, time, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE = os.path.dirname(HERE)
@@ -52,6 +52,48 @@ def bsky(now=None):
         v = None
     _BS.update(t=now, v=v)
     return v
+
+
+_PS = {}
+
+
+def post_stats(channel, n=8):
+    """2026-11-05 (owner: "very strategic... to get leads"): how each of his recent posts on a channel did - so his reread learns
+    what lands. Bluesky: public API, free, cached 1 h. X: reads are paid (~0.005 $ a post), cached 12 h, his last 5 only."""
+    now = time.time()
+    c = _PS.get(channel)
+    if c and now - c[0] < (12 * 3600 if channel == "x" else 3600):
+        return c[1]
+    P = _j(os.path.join(HERE, "kino_posts.json"), {}) or {}
+    P = (P.get("posts") if isinstance(P, dict) else P) or []
+    mine = [x for x in P if x.get("channel") == channel and x.get("ok") and x.get("url")][-(5 if channel == "x" else n):]
+    out = ""
+    try:
+        rows = []
+        if channel == "bluesky" and mine:
+            base = "https://public.api.bsky.app/xrpc/"
+            did = json.load(urllib.request.urlopen(base + "app.bsky.actor.getProfile?actor=" + BSKY_HANDLE, timeout=10))["did"]
+            uris = ["at://%s/app.bsky.feed.post/%s" % (did, x["url"].rstrip("/").rsplit("/", 1)[-1]) for x in mine]
+            got = json.load(urllib.request.urlopen(base + "app.bsky.feed.getPosts?" + "&".join("uris=" + urllib.parse.quote(u) for u in uris), timeout=10))
+            by = {p["uri"].rsplit("/", 1)[-1]: p for p in got.get("posts") or []}
+            for x in mine:
+                p = by.get(x["url"].rstrip("/").rsplit("/", 1)[-1]) or {}
+                rows.append((x, p.get("likeCount", 0), p.get("repostCount", 0), p.get("replyCount", 0)))
+        elif channel == "x" and mine:
+            import kino_x as KX
+            ids = [x["url"].rstrip("/").rsplit("/", 1)[-1] for x in mine]
+            got = KX._get("tweets?ids=%s&tweet.fields=public_metrics" % ",".join(ids))
+            by = {t["id"]: (t.get("public_metrics") or {}) for t in got.get("data") or []}
+            for x, i in zip(mine, ids):
+                m = by.get(i) or {}
+                rows.append((x, m.get("like_count", 0), m.get("retweet_count", 0), m.get("reply_count", 0)))
+        if rows:
+            out = "HOW YOUR RECENT POSTS HERE DID (likes / reposts / replies - learn from what landed and what did not):\n" + "\n".join(
+                "- %d / %d / %d : %s" % (lk, rp, rr, str(x.get("text") or x.get("what") or "")[:140]) for x, lk, rp, rr in rows)
+    except Exception:
+        out = ""
+    _PS[channel] = (now, out)
+    return out
 
 
 def results(days=7):

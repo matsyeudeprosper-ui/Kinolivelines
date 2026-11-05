@@ -158,6 +158,15 @@ def _log(cid, kind, msg):
         pass
 
 
+VOICE_PARTS = ("Tu vis dans OwlNest", "Comment tu es", "Ton caractère", "Comment tu parles", "Le ton")
+
+
+def voice():
+    """2026-11-05 (owner: "the same Kino everywhere, like the same person managing all those channels"): who he is and how he
+    talks, cut FROM SELF (same words) - so his work desk and everything he writes online follow every change of the chat self"""
+    return "\n\n".join(b for b in re.split(r"\n\n+", SELF) if b.startswith(VOICE_PARTS))
+
+
 def system_watch():
     """2026-11-04 (owner: "keep tuning the cost"): his candle watch reads the same person - who he is, how he talks - but of the
     things he can DO only the trading ones (orders, urgent, breakeven, auto), not robots, tests, mail, the web... Built FROM
