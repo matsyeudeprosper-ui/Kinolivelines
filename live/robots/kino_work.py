@@ -225,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -253,6 +253,14 @@ You can make things public on your own, under your own name, with nobody approvi
 - publish (path = a project folder in C:\\KinoWorld\\projects, repo, why = what it is) puts those files on your GitHub
   account kinoverse26-byte, public, at once.
 - post (title + text) puts a post on your own blog, https://kinoverse26-byte.github.io - what you built, measured, learned.
+- KINOVERSE SALES (owner 05/11: you find businesses with a problem you can solve, make them something real, contact them,
+  negotiate within the rules, deliver, follow up - you are "Kino, AI assistant by Kinoverse"):
+  prospect ("name", "url" their site, "email" their public professional address, "country", "lang", "need" what you noticed
+  and what you could do, "notes", "stage" found|checked|preview|contacted|replied|quoted|won|delivered|lost) adds or updates one;
+  preview ("who" the prospect, "path" a folder of your world with index.html) publishes a working page made for them and gives
+  its address; outreach ("who", "subject", "text" - your personal email, in their language; the footer with the address and
+  "reply STOP" is added for you) sends your first email, or your one follow-up 4+ days later. Replies come to your mailbox and
+  call you; quote and invoice from there.
 - manage: you own your channels (owner 05/11: "manage them freely - no limits but budgets"). "op": delete | edit | like |
   unlike | repost | unrepost | follow | unfollow | mentions, "channel": x | bluesky | mastodon | blog, "url": the post (or the
   person for follow), "text" for edit, "why" one line for your own record. Bluesky and X cannot edit a post: delete and post
@@ -374,6 +382,11 @@ def _mind(person, uid):
             L.append("DIRECTION: " + _dr)
     except Exception:
         pass
+    try:                                       # 2026-11-05: Kinoverse sales - his prospects, the offer and its rules
+        import kino_sales as KSL
+        L.append(KSL.block())
+    except Exception:
+        pass
     try:                                       # 2026-11-05 (owner: "a master promoter of himself"): what his work brought back
         import kino_promo as KPR
         L.append(KPR.results())
@@ -485,6 +498,17 @@ def _act(j, person, W=None):
         if j.get("about"):
             return KP.mastodon_profile(W, j.get("title") or "Kino (AI)", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
         return KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+    if a in ("prospect", "preview", "outreach"):     # 2026-11-05: Kinoverse sales
+        import kino_sales as KSL
+        if a == "prospect":
+            r = KSL.prospect(j.get("name") or j.get("who"), url=j.get("url"), email_=j.get("email"), country=j.get("country"),
+                             lang=j.get("lang"), need=j.get("need") or j.get("text"), notes=j.get("notes"), stage=j.get("stage"))
+            return "prospect %s: %s [%s]" % (r["id"], r["name"], r["stage"])
+        if a == "preview":
+            return KSL.preview(W, j.get("who") or j.get("name"), _inside(j.get("path")) if j.get("path") else None,
+                               log=os.path.join(HERE, "kino_post_calls.log"))
+        return KSL.outreach(W, j.get("who") or j.get("name"), j.get("subject"), j.get("text") or j.get("content"),
+                            log=os.path.join(HERE, "kino_post_calls.log"))
     if a == "manage":                      # 2026-11-05: his channels, his to run
         import kino_post as KP
         return KP.manage(W, j.get("op"), j.get("channel"), j.get("url") or j.get("target") or j.get("who"), text=j.get("text"),

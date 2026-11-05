@@ -125,6 +125,11 @@ def check(first_run_quiet=True):
         _log("IN from %s | %s" % (x["from"], x["subject"][:120]))
         # 2026-11-01 (owner: clients write to him): who writes to him can be answered, and the mail waits for his answer
         a = email.utils.parseaddr(x["from"])[1].lower()
+        try:                                       # 2026-11-05 (Kinoverse sales): STOP is honoured at once; a prospect's answer counts
+            import kino_sales as KSL
+            KSL.on_mail(a, x["subject"], x["text"])
+        except Exception:
+            pass
         if a and a != OWNER_EMAIL and "noreply" not in a and "no-reply" not in a and "notification" not in a:
             allow(a)
             try:

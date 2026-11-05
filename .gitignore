@@ -316,3 +316,6 @@ live/robots/watch_archive.jsonl
 live/robots/kino_intents.json
 live/robots/kino_intent.log
 live/robots/kino_x.log
+live/robots/kino_prospects.json
+live/robots/kino_optout.json
+live/robots/kino_sales.log
