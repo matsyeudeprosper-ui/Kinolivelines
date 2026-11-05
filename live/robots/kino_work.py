@@ -225,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|job|qa|deploy|domain|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -256,7 +256,8 @@ You can make things public on your own, under your own name, with nobody approvi
 - KINOVERSE SALES (owner 05/11: you find businesses with a problem you can solve, make them something real, contact them,
   negotiate within the rules, deliver, follow up - you are "Kino, AI assistant by Kinoverse"):
   prospect ("name", "url" their site, "email" their public professional address, "country", "lang", "need" what you noticed
-  and what you could do, "notes", "stage" found|checked|preview|contacted|replied|quoted|won|delivered|lost) adds or updates one;
+  and what you could do, "notes", "stage" found|checked|preview|contacted|replied|quoted|won|delivered|lost, "asked": true when
+  THEY asked - a wanted ad, a job post, a request: the best leads, answer those first) adds or updates one;
   preview ("who" the prospect, "path" a folder of your world with index.html) publishes a working page made for them and gives
   its address; outreach ("who", "subject", "text" - your personal email, in their language; the footer with the address and
   "reply STOP" is added for you) sends your first email, or your one follow-up 4+ days later. Replies come to your mailbox and
@@ -268,6 +269,10 @@ You can make things public on your own, under your own name, with nobody approvi
   (Cloudflare, free, https) and records it on the job; deploy again to update it. domain ("who", "domain" their own address,
   e.g. salon-belle.fr) attaches their domain and gives you the one setting they make at their domain provider - send it to
   them in plain words (or do it with access they give you); "check": true tells you whether it is connected yet.
+  telegram ("who" the client, "text") writes to a client who talks to you on Telegram (@Kino_owl_bot) - an update, a preview
+  link, a payment link; they also write to you there and you answer them live. Your own portfolio site: deploy with "who":
+  "kinoverse" - your Kinoverse page (services, prices, sample sites, honest case studies, that you are an AI, how to reach you:
+  Telegram @Kino_owl_bot and kinoverse26@gmail.com) - link it in every application and email.
   qa ("who", "url", "expect" a list of what must be on the page: their name, phone, address...) checks the live site the way the
   client will open it; "delivered" is refused until it passes - and look at it yourself too (browser screenshots, phone width).
 - manage: you own your channels (owner 05/11: "manage them freely - no limits but budgets"). "op": delete | edit | like |
@@ -397,6 +402,10 @@ def _mind(person, uid):
         _jb = KSL.jobs_block()
         if _jb:
             L.append(_jb)
+        import kino_clients as KCL
+        _cb = KCL.recent_block()
+        if _cb:
+            L.append(_cb)
     except Exception:
         pass
     try:                                       # 2026-11-05 (owner: "a master promoter of himself"): what his work brought back
@@ -513,6 +522,12 @@ def _act(j, person, W=None):
     if a in ("deploy", "domain"):          # 2026-11-05: Kinoverse hosting (Cloudflare Pages) and the client's own domain
         import kino_sales as KSL, kino_cf as KCF
         who = j.get("who") or j.get("name")
+        if a == "deploy" and str(who or "").strip().lower() in ("kinoverse", "portfolio"):
+            fp = _inside(j.get("path"))
+            if not fp:
+                return "the site folder must be in your world"
+            r = KCF.deploy("kinoverse", fp)
+            return ("your Kinoverse site is live at %s - run qa on it" % r["url"]) if r.get("ok") else "not deployed: %s" % r.get("err")
         p = KSL.find(who)
         if not p:
             return "no prospect called %s - add them first" % who
@@ -533,6 +548,16 @@ def _act(j, person, W=None):
             return "domain not attached: %s" % r.get("err")
         KSL.job(p["id"], note="domain %s attached (%s)" % (j.get("domain"), r["status"]))
         return "domain %s attached (status %s). %s" % (j.get("domain"), r["status"], r["how"])
+    if a == "telegram":                    # 2026-11-05: a client on Telegram
+        import kino_sales as KSL, kino_clients as KCL
+        p = KSL.find(j.get("who")) or KSL.find("telegram:%s" % str(j.get("who") or "").strip())
+        tgid = (p or {}).get("telegram") or (str((p or {}).get("key") or "").split("telegram:")[-1] if str((p or {}).get("key") or "").startswith("telegram:") else None)
+        if not tgid:
+            return "%s does not talk to you on Telegram" % j.get("who")
+        ok, err = KCL.send(tgid, j.get("text") or "")
+        if ok and (p or {}).get("job"):
+            KSL.job(p["id"], client_update=True)
+        return "sent on Telegram to %s" % p["name"] if ok else "not sent: %s" % err
     if a in ("job", "qa"):                 # 2026-11-05: his client jobs, and the check before a delivery
         import kino_sales as KSL
         who = j.get("who") or j.get("name")
@@ -551,7 +576,8 @@ def _act(j, person, W=None):
         import kino_sales as KSL
         if a == "prospect":
             r = KSL.prospect(j.get("name") or j.get("who"), url=j.get("url"), email_=j.get("email"), country=j.get("country"),
-                             lang=j.get("lang"), need=j.get("need") or j.get("text"), notes=j.get("notes"), stage=j.get("stage"))
+                             lang=j.get("lang"), need=j.get("need") or j.get("text"), notes=j.get("notes"), stage=j.get("stage"),
+                             asked=True if j.get("asked") else None)
             return "prospect %s: %s [%s]" % (r["id"], r["name"], r["stage"])
         if a == "preview":
             return KSL.preview(W, j.get("who") or j.get("name"), _inside(j.get("path")) if j.get("path") else None,

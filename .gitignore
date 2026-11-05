@@ -320,3 +320,6 @@ live/robots/kino_prospects.json
 live/robots/kino_optout.json
 live/robots/kino_sales.log
 live/robots/kino_cf.log
+live/robots/kino_clients/
+live/robots/kino_clients.log
+live/robots/kino_clients_calls.log

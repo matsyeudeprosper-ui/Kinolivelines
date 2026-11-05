@@ -64,17 +64,18 @@ def _slug(s):
     return re.sub(r"[^a-z0-9]+", "-", str(s or "").lower()).strip("-")[:40] or "business"
 
 
-def prospect(name, url=None, email_=None, country=None, lang=None, need=None, notes=None, stage=None):
+def prospect(name, url=None, email_=None, country=None, lang=None, need=None, notes=None, stage=None, key=None, asked=None):
     """add or update one business (by its website or name) -> the record"""
     with _LK:
         d = _j(STORE, {"items": []})
-        key = (str(url or "").lower().split("//")[-1].strip("/").split("/")[0]) or _slug(name)
+        key = key or (str(url or "").lower().split("//")[-1].strip("/").split("/")[0]) or _slug(name)   # key: e.g. telegram:<id>
         p = next((x for x in d["items"] if x["key"] == key), None)
         if p is None:
             p = {"id": "p%d" % (int(time.time() * 10) % 10 ** 9), "key": key, "name": str(name or key)[:120], "t": time.time(),
                  "stage": "found", "history": []}
             d["items"].append(p)
-        for k, v in (("url", url), ("email", email_), ("country", country), ("lang", lang), ("need", need), ("notes", notes)):
+        for k, v in (("url", url), ("email", email_), ("country", country), ("lang", lang), ("need", need), ("notes", notes),
+                     ("asked", asked)):
             if v:
                 p[k] = str(v)[:1500]
         if stage in STAGES and stage != p["stage"]:
@@ -147,6 +148,15 @@ def outreach(W, ref, subject, body, log=None):
         return "outreach waits for the business postal address (Matsy gives it) - the law needs it in each email"
     if opted_out(a):
         return "%s asked not to be written to - never again" % a
+    # 2026-11-05 (owner: "anywhere in the world"): the law of the reader's country. Someone who ASKED (a wanted ad, a job post,
+    # a request) can always be answered. Otherwise: Germany / Austria forbid cold business email without prior consent - use
+    # their own contact form; South Africa (POPIA) allows one message that only asks whether they want to hear more
+    cc = str(p.get("country") or "").strip().upper()[:2]
+    if not p.get("asked"):
+        if cc in ("DE", "AT"):
+            return "%s is in %s: cold email is not allowed there without their consent - use the contact form on their site" % (p["name"], cc)
+        if cc == "ZA" and sent:
+            return "South Africa: you may ask once for consent; without a yes, no second email"
     sent = p.get("sent") or []
     if len(sent) >= 2:
         return "you already wrote twice to %s - no more unless they answer" % p["name"]
@@ -160,9 +170,12 @@ def outreach(W, ref, subject, body, log=None):
     full = body + "\n\n" + footer(p.get("lang") or "en")
     try:
         import kino_post as KP
-        ok, why = KP.check(W, "SALES EMAIL to a business (%s, %s)\nSubject: %s\n\n%s\n\nThis is a first contact from an AI assistant of "
-                              "Kinoverse to a business at its public professional address. Also say no if it claims results, clients or "
-                              "a registration it does not have, or pressures the reader." % (p["name"], p.get("url") or "", subject, full), log=log)
+        ok, why = KP.check(W, "SALES EMAIL to a business (%s, %s, country %s%s)\nSubject: %s\n\n%s\n\nThis is a first contact from an "
+                              "AI assistant of Kinoverse to a business at its public professional address. Also say no if it claims "
+                              "results, clients or a registration it does not have, or pressures the reader.%s" % (
+                                  p["name"], p.get("url") or "", cc or "?", ", they asked for this" if p.get("asked") else "", subject, full,
+                                  " South Africa: this first message must ONLY ask whether they would like to see what he made - no "
+                                  "offer, no price yet." if cc == "ZA" and not p.get("asked") else ""), log=log)
         if not ok:
             return "not sent - the check said: %s" % why
     except Exception:
@@ -243,7 +256,8 @@ def block():
                                                                  (" - " + p["url"]) if p.get("url") else "") for p in act))
     if due:
         L.append("No answer after 5+ days (one follow-up allowed, if it adds something): " + ", ".join(p["name"] for p in due))
-    L.append("THE OFFER AND YOUR RULES (Matsy's): " + json.dumps({k: o.get(k) for k in ("services", "rules", "registration")}, ensure_ascii=False)[:2500])
+    L.append("THE OFFER AND YOUR RULES (Matsy's): " + json.dumps({k: o.get(k) for k in ("services", "rules", "registration", "country_rules")},
+                                                                ensure_ascii=False)[:4500])
     return "\n".join(L)
 
 

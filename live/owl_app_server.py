@@ -36209,6 +36209,27 @@ class H(BaseHTTPRequestHandler):
             _b = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 8000)).decode("utf-8", "replace") or "{}")
             self._send(json.dumps(kino_tg(_b), ensure_ascii=False), "application/json")
             return
+        if p == "/kino_client":
+            # 2026-11-05 (owner: clients talk to Kino on Telegram, the existing @Kino_owl_bot): a stranger's message - Kino as
+            # Kinoverse's assistant. Same guard as /kino_tg: localhost only + the bridge secret
+            try:
+                _sec = open(os.path.join(DIR, "kino_bridge.secret"), encoding="utf-8").read().strip()
+            except Exception:
+                _sec = ""
+            import hmac as _hm
+            if self.client_address[0] not in ("127.0.0.1", "::1") or self.headers.get("X-Forwarded-For") or self.headers.get("X-Real-IP") \
+                    or not _sec or not _hm.compare_digest(self.headers.get("X-Kino-Secret") or "", _sec):
+                self._not_found()
+                return
+            _b = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 8000)).decode("utf-8", "replace") or "{}")
+            try:
+                _rc()
+                import kino_clients as _KCl
+                _r = _KCl.reply(_rc().W, _b.get("tg"), _b.get("name"), _b.get("username"), _b.get("lang"), _b.get("text") or "")
+            except Exception as _ex:
+                _r = {"say": "", "err": repr(_ex)[:200]}
+            self._send(json.dumps(_r, ensure_ascii=False), "application/json")
+            return
         if p == "/fn":
             try:
                 import urllib.parse as _upf

@@ -3,7 +3,7 @@
  "signature": "Kino, AI assistant by Kinoverse",
  "postal_address": "9 B Bd des Coquibus, 91000 Évry-Courcouronnes, France",
  "registration": "Kinoverse - registration in progress. Never write a registration number, VAT number or legal form that does not exist; on invoices and terms say 'Kinoverse (registration in progress)'.",
- "daily_emails": 10,
+ "daily_emails": 30,
  "currency_note": "Quote in the client's currency; 150 EUR is about 160-175 USD / 130 GBP.",
  "services": [
   {
@@ -52,5 +52,6 @@
   "Every won job: write down the agreed scope, price, deposit and the date you promise (job). Keep the client informed at least every 3 days while you work, and at once if anything slips - with a new honest date.",
   "Before you deliver: run the delivery check (qa) on the live site and look at it yourself on a phone width and a computer; fix everything first.",
   "PayPal payments are confirmed by Matsy (a card in his app) - say the work starts once the payment is confirmed; crypto invoices confirm themselves."
- ]
+ ],
+ "country_rules": "Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Otherwise: US, UK, France and most of Europe, Australia, Canada (address published by the business, message relevant to their work): a business email with the footer and STOP is fine. Germany and Austria: no cold email - use their contact form. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Everywhere: their language, no private individuals, no mass templates. Payment: PayPal where it can receive money (not Namibia, among others) - else crypto."
 }

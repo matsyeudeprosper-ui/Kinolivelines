@@ -275,6 +275,28 @@ def kino_bridge(token, cid, uid, text, msg_id):
     threading.Thread(target=run, daemon=True).start()
 
 
+def client_bridge(token, cid, frm, text, msg_id):
+    """2026-11-05 (owner: Kinoverse clients talk to Kino here): someone who is not an OwlNest member - Kino answers as
+    Kinoverse's assistant (POST /kino_client, localhost + the bridge secret)"""
+    import threading
+
+    def run():
+        try:
+            sec = open(os.path.join(DIR, "kino_bridge.secret"), encoding="utf-8").read().strip()
+            tg(token, "sendChatAction", chat_id=cid, action="typing")
+            req = urllib.request.Request("http://127.0.0.1:8787/kino_client", data=json.dumps({
+                "tg": cid, "name": " ".join(x for x in ((frm or {}).get("first_name"), (frm or {}).get("last_name")) if x),
+                "username": (frm or {}).get("username"), "lang": (frm or {}).get("language_code"), "text": text}).encode("utf-8"),
+                headers={"Content-Type": "application/json", "X-Kino-Secret": sec})
+            r = json.loads(urllib.request.urlopen(req, timeout=180).read().decode("utf-8"))
+            for part in [x.strip() for x in (r.get("say") or "").split("\n\n") if x.strip()][:5]:
+                tg(token, "sendMessage", chat_id=cid, text=part)
+                time.sleep(0.8)
+        except Exception as e:
+            say(f"client bridge error: {e}")
+    threading.Thread(target=run, daemon=True).start()
+
+
 def main():
     say("telegram daemon starting")
     # wait for config with a token
@@ -325,6 +347,9 @@ def main():
                             "\U0001F989 Bienvenue dans le nid ! Vous "
                             "recevrez les nouvelles importantes du robot."))
                         say(f"subscribed chat {cid}")
+                    elif not mem and txt and txt != join_word and (not txt.startswith("/") or txt.startswith("/start"))                             and (m.get("chat") or {}).get("type") == "private":
+                        # 2026-11-05: a stranger in a private chat is a possible Kinoverse client - Kino answers them
+                        client_bridge(token, cid, m.get("from") or {}, m.get("text") or "", m.get("message_id"))
                     elif txt.startswith("/start"):
                         tg(token, "sendMessage", chat_id=cid, text=(
                             "\U0001F989 OwlNest. Pour retrouver votre acc\u00e8s un jour, reliez ce Telegram depuis l\u2019app "
