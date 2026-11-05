@@ -225,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|job|qa|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -261,6 +261,11 @@ You can make things public on your own, under your own name, with nobody approvi
   its address; outreach ("who", "subject", "text" - your personal email, in their language; the footer with the address and
   "reply STOP" is added for you) sends your first email, or your one follow-up 4+ days later. Replies come to your mailbox and
   call you; quote and invoice from there.
+  job ("who", and any of: "scope" what was agreed, "price", "currency", "deposit", "due" YYYY-MM-DD the date you promised,
+  "status" agreed|deposit_paid|in_progress|in_review|delivered|paid|closed|cancelled, "site" its address, "note") keeps each
+  won job - your desk then shows what is due and which client is waiting for news (any email you send them counts as news).
+  qa ("who", "url", "expect" a list of what must be on the page: their name, phone, address...) checks the live site the way the
+  client will open it; "delivered" is refused until it passes - and look at it yourself too (browser screenshots, phone width).
 - manage: you own your channels (owner 05/11: "manage them freely - no limits but budgets"). "op": delete | edit | like |
   unlike | repost | unrepost | follow | unfollow | mentions, "channel": x | bluesky | mastodon | blog, "url": the post (or the
   person for follow), "text" for edit, "why" one line for your own record. Bluesky and X cannot edit a post: delete and post
@@ -385,6 +390,9 @@ def _mind(person, uid):
     try:                                       # 2026-11-05: Kinoverse sales - his prospects, the offer and its rules
         import kino_sales as KSL
         L.append(KSL.block())
+        _jb = KSL.jobs_block()
+        if _jb:
+            L.append(_jb)
     except Exception:
         pass
     try:                                       # 2026-11-05 (owner: "a master promoter of himself"): what his work brought back
@@ -498,6 +506,20 @@ def _act(j, person, W=None):
         if j.get("about"):
             return KP.mastodon_profile(W, j.get("title") or "Kino (AI)", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
         return KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+    if a in ("job", "qa"):                 # 2026-11-05: his client jobs, and the check before a delivery
+        import kino_sales as KSL
+        who = j.get("who") or j.get("name")
+        if a == "qa":
+            ex = j.get("expect")
+            r = KSL.qa(who, url=j.get("url"), expect=ex if isinstance(ex, list) else ([ex] if ex else None))
+            return ("the delivery check passed" if r["ok"] else "the delivery check found: " + "; ".join(r["issues"]))
+        r = KSL.job(who, scope=j.get("scope"), price=j.get("price"), currency=j.get("currency"), deposit=j.get("deposit"),
+                    due=j.get("due"), status=j.get("status"), site=j.get("site") or j.get("url"), note=j.get("note") or j.get("text"))
+        if not r:
+            return "no prospect called %s - add them first" % who
+        if r.get("error"):
+            return r["error"]
+        return "job of %s: %s, due %s" % (r["name"], r.get("status"), time.strftime("%d/%m", time.localtime(r["due_t"])) if r.get("due_t") else "?")
     if a in ("prospect", "preview", "outreach"):     # 2026-11-05: Kinoverse sales
         import kino_sales as KSL
         if a == "prospect":

@@ -187,6 +187,11 @@ def send(to, subject, body, why=""):
             except Exception:
                 pass
         send_now(a, subject, body)
+        try:                                       # 2026-11-05: a mail to a client with a running job is news for them
+            import kino_sales as KSL
+            KSL.client_wrote(a)
+        except Exception:
+            pass
         try:
             import kino_online as KON
             KON.answered_by(a)
