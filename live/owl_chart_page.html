@@ -757,6 +757,14 @@ function htDraw(){
  cs.forEach((k,i)=>{
   const x=Math.round(cw*(i+1))+0.5;HT.xoft[k[0]]=x;HT.xts.push(k[0]);
   if(HT.tf==='PB'&&atLive&&LT&&k[0]===LT[0])return;   // the forming minute is drawn live, below
+  // 2026-11-05 (owner: "an issue between what you see and what I do"): the stand-in - the newest lower candle the top chart
+  // shows until a structure point decides it - is NOT a closed top candle (Kino does not count it): hollow, dashed, "en attente"
+  if(HT.tf==='PB'&&d.pending_t&&k[0]===d.pending_t){
+   g.save();g.globalAlpha=.85;g.setLineDash([3,3]);g.strokeStyle='#8a9bb0';g.lineWidth=1;
+   const y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));
+   g.strokeRect(x-bw/2,y1,bw,Math.max(1.5,y2-y1));g.beginPath();g.moveTo(x,py(k[2]));g.lineTo(x,y1);g.moveTo(x,y1+Math.max(1.5,y2-y1));g.lineTo(x,py(k[3]));g.stroke();
+   g.setLineDash([]);g.fillStyle='#8a9bb0';g.font='600 9px Inter, system-ui, sans-serif';g.textAlign='center';
+   g.fillText(CL?'pending':'en attente',x,Math.max(TOP+9,py(k[2])-6));g.restore();return;}
   const age=(cs.length-1-i)/Math.max(1,cs.length-1);
   g.globalAlpha=(1-age*(HT.off<0.5?0.45:0.18))*(MEM.has(k[0])?0.55:1);
   g.strokeStyle='#7d8b9e';g.lineWidth=1;

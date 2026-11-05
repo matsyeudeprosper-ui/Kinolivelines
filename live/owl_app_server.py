@@ -39164,6 +39164,16 @@ class H(BaseHTTPRequestHandler):
             d["symbols"] = [{"sym": x["sym"], "fr": x["fr"], "en": x["en"], "robot": x["robot"]} for x in _syms]
             d["sym"] = _sm["sym"]; d["scale"] = _sm["scale"]; d["digits"] = _sm["digits"]
             d["sym_fr"] = _sm["fr"]; d["sym_en"] = _sm["en"]; d["robot_market"] = bool(_sm["robot"])
+            # 2026-11-05 19:58 UTC (owner: "there's an issue between what you see and what I do on the chart" - auto stopped): the top
+            # chart's last candle is often only a STAND-IN (the newest lower candle, replaced each minute unless it becomes a structure
+            # point). Kino ignores it; the chart drew it like a closed candle. The page now draws it as pending (pb.pending_t)
+            try:
+                _pbc = (d.get("pb") or {}).get("candles") or []
+                _lwc = d.get("candles") or []
+                if _pbc and _lwc and int(float(_pbc[-1][0])) == int(float(_lwc[-1][0])):
+                    d["pb"]["pending_t"] = int(float(_pbc[-1][0]))
+            except Exception:
+                pass
             # 2026-11-04 (owner: the custom chart becomes a paid add-on - Pro, Premium): without it, the plain 1-minute candles
             # and no custom structure. Any viewer marks the market as in use (the multi feed keeps it live; unwatched markets slow down)
             _chart_demand(_sm["sym"])
