@@ -225,7 +225,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|job|qa|invoice|lead|goal|shop|site|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|toot|manage|notify|prospect|preview|outreach|job|qa|deploy|domain|invoice|lead|goal|shop|site|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -264,6 +264,10 @@ You can make things public on your own, under your own name, with nobody approvi
   job ("who", and any of: "scope" what was agreed, "price", "currency", "deposit", "due" YYYY-MM-DD the date you promised,
   "status" agreed|deposit_paid|in_progress|in_review|delivered|paid|closed|cancelled, "site" its address, "note") keeps each
   won job - your desk then shows what is due and which client is waiting for news (any email you send them counts as news).
+  deploy ("who", "path" the folder of your world with the finished site) puts the client's site live on Kinoverse hosting
+  (Cloudflare, free, https) and records it on the job; deploy again to update it. domain ("who", "domain" their own address,
+  e.g. salon-belle.fr) attaches their domain and gives you the one setting they make at their domain provider - send it to
+  them in plain words (or do it with access they give you); "check": true tells you whether it is connected yet.
   qa ("who", "url", "expect" a list of what must be on the page: their name, phone, address...) checks the live site the way the
   client will open it; "delivered" is refused until it passes - and look at it yourself too (browser screenshots, phone width).
 - manage: you own your channels (owner 05/11: "manage them freely - no limits but budgets"). "op": delete | edit | like |
@@ -506,6 +510,29 @@ def _act(j, person, W=None):
         if j.get("about"):
             return KP.mastodon_profile(W, j.get("title") or "Kino (AI)", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
         return KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+    if a in ("deploy", "domain"):          # 2026-11-05: Kinoverse hosting (Cloudflare Pages) and the client's own domain
+        import kino_sales as KSL, kino_cf as KCF
+        who = j.get("who") or j.get("name")
+        p = KSL.find(who)
+        if not p:
+            return "no prospect called %s - add them first" % who
+        if a == "deploy":
+            fp = _inside(j.get("path"))
+            if not fp:
+                return "the site folder must be in your world"
+            r = KCF.deploy(p["name"], fp)
+            if not r.get("ok"):
+                return "not deployed: %s" % r.get("err")
+            KSL.job(p["id"], site=r["url"], note="deployed to %s" % r["url"])
+            return "live at %s (this deployment: %s) - run qa on it before you call it delivered" % (r["url"], r.get("deployment"))
+        if j.get("check"):
+            r = KCF.domain_status(p["name"], j.get("domain"))
+            return "domain %s: %s" % (j.get("domain"), r.get("status") or r.get("err"))
+        r = KCF.add_domain(p["name"], j.get("domain"))
+        if not r.get("ok"):
+            return "domain not attached: %s" % r.get("err")
+        KSL.job(p["id"], note="domain %s attached (%s)" % (j.get("domain"), r["status"]))
+        return "domain %s attached (status %s). %s" % (j.get("domain"), r["status"], r["how"])
     if a in ("job", "qa"):                 # 2026-11-05: his client jobs, and the check before a delivery
         import kino_sales as KSL
         who = j.get("who") or j.get("name")
