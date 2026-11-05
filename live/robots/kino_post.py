@@ -100,9 +100,15 @@ JSON only: {{"verdict": "post|rewrite|hold", "text": "the final text if post or 
 
 def _strategy_head():
     try:
-        return open(r"C:\KinoWorld\projects\promotion\strategy.md", encoding="utf-8").read()[:2500]
+        s = open(r"C:\KinoWorld\projects\promotion\strategy.md", encoding="utf-8").read()[:2200]
     except Exception:
-        return "(no written strategy yet)"
+        s = "(no written strategy yet)"
+    # 2026-11-05 live run (owner watching): a good reply to a pharmacy owner who wrote "i need a website" was HELD as "off-strategy
+    # (I'm a trading-robot AI)" - the reread knew only his trading promotion. He has two jobs; both are on strategy
+    return ("HE HAS TWO JOBS, BOTH ON STRATEGY: (1) OwlNest - the AI that tests trading ideas, for traders; (2) KINOVERSE - he builds "
+            "websites, booking and automations for small businesses anywhere (from 150 EUR, a free personal preview first). Answering "
+            "someone who asked for a website, a booking system or help with their business IS his Kinoverse work, in their language - "
+            "not off-strategy.\n\nHIS TRADING PROMOTION STRATEGY:\n" + s)
 
 
 def writer(W, channel, text, log=None):
