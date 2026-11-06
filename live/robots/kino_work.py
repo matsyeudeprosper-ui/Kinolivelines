@@ -31,6 +31,12 @@ SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): 
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
 NIGHT_USD = 1.2                  # 2026-11-05: the night (01-07 France) hunt in the US may use this much of the new day's budget
 NIGHT_SESSIONS = 4
+DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). Read my playbook. Pick ONE city where it is business hours now "
+            "(Europe in the morning, the Americas from the afternoon) and ONE kind of small business. Both count: businesses with "
+            "a WEAK website (find with with_site true, then audit - weakness 4+ with an email) and businesses with NO website "
+            "(find their email on Facebook About, Google listing, Instagram, a directory). Brief my hunter for a whole city if it "
+            "is big, my designer for the premium preview of the best lead, and check it with qa. Then ONE personal email per "
+            "solid lead, within the country rules. Record every lead, note what I learn in the playbook, finish with done.")
 NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use find with "
               "with_site true in ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), audit their "
               "sites, pick a weak one (score 4+) that shows an email, check it, record it, and if it is solid have the premium "
@@ -176,6 +182,12 @@ def due(person, ctx, now=None):
         _mut(_mark)
         return True
     today = time.strftime("%Y-%m-%d", time.gmtime(now))
+    # 2026-11-06 (watch): three morning sessions in a row he chose promotion (the same gold story on X then Bluesky) while
+    # Kinoverse - Matsy's big goal - got nothing; a project note did not change his choice. When his last two sessions were
+    # not Kinoverse, the next one is a hunt (his day work, like the night hunt)
+    _last2 = (d.get("sessions") or [])[-2:]
+    if len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
+        _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
