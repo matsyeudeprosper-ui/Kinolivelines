@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-06T01:00:42Z",
+ "updated": "2026-11-06T04:01:00Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -3852,6 +3852,15 @@
     "flip_day",
     "flip_after_loss"
    ]
+  },
+  {
+   "t": "2026-11-06T04:01:00Z",
+   "looked": [
+    "wake_context (1 close 03:25; 314 total; twin noday 27 tr -5.89; no ask)",
+    "bos_journal last row",
+    "scrutiny --pile flip_after_loss"
+   ],
+   "saw": "FLIP-BOS BUY 02:50 pace 1.146 stop 316, ~85 min after a win, h1 t=-1, L -6.36 in 35 min. Falls in flip_after_loss nervous bucket (1.0-1.3: 29% win, -58.86 over ~24 tr). Pile flip_after_loss 101 tr 40% -91.94, halves 45/34. No run, no pile, no proposal."
   }
  ],
  "lessons": [
