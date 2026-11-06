@@ -710,16 +710,33 @@ def find_businesses(place, kind, limit=25, with_site=False):
         return {"ok": False, "err": "%r is too big an area - name a city or a district" % place}
     k, v = tag.split("=", 1)
     q = '[out:json][timeout:50];nwr["%s"="%s"]["name"](%f,%f,%f,%f);out center tags 300;' % (k, v, s, w, n, e)
+    # 2026-11-06: the free map servers fail often (SSL, 502) - a city fetched once is kept 7 days
+    import hashlib
+    cf = os.path.join(os.path.dirname(STORE), "osm_cache", hashlib.sha1(q.encode()).hexdigest()[:16] + ".json")
     r, last = None, ""
-    for ep in ("https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
-               "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
-               "https://overpass-api.de/api/interpreter"):   # free public servers: when one is busy, the next (06/11: SSL errors x4)
-        try:
-            r = json.load(urllib.request.urlopen(urllib.request.Request(
-                ep, data=urllib.parse.urlencode({"data": q}).encode(), headers=_UA), timeout=90))
+    try:
+        if time.time() - os.path.getmtime(cf) < 7 * 86400:
+            r = json.load(open(cf, encoding="utf-8"))
+    except Exception:
+        pass
+    for _try in range(2 if r is None else 0):
+        if _try:
+            time.sleep(20)
+        for ep in ("https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
+                   "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter"):
+            try:
+                r = json.load(urllib.request.urlopen(urllib.request.Request(
+                    ep, data=urllib.parse.urlencode({"data": q}).encode(), headers=_UA), timeout=90))
+                break
+            except Exception as ex:
+                last = str(ex)[:80]
+        if r is not None:
+            try:
+                os.makedirs(os.path.dirname(cf), exist_ok=True)
+                json.dump(r, open(cf, "w", encoding="utf-8"))
+            except Exception:
+                pass
             break
-        except Exception as ex:
-            last = str(ex)[:80]
     if r is None:
         return {"ok": False, "err": "the map servers did not answer (%s) - try again in a few minutes" % last}
     out = []

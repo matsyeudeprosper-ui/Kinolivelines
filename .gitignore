@@ -331,3 +331,4 @@ live/robots/kino_team.log
 live/robots/kino_toolbox_off
 live/robots/kino_report.json
 live/robots/work_inflight.json
+live/robots/osm_cache/
