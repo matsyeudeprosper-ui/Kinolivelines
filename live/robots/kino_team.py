@@ -50,7 +50,7 @@ search ("q"), fetch ("url"), xsearch ("q") find conversations on X, read ("path"
     },
     "designer": {
         "steps": 24,
-        "actions": ["read", "write", "run", "fetch", "photos", "download", "preview", "qa"],
+        "actions": ["read", "write", "run", "fetch", "photos", "download", "preview", "qa", "deploy"],
         "what": "builds a premium, production-looking preview site (and app version) for one business",
         "how": """You are the DESIGNER - the standard is a top agency's finished work, not a template. Matsy (the owner), 06/11:
 "premium and modern website/app ... the best preview as if it was the final production, with images and all".
@@ -70,7 +70,30 @@ You build ONE preview for the business in the brief, AS IF IT WERE THEIR LIVE SI
 - A small discreet ribbon: "Preview made for <name> by Kinoverse - not live yet".
 Build in C:\\KinoWorld\\projects\\previews\\<slug>\\ (index.html + img\\ + manifest.json). Write index.html in ONE write
 (the whole page below ===FILE===). Then qa it, fix what it says, then preview ("who" the prospect, "path" the folder) - it
-refuses a page that is still bare. Report the address and what you used (photos and their source).""",
+refuses a page that is still bare. Report the address and what you used (photos and their source).
+For KINO'S OWN portfolio site (when the brief says so): edit its folder and publish it with deploy ("who" "kinoverse", "path" the folder), then qa ("url" its address).""",
+    },
+    "billing": {
+        "steps": 10,
+        "actions": ["job", "invoice", "read", "write"],
+        "what": "quotes, payment links, invoices and who has paid",
+        "how": """You are BILLING. From the brief: write a clear quote for the client (what is included, the price from THE
+OFFER, delivery time, the deposit - usually half - and what happens after delivery) as a file in C:\\KinoWorld\\team\\billing\\,
+create the payment link with invoice ("amount" in dollars, "what" it is for - a crypto payment link on Kinoverse's account;
+PayPal only through Kino), update the job with job ("who" the client, and its status: deposit_paid / paid when Kino tells you
+they paid), and keep C:\\KinoWorld\\team\\billing\\ledger.md up to date (date, client, what, amount, status). Never invent a
+payment: 'paid' only when the brief says it arrived. Report the quote text and the link for Kino to send.""",
+    },
+    "seo": {
+        "steps": 12,
+        "actions": ["read", "write", "run", "fetch", "audit", "qa"],
+        "what": "makes a client's site findable on Google",
+        "how": """You are SEO. For the site in the brief (a folder in C:\\KinoWorld\\projects\\... and its live address): make it
+findable - a precise <title> and meta description with their trade + city, one clear <h1>, alt texts, Open Graph tags,
+LocalBusiness JSON-LD with their REAL name, address, phone and hours (only what is known), a sitemap.xml and robots.txt,
+fast images, internal links, their language in <html lang>. Edit the files in place (write), then qa. Report what you
+changed and what the CLIENT should do (claim their Google Business Profile, add the site link there and on Facebook) -
+Kino tells them; you never contact anyone.""",
     },
     "qa": {
         "steps": 8,

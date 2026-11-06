@@ -22,7 +22,7 @@ STORE = os.path.join(HERE, "kino_prospects.json")
 OPTOUT = os.path.join(HERE, "kino_optout.json")
 LOG = os.path.join(HERE, "kino_sales.log")
 _LK = threading.Lock()
-STAGES = ("found", "checked", "preview", "contacted", "followed_up", "replied", "quoted", "won", "delivered", "lost")
+STAGES = ("found", "checked", "preview", "contacted", "opened", "followed_up", "replied", "quoted", "won", "delivered", "lost")
 STOP_RE = re.compile(r"\b(stop|unsubscribe|remove me|d[ée]sinscri|ne plus (me )?(contacter|[ée]crire)|pas int[ée]ress)", re.I)
 
 
@@ -148,7 +148,7 @@ def on_mail(addr, subject, text):
     if STOP_RE.search((subject or "") + " " + (text or "")[:400]):
         opt_out(a, "replied: " + (subject or "")[:60])
         return
-    if p["stage"] in ("contacted", "followed_up"):
+    if p["stage"] in ("contacted", "opened", "followed_up"):
         prospect(p["name"], url=p.get("url"), stage="replied")
         _log("REPLIED %s" % a)
 
@@ -172,6 +172,35 @@ def country_code(c):
     if len(s) == 2:
         return s.upper()
     return _CC.get(s.lower(), s.upper()[:2])
+
+
+EMAIL_QA = """You are the QA of Kinoverse (an AI web studio). Before a FIRST email goes to a small business, you check it hard.
+FAIL it if ANY of these is true:
+- a fact about the business (name, street, city, phone, what is wrong with their site) differs from THE RECORD, or is not in it
+- it is not in the business's language (THE RECORD lang/country) or has spelling/grammar mistakes
+- it reads like a template (could be sent to any business unchanged) instead of being about THEM
+- it is pushy, claims clients/results/reviews/registration we do not have, or promises gains
+- the country rule is broken (THE RULE below)
+- no clear, easy next step for them, or longer than about 180 words
+Answer JSON only: {"pass": true|false, "fix": "the exact list of what to change, short"}"""
+
+
+def _email_qa(W, p, cc, subject, body, log=None):
+    """'' when it passes, else what to fix"""
+    if W is None:
+        return ""
+    rule = offer().get("country_rules") or ""
+    rec = {k: p.get(k) for k in ("name", "url", "email", "country", "lang", "need", "notes", "preview", "asked")}
+    try:
+        v = W.ask_json(EMAIL_QA, "THE RECORD: %s\nTHE RULE (country %s): %s\n\nTHE EMAIL\nSubject: %s\n\n%s\n\nJSON only." % (
+            json.dumps(rec, ensure_ascii=False), cc or "?", rule[:1500], subject, body), models=("sonnet",), timeout=120, log=log, warm=False)
+    except Exception as e:
+        _log("EMAIL-QA-ERR %s" % e)
+        return ""
+    if isinstance(v, dict) and v.get("pass") is False:
+        _log("EMAIL-QA FAIL %s | %s" % (p["name"], str(v.get("fix"))[:200]))
+        return str(v.get("fix") or "it did not pass")[:600]
+    return ""
 
 
 def outreach(W, ref, subject, body, log=None):
@@ -208,14 +237,18 @@ def outreach(W, ref, subject, body, log=None):
         sent = [x for x in sent if float(x["t"]) > rt]
     if len(sent) >= 2:
         return "you already wrote twice to %s - no more unless they answer" % p["name"]
-    if sent and time.time() - float(sent[-1]["t"]) < 4 * 86400:
-        return "a follow-up comes at least 4 days after your first email"
+    _gap = 2 if p.get("clicks") else 4          # 2026-11-06: they opened the preview - interest is real, sooner is right
+    if sent and time.time() - float(sent[-1]["t"]) < _gap * 86400:
+        return "a follow-up comes at least %d days after your first email" % _gap
     if _sent_today() >= int(o.get("daily_emails") or 10):
         return "you sent today's %d outreach emails - more tomorrow" % int(o.get("daily_emails") or 10)
     if len(body) < 80:
         return "too short to be a real, personal email"
     # clients see the Kinoverse work, not the trading app
     body = re.sub(r"https?://kino\.owltrader\.duckdns\.org/?(?=\s|$)", PORTFOLIO, body)
+    if p.get("preview"):                      # 2026-11-06: the preview link goes through the click counter
+        _pv = p["preview"].rstrip("/")
+        body = re.sub(re.escape(_pv) + r"/?(?:index\.html)?", tracked(p), body)
     full = body + "\n\n" + footer(p.get("lang") or "en")
     try:
         import kino_post as KP
@@ -229,6 +262,10 @@ def outreach(W, ref, subject, body, log=None):
             return "not sent - the check said: %s" % why
     except Exception:
         pass
+    if not sent:                                     # 2026-11-06 (owner: "do all 7" - #5): every FIRST email is checked by QA
+        q = _email_qa(W, p, cc, subject, body, log)
+        if q:
+            return "not sent - QA found: %s. Fix it (or brief your writer), then send again." % q
     import kino_mail as KM
     KM.allow(a)
     KM.send_now(a, subject, full)
@@ -325,6 +362,40 @@ def preview(W, ref, folder, log=None):
     return "preview published (a minute or two to appear): %s" % url
 
 
+TRACK_BASE = "https://owltrader.duckdns.org/v/"      # 2026-11-06 (owner): did they open what we made? - an honest click counter
+
+
+def tracked(p):
+    """the link that goes in an email: our address, which counts the visit and forwards to their preview"""
+    return TRACK_BASE + p["id"] if p.get("preview") else ""
+
+
+def on_click(pid, ua=""):
+    """someone opened /v/<id> -> (preview url or None). Counted on the prospect; Kino hears about it"""
+    with _LK:
+        d = _j(STORE, {"items": []})
+        p = next((x for x in d["items"] if x["id"] == pid), None)
+        if not p or not p.get("preview"):
+            return None
+        c = p.setdefault("clicks", [])
+        c.append({"t": time.time(), "ua": str(ua or "")[:120]})
+        p["clicks"] = c[-50:]
+        if p["stage"] in ("contacted", "followed_up", "preview"):
+            p.setdefault("history", []).append([int(time.time()), p["stage"], "opened"])
+            p["stage"] = "opened"
+        _w(STORE, d)
+        url, name, n = p["preview"], p["name"], len(c)
+    _log("CLICK %s (%d)" % (name, n))
+    if n == 1:
+        try:
+            import kino_urge as KU
+            KU.add("kino", "A BUSINESS OPENED WHAT YOU MADE: %s just opened the preview you sent them (%s). That is the moment "
+                           "interest is real - your follow-up can now come sooner and warmer, within the country rules." % (name, url))
+        except Exception:
+            pass
+    return url
+
+
 _EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 
 
@@ -410,11 +481,15 @@ def block():
         by[p["stage"]] = by.get(p["stage"], 0) + 1
     act = sorted([p for p in d if p["stage"] in ("replied", "quoted", "won", "preview", "checked")], key=lambda p: -p.get("updated", 0))[:8]
     due = [p for p in d if p["stage"] == "contacted" and len(p.get("sent") or []) == 1 and time.time() - float(p["sent"][-1]["t"]) > 5 * 86400][:5]
+    opened = sorted([p for p in d if p.get("clicks")], key=lambda p: -p["clicks"][-1]["t"])[:6]
     L = ["KINOVERSE SALES - your prospects: " + (", ".join("%s %d" % (k, by[k]) for k in STAGES if by.get(k)) or "none yet") +
          "; outreach sent today %d of %d." % (_sent_today(), int(o.get("daily_emails") or 10))]
     if act:
         L.append("Moving now: " + " | ".join("%s [%s] %s%s" % (p["name"], p["stage"], (p.get("need") or "")[:80],
                                                                  (" - " + p["url"]) if p.get("url") else "") for p in act))
+    if opened:                                 # 2026-11-06: who opened what you made (the click counter)
+        L.append("OPENED YOUR PREVIEW (follow these up first, 2+ days after your email, warmly): " + " | ".join(
+            "%s - %d time(s), last %s" % (p["name"], len(p["clicks"]), time.strftime("%d/%m %H:%M UTC", time.gmtime(p["clicks"][-1]["t"]))) for p in opened))
     if due:
         L.append("No answer after 5+ days (one follow-up allowed, if it adds something): " + ", ".join(p["name"] for p in due))
     try:                                       # 2026-11-05 (owner: "is he learning from his mistakes?"): his own playbook

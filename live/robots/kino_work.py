@@ -144,6 +144,11 @@ def due(person, ctx, now=None):
     if _BUSY["on"] or ctx.get("in_talk"):
         return False
     d = _load()
+    try:                                       # 2026-11-06 (owner #7): Sunday evening, his week in real numbers to Matsy
+        import kino_report as KRP
+        KRP.maybe_send(now)
+    except Exception:
+        pass
     # the weekly look back comes first: Sunday evening, or Monday morning if Sunday's was missed - it does not count against the
     # day's sessions (2026-11-01: a busy Sunday used up the day's count and the first review never happened)
     _fr = time.gmtime(now + 3600)

@@ -38303,6 +38303,24 @@ class H(BaseHTTPRequestHandler):
                        "<h2>%s</h2><p>%s</p>" % ("Connected" if _okx else "Not connected", __import__("html").escape(_msx)),
                        "text/html; charset=utf-8")
             return
+        if len(parts) == 2 and parts[0] == "v" and re.match(r"^p\d{1,12}$", parts[1]):
+            # 2026-11-06 (owner: "do we know if the client viewed the sample?"): the preview link in Kino's emails - counts a
+            # real visit (not link-preview robots, not the admin), then forwards to the preview
+            _rc()
+            import kino_sales as _KSv
+            _uav = (self.headers.get("User-Agent") or "").lower()
+            _botv = (not _uav.startswith("mozilla/")) or any(w in _uav for w in (
+                "bot", "crawl", "spider", "preview", "scan", "google-safety", "proofpoint", "mimecast", "barracuda", "headless",
+                "python", "curl", "facebookexternalhit", "slurp", "embedly"))
+            if _botv or admin_cookie_ok(self.headers) or usage_local(self.headers):
+                _pv = (_KSv.find(parts[1]) or {}).get("preview")
+            else:
+                _pv = _KSv.on_click(parts[1], _uav)
+            self.send_response(302)
+            self.send_header("Location", _pv or "https://kv-kinoverse.pages.dev/")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            return
         if parts == ["demo"]:
             # 2026-11-01 (owner: "think deeper what the demo becomes"): the demo is meeting Kino - a conversation without an
             # account (kino_meet), what he does, and a robot he made working live at /demo/live
