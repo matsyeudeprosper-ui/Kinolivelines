@@ -142,7 +142,9 @@ BUILD = """You are a top web designer and front-end developer (the level of the 
 quality HTML page for a small business: the client must open it and feel it is their finished, premium site.
 Rules: their REAL facts only (from the brief and the notes) - never invent reviews, awards, prices or hours ("on request" /
 "call to book" instead); use ONLY the image files listed as downloaded (relative paths like img/hero.jpg), each where it fits
-best (the sharpest, most striking one as the hero); inline CSS + a little vanilla JS, Google Fonts allowed; mobile-first and
+best (the sharpest, most striking one as the hero) - but NEVER a photo showing another business's name, sign or logo
+(06/11: a 'Daddy Joe barbing saloon' sign ended up in Atlas's gallery), and alt texts only claim what the photo really is;
+the business name as logo text is written plainly (no letter split into a span); inline CSS + a little vanilla JS, Google Fonts allowed; mobile-first and
 flawless on a phone; a full-bleed hero with a strong, specific headline (about THEM, their street, their city - not a generic
 slogan), clear calls to action (call / WhatsApp / booking), at least 5 <section>s (about, services, gallery, hours + map embed
 of their address, contact), refined palette from their brand, generous spacing, subtle reveal animation that never hides content
