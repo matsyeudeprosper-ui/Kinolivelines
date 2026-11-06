@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-06T04:01:00Z",
+ "updated": "2026-11-06T05:08:30Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -110,7 +110,8 @@
     "2026-11-02: on filter + quarter 13-16: flip_hot 0.5 adds +10.1 on 42 d (hole 47.5 -> 39.2, h2 -11.0 -> -0.3) and +8.2 on 69 d. Alone with fl05 (no hours) 42 d -24.2 vs F -42.1: helps, not enough.",
     "2026-11-02 13:00 veille: two day nervous FLIP-BOS lost (08:40 BUY pace 1.446 -4.50; 09:36 SELL pace 1.331 -1.45 at 0.02), as flip_day/flip_hot predict. FLIP-BOS 147 tr 45% -97.37 PF 0.67 (h 45/45); BOS 136 tr 50% -40.81 (h 58/43).",
     "2026-11-02 18:40 veille: evening FLIP-BOS SELL pace 1.819 storm, stop 109, 4.6 min, L -2.29 at 0.02 (twin same -2.49). Journal ref account: FLIP nervous 28 tr 15 won -3.42 (flat, fits 'earn nothing'); FLIP calm 76 tr 33 won -51.79 (contradicts 'calm flips carry' on real trades). Recheck pooled at night.",
-    "2026-11-05 15:00 veille: day FLIP-BOS SELL pace 1.557 storm, stop 225, 6 min, W +3.61 at 0.02 - against, one trade."
+    "2026-11-05 15:00 veille: day FLIP-BOS SELL pace 1.557 storm, stop 225, 6 min, W +3.61 at 0.02 - against, one trade.",
+    "2026-11-06 05:08 veille: FLIP-BOS SELL pace 0.90 after a loss W +3.24 in 68 min; pile flip_after_loss 0.8-1.0 bucket 32 tr 44% -19.06 vs 1.0-1.3 24 tr 29% -58.86. One trade, hint."
    ],
    "next": "Battery + critic on pb_y_q1316_fh05."
   },
@@ -3861,6 +3862,19 @@
     "scrutiny --pile flip_after_loss"
    ],
    "saw": "FLIP-BOS BUY 02:50 pace 1.146 stop 316, ~85 min after a win, h1 t=-1, L -6.36 in 35 min. Falls in flip_after_loss nervous bucket (1.0-1.3: 29% win, -58.86 over ~24 tr). Pile flip_after_loss 101 tr 40% -91.94, halves 45/34. No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-06T05:08:30Z",
+   "looked": [
+    "wake_context (1 close 05:06; 315 total; twin noday 28 tr -2.68, was 27 tr -5.89; no ask)",
+    "bos_journal_u477508138 last row",
+    "scrutiny --pile flip_after_loss"
+   ],
+   "saw": "FLIP-BOS SELL 03:58 pace 0.898 stop 201, ~33 min after the 03:25 loss, h1 t=-1 i=0, move 2, W +3.24 at 0.02 in 68 min. Against flip_after_loss (one more win in the pile: 102 tr 40% -90.25, halves 45/35, nerv 0.8-1.0 bucket 32 tr 44% -19.06 halves disagree), consistent with flip_nervous (calm flips hold). Noday twin took it (night): -2.68. No run, no pile, no proposal.",
+   "hyp": [
+    "flip_after_loss",
+    "flip_nervous"
+   ]
   }
  ],
  "lessons": [
