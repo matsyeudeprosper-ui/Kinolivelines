@@ -49,14 +49,17 @@ def offer():
     return _j(OFFER, {})
 
 
+PORTFOLIO = "https://kv-kinoverse.pages.dev"     # 2026-11-05 (watch): his Atlas email was signed with the trading app's address
+
+
 def footer(lang="en"):
     o = offer()
     a = o.get("postal_address") or ""
     if str(lang).startswith("fr"):
-        return ("--\nKino, assistant IA de %s\n%s\nVous recevez ce message car votre entreprise est publique en ligne. Répondez STOP "
-                "et je ne vous écrirai plus." % (o.get("brand", "Kinoverse"), a))
-    return ("--\nKino, AI assistant at %s\n%s\nYou are receiving this because your business is listed publicly online. Reply STOP "
-            "and I will not write again." % (o.get("brand", "Kinoverse"), a))
+        return ("--\nKino, assistant IA de %s\n%s\n%s\nVous recevez ce message car votre entreprise est publique en ligne. Répondez STOP "
+                "et je ne vous écrirai plus." % (o.get("brand", "Kinoverse"), PORTFOLIO, a))
+    return ("--\nKino, AI assistant at %s\n%s\n%s\nYou are receiving this because your business is listed publicly online. Reply STOP "
+            "and I will not write again." % (o.get("brand", "Kinoverse"), PORTFOLIO, a))
 
 
 # ------------------------------------------------------------------ prospects
@@ -64,11 +67,31 @@ def _slug(s):
     return re.sub(r"[^a-z0-9]+", "-", str(s or "").lower()).strip("-")[:40] or "business"
 
 
+_SHARED_HOSTS = ("facebook.com", "instagram.com", "x.com", "twitter.com", "tiktok.com", "linkedin.com", "google.", "goo.gl",
+                 "yelp.", "github.io", "pages.dev", "wa.me", "openstreetmap.org", "tripadvisor.", "booksy.com", "fresha.com")
+
+
+def _key(url, name):
+    """2026-11-05 (watch): the key was the site's host - every business found on Facebook was 'www.facebook.com', so a Cape Town
+    barber (Sajid) kept overwriting another (Atlas). On a shared site the page path is the business; else the host is."""
+    u = str(url or "").lower().split("//")[-1].split("?")[0].split("#")[0].strip("/")
+    host = u.split("/")[0]
+    if host.startswith("www."):
+        host = host[4:]
+    if not host:
+        return _slug(name)
+    if any(h in host for h in _SHARED_HOSTS):
+        seg = [x for x in u.split("/")[1:] if x]
+        path = "/".join(seg[:2] if seg and seg[0] in ("p", "pages", "people", "biz", "maps", "place", "company") else seg[:1])
+        return host + "/" + path if path else host + "/" + _slug(name)
+    return host
+
+
 def prospect(name, url=None, email_=None, country=None, lang=None, need=None, notes=None, stage=None, key=None, asked=None):
     """add or update one business (by its website or name) -> the record"""
     with _LK:
         d = _j(STORE, {"items": []})
-        key = key or (str(url or "").lower().split("//")[-1].strip("/").split("/")[0]) or _slug(name)   # key: e.g. telegram:<id>
+        key = key or _key(url, name)   # key: e.g. telegram:<id>
         p = next((x for x in d["items"] if x["key"] == key), None)
         if p is None:
             p = {"id": "p%d" % (int(time.time() * 10) % 10 ** 9), "key": key, "name": str(name or key)[:120], "t": time.time(),
@@ -168,21 +191,31 @@ def outreach(W, ref, subject, body, log=None):
     # a request) can always be answered. Otherwise: Germany / Austria forbid cold business email without prior consent - use
     # their own contact form; South Africa (POPIA) allows one message that only asks whether they want to hear more
     cc = country_code(p.get("country"))
-    if not p.get("asked"):
+    sent = p.get("sent") or []          # (was read below before it was set: every South Africa email crashed once the code fix landed)
+    body = str(body or "").strip()
+    yes = p.get("stage") in ("replied", "quoted", "won", "delivered")
+    if not p.get("asked") and not yes:
         if cc in ("DE", "AT"):
             return "%s is in %s: cold email is not allowed there without their consent - use the contact form on their site" % (p["name"], cc)
         if cc == "ZA" and sent:
             return "South Africa: you may ask once for consent; without a yes, no second email"
-    sent = p.get("sent") or []
+        # 2026-11-05 (watch): the Atlas email put the preview link straight into the first message - the rule was only words
+        if cc == "ZA" and re.search(r"https?://|www\.|\.github\.io|\.pages\.dev|[€$]|\bR ?\d|\bprice|\bquote", body, re.I):
+            return ("South Africa: this first message may ONLY ask whether they would like to see what you made - no link, no "
+                    "price, no offer. Send the link after they say yes.")
+    if yes:                             # after their answer, the conversation is theirs: the limits count from their reply
+        rt = max([h[0] for h in p.get("history") or [] if h[2] == "replied"] or [0])
+        sent = [x for x in sent if float(x["t"]) > rt]
     if len(sent) >= 2:
         return "you already wrote twice to %s - no more unless they answer" % p["name"]
     if sent and time.time() - float(sent[-1]["t"]) < 4 * 86400:
         return "a follow-up comes at least 4 days after your first email"
     if _sent_today() >= int(o.get("daily_emails") or 10):
         return "you sent today's %d outreach emails - more tomorrow" % int(o.get("daily_emails") or 10)
-    body = str(body or "").strip()
     if len(body) < 80:
         return "too short to be a real, personal email"
+    # clients see the Kinoverse work, not the trading app
+    body = re.sub(r"https?://kino\.owltrader\.duckdns\.org/?(?=\s|$)", PORTFOLIO, body)
     full = body + "\n\n" + footer(p.get("lang") or "en")
     try:
         import kino_post as KP
