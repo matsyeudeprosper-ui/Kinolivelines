@@ -319,6 +319,16 @@
    "answered": "2026-11-06T02:35:00Z",
    "answer_fr": "Toujours vrai : cent huit changements de sens entre 8 h et minuit, 40 % gagnés contre 52 %, les deux moitiés d'accord. Même histoire qu'avant : c'est la hâte après une perte en journée plus que le sens. Couper des heures entières a déjà coûté au test. Pas de nouvelle proposition, j'attends le réglage de jour.",
    "answer_en": "Still true: one hundred and eight reversals between 8 h and midnight, 40% won against 52%, both halves agree. Same story as before: the hurry after a loss by day more than the direction. Cutting whole hours already cost in the test. No new proposal, waiting for the day dial."
+  },
+  {
+   "id": "ask_1793945390_gap_30_60",
+   "seed": "gap_30_60",
+   "seed_fr": "Trade pris 30 à 60 minutes après le précédent",
+   "seed_en": "Trade taken 30 to 60 minutes after the previous one",
+   "by": "labo",
+   "date": "2026-11-06",
+   "note": "69 trades, 55 % gagnés contre 45 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
