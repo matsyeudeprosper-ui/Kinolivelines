@@ -621,7 +621,7 @@ def block():
         L.append("Moving now: " + " | ".join("%s [%s] %s%s" % (p["name"], p["stage"], (p.get("need") or "")[:80],
                                                                  (" - " + p["url"]) if p.get("url") else "") for p in act))
     ready = sorted([p for p in d if p["stage"] in ("found", "checked") and p.get("email") and not p.get("sent")],
-                   key=lambda p: -p.get("updated", 0))[:8]
+                   key=lambda p: (not p.get("preview"), -p.get("updated", 0)))[:8]    # previews first, THEN the newest
     fbo = [p for p in d if p["stage"] in ("found", "checked") and not p.get("email") and "facebook.com" in str(p.get("url") or "")][:5]
     if ready:                                  # 2026-11-06 (owner: turn leads into emails)
         ready.sort(key=lambda p: not p.get("preview"))
