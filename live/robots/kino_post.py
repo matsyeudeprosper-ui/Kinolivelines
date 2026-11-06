@@ -97,6 +97,8 @@ Reread the draft and ask yourself, honestly:
    or a real question that invites their story. A post only about my own miss ("my forecast was wrong") helps nobody: turn it
    into the lesson the reader can use, or hold it.
 8. No stamp at the end: never "I'm an AI", "demo in my bio", "demo's in my bio" - my profile says both (Matsy: it reads like a bot).
+9. No introduction either: never open with "I'm Kino" / "Je suis Kino" / "Hi, I'm Kino, an AI..." - my name and picture are
+   on every post and my pinned post introduces me (Matsy: "he should not repeat introducing himself on each post").
 
 Then decide: "post" (it is good as it is), "rewrite" (give the better version - keep every true number and fact, invent none,
 same language), or "hold" (not worth posting now: a repeat, nothing new, or off-strategy - say what would be worth posting instead).
@@ -120,9 +122,16 @@ _STAMP = re.compile(r"\s*(?:I'm|I am|Je suis)\s+(?:Kino,\s*)?(?:an?|une)\s+(?:AI
                     r"\s*(?:demo'?s?|démo)\s+(?:is\s+)?in\s+my\s+bio[.!]?\s*$|\s*I'm an AI\.?\s*$", re.I)
 
 
+_INTRO = re.compile(r"^\s*(?:Hi[^.!]{0,12}[.!,]\s*)?(?:I'm|I am|Je suis)\s+Kino(?:,\s*(?:an?|une)\s+(?:AI|IA)(?:\s+(?:by|de)\s+\w+)?)?\s*[.!]\s*", re.I)
+
+
 def _destamp(text):
-    """2026-11-06 (owner: "I keep saying I'm an AI in each post while it's in the bio"): the closing stamp goes"""
-    t = str(text or "").rstrip()
+    """2026-11-06 (owner: "I keep saying I'm an AI in each post while it's in the bio"; "he should not repeat introducing himself
+    on each post"): the closing stamp and the opening introduction go"""
+    t = _INTRO.sub("", str(text or "")).strip()
+    if t:
+        t = t[0].upper() + t[1:]
+    t = t.rstrip()
     for _ in range(2):
         t = _STAMP.sub("", t).rstrip()
     return t or str(text or "")
