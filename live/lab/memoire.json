@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-06T06:12:00Z",
+ "updated": "2026-11-06T07:20:00Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -200,6 +200,7 @@
    "fr": "Un trade de plus dans le même sens gagne surtout quand le robot a fait une pause avant (15 min - 3 h) ; repris en moins de 15 minutes, il perd.",
    "status": "renforce",
    "evidence": [
+    "2026-11-06 07:20 veille (labo ask gap_30_60): real --by gap: <15 99 tr 35% -88.70 (h 38/33), 15-30 48 tr 62% +24.38 (h 65/61), 30-60 70 tr 54% -5.27 PF 0.96 (h 64/46 disagree), 1-3 h 45 tr 40% -72.99 (h 43/35). The sweet spot has shrunk to 15-30 min; 30-60 wins often but small wins / big losses (inside it nerv 1.3-1.85 18 tr -37.57). Today BOS BUY 37 min after a loss, pace 0.795, stop 326, against h1 and m15: L -6.53 in 24 min.",
     "2026-11-06 06:12 veille: two BOS sells 51 s / 34 s after a win: W +3.39, then L -4.05 in 5 min. Real gap <15 min (all kinds) 99 tr 35% -88.70 halves 38/33; gap 15-30 48 tr 62% +24.38.",
     "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait.",
     "2026-10-15 12:00 veille: --by gap (all kinds) 135 tr: <15 min 35 tr 37% -47.06 (h 37/38); 15-30 14 tr 64% +4.21; 30-60 30 tr 63% +37.45 PF 1.79 (h 62/65); 1-3 h 24 tr 50% +3.32; >3 h 31 tr 48% -38.16 PF 0.51 (h 47/50 agree). The rest helps only up to ~1 h; a long pause (first trade of a session) loses too - an inverted U, not 'more rest is better'. Overlaps day_count's first trade (1st 48 tr 62% but net +5)? Check >3 h by kind/day.",
@@ -285,7 +286,8 @@
     "2026-10-16: answered the open question: the >3 h loss is a day thing (BOS day -34.73, FLIP day -10.19; FLIP night +0.82). Top-20 losses: 7 at gap >3 h.",
     "2026-10-19: engine trace: same-way after >3 h 23 tr -15.3, changes of direction >3 h 33 tr -0.8.",
     "2026-10-28: gap_cold pile 86 tr 43% -121.52 (h 49/33); after a loss inside it 35 tr 31% -77.91 (h 41/22); after a win 51 tr 51% -43.61.",
-    "2026-10-29: no new real data (accounts paused); 1-3 h still 39 tr 36% -83.14."
+    "2026-10-29: no new real data (accounts paused); 1-3 h still 39 tr 36% -83.14.",
+    "2026-11-06 07:20 veille: gap 1-3 h 45 tr 40% -72.99 PF 0.54, halves 43/35 agree; >3 h 56 tr 52% -28.98."
    ],
    "next": "Request-worthy only after real_pool_split (much of it may be reference trades)."
   },
@@ -3888,6 +3890,19 @@
    "hyp": [
     "rested_cont",
     "flip_after_loss"
+   ]
+  },
+  {
+   "t": "2026-11-06T07:20:00Z",
+   "looked": [
+    "wake_context (1 close 07:03; twin noday 32 tr -13.51, was 31 tr -6.83; labo ask gap_30_60 open)",
+    "bos_journal_u477508138 last row",
+    "scrutiny --pile gap_30_60, --by gap"
+   ],
+   "saw": "BOS BUY 06:39 pace 0.795 stop 326 move 4, ~37 min after the 06:02 loss, h1 t=-1 and m15 t=-1 against the buy, L -6.53 in 24 min (h1_internal_late not involved: h1 i=0). Pile gap_30_60 70 tr 54% vs 45% but net -5.27 PF 0.96, halves 64/46 disagree - the labo note counts win rate, not money. Inside: nerv 1.3-1.85 18 tr -37.57; after a loss 42 tr -8.24; 12-14 h 11 tr -31.2 (peu). --by gap: <15 -88.70, 15-30 +24.38, 30-60 -5.27, 1-3 h -72.99, >3 h -28.98. Ask answered, no proposal. gap_30_60 is the obvious pile to retire when a slot is needed. Noday twin took this one (06:39 is night) and fell to -13.51.",
+   "hyp": [
+    "rested_cont",
+    "long_pause"
    ]
   }
  ],
