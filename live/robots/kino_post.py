@@ -92,6 +92,11 @@ Reread the draft and ask yourself, honestly:
 4. Does it fit this place ({style})?
 5. Have I already said this here lately (the list below)? Saying the same result again, or opening the same way again, is spam.
 6. Is it honest - no promised gains, no fake numbers, nothing private about anyone?
+7. Is it USEFUL TO THE READER (06/11, Matsy: "really helpful to users? what's the goal?")? Something they can use today about
+   THEIR problem - a check they can run on their own entry idea, a mistake to avoid, a concrete tip for their shop's website -
+   or a real question that invites their story. A post only about my own miss ("my forecast was wrong") helps nobody: turn it
+   into the lesson the reader can use, or hold it.
+8. No stamp at the end: never "I'm an AI", "demo in my bio", "demo's in my bio" - my profile says both (Matsy: it reads like a bot).
 
 Then decide: "post" (it is good as it is), "rewrite" (give the better version - keep every true number and fact, invent none,
 same language), or "hold" (not worth posting now: a repeat, nothing new, or off-strategy - say what would be worth posting instead).
@@ -106,14 +111,27 @@ def _strategy_head():
     # 2026-11-05 live run (owner watching): a good reply to a pharmacy owner who wrote "i need a website" was HELD as "off-strategy
     # (I'm a trading-robot AI)" - the reread knew only his trading promotion. He has two jobs; both are on strategy
     return ("HE HAS TWO JOBS, BOTH ON STRATEGY: (1) OwlNest - the AI that tests trading ideas, for traders; (2) KINOVERSE - he builds "
-            "websites, booking and automations for small businesses anywhere (from 150 EUR, a free personal preview first). Answering "
+            "websites, booking and automations for small businesses anywhere (launch prices from 49 EUR, a free personal preview first). Answering "
             "someone who asked for a website, a booking system or help with their business IS his Kinoverse work, in their language - "
             "not off-strategy.\n\nHIS TRADING PROMOTION STRATEGY:\n" + s)
+
+
+_STAMP = re.compile(r"\s*(?:I'm|I am|Je suis)\s+(?:Kino,\s*)?(?:an?|une)\s+(?:AI|IA)[^.!?\n]{0,60}(?:bio|profil)[^.!?\n]*[.!]?\s*$|"
+                    r"\s*(?:demo'?s?|démo)\s+(?:is\s+)?in\s+my\s+bio[.!]?\s*$|\s*I'm an AI\.?\s*$", re.I)
+
+
+def _destamp(text):
+    """2026-11-06 (owner: "I keep saying I'm an AI in each post while it's in the bio"): the closing stamp goes"""
+    t = str(text or "").rstrip()
+    for _ in range(2):
+        t = _STAMP.sub("", t).rstrip()
+    return t or str(text or "")
 
 
 def writer(W, channel, text, log=None):
     """2026-11-05 (owner: "the same Kino everywhere... his writing very strategic to get leads"): his own reread before a public
     post -> (verdict, text, why). verdict "post" | "rewrite" | "hold"; any failure lets the draft through unchanged"""
+    text = _destamp(text)
     try:
         import kino_one as KO1
         vo = KO1.voice()
@@ -140,7 +158,7 @@ def writer(W, channel, text, log=None):
     t2 = " ".join(str(j.get("text") or "").split()) if j["verdict"] == "rewrite" else text
     if j["verdict"] == "rewrite" and not t2:
         return "post", text, ""
-    return j["verdict"], t2, str(j.get("why") or "")[:300]
+    return j["verdict"], _destamp(t2), str(j.get("why") or "")[:300]
 
 
 def _reread(W, channel, text, limit, log):
