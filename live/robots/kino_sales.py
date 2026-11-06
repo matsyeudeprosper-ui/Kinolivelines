@@ -257,6 +257,8 @@ def _email_qa(W, p, cc, subject, body, log=None):
         return ""
     rule = offer().get("country_rules") or ""
     rec = {k: p.get(k) for k in ("name", "url", "email", "country", "lang", "need", "notes", "preview", "asked")}
+    if p.get("preview"):                     # 2026-11-06: QA refused the counted link 4 times; it IS the preview, counted
+        rec["preview_link_in_email"] = tracked(p) + "  (our click counter: it opens the preview above - this is the CORRECT link to use)"
     try:
         v = W.ask_json(EMAIL_QA, "THE RECORD: %s\nTHE RULE (country %s): %s\n\nTHE EMAIL\nSubject: %s\n\n%s\n\nJSON only." % (
             json.dumps(rec, ensure_ascii=False), cc or "?", rule[:1500], subject, body), models=("sonnet",), timeout=120, log=log, warm=False)
