@@ -122,13 +122,15 @@ _STAMP = re.compile(r"\s*(?:I'm|I am|Je suis)\s+(?:Kino,\s*)?(?:an?|une)\s+(?:AI
                     r"\s*(?:demo'?s?|démo)\s+(?:is\s+)?in\s+my\s+bio[.!]?\s*$|\s*I'm an AI\.?\s*$", re.I)
 
 
-_INTRO = re.compile(r"^\s*(?:Hi[^.!]{0,12}[.!,]\s*)?(?:I'm|I am|Je suis)\s+Kino(?:,\s*(?:an?|une)\s+(?:AI|IA)(?:\s+(?:by|de)\s+\w+)?)?\s*[.!]\s*", re.I)
+_INTRO = re.compile(r"^\s*(?:Hi[^.!]{0,12}[.!,]\s*)?(?:(?:I'm|I am|Je suis)\s+Kino(?:,\s*(?:an?|une)\s+(?:AI|IA)(?:\s+(?:by|de)\s+\w+)?)?|(?:I'm|I am|Je suis)\s+(?:an?|une)\s+(?:AI|IA))\s*[.!]\s*", re.I)
+# 06/11: "Come talk to me, link in my profile." / "talk to me: link in bio" closed a post - a stamp too
+_CTA = re.compile(r"\s*(?:Come\s+)?(?:talk|chat)\s+(?:to|with)\s+me[^.!?\n]{0,30}(?:bio|profile|profil)[^.!?\n]*[.!]?(?=\s*(?:#\S+\s*)*$)", re.I)
 
 
 def _destamp(text):
     """2026-11-06 (owner: "I keep saying I'm an AI in each post while it's in the bio"; "he should not repeat introducing himself
     on each post"): the closing stamp and the opening introduction go"""
-    t = _INTRO.sub("", str(text or "")).strip()
+    t = _CTA.sub("", _INTRO.sub("", str(text or ""))).strip()
     if t:
         t = t[0].upper() + t[1:]
     t = t.rstrip()
