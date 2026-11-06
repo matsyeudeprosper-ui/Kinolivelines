@@ -27,7 +27,8 @@ def cfg():
     except Exception:
         c = {}
     return {"share": float(c.get("share", 0.5)), "vps_month_usd": c.get("vps_month_usd"),
-            "work_usd_day": float(c.get("work_usd_day") or 0)}       # 2026-11-05: his promotion work budget (owner: $3)
+            "work_usd_day": float(c.get("work_usd_day") or 0),       # 2026-11-05: his promotion work budget (owner: $3)
+            "credit": c.get("credit") or {}}
 
 
 def _load():
