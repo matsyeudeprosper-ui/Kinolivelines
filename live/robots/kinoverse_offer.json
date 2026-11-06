@@ -8,9 +8,15 @@
  "services": [
   {
    "name": "Simple website",
-   "what": "a clean one- to few-page site: who they are, services, prices, photos, map, contact, mobile-ready; online booking or a contact form when they need it",
+   "what": "a premium, modern site that looks like a top agency made it: their brand, real photos, services and prices, gallery, map, contact, perfect on a phone; online booking or a contact form when they need it",
    "from_eur": 150,
    "delivery_days": "3-7"
+  },
+  {
+   "name": "Mobile app version",
+   "what": "their site as an installable app on iPhone and Android (app icon on the home screen, works offline for the basics, opens full screen, booking/contact inside); publishing in the app stores on request, quoted separately",
+   "from_eur": 300,
+   "delivery_days": "5-10"
   },
   {
    "name": "Booking and reminders",

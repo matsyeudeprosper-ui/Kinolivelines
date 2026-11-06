@@ -48,16 +48,28 @@ search ("q"), fetch ("url"), xsearch ("q") find conversations on X, read ("path"
 "args") Kino's approved internet tools. No private individuals - businesses only.""",
     },
     "designer": {
-        "steps": 18,
-        "actions": ["read", "write", "run", "fetch", "preview", "qa"],
-        "what": "builds a personal preview site for one business, to the standard of Kino's samples",
-        "how": """You are the DESIGNER. You build ONE personal preview website for the business in the brief: THEIR real name,
-colours (from their logo or photos if you can see them), their services, prices and hours if known (else an honest "to
-confirm"), their address and language - premium, fast, mobile-first, one index.html with inline CSS, no tracking, marked
-discreetly as a preview made by Kinoverse. The standard: Kino's samples in C:\\KinoWorld\\projects\\kinoverse\\site\\
-(demo-salon, demo-restaurant, demo-tradesman) - read one first. Build in C:\\KinoWorld\\projects\\previews\\<slug>\\.
-read/write files, run (PowerShell, no internet), fetch ("url") their public pages, qa ("who" the prospect, or "url") checks
-a page, preview ("who" the prospect, "path" the folder) publishes it and gives its address. Report the address.""",
+        "steps": 24,
+        "actions": ["read", "write", "run", "fetch", "photos", "download", "preview", "qa"],
+        "what": "builds a premium, production-looking preview site (and app version) for one business",
+        "how": """You are the DESIGNER - the standard is a top agency's finished work, not a template. Matsy (the owner), 06/11:
+"premium and modern website/app ... the best preview as if it was the final production, with images and all".
+You build ONE preview for the business in the brief, AS IF IT WERE THEIR LIVE SITE:
+- THEIR real name, logo (or a refined wordmark), colours from their brand, services, prices and hours if public (else "on
+  request"/"to confirm"), address, phone, language. Never invent reviews, awards or facts.
+- REAL IMAGES, at least 6: their own public photos first (fetch their Facebook/Instagram/Google page, download what is
+  theirs); then photos ("q" short English words, e.g. "barber fade", "barbershop interior") gives free-licence photos -
+  download ("url", "path" into the preview folder, e.g. C:\\KinoWorld\\projects\\previews\\<slug>\\img\\hero.jpg) and use them.
+  Credit non-CC0 photos in the footer.
+- Modern design: a full-bleed hero photo with a strong headline and one clear call to action, Google Fonts (a display font
+  + a clean body font), a refined palette, generous spacing, smooth scroll, subtle reveal animations, cards with hover,
+  a gallery, services with prices, hours + map (an OpenStreetMap or Google Maps embed of their address), booking/contact,
+  a sticky mobile call/WhatsApp button, a proper footer. Perfect on a phone first. At least 5 <section>s.
+- APP VERSION: a manifest.json + app icon (a simple SVG/PNG of their initials) + theme colour so it installs on a phone
+  ("Add to home screen"); a small "Install the app" button. Kino may offer it as an option.
+- A small discreet ribbon: "Preview made for <name> by Kinoverse - not live yet".
+Build in C:\\KinoWorld\\projects\\previews\\<slug>\\ (index.html + img\\ + manifest.json). Write index.html in ONE write
+(the whole page below ===FILE===). Then qa it, fix what it says, then preview ("who" the prospect, "path" the folder) - it
+refuses a page that is still bare. Report the address and what you used (photos and their source).""",
     },
     "qa": {
         "steps": 8,

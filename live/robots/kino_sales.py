@@ -266,6 +266,23 @@ def preview(W, ref, folder, log=None):
         return "a preview needs an index.html"
     if len(files) > 40:
         return "too many files for a preview (40 at most)"
+    # 2026-11-06 (Matsy on the Atlas preview: "clean but not the best ... premium and modern ... as if it was the final production
+    # with images and all"): a bare page is not published
+    html = open(os.path.join(root, "index.html"), encoding="utf-8", errors="replace").read()
+    n_img = len(re.findall(r"<img\b|background(?:-image)?\s*:[^;]*url\(", html, re.I)) + \
+        sum(1 for r, _ in files if r.lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".avif")))
+    miss = []
+    if n_img < 5:
+        miss.append("real images (%d found, at least 5: their own photos first, then fitting free-licence photos)" % n_img)
+    if not re.search(r"<meta[^>]+name=[\"']viewport", html, re.I):
+        miss.append("the mobile viewport tag")
+    if len(re.findall(r"<section\b", html, re.I)) < 4:
+        miss.append("the sections of a real site (hero, services, gallery, hours/map, contact - at least 4 <section>)")
+    if len(html) < 9000:
+        miss.append("depth (%d characters - a production site has more)" % len(html))
+    if miss:
+        return ("not published - this is not yet the premium, finished-looking site Matsy asked for. Missing: %s. Brief your "
+                "designer or improve it, then publish." % "; ".join(miss))
     import kino_github as KG, kino_post as KP
     sec = KG._secrets()
     slug = _slug(p["name"])
@@ -287,6 +304,28 @@ def preview(W, ref, folder, log=None):
     prospect(p["name"], url=p.get("url"), stage="preview", notes=(p.get("notes") or "") + " | preview: " + url)
     _log("PREVIEW %s %s" % (p["name"], url))
     return "preview published (a minute or two to appear): %s" % url
+
+
+def stock_photos(q, n=12):
+    """2026-11-06 (Matsy: previews 'as if it was the final production with images and all'): free-licence photos for a trade,
+    from Openverse (CC0 first: StockSnap, Rawpixel; then any licence allowing commercial use, with its credit)"""
+    import urllib.parse, urllib.request
+    out = []
+    for extra in ("&source=stocksnap,rawpixel&license=cc0", "&license_type=commercial&aspect_ratio=wide&size=large"):
+        url = "https://api.openverse.org/v1/images/?q=%s&page_size=%d%s" % (urllib.parse.quote(str(q or "")[:80]), n, extra)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Kinoverse/1.0 (https://kv-kinoverse.pages.dev)"})
+            d = json.loads(urllib.request.urlopen(req, timeout=20).read().decode("utf-8"))
+        except Exception as e:
+            _log("PHOTOS-ERR %s %s" % (q, e))
+            continue
+        for r in d.get("results") or []:
+            if r.get("url") and r["url"] not in [x["url"] for x in out] and (r.get("width") or 0) >= 900:
+                out.append({"url": r["url"], "license": r.get("license"), "w": r.get("width"), "h": r.get("height"),
+                            "by": (r.get("creator") or "")[:60], "title": (r.get("title") or "")[:80]})
+        if len(out) >= n:
+            break
+    return out[:n]
 
 
 # ------------------------------------------------------------------ what he sees at his desk

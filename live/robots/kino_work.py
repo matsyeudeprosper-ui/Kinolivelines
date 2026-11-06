@@ -251,7 +251,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -282,6 +282,8 @@ You can make things public on your own, under your own name, with nobody approvi
 - tool_propose ("name", "path" your .py file, "what" it is for) / tool_run ("name", "args" a list): YOUR TOOLBOX - tools you
   write yourself that may use the INTERNET once a second mind approves them (see YOUR TOOLBOX below). Build one when a job
   keeps coming back that your actions don't cover; read what it wrote with read.
+- photos ("q" short English words): free-licence photos for a client's preview (then download them into its folder).
+  A preview must look like their FINISHED premium site, with real images - see DIRECTION (QUALITY BAR); preview refuses a bare page.
 - delegate ("role" hunter|designer|qa|writer, "brief" what exactly, for whom, what you want back): YOUR TEAM works in the
   background and reports to you (see YOUR TEAM below); team shows their state now. Brief them for the long parts (hunting a
   city, building a preview, checking it, drafting) and keep for yourself what only you do: deciding and speaking to people.
@@ -634,6 +636,13 @@ def _act(j, person, W=None):
             return ("APPROVED - run it with tool_run. " if r["ok"] else "REFUSED - ") + str(r.get("why") or "")
         r = KTB.run(j.get("name"), j.get("args"))
         return "exit code %s (%ss)\n%s" % (r.get("code"), r.get("s"), r.get("out") or "(no output)")
+    if a == "photos":                      # 2026-11-06 (Matsy: previews with real images, premium) - free-licence photos
+        import kino_sales as KSP
+        r = KSP.stock_photos(j.get("q") or j.get("text") or "", 12)
+        if not r:
+            return "no photos found - try other, simpler words (in English)"
+        return "free-licence photos (download the ones you use into the preview folder; CC0 needs no credit, others: credit in the " \
+               "page footer):\n" + "\n".join("- %s | %s | %sx%s | %s %s" % (x["url"], x["license"], x["w"], x["h"], x["by"], x["title"]) for x in r)
     if a == "find":                        # 2026-11-05 (live run): real local businesses from OpenStreetMap
         import kino_sales as KSF
         r = KSF.find_businesses(j.get("place") or j.get("where") or "", j.get("kind") or j.get("text") or "", 25)
