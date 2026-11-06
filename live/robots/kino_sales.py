@@ -563,9 +563,11 @@ def block():
                    key=lambda p: -p.get("updated", 0))[:8]
     fbo = [p for p in d if p["stage"] in ("found", "checked") and not p.get("email") and "facebook.com" in str(p.get("url") or "")][:5]
     if ready:                                  # 2026-11-06 (owner: turn leads into emails)
+        ready.sort(key=lambda p: not p.get("preview"))
         L.append("READY TO CONTACT (recorded, an email, nothing sent yet - every hunt ENDS with up to 5 of these written to, "
-                 "personally): " + " | ".join("%s (%s, %s) %s - %s" % (p["name"], p.get("country") or "?", p.get("lang") or "?",
-                                                                     p.get("email"), (p.get("need") or "")[:90]) for p in ready))
+                 "personally; those WITH A PREVIEW first): " + " | ".join("%s (%s, %s) %s - %s%s" % (
+                     p["name"], p.get("country") or "?", p.get("lang") or "?", p.get("email"), (p.get("need") or "")[:90],
+                     " - PREVIEW READY: " + p["preview"] if p.get("preview") else "") for p in ready))
     if fbo:
         L.append("FACEBOOK ONLY (no email - fbhand: Matsy sends your message in Messenger): " + " | ".join(
             "%s %s" % (p["name"], p["url"]) for p in fbo))

@@ -25183,6 +25183,11 @@ def _urge_tick():
                             _kino_req_card(_rq)
                 except Exception:
                     pass
+                try:                                   # 2026-11-06 (owner: "build now"): previews for the waiting leads, on the owner's budget
+                    if pm == "kino":
+                        __import__("kino_team").auto_previews(_rc().W)
+                except Exception:
+                    pass
                 try:                                   # 2026-11-01 (kino_work): he sits down at his own computer when he feels like it
                     import kino_work as _KWk
                     if pm == "kino" and _KWk.due(pm, ctx, now):

@@ -13,7 +13,8 @@ import json, os, re, threading, time, uuid
 HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_team.json")
 LOG = os.path.join(HERE, "kino_team.log")
-WLOG = os.path.join(HERE, "kino_work.log")          # their thinking is paid from his work budget (kino_wallet OWN_TAGS)
+WLOG = os.path.join(HERE, "kino_work.log")
+BLOG = os.path.join(HERE, "kino_build.log")      # building (designer, seo, qa, hunter, billing): the owner's budget          # their thinking is paid from his work budget (kino_wallet OWN_TAGS)
 TEAMDIR = r"C:\KinoWorld\team"
 _LK = threading.Lock()
 MAX_LIVE = 2                    # at most two at work at once (each step is one AI call)
@@ -274,7 +275,7 @@ def delegate(W, role, brief, log=WLOG):
     try:
         import kino_wallet as KWa
         al = KWa.allowance()
-        if al["day"] and al["left"] < MIN_LEFT:
+        if role == "writer" and al["day"] and al["left"] < MIN_LEFT:      # builders are on the owner's budget
             return "not enough of today's budget left to brief someone (%.2f $ left)" % al["left"]
     except Exception:
         pass
@@ -297,10 +298,64 @@ def delegate(W, role, brief, log=WLOG):
     err = _mut(f)
     if err:
         return err
+    # 2026-11-06 (owner: "the building of anything on my personal budget for now; later Kino pays himself"): the builders'
+    # thinking is logged apart (kino_build.log is not one of his wallet tags) - only the writer, who talks for him, is his
+    if role != "writer" and log == WLOG:
+        log = BLOG
     threading.Thread(target=_work, args=(W, rid, role, brief, log), daemon=True, name="kino-team-" + role).start()
     _log("START %s %s | %s" % (rid, role, brief[:300].replace("\n", " ")))
     return "your %s started on it (id %s, up to %d steps). The report comes into YOUR TEAM - go on with something else." % (
         role, rid, ROLES[role]["steps"])
+
+
+_AUTO = {"t": 0.0}
+AUTO_DAY = 10                   # previews built a day by the queue (the owner's subscription carries them - kept reasonable)
+
+
+def auto_previews(W):
+    """2026-11-06 (owner: "the building of anything on my personal budget - build now"): every lead waiting on his desk with an
+    email gets its premium preview built before he writes, one at a time, in the background. Called often by the app; acts
+    at most every 10 minutes, never when a designer is already at work."""
+    now = time.time()
+    if now - _AUTO["t"] < 600:
+        return None
+    _AUTO["t"] = now
+    d = _load()
+    R = d.get("runs") or []
+    if any(x.get("status") == "working" and x["role"] == "designer" and now - x["t"] < 3 * 3600 for x in R):
+        return None
+    day = time.strftime("%Y-%m-%d", time.gmtime(now))
+    if sum(1 for x in R if x.get("day") == day and x["role"] == "designer" and "[auto]" in x.get("brief", "")) >= AUTO_DAY:
+        return None
+    try:
+        import kino_sales as KS
+        P = KS._j(KS.STORE, {"items": []})["items"]
+    except Exception:
+        return None
+    tried = {x.get("lead") for x in R if x.get("lead")}
+    cand = [p for p in P if p["stage"] in ("found", "checked") and p.get("email") and not p.get("preview") and not p.get("sent")
+            and p["id"] not in tried]
+    if not cand:
+        return None
+    cand.sort(key=lambda p: ("weak site" not in str(p.get("need") or ""), -float(p.get("updated") or 0)))
+    p = cand[0]
+    brief = ("[auto] Build the premium preview for the prospect '%s' (%s, %s). What we know (verified by the scan - use ONLY true "
+             "facts, 'on request' / 'to confirm' for the rest): %s. Notes: %s. Their site if any: %s. Language: %s. Find their own "
+             "photos or details on their public pages if you can (fetch), else fitting free-licence photos. Build it as their "
+             "finished site, app version included, qa it, then publish with preview (who '%s'). Report the address." % (
+                 p["name"], p.get("country") or "?", p.get("lang") or "?", p.get("need") or "", (p.get("notes") or "")[:300],
+                 p.get("url") or "none", p.get("lang") or "fr", p["name"]))
+    r = delegate(W, "designer", brief, log=BLOG)
+    if r.startswith("your designer started"):
+        rid = re.search(r"id (\w+)", r)
+
+        def f(dd):
+            for x in dd.get("runs") or []:
+                if rid and x["id"] == rid.group(1):
+                    x["lead"] = p["id"]
+        _mut(f)
+    _log("AUTO-PREVIEW %s | %s" % (p["name"], r[:120]))
+    return r
 
 
 def block():
