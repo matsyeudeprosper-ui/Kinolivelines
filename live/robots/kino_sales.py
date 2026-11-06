@@ -64,7 +64,10 @@ def footer(lang="en"):
 
 # ------------------------------------------------------------------ prospects
 def _slug(s):
-    return re.sub(r"[^a-z0-9]+", "-", str(s or "").lower()).strip("-")[:40] or "business"
+    # 2026-11-06: "Brévi" became "br-vi" in the preview address a client reads - accents are folded, not cut
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40] or "business"
 
 
 _SHARED_HOSTS = ("facebook.com", "instagram.com", "x.com", "twitter.com", "tiktok.com", "linkedin.com", "google.", "goo.gl",
@@ -495,6 +498,26 @@ def scan(place, kind, max_sites=40):
                                                                             x["address"] or city, x["osm"]))
             n += 1
     return {"ok": True, "place": r["place"], "total": r["total"], "audited": len(sites), "weak": weak, "nosite": nosite}
+
+
+def page_images(url, n=30):
+    """2026-11-06 (Brévi preview: stock photos of an Asian street barber with a Pepsi sign for a Lyon family salon): the
+    business's OWN photos, from its own site - the image addresses on the page (and its og:image), biggest-looking first"""
+    import urllib.parse
+    import kino_web as KWB
+    try:
+        h, _ = KWB._get(url, timeout=25, cap=2_000_000)
+    except Exception as e:
+        return {"ok": False, "err": str(e)[:120]}
+    raw = re.findall(r"""(?:src|data-src|data-lazy-src|href|content)=["']([^"']+\.(?:jpe?g|png|webp)(?:\?[^"']*)?)["']""", h, re.I)
+    raw += re.findall(r"url\(['\"]?([^'\")]+\.(?:jpe?g|png|webp))", h, re.I)
+    out = []
+    for u in raw:
+        a = urllib.parse.urljoin(url, u)
+        if a not in out and not re.search(r"logo-?mini|favicon|icon|sprite|pixel|spacer|1x1|avatar|emoji|badge", a, re.I):
+            out.append(a)
+    out.sort(key=lambda a: -bool(re.search(r"\d{3,4}x\d{3,4}|large|full|hero|slide|banner|galer|photo|salon|img", a, re.I)))
+    return {"ok": True, "images": out[:n]}
 
 
 def record_line():

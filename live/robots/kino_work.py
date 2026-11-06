@@ -271,7 +271,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -698,6 +698,14 @@ def _act0(j, person, W=None):
         return "%s - weakness %s/10: %s | email on their site: %s" % (
             r["url"], "?" if r["score"] is None else r["score"], "; ".join(r["problems"]) or "nothing obvious - a decent site",
             ", ".join(r["emails"]) or "none found")
+    if a == "images":                      # 2026-11-06: a business's OWN photos, from its own site (download the ones you use)
+        import kino_sales as KSI
+        r = KSI.page_images(j.get("url") or "")
+        if not r.get("ok"):
+            return "images: %s" % r.get("err")
+        if not r["images"]:
+            return "no images found on that page"
+        return "the images on that page (theirs - for their own preview only):\n" + "\n".join("- " + u for u in r["images"])
     if a == "photos":                      # 2026-11-06 (Matsy: previews with real images, premium) - free-licence photos
         import kino_sales as KSP
         r = KSP.stock_photos(j.get("q") or j.get("text") or "", 12)

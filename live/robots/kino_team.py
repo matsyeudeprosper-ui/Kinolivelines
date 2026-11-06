@@ -33,7 +33,7 @@ Answer ONE JSON object per step and nothing else:
           and what you suggest he does next. Plain, short, complete."}
 A long file (code, a page) goes BELOW the JSON between a line ===FILE=== and a line ===END=== (write).
 FIELD NAMES (06/11: a designer sent six "run" with no command): run {"cmd": "a PowerShell command"}, read/write {"path"},
-fetch/audit {"url"}, scan {"place", "kind"}, search/xsearch/photos {"q"}, download {"url", "path"}, find {"place", "kind", "with_site"},
+fetch/audit/images {"url"}, scan {"place", "kind"}, search/xsearch/photos {"q"}, download {"url", "path"}, find {"place", "kind", "with_site"},
 prospect {"name", "url", "email", "country", "lang", "need", "notes", "stage"}, preview/qa/job {"who"} (qa also "url"),
 deploy {"who", "path"}, invoice {"amount", "what"}, tool_run {"name", "args"}.
 ACTIONS YOU HAVE:
@@ -56,15 +56,16 @@ search ("q"), fetch ("url"), xsearch ("q") find conversations on X, read ("path"
     },
     "designer": {
         "steps": 24,
-        "actions": ["read", "write", "run", "fetch", "photos", "download", "preview", "qa", "deploy"],
+        "actions": ["read", "write", "run", "fetch", "images", "photos", "download", "preview", "qa", "deploy"],
         "what": "builds a premium, production-looking preview site (and app version) for one business",
         "how": """You are the DESIGNER - the standard is a top agency's finished work, not a template. Matsy (the owner), 06/11:
 "premium and modern website/app ... the best preview as if it was the final production, with images and all".
 You build ONE preview for the business in the brief, AS IF IT WERE THEIR LIVE SITE:
 - THEIR real name, logo (or a refined wordmark), colours from their brand, services, prices and hours if public (else "on
   request"/"to confirm"), address, phone, language. Never invent reviews, awards or facts.
-- REAL IMAGES, at least 6: their own public photos first (fetch their Facebook/Instagram/Google page, download what is
-  theirs); then photos ("q" short English words, e.g. "barber fade", "barbershop interior") gives free-licence photos -
+- REAL IMAGES, at least 6: THEIR OWN photos first - if they have a site, images ("url" their site) lists the photos on it:
+  download the best ones (their salon, their team, their work); also their Facebook/Instagram/Google page. A business with
+  a site ALWAYS gets its own photos (06/11: the Brevi preview showed an Asian street barber with a Pepsi sign instead); then photos ("q" short English words, e.g. "barber fade", "barbershop interior") gives free-licence photos -
   download ("url", "path" into the preview folder, e.g. C:\\KinoWorld\\projects\\previews\\<slug>\\img\\hero.jpg) and use them.
   Credit non-CC0 photos in the footer.
 - Modern design: a full-bleed hero photo with a strong headline and one clear call to action, Google Fonts (a display font
@@ -175,7 +176,9 @@ BUILD = """You are a top web designer and front-end developer (the level of the 
 quality HTML page for a small business: the client must open it and feel it is their finished, premium site.
 Rules: their REAL facts only (from the brief and the notes) - never invent reviews, awards, prices or hours ("on request" /
 "call to book" instead); use ONLY the image files listed as downloaded (relative paths like img/hero.jpg), each where it fits
-best (the sharpest, most striking one as the hero) - but NEVER a photo showing another business's name, sign or logo
+best (the sharpest, most striking one as the hero; the business's OWN photos always before stock) - a stock photo only
+if it fits THEIR world (their country, their kind of place, modern and clean - not a street stall for a city salon) - and
+NEVER a photo showing another business's name, sign, logo or a brand (Pepsi, Coca-Cola...)
 (06/11: a 'Daddy Joe barbing saloon' sign ended up in Atlas's gallery), and alt texts only claim what the photo really is;
 the business name as logo text is written plainly (no letter split into a span); inline CSS + a little vanilla JS, Google Fonts allowed; mobile-first and
 flawless on a phone; a full-bleed hero with a strong, specific headline (about THEM, their street, their city - not a generic
