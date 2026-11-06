@@ -796,6 +796,11 @@ def session(W, person, uid, log=None, task=None, project=""):
         return None
     _BUSY["on"] = True
     t0 = time.time()
+    _WIF = os.path.join(HERE, "work_inflight.json")     # 2026-11-06: restart.ps1 waits while this exists
+    try:
+        json.dump({"t": t0, "task": str(task or "")[:200], "pid": os.getpid()}, open(_WIF, "w", encoding="utf-8"))
+    except Exception:
+        pass
     try:
         mind = _mind(person, uid)
         nt = None if task else _load().get("next_task")     # 2026-11-01: a session his rhythm set (the Sunday look back)
@@ -880,6 +885,10 @@ def session(W, person, uid, log=None, task=None, project=""):
         return rec
     finally:
         _BUSY["on"] = False
+        try:
+            os.remove(_WIF)
+        except Exception:
+            pass
         try:
             if _BR.get("b"):
                 _BR.pop("b").close()

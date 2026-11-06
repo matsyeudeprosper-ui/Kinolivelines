@@ -80,6 +80,13 @@ if (($What -eq "all" -or $What -eq "app") -and -not $SkipCheck) {
         if ($i -eq 0) { Say "an order is on its way to the trading tool - waiting for its answer before restarting..." }
         Start-Sleep -Seconds 5
     }
+    # 2026-11-06 (watch): two restarts killed Kino's work sessions a minute after they started (a night hunt, then his first
+    # day hunt). robots\work_inflight.json lives while a session runs (kino_work.session); wait for it, up to 15 min
+    $fw = Join-Path $LIVE "robots\work_inflight.json"
+    for ($i = 0; $i -lt 180 -and (Test-Path $fw) -and (((Get-Date) - (Get-Item $fw).LastWriteTime).TotalSeconds -lt 1500); $i++) {
+        if ($i -eq 0) { Say "Kino is in a work session - waiting for it to finish before restarting (max 15 min, -SkipCheck to force)..." }
+        Start-Sleep -Seconds 5
+    }
 }
 
 # ---- 2. what is running now -------------------------------------------
