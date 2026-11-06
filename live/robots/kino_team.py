@@ -180,7 +180,9 @@ best (the sharpest, most striking one as the hero; the business's OWN photos alw
 if it fits THEIR world (their country, their kind of place, modern and clean - not a street stall for a city salon) - and
 NEVER a photo showing another business's name, sign, logo or a brand (Pepsi, Coca-Cola...)
 (06/11: a 'Daddy Joe barbing saloon' sign ended up in Atlas's gallery), and alt texts only claim what the photo really is;
-the business name as logo text is written plainly (no letter split into a span); inline CSS + a little vanilla JS, Google Fonts allowed; mobile-first and
+the business name as logo text is written plainly (no letter split into a span); the header must fit on a 360 px phone WITH every
+button visible - the "Install the app" button appears only on Android, so let the header wrap (06/11: Appeler was cut off on
+the owner's phone); image addresses carry a version (img/hero.jpg?v=1) so a rebuilt preview never shows old cached photos; inline CSS + a little vanilla JS, Google Fonts allowed; mobile-first and
 flawless on a phone; a full-bleed hero with a strong, specific headline (about THEM, their street, their city - not a generic
 slogan), clear calls to action (call / WhatsApp / booking), at least 5 <section>s (about, services, gallery, hours + map embed
 of their address, contact), refined palette from their brand, generous spacing, subtle reveal animation that never hides content

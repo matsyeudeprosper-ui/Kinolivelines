@@ -50,6 +50,23 @@ def offer():
 
 
 PORTFOLIO = "https://kv-kinoverse.pages.dev"     # 2026-11-05 (watch): his Atlas email was signed with the trading app's address
+PORTFOLIO_FR = PORTFOLIO + "/fr/"                 # 2026-11-06 (owner: "French people land on the French version I hope?")
+
+
+_FRC = {"t": 0.0, "ok": False}
+
+
+def _fr_live():
+    """the French portfolio is linked only once it really answers (checked every 10 min)"""
+    if time.time() - _FRC["t"] > 600:
+        _FRC["t"] = time.time()
+        try:
+            import urllib.request
+            _FRC["ok"] = urllib.request.urlopen(urllib.request.Request(PORTFOLIO_FR, headers={"User-Agent": "Mozilla/5.0"}),
+                                                timeout=10).status == 200
+        except Exception:
+            _FRC["ok"] = False
+    return _FRC["ok"]
 
 
 def footer(lang="en"):
@@ -57,7 +74,7 @@ def footer(lang="en"):
     a = o.get("postal_address") or ""
     if str(lang).startswith("fr"):
         return ("--\nKino, assistant IA de %s\n%s\n%s\nVous recevez ce message car votre entreprise est publique en ligne. Répondez STOP "
-                "et je ne vous écrirai plus." % (o.get("brand", "Kinoverse"), PORTFOLIO, a))
+                "et je ne vous écrirai plus." % (o.get("brand", "Kinoverse"), PORTFOLIO_FR if _fr_live() else PORTFOLIO, a))
     return ("--\nKino, AI assistant at %s\n%s\n%s\nYou are receiving this because your business is listed publicly online. Reply STOP "
             "and I will not write again." % (o.get("brand", "Kinoverse"), PORTFOLIO, a))
 
