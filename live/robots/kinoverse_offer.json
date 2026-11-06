@@ -7,10 +7,24 @@
  "currency_note": "Quote in the client's currency; 150 EUR is about 160-175 USD / 130 GBP.",
  "services": [
   {
+   "name": "Site + AI staff member (bundle)",
+   "what": "the premium website AND the AI staff member who keeps it alive and does the daily work behind it - the offer to lead with once a business shows interest",
+   "from_eur": 49,
+   "plus_month_eur": 29,
+   "note": "launch bundle: 49 EUR for the site + 29 EUR a month for the AI staff member, negotiable; first month of the AI staff member free in exchange for an honest review"
+  },
+  {
    "name": "Simple website",
    "what": "a premium, modern site that looks like a top agency made it: their brand, real photos, services and prices, gallery, map, contact, perfect on a phone; online booking or a contact form when they need it",
    "from_eur": 49,
    "delivery_days": "3-7"
+  },
+  {
+   "name": "AI staff member",
+   "what": "an AI employee who does the business's DAILY WORK in its own tools - not a chat window: answers and sorts the customer inbox, prepares and sends quotes and invoices and chases late payments, follows up quotes and customers who have not come back, replies to every Google review, posts their real news weekly on their social pages, keeps their website up to date, handles booking confirmations and reminders, and sends the owner a weekly report. Starts in 'I propose, you approve' mode, then works alone task by task as trust grows; anything unsure goes to the owner; customers always know they deal with an AI",
+   "from_eur": 29,
+   "per": "month",
+   "delivery_days": "set up in 2-5 days, then monthly"
   },
   {
    "name": "Mobile app version",
