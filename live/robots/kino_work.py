@@ -657,7 +657,9 @@ def _act0(j, person, W=None):
         if a == "qa":
             ex = j.get("expect")
             r = KSL.qa(who, url=j.get("url"), expect=ex if isinstance(ex, list) else ([ex] if ex else None))
-            return ("the delivery check passed" if r["ok"] else "the delivery check found: " + "; ".join(r["issues"]))
+            return (("the delivery check passed (opened on a phone and a computer)" if r["ok"] else
+                     "the delivery check found - fix ALL of it before anyone sees the page: " + "; ".join(r["issues"])) +
+                    ((" | also worth knowing: " + "; ".join(r.get("notes") or [])) if r.get("notes") else ""))
         r = KSL.job(who, scope=j.get("scope"), price=j.get("price"), currency=j.get("currency"), deposit=j.get("deposit"),
                     due=j.get("due"), status=j.get("status"), site=j.get("site") or j.get("url"), note=j.get("note") or j.get("text"))
         if not r:

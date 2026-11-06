@@ -62,8 +62,10 @@ def _fr_live():
         _FRC["t"] = time.time()
         try:
             import urllib.request
-            _FRC["ok"] = urllib.request.urlopen(urllib.request.Request(PORTFOLIO_FR, headers={"User-Agent": "Mozilla/5.0"}),
-                                                timeout=10).status == 200
+            # Cloudflare Pages answers 200 with the home page for a path that does not exist - the page must BE French
+            _h = urllib.request.urlopen(urllib.request.Request(PORTFOLIO_FR, headers={"User-Agent": "Mozilla/5.0"}),
+                                        timeout=10).read(4000).decode("utf-8", "replace")
+            _FRC["ok"] = bool(re.search(r"<html[^>]+lang=[\"']fr", _h, re.I))
         except Exception:
             _FRC["ok"] = False
     return _FRC["ok"]
@@ -282,6 +284,11 @@ def outreach(W, ref, subject, body, log=None):
             return "not sent - the check said: %s" % why
     except Exception:
         pass
+    if p.get("preview") and tracked(p) in body:      # 2026-11-06 (owner: "first impression so good"): the page they will open
+        q2 = qa(p["name"], url=p["preview"])          # is tested in a real browser right now - a failing page is never sent
+        if not q2["ok"]:
+            return "not sent - their preview fails the browser test: %s. Fix the preview (or brief your designer), then send." % \
+                "; ".join(q2["issues"])[:700]
     if not sent:                                     # 2026-11-06 (owner: "do all 7" - #5): every FIRST email is checked by QA
         q = _email_qa(W, p, cc, subject, body, log)
         if q:
@@ -763,7 +770,22 @@ def qa(ref, url=None, expect=None):
             bad.append("%s (no answer)" % h[:80])
     if bad:
         issues.append("broken links or images: " + ", ".join(bad[:8]))
-    res = {"t": time.time(), "url": url, "ok": not issues, "issues": issues}
+    # 2026-11-06 (owner: "make sure QA does a good testing job - caching and all - so the first impression is so good"; the
+    # Brevi preview cut its Call button off on his Android phone): the page opened in a real browser, phone and computer
+    notes = []
+    try:
+        import subprocess
+        _pq = subprocess.run(["node", os.path.join(os.path.dirname(HERE), "review", "page_qa.mjs"), url + ("&" if "?" in url else "?") + "qa=%d" % int(time.time())],
+                             capture_output=True, text=True, timeout=150, encoding="utf-8", errors="replace")
+        _r = json.loads((_pq.stdout or "").strip().splitlines()[-1])
+        if any("could not start" in i for i in _r.get("issues") or []):
+            notes.append("the browser test could not run this time - look at it yourself before sending")
+        else:
+            issues += _r.get("issues") or []
+            notes += _r.get("notes") or []
+    except Exception as e:
+        notes.append("the browser test failed (%s) - look at it yourself before sending" % str(e)[:80])
+    res = {"t": time.time(), "url": url, "ok": not issues, "issues": issues, "notes": notes}
     if p and p.get("job"):
         with _LK:
             d = _j(STORE, {"items": []})
