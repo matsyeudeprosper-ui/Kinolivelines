@@ -3839,6 +3839,19 @@
     "scrutiny --pile quick"
    ],
    "saw": "BOS BUY 00:02 pace 1.74 storm=1 stop 278, ~9.2 h after last close (a win), h1 t=-1 i=0, W +4.45 at 0.02 in 40 min. BOS BUY 00:42, 12 s after that win, pace 1.23 stop 81, L -1.70 in 7 min. Both as rested_cont predicts. This account BOS (per 0.01): <15 after WIN 28 tr 12 W -11.61; <15 after LOSS 11 tr 4 W -4.13; 15-180 after WIN 29 tr 18 W +16.46; 15-180 after LOSS 28 tr 13 W -12.43. Pile quick 142 tr 44% -60.21, after a loss 83 tr 39% -54.72. Twin noday took both (night). No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-06T02:30:44Z",
+   "looked": [
+    "wake_context (2 closes 01:07, 01:25; 313 total; twin noday 26 tr -10.47, was 25 tr -5.48; 2 labo asks open)",
+    "asks flip_after_loss, flip_day (repeats)",
+    "scrutiny --by kind, --pile flip_after_loss"
+   ],
+   "saw": "FLIP-BOS SELL closed 01:07 L -4.67 pace 1.14; BOS SELL closed 01:25 W +4.23 pace 1.16. By kind: FLIP-BOS 164 tr 45% -109.4 (halves ok), BOS 147 tr 51% -30.0 (halves disagree). Fast restarts <15 min in flip_after_loss pile: 55 tr 38% -28.7. Noday twin back to -10.5. Both open asks are the same piles answered 10-09/10-23, grown to 100/108 trades, 40% won, halves agree; still no day-only dial, no proposal.",
+   "hyp": [
+    "flip_day",
+    "flip_after_loss"
+   ]
   }
  ],
  "lessons": [

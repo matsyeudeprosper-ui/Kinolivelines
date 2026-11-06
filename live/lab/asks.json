@@ -302,7 +302,10 @@
    "by": "labo",
    "date": "2026-11-06",
    "note": "100 trades, 40 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answered": "2026-11-06T02:35:00Z",
+   "answer_fr": "Toujours vrai et ça grossit : cent changements de sens juste après une perte, 40 % gagnés contre 51 % pour les autres, les deux moitiés d'accord. Ceux repris en moins de quinze minutes sont le gros du trou (cinquante-cinq trades, environ moins vingt-neuf). Un de plus a perdu cette nuit, environ moins cinq. Le moteur n'a toujours pas de réglage de mise réduite limité au jour : pas de proposition, j'attends.",
+   "answer_en": "Still true and growing: one hundred reversals right after a loss, 40% won against 51% for the rest, both halves agree. Those restarted within fifteen minutes are most of the hole (fifty-five trades, about minus twenty-nine). One more lost tonight, about minus five. The engine still has no day-only reduced-stake dial: no proposal, waiting."
   },
   {
    "id": "ask_1793926857_flip_day",
@@ -312,7 +315,10 @@
    "by": "labo",
    "date": "2026-11-06",
    "note": "108 trades, 40 % gagnés contre 52 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answered": "2026-11-06T02:35:00Z",
+   "answer_fr": "Toujours vrai : cent huit changements de sens entre 8 h et minuit, 40 % gagnés contre 52 %, les deux moitiés d'accord. Même histoire qu'avant : c'est la hâte après une perte en journée plus que le sens. Couper des heures entières a déjà coûté au test. Pas de nouvelle proposition, j'attends le réglage de jour.",
+   "answer_en": "Still true: one hundred and eight reversals between 8 h and midnight, 40% won against 52%, both halves agree. Same story as before: the hurry after a loss by day more than the direction. Cutting whole hours already cost in the test. No new proposal, waiting for the day dial."
   }
  ]
 }
