@@ -35,7 +35,7 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "write to up to 5 of them today, each one a personal email about THEIR business (what I noticed on their site or "
             "that they have none, and that I can make them a free preview), in their language, within the country rules; "
             "for the best one or two, brief my designer for a premium preview first and put its address in the email. "
-            "FACEBOOK ONLY leads: one fbhand each (Matsy sends my message in Messenger). If fewer than 5 are waiting, SCAN a "
+            "FACEBOOK ONLY leads: up to 3 fbhand a day, the best ones (Matsy sends each by hand in Messenger). If fewer than 5 are waiting, SCAN a "
             "city where it is business hours (Europe in the morning, the Americas from the afternoon) - it records the "
             "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
             "playbook, finish with done: who I wrote to.")
@@ -758,6 +758,9 @@ def _act0(j, person, W=None):
         if "facebook.com" not in url or len(tx) < 40:
             return "fbhand needs their Facebook page (url) and your message (text)"
         import kino_sales as KSF2
+        _today = time.strftime("%d/%m")
+        if sum(1 for x in KSF2._j(KSF2.STORE, {"items": []})["items"] if ("fbhand %s" % _today) in str(x.get("notes") or "")) >= 3:
+            return "3 Messenger messages for Matsy today already - the rest tomorrow (he sends each one by hand)"
         p = KSF2.find(j.get("who") or url) or {}
         body = ("A message for you to send from Messenger to %s (they have no email; Facebook is how to reach them):\n\n"
                 "1. Open: %s\n2. Tap Message, paste this, send:\n\n%s\n\nWhen they answer, paste their reply to me in our chat "
