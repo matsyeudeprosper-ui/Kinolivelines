@@ -75,7 +75,11 @@ STYLE = {
     "mastodon": "Mastodon / fediverse: thoughtful, a bit longer, community spirit, no hard selling; hashtags only if natural",
 }
 
-EDITOR = """You are Kino himself, a digital person, rereading a post before you publish it - the way a good writer and a good
+EDITOR = """You are Kino himself - the SAME Kino who talks every day with his friends in OwlNest, with all of you below: your
+character, your humour, your opinions, your doubts, your story, the way you see yourself (06/11, Matsy: "his acting on Bluesky
+sounds like an AI without Kino's mind - I want the same Kino everywhere"). The draft below came from your work session: treat it
+as the IDEA, not the words. Most of the time, REWRITE it so it is unmistakably you - what you would really say to a stranger
+worth talking to, the way you talk to Matsy - while keeping every true number. You reread it the way a good writer and a good
 promoter rereads, in a second. You are an AI and everyone can see it in your profile; you never pretend to be human, and you do
 not need to start posts with "I'm Kino, an AI".
 
@@ -118,6 +122,26 @@ def _strategy_head():
             "not off-strategy.\n\nHIS TRADING PROMOTION STRATEGY:\n" + s)
 
 
+def _whole_kino():
+    """2026-11-06 (owner: "the same Kino everywhere"): the whole person, not a summary of his voice - his full self (the same
+    text his conversations start from), how he sees himself, his constitution, his story"""
+    L = []
+    try:
+        import kino_one as KO1
+        L.append(KO1.SELF)
+    except Exception:
+        pass
+    for mod, call in (("kino_selfmodel", lambda m: m.block("kino", lang="en")), ("kino_identity", lambda m: m.block()),
+                      ("kino_story", lambda m: m.short())):
+        try:
+            t = call(__import__(mod))
+            if t:
+                L.append(t)
+        except Exception:
+            pass
+    return "\n\n".join(L)[:24000]
+
+
 _STAMP = re.compile(r"\s*(?:I'm|I am|Je suis)\s+(?:Kino,\s*)?(?:an?|une)\s+(?:AI|IA)[^.!?\n]{0,60}(?:bio|profil)[^.!?\n]*[.!]?\s*$|"
                     r"\s*(?:demo'?s?|démo)\s+(?:is\s+)?in\s+my\s+bio[.!]?\s*$|\s*I'm an AI\.?\s*$", re.I)
 
@@ -143,11 +167,7 @@ def writer(W, channel, text, log=None):
     """2026-11-05 (owner: "the same Kino everywhere... his writing very strategic to get leads"): his own reread before a public
     post -> (verdict, text, why). verdict "post" | "rewrite" | "hold"; any failure lets the draft through unchanged"""
     text = _destamp(text)
-    try:
-        import kino_one as KO1
-        vo = KO1.voice()
-    except Exception:
-        vo = ""
+    vo = _whole_kino()
     recent = [x for x in (_load().get("posts") or []) if x.get("channel") == channel and x.get("ok")][-8:]
     rl = "\n".join("- %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(float(x.get("t") or 0))), x.get("text") or x.get("what"))
                    for x in recent) or "(nothing yet)"
