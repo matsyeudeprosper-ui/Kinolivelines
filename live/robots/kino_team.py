@@ -37,10 +37,11 @@ ACTIONS YOU HAVE:
 ROLES = {
     "hunter": {
         "steps": 14,
-        "actions": ["find", "search", "fetch", "xsearch", "prospect", "read", "write", "tool_run"],
+        "actions": ["find", "audit", "search", "fetch", "xsearch", "prospect", "read", "write", "tool_run"],
         "what": "finds real small businesses that need what Kinoverse makes, and checks them",
         "how": """You are the HUNTER. From the brief: find real businesses (find = OpenStreetMap: "place" a city/district, "kind" e.g.
-barber|restaurant|plumber...), prefer those with an email or phone and NO website, check the best 2-3 on their own public page
+barber|restaurant|plumber..., "with_site": true for those WITH a website), then audit ("url") their sites - a weakness score
+4+ with an email found = the best lead (no-website businesses rarely show an email; Kino cannot phone). Check the best 2-3 on their own public page
 (fetch a Facebook/Google/listing page; search with SHORT words), and record each CHECKED one with prospect ("name", "url",
 "email" public business address only, "country" a 2-letter code, "lang", "need" what you noticed, "stage" found|checked,
 "notes" what you verified and where). Read Kino's playbook first: C:\\KinoWorld\\projects\\kinoverse\\playbook.md.
@@ -137,6 +138,37 @@ def _step(W, role, ctx, log):
     return j
 
 
+BUILD = """You are a top web designer and front-end developer (the level of the best agencies). You write ONE complete, production-
+quality HTML page for a small business: the client must open it and feel it is their finished, premium site.
+Rules: their REAL facts only (from the brief and the notes) - never invent reviews, awards, prices or hours ("on request" /
+"call to book" instead); use ONLY the image files listed as downloaded (relative paths like img/hero.jpg), each where it fits
+best (the sharpest, most striking one as the hero); inline CSS + a little vanilla JS, Google Fonts allowed; mobile-first and
+flawless on a phone; a full-bleed hero with a strong, specific headline (about THEM, their street, their city - not a generic
+slogan), clear calls to action (call / WhatsApp / booking), at least 5 <section>s (about, services, gallery, hours + map embed
+of their address, contact), refined palette from their brand, generous spacing, subtle reveal animation that never hides content
+if JS fails, sticky mobile call bar, accessible contrast, alt texts, meta description, Open Graph tags, a manifest link and
+theme colour if a manifest exists, the discreet ribbon "Preview made for <name> by Kinoverse - not live yet", and photo credits
+in the footer for any non-CC0 photo. Answer with the complete HTML document only, from <!doctype html> to </html>."""
+
+
+def _build(W, brief, hist, path, draft, log):
+    """2026-11-06 (owner: "premium ... the best possible"): the page itself is written by the strongest model, from everything
+    the designer gathered; its cheaper steps only do the gathering"""
+    try:
+        raw = W.ask_text(BUILD, "THE BRIEF:\n%s\n\nWHAT THE DESIGNER GATHERED (facts, photos downloaded, notes):\n%s\n\nTHE DESIGNER'S "
+                                "DRAFT (improve on it freely - keep its true facts and its image files):\n%s\n\nWrite the complete page "
+                                "for %s now." % (brief, "\n".join(hist)[-14000:], str(draft)[:16000], path),
+                         model="opus", timeout=420, log=log, warm=False) or ""
+        m = re.search(r"<!doctype html.*?</html>", raw, re.S | re.I)
+        if m and len(m.group(0)) > 6000:
+            _log("BUILD opus %d chars for %s" % (len(m.group(0)), path))
+            return m.group(0)
+        _log("BUILD opus gave no full page for %s" % path)
+    except Exception as e:
+        _log("BUILD-ERR %s" % e)
+    return None
+
+
 def _work(W, rid, role, brief, log):
     import kino_work as KW
     R = ROLES[role]
@@ -164,6 +196,8 @@ def _work(W, rid, role, brief, log):
                     p = str(j.get("path") or "")
                     if p and not os.path.isabs(p) and p.replace("/", "\\").lower().startswith("team\\"):
                         j["path"] = os.path.join(r"C:\KinoWorld", p)
+                    if role == "designer" and p.lower().endswith(".html"):
+                        j["content"] = _build(W, brief, hist, p, j.get("content") or "", log) or j.get("content")
                 try:
                     seen = KW._act(j, "kino", W)
                 except Exception as e:

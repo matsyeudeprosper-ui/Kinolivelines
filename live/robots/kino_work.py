@@ -31,10 +31,10 @@ SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): 
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
 NIGHT_USD = 1.2                  # 2026-11-05: the night (01-07 France) hunt in the US may use this much of the new day's budget
 NIGHT_SESSIONS = 4
-NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use find in "
-              "ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), pick those with an email or a "
-              "phone and no website, check one lead against its own public page, record it, and if it is solid make the personal "
-              "preview and send ONE personal email in English (US rules: business email, footer and STOP line). Do not write to Matsy "
+NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use find with "
+              "with_site true in ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), audit their "
+              "sites, pick a weak one (score 4+) that shows an email, check it, record it, and if it is solid have the premium "
+              "redesign preview made and send ONE personal email in English (US rules: business email, footer and STOP line). Do not write to Matsy "
               "now - he sleeps; it goes in my diary and the playbook. Finish with done and what I found.")
 
 
@@ -251,7 +251,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -282,6 +282,8 @@ You can make things public on your own, under your own name, with nobody approvi
 - tool_propose ("name", "path" your .py file, "what" it is for) / tool_run ("name", "args" a list): YOUR TOOLBOX - tools you
   write yourself that may use the INTERNET once a second mind approves them (see YOUR TOOLBOX below). Build one when a job
   keeps coming back that your actions don't cover; read what it wrote with read.
+- audit ("url" a business site): how weak their site is (0-10) and the email on it - see WEAK WEBSITES FIRST. find takes
+  "with_site": true to list only businesses that have a site.
 - photos ("q" short English words): free-licence photos for a client's preview (then download them into its folder).
   A preview must look like their FINISHED premium site, with real images - see DIRECTION (QUALITY BAR); preview refuses a bare page.
 - delegate ("role" hunter|designer|qa|writer, "brief" what exactly, for whom, what you want back): YOUR TEAM works in the
@@ -636,6 +638,14 @@ def _act(j, person, W=None):
             return ("APPROVED - run it with tool_run. " if r["ok"] else "REFUSED - ") + str(r.get("why") or "")
         r = KTB.run(j.get("name"), j.get("args"))
         return "exit code %s (%ss)\n%s" % (r.get("code"), r.get("s"), r.get("out") or "(no output)")
+    if a == "audit":                       # 2026-11-06 (owner: hunt businesses with WEAK websites) - their site as a client sees it
+        import kino_sales as KSA
+        r = KSA.site_audit(j.get("url") or j.get("text") or "")
+        if not r.get("ok"):
+            return "audit: %s" % r.get("err")
+        return "%s - weakness %s/10: %s | email on their site: %s" % (
+            r["url"], "?" if r["score"] is None else r["score"], "; ".join(r["problems"]) or "nothing obvious - a decent site",
+            ", ".join(r["emails"]) or "none found")
     if a == "photos":                      # 2026-11-06 (Matsy: previews with real images, premium) - free-licence photos
         import kino_sales as KSP
         r = KSP.stock_photos(j.get("q") or j.get("text") or "", 12)
@@ -645,7 +655,8 @@ def _act(j, person, W=None):
                "page footer):\n" + "\n".join("- %s | %s | %sx%s | %s %s" % (x["url"], x["license"], x["w"], x["h"], x["by"], x["title"]) for x in r)
     if a == "find":                        # 2026-11-05 (live run): real local businesses from OpenStreetMap
         import kino_sales as KSF
-        r = KSF.find_businesses(j.get("place") or j.get("where") or "", j.get("kind") or j.get("text") or "", 25)
+        r = KSF.find_businesses(j.get("place") or j.get("where") or "", j.get("kind") or j.get("text") or "", 25,
+                                with_site=str(j.get("with_site") or "").lower() in ("true", "1", "yes"))
         if not r.get("ok"):
             return "find: %s" % r.get("err")
         return "%s - %d %s found, %d without a website:\n" % (r["place"][:80], r["total"], j.get("kind"), r["without_site"]) + "\n".join(

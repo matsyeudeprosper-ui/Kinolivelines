@@ -325,6 +325,60 @@ def preview(W, ref, folder, log=None):
     return "preview published (a minute or two to appear): %s" % url
 
 
+_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
+
+def site_audit(url):
+    """2026-11-06 (owner: yes to hunting businesses with WEAK websites - the no-website ones have no email, the night hunt showed):
+    one business site as a client sees it -> {"ok", "url", "score" 0-10 (10 = very weak), "problems": [...], "emails": [...]}"""
+    import time as _t
+    import kino_web as KWB
+    url = str(url or "").strip()
+    if not url:
+        return {"ok": False, "err": "no address"}
+    if not url.startswith(("http://", "https://")):
+        url = "http://" + url
+    t0 = _t.time()
+    try:
+        h, _ct = KWB._get(url, timeout=25, cap=2_000_000)
+    except Exception as e:
+        # (a site that refuses robots is not proof it is broken - open it in your browser before calling it dead)
+        return {"ok": True, "url": url, "score": None, "problems": ["could not open it from here (%s) - check it in your browser" % str(e)[:80]],
+                "emails": []}
+    s = _t.time() - t0
+    P, score = [], 0
+    if not url.startswith("https://") and not re.search(r"https://", url):
+        P.append("no secure https");  score += 2
+    if not re.search(r"<meta[^>]+name=[\"']viewport", h, re.I):
+        P.append("not made for phones (no mobile viewport)");  score += 3
+    yrs = [int(y) for y in re.findall(r"(?:©|&copy;|copyright)\s*(?:\d{4}\s*[-–]\s*)?(20\d\d|19\d\d)", h, re.I)]
+    if yrs and max(yrs) <= time.gmtime().tm_year - 3:
+        P.append("looks unmaintained (copyright %d)" % max(yrs));  score += 2
+    if re.search(r"<table[^>]+width=|<font\b|<center\b|<frameset|\.swf\b|<marquee", h, re.I):
+        P.append("old-fashioned building blocks (tables/fonts/frames)");  score += 2
+    if re.search(r"wix\.com|weebly|godaddy.*builder|jimdo|site123|webnode", h, re.I):
+        P.append("a free builder template");  score += 1
+    if s > 6:
+        P.append("slow (%.0f s)" % s);  score += 1
+    if not re.search(r"<title>\s*\S", h, re.I):
+        P.append("no page title");  score += 1
+    if len(re.findall(r"<img\b", h, re.I)) < 2:
+        P.append("almost no photos");  score += 1
+    if not re.search(r"book|booking|appointment|reserv|rendez|réserv", h, re.I):
+        P.append("no online booking");  score += 1
+    em = [e for e in dict.fromkeys(_EMAIL_RE.findall(h)) if not re.search(r"\.(png|jpe?g|gif|webp|svg)$|example\.|sentry|wixpress|@2x", e, re.I)]
+    if not em:                                     # the contact page often has it
+        m = re.search(r"href=[\"']([^\"']*(?:contact|kontakt|nous-contacter|about)[^\"']*)[\"']", h, re.I)
+        if m:
+            try:
+                import urllib.parse
+                h2, _ = KWB._get(urllib.parse.urljoin(url, m.group(1)), timeout=20, cap=1_000_000)
+                em = [e for e in dict.fromkeys(_EMAIL_RE.findall(h2)) if not re.search(r"\.(png|jpe?g|gif|webp|svg)$|example\.|sentry|wixpress", e, re.I)]
+            except Exception:
+                pass
+    return {"ok": True, "url": url, "score": min(10, score), "problems": P, "emails": em[:4]}
+
+
 def stock_photos(q, n=12):
     """2026-11-06 (Matsy: previews 'as if it was the final production with images and all'): free-licence photos for a trade,
     from Openverse (CC0 first: StockSnap, Rawpixel; then any licence allowing commercial use, with its credit)"""
@@ -537,8 +591,8 @@ KINDS = {"hairdresser": "shop=hairdresser", "barber": "shop=hairdresser", "salon
          "tailor": "craft=tailor", "veterinary": "amenity=veterinary", "pet shop": "shop=pet"}
 
 
-def find_businesses(place, kind, limit=25):
-    """real businesses of one kind in one place, those WITHOUT a website first -> {"ok", "items"|"err"}"""
+def find_businesses(place, kind, limit=25, with_site=False):
+    """real businesses of one kind in one place, those WITHOUT a website first (with_site: only those WITH one, to audit) -> {"ok", "items"|"err"}"""
     import urllib.parse, urllib.request
     tag = KINDS.get(str(kind or "").strip().lower()) or (str(kind) if "=" in str(kind or "") else None)
     if not tag:
@@ -578,6 +632,8 @@ def find_businesses(place, kind, limit=25):
         out.append({"name": t.get("name"), "website": site, "phone": phone, "email": mail, "facebook": fb, "address": addr,
                     "hours": t.get("opening_hours"), "osm": "https://www.openstreetmap.org/%s/%s" % (el["type"], el["id"])})
     out.sort(key=lambda x: (bool(x["website"]), not (x["email"] or x["phone"] or x["facebook"])))
+    if with_site:                                  # 2026-11-06: the weak-site hunt
+        out = [x for x in out if x["website"]]
     no_site = sum(1 for x in out if not x["website"])
     _log("FIND %s in %s -> %d (%d without a website)" % (kind, place, len(out), no_site))
     return {"ok": True, "place": g[0].get("display_name"), "total": len(out), "without_site": no_site, "items": out[:int(limit)]}
