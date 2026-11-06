@@ -259,8 +259,21 @@ def preview(W, ref, folder, log=None):
     for dp, _dn, fn in os.walk(root):
         for f in fn:
             fp = os.path.join(dp, f)
+            # 2026-11-06 (Atlas rebuild): a 4.2 MB photo was skipped silently - a broken image on the page, and heavy photos
+            # make a phone wait. Photos are shrunk here (max 1600 px, ~85 quality) before they go up
+            if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp")) and os.path.getsize(fp) > 450_000:
+                try:
+                    from PIL import Image
+                    im = Image.open(fp)
+                    im.thumbnail((1600, 1600))
+                    if f.lower().endswith((".jpg", ".jpeg")):
+                        im.convert("RGB").save(fp, "JPEG", quality=84, optimize=True, progressive=True)
+                    else:
+                        im.save(fp, optimize=True)
+                except Exception as e:
+                    _log("SHRINK-ERR %s %s" % (fp, e))
             if os.path.getsize(fp) > 3_000_000:
-                continue
+                return "not published - %s is %.1f MB, too big for a page (shrink it)" % (f, os.path.getsize(fp) / 1e6)
             files.append((os.path.relpath(fp, root).replace("\\", "/"), fp))
     if not any(r == "index.html" for r, _ in files):
         return "a preview needs an index.html"
@@ -302,6 +315,12 @@ def preview(W, ref, folder, log=None):
             return "upload of %s failed (%s)" % (rel, st)
     url = "https://%s/previews/%s/" % (KP.BLOG, slug)
     prospect(p["name"], url=p.get("url"), stage="preview", notes=(p.get("notes") or "") + " | preview: " + url)
+    with _LK:                                          # 2026-11-06: qa checks a preview before any job exists
+        d = _j(STORE, {"items": []})
+        for x in d["items"]:
+            if x["id"] == p["id"]:
+                x["preview"] = url
+        _w(STORE, d)
     _log("PREVIEW %s %s" % (p["name"], url))
     return "preview published (a minute or two to appear): %s" % url
 
@@ -443,7 +462,9 @@ def qa(ref, url=None, expect=None):
     import urllib.parse, urllib.request
     p = find(ref)
     j = (p or {}).get("job") or {}
-    url = url or j.get("site")
+    if url and os.path.isdir(str(url)):                # 2026-11-06: the designer passed its folder - check what was published
+        url = None
+    url = url or j.get("site") or (p or {}).get("preview")
     if not url:
         return {"ok": False, "issues": ["no site address - set the job's site first"]}
     issues = []
