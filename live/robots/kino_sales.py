@@ -450,6 +450,31 @@ def site_audit(url):
     return {"ok": True, "url": url, "score": min(10, score), "problems": P, "emails": em[:4]}
 
 
+def scan(place, kind, max_sites=40):
+    """2026-11-06 (watch: a hunt found 74 Lyon barbers and audited 5, one per step): a whole city at once - every business
+    site audited in parallel (no AI cost), plus the no-website ones that show an email -> {"ok", "weak": [...], "nosite": [...]}"""
+    from concurrent.futures import ThreadPoolExecutor
+    r = find_businesses(place, kind, limit=400)
+    if not r.get("ok"):
+        return r
+    items = r["items"]
+    sites = [x for x in items if x["website"]][:int(max_sites)]
+    nosite = [x for x in items if not x["website"] and (x["email"] or x["facebook"])]
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        audits = list(ex.map(lambda x: site_audit(x["website"]), sites))
+    weak = []
+    for x, a in zip(sites, audits):
+        if a.get("ok") and (a.get("score") or 0) >= 4:
+            dom = re.sub(r"^www\.", "", str(x["website"]).lower().split("//")[-1].split("/")[0])
+            em = list(dict.fromkeys(([x["email"]] if x["email"] else []) + (a.get("emails") or [])))
+            em.sort(key=lambda e: not e.lower().endswith("@" + dom))   # their own domain first - a footer email can be the web agency's
+            weak.append(dict(x, score=a["score"], problems=a["problems"], emails=em))
+    weak.sort(key=lambda x: (-bool(x["emails"]), -x["score"]))
+    _log("SCAN %s in %s -> %d sites audited, %d weak (%d with email), %d no-site with email/facebook" % (
+        kind, place, len(sites), len(weak), sum(1 for x in weak if x["emails"]), len(nosite)))
+    return {"ok": True, "place": r["place"], "total": r["total"], "audited": len(sites), "weak": weak, "nosite": nosite}
+
+
 def stock_photos(q, n=12):
     """2026-11-06 (Matsy: previews 'as if it was the final production with images and all'): free-licence photos for a trade,
     from Openverse (CC0 first: StockSnap, Rawpixel; then any licence allowing commercial use, with its credit)"""
@@ -687,7 +712,8 @@ def find_businesses(place, kind, limit=25, with_site=False):
     q = '[out:json][timeout:50];nwr["%s"="%s"]["name"](%f,%f,%f,%f);out center tags 300;' % (k, v, s, w, n, e)
     r, last = None, ""
     for ep in ("https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
-               "https://maps.mail.ru/osm/tools/overpass/api/interpreter"):   # free public servers: when one is busy, the next
+               "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
+               "https://overpass-api.de/api/interpreter"):   # free public servers: when one is busy, the next (06/11: SSL errors x4)
         try:
             r = json.load(urllib.request.urlopen(urllib.request.Request(
                 ep, data=urllib.parse.urlencode({"data": q}).encode(), headers=_UA), timeout=90))

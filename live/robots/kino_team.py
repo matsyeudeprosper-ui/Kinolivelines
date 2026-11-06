@@ -32,7 +32,7 @@ Answer ONE JSON object per step and nothing else:
           and what you suggest he does next. Plain, short, complete."}
 A long file (code, a page) goes BELOW the JSON between a line ===FILE=== and a line ===END=== (write).
 FIELD NAMES (06/11: a designer sent six "run" with no command): run {"cmd": "a PowerShell command"}, read/write {"path"},
-fetch/audit {"url"}, search/xsearch/photos {"q"}, download {"url", "path"}, find {"place", "kind", "with_site"},
+fetch/audit {"url"}, scan {"place", "kind"}, search/xsearch/photos {"q"}, download {"url", "path"}, find {"place", "kind", "with_site"},
 prospect {"name", "url", "email", "country", "lang", "need", "notes", "stage"}, preview/qa/job {"who"} (qa also "url"),
 deploy {"who", "path"}, invoice {"amount", "what"}, tool_run {"name", "args"}.
 ACTIONS YOU HAVE:
@@ -41,9 +41,10 @@ ACTIONS YOU HAVE:
 ROLES = {
     "hunter": {
         "steps": 14,
-        "actions": ["find", "audit", "search", "fetch", "xsearch", "prospect", "read", "write", "tool_run"],
+        "actions": ["scan", "find", "audit", "search", "fetch", "xsearch", "prospect", "read", "write", "tool_run"],
         "what": "finds real small businesses that need what Kinoverse makes, and checks them",
-        "how": """You are the HUNTER. From the brief: find real businesses (find = OpenStreetMap: "place" a city/district, "kind" e.g.
+        "how": """You are the HUNTER. Start with scan ("place", "kind"): a whole city audited at once - the weak sites with their email and the
+no-website businesses that show an email. Then (or for more): find real businesses (find = OpenStreetMap: "place" a city/district, "kind" e.g.
 barber|restaurant|plumber..., "with_site": true for those WITH a website), then audit ("url") their sites - a weakness score
 4+ with an email found = the best lead (no-website businesses rarely show an email; Kino cannot phone). Check the best 2-3 on their own public page
 (fetch a Facebook/Google/listing page; search with SHORT words), and record each CHECKED one with prospect ("name", "url",

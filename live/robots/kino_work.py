@@ -32,13 +32,13 @@ STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a re
 NIGHT_USD = 1.2                  # 2026-11-05: the night (01-07 France) hunt in the US may use this much of the new day's budget
 NIGHT_SESSIONS = 4
 DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). Read my playbook. Pick ONE city where it is business hours now "
-            "(Europe in the morning, the Americas from the afternoon) and ONE kind of small business. Both count: businesses with "
-            "a WEAK website (find with with_site true, then audit - weakness 4+ with an email) and businesses with NO website "
+            "(Europe in the morning, the Americas from the afternoon) and ONE kind of small business, and SCAN it (one action: all sites audited). Both count: businesses with "
+            "a WEAK website (weakness 4+ with an email) and businesses with NO website "
             "(find their email on Facebook About, Google listing, Instagram, a directory). Brief my hunter for a whole city if it "
             "is big, my designer for the premium preview of the best lead, and check it with qa. Then ONE personal email per "
             "solid lead, within the country rules. Record every lead, note what I learn in the playbook, finish with done.")
-NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use find with "
-              "with_site true in ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), audit their "
+NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use scan in "
+              "ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), audit their "
               "sites, pick a weak one (score 4+) that shows an email, check it, record it, and if it is solid have the premium "
               "redesign preview made and send ONE personal email in English (US rules: business email, footer and STOP line). Do not write to Matsy "
               "now - he sleeps; it goes in my diary and the playbook. Finish with done and what I found.")
@@ -268,7 +268,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|xhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|scan|xhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -299,6 +299,8 @@ You can make things public on your own, under your own name, with nobody approvi
 - tool_propose ("name", "path" your .py file, "what" it is for) / tool_run ("name", "args" a list): YOUR TOOLBOX - tools you
   write yourself that may use the INTERNET once a second mind approves them (see YOUR TOOLBOX below). Build one when a job
   keeps coming back that your actions don't cover; read what it wrote with read.
+- scan ("place" a city, "kind"): YOUR BEST HUNTING TOOL - a whole city in about a minute: every business site audited at
+  once, the weak ones (with their email) and the no-website ones that show an email or Facebook. Start every hunt with it.
 - audit ("url" a business site): how weak their site is (0-10) and the email on it - see WEAK WEBSITES FIRST. find takes
   "with_site": true to list only businesses that have a site.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
@@ -670,6 +672,19 @@ def _act0(j, person, W=None):
             return ("APPROVED - run it with tool_run. " if r["ok"] else "REFUSED - ") + str(r.get("why") or "")
         r = KTB.run(j.get("name"), j.get("args"))
         return "exit code %s (%ss)\n%s" % (r.get("code"), r.get("s"), r.get("out") or "(no output)")
+    if a == "scan":                        # 2026-11-06 (watch): a whole city at once - all sites audited in parallel, no AI cost
+        import kino_sales as KSS
+        r = KSS.scan(j.get("place") or j.get("where") or "", j.get("kind") or j.get("text") or "")
+        if not r.get("ok"):
+            return "scan: %s" % r.get("err")
+        L = ["%s - %d businesses, %d sites audited." % (r["place"][:80], r["total"], r["audited"]),
+             "WEAK SITES (score 4+/10, best leads first):"] + [
+            "- %s | %s | weak %d/10: %s | email: %s | phone %s | %s" % (x["name"], x["website"], x["score"], "; ".join(x["problems"][:4]),
+                                                                ", ".join(x["emails"][:2]) or "none", x["phone"] or "-", x["address"] or "")
+            for x in r["weak"][:15]] + ["NO WEBSITE, reachable:"] + [
+            "- %s | email: %s | facebook: %s | phone %s | %s" % (x["name"], x["email"] or "-", x["facebook"] or "-", x["phone"] or "-",
+                                                             x["address"] or "") for x in r["nosite"][:15]]
+        return "\n".join(L)
     if a == "audit":                       # 2026-11-06 (owner: hunt businesses with WEAK websites) - their site as a client sees it
         import kino_sales as KSA
         r = KSA.site_audit(j.get("url") or j.get("text") or "")
