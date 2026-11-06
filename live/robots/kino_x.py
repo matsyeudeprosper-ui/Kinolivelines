@@ -285,7 +285,7 @@ def mentions(n=10):
 # on X; raise the budget"): finding the conversations where he has something real to add. Reads cost ~0.005 $ a post: the owner's X cap
 # is 30 $ a month, about 1 $ a day for everything - so at most READS_DAY post reads a day (the rest goes to his posts and replies).
 USAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_x_usage.json")
-READS_DAY = 140
+READS_DAY = 25                  # 2026-11-06 (owner: X is not where clients come from - spend less): was 140
 
 
 def _usage(add=0):

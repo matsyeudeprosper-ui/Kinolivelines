@@ -438,6 +438,11 @@ def xpost(W, text, log=None, reply_to=None, image=None):
         return "a post needs text"
     if len(text) > 280:
         return "too long for X: %d characters, 280 at most" % len(text)
+    if not reply_to:                                   # 2026-11-06 (owner: spend less on X - it is the shop window): one post a day
+        _today = time.strftime("%Y-%m-%d", time.gmtime())
+        if sum(1 for x in (_load().get("posts") or []) if x.get("channel") == "x" and x.get("ok") and x.get("day") == _today
+               and "PINNED" not in str(x.get("what") or "")) >= 1:
+            return "you already posted on X today - one a day there now (Matsy: X is your shop window); answering people who mention you is still fine"
     text, _held = _reread(W, "x", text, 280, log)      # 2026-11-05: his own reread - same voice, strategic, no repeats
     if _held:
         return _held
