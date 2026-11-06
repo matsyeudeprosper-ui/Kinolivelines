@@ -1309,13 +1309,22 @@ def member_trades():
             t = round(float(nd.get("today") or 0.0), 2)
         except Exception:
             continue
-        prev = _member_today.get(uid)
-        _member_today[uid] = t
-        if prev is None:
+        # 2026-11-06 (owner: "this notification is stuck, keeps coming back"): Valère's "today" flickered 0 <-> 3.76 for six
+        # minutes (12:07-12:13 UTC) and every return to 3.76 pushed "Trade terminé +3.76" again - 12 times. A drop to 0 is
+        # not a new day (only the date is), and one day's total is announced once.
+        day = time.strftime("%Y-%m-%d", time.gmtime())
+        st = _member_today.get(uid)
+        if not isinstance(st, dict) or st.get("day") != day:
+            _member_today[uid] = {"day": day, "t": t, "said": {t}}
             continue
+        if t == 0 and abs(st["t"]) > 0.01:
+            continue    # a glitch to 0 inside the day: ignored, the last real total is kept
+        prev = st["t"]
+        st["t"] = t
         delta = round(t - prev, 2)
-        if abs(delta) < 0.01 or (t == 0 and abs(prev) > 0.01):
-            continue    # no change, or day rollover
+        if abs(delta) < 0.01 or t in st["said"]:
+            continue    # no change, or a total already announced today
+        st["said"].add(t)
         # 2026-09-27: same voice as the app's toast
         if lang_of(uid) == "en":
             title = (f"\u2705 Trade closed \u00b7 +{delta:.2f} $" if delta > 0
