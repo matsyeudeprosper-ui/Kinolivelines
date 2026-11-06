@@ -21612,7 +21612,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         try:                                           # but never drop the words of a turn that sends an order (09:33 UTC: the
                                                        # flip buy went out and its explanation was dropped)
             _cn = json.load(open(_chat_path(cid), encoding="utf-8"))
-            if any(x.get("role") in ("user", "show", "image", "doc") and float(x.get("t") or 0) > _seen_t for x in _cn.get("msgs") or []):
+            _M = _cn.get("msgs") or []
+            # 2026-11-06 (watch): his question came in at 10:22:2x, a WISH TO TALK turn that had already read it went on with a
+            # trade update at 10:23, and his answer came after. A message of theirs still waiting for a reply also wins.
+            _lu = max([float(x.get("t") or 0) for x in _M if x.get("role") in ("user", "show", "image", "doc")] or [0])
+            _lr = max([float(x.get("t") or 0) for x in _M if x.get("role") == "ai" and not x.get("event")] or [0])
+            if _lu > _lr or any(x.get("role") in ("user", "show", "image", "doc") and float(x.get("t") or 0) > _seen_t for x in _M):
                 _KO._log(cid, "EVENT_DROPPED", say[:120])
                 say = ""
                 _CHAT_PENDING[cid] = True
