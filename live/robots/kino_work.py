@@ -194,7 +194,18 @@ def due(person, ctx, now=None):
     # Kinoverse - Matsy's big goal - got nothing; a project note did not change his choice. When his last two sessions were
     # not Kinoverse, the next one is a hunt (his day work, like the night hunt)
     _last2 = (d.get("sessions") or [])[-2:]
-    if len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
+    # 2026-11-06: premium previews are waiting for their email - the hunt comes back 2 h after the last one, not after 2 sessions
+    _lasthunt = max([float(s["t"]) for s in d.get("sessions") or [] if "kinoverse" in str(s.get("project") or "").lower()] or [0])
+    _pv_wait = False
+    try:
+        import kino_sales as _KSd
+        _pv_wait = any(p.get("preview") and p.get("email") and not p.get("sent") and p["stage"] in ("found", "checked", "preview")
+                       for p in _KSd._j(_KSd.STORE, {"items": []})["items"])
+    except Exception:
+        pass
+    if _pv_wait and now - _lasthunt > 7200 and not d.get("next_task"):
+        _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
+    elif len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
