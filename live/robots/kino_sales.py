@@ -177,6 +177,32 @@ def opt_out(addr, why=""):
 def on_mail(addr, subject, text):
     """an email came in: an opt-out is honoured at once; a prospect's answer moves them to 'replied'"""
     a = email.utils.parseaddr(str(addr or ""))[1].lower()
+    # 2026-11-06 (owner: "has he seen the failed send?" - À la bonne Franquette's address bounced and nothing noticed): a
+    # delivery failure names the address that failed; that lead goes back to the desk without its email
+    if re.search(r"mailer-daemon|postmaster|mail delivery", a + " " + str(addr), re.I) or \
+            re.search(r"delivery status notification|undeliver|non remis|échec de (la )?distribution|address not found|adresse introuvable",
+                      str(subject or "") + " " + str(text or "")[:300], re.I):
+        for bad in dict.fromkeys(_EMAIL_RE.findall(str(text or "")[:3000])):
+            bp = find(bad.lower())
+            if bp and bp.get("sent"):
+                with _LK:
+                    d = _j(STORE, {"items": []})
+                    for x in d["items"]:
+                        if x["id"] == bp["id"]:
+                            x.setdefault("history", []).append([int(time.time()), x["stage"], "found"])
+                            x["stage"] = "found"
+                            x["bounced"] = x.pop("email", None)
+                            x["notes"] = (x.get("notes") or "") + " | %s: email %s BOUNCED (address does not exist) - find another way to reach them (Facebook, their site's contact form, a phone for Matsy)" % (
+                                time.strftime("%d/%m"), bad)
+                    _w(STORE, d)
+                _log("BOUNCED %s %s" % (bp["name"], bad))
+                try:
+                    import kino_urge as KU
+                    KU.add("kino", "YOUR WORK - your email to %s did not arrive: the address %s does not exist. They are back on your desk "
+                                   "to reach another way (Facebook, a contact form)." % (bp["name"], bad))
+                except Exception:
+                    pass
+        return
     p = find(a)
     if not p:
         return
@@ -597,7 +623,7 @@ def record_line():
             ", " + str(p.get("need") or "")[:70] if p.get("need") else "",
             ", with a preview" if p.get("preview") and (p["preview"].rstrip("/") in s.get("body", "") or tracked(p) in s.get("body", "")) else ", no preview",
             ", OPENED %dx" % len(p["clicks"]) if p.get("clicks") else "",
-            ", REPLIED" if p["stage"] in ("replied", "quoted", "won", "delivered") else ", no answer yet") for s, p in sent[:8]))
+            ", BOUNCED - the address does not exist" if p.get("bounced") else ", REPLIED" if p["stage"] in ("replied", "quoted", "won", "delivered") else ", no answer yet") for s, p in sent[:8]))
     else:
         L.append("no email sent yet")
     if fb:
