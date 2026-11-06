@@ -109,6 +109,132 @@ def price():
     return j
 
 
+def _font(size, bold=False, italic=False, script=False):
+    from PIL import ImageFont
+    names = (["segoesc.ttf", "segoepr.ttf"] if script else []) + [("segoeuib.ttf" if bold else "segoeuii.ttf" if italic else "segoeui.ttf"), "arial.ttf"]
+    for n in names:
+        try:
+            return ImageFont.truetype(os.path.join(r"C:\Windows\Fonts", n), size)
+        except Exception:
+            pass
+
+
+def _wrap(text, width):
+    out = []
+    for para in str(text).split("\n"):
+        cur = ""
+        for w in para.split():
+            if len(cur) + len(w) + 1 > width:
+                out.append(cur)
+                cur = w
+            else:
+                cur = (cur + " " + w).strip()
+        out.append(cur)
+    return out
+
+
+def make(name, place_line, preview_url, qr_url, message, slug):
+    """front: their own preview on a phone + their name; back (left half only): Kino's note and the QR code to the counted link"""
+    import qrcode
+    from PIL import Image, ImageDraw, ImageFilter
+    import kino_media as KMD
+    W, H = 1772, 1240
+    sh = KMD.shot(preview_url, "card-" + slug, "x")
+    if not sh.get("ok"):
+        return None, "could not capture their preview (%s)" % sh.get("err")
+    phone = Image.open(sh["path"]).convert("RGB").crop((955, 66, 1362, 834))
+    front = Image.new("RGB", (W, H), (16, 18, 24))
+    d = ImageDraw.Draw(front)
+    for y in range(H):
+        c = int(16 + 22 * (1 - abs(y - H / 2) / (H / 2)))
+        d.line([(0, y), (W, y)], fill=(c + 6, c + 3, c))
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse((W - 1050, 80, W - 150, 1160), fill=(201, 166, 92, 70))
+    glow = glow.filter(ImageFilter.GaussianBlur(160))
+    front.paste(glow, (0, 0), glow)
+    ph = phone.resize((int(phone.width * 1.42), int(phone.height * 1.42)))
+    px, py = W - ph.width - 150, (H - ph.height) // 2
+    shadow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle((px + 30, py + 40, px + ph.width + 40, py + ph.height + 50), radius=70, fill=(0, 0, 0, 170))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(40))
+    front.paste(shadow, (0, 0), shadow)
+    front.paste(ph, (px, py))
+    d = ImageDraw.Draw(front)
+    nm = _wrap(name, 22)[:2]
+    d.text((120, 300), "Votre nouveau site,", font=_font(84, True), fill=(244, 240, 232))
+    y = 400
+    for ln in nm:
+        d.text((120, y), ln, font=_font(84, True), fill=(212, 175, 104))
+        y += 100
+    d.text((124, y + 40), str(place_line)[:44], font=_font(44), fill=(196, 196, 204))
+    d.text((124, y + 110), "Déjà prêt. Il ne manque que votre « oui ».", font=_font(44), fill=(196, 196, 204))
+    d.text((124, 1060), "Kinoverse", font=_font(40, True), fill=(160, 170, 255))
+    d.text((124, 1112), "sites & employés IA pour les commerces", font=_font(32), fill=(150, 150, 160))
+    back = Image.new("RGB", (W, H), (251, 249, 244))
+    d = ImageDraw.Draw(back)
+    y = 100
+    for ln in _wrap(message, 42)[:13]:
+        d.text((100, y), ln, font=_font(36), fill=(40, 40, 48))
+        y += 47
+    d.text((100, y + 4), "Kino", font=_font(64, script=True), fill=(60, 70, 150))
+    d.text((310, y + 38), "assistant IA de Kinoverse", font=_font(28, italic=True), fill=(110, 110, 120))
+    qr = qrcode.QRCode(box_size=10, border=2)
+    qr.add_data(qr_url)
+    qr.make(fit=True)
+    back.paste(qr.make_image(fill_color=(30, 30, 40), back_color=(251, 249, 244)).convert("RGB").resize((250, 250)), (100, H - 320))
+    d.text((380, H - 270), "Votre aperçu", font=_font(38, True), fill=(40, 40, 48))
+    d.text((380, H - 220), "scannez avec l'appareil photo", font=_font(30), fill=(110, 110, 120))
+    d.text((380, H - 180), "de votre téléphone", font=_font(30), fill=(110, 110, 120))
+    d.text((100, H - 60), "Kinoverse · 9 B Bd des Coquibus, 91000 Évry · STOP : kinoverse26@gmail.com", font=_font(20), fill=(130, 130, 140))
+    out = r"C:\KinoWorld\media"
+    f, b = os.path.join(out, "carte_%s_recto.jpg" % slug), os.path.join(out, "carte_%s_verso.jpg" % slug)
+    front.save(f, quality=92)
+    back.save(b, quality=92)
+    return (f, b), None
+
+
+CARD_EUR = 2.30
+
+
+def card_for(prospect_ref, message, street, cp, city, dry=False):
+    """2026-11-06 (owner: "when it comes from him we don't need confirmation"): Kino posts a card to a lead, within his spending
+    rules (kino_spend) - Matsy is told after, not asked before"""
+    import re as _re
+    import kino_sales as KS
+    import kino_spend as KSP
+    p = KS.find(prospect_ref)
+    if not p:
+        return "no prospect called %s" % prospect_ref
+    if not p.get("preview"):
+        return "%s has no preview yet - the card shows their own site, build it first" % p["name"]
+    if not (_re.match(r"^\d{5}$", str(cp or "").strip()) and str(street or "").strip() and str(city or "").strip()):
+        return "a card needs their full postal address: street, a 5-digit postcode, city (from their site or listing)"
+    if len(str(message or "").strip()) < 80:
+        return "write them a real, personal note (a few lines, in French) - it is printed on the back"
+    if any(x.get("to") == p["name"] for x in _j(STATE, {}).get("sent") or []):
+        return "%s already got a card" % p["name"]
+    ok, why = KSP.check(CARD_EUR, "postage", "postcard to %s" % p["name"])
+    if not ok:
+        return "no card: " + why
+    slug = KS._slug(p["name"])
+    files, err = make(p["name"], "%s, %s" % (str(street).strip()[:30], city), p["preview"], KS.tracked(p) + "?src=carte",
+                      str(message).strip(), slug)
+    if err:
+        return err
+    if dry:
+        return "card made (not posted): %s and %s" % files
+    dest = {"civilite": "", "nom": "", "prenom": "", "societe": p["name"][:38], "adresse1": str(street).strip()[:38], "adresse2": "",
+            "adresse3": "", "cp": str(cp).strip(), "ville": str(city).strip()[:32], "pays": "france", "phone": "", "email": "",
+            "consent": 0, "reference": p["id"]}
+    r = send(files[0], files[1], dest, "Kinoverse - %s" % p["name"][:30])
+    if not r.get("ok"):
+        return "the card was not posted: %s" % r.get("err")
+    KSP.record(CARD_EUR, "postage", "postcard to %s (%s)" % (p["name"], city), ref=p["id"])
+    KS.prospect(p["name"], key=p["key"], notes=(p.get("notes") or "") + " | %s: POSTCARD sent to %s, %s %s" % (
+        time.strftime("%d/%m"), street, cp, city))
+    return "card posted to %s (%s %s) - it arrives in 2-4 days; its QR code is counted (src=carte)" % (p["name"], cp, city)
+
+
 def send(front_jpg, back_jpg, dest, designation=""):
     """posts ONE card - only after Matsy approved it (the approval step calls this)"""
     st = _j(STATE, {})

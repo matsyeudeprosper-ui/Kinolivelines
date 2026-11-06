@@ -282,7 +282,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -321,6 +321,10 @@ You can make things public on your own, under your own name, with nobody approvi
   gets your message and the link and sends it in Messenger; it is marked contacted.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
+- card ("who" a lead with a built preview, "text" your personal note in French - printed on the back, "street", "cp" 5
+  digits, "city" - from their own site or listing): a REAL POSTCARD through La Poste (2.30 EUR, from your spending rules -
+  see YOUR SPENDING): front = their own site on a phone, back = your note + a QR code to their preview. For the best leads who
+  did not open your email after 5 days - a card on the counter gets read. One card per business.
 - shot ("url" a page, "name", "text" a short caption): an image of that page on a phone, ready to post - xpost takes
   "image": its path. Posts with an image are seen far more; use your sample sites (kv-kinoverse.pages.dev) - a client's
   preview only once they agreed.
@@ -478,6 +482,11 @@ def _mind(person, uid):
         _dr = json.load(open(os.path.join(HERE, "kino_direction.json"), encoding="utf-8")).get("text")
         if _dr:
             L.append("DIRECTION: " + _dr)
+    except Exception:
+        pass
+    try:                                       # 2026-11-06 (owner): what he may spend on his own, and what is spent
+        import kino_spend as KSPB
+        L.append(KSPB.block())
     except Exception:
         pass
     try:                                       # 2026-11-06: his life story, which his work is part of
@@ -721,6 +730,10 @@ def _act0(j, person, W=None):
         return "%s - weakness %s/10: %s | email on their site: %s" % (
             r["url"], "?" if r["score"] is None else r["score"], "; ".join(r["problems"]) or "nothing obvious - a decent site",
             ", ".join(r["emails"]) or "none found")
+    if a == "card":                        # 2026-11-06 (owner: postcards, his own spending - no confirmation, Matsy told after)
+        import kino_postcard as KPC
+        return KPC.card_for(j.get("who") or j.get("name"), j.get("text") or j.get("message"), j.get("street"), j.get("cp"),
+                            j.get("city"))
     if a == "shot":                        # 2026-11-06 (owner: posts with media): a page on a phone, as an image to post
         import kino_media as KMD
         r = KMD.shot(j.get("url") or "", j.get("name") or j.get("path") or "shot", j.get("text") or j.get("caption") or "")
