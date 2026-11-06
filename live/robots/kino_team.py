@@ -31,6 +31,10 @@ Answer ONE JSON object per step and nothing else:
  "text": "done: YOUR REPORT to Kino - what you did, what you found (with the exact names/addresses/links), what is not checked,
           and what you suggest he does next. Plain, short, complete."}
 A long file (code, a page) goes BELOW the JSON between a line ===FILE=== and a line ===END=== (write).
+FIELD NAMES (06/11: a designer sent six "run" with no command): run {"cmd": "a PowerShell command"}, read/write {"path"},
+fetch/audit {"url"}, search/xsearch/photos {"q"}, download {"url", "path"}, find {"place", "kind", "with_site"},
+prospect {"name", "url", "email", "country", "lang", "need", "notes", "stage"}, preview/qa/job {"who"} (qa also "url"),
+deploy {"who", "path"}, invoice {"amount", "what"}, tool_run {"name", "args"}.
 ACTIONS YOU HAVE:
 %s"""
 
