@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-05T15:00:50Z",
+ "updated": "2026-11-06T01:00:42Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -221,7 +221,8 @@
     "2026-11-02 13:00 veille: quick re-entries 07:15 BOS (12 min after a loss) W +1.12, 09:36 FLIP (2 min after a loss) L -0.73, 11:18 BOS (26 s after a win) L -1.04 per 0.01; 10:01 BOS after 15 min W +1.41. Today's <15 min: 3 W / 5 L. Holds.",
     "2026-11-02 20:00 veille: BOS SELL entry 18:44, 7.4 min after the 18:36 FLIP loss, pace 1.83 storm 0, stop 196, h1 internal opposite, held 56 min, W +3.26 at 0.02 (+1.63 per 0.01). A quick re-entry after a loss won - against; today's <15 min now 4 W / 5 L. One trade, holds.",
     "2026-11-04 15:00 veille: ref account BOS <15 min after a WIN 27 tr 44% -21.51 (halves agree); 15-180 after WIN 29 tr 62% +32.93; 15-180 after LOSS 28 tr 46% -24.87. The rest helps after a win; after a loss even rested BOS lose. Today 14:50 BOS BUY 9.6 min after a win, 1017 pts above, lost -8.80.",
-    "2026-11-05: pooled real: re-entry <15 min after a WIN 44 tr 45% -24.95 (h 55/36, worsening); BOS among them 39 tr 46% -23.31; 15-30 min after a win 14 tr 79% +21.16 (peu). Pile win_quick15 opened."
+    "2026-11-05: pooled real: re-entry <15 min after a WIN 44 tr 45% -24.95 (h 55/36, worsening); BOS among them 39 tr 46% -23.31; 15-30 min after a win 14 tr 79% +21.16 (peu). Pile win_quick15 opened.",
+    "2026-11-06 01:00 veille: BOS rested 9 h W +4.45; BOS retaken 12 s after that win, stop 81, L -1.70. u477508138 BOS <15 min after a win now 28 tr 12 W -11.61 per 0.01 vs 15-180 after a win 29 tr 18 W +16.46. Two more for the prediction."
    ],
    "next": "cont_wait when built, test it split by previous result (after a win vs after a loss, ties loss_gap_size); re-read on src=filtre once real_pool_split exists. Watch whether the pile's second half keeps falling."
   },
@@ -3828,6 +3829,16 @@
     "scrutiny --pile ny_open, --pile flip_hot"
    ],
    "saw": "FLIP-BOS SELL 14:45 pace 1.557 storm=1, stop 225, h1 t=-1 i=0, day_n 0, ~24 h after the last close (a loss), W +3.61 at 0.02 in 6 min. Against flip_nervous and ny_open on its face, one trade. ny_open pile by hour: 13 h 12 tr 25% -52.24, 14 h 13 tr 54% -12.53 (halves disagree), 15 h 8 tr 62% +0.02, 16 h 12 tr 25% -47.65: the window's leak is at its edges (13, 16), consistent with 12-16/13-16 quarter-stake results. flip_hot pile < 15 min 43 tr 42% -31.60 (halves ok). No run, no pile, no proposal."
+  },
+  {
+   "t": "2026-11-06T01:00:42Z",
+   "looked": [
+    "wake_context (2 real closes 00:41, 00:49; 311 total; twin noday 25 tr -5.48, was 24 tr -9.92; labo empty; no open ask)",
+    "bos_journal_u477508138 last 2 rows",
+    "this account BOS by gap to previous close x previous outcome",
+    "scrutiny --pile quick"
+   ],
+   "saw": "BOS BUY 00:02 pace 1.74 storm=1 stop 278, ~9.2 h after last close (a win), h1 t=-1 i=0, W +4.45 at 0.02 in 40 min. BOS BUY 00:42, 12 s after that win, pace 1.23 stop 81, L -1.70 in 7 min. Both as rested_cont predicts. This account BOS (per 0.01): <15 after WIN 28 tr 12 W -11.61; <15 after LOSS 11 tr 4 W -4.13; 15-180 after WIN 29 tr 18 W +16.46; 15-180 after LOSS 28 tr 13 W -12.43. Pile quick 142 tr 44% -60.21, after a loss 83 tr 39% -54.72. Twin noday took both (night). No run, no pile, no proposal."
   }
  ],
  "lessons": [
