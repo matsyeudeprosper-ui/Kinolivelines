@@ -282,7 +282,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -321,6 +321,9 @@ You can make things public on your own, under your own name, with nobody approvi
   gets your message and the link and sends it in Messenger; it is marked contacted.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
+- shot ("url" a page, "name", "text" a short caption): an image of that page on a phone, ready to post - xpost takes
+  "image": its path. Posts with an image are seen far more; use your sample sites (kv-kinoverse.pages.dev) - a client's
+  preview only once they agreed.
 - photos ("q" short English words): free-licence photos for a client's preview (then download them into its folder).
   A preview must look like their FINISHED premium site, with real images - see DIRECTION (QUALITY BAR); preview refuses a bare page.
 - delegate ("role" hunter|designer|qa|writer, "brief" what exactly, for whom, what you want back): YOUR TEAM works in the
@@ -718,6 +721,11 @@ def _act0(j, person, W=None):
         return "%s - weakness %s/10: %s | email on their site: %s" % (
             r["url"], "?" if r["score"] is None else r["score"], "; ".join(r["problems"]) or "nothing obvious - a decent site",
             ", ".join(r["emails"]) or "none found")
+    if a == "shot":                        # 2026-11-06 (owner: posts with media): a page on a phone, as an image to post
+        import kino_media as KMD
+        r = KMD.shot(j.get("url") or "", j.get("name") or j.get("path") or "shot", j.get("text") or j.get("caption") or "")
+        return ("image ready: %s - post it with xpost (\"image\": that path). Only your OWN sample sites, or a client's site once "
+                "they agreed, go public." % r["path"]) if r.get("ok") else "shot: %s" % r.get("err")
     if a == "images":                      # 2026-11-06: a business's OWN photos, from its own site (download the ones you use)
         import kino_sales as KSI
         r = KSI.page_images(j.get("url") or "")
@@ -838,7 +846,13 @@ def _act0(j, person, W=None):
             for x in r["items"])
     if a == "xpost":                       # 2026-11-05: his X account (@kinoverse26, automated label)
         import kino_post as KP
-        return KP.xpost(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
+        _img = j.get("image")                  # 2026-11-06 (owner: posts with media): an image of his world (or his shots)
+        if _img:
+            _img = _inside(_img) or _net_out(_img)
+            if not _img or not os.path.isfile(_img):
+                return "the image must be a file in your world (make one with shot)"
+        return KP.xpost(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"),
+                        image=_img)
     if a == "skeet":                       # 2026-11-01: his Bluesky (kinoverse.bsky.social)
         import kino_post as KP
         if j.get("about"):

@@ -19,7 +19,7 @@ TOKEN = os.path.join(SECRET, "x_token.json")
 PKCE = os.path.join(SECRET, "x_pkce.json")
 LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_x.log")
 REDIRECT = "https://owltrader.duckdns.org/x/callback"
-SCOPES = "tweet.read tweet.write users.read offline.access like.read like.write follows.read follows.write"
+SCOPES = "tweet.read tweet.write users.read offline.access like.read like.write follows.read follows.write media.write"   # media: 06/11 (owner: posts with images)
 # 2026-11-05 (owner: "all abilities to manage freely the channels, he owns them"): likes and follows added - an account
 # authorized before that keeps posting; the new abilities need one more "Authorize" by the owner (auth_url)
 API = "https://api.x.com/2/"
@@ -141,7 +141,40 @@ def _post(path, body):
 _URL = re.compile(r"https?://|www\.|\b[a-z0-9-]+\.(?:com|org|net|io|app|social|fr)\b", re.I)
 
 
-def post(text, reply_to=None, link_ok=False):
+def upload(path):
+    """2026-11-06 (owner: "attractive and alive, with media"): an image -> its media id (X API v2 media upload, needs media.write)"""
+    import uuid
+    if "media.write" not in scopes():
+        return None, "X has not given me the right to post images yet - Matsy must reconnect me once (new link with media.write)"
+    try:
+        data = open(path, "rb").read()
+    except Exception as e:
+        return None, "cannot read %s (%s)" % (path, e)
+    if len(data) > 5_000_000:
+        return None, "image over 5 MB"
+    ext = os.path.splitext(path)[1].lower().lstrip(".") or "png"
+    bd = "----kino" + uuid.uuid4().hex
+    CRLF = "\r\n"
+    body = (("--%s" + CRLF + 'Content-Disposition: form-data; name="media_category"' + CRLF + CRLF + "tweet_image" + CRLF) % bd).encode() + \
+        (("--%s" + CRLF + 'Content-Disposition: form-data; name="media"; filename="image.%s"' + CRLF + "Content-Type: image/%s" + CRLF + CRLF) % (
+            bd, ext, "jpeg" if ext in ("jpg", "jpeg") else ext)).encode() + data + ((CRLF + "--%s--" + CRLF) % bd).encode()
+    req = urllib.request.Request(API + "media/upload", data=body, method="POST")
+    req.add_header("Authorization", "Bearer " + _access())
+    req.add_header("Content-Type", "multipart/form-data; boundary=" + bd)
+    try:
+        j = json.load(urllib.request.urlopen(req, timeout=60))
+    except urllib.error.HTTPError as e:
+        err = "%s %s" % (e.code, e.read()[:200].decode("utf-8", "replace"))
+        _log("upload refused %s" % err)
+        return None, err
+    except Exception as e:
+        return None, repr(e)[:200]
+    mid = (j.get("data") or {}).get("id") or j.get("media_id_string")
+    _log("UPLOADED %s %s" % (mid, path))
+    return mid, None
+
+
+def post(text, reply_to=None, link_ok=False, image=None):
     """one post (or a reply) as Kino. A link costs ~13x a plain post on X: refused unless link_ok"""
     text = str(text or "").strip()
     if not text:
@@ -151,6 +184,11 @@ def post(text, reply_to=None, link_ok=False):
     if _URL.search(text) and not link_ok:
         return {"ok": False, "err": "a link in a post costs about 0.20 $ on X instead of 0.015 $ - keep links in your bio and pinned post"}
     body = {"text": text}
+    if image:
+        mid, err = upload(image)
+        if not mid:
+            return {"ok": False, "err": "image: " + str(err)}
+        body["media"] = {"media_ids": [str(mid)]}
     if reply_to:
         body["reply"] = {"in_reply_to_tweet_id": str(reply_to)}
     try:

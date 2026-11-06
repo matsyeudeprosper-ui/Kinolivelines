@@ -420,7 +420,7 @@ def bluesky(W, text, log=None, reply_to=None):
     return "posted on Bluesky: %s" % url
 
 
-def xpost(W, text, log=None, reply_to=None):
+def xpost(W, text, log=None, reply_to=None, image=None):
     """2026-11-05 (owner: Kino on X, @kinoverse26, labelled automated): a post or a reply on X -> a sentence for him. X's API is
     paid per use (~0.015 $ a post, ~0.20 $ with a link, 10 $ a month cap set by the owner): no links in posts - his demo link
     lives in his bio and pinned post"""
@@ -444,7 +444,7 @@ def xpost(W, text, log=None, reply_to=None):
     if reply_to:
         m = re.search(r"/status/(\d+)", str(reply_to)) or re.match(r"^(\d+)$", str(reply_to))
         rid = m.group(1) if m else None
-    r = KX.post(text, reply_to=rid)
+    r = KX.post(text, reply_to=rid, image=image)
     if not r.get("ok"):
         _record("x", text[:120], False, str(r.get("err"))[:200])
         return "not posted on X: %s" % str(r.get("err"))[:200]
