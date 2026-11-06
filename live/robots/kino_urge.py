@@ -36,6 +36,8 @@ WEIGHTS = (
     # 2026-11-01 (watch): reasons from his life outside the app were silently dropped (no weight) - a payment, a reply
     ("MONEY ARRIVED", 0.9), ("A MISTAKE OF YOURS", 0.9), ("SOMEONE ANSWERED YOU", 0.7), ("SOMEONE MENTIONED YOU", 0.6),
     ("SOMEONE QUOTED YOU", 0.5), ("A NEW FOLLOWER", 0.4),
+    ("A CORRECTION YOU OWE", 0.9),        # 2026-11-06 (watch): a wrong thing he told someone, to put right himself
+    ("A BUSINESS OPENED", 0.7),           # 2026-11-06 kino_sales: a business opened the preview he sent (click counter)
     ("AN INTENTION OF YOURS", 0.75),     # 2026-11-04 kino_intent: something he wants to do with or for them (weight learned)
     ("YOUR REQUEST", 0.6),               # 2026-11-01 kino_hands: the owner answered something he asked for                 # 2026-11-01 kino_work: a session at his own computer           # 2026-11-01 kino_mail: mail in his own mailbox               # 2026-10-31 kino_workspace: something about them took the stage of his mind
 )
