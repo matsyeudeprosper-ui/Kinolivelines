@@ -133,6 +133,45 @@ def _bsky_tick():
     return len(N)
 
 
+_XLAST = {"t": 0.0}
+
+
+def _x_tick():
+    """2026-11-06 (owner: "once I post it, can he continue the conversation if the client replies?"): X mentions every 30 min.
+    A reply to @kinoverse26 mentions him, so he may answer it through the API. ~0.05 $ a check at most (10 reads)."""
+    if time.time() - _XLAST["t"] < 1800:
+        return 0
+    _XLAST["t"] = time.time()
+    import kino_x as KX
+    r = KX.mentions(10)
+    if not r.get("ok"):
+        _log("x mentions error %s" % str(r.get("err"))[:200])
+        return 0
+    try:
+        KX._usage(len(r["items"]))
+    except Exception:
+        pass
+    seen = set(_load().get("x_seen") or [])
+    new = [m for m in r["items"] if m["id"] not in seen]
+    for m in reversed(new):
+        who = "@" + str(m.get("by"))
+        note(who, "x", m.get("text") or "", "in", m["url"], kind="mention")
+        try:
+            os.makedirs(INBOX, exist_ok=True)
+            open(os.path.join(INBOX, "x_%s_%s.txt" % (time.strftime("%Y%m%d_%H%M%S"), re.sub(r"\W", "", who)[:20])), "w",
+                 encoding="utf-8").write("FROM %s (X)\nPOST %s\n\n%s\n" % (who, m["url"], m.get("text") or ""))
+        except Exception:
+            pass
+        _tell("SOMEONE ANSWERED YOU on X - %s: \"%s\" (%s - you may reply with xpost, url = that address)" % (
+            who, str(m.get("text") or "")[:300], m["url"]))
+    if new:
+        with _LK:
+            d = _load()
+            d["x_seen"] = (list(seen) + [m["id"] for m in new])[-300:]
+            _save(d)
+    return len(new)
+
+
 def _tell(line):
     _log(line)
     try:
@@ -153,3 +192,9 @@ def tick():
             _log("bluesky: %d new" % n)
     except Exception as e:
         _log("bluesky error %s" % str(e)[:200])
+    try:
+        n = _x_tick()
+        if n:
+            _log("x: %d new" % n)
+    except Exception as e:
+        _log("x error %s" % str(e)[:200])

@@ -268,7 +268,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|xhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -301,6 +301,8 @@ You can make things public on your own, under your own name, with nobody approvi
   keeps coming back that your actions don't cover; read what it wrote with read.
 - audit ("url" a business site): how weak their site is (0-10) and the email on it - see WEAK WEBSITES FIRST. find takes
   "with_site": true to list only businesses that have a site.
+- xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
+  this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
 - photos ("q" short English words): free-licence photos for a client's preview (then download them into its folder).
   A preview must look like their FINISHED premium site, with real images - see DIRECTION (QUALITY BAR); preview refuses a bare page.
 - delegate ("role" hunter|designer|qa|writer, "brief" what exactly, for whom, what you want back): YOUR TEAM works in the
@@ -696,6 +698,29 @@ def _act(j, person, W=None):
         import kino_post as KP
         return KP.manage(W, j.get("op"), j.get("channel"), j.get("url") or j.get("target") or j.get("who"), text=j.get("text"),
                          why=j.get("why") or j.get("thought") or "", log=os.path.join(HERE, "kino_post_calls.log"))
+    if a == "xhand":                       # 2026-11-06 (owner: "he can always give me the message and the link where to paste it")
+        url, tx = str(j.get("url") or "").strip(), str(j.get("text") or "").strip()
+        if not re.match(r"^https://(x|twitter)\.com/\w+/status/\d+", url) or len(tx) < 10:
+            return "xhand needs the X post address (url) and your reply (text)"
+        if len(tx) > 280:
+            return "too long for X (%d characters, max 280)" % len(tx)
+        body = ("A reply for you to post from @kinoverse26 (X does not let me reply to people who have not mentioned me):\n\n"
+                "1. Open: %s\n2. Tap Reply, paste this, send:\n\n%s\n\nOnce they answer you, the conversation is mine again - "
+                "their reply mentions @kinoverse26 and I see it within 30 minutes." % (url, tx))
+        ok = False
+        try:
+            import kino_mail as KM
+            KM.send_now(KM.OWNER_EMAIL, "Kino: a reply to post on X", body)
+            ok = True
+        except Exception:
+            pass
+        try:
+            if NOTIFY:
+                NOTIFY("Reply to post on X for Kino - it's in your email, with the link: %s" % url)
+        except Exception:
+            pass
+        return ("Matsy has the reply and the link (email + phone). When they answer, it reaches you as SOMEONE ANSWERED YOU on X."
+                if ok else "could not reach Matsy - try notify")
     if a == "notify":                      # 2026-11-05: Matsy, only when he truly cannot go on without him
         tx = " ".join(str(j.get("text") or "").split())[:400]
         if not tx:
