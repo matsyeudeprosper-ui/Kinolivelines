@@ -65,7 +65,8 @@ def _fr_live():
             # Cloudflare Pages answers 200 with the home page for a path that does not exist - the page must BE French
             _h = urllib.request.urlopen(urllib.request.Request(PORTFOLIO_FR, headers={"User-Agent": "Mozilla/5.0"}),
                                         timeout=10).read(4000).decode("utf-8", "replace")
-            _FRC["ok"] = bool(re.search(r"<html[^>]+lang=[\"']fr", _h, re.I))
+            # ... and carry the mark of a page that passed review (06/11: a first French version came out half English)
+            _FRC["ok"] = bool(re.search(r"<html[^>]+lang=[\"']fr", _h, re.I)) and "kv-reviewed" in _h
         except Exception:
             _FRC["ok"] = False
     return _FRC["ok"]
