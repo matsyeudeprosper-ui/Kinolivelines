@@ -277,6 +277,14 @@ def outreach(W, ref, subject, body, log=None):
     if p.get("preview"):                      # 2026-11-06: the preview link goes through the click counter
         _pv = p["preview"].rstrip("/")
         body = re.sub(re.escape(_pv) + r"/?(?:index\.html)?", tracked(p), body)
+    # 2026-11-06 (first real batch): his own STOP line and signature came on top of the automatic footer - twice in every
+    # email. The footer carries both; his lines are taken out. (And no "OpenStreetMap" talk to a restaurant owner.)
+    _bl = body.splitlines()
+    while _bl and (not _bl[-1].strip() or re.search(r"\bSTOP\b|ne plus recevoir|unsubscribe|^\s*Kino[ ,-].*(Kinoverse|IA|AI)|kinoverse26@gmail\.com\s*$",
+                                                   _bl[-1], re.I)):
+        _bl.pop()
+    body = "\n".join(_bl).strip() + "\n\nKino"
+    body = re.sub(r"\s*(dans l'annuaire public |in the public directory )?OpenStreetMap", "", body)
     full = body + "\n\n" + footer(p.get("lang") or "en")
     try:
         import kino_post as KP
@@ -296,7 +304,7 @@ def outreach(W, ref, subject, body, log=None):
             return "not sent - their preview fails the browser test: %s. Fix the preview (or brief your designer), then send." % \
                 "; ".join(q2["issues"])[:700]
     if not sent:                                     # 2026-11-06 (owner: "do all 7" - #5): every FIRST email is checked by QA
-        q = _email_qa(W, p, cc, subject, body, log)
+        q = _email_qa(W, p, cc, subject, full, log)          # with the footer it will carry (06/11: QA asked for a footer it could not see)
         if q:
             return "not sent - QA found: %s. Fix it (or brief your writer), then send again." % q
     import kino_mail as KM
