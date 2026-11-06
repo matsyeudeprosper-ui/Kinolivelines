@@ -117,7 +117,12 @@ def prospect(name, url=None, email_=None, country=None, lang=None, need=None, no
         key = key or _key(url, name)   # key: e.g. telegram:<id>
         p = next((x for x in d["items"] if x["key"] == key), None)
         if p is None:
-            p = {"id": "p%d" % (int(time.time() * 10) % 10 ** 9), "key": key, "name": str(name or key)[:120], "t": time.time(),
+            # 2026-11-06: a scan records many leads in the same tenth of a second - they shared one id, and one preview
+            _ids = {x["id"] for x in d["items"]}
+            _n = int(time.time() * 10) % 10 ** 9
+            while "p%d" % _n in _ids:
+                _n += 1
+            p = {"id": "p%d" % _n, "key": key, "name": str(name or key)[:120], "t": time.time(),
                  "stage": "found", "history": []}
             d["items"].append(p)
         for k, v in (("url", url), ("email", email_), ("country", country), ("lang", lang), ("need", need), ("notes", notes),
