@@ -33,7 +33,8 @@ MISSION = os.path.join(LAB, "VEILLE.md")
 MAX_PER_DAY = 6         # 2026-10-04 (owner): woken by the trades, at most six looks a day
 MIN_GAP = 60 * 60       # one look per hour at most - a burst of trades is one look
 MAX_GAP = 12 * 3600     # a dead day still gets one look
-QUIET_LOCAL = (3, 7)        # the night run owns 03:30-06:30 local
+QUIET_LOCAL = (18, 24)      # the night run owns 18:30-~23:30 server time (Central) = 01:30-06:30 France (moved 2026-11-06:
+                            # at 02:30 Central it ran 09:30-13:30 France and slowed Kino while the owner talked to him)
 TURNS = 20              # a look, not a study: the night run is the deep one
 A = sys.argv[1:]
 DRY, FORCE = "--dry" in A, "--force" in A
@@ -108,6 +109,21 @@ def signals(state):
     return reasons, ctx, nxt
 
 
+def _owner_talking(now):
+    """2026-11-06 (owner: heavy jobs when nobody is chatting): a look waits while the owner wrote to Kino in the last 15 min"""
+    import glob
+    try:
+        for f in glob.glob(os.path.join(os.path.dirname(LAB), "robots", "chats", "std_*.json")) +                 glob.glob(os.path.join(os.path.dirname(LAB), "robots", "chats", "kino_*.json")):
+            if now - os.path.getmtime(f) > 900:
+                continue
+            m = [x for x in (json.load(open(f, encoding="utf-8")).get("msgs") or []) if x.get("role") == "user"]
+            if m and now - float(m[-1].get("t") or 0) < 900:
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def decide(state, reasons, now):
     today = datetime.now().strftime("%Y-%m-%d")
     count = int(state.get("count") or 0) if state.get("day") == today else 0
@@ -118,6 +134,8 @@ def decide(state, reasons, now):
     lock = state.get("lock") or {}
     if lock and now - float(lock.get("t") or 0) < 3600:
         return False, "une veille est en cours"
+    if _owner_talking(now):
+        return False, "le patron parle avec Kino"
     if count >= MAX_PER_DAY:
         return False, f"{MAX_PER_DAY} veilles aujourd’hui, assez"
     if FORCE:

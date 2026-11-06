@@ -31,17 +31,19 @@ SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): 
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
 NIGHT_USD = 1.2                  # 2026-11-05: the night (01-07 France) hunt in the US may use this much of the new day's budget
 NIGHT_SESSIONS = 4
-DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). Read my playbook. Pick ONE city where it is business hours now "
-            "(Europe in the morning, the Americas from the afternoon) and ONE kind of small business, and SCAN it (one action: all sites audited). Both count: businesses with "
-            "a WEAK website (weakness 4+ with an email) and businesses with NO website "
-            "(find their email on Facebook About, Google listing, Instagram, a directory). Brief my hunter for a whole city if it "
-            "is big, my designer for the premium preview of the best lead, and check it with qa. Then ONE personal email per "
-            "solid lead, within the country rules. Record every lead, note what I learn in the playbook, finish with done.")
-NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook first. Use scan in "
-              "ONE US city and ONE kind of small business (trades, salons, restaurants, cleaners...), audit their "
-              "sites, pick a weak one (score 4+) that shows an email, check it, record it, and if it is solid have the premium "
-              "redesign preview made and send ONE personal email in English (US rules: business email, footer and STOP line). Do not write to Matsy "
-              "now - he sleeps; it goes in my diary and the playbook. Finish with done and what I found.")
+DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads already waiting: READY TO CONTACT on my desk - "
+            "write to up to 5 of them today, each one a personal email about THEIR business (what I noticed on their site or "
+            "that they have none, and that I can make them a free preview), in their language, within the country rules; "
+            "for the best one or two, brief my designer for a premium preview first and put its address in the email. "
+            "FACEBOOK ONLY leads: one fbhand each (Matsy sends my message in Messenger). If fewer than 5 are waiting, SCAN a "
+            "city where it is business hours (Europe in the morning, the Americas from the afternoon) - it records the "
+            "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
+            "playbook, finish with done: who I wrote to.")
+NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook. SCAN ONE "
+              "US city and ONE kind of small business (trades, salons, restaurants, cleaners...) - it records the reachable "
+              "leads - then write to up to 3 of the best (READY TO CONTACT), personal emails in English (US rules: business "
+              "email, footer and STOP line); a premium preview for the best one if the night budget allows. Do not write to "
+              "Matsy now - he sleeps; it goes in my diary and the playbook. Finish with done: who I wrote to.")
 
 
 def _log(line):
@@ -268,7 +270,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|scan|xhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -303,6 +305,8 @@ You can make things public on your own, under your own name, with nobody approvi
   once, the weak ones (with their email) and the no-website ones that show an email or Facebook. Start every hunt with it.
 - audit ("url" a business site): how weak their site is (0-10) and the email on it - see WEAK WEBSITES FIRST. find takes
   "with_site": true to list only businesses that have a site.
+- fbhand ("url" their Facebook page, "who" the prospect, "text" your message): a business with only Facebook - Matsy
+  gets your message and the link and sends it in Messenger; it is marked contacted.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
 - photos ("q" short English words): free-licence photos for a client's preview (then download them into its folder).
@@ -749,6 +753,29 @@ def _act0(j, person, W=None):
             pass
         return ("Matsy has the reply and the link (email + phone). When they answer, it reaches you as SOMEONE ANSWERED YOU on X."
                 if ok else "could not reach Matsy - try notify")
+    if a == "fbhand":                      # 2026-11-06 (owner: yes) - a business with only a Facebook page: Matsy sends it in Messenger
+        url, tx = str(j.get("url") or "").strip(), str(j.get("text") or "").strip()
+        if "facebook.com" not in url or len(tx) < 40:
+            return "fbhand needs their Facebook page (url) and your message (text)"
+        import kino_sales as KSF2
+        p = KSF2.find(j.get("who") or url) or {}
+        body = ("A message for you to send from Messenger to %s (they have no email; Facebook is how to reach them):\n\n"
+                "1. Open: %s\n2. Tap Message, paste this, send:\n\n%s\n\nWhen they answer, paste their reply to me in our chat "
+                "(or forward it to kinoverse26@gmail.com) and I take it from there." % (p.get("name") or "this business", url, tx))
+        try:
+            import kino_mail as KM
+            KM.send_now(KM.OWNER_EMAIL, "Kino: a Messenger message to send - %s" % (p.get("name") or "a business"), body)
+        except Exception as e:
+            return "could not reach Matsy (%s)" % str(e)[:100]
+        try:
+            if NOTIFY:
+                NOTIFY("A Messenger message for %s is in your email (Kino)" % (p.get("name") or "a business"))
+        except Exception:
+            pass
+        if p:
+            KSF2.prospect(p["name"], key=p["key"], stage="contacted",
+                          notes=(p.get("notes") or "") + " | fbhand %s: %s" % (time.strftime("%d/%m"), tx[:200]))
+        return "Matsy has your message and the link (email + phone); %s is marked contacted." % (p.get("name") or "the business")
     if a == "notify":                      # 2026-11-05: Matsy, only when he truly cannot go on without him
         tx = " ".join(str(j.get("text") or "").split())[:400]
         if not tx:
@@ -961,6 +988,11 @@ def block(lang="fr"):
                  " | ".join("%s - %s" % (time.strftime("%d/%m %H:%M", time.gmtime(s["t"])), s["summary"][:200]) for s in S))
     if P:
         L.append(("Your projects: " if en else "Tes projets : ") + " | ".join("%s (next: %s)" % (p["name"], (p.get("next") or "")[:120]) for p in P))
+    try:                                       # 2026-11-06 (watch): "I sent one [Lyon barber] a free page" - it was Atlas, Cape Town
+        import kino_sales as KSR
+        L.append(KSR.record_line())
+    except Exception:
+        pass
     try:                                       # 2026-11-01: his own money (half of what he earns; his life is paid from it)
         import kino_wallet as KWL
         L.append(KWL.line(en))

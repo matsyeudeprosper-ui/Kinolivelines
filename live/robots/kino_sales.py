@@ -472,7 +472,54 @@ def scan(place, kind, max_sites=40):
     weak.sort(key=lambda x: (-bool(x["emails"]), -x["score"]))
     _log("SCAN %s in %s -> %d sites audited, %d weak (%d with email), %d no-site with email/facebook" % (
         kind, place, len(sites), len(weak), sum(1 for x in weak if x["emails"]), len(nosite)))
+    # 2026-11-06 (owner: "turn leads into emails" - a hunt found 65 reachable businesses and wrote to none): the reachable ones
+    # are recorded at once, so they wait on his desk as READY TO CONTACT
+    cc = country_code(str(r.get("place") or "").split(",")[-1].strip())
+    lang = {"FR": "fr", "BE": "fr", "CH": "fr", "LU": "fr", "ES": "es", "MX": "es", "AR": "es", "CO": "es", "DE": "de", "AT": "de",
+            "IT": "it", "PT": "pt", "BR": "pt", "NL": "nl"}.get(cc, "en")
+    city = str(place).strip()
+    n = 0
+    for x in weak:
+        if x["emails"] and n < 12:
+            prospect(x["name"], url=x["website"], email_=x["emails"][0], country=cc, lang=lang, stage="found",
+                     need="%s %s with a weak site (%d/10): %s" % (kind, city, x["score"], "; ".join(x["problems"][:4])),
+                     notes="scan %s | phone %s | %s" % (time.strftime("%d/%m"), x["phone"] or "-", x["address"] or city))
+            n += 1
+    for x in nosite:
+        if n < 20:
+            prospect(x["name"], url=x["facebook"] if x["facebook"] and str(x["facebook"]).startswith("http") else None,
+                     key=None if x["facebook"] and str(x["facebook"]).startswith("http") else "osm:" + x["osm"].rsplit("/", 1)[-1],
+                     email_=x["email"], country=cc, lang=lang, stage="found",
+                     need="%s %s with NO website" % (kind, city),
+                     notes="scan %s | facebook %s | phone %s | %s | %s" % (time.strftime("%d/%m"), x["facebook"] or "-", x["phone"] or "-",
+                                                                            x["address"] or city, x["osm"]))
+            n += 1
     return {"ok": True, "place": r["place"], "total": r["total"], "audited": len(sites), "weak": weak, "nosite": nosite}
+
+
+def record_line():
+    """2026-11-06 (watch: in chat he said a Lyon barber got his free page - it was Atlas in Cape Town): the facts of his sales,
+    for every conversation - who he really wrote to, where, when, with what, and what came back. Talk from THIS, not memory."""
+    d = _j(STORE, {"items": []})["items"]
+    sent = sorted([(s, p) for p in d for s in p.get("sent") or []], key=lambda x: -x[0]["t"])
+    fb = [p for p in d if "fbhand" in str(p.get("notes") or "")]
+    found = [p for p in d if p["stage"] in ("found", "checked")]
+    L = ["YOUR SALES RECORD (the facts - when you talk about your clients and leads, say only what is here): "]
+    if sent:
+        L.append("emails sent: " + " | ".join("%s to %s (%s%s)%s%s%s" % (
+            time.strftime("%d/%m", time.gmtime(s["t"])), p["name"], p.get("country") or "?",
+            ", " + str(p.get("need") or "")[:70] if p.get("need") else "",
+            ", with a preview" if p.get("preview") and p["preview"].rstrip("/") in s.get("body", "") or tracked(p) in s.get("body", "") else "",
+            ", OPENED %dx" % len(p["clicks"]) if p.get("clicks") else "",
+            ", REPLIED" if p["stage"] in ("replied", "quoted", "won", "delivered") else ", no answer yet") for s, p in sent[:8]))
+    else:
+        L.append("no email sent yet")
+    if fb:
+        L.append("; Messenger messages given to Matsy: " + ", ".join(p["name"] for p in fb[:6]))
+    L.append("; leads recorded and not contacted yet: %d" % len(found))
+    won = [p for p in d if p["stage"] in ("won", "delivered")]
+    L.append("; clients won: %s" % (", ".join(p["name"] for p in won) or "none yet"))
+    return "".join(L)
 
 
 def stock_photos(q, n=12):
@@ -512,6 +559,16 @@ def block():
     if act:
         L.append("Moving now: " + " | ".join("%s [%s] %s%s" % (p["name"], p["stage"], (p.get("need") or "")[:80],
                                                                  (" - " + p["url"]) if p.get("url") else "") for p in act))
+    ready = sorted([p for p in d if p["stage"] in ("found", "checked") and p.get("email") and not p.get("sent")],
+                   key=lambda p: -p.get("updated", 0))[:8]
+    fbo = [p for p in d if p["stage"] in ("found", "checked") and not p.get("email") and "facebook.com" in str(p.get("url") or "")][:5]
+    if ready:                                  # 2026-11-06 (owner: turn leads into emails)
+        L.append("READY TO CONTACT (recorded, an email, nothing sent yet - every hunt ENDS with up to 5 of these written to, "
+                 "personally): " + " | ".join("%s (%s, %s) %s - %s" % (p["name"], p.get("country") or "?", p.get("lang") or "?",
+                                                                     p.get("email"), (p.get("need") or "")[:90]) for p in ready))
+    if fbo:
+        L.append("FACEBOOK ONLY (no email - fbhand: Matsy sends your message in Messenger): " + " | ".join(
+            "%s %s" % (p["name"], p["url"]) for p in fbo))
     if opened:                                 # 2026-11-06: who opened what you made (the click counter)
         L.append("OPENED YOUR PREVIEW (follow these up first, 2+ days after your email, warmly): " + " | ".join(
             "%s - %d time(s), last %s" % (p["name"], len(p["clicks"]), time.strftime("%d/%m %H:%M UTC", time.gmtime(p["clicks"][-1]["t"]))) for p in opened))
