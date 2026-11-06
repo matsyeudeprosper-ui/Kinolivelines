@@ -23181,9 +23181,9 @@ def _companion_tick():
                     new_open = [o for o, k in zip(main, keys_open) if k not in (ts.get("open") or [])]
                     if new_open:
                         o = new_open[0]
-                        ev = ("LIVE TRADE OPENED on their account: %s %s lot %s at %s, stop %s, target %s (%s). Today so far %+.2f $." % (
+                        ev = ("LIVE TRADE OPENED on their account: %s %s lot %s at %s, stop %s, target %s (%s). Today so far %+.2f $. %s" % (
                             "BUY" if o.get("d") == "A" else "SELL", o.get("sym"), o.get("lot"), o.get("e"), o.get("sl") or "-", o.get("tp") or "-",
-                            time.strftime("%H:%M UTC", time.gmtime(int(o.get("t") or now))), nd.get("today") or 0))
+                            time.strftime("%H:%M UTC", time.gmtime(int(o.get("t") or now))), nd.get("today") or 0, _trade_source(o, now)))
                     elif last_cl.get("pid") and last_cl.get("pid") != ts.get("closed") and \
                             now - (_trade_epoch(last_cl.get("w")) + 60 * float(last_cl.get("dur") or 0)) > 3 * 3600:
                         pass                                 # an old trade (memory reset / reordering): remembered below, never announced
@@ -25951,6 +25951,38 @@ def _trade_epoch(w):
         return t - 365 * 86400 if t > time.time() + 86400 else t
     except Exception:
         return 0
+
+
+def _trade_source(o, now=None):
+    """2026-11-06 (watch): a sell appeared at 76298 while auto was on; Kino was told only "LIVE TRADE OPENED", guessed it was
+    his, confessed in the debrief and stored the guilt as a memory - but no order had gone through the app. Every order the app
+    sends (his page, Kino's cards and direct orders) is logged as ORDRE MANUEL by the manual trader: no such line around the
+    open time = the member placed it himself, outside the app."""
+    try:
+        import glob
+        t = float(o.get("t") or now or time.time())
+        e = float(o.get("e") or 0)
+        side = "ACHAT" if o.get("d") == "A" else "VENTE"
+        for f in glob.glob(os.path.join(DIR, "owl_manual_trader_*.log")):
+            if time.time() - os.path.getmtime(f) > 2 * 86400:
+                continue
+            with open(f, "rb") as fh:
+                fh.seek(max(0, os.path.getsize(f) - 400_000))
+                tail = fh.read().decode("utf-8", "replace")
+            for ln in tail.splitlines():
+                m = re.match(r"(\S+) ORDRE MANUEL (ACHAT|VENTE) [\d.]+ @ ([\d.]+)", ln)
+                if not m or m.group(2) != side:
+                    continue
+                try:
+                    lt = datetime.fromisoformat(m.group(1)).timestamp()
+                except Exception:
+                    continue
+                if abs(lt - t) < 180 and (not e or abs(float(m.group(3)) - e) / e < 0.003):
+                    return "WHO: it went through the app (his trading page, or an order you passed for him)."
+        return ("WHO: NOT through the app - he placed it himself, directly in his MT5. It is not yours: every order you send goes "
+                "through the app and none was sent at that time.")
+    except Exception:
+        return ""
 
 
 def _glance(user, c, since):
