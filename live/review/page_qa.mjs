@@ -35,7 +35,7 @@ for (const [label, width, mobile] of [["phone", 360, true], ["computer", 1366, f
   const r = await ev(`(async()=>{
     const W=innerWidth, out={};
     // what only shows on some phones (the Android "install the app" button): shown, so the layout is tested with it
-    document.querySelectorAll('header button, header a, nav button').forEach(b=>{ if(getComputedStyle(b).display==='none' && /install|installer|app|instalar/i.test((b.id||'')+' '+(b.innerText||b.textContent||''))){ b.style.display='inline-flex'; b.dataset.qaShown='1'; } });
+    document.querySelectorAll('header button, header a, nav button').forEach(b=>{ if(getComputedStyle(b).display==='none' && /install|installer|l'app|the app|app|instalar/i.test((b.id||'')+' '+(b.innerText||b.textContent||''))){ b.style.display='inline-flex'; b.dataset.qaShown='1'; } });
     await new Promise(r=>setTimeout(r,300));
     for(let y=0;y<document.documentElement.scrollHeight;y+=500){scrollTo(0,y);await new Promise(r=>setTimeout(r,60))} scrollTo(0,0);
     await new Promise(r=>setTimeout(r,500));
