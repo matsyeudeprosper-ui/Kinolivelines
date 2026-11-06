@@ -146,6 +146,8 @@ def allowance():
     try:
         day = float(cfg().get("work_usd_day") or 0)
         used = float(status().get("ai_today") or 0)
+        # 2026-11-06: work run for him by the admin (tests) is not his spending - credited back per UTC day
+        used = max(0.0, used - float((cfg().get("credit") or {}).get(time.strftime("%Y-%m-%d", time.gmtime())) or 0))
         return {"day": day, "used": round(used, 2), "left": round(max(0.0, day - used), 2)}
     except Exception:
         return {"day": 0.0, "used": 0.0, "left": 0.0}
