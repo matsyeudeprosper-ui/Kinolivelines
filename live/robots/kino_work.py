@@ -529,7 +529,20 @@ def _mind(person, uid):
     return "\n\n".join(L)
 
 
+# 2026-11-06 (owner): what TALKS to the outside world (posts, replies, emails to businesses, client chats) runs on the commercial
+# API; building, research and his own thinking stay on the owner's Claude subscription (claude.exe) - the API falls back to it
+COMM_ACTIONS = ("xpost", "skeet", "toot", "post", "manage", "outreach", "telegram", "email")
+
+
 def _act(j, person, W=None):
+    if str(j.get("action") or "").lower() in COMM_ACTIONS:
+        import robot_warm as _RW
+        with _RW.api_scope():
+            return _act0(j, person, W)
+    return _act0(j, person, W)
+
+
+def _act0(j, person, W=None):
     """one action -> what he sees back"""
     import kino_hands as KH
     a = str(j.get("action") or "").lower()

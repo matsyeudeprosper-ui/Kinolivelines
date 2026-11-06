@@ -153,7 +153,11 @@ def _system(role):
 def _step(W, role, ctx, log):
     try:
         import robot_interview as IV
-        raw = W.ask_text(_system(role), ctx, model="sonnet", timeout=180, log=log, warm=False) or ""
+        if role == "writer":                   # 2026-11-06 (owner): words for clients and the public on the API; building on the subscription
+            with W.api_scope():
+                raw = W.ask_text(_system(role), ctx, model="sonnet", timeout=180, log=log, warm=False) or ""
+        else:
+            raw = W.ask_text(_system(role), ctx, model="sonnet", timeout=180, log=log, warm=False) or ""
         j = IV.first_json(raw)
     except Exception:
         return None

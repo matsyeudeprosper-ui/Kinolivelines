@@ -94,7 +94,8 @@ def reply(W, tg, name, username, lang, text):
                 json.dumps({k: rec.get(k) for k in ("name", "stage", "need", "notes", "job", "country")}, ensure_ascii=False)[:2000],
                 hist, time.strftime("%d/%m %H:%M", time.gmtime())))
     try:
-        out = W.ask_text(sysp, user, model="sonnet", timeout=120, log=LOG.replace(".log", "_calls.log"), warm=True) or ""
+        with W.api_scope():                    # 2026-11-06 (owner): talking to clients runs on the API (claude.exe if it fails)
+            out = W.ask_text(sysp, user, model="sonnet", timeout=120, log=LOG.replace(".log", "_calls.log"), warm=True) or ""
     except Exception as e:
         _log("reply error %r" % e)
         out = ""

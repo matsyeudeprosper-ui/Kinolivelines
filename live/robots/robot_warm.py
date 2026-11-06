@@ -81,6 +81,24 @@ def set_api(flag):
     _TL.api = bool(flag)
 
 
+class api_scope(object):
+    """2026-11-06 (owner: "the building of code and all on my Claude subscription; communication, X and others on the API;
+    claude.exe when the API is not there or out of credit"): `with api_scope():` - every call inside talks to the outside
+    world, so it goes through the commercial API first (falling back to claude.exe on any failure)"""
+
+    def __enter__(self):
+        self._prev = getattr(_TL, "api", False)
+        _TL.api = True
+        return self
+
+    def __exit__(self, *a):
+        _TL.api = self._prev
+        return False
+
+
+_RA_DOWN = {"until": 0.0, "n": 0}
+
+
 def _bg_usd_cap():
     try:
         return float(json.load(open(BG_USD_FILE, encoding="utf-8")).get("usd_day") or 6.0)
@@ -363,15 +381,21 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         _OA_DOWN["n"] += 1
         if _OA_DOWN["n"] >= 2:
             _OA_DOWN["until"], _OA_DOWN["n"] = time.time() + 600, 0
-    if getattr(_TL, "api", False):
+    if getattr(_TL, "api", False) and time.time() > _RA_DOWN["until"]:
         try:
             import robot_anthropic as _RA
             if _RA.ready():
                 _ra = _RA.ask_text(system, user, model, timeout, log, on_text)
                 if _ra is not None:
+                    _RA_DOWN["n"] = 0
                     return _ra
         except Exception:
             pass
+        # 2026-11-06: the API failed (out of credit, down) - claude.exe answers; after two failures in a row the API is skipped
+        # for 15 minutes so every call does not first wait on a dead API
+        _RA_DOWN["n"] += 1
+        if _RA_DOWN["n"] >= 2:
+            _RA_DOWN["until"], _RA_DOWN["n"] = time.time() + 900, 0
     if not getattr(_TL, "member", False) and not _budget_ok(log):
         try:                                      # refused, and said so in the cost log
             io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
