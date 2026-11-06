@@ -900,6 +900,12 @@ def session(W, person, uid, log=None, task=None, project=""):
         nt = None if task else _load().get("next_task")     # 2026-11-01: a session his rhythm set (the Sunday look back)
         if nt:
             _mut(lambda d: d.pop("next_task", None))
+            # 2026-11-06 (watch): a hunt queued in the morning ran in the afternoon with the morning's words - the 34 waiting
+            # leads were skipped for a scan of Montreal. A queued hunt always takes the CURRENT instructions.
+            if "daily client hunt" in str(nt.get("why") or ""):
+                nt = dict(nt, do=DAY_HUNT)
+            elif "night hunt" in str(nt.get("why") or ""):
+                nt = dict(nt, do=NIGHT_HUNT)
         ch = {"do": task, "project": project, "why": "the owner asked me to work on it"} if task else nt or \
             W.ask_json(CHOOSE, mind[:12000] + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
         task = str((ch or {}).get("do") or "").strip() if isinstance(ch, dict) else ""
