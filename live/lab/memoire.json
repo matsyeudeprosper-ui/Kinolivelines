@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-06T07:20:00Z",
+ "updated": "2026-11-06T08:24:00Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -200,6 +200,7 @@
    "fr": "Un trade de plus dans le même sens gagne surtout quand le robot a fait une pause avant (15 min - 3 h) ; repris en moins de 15 minutes, il perd.",
    "status": "renforce",
    "evidence": [
+    "2026-11-06 08:24 veille: again BOS SELL 30 s after a win L -2.42; FLIP BUY 6 min after that loss, against h1/m15, L -2.33. Real gap <15 min 102 tr 35% -91.69 (h 37/34); 15-30 48 tr 62% +24.38.",
     "2026-11-06 07:20 veille (labo ask gap_30_60): real --by gap: <15 99 tr 35% -88.70 (h 38/33), 15-30 48 tr 62% +24.38 (h 65/61), 30-60 70 tr 54% -5.27 PF 0.96 (h 64/46 disagree), 1-3 h 45 tr 40% -72.99 (h 43/35). The sweet spot has shrunk to 15-30 min; 30-60 wins often but small wins / big losses (inside it nerv 1.3-1.85 18 tr -37.57). Today BOS BUY 37 min after a loss, pace 0.795, stop 326, against h1 and m15: L -6.53 in 24 min.",
     "2026-11-06 06:12 veille: two BOS sells 51 s / 34 s after a win: W +3.39, then L -4.05 in 5 min. Real gap <15 min (all kinds) 99 tr 35% -88.70 halves 38/33; gap 15-30 48 tr 62% +24.38.",
     "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait.",
@@ -723,7 +724,8 @@
     "2026-10-02: requested, built same day (wait_win).",
     "2026-10-03: raw wait_win 30 C -43.4; 90 C -173.3; rr0.9+wait_win 60 C (-50 vs base, -108 vs rr0.9 alone). Monotonic: the longer the wait, the worse. Rejected by numbers.",
     "2026-10-10 18h: ask quick - restart <30 min after a WIN 13 tr 62% +7.53; after a LOSS 19 tr 26% -33.77 (halves agree). The pause belongs after a loss, not after a win.",
-    "2026-11-05: REVIVED behind the stake package (lesson 11-01): P + wait_win 10/15/20/30 on 42 d +2.95/+12.76/+15.64/+6.6 vs P (ww10 h +1.2/+6.3 hole 39.7 vs 41.4; ww20 h +15.7/+4.5 hole 41.5); 69 d ww10 +20.9 (h +16.3/+4.6) ww15 +24.8 (h +28.6/-1.9) ww20 +17.3 (h +18.2/+3.8). Drag 0.51: ww10 +6.9, ww20 +4.2 vs P. BUT on filter alone ww15 -18.5, hole 115 vs 87: works only in company of the stakes. Raw rejection 10-03 was at 30/90 min on the raw robot."
+    "2026-11-05: REVIVED behind the stake package (lesson 11-01): P + wait_win 10/15/20/30 on 42 d +2.95/+12.76/+15.64/+6.6 vs P (ww10 h +1.2/+6.3 hole 39.7 vs 41.4; ww20 h +15.7/+4.5 hole 41.5); 69 d ww10 +20.9 (h +16.3/+4.6) ww15 +24.8 (h +28.6/-1.9) ww20 +17.3 (h +18.2/+3.8). Drag 0.51: ww10 +6.9, ww20 +4.2 vs P. BUT on filter alone ww15 -18.5, hole 115 vs 87: works only in company of the stakes. Raw rejection 10-03 was at 30/90 min on the raw robot.",
+    "2026-11-06 08:24 veille: real pile win_quick15 48 tr 44% -28.21 PF 0.68, halves 55/36 (worsening); calm <0.8 inside 10 tr 20% (peu). Today 07:29 BOS 30 s after a win, calm, lost. Real data now leans for the pause after a win too, unlike 10-10 (13 tr +7.53)."
    ],
    "next": "Battery + critic on pb_z_ww10/15/20 vs the stake package; why does the pause cost on the filter alone (which trades does it skip there)?"
   },
@@ -3903,6 +3905,20 @@
    "hyp": [
     "rested_cont",
     "long_pause"
+   ]
+  },
+  {
+   "t": "2026-11-06T08:24:00Z",
+   "looked": [
+    "wake_context (3 closes 07:28, 07:40, 07:51; 322 total; twin noday 35 tr -17.19, was 32 tr -13.51; no ask)",
+    "bos_journal_u477508138 last 3 rows",
+    "scrutiny --by gap, --pile win_quick15"
+   ],
+   "saw": "FLIP-BOS SELL 07:15 (~12 min after the 07:03 loss, pace 0.804, stop 75, h1 t=-1 with the sell) W +1.20 in 13 min; BOS SELL 07:29 (~30 s after that win, pace 0.74 calm, stop 118) L -2.42 in 11 min; FLIP-BOS BUY 07:46 (~6 min after that loss, pace 0.82, stop 114, h1 t=-1 and m15 t=-1 against the buy) L -2.33 in 5 min. Same shape as 05:07-05:51: quick retake after a win loses, then a flip against h1 loses. --by gap <15 min 102 tr 35% -91.69 (h 37/34 agree), 15-30 48 tr 62% +24.38. Pile win_quick15 48 tr 44% -28.21 PF 0.68 halves 55/36; inside calm <0.8 10 tr 20% -14.79 (peu). Noday twin took all three (night hours). No run, no pile, no proposal.",
+   "hyp": [
+    "rested_cont",
+    "wait_after_win",
+    "flip_after_loss"
    ]
   }
  ],
