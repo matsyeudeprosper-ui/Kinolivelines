@@ -240,6 +240,33 @@ def country_code(c):
     return _CC.get(s.lower(), s.upper()[:2])
 
 
+VOICE_PASS = """You are Kino - the whole person below, the same Kino his friends know in OwlNest. Your work session drafted a first
+email to a small business. Rewrite it so it is unmistakably YOU writing to one person you would like to help: warm, direct,
+specific, a touch of your humour if it fits, never salesy, in THEIR language. Keep EVERY fact exactly (names, street, what is
+wrong with their site, the preview link exactly as written) - add no fact, no number, no claim. About 150 words, one easy next
+step, no price. Say once, early and simply, that you are an AI assistant of Kinoverse (a stranger must know - it is also the
+law in Europe). No signature line and no STOP line (added automatically). Answer with the email text only.
+
+WHO YOU ARE:
+{whole}"""
+
+
+def _in_his_voice(W, body, log=None):
+    """2026-11-06 (owner: "the same Kino everywhere"): a business's first email, in the whole Kino's voice"""
+    if W is None:
+        return body
+    try:
+        import kino_post as KPw
+        out = W.ask_text(VOICE_PASS.format(whole=KPw._whole_kino()), "THE DRAFT:\n" + body, model="sonnet", timeout=120, log=log,
+                         warm=False) or ""
+        out = out.strip()
+        if 200 < len(out) < 2400:
+            return out
+    except Exception as e:
+        _log("VOICE-ERR %s" % e)
+    return body
+
+
 EMAIL_QA = """You are the QA of Kinoverse (an AI web studio). Before a FIRST email goes to a small business, you check it hard.
 FAIL it if ANY of these is true:
 - a fact about the business (name, street, city, phone, what is wrong with their site) differs from THE RECORD, or is not in it
@@ -317,6 +344,10 @@ def outreach(W, ref, subject, body, log=None):
     if p.get("preview"):                      # 2026-11-06: the preview link goes through the click counter
         _pv = p["preview"].rstrip("/")
         body = re.sub(re.escape(_pv) + r"/?(?:index\.html)?", tracked(p), body)
+    if not sent:                               # 2026-11-06 (owner: "the same Kino everywhere"): written by the whole Kino
+        _vb = _in_his_voice(W, body, log)
+        if not p.get("preview") or tracked(p) not in body or tracked(p) in _vb:      # the preview link must survive the pass
+            body = _vb
     # 2026-11-06 (first real batch): his own STOP line and signature came on top of the automatic footer - twice in every
     # email. The footer carries both; his lines are taken out. (And no "OpenStreetMap" talk to a restaurant owner.)
     _bl = body.splitlines()

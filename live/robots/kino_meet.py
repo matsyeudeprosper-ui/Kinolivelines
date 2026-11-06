@@ -26,8 +26,8 @@ def _system():
     import time as _t
     if _SYS["v"] is None or _t.time() - _SYS["t"] > 600:
         try:
-            import kino_one as KO1
-            vo = KO1.voice()
+            import kino_post as _KPw                  # 2026-11-06 (owner: "the same Kino everywhere"): the whole Kino
+            vo = _KPw._whole_kino()
         except Exception:
             vo = ""
         _SYS.update(t=_t.time(), v=SYSTEM + (("\n\nWHO YOU ARE AND HOW YOU TALK - the same Kino the members know in the app (written "

@@ -79,8 +79,8 @@ def reply(W, tg, name, username, lang, text):
     if KS.STOP_RE.search(str(text)[:300]):
         KS.opt_out("tg%s@telegram" % tg, "telegram stop")
     try:
-        import kino_one as KO1
-        vo = KO1.voice()
+        import kino_post as _KPw                      # 2026-11-06 (owner: "the same Kino everywhere"): the whole Kino
+        vo = _KPw._whole_kino()
     except Exception:
         vo = ""
     o = KS.offer()
