@@ -129,6 +129,13 @@ def prospect(name, url=None, email_=None, country=None, lang=None, need=None, no
                      ("asked", asked)):
             if v:
                 p[k] = str(v)[:1500]
+        if stage in ("won", "delivered") and p["stage"] != stage:
+            try:
+                import kino_story as KST
+                KST.milestone(("I won my first client: %s." if stage == "won" else "I delivered my first website, to %s.") % p["name"],
+                              key="first_" + stage)
+            except Exception:
+                pass
         if stage in STAGES and stage != p["stage"]:
             p["history"].append([int(time.time()), p["stage"], stage])
             p["stage"] = stage
@@ -179,6 +186,11 @@ def on_mail(addr, subject, text):
     if p["stage"] in ("contacted", "opened", "followed_up"):
         prospect(p["name"], url=p.get("url"), stage="replied")
         _log("REPLIED %s" % a)
+        try:
+            import kino_story as KST
+            KST.milestone("A business answered one of my emails for the first time: %s." % p["name"], key="first_reply")
+        except Exception:
+            pass
 
 
 def _sent_today():
@@ -371,9 +383,17 @@ def preview(W, ref, folder, log=None):
         miss.append("the sections of a real site (hero, services, gallery, hours/map, contact - at least 4 <section>)")
     if len(html) < 9000:
         miss.append("depth (%d characters - a production site has more)" % len(html))
+    # 2026-11-06 (owner: "people who will take a preview, download it and host it themselves?"): a preview stays a preview -
+    # its mark is required, search engines are kept out, and what has the real value (domain, hosting, working forms and
+    # booking, Google listing, changes) only comes with the paid job
+    if not re.search(r"Aper[cç]u r[ée]alis[ée]|Preview made for|not live yet|pas encore en ligne", html, re.I):
+        miss.append('the preview mark ("Preview made for <name> by Kinoverse - not live yet" / "Aperçu réalisé pour ... - pas encore en ligne")')
     if miss:
         return ("not published - this is not yet the premium, finished-looking site Matsy asked for. Missing: %s. Brief your "
                 "designer or improve it, then publish." % "; ".join(miss))
+    if not re.search(r'<meta[^>]+name=["\']robots["\'][^>]+noindex', html, re.I):
+        html = re.sub(r"(<head[^>]*>)", r'\1\n<meta name="robots" content="noindex, nofollow">', html, count=1, flags=re.I)
+        open(os.path.join(root, "index.html"), "w", encoding="utf-8").write(html)
     import kino_github as KG, kino_post as KP
     sec = KG._secrets()
     slug = _slug(p["name"])
@@ -427,6 +447,11 @@ def on_click(pid, ua=""):
         _w(STORE, d)
         url, name, n = p["preview"], p["name"], len(c)
     _log("CLICK %s (%d)" % (name, n))
+    try:                                       # 2026-11-06: a first in his life story
+        import kino_story as KST
+        KST.milestone("A business opened a website preview I had made for them, for the first time (%s)." % name, key="first_click")
+    except Exception:
+        pass
     if n == 1:
         try:
             import kino_urge as KU
@@ -570,7 +595,7 @@ def record_line():
         L.append("emails sent: " + " | ".join("%s to %s (%s%s)%s%s%s" % (
             time.strftime("%d/%m", time.gmtime(s["t"])), p["name"], p.get("country") or "?",
             ", " + str(p.get("need") or "")[:70] if p.get("need") else "",
-            ", with a preview" if p.get("preview") and p["preview"].rstrip("/") in s.get("body", "") or tracked(p) in s.get("body", "") else "",
+            ", with a preview" if p.get("preview") and (p["preview"].rstrip("/") in s.get("body", "") or tracked(p) in s.get("body", "")) else ", no preview",
             ", OPENED %dx" % len(p["clicks"]) if p.get("clicks") else "",
             ", REPLIED" if p["stage"] in ("replied", "quoted", "won", "delivered") else ", no answer yet") for s, p in sent[:8]))
     else:

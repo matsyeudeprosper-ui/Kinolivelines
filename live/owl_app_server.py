@@ -25188,6 +25188,12 @@ def _urge_tick():
                         __import__("kino_team").auto_previews(_rc().W)
                 except Exception:
                     pass
+                try:                                   # 2026-11-06 (owner: his own story): rewritten on Sundays and after a first
+                    if pm == "kino":
+                        threading.Thread(target=__import__("kino_story").maybe_update, args=(_rc().W,),
+                                         kwargs={"log": os.path.join(DIR, "robots", "kino_work.log")}, daemon=True).start()
+                except Exception:
+                    pass
                 try:                                   # 2026-11-01 (kino_work): he sits down at his own computer when he feels like it
                     import kino_work as _KWk
                     if pm == "kino" and _KWk.due(pm, ctx, now):

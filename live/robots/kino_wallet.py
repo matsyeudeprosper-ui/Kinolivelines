@@ -56,6 +56,11 @@ def income(usd, what, ref):
         d["income"].append({"t": time.time(), "usd": usd, "mine": mine, "owner": round(usd - mine, 2), "what": str(what)[:150], "ref": ref})
         _save(d)
     _CACHE["v"] = None
+    try:                                       # 2026-11-06: the first money he earned is a moment of his life
+        import kino_story as KST
+        KST.milestone("I earned my first money: %.2f $ for %s." % (usd, str(what)[:80]), key="first_money")
+    except Exception:
+        pass
     try:
         import kino_inner as KI
         KI.feel("relieved and proud", 0.6, why="%.2f $ paid for \"%s\" - %.2f $ of it is yours" % (usd, what, mine))

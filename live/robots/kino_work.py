@@ -466,6 +466,13 @@ def _mind(person, uid):
             L.append("DIRECTION: " + _dr)
     except Exception:
         pass
+    try:                                       # 2026-11-06: his life story, which his work is part of
+        import kino_story as KSTM
+        _st = KSTM.short()
+        if _st:
+            L.append(_st)
+    except Exception:
+        pass
     try:                                       # 2026-11-05: his team and their reports
         import kino_team as KTMB
         L.append(KTMB.block())
@@ -1008,6 +1015,13 @@ def block(lang="fr"):
                  " | ".join("%s - %s" % (time.strftime("%d/%m %H:%M", time.gmtime(s["t"])), s["summary"][:200]) for s in S))
     if P:
         L.append(("Your projects: " if en else "Tes projets : ") + " | ".join("%s (next: %s)" % (p["name"], (p.get("next") or "")[:120]) for p in P))
+    try:                                       # 2026-11-06 (owner: "he must remember how he started, where he is, where he is heading")
+        import kino_story as KSTB
+        _st = KSTB.short(fr=not en)
+        if _st:
+            L.append(_st)
+    except Exception:
+        pass
     try:                                       # 2026-11-06 (watch): "I sent one [Lyon barber] a free page" - it was Atlas, Cape Town
         import kino_sales as KSR
         L.append(KSR.record_line())
