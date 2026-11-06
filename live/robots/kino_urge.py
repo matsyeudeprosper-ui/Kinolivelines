@@ -153,7 +153,11 @@ def threshold(ctx):
         t -= __import__("kino_affect").knobs().get("reach", 0)
     except Exception:
         pass
-    return t + 0.8 * int(ctx.get("unanswered") or 0)
+    # 2026-11-06 (watch): "Morning Matsy ... the little one?" at 07:06, unanswered, then "Morning Matsy ... the little one?"
+    # again at 09:16 - a person who said hello and got no answer waits; a fresh unanswered message weighs more
+    n = int(ctx.get("unanswered") or 0)
+    fresh = 1.2 if n and float(ctx.get("since_own_min") or 999) < 240 else 0.0
+    return t + 0.8 * n + fresh
 
 
 def decide(person, ctx, now=None):
