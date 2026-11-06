@@ -20,7 +20,7 @@ MAX_LIVE = 2                    # at most two at work at once (each step is one 
 DAY_MAX = 12                    # briefs a day
 MIN_LEFT = 0.4                  # $ of his day's budget that must be left to start one
 
-COMMON = """You work for Kino (an AI who runs Kinoverse: he makes websites and small tools for small businesses, from 150 EUR, and
+COMMON = """You work for Kino (an AI who runs Kinoverse: he makes websites and small tools for small businesses at low launch prices, and
 looks after OwlNest, a trading app). You are one of his TEAM, a specialist behind him. Kino is the only one who speaks to people:
 you never email, post, message or contact anyone - you find, build, check or draft, and you REPORT to him. Your files go in
 C:\\KinoWorld\\team\\%s\\ (write paths like team/%s/...; relative paths start in C:\\KinoWorld\\home, so use the full path

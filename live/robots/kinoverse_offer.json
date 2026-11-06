@@ -9,37 +9,37 @@
   {
    "name": "Simple website",
    "what": "a premium, modern site that looks like a top agency made it: their brand, real photos, services and prices, gallery, map, contact, perfect on a phone; online booking or a contact form when they need it",
-   "from_eur": 150,
+   "from_eur": 49,
    "delivery_days": "3-7"
   },
   {
    "name": "Mobile app version",
    "what": "their site as an installable app on iPhone and Android (app icon on the home screen, works offline for the basics, opens full screen, booking/contact inside); publishing in the app stores on request, quoted separately",
-   "from_eur": 300,
+   "from_eur": 79,
    "delivery_days": "5-10"
   },
   {
    "name": "Booking and reminders",
    "what": "online appointment booking with confirmation and reminder emails, added to a new or existing site (using a reliable free or low-cost booking tool, set up for them)",
-   "from_eur": 150,
+   "from_eur": 79,
    "delivery_days": "2-5"
   },
   {
    "name": "Website redesign",
    "what": "a modern, faster, clearer version of an existing site, shown first as a working preview",
-   "from_eur": 250,
+   "from_eur": 69,
    "delivery_days": "5-10"
   },
   {
    "name": "Automation and reports",
    "what": "scripts that remove repetitive spreadsheet or admin work: cleaning, merging, monthly reports, simple dashboards, sending files",
-   "from_eur": 150,
+   "from_eur": 29,
    "delivery_days": "3-10, after a clear written scope"
   },
   {
    "name": "Freelance tasks",
    "what": "applications to posted freelance jobs that match what Kino can really do (sites, scripts, data, writing FR/EN), with a tailored proposal",
-   "from_eur": 150,
+   "from_eur": 15,
    "delivery_days": "as agreed"
   }
  ],
@@ -49,7 +49,7 @@
   "Personal, specific, honest: show what you noticed and what you made for them. No mass templates, no pressure, no fake urgency.",
   "Never promise results (more clients, sales, rankings). Promise what you deliver and when.",
   "Never claim clients, reviews, years in business or a registration you do not have.",
-  "Prices: never below the 'from' prices; agree a fixed price and a written scope before work; for bigger work, a deposit (half) before you start.",
+  "PRICES (06/11, Matsy: 'he is just starting - be very flexible, accept negotiation; what matters now is jobs done and money in from many clients, even very little; as the CV grows we charge more'): the 'from' prices are LAUNCH prices and open to negotiation - ask their budget, meet them, never lose a willing client over price. FLOOR: 20 EUR for a site or app job, 10 EUR for a small task (below that it does not even pay the work). Offer a launch price in exchange for an honest review they let you quote. Small jobs (under 100 EUR): no deposit - they pay when they have seen the finished work, before it goes live; bigger work: half to start. Agree the price and scope in writing (job).",
   "Only sell what you can deliver well and on time. If a request is beyond you, say so and decline politely.",
   "Hosting, domains and paid tools the client needs are in the client's name and paid by the client; explain them plainly.",
   "Payment: an invoice link (crypto) or PayPal (kryausa) with the reference; work starts when the deposit is paid.",
@@ -59,5 +59,6 @@
   "Before you deliver: run the delivery check (qa) on the live site and look at it yourself on a phone width and a computer; fix everything first.",
   "PayPal payments are confirmed by Matsy (a card in his app) - say the work starts once the payment is confirmed; crypto invoices confirm themselves."
  ],
- "country_rules": "Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Otherwise: US, UK, France and most of Europe, Australia, Canada (address published by the business, message relevant to their work): a business email with the footer and STOP is fine. Germany and Austria: no cold email - use their contact form. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Everywhere: their language, no private individuals, no mass templates. Payment: PayPal where it can receive money (not Namibia, among others) - else crypto."
+ "country_rules": "Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Otherwise: US, UK, France and most of Europe, Australia, Canada (address published by the business, message relevant to their work): a business email with the footer and STOP is fine. Germany and Austria: no cold email - use their contact form. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Everywhere: their language, no private individuals, no mass templates. Payment: PayPal where it can receive money (not Namibia, among others) - else crypto.",
+ "pricing_stage": "launch"
 }
