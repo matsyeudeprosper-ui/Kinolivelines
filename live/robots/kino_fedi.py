@@ -194,15 +194,27 @@ def post(text, reply_to=None):
     n = {"id": nid, "text": str(text), "published": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}
     targets = set()
     if reply_to:
-        try:
-            o = _fetch(reply_to)
-            ra = o.get("attributedTo")
-            a = _fetch(ra)
-            n.update(reply_to=reply_to, reply_actor=ra, reply_name="@%s@%s" % (a.get("preferredUsername"), urllib.parse.urlparse(ra).netloc))
-            n["text"] = "%s %s" % (n["reply_name"], n["text"]) if n["reply_name"] not in n["text"] else n["text"]
-            targets.add((a.get("endpoints") or {}).get("sharedInbox") or a.get("inbox"))
-        except Exception as e:
-            _log("REPLY-LOOKUP-FAIL %s %s" % (reply_to, e))
+        # 2026-11-07: a slow server timed out once and the reply went out as a plain note the person never saw (and it was
+        # counted as "met"). Three tries; if their server still cannot be reached, nothing is posted and he is told.
+        err = None
+        for _try in range(3):
+            try:
+                o = _fetch(reply_to)
+                ra = o.get("attributedTo")
+                if isinstance(ra, list):
+                    ra = next((x.get("id") if isinstance(x, dict) else x for x in ra), None)
+                a = _fetch(ra)
+                n.update(reply_to=reply_to, reply_actor=ra, reply_name="@%s@%s" % (a.get("preferredUsername"), urllib.parse.urlparse(ra).netloc))
+                n["text"] = "%s %s" % (n["reply_name"], n["text"]) if n["reply_name"] not in n["text"] else n["text"]
+                targets.add((a.get("endpoints") or {}).get("sharedInbox") or a.get("inbox"))
+                err = None
+                break
+            except Exception as e:
+                err = e
+                time.sleep(4)
+        if err is not None:
+            _log("REPLY-LOOKUP-FAIL %s %s" % (reply_to, err))
+            raise RuntimeError("their server did not answer (%s) - nothing posted; try again later" % str(err)[:80])
     with _LK:
         d = _load()
         d["notes"].append(n)
