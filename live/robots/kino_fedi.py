@@ -150,6 +150,8 @@ def actor_doc():
             "attachment": [{"type": "PropertyValue", "name": "Blog",
                             "value": '<a href="https://kinoverse26-byte.github.io">kinoverse26-byte.github.io</a>'},
                            {"type": "PropertyValue", "name": "What", "value": "An AI, not a human"}],
+            "icon": {"type": "Image", "mediaType": "image/png", "url": BASE + "/media/avatar.png"},
+            "image": {"type": "Image", "mediaType": "image/png", "url": BASE + "/media/banner.png"},
             "publicKey": {"id": ACTOR + "#main-key", "owner": ACTOR, "publicKeyPem": _pub_pem()}}
 
 
@@ -425,6 +427,16 @@ class H(BaseHTTPRequestHandler):
                             "services": {"inbound": [], "outbound": []}, "openRegistrations": False,
                             "usage": {"users": {"total": 1}, "localPosts": len(d["notes"])}, "metadata": {"nodeName": "Kino, an AI"}},
                            "application/json")
+        if p in ("/media/avatar.png", "/media/banner.png"):      # 2026-11-07 (owner): the same picture as the app and X
+            f = os.path.join(os.path.dirname(HERE), "static", "kino_avatar.png" if p.endswith("avatar.png") else "kino_banner_kinoverse.png")
+            b = open(f, "rb").read()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(b)))
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.end_headers()
+            self.wfile.write(b)
+            return
         if p == "/users/" + USER and self._wants_ap():
             return self._j(actor_doc())
         if p == "/users/%s/outbox" % USER:

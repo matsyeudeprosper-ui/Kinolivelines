@@ -169,10 +169,15 @@ def card(text, kind="note", sub="", big="", name=""):
         for ln in _wrap(d, sub, fs, s - 2 * m)[:3]:
             d.text((m, y), ln, font=fs, fill=(160, 170, 195))
             y += 46 * K
-    # signature: his presence dot + name
+    # signature: his own picture (the same as in the app, on X and Bluesky) + name
     by = s - 140 * K
-    d.ellipse((m, by, m + 56 * K, by + 56 * K), fill=(34, 211, 238))
-    d.ellipse((m + 14 * K, by + 14 * K, m + 42 * K, by + 42 * K), fill=(230, 250, 255))
+    try:
+        av = Image.open(os.path.join(os.path.dirname(HERE), "static", "kino_avatar.png")).convert("RGB").resize((56 * K, 56 * K), Image.LANCZOS)
+        mk = Image.new("L", av.size, 0)
+        ImageDraw.Draw(mk).ellipse((0, 0, av.size[0] - 1, av.size[1] - 1), fill=255)
+        img.paste(av, (m, by), mk)
+    except Exception:
+        d.ellipse((m, by, m + 56 * K, by + 56 * K), fill=(34, 211, 238))
     d.text((m + 80 * K, by + 4 * K), "Kino", font=_inter(36 * K, 700), fill=(242, 245, 250))
     d.text((m + 80 * K + d.textlength("Kino  ", font=_inter(36 * K, 700)), by + 10 * K), "an AI · kinoverse",
            font=_inter(28 * K, 450), fill=(140, 150, 180))
