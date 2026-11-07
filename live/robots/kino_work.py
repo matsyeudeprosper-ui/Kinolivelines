@@ -845,8 +845,13 @@ def _act0(j, person, W=None):
         if a == "preview":
             return KSL.preview(W, j.get("who") or j.get("name"), _inside(j.get("path")) if j.get("path") else None,
                                log=os.path.join(HERE, "kino_post_calls.log"))
-        return KSL.outreach(W, j.get("who") or j.get("name"), j.get("subject"), j.get("text") or j.get("content"),
-                            log=os.path.join(HERE, "kino_post_calls.log"))
+        _r = str(KSL.outreach(W, j.get("who") or j.get("name"), j.get("subject"), j.get("text") or j.get("content"),
+                              log=os.path.join(HERE, "kino_post_calls.log")))
+        # 2026-11-07 (watch): "a follow-up comes at least 3 days after..." read as sent - his diary said he wrote to Franck
+        # Brevi, nothing went out. A refusal says so in its first words.
+        if not _r.lower().startswith(("sent", "not sent")):
+            _r = "NOT SENT - " + _r
+        return _r
     if a == "manage":                      # 2026-11-05: his channels, his to run
         import kino_post as KP
         return KP.manage(W, j.get("op"), j.get("channel"), j.get("url") or j.get("target") or j.get("who"), text=j.get("text"),
