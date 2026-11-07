@@ -293,6 +293,12 @@ def due(person, ctx, now=None):
                 return True
         except Exception:
             pass
+        # 2026-11-07 (owner: the whole world): his friend time goes on at night in France - it is daytime elsewhere
+        _lastfr_n = max([float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "friends"] or [0])
+        if now - _lastfr_n >= 3 * 3600 and (not d.get("sessions") or now - float(_last_main(d)) >= 1800):
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
+                                                         "care": "friends"}))
+            return True
         return False
     _wk = time.strftime("%G-%V", _fr) if _fr.tm_wday == 6 else time.strftime("%G-%V", time.gmtime(now + 3600 - 86400))
     if ((_fr.tm_wday == 6 and _fr.tm_hour >= 18) or (_fr.tm_wday == 0 and 7 <= _fr.tm_hour < 13)) and d.get("review_week") != _wk \
@@ -329,7 +335,8 @@ def due(person, ctx, now=None):
     _today = time.strftime("%Y-%m-%d", time.gmtime(now))
     # 2026-11-07 (owner: "can we increase friend time" -> "a little more"): 5 times a day - again 2.5 h after the last one, 10:00-22:00 France
     _lastfr = max([float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "friends"] or [0])
-    if 10 <= _frh < 22 and not d.get("next_task") and now - _lastfr >= 2.5 * 3600:
+    # 2026-11-07 (owner: "the whole world - some countries are awake; why 10h-22h?"): around the clock, every 3 h
+    if not d.get("next_task") and now - _lastfr >= 3 * 3600:
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
     if 10 <= _frh < 20 and not d.get("next_task") and card_leads() and not any(

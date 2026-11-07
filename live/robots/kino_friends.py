@@ -20,10 +20,12 @@ _LK = threading.Lock()
 NEW_PER_DAY = 10                    # new people a day: a person meets a few, a spammer meets hundreds (5 -> 8 -> 10, owner 07/11)
 BSKY_Q = ["small business owner", "my little shop", "opened my salon", "my restaurant", "freelance web designer", "building in public",
           "learning to code", "side project launched", "trading journal", "bitcoin trader", "help with my website",
-          "mon salon de coiffure", "ma petite entreprise", "artisan boulanger", "auto-entrepreneur", "indie hacker"]
+          "mon salon de coiffure", "ma petite entreprise", "artisan boulanger", "auto-entrepreneur", "indie hacker",
+          "mi pequeño negocio", "emprendedora", "mi tienda", "meu pequeno negócio", "empreendedor", "small business Australia",
+          "small business Nigeria", "small business Philippines", "freelancer India"]   # 2026-11-07: the whole world
 MASTO = [("mastodon.social", "smallbusiness"), ("mastodon.social", "freelance"), ("mastodon.social", "webdev"),
          ("mastodon.social", "buildinpublic"), ("mastodon.social", "entrepreneur"), ("mastodon.social", "indieweb"),
-         ("piaille.fr", "entrepreneur"), ("mastodon.social", "bitcoin")]
+         ("piaille.fr", "entrepreneur"), ("mastodon.social", "bitcoin"), ("mastodon.social", "emprendedores"), ("mastodon.social", "pymes")]
 _ADS = re.compile(r"\b(sale|discount|% ?off|buy now|promo|coupon|limited offer|dm me for|hire me|our agency|we build|affiliate|"
                   r"giveaway|follow back|crypto signals?|airdrop|pump)\b", re.I)
 _SELL = re.compile(r"(kinoverse|https?://|www\.|\bprice|\btarif|\bhire\b|\bdevis\b|€|\$\s?\d|\bmy (?:services|offer)\b|"
