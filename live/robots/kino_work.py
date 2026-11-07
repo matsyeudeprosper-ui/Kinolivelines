@@ -918,34 +918,34 @@ def _act0(j, person, W=None):
         return "%s - weakness %s/10: %s | email on their site: %s" % (
             r["url"], "?" if r["score"] is None else r["score"], "; ".join(r["problems"]) or "nothing obvious - a decent site",
             ", ".join(r["emails"]) or "none found")
+    if a in ("lab_idea", "lab_test", "lab_final", "lab_kill", "lab_board"):   # 2026-11-07: his trading lab
+        import kino_lab as KLA
+        if a == "lab_idea":
+            return KLA.idea(j.get("name"), j.get("hypothesis"), j.get("why"), j.get("rule"), j.get("kill"))
+        if a == "lab_board":
+            return KLA.board(20)
+        if a == "lab_kill":
+            return KLA.kill(j.get("idea") or j.get("name"), j.get("why") or j.get("text"))
+        _sp = _inside(j.get("path"))
+        if not _sp or not _sp.lower().startswith(os.path.join(WORLD, "lab", "strategies").lower()):
+            return "the strategy file must be in C:\\KinoWorld\\lab\\strategies\\"
+        if a == "lab_final":
+            return KLA.final(j.get("idea") or j.get("name"), _sp)
+        return KLA.test(j.get("idea") or j.get("name"), _sp, j.get("stage") or "quick")
+    if a == "friend_link":             # 2026-11-07: a friend now writing by email (or Telegram) - one person, one memory
+        import kino_friends as KFK
+        _c = str(j.get("contact") or "").strip().lower()
+        if "@" in _c and not _c.startswith(("email:", "telegram:")) and "." in _c.split("@")[-1]:
+            _c = "email:" + _c
+        if not _c.startswith(("email:", "telegram:")):
+            return "contact must be their email address (or telegram:<id>)"
+        return "linked: %s is %s - you will know them there" % (KFK.link(j.get("who"), _c), _c)
+    if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
+        import kino_friends as KFN
+        return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
     if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")
-        if a in ("lab_idea", "lab_test", "lab_final", "lab_kill", "lab_board"):   # 2026-11-07: his trading lab
-            import kino_lab as KLA
-            if a == "lab_idea":
-                return KLA.idea(j.get("name"), j.get("hypothesis"), j.get("why"), j.get("rule"), j.get("kill"))
-            if a == "lab_board":
-                return KLA.board(20)
-            if a == "lab_kill":
-                return KLA.kill(j.get("idea") or j.get("name"), j.get("why") or j.get("text"))
-            _sp = _inside(j.get("path"))
-            if not _sp or not _sp.lower().startswith(os.path.join(WORLD, "lab", "strategies").lower()):
-                return "the strategy file must be in C:\\KinoWorld\\lab\\strategies\\"
-            if a == "lab_final":
-                return KLA.final(j.get("idea") or j.get("name"), _sp)
-            return KLA.test(j.get("idea") or j.get("name"), _sp, j.get("stage") or "quick")
-        if a == "friend_link":             # 2026-11-07: a friend now writing by email (or Telegram) - one person, one memory
-            import kino_friends as KFK
-            _c = str(j.get("contact") or "").strip().lower()
-            if "@" in _c and not _c.startswith(("email:", "telegram:")) and "." in _c.split("@")[-1]:
-                _c = "email:" + _c
-            if not _c.startswith(("email:", "telegram:")):
-                return "contact must be their email address (or telegram:<id>)"
-            return "linked: %s is %s - you will know them there" % (KFK.link(j.get("who"), _c), _c)
-        if a == "friend_note":
-            import kino_friends as KFN
-            return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
         if a == "help_task":
             return KHP.task(j.get("what") or j.get("text"), j.get("why"), j.get("proof"), j.get("pay") or 0, j.get("hours") or 48,
                             j.get("place") or "")
