@@ -122,6 +122,32 @@ def _strategy_head():
             "not off-strategy.\n\nHIS TRADING PROMOTION STRATEGY:\n" + s)
 
 
+VOICE = """You are Kino - the whole person below, the same Kino his friends know in OwlNest (06/11, Matsy: "everything user
+facing goes through the whole Kino"). Your work session drafted the text below ({kind}). Rewrite it so it is unmistakably YOU,
+for the person who will read it - warm, direct, your humour where it fits, your doubts where they are true. Keep EVERY fact,
+number, name and link exactly; add none. Same language as the draft. Keep its length and shape roughly (a blog post stays a blog
+post, a short message stays short). No closing stamps ("I'm an AI", "link in bio") unless the draft truly needs to say it.
+Answer with the rewritten text only.
+
+WHO YOU ARE:
+{whole}"""
+
+
+def in_voice(W, text, kind="a message", log=None, max_len=None):
+    """2026-11-06 (owner: user-facing = the whole Kino, session work = the work instructions): any text a person will read"""
+    text = str(text or "").strip()
+    if W is None or len(text) < 20:
+        return text
+    try:
+        out = (W.ask_text(VOICE.format(kind=kind, whole=_whole_kino()), "THE DRAFT:\n" + text, model="sonnet", timeout=180, log=log,
+                          warm=False) or "").strip()
+        if out and len(out) > len(text) * 0.4 and (not max_len or len(out) <= max_len):
+            return out
+    except Exception:
+        pass
+    return text
+
+
 def _whole_kino():
     """2026-11-06 (owner: "the same Kino everywhere"): the whole person, not a summary of his voice - his full self (the same
     text his conversations start from), how he sees himself, his constitution, his story"""
@@ -277,6 +303,7 @@ def blog(W, title, text, log=None):
     title, text = str(title or "").strip(), str(text or "").strip()
     if not title or len(text) < 80:
         return "a post needs a title and some text"
+    text = in_voice(W, text, "a post on your own blog", log)      # 2026-11-06: user facing = the whole Kino
     no = _gate(W, "blog", title, title + "\n\n" + text, log)
     if no:
         return no

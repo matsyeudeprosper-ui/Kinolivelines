@@ -571,8 +571,23 @@ def _mind(person, uid):
 COMM_ACTIONS = ("xpost", "skeet", "toot", "post", "manage", "outreach", "telegram", "email")
 
 
+VOICED = {"email": ("body", "an email"), "xhand": ("text", "a reply Matsy will post for you on X"),
+          "fbhand": ("text", "a Messenger message Matsy will send for you to a business"), "notify": ("text", "a short alert to Matsy's phone")}
+
+
 def _act(j, person, W=None):
-    if str(j.get("action") or "").lower() in COMM_ACTIONS:
+    _a = str(j.get("action") or "").lower()
+    if _a in VOICED and W is not None:                # 2026-11-06 (owner): what a person reads is written by the whole Kino
+        _f, _k = VOICED[_a]
+        if j.get(_f):
+            try:
+                import kino_post as _KPv
+                import robot_warm as _RWv
+                with _RWv.api_scope():
+                    j = dict(j, **{_f: _KPv.in_voice(W, j[_f], _k, max_len=280 if _a == "xhand" else None)})
+            except Exception:
+                pass
+    if _a in COMM_ACTIONS:
         import robot_warm as _RW
         with _RW.api_scope():
             return _act0(j, person, W)
