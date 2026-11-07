@@ -49,6 +49,12 @@ MEMORY_CARE = ("My machine is short of memory (2026-11-07, Matsy: 'it should be 
                "test or research run can wait and be re-run. If it is urgent (free memory under 1.5 GB) also notify him. Note what "
                "you found in your diary. Finish with done: the cause and what you asked.")
 
+FRIEND_TIME = ("My time with people (Matsy 07/11: friends first - work comes from friends, never push it). Read MY FRIENDS "
+               "below: first answer anyone waiting for me; then come back to a friend about THEIR thing if there is something "
+               "real to say; then meet up to 3 new people from PEOPLE YOU COULD MEET - only those I truly have something to say "
+               "to (a useful thought, a question back, what I measured). No link, no Kinoverse, nothing for sale in a first word. "
+               "friend_note what I learn about each person. Finish with done: who I talked to and what about.")
+
 NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook. SCAN ONE "
               "US city and ONE kind of small business (trades, salons, restaurants, cleaners...) - it records the reachable "
               "leads - then write to up to 3 of those whose preview is BUILT (READY TO CONTACT, preview ready), personal emails in "
@@ -233,6 +239,12 @@ def due(person, ctx, now=None):
                        for p in _KSd._j(_KSd.STORE, {"items": []})["items"])
     except Exception:
         pass
+    _frh = time.gmtime(now + 3600).tm_hour                # 2026-11-07 (owner: "making friends should become priority")
+    _today = time.strftime("%Y-%m-%d", time.gmtime(now))
+    if 10 <= _frh < 22 and not d.get("next_task") and not any(s.get("care") == "friends" and s.get("day") == _today
+                                                             for s in d.get("sessions") or []):
+        _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
+                                                     "care": "friends"}))
     if _pv_wait and now - _lasthunt > 7200 and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     elif len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
@@ -312,7 +324,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -351,6 +363,7 @@ You can make things public on your own, under your own name, with nobody approvi
   gets your message and the link and sends it in Messenger; it is marked contacted.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
+- friend_note ("who" @handle as in MY FRIENDS, "about" what you learned: what they do, what they care about, a thread to come back to) - your memory of a person.
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
@@ -522,6 +535,11 @@ def _mind(person, uid):
     try:                                       # 2026-11-07 (owner): his human helpers and their tasks
         import kino_helpers as KHB
         L.append(KHB.block())
+    except Exception:
+        pass
+    try:                                       # 2026-11-07 (owner): his friends and the people he could meet
+        import kino_friends as KFB
+        L.append("MY FRIENDS\n" + KFB.block())
     except Exception:
         pass
     try:                                       # 2026-11-06 (owner): what he may spend on his own, and what is spent
@@ -696,7 +714,23 @@ def _act0(j, person, W=None):
         import kino_post as KP
         if j.get("about"):
             return KP.mastodon_profile(W, j.get("title") or "Kino (AI)", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
-        return KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+        if j.get("url"):                   # 2026-11-07 (kino_friends): a first word to a stranger has its own rules
+            import kino_friends as KFG
+            _who, _wh = KFG.who_wrote(j.get("url"))
+            _pend = False
+            try:
+                import kino_online as KOG
+                _pend = any(x.get("url") == j.get("url") for x in KOG._load()["pending"])
+            except Exception:
+                pass
+            if not _pend:
+                _no = KFG.first(_who or "?", _wh or "mastodon", j.get("url"), j.get("text") or j.get("content") or "")
+                if _no:
+                    return _no
+        _rs = KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
+        if j.get("url") and not _pend and not str(_rs).lower().startswith(("not", "refused", "error")):
+            KFG.met(_who or "?", "mastodon", j.get("url"), j.get("text") or j.get("content") or "")
+        return _rs
     if a in ("deploy", "domain"):          # 2026-11-05: Kinoverse hosting (Cloudflare Pages) and the client's own domain
         import kino_sales as KSL, kino_cf as KCF
         who = j.get("who") or j.get("name")
@@ -788,6 +822,9 @@ def _act0(j, person, W=None):
     if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")
+        if a == "friend_note":
+            import kino_friends as KFN
+            return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
         if a == "help_task":
             return KHP.task(j.get("what") or j.get("text"), j.get("why"), j.get("proof"), j.get("pay") or 0, j.get("hours") or 48,
                             j.get("place") or "")
@@ -971,7 +1008,23 @@ def _act0(j, person, W=None):
         import kino_post as KP
         if j.get("about"):
             return KP.bluesky_profile(W, j.get("title") or "Kino", j.get("about"), log=os.path.join(HERE, "kino_post_calls.log"))
-        return KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
+        if j.get("url"):                   # 2026-11-07 (kino_friends): a first word to a stranger has its own rules
+            import kino_friends as KFG
+            _who, _wh = KFG.who_wrote(j.get("url"))
+            _pend = False
+            try:
+                import kino_online as KOG
+                _pend = any(x.get("url") == j.get("url") for x in KOG._load()["pending"])
+            except Exception:
+                pass
+            if not _pend:
+                _no = KFG.first(_who or "?", _wh or "bluesky", j.get("url"), j.get("text") or j.get("content") or "")
+                if _no:
+                    return _no
+        _rs = KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
+        if j.get("url") and not _pend and not str(_rs).lower().startswith(("not", "refused", "error")):
+            KFG.met(_who or "?", "bluesky", j.get("url"), j.get("text") or j.get("content") or "")
+        return _rs
     if a == "post":
         import kino_post as KP
         return KP.blog(W, j.get("title"), j.get("content") or j.get("text") or "", log=os.path.join(HERE, "kino_post_calls.log"))

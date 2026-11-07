@@ -198,3 +198,7 @@ def tick():
             _log("x: %d new" % n)
     except Exception as e:
         _log("x error %s" % str(e)[:200])
+    try:                                       # 2026-11-07 (kino_friends): the places he meets people, every 2 h
+        __import__("kino_friends").scout()
+    except Exception as e:
+        _log("friends scout error %s" % str(e)[:200])
