@@ -280,7 +280,7 @@ def delegate(W, role, brief, log=WLOG):
     try:
         import kino_wallet as KWa
         al = KWa.allowance()
-        if role == "writer" and al["day"] and al["left"] < MIN_LEFT:      # builders are on the owner's budget
+        if False and role == "writer" and al["day"] and al["left"] < MIN_LEFT:   # 2026-11-07 (owner): the whole team is on his budget now
             return "not enough of today's budget left to brief someone (%.2f $ left)" % al["left"]
     except Exception:
         pass

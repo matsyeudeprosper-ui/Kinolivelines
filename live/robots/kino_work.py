@@ -200,7 +200,8 @@ def due(person, ctx, now=None):
             import kino_wallet as KWa
             _al = KWa.allowance()
             _n = [s for s in d.get("sessions") or [] if s.get("night") and now - float(s["t"]) < 8 * 3600]
-            if _al["day"] and _al["used"] < NIGHT_USD and len(_n) < NIGHT_SESSIONS and \
+            # 2026-11-07 (owner): his hunting is on Matsy, not on his budget - only the number of night sessions limits it
+            if len(_n) < NIGHT_SESSIONS and \
                     (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 2400):
                 _mut(lambda dd: dd.__setitem__("next_task", {"do": NIGHT_HUNT, "project": "Kinoverse", "why": "my night hunt in the US",
                                                              "night": True}))
@@ -249,9 +250,15 @@ def due(person, ctx, now=None):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     elif len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
+    # 2026-11-07 (owner: "don't let the budget block his making friends and hunting - I take care of that spending until he
+    # can afford it"): a friend session or a client hunt is never held back by his day budget; the rest of his work still is
+    _nt = _load().get("next_task") or {}
+    _paid_by_matsy = _nt.get("care") == "friends" or "hunt" in str(_nt.get("why") or "").lower()
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
+        if _paid_by_matsy:
+            _al = {"day": 0.0, "used": 0.0, "left": 1.0}
         if _al["day"] and _al["left"] <= 0.05:
             return False
         # 2026-11-05 (watch): 2.78 of 3 $ gone by 11:00 France - nothing left for the afternoon and evening, when traders are
