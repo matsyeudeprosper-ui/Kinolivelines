@@ -4037,6 +4037,14 @@
     "wake_context (4h timer)"
    ],
    "saw": "Still 322 real trades, no close since 11-06 morning; twin noday unchanged (35 tr, -17.19); no labo activity, no open ask. Night already did the full look at 02:30 -> veille 'rien'. Hypotheses untouched."
+  },
+  {
+   "t": "2026-11-07T19:00:15Z",
+   "looked": [
+    "wake_context (4h timer)",
+    "asks.json"
+   ],
+   "saw": "Saturday, market closed: still 322 real trades, no new close; twin noday unchanged (35 tr, -17.19); no labo activity, no open ask. Nothing new -> veille 'rien', no harness run. Hypotheses untouched; waiting for Monday's quick-retake trades."
   }
  ],
  "lessons": [
