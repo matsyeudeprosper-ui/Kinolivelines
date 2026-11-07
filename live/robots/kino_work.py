@@ -327,8 +327,9 @@ def due(person, ctx, now=None):
         pass
     _frh = time.gmtime(now + 3600).tm_hour                # 2026-11-07 (owner: "making friends should become priority")
     _today = time.strftime("%Y-%m-%d", time.gmtime(now))
-    if 10 <= _frh < 22 and not d.get("next_task") and not any(s.get("care") == "friends" and s.get("day") == _today
-                                                             for s in d.get("sessions") or []):
+    # 2026-11-07 (owner: "can we increase friend time"): 3 times a day - again 4 h after the last one, 10:00-22:00 France
+    _lastfr = max([float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "friends"] or [0])
+    if 10 <= _frh < 22 and not d.get("next_task") and now - _lastfr >= 4 * 3600:
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
     if 10 <= _frh < 20 and not d.get("next_task") and card_leads() and not any(

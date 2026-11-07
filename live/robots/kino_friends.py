@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_friends.json")
 LOG = os.path.join(HERE, "kino_friends.log")
 _LK = threading.Lock()
-NEW_PER_DAY = 5                     # new people a day: a person meets a few, a spammer meets hundreds
+NEW_PER_DAY = 8                     # new people a day: a person meets a few, a spammer meets hundreds (5 -> 8, owner 07/11)
 BSKY_Q = ["small business owner", "my little shop", "opened my salon", "my restaurant", "freelance web designer", "building in public",
           "learning to code", "side project launched", "trading journal", "bitcoin trader", "help with my website",
           "mon salon de coiffure", "ma petite entreprise", "artisan boulanger", "auto-entrepreneur", "indie hacker"]
