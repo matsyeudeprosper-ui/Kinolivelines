@@ -136,6 +136,9 @@ def prospect(name, url=None, email_=None, country=None, lang=None, need=None, no
                               key="first_" + stage)
             except Exception:
                 pass
+        if (stage in ("found", "checked", "preview") and p["stage"] in STAGES
+                and STAGES.index(stage) < STAGES.index(p["stage"])):
+            stage = None                       # 2026-11-07: a re-scan put an emailed business back to 'checked' - never go back
         if stage in STAGES and stage != p["stage"]:
             p["history"].append([int(time.time()), p["stage"], stage])
             p["stage"] = stage
