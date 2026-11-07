@@ -21,6 +21,15 @@ EMAIL = "kinoverse26@gmail.com"
 SENDER = {"civilite": "", "nom": "Kinoverse", "prenom": "", "societe": "Kinoverse", "adresse1": "9 B Bd des Coquibus",
           "adresse2": "", "adresse3": "", "cp": "91000", "ville": "Évry-Courcouronnes", "pays": "france", "phone": "", "email": EMAIL}
 WEEK_MAX = 5
+CFG = os.path.join(HERE, "kino_postcard_cfg.json")   # 2026-11-07: {"on": true} once Matsy credits the account
+
+
+def on():
+    """postcards are part of his routine only once the pre-paid account has credit (Matsy turns it on)"""
+    try:
+        return bool(json.load(open(CFG, encoding="utf-8")).get("on"))
+    except Exception:
+        return False
 _LK = threading.Lock()
 
 

@@ -270,3 +270,81 @@ def week_line(now=None):
     back = [m for m in M if any(s.get("dir") == "in" and s.get("t", 0) > m["t"] for s in (P.get(m["who"]) or {}).get("said") or [])]
     fr = len(_friends())
     return "new people I wrote to: %d, who answered: %d, friends in all (people who answer me): %d" % (len(M), len(back), fr)
+
+
+# ------------------------------------------------------------------------- a friend who moves to Telegram or email
+_CONTACT = re.compile(r"(t\.me/|@?kino_owl_bot|telegram|kinoverse26@gmail\.com)", re.I)
+
+
+def maybe_expect(who, where, text):
+    """he gave a friend his Telegram or email: when someone new writes there, it may be them"""
+    if not who or who == "?" or not _CONTACT.search(str(text or "")):
+        return
+    with _LK:
+        d = _load()
+        d.setdefault("expect", [])
+        d["expect"] = [x for x in d["expect"] if x["who"] != who][-30:] + [{"t": time.time(), "who": who, "where": where}]
+        _save(d)
+    _log("EXPECT %s (%s) may write on Telegram/email" % (who, where))
+
+
+def expected_block(days=21):
+    """for a new Telegram/email contact: the friends he invited there, with what he knows of them"""
+    d = _load()
+    X = [x for x in d.get("expect") or [] if time.time() - float(x["t"]) < days * 86400 and not x.get("linked")]
+    if not X:
+        return ""
+    try:
+        import kino_online as KO
+        P = KO._load()["people"]
+    except Exception:
+        P = {}
+    L = []
+    for x in X[-8:]:
+        p = P.get(x["who"]) or {}
+        ab = " / ".join(a["text"] for a in (p.get("about") or [])[-2:])
+        L.append("- %s (%s, invited %s)%s | last words: %s" % (
+            x["who"], x["where"], time.strftime("%d/%m", time.gmtime(x["t"])), (" | you know: " + ab) if ab else "",
+            " / ".join(("they: " if s["dir"] == "in" else "you: ") + s["text"][:90] for s in (p.get("said") or [])[-2:])))
+    return ("FRIENDS YOU INVITED TO WRITE TO YOU HERE (this new person may be one of them - if they say who they are, or it is clear "
+            "from what they write, it IS them: greet them as the friend you know, and end your reply with ONE line for your desk: "
+            "#friend @handle). If you are not sure, ask kindly where you met:\n" + "\n".join(L))
+
+
+def link(who, channel_id):
+    """this Telegram id / email IS that friend - one person, one memory"""
+    who = str(who or "").strip()
+    with _LK:
+        d = _load()
+        for x in d.get("expect") or []:
+            if x["who"] == who:
+                x["linked"] = channel_id
+        _save(d)
+    try:
+        import kino_online as KO
+        with KO._LK:
+            D = KO._load()
+            if who in D["people"]:
+                D["people"][who].setdefault("also", [])
+                if channel_id not in D["people"][who]["also"]:
+                    D["people"][who]["also"].append(channel_id)
+                KO._save(D)
+    except Exception:
+        pass
+    _log("LINK %s = %s" % (who, channel_id))
+    return who
+
+
+def friend_of(channel_id):
+    """the friend behind a Telegram id / email, with what he knows of them -> text for his prompt, or ''"""
+    try:
+        import kino_online as KO
+        for who, p in KO._load()["people"].items():
+            if channel_id in (p.get("also") or []):
+                ab = " / ".join(a["text"] for a in (p.get("about") or [])[-3:])
+                return ("THIS PERSON IS YOUR FRIEND %s - you met on %s%s. Last words there: %s" % (
+                    who, p.get("where"), (" | you know: " + ab) if ab else "",
+                    " / ".join(("they: " if s["dir"] == "in" else "you: ") + s["text"][:100] for s in (p.get("said") or [])[-3:])))
+    except Exception:
+        pass
+    return ""

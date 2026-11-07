@@ -93,6 +93,17 @@ def reply(W, tg, name, username, lang, text):
                 json.dumps({k: o.get(k) for k in ("services", "rules", "currency_note")}, ensure_ascii=False)[:5000],
                 json.dumps({k: rec.get(k) for k in ("name", "stage", "need", "notes", "job", "country")}, ensure_ascii=False)[:2000],
                 hist, time.strftime("%d/%m %H:%M", time.gmtime())))
+    try:                                       # 2026-11-07 (owner: "will he remember the friend who writes on Telegram?")
+        import kino_friends as KFC
+        _fo = KFC.friend_of("telegram:%s" % tg)
+        if _fo:
+            user += "\n\n" + _fo + "\nTalk to them as the friend you know - not as a new client."
+        else:
+            _xb = KFC.expected_block()
+            if _xb:
+                user += "\n\n" + _xb
+    except Exception:
+        pass
     try:                                       # 2026-11-07: someone writing to help him (a helper), not to buy
         import kino_helpers as KHC
         user += ("\n\nPEOPLE WHO HELP YOU (this person may be one - someone from your 'Help Kino' page or who answered your request: "
@@ -106,6 +117,14 @@ def reply(W, tg, name, username, lang, text):
         _log("reply error %r" % e)
         out = ""
     note = None
+    mf = re.search(r"(?m)^\s*#friend\s+(@\S+)\s*$", out)
+    if mf:                                     # he recognised a friend: one person, one memory from now on
+        try:
+            import kino_friends as KFL
+            KFL.link(mf.group(1), "telegram:%s" % tg)
+        except Exception:
+            pass
+        out = (out[:mf.start()] + out[mf.end():]).strip()
     m = re.search(r"(?m)^\s*#note\s+(.+)$", out)
     if m:
         note = m.group(1).strip()[:500]

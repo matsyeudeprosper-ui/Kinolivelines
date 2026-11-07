@@ -41,6 +41,11 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "city where it is business hours (Europe in the morning, the Americas from the afternoon) - it records the "
             "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
             "playbook, finish with done: who I wrote to.")
+CARD_ROUND = ("My postcard round (Matsy 07/11: email for volume, a postcard for the best leads who did not answer, friends "
+              "for the long run). CARD LEADS below: businesses I emailed a week or more ago, with a built preview, that never "
+              "answered. For the best of them (up to 3 today): find their postal address on their own site or listing, then "
+              "card (who, text - a short personal note in French, street, cp, city). Never a business that said stop. Note in "
+              "my playbook, finish with done: who gets a card.")
 MEMORY_CARE = ("My machine is short of memory (2026-11-07, Matsy: 'it should be one of your priorities'): when it runs out, "
                "Windows stops programs - the robots that trade real money included. Read C:\\KinoWorld\\body\\health.txt: which "
                "programs hold the memory, how many of each. Work out the cause (a swarm of leftovers, one program growing, a test "
@@ -173,6 +178,48 @@ def _memory_call(d, now):
     return False
 
 
+def card_leads(min_days=7):
+    """leads for a postcard: emailed a week ago or more, preview built, no answer, no card yet, France (La Poste)"""
+    try:
+        import kino_postcard as KPCl, kino_sales as KSc
+        if not KPCl.on():
+            return []
+        out = []
+        for p in KSc._j(KSc.STORE, {"items": []})["items"]:
+            S = p.get("sent") or []
+            if not S or not p.get("preview") or p.get("card") or p.get("bounced") or p.get("stop"):
+                continue
+            if p["stage"] not in ("contacted", "opened", "followed_up") or str(p.get("country") or "fr").lower() not in ("fr", "france"):
+                continue
+            if time.time() - max(float(x["t"]) for x in S) >= min_days * 86400:
+                out.append(p)
+        return out
+    except Exception:
+        return []
+
+
+def routine_line(now=None):
+    """2026-11-07 (owner: \"make sure these 3 run properly\"): emails, postcards, friends - the last time each ran"""
+    now = now or time.time()
+    d = _load()
+    S = d.get("sessions") or []
+    ago = lambda f: min([(now - float(s["t"])) / 3600 for s in S if f(s)] or [999])
+    h = ago(lambda s: "hunt" in str(s.get("why") or "").lower())
+    fr = ago(lambda s: s.get("care") == "friends")
+    cd = ago(lambda s: s.get("care") == "cards")
+    try:
+        import kino_sales as KSr, kino_friends as KFr, kino_postcard as KPr
+        P = KSr._j(KSr.STORE, {"items": []})["items"]
+        em = sum(1 for p in P for x in p.get("sent") or [] if now - float(x["t"]) < 86400)
+        met = len(KFr.met_today())
+        pc = ("on, %d leads waiting" % len(card_leads())) if KPr.on() else "off (no credit yet)"
+    except Exception as e:
+        em, met, pc = "?", "?", "? (%s)" % e
+    warn = [w for w, x in (("NO HUNT IN 26 H", h > 26), ("NO FRIEND TIME IN 26 H", fr > 26)) if x]
+    return "ROUTINE: hunt %.0f h ago (emails 24 h: %s) | friends %.0f h ago (new people today: %s) | postcards %s%s%s" % (
+        h, em, fr, met, pc, (" | last card round %.0f h ago" % cd) if cd < 999 else "", (" | " + ", ".join(warn)) if warn else "")
+
+
 def due(person, ctx, now=None):
     """does he feel like sitting down at his computer now? (his needs and his body decide; a few times a day at most)"""
     now = now or time.time()
@@ -246,6 +293,10 @@ def due(person, ctx, now=None):
                                                              for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
+    if 10 <= _frh < 20 and not d.get("next_task") and card_leads() and not any(
+            s.get("care") == "cards" and s.get("day") == _today for s in d.get("sessions") or []):
+        _mut(lambda dd: dd.__setitem__("next_task", {"do": CARD_ROUND, "project": "Kinoverse", "why": "my postcard round",
+                                                     "care": "cards"}))
     if _pv_wait and now - _lasthunt > 7200 and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     elif len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
@@ -253,7 +304,7 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "don't let the budget block his making friends and hunting - I take care of that spending until he
     # can afford it"): a friend session or a client hunt is never held back by his day budget; the rest of his work still is
     _nt = _load().get("next_task") or {}
-    _paid_by_matsy = _nt.get("care") == "friends" or "hunt" in str(_nt.get("why") or "").lower()
+    _paid_by_matsy = _nt.get("care") in ("friends", "cards") or "hunt" in str(_nt.get("why") or "").lower()
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
@@ -314,7 +365,7 @@ def due(person, ctx, now=None):
             return True
     except Exception:
         pass
-    if (d.get("next_task") or {}).get("care") == "friends":    # 2026-11-07: his time with people is a daily habit, not a mood
+    if (d.get("next_task") or {}).get("care") in ("friends", "cards"):   # 2026-11-07: daily habits, not moods
         return True
     open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
     return want >= 0.55 or (open_project and want >= 0.4)
@@ -739,6 +790,8 @@ def _act0(j, person, W=None):
         _rs = KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
         if j.get("url") and not _pend and not str(_rs).lower().startswith(("not", "refused", "error")):
             KFG.met(_who or "?", "mastodon", j.get("url"), j.get("text") or j.get("content") or "")
+        if j.get("url") and not str(_rs).lower().startswith(("not", "refused", "error")):
+            KFG.maybe_expect(_who, "mastodon", j.get("text") or j.get("content") or "")
         return _rs
     if a in ("deploy", "domain"):          # 2026-11-05: Kinoverse hosting (Cloudflare Pages) and the client's own domain
         import kino_sales as KSL, kino_cf as KCF
@@ -849,6 +902,8 @@ def _act0(j, person, W=None):
         return KHP.paid(tid)
     if a == "card":                        # 2026-11-06 (owner: postcards, his own spending - no confirmation, Matsy told after)
         import kino_postcard as KPC
+        if not KPC.on():
+            return "NOT SENT - postcards are off until Matsy credits the postcard account"
         return KPC.card_for(j.get("who") or j.get("name"), j.get("text") or j.get("message"), j.get("street"), j.get("cp"),
                             j.get("city"))
     if a == "shot":                        # 2026-11-06 (owner: posts with media): a page on a phone, as an image to post
@@ -1033,6 +1088,8 @@ def _act0(j, person, W=None):
         _rs = KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
         if j.get("url") and not _pend and not str(_rs).lower().startswith(("not", "refused", "error")):
             KFG.met(_who or "?", "bluesky", j.get("url"), j.get("text") or j.get("content") or "")
+        if j.get("url") and not str(_rs).lower().startswith(("not", "refused", "error")):
+            KFG.maybe_expect(_who, "bluesky", j.get("text") or j.get("content") or "")
         return _rs
     if a == "post":
         import kino_post as KP
@@ -1124,6 +1181,10 @@ def session(W, person, uid, log=None, task=None, project=""):
         if isinstance(ch, dict) and ch.get("care"):
             rec["care"] = ch["care"]
         _fx = ""                               # 2026-11-07 (first friend session): the people list sat past the 6000 chars
+        if rec.get("care") == "cards":
+            _fx = "\n\nCARD LEADS:\n" + "\n".join("- %s (%s) emailed %s, preview %s, site %s" % (
+                p["name"], p.get("email"), time.strftime("%d/%m", time.gmtime(max(float(x["t"]) for x in p["sent"]))),
+                p.get("preview"), p.get("url")) for p in card_leads()[:10])
         if rec.get("care") == "friends":       # of his mind each step reads - "nobody to meet in what I received"
             try:
                 import kino_friends as KFS
