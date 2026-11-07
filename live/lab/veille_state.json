@@ -3,7 +3,11 @@
  "twins_sig": "noday:running:35",
  "labo_sig": "{}",
  "asks_open": 0,
- "day": "2026-11-06",
- "count": 3,
- "last_wake": 1793953263.0822878
+ "day": "2026-11-07",
+ "count": 1,
+ "last_wake": 1793953263.0822878,
+ "lock": {
+  "pid": 14540,
+  "t": 1794031213.6260936
+ }
 }
