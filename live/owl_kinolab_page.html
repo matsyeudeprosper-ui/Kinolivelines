@@ -1,129 +1,190 @@
-<!doctype html>
-<html lang="fr">
-<head>
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0a0e16">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
 <title>Le labo de Kino</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
 <style>
-:root{--bg:#0a0e16;--card:#111726;--card2:#141b2d;--line:#1f2840;--line2:#2a3556;--ink:#eef1f8;--ink2:#c9d0e0;--mute:#8d98b3;
-  --a:#7c6cff;--b:#22d3ee;--ok:#34d399;--bad:#f87171;--warn:#fbbf24;--grad:linear-gradient(135deg,#7c6cff,#22d3ee)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink2);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-.wrap{max-width:980px;margin:0 auto;padding:22px 16px 60px}
-.top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
-.top a{color:var(--mute);text-decoration:none;font-size:14px}
-h1{margin:6px 0 4px;color:var(--ink);font-size:clamp(26px,5vw,34px);letter-spacing:-.03em;font-weight:800}
-.sub{color:var(--mute);margin:0 0 22px;max-width:680px}
-.bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
-.stat{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
-.stat b{display:block;color:var(--ink);font-size:24px;font-weight:800;letter-spacing:-.02em}
-.stat span{font-size:13px;color:var(--mute)}
-.funnel{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 26px}
-.step{flex:1 1 120px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
-.step b{color:var(--ink);display:block;font-size:14px}
-.step i{font-style:normal;color:var(--mute)}
-h2{color:var(--ink);font-size:20px;margin:28px 0 12px;letter-spacing:-.02em}
-.idea{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px}
-.idea-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.idea h3{margin:0;color:var(--ink);font-size:17px}
-.idea .when{color:var(--mute);font-size:12.5px;white-space:nowrap}
-.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;margin-top:6px}
-.b-card{background:#1f2840;color:var(--ink2)}.b-dead{background:rgba(248,113,113,.14);color:var(--bad)}
-.b-pass{background:rgba(52,211,153,.14);color:var(--ok)}.b-final{background:var(--grad);color:#fff}
-.b-tested{background:rgba(251,191,36,.12);color:var(--warn)}
-.idea p{margin:10px 0 0;font-size:14px}
-.idea p em{font-style:normal;color:var(--mute)}
-.tests{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
-.t{display:grid;grid-template-columns:110px 70px 1fr;gap:8px;font-size:13.5px;padding:6px 0;border-bottom:1px dashed rgba(42,53,86,.6)}
-.t:last-child{border-bottom:0}
-.t .ok{color:var(--ok);font-weight:700}.t .no{color:var(--bad);font-weight:700}
-.months{color:var(--mute)}
-.months span{display:inline-block;margin-right:8px}
-.pos{color:var(--ok)}.neg{color:var(--bad)}
-.sess{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:14px}
-.sess .when{color:var(--mute);font-size:12.5px;display:block;margin-bottom:4px}
-.empty{color:var(--mute);background:var(--card);border:1px dashed var(--line2);border-radius:14px;padding:18px}
-@media (max-width:640px){.bar{grid-template-columns:repeat(2,1fr)}.t{grid-template-columns:90px 54px 1fr}}
+/* 2026-11-07 (owner: "copy the design of the lab pages we stopped - cards and everything"): Kino's trading lab in the
+   strategy lab's look (owl_strategies_page.html): same tokens, the dark hero with the pipeline, cards with a coloured edge */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;
+ --border:#1f2a38;--border2:#2b3a4d;--hl:inset 0 1px 0 rgba(255,255,255,.04);
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--muted2:#a9b8c8;
+ --accent:#3b82f6;--accent-soft:#8fc6ff;--accent-bg:rgba(59,130,246,.14);
+ --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--down-soft:#ff9a9a;--warn:#e8c55a;--violet:#a78bfa;--violet-soft:#c4b5fd;
+ --r:16px;--r-lg:24px;--ok-bg:rgba(46,204,113,.12);--mid-bg:rgba(232,197,90,.12);--bad-bg:rgba(255,92,92,.12);--vi-bg:rgba(167,139,250,.13);--gr-bg:rgba(138,155,176,.12)}
+:root[data-theme=light]{--bg:#eef2f7;--surface:#ffffff;--surface2:#f6f8fb;--surface3:#e6ecf4;--border:#dde4ed;--border2:#c7d2df;
+ --hl:inset 0 1px 0 rgba(255,255,255,.7);--text:#0f172a;--text2:#33415a;--muted:#5f6f85;--muted2:#4c5b70;
+ --accent:#2563eb;--accent-soft:#1d4ed8;--accent-bg:rgba(37,99,235,.10);--up:#15803d;--up-soft:#166534;--down:#dc2626;--down-soft:#b91c1c;
+ --warn:#a16207;--violet:#7c3aed;--violet-soft:#6d28d9}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:calc(48px + env(safe-area-inset-bottom,0px));overflow-x:hidden}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;color:inherit}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+#aur{position:fixed;inset:-20% -10% auto -10%;height:480px;z-index:0;pointer-events:none;
+ background:radial-gradient(50% 60% at 15% 25%,rgba(167,139,250,.16),transparent 70%),radial-gradient(50% 55% at 85% 15%,rgba(59,130,246,.22),transparent 70%),radial-gradient(40% 40% at 60% 75%,rgba(46,204,113,.09),transparent 70%);filter:blur(10px)}
+header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 8px}
+.hrow{display:flex;align-items:center;gap:12px}
+.ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;color:var(--text2);flex:none}
+.ttl{flex:1;min-width:0}.ttl h1{font-size:1.35rem;font-weight:800;letter-spacing:-.015em}
+.ttl div{font-size:.82rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--up-soft);border:1px solid rgba(46,204,113,.35);background:var(--ok-bg);border-radius:99px;padding:6px 10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer}
+.live i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.35}}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.card h2{font-size:.74rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.sub{font-size:.9rem;color:var(--muted);line-height:1.55}
+/* hero (the dark lab banner) */
+.hero{margin-top:6px;padding:22px 20px 20px;border-color:rgba(143,198,255,.18);
+ background:radial-gradient(120% 85% at 100% 0%,rgba(59,130,246,.17),transparent 55%),radial-gradient(90% 70% at 0% 100%,rgba(141,240,187,.06),transparent 60%),linear-gradient(165deg,#0d1824 0%,#0a121b 100%)}
+.hero:after{content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.10),transparent 70%)}
+.eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de}
+.hh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
+.hn{font-size:1.02rem;color:#d6e6f3;margin-top:8px}.hn b{font-size:2.3rem;font-weight:900;color:#fff;letter-spacing:-.03em;margin-right:6px;vertical-align:-3px}
+.hl{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:800;color:#8df0bb;background:rgba(46,204,113,.13);border:1px solid rgba(46,204,113,.3);border-radius:99px;padding:5px 10px}
+.hl i{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}
+.hp{font-size:.9rem;line-height:1.5;color:#d6e6f3;margin-top:10px;max-width:560px;position:relative;z-index:1}
+.pp6{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-top:20px;z-index:1}
+.pp6:before{content:"";position:absolute;left:8%;right:8%;top:17px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(46,204,113,.55))}
+.ps{position:relative;border:0;background:none;color:#d6e6f3;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;min-width:0}
+.ps b{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:.92rem;font-weight:900;color:#fff;background:color-mix(in srgb,var(--c) 30%,#0f2236);border:2px solid var(--c);box-shadow:0 0 0 4px rgba(11,26,42,.6)}
+.ps span{font-size:.64rem;font-weight:700;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ps.z b{opacity:.45}
+.pcap{font-size:.72rem;color:#9fc2de;text-align:center;margin-top:10px;position:relative;z-index:1}
+.st3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.025);position:relative;z-index:1}
+.st3 div{padding:11px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.08)}.st3 div:first-child{border-left:0}
+.st3 b{display:block;font-size:1.35rem;font-weight:900;color:#fff;line-height:1.1}.st3 span{display:block;font-size:.72rem;color:#9fc2de;margin-top:3px;white-space:nowrap}
+.pulse{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 13px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);font-size:.84rem;color:#d6e6f3;position:relative;z-index:1}
+.pulse .dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--up);box-shadow:0 0 10px var(--up);animation:blink 1.6s infinite}
+.bar{font-size:.8rem;color:#9fc2de;margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);position:relative;z-index:1;line-height:1.45}
+.bar b{color:#fff}
+/* chips */
+nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,transparent);padding:10px 0 12px}
+.chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--border);background:var(--surface);color:var(--muted2);font-size:.84rem;font-weight:700;padding:9px 13px;border-radius:99px;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.chip em{font-style:normal;font-size:.72rem;font-weight:800;color:var(--muted);background:var(--surface3);border-radius:99px;padding:1px 7px}
+.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}.chip.on em{background:rgba(127,127,127,.25);color:inherit}
+/* idea cards */
+.list{display:flex;flex-direction:column;gap:10px}
+.sc{position:relative;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px 16px 14px 19px;box-shadow:var(--hl);overflow:hidden;width:100%;display:flex;flex-direction:column;gap:10px;transition:transform .15s,border-color .2s;animation:fade .35s ease both}
+.sc:hover{border-color:var(--border2)}
+.sc:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:var(--c)}
+.sc.flag{background:linear-gradient(150deg,rgba(46,204,113,.08),var(--surface) 55%);border-color:rgba(46,204,113,.28)}
+.sc .top{display:flex;align-items:flex-start;gap:12px}
+.fi{flex:none;width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border:1px solid var(--border);color:var(--c)}
+.fi svg{width:20px;height:20px}
+.sc .tt{flex:1;min-width:0}
+.sc .tt b{display:block;font-size:1rem;font-weight:800;line-height:1.3;letter-spacing:-.005em;word-break:break-word}
+.sc .tt small{display:block;font-size:.74rem;color:var(--muted);margin-top:3px;font-weight:600}
+.sc p{font-size:.86rem;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sc.open p{-webkit-line-clamp:unset;display:block}
+.sc .ft{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.sc .met{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:800}
+.bd{display:inline-flex;align-items:center;gap:5px;font-size:.66rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:4px 9px;white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.ev{background:var(--surface2);color:var(--muted2);border:1px solid var(--border)}
+.pos{color:var(--up-soft)}.neg{color:var(--down-soft)}
+.mb{display:flex;align-items:flex-end;gap:2px;height:26px}
+.mb i{display:block;width:7px;border-radius:2px 2px 0 0}
+/* details */
+.det{display:none;flex-direction:column;gap:10px;border-top:1px solid var(--border);padding-top:12px}
+.sc.open .det{display:flex}
+.kv{display:grid;gap:8px}
+.kv div{padding:10px 12px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);font-size:.86rem;line-height:1.5;color:var(--text2)}
+.kv small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.tr{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:14px;background:var(--surface2);border:1px solid var(--border)}
+.tr .th{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem}
+.tr .th span{color:var(--muted);font-weight:600}
+.tr .tm{display:flex;flex-wrap:wrap;gap:6px}
+.tr .tm b{font-size:.74rem;font-weight:800;padding:3px 8px;border-radius:99px;background:var(--surface3)}
+.tr .why{font-size:.8rem;color:var(--muted)}
+/* sessions */
+.ses{display:flex;gap:12px;padding:12px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);margin-bottom:8px}
+.cal{flex:none;width:48px;text-align:center;border-radius:11px;background:var(--surface3);padding:6px 0;align-self:flex-start}
+.cal b{display:block;font-size:1.05rem;font-weight:900;line-height:1.1}
+.cal small{display:block;font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ses p{font-size:.86rem;color:var(--text2);line-height:1.5;min-width:0;overflow-wrap:anywhere}
+.empty{padding:18px;border-radius:18px;border:1px dashed var(--border2);color:var(--muted);font-size:.9rem;line-height:1.5;text-align:center}
+@media (max-width:520px){.ps span{font-size:.58rem}.hn b{font-size:2rem}}
 </style>
-</head>
-<body>
+</head><body>
+<div id="aur"></div>
 <div class="wrap">
-  <div class="top"><a href="./">← OwlNest</a></div>
-  <h1>Le labo de Kino</h1>
-  <p class="sub">Kino cherche une stratégie de trading positive <b>chaque mois</b>. Chaque idée doit passer toutes les étapes, et la dernière se joue sur des mois qu'il n'a jamais vus. Rien n'est arrangé : ce que vous voyez est exactement ce que le banc de test a mesuré.</p>
-
-  <div class="bar" id="bar"></div>
-
-  <div class="funnel">
-    <div class="step"><b>1 · Fiche</b><i>l'idée, pourquoi, ce qui la tuerait</i></div>
-    <div class="step"><b>2 · Test rapide</b><i>2 mois, contre 50 robots au hasard</i></div>
-    <div class="step"><b>3 · Test complet</b><i>7 mois, chaque mois positif</i></div>
-    <div class="step"><b>4 · Examen final</b><i>mois cachés, chaque mois positif</i></div>
-    <div class="step"><b>5 · Sur papier</b><i>4 semaines en direct</i></div>
-    <div class="step"><b>6 · Argent réel</b><i>une petite somme de vous</i></div>
-  </div>
-
-  <h2>Ses idées</h2>
-  <div id="ideas"></div>
-
-  <h2>Ses dernières séances au labo</h2>
-  <div id="sess"></div>
+<header><div class="hrow">
+ <a href="account" id="back" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+ <div class="ttl"><h1 id="h1">Le labo de Kino</h1><div id="h1s"></div></div>
+ <span class="live" onclick="load()"><i></i><span id="livet">En direct</span></span>
+</div></header>
+<div id="top"></div>
+<nav><div class="chips" id="chips"></div></nav>
+<div class="list" id="list"></div>
+<div class="card" style="margin-top:16px"><h2 id="sesh">Ses dernières séances</h2><div id="ses"></div></div>
 </div>
 <script>
-var STAGES = {"card": ["Fiche écrite", "b-card"], "tested": ["Testée - pas assez bonne", "b-tested"], "dead": ["Abandonnée", "b-dead"],
-  "quick passed": ["Test rapide réussi", "b-pass"], "full passed": ["Test complet réussi", "b-pass"],
-  "final failed": ["Examen final raté", "b-dead"], "FINAL PASSED - paper trading next": ["Examen final réussi", "b-final"]};
-var STEP = {"quick": "Rapide", "full": "Complet", "final": "Final"};
-function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
-function d(t) { var x = new Date(t * 1000); return x.toLocaleDateString("fr-FR", {day: "2-digit", month: "2-digit"}) + " " + x.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"}); }
-function money(v) { return v == null ? "-" : (v >= 0 ? "+" : "") + Number(v).toFixed(2) + " $"; }
-function load() {
-  fetch("kino_lab_data", {cache: "no-store"}).then(function (r) { return r.json(); }).then(function (D) {
-    var I = D.ideas || [], tests = 0, best = "aucune";
-    I.forEach(function (x) { tests += (x.tests || []).length; });
-    var order = ["card", "tested", "dead", "quick passed", "full passed", "final failed", "FINAL PASSED - paper trading next"];
-    var top = I.slice().sort(function (a, b) { return order.indexOf(b.stage) - order.indexOf(a.stage); })[0];
-    if (top) best = (STAGES[top.stage] || [top.stage])[0];
-    var pass = I.filter(function (x) { return (x.tests || []).some(function (t) { return t.pass; }); }).length;
-    document.getElementById("bar").innerHTML =
-      '<div class="stat"><b>' + I.length + '</b><span>idées essayées</span></div>' +
-      '<div class="stat"><b>' + tests + '</b><span>tests lancés</span></div>' +
-      '<div class="stat"><b>' + pass + '</b><span>idées qui ont passé une étape</span></div>' +
-      '<div class="stat"><b style="font-size:16px;line-height:1.5">' + esc(best) + '</b><span>le plus loin atteint</span></div>';
-    var h = "";
-    I.slice().reverse().forEach(function (x) {
-      var st = STAGES[x.stage] || [x.stage, "b-card"];
-      h += '<div class="idea"><div class="idea-h"><div><h3>' + esc(x.name) + '</h3><span class="badge ' + st[1] + '">' + esc(st[0]) + '</span></div>' +
-        '<span class="when">' + d(x.t) + '</span></div>' +
-        '<p><em>L\'idée :</em> ' + esc(x.hypothesis) + '</p>' +
-        (x.why ? '<p><em>Pourquoi ça pourrait marcher :</em> ' + esc(x.why) + '</p>' : '') +
-        '<p><em>Ce qui la tuerait :</em> ' + esc(x.kill) + '</p>' +
-        (x.dead_why ? '<p><em>Abandonnée parce que :</em> ' + esc(x.dead_why) + '</p>' : '');
-      if ((x.tests || []).length) {
-        h += '<div class="tests">';
-        x.tests.forEach(function (t) {
-          var m = "";
-          if (t.months) Object.keys(t.months).forEach(function (k) { var v = t.months[k]; m += '<span class="' + (v > 0 ? "pos" : "neg") + '">' + k.slice(2) + " " + (v > 0 ? "+" : "") + v.toFixed(0) + '</span>'; });
-          h += '<div class="t"><span>' + d(t.t) + ' · ' + (STEP[t.stage] || t.stage) + '</span>' +
-            (t.ok === false ? '<span class="no">refusé</span><span class="months">' + esc(t.why || "") + '</span>' :
-              '<span class="' + (t.pass ? "ok" : "no") + '">' + (t.pass ? "réussi" : "raté") + '</span>' +
-              '<span>' + money(t.net) + ' · ' + (t.trades || 0) + ' trades · hasard aussi bon : ' + (t.random_as_good == null ? "-" : t.random_as_good) +
-              '<br><span class="months">' + m + '</span></span>') + '</div>';
-        });
-        h += '</div>';
-      }
-      h += '</div>';
-    });
-    document.getElementById("ideas").innerHTML = h || '<div class="empty">Pas encore d\'idée. Kino travaille au labo toutes les 2 heures, jour et nuit : la première fiche arrive bientôt.</div>';
-    var s = "";
-    (D.sessions || []).slice().reverse().forEach(function (x) { s += '<div class="sess"><span class="when">' + d(x.t) + '</span>' + esc(x.summary || "(en cours)") + '</div>'; });
-    document.getElementById("sess").innerHTML = s || '<div class="empty">Pas encore de séance.</div>';
-  }).catch(function () { document.getElementById("ideas").innerHTML = '<div class="empty">Impossible de charger le labo.</div>'; });
+const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
+const T=(f,e)=>EN?e:f, $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=v=>v==null?'-':(v>=0?'+':'')+Number(v).toFixed(2)+' $';
+const fdate=t=>new Date(t*1000).toLocaleDateString(EN?'en-GB':'fr-FR',{day:'2-digit',month:'short'});
+const ftime=t=>new Date(t*1000).toLocaleTimeString(EN?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});
+function ago(t){const s=Date.now()/1000-t;if(s<3600)return T('il y a ','')+Math.max(1,Math.round(s/60))+' min'+T('',' ago');if(s<86400)return T('il y a ','')+Math.round(s/3600)+' h'+T('',' ago');return T('il y a ','')+Math.round(s/86400)+T(' j',' d ago');}
+// a stage = how far the idea went
+const ST={card:{fr:'Fiche écrite',en:'Card written',c:'var(--violet)',cls:'background:var(--vi-bg);color:var(--violet-soft)'},
+ tested:{fr:'Pas assez bonne',en:'Not good enough',c:'var(--warn)',cls:'background:var(--mid-bg);color:var(--warn)'},
+ dead:{fr:'Abandonnée',en:'Dropped',c:'var(--down)',cls:'background:var(--bad-bg);color:var(--down-soft)'},
+ 'quick passed':{fr:'Test rapide réussi',en:'Quick test passed',c:'var(--accent)',cls:'background:var(--accent-bg);color:var(--accent-soft)'},
+ 'full passed':{fr:'Test complet réussi',en:'Full test passed',c:'var(--accent)',cls:'background:var(--accent-bg);color:var(--accent-soft)'},
+ 'final failed':{fr:'Examen final raté',en:'Final exam failed',c:'var(--down)',cls:'background:var(--bad-bg);color:var(--down-soft)'},
+ 'FINAL PASSED - paper trading next':{fr:'Examen final réussi',en:'Final exam passed',c:'var(--up)',cls:'background:var(--ok-bg);color:var(--up-soft)'}};
+const STEP={quick:T('Test rapide','Quick test'),full:T('Test complet','Full test'),final:T('Examen final','Final exam')};
+const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M7.5 14h9"/></svg>';
+let D={ideas:[],sessions:[]},F='all',OPEN={};
+function reach(x){const s=x.stage,t=x.tests||[];return {card:1,quick:t.some(z=>z.stage==='quick'),qpass:t.some(z=>z.stage==='quick'&&z.pass),fpass:t.some(z=>z.stage==='full'&&z.pass),final:s==='FINAL PASSED - paper trading next'};}
+function bars(m){if(!m)return '';const v=Object.values(m),mx=Math.max(1,...v.map(Math.abs));return '<span class="mb">'+v.map(x=>'<i style="height:'+Math.max(3,26*Math.abs(x)/mx)+'px;background:'+(x>0?'var(--up)':'var(--down)')+'"></i>').join('')+'</span>';}
+function renderTop(){const I=D.ideas||[];const R=I.map(reach);
+ const n=k=>R.filter(r=>r[k]).length,tests=I.reduce((a,x)=>a+(x.tests||[]).length,0),dead=I.filter(x=>x.stage==='dead'||x.stage==='tested'||x.stage==='final failed').length;
+ const PIPE=[['card',T('Fiches','Cards'),'var(--violet)'],['quick',T('Rapide','Quick'),'var(--warn)'],['qpass',T('Rapide ✓','Quick ✓'),'var(--accent)'],['fpass',T('Complet ✓','Full ✓'),'var(--accent)'],['final',T('Final ✓','Final ✓'),'var(--up)'],['paper',T('Papier','Paper'),'var(--up)']];
+ const last=(D.sessions||[]).slice(-1)[0];
+ $('top').innerHTML='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Le labo de trading de Kino','Kino\'s trading lab')+'</div><div class="hn"><b>'+I.length+'</b>'+T('idées essayées','ideas tried')+'</div></div>'+
+  (last?'<span class="hl"><i></i>'+T('au travail','working')+'</span>':'')+'</div>'+
+  '<p class="hp">'+T('Kino cherche une stratégie positive <b>chaque mois</b>. Chaque idée avance de gauche à droite ; la dernière épreuve se joue sur des mois qu\'il n\'a jamais vus.','Kino is looking for a strategy that is positive <b>every month</b>. Each idea moves left to right; the last test runs on months he has never seen.')+'</p>'+
+  '<div class="pp6">'+PIPE.map(s=>{const c=s[0]==='paper'?0:n(s[0]);return '<div class="ps'+(c?'':' z')+'" style="--c:'+s[2]+'"><b>'+c+'</b><span>'+s[1]+'</span></div>';}).join('')+'</div>'+
+  '<div class="pcap">'+T('Fiche → test rapide (2 mois) → test complet (7 mois) → examen final (mois cachés) → 4 semaines sur papier → argent réel','Card → quick test (2 months) → full test (7 months) → final exam (hidden months) → 4 weeks on paper → real money')+'</div>'+
+  '<div class="st3"><div><b>'+tests+'</b><span>'+T('tests lancés','tests run')+'</span></div><div><b>'+n('qpass')+'</b><span>'+T('passé une étape','passed a step')+'</span></div><div><b>'+dead+'</b><span>'+T('écartées','dropped')+'</span></div></div>'+
+  '<div class="bar">'+T('<b>La barre</b> (votre accord du 07/11) : chaque mois positif sur les mois cachés, 75 % des semaines positives, mieux que 95 % de robots au hasard.','<b>The bar</b> (agreed 07/11): every month positive on the hidden months, 75% of weeks positive, better than 95% of random robots.')+'</div>'+
+  (last?'<div class="pulse"><span class="dot"></span><span>'+T('Dernière séance ','Last session ')+ago(last.t)+' · '+T('une séance toutes les 2 h, jour et nuit','a session every 2 h, day and night')+'</span></div>':'')+'</div>';
+ $('h1s').textContent=T('ses idées, ses tests, ses verdicts','his ideas, tests and verdicts');
 }
-load(); setInterval(load, 60000);
+function chips(){const I=D.ideas||[];const C=[['all',T('Toutes','All'),I.length],['alive',T('En course','Still in'),I.filter(x=>!['dead','tested','final failed'].includes(x.stage)).length],['out',T('Écartées','Dropped'),I.filter(x=>['dead','tested','final failed'].includes(x.stage)).length]];
+ $('chips').innerHTML=C.map(c=>'<button class="chip'+(F===c[0]?' on':'')+'" onclick="F=\''+c[0]+'\';render()">'+c[1]+'<em>'+c[2]+'</em></button>').join('');}
+function card(x,i){const m=ST[x.stage]||ST.card,t=x.tests||[],lt=t[t.length-1],op=!!OPEN[x.id];
+ let met='';if(lt&&lt.ok!==false&&lt.net!=null)met=bars(lt.months)+'<span class="'+(lt.net>=0?'pos':'neg')+'">'+money(lt.net)+'</span>';
+ let det='<div class="det"><div class="kv">'+
+  '<div><small>'+T('L\'idée','The idea')+'</small>'+esc(x.hypothesis)+'</div>'+
+  (x.why?'<div><small>'+T('Pourquoi ça pourrait marcher','Why it could work')+'</small>'+esc(x.why)+'</div>':'')+
+  '<div><small>'+T('La règle','The rule')+'</small>'+esc(x.rule)+'</div>'+
+  '<div><small>'+T('Ce qui la tuerait','What would kill it')+'</small>'+esc(x.kill)+'</div>'+
+  (x.dead_why?'<div><small>'+T('Abandonnée parce que','Dropped because')+'</small>'+esc(x.dead_why)+'</div>':'')+'</div>'+
+  t.slice().reverse().map(z=>'<div class="tr"><div class="th"><span class="bd" style="'+(z.ok===false?'background:var(--gr-bg);color:var(--muted2)':z.pass?'background:var(--ok-bg);color:var(--up-soft)':'background:var(--bad-bg);color:var(--down-soft)')+'"><i></i>'+(z.ok===false?T('refusé','refused'):z.pass?T('réussi','passed'):T('raté','failed'))+'</span><b>'+(STEP[z.stage]||z.stage)+'</b><span>'+fdate(z.t)+' '+ftime(z.t)+'</span>'+
+   (z.ok!==false?'<span style="margin-left:auto" class="'+((z.net||0)>=0?'pos':'neg')+'"><b>'+money(z.net)+'</b></span>':'')+'</div>'+
+   (z.ok!==false?'<div class="tm">'+Object.entries(z.months||{}).map(e=>'<b class="'+(e[1]>0?'pos':'neg')+'">'+e[0].slice(2)+' '+(e[1]>0?'+':'')+e[1].toFixed(0)+'</b>').join('')+'</div><div class="why">'+(z.trades||0)+' trades · '+T('robots au hasard aussi bons : ','random robots as good: ')+(z.random_as_good==null?'-':z.random_as_good)+'</div>':'<div class="why">'+esc(z.why||'')+'</div>')+'</div>').join('')+'</div>';
+ return '<div class="sc'+(x.stage==='FINAL PASSED - paper trading next'?' flag':'')+(op?' open':'')+'" style="--c:'+m.c+';animation-delay:'+Math.min(i,12)*30+'ms" onclick="OPEN[\''+x.id+'\']=!OPEN[\''+x.id+'\'];render()">'+
+  '<div class="top"><span class="fi">'+ICON+'</span><span class="tt"><b>'+esc(x.name)+'</b><small>'+x.id+' · '+fdate(x.t)+' · '+t.length+' test'+(t.length>1?'s':'')+'</small></span></div>'+
+  '<p>'+esc(x.dead_why||x.hypothesis)+'</p>'+
+  '<div class="ft"><span class="bd" style="'+m.cls+'"><i></i>'+T(m.fr,m.en)+'</span>'+(lt?'<span class="bd ev">'+(STEP[lt.stage]||lt.stage)+'</span>':'')+'<span class="met">'+met+'</span></div>'+det+'</div>';}
+function render(){renderTop();chips();const I=(D.ideas||[]).slice().reverse().filter(x=>F==='all'||(F==='out')===['dead','tested','final failed'].includes(x.stage));
+ $('list').innerHTML=I.length?I.map(card).join(''):'<div class="empty">'+T('Pas encore d\'idée ici. Kino passe au labo toutes les 2 heures, jour et nuit.','No idea here yet. Kino works in the lab every 2 hours, day and night.')+'</div>';
+ $('sesh').textContent=T('Ses dernières séances','His last sessions');
+ const S=(D.sessions||[]).slice().reverse();
+ $('ses').innerHTML=S.length?S.map(x=>'<div class="ses"><span class="cal"><b>'+new Date(x.t*1000).getDate()+'</b><small>'+ftime(x.t)+'</small></span><p>'+esc(x.summary||T('(en cours)','(running)'))+'</p></div>').join(''):'<div class="empty">'+T('Pas encore de séance.','No session yet.')+'</div>';
+ $('livet').textContent=T('En direct','Live');}
+function load(){fetch('kino_lab_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{D=d;render();}).catch(()=>{$('list').innerHTML='<div class="empty">'+T('Impossible de charger le labo.','Could not load the lab.')+'</div>';});}
+if(EN)document.documentElement.lang='en';
+$('h1').textContent=T('Le labo de Kino','Kino\'s trading lab');
+load();setInterval(load,60000);
 </script>
-</body>
-</html>
+</body></html>
