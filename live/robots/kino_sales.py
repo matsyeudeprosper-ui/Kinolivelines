@@ -398,7 +398,19 @@ def outreach(W, ref, subject, body, log=None):
             return "not sent - QA found: %s. Fix it (or brief your writer), then send again." % q
     import kino_mail as KM
     KM.allow(a)
-    KM.send_now(a, subject, full)
+    _img = None
+    if p.get("preview") and tracked(p) in full:     # 2026-11-07 (owner): a picture of their new site in the email itself
+        try:
+            import kino_media as KMD
+            from PIL import Image
+            _sh = KMD.shot(p["preview"], "mail-" + _slug(p["name"]),
+                           ("Votre nouveau site, %s" if str(p.get("lang") or "fr").startswith("fr") else "Your new website, %s") % p["name"][:40])
+            if _sh.get("ok"):
+                _img = _sh["path"][:-4] + ".jpg"
+                Image.open(_sh["path"]).convert("RGB").resize((1120, 630)).save(_img, quality=85)
+        except Exception as e:
+            _log("MAIL-IMAGE-ERR %s %s" % (p["name"], e))
+    KM.send_now(a, subject, full, image=_img, link=tracked(p) if _img else None)
     rec = {"t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "subject": str(subject)[:200], "body": body[:3000]}
     with _LK:
         d = _j(STORE, {"items": []})

@@ -829,12 +829,30 @@ def _act0(j, person, W=None):
         if sum(1 for x in KSF2._j(KSF2.STORE, {"items": []})["items"] if ("fbhand %s" % _today) in str(x.get("notes") or "")) >= 3:
             return "3 Messenger messages for Matsy today already - the rest tomorrow (he sends each one by hand)"
         p = KSF2.find(j.get("who") or url) or {}
+        if not p.get("preview"):                    # 2026-11-07 (owner): every first message carries their preview
+            return "build their preview first (brief your designer for %s), then the message with its link" % (p.get("name") or "them")
+        _lnk = KSF2.tracked(p)
+        if _lnk not in tx and p["preview"].rstrip("/") not in tx:
+            tx = tx.rstrip() + "\n\n" + _lnk
+        tx = tx.replace(p["preview"].rstrip("/") + "/", _lnk).replace(p["preview"].rstrip("/"), _lnk)
+        _img = None
+        try:
+            import kino_media as KMD
+            from PIL import Image
+            _sh = KMD.shot(p["preview"], "fb-" + KSF2._slug(p["name"]), "Votre nouveau site, %s" % p["name"][:40])
+            if _sh.get("ok"):
+                _img = _sh["path"][:-4] + ".jpg"
+                Image.open(_sh["path"]).convert("RGB").resize((1120, 630)).save(_img, quality=85)
+        except Exception:
+            pass
         body = ("A message for you to send from Messenger to %s (they have no email; Facebook is how to reach them):\n\n"
-                "1. Open: %s\n2. Tap Message, paste this, send:\n\n%s\n\nWhen they answer, paste their reply to me in our chat "
-                "(or forward it to kinoverse26@gmail.com) and I take it from there." % (p.get("name") or "this business", url, tx))
+                "1. Open: %s\n2. Tap Message, paste this%s, send:\n\n%s\n\nWhen they answer, paste their reply to me in our chat "
+                "(or forward it to kinoverse26@gmail.com) and I take it from there." % (
+                    p.get("name") or "this business", url, " and add the picture below (their new site)" if _img else "", tx))
         try:
             import kino_mail as KM
-            KM.send_now(KM.OWNER_EMAIL, "Kino: a Messenger message to send - %s" % (p.get("name") or "a business"), body)
+            KM.send_now(KM.OWNER_EMAIL, "Kino: a Messenger message to send - %s" % (p.get("name") or "a business"), body,
+                        image=_img, link=_lnk if _img else None)
         except Exception as e:
             return "could not reach Matsy (%s)" % str(e)[:100]
         try:

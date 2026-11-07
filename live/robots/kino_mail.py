@@ -151,9 +151,41 @@ def allow(addr):
     return a
 
 
-def send_now(to, subject, body):
+def _html(body, link, img_cid):
+    """the same words as the text version, with the picture of their new site where the link is"""
+    import html as _h
+    paras = []
+    for block in str(body).split("\n\n"):
+        t = _h.escape(block).replace("\n", "<br>")
+        if link and link in block:
+            t = t.replace(_h.escape(link), '<a href="%s">%s</a>' % (link, _h.escape(link)))
+            paras.append('<p style="margin:0 0 14px">%s</p><p style="margin:0 0 18px"><a href="%s"><img src="cid:%s" alt="Aperçu de votre nouveau site" '
+                         'width="560" style="max-width:100%%;height:auto;border-radius:10px;border:1px solid #ddd"></a></p>' % (t, link, img_cid))
+        else:
+            paras.append('<p style="margin:0 0 14px">%s</p>' % t)
+    return ('<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#222;max-width:600px">%s</div>'
+            % "".join(paras))
+
+
+def send_now(to, subject, body, image=None, link=None):
+    """2026-11-07 (owner: "include an image preview of their new site in the email - some people are afraid of links"): with
+    image (a file) the email is text + HTML, the picture inline next to the link, clickable"""
     c = _cred()
-    m = MIMEText(str(body), "plain", "utf-8")
+    if image and os.path.isfile(image):
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.image import MIMEImage
+        cid = "preview%d" % int(time.time())
+        m = MIMEMultipart("related")
+        alt = MIMEMultipart("alternative")
+        alt.attach(MIMEText(str(body), "plain", "utf-8"))
+        alt.attach(MIMEText(_html(body, link, cid), "html", "utf-8"))
+        m.attach(alt)
+        im = MIMEImage(open(image, "rb").read())
+        im.add_header("Content-ID", "<%s>" % cid)
+        im.add_header("Content-Disposition", "inline", filename="apercu.jpg")
+        m.attach(im)
+    else:
+        m = MIMEText(str(body), "plain", "utf-8")
     m["From"] = "Kino <%s>" % c["address"]
     m["To"] = to
     m["Subject"] = str(subject)[:200]
