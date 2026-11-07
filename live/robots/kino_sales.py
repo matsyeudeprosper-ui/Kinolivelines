@@ -527,6 +527,10 @@ def on_click(pid, ua=""):
         p = next((x for x in d["items"] if x["id"] == pid), None)
         if not p or not p.get("preview"):
             return None
+        # 2026-11-07: Matsy opens the link himself while he sends a Messenger message (3 "clicks" were his) - not theirs
+        if p.get("handed_t") and time.time() - float(p["handed_t"]) < 1800:
+            _log("CLICK ignored (Matsy sending it) %s" % p["name"])
+            return p["preview"]
         c = p.setdefault("clicks", [])
         c.append({"t": time.time(), "ua": str(ua or "")[:120]})
         p["clicks"] = c[-50:]

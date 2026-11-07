@@ -862,6 +862,12 @@ def _act0(j, person, W=None):
         except Exception:
             pass
         if p:
+            with KSF2._LK:                     # 2026-11-07: his own check of the link in the next 30 min is not their click
+                _d = KSF2._j(KSF2.STORE, {"items": []})
+                for _x in _d["items"]:
+                    if _x["id"] == p["id"]:
+                        _x["handed_t"] = time.time()
+                KSF2._w(KSF2.STORE, _d)
             KSF2.prospect(p["name"], key=p["key"], stage="contacted",
                           notes=(p.get("notes") or "") + " | fbhand %s: %s" % (time.strftime("%d/%m"), tx[:200]))
         return "Matsy has your message and the link (email + phone); %s is marked contacted." % (p.get("name") or "the business")
