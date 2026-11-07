@@ -317,6 +317,30 @@ def _put(repo, path, text, msg):
         raise RuntimeError("upload of %s failed (%s %s)" % (path, st, d.get("message")))
 
 
+FR_POST = """You are Kino (an AI) and you write your own blog in two languages. Below is your blog post in English. Write the
+SAME post in natural French (France) - as you would have written it in French yourself: your voice, your humour, plain words,
+"je". Keep every fact, number, name and link exactly; add nothing, remove nothing; no "I'm Kino" introduction. A French title too.
+JSON only: {"title": "...", "text": "the whole post in French, paragraphs separated by a blank line"}"""
+
+
+def blog_fr(W, title, text, day, slug_en, log=None):
+    """2026-11-07 (owner: "a French blog version as well"): the French twin of an English post, linked both ways"""
+    try:
+        j = W.ask_json(FR_POST, "TITLE: %s\n\nPOST:\n%s" % (title, text), models=("sonnet",), timeout=150, log=log, warm=False)
+    except Exception as e:
+        return "no French version (%s)" % str(e)[:100]
+    if not isinstance(j, dict) or not j.get("title") or len(str(j.get("text") or "")) < 80:
+        return "no French version (the translation came back empty)"
+    y, m, d = day.split("-")
+    fr_url = "/fr/%s/%s/%s/%s.html" % (y, m, d, slug_en)
+    en_url = "/%s/%s/%s/%s.html" % (y, m, d, slug_en)
+    body = _destamp(str(j["text"]).strip())
+    _put(BLOG, "_posts/%s-%s-fr.md" % (day, slug_en),
+         "---\nlayout: post\nlang: fr\ntitle: %s\npermalink: %s\nalt_url: %s\n---\n\n%s\n\n*Écrit par Kino, une IA. Aucun humain n'a "
+         "retouché cet article.*\n" % (json.dumps(str(j["title"]), ensure_ascii=False), fr_url, en_url, body), "Kino: " + str(j["title"])[:60])
+    return "https://%s%s" % (BLOG, fr_url)
+
+
 def blog(W, title, text, log=None):
     """a post on his blog -> what happened (a sentence for him)"""
     title, text = str(title or "").strip(), str(text or "").strip()
@@ -335,14 +359,15 @@ def blog(W, title, text, log=None):
         _ensure_blog()
         day = time.strftime("%Y-%m-%d", time.gmtime())
         name = "_posts/%s-%s.md" % (day, slug(title))
-        _put(BLOG, name, "---\nlayout: post\ntitle: %s\n---\n\n%s\n\n*Written by Kino, an AI. No human edited this post.*\n" % (
-            json.dumps(title, ensure_ascii=False), text), "Kino: " + title[:60])
+        _put(BLOG, name, "---\nlayout: post\ntitle: %s\nalt_url: /fr/%s/%s.html\n---\n\n%s\n\n*Written by Kino, an AI. No human edited this post.*\n" % (
+            json.dumps(title, ensure_ascii=False), day.replace("-", "/"), slug(title), text), "Kino: " + title[:60])
         url = "https://%s/%s/%s.html" % (BLOG, day.replace("-", "/"), slug(title))
     except Exception as e:
         _record("blog", title, False, str(e)[:200])
         return "the post failed: %s" % str(e)[:200]
     _record("blog", title, True, "", url)
-    return "posted on your blog: %s (it can take a minute or two to appear)" % url
+    fr = blog_fr(W, title, text, day, slug(title), log)          # 2026-11-07: the French twin, for the French businesses he meets
+    return "posted on your blog: %s (it can take a minute or two to appear) - French version: %s" % (url, fr)
 
 
 def repo(W, folder, name, description, files=None, log=None):
