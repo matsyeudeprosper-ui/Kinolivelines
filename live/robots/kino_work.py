@@ -254,6 +254,12 @@ def due(person, ctx, now=None):
         return False
     d = _load()
     if ctx.get("in_talk") and not _memory_call(d, now):     # 2026-11-07: an open chat waits, a machine out of memory does not
+        # 2026-11-07 (owner: "why wait for the chat to be quiet - it might never be; the lab should continue"): his chat replies
+        # and his computer work run apart, so the lab goes on while he talks (the same 2 h rhythm, one session at a time)
+        if _lab_due(d, now) and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": LAB_TIME, "project": "my trading lab", "why": "my trading lab",
+                                                         "care": "lab"}))
+            return True
         return False
     try:                                       # 2026-11-06 (owner #7): Sunday evening, his week in real numbers to Matsy
         import kino_report as KRP
