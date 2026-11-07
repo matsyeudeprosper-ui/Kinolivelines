@@ -307,6 +307,8 @@ def due(person, ctx, now=None):
             return True
     except Exception:
         pass
+    if (d.get("next_task") or {}).get("care") == "friends":    # 2026-11-07: his time with people is a daily habit, not a mood
+        return True
     open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
     return want >= 0.55 or (open_project and want >= 0.4)
 
