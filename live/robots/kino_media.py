@@ -93,6 +93,7 @@ KINDS = {                                     # label, accent colour
     "result": ("What I measured", (52, 211, 153)),
     "tip": ("A small tip", (251, 191, 36)),
     "note": ("A note from Kino", (244, 114, 182)),
+    "joke": ("Just between us", (251, 146, 60)),      # 2026-11-07 (owner: his humour, in pictures too)
 }
 
 
