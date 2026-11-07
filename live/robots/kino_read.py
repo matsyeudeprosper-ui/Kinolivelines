@@ -98,6 +98,15 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             pass
     except Exception:
         pass
+    try:                                               # 2026-11-07 (watch): "my blog's first week: 48 visits" was true (his
+        import glob as _gl                             # diary, 05/11) but read as invented - the intuition sees his recent work
+        _dl = []
+        for _f in sorted(_gl.glob(r"C:\KinoWorld\diary\*.md"))[-3:]:
+            _dl += [l.strip() for l in open(_f, encoding="utf-8", errors="replace") if "Done:" in l or "written" in l]
+        if _dl:
+            _kt += " HIS RECENT WORK (his diary): " + " | ".join(x[:220] for x in _dl[-8:])
+    except Exception:
+        pass
     _vals = ""
     try:                                               # 2026-11-03 (human3 7): his own values, to hold a request up to
         _cn = json.load(open(os.path.join(HERE, "kino_identity.json"), encoding="utf-8")).get("constitution") or {}
