@@ -22,7 +22,8 @@ PER_TASK, PER_MONTH = 15.0, 50.0
 PAGE_FR = "https://kv-kinoverse.pages.dev/fr/aidez-kino.html"
 PAGE_EN = "https://kv-kinoverse.pages.dev/help-kino.html"
 _LK = threading.Lock()
-_FORBID = re.compile(r"photo[s]? (?:of|de) (?:a |une |un )?(?:person|personne|people|gens|enfant|child)|suivre (?:quelqu|une personne)|"
+_FORBID = re.compile(r"(?:photo|picture|pic|film|video|vid[eé]o)\w*\W+(?:\w+\W+){0,4}?(?:person|personne|people|gens|enfant|child|"
+                     r"kid|visage|face|someone|quelqu|passant|passer-?by)|suivre (?:quelqu|une personne)|"
                      r"follow (?:someone|a person)|home address of|adresse personnelle|password|mot de passe|pretend to be|se faire passer|"
                      r"fake review|faux avis|login|identifiant", re.I)
 
