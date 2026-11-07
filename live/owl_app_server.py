@@ -25145,7 +25145,9 @@ def _urge_tick():
             except Exception:
                 pass
             lu = max([float(m.get("t") or 0) for m in M if m.get("role") == "user"] or [0])
-            own = [float(m.get("t") or 0) for m in M if m.get("role") == "ai" and m.get("event") and m.get("text")]
+            # 2026-11-07 (watch): "night duty till 1 or 2" (his reply) then "night shift till 1 or 2" on his own 6 min later -
+            # only his own wishes counted as waiting; any message of his the member has not answered yet waits too
+            own = [float(m.get("t") or 0) for m in M if m.get("role") == "ai" and m.get("text")]
             ctx = {"in_talk": _in_talk(uid, c), "their_hour": _active_hour(pm),
                    "unanswered": sum(1 for t in own if t > lu), "since_own_min": round((now - max(own or [0])) / 60, 1),
                    "hours_since_member": round((now - lu) / 3600, 1) if lu else 99}
