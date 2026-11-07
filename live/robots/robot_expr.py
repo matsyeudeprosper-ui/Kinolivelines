@@ -35,9 +35,26 @@ EYES = ("trend", "bos_up", "bos_down", "choch_up", "choch_down")
 # progress, pb_trend = its own trend. Unknown (no series for that minute) = a condition with them is false.
 PB = ("pb_dir", "pb_live_dir", "pb_trend", "pb_open", "pb_high", "pb_low", "pb_close")
 # 2026-11-07 (owner: "enter on the FIRST candle going the other way once the top candle closed"): pb_n_up / pb_n_down =
-# how many green / red 1-minute closes since the pullback chart's last candle finished, this one included (1 = the first)
-PBN = ("pb_n_up", "pb_n_down")
+# how many green / red candles OF THE SILENCE CHART since the pullback chart's last candle finished, this one included
+# (1 = the first). quiet = 1 when this 1-minute candle is shown on the silence chart (owl_chart_feed.build: its close lands
+# beyond the last shown candle's high or low; its colour = close >= open) - owner: "the entry candle is the one from the
+# silence filtered chart, not normal candles"
+PBN = ("pb_n_up", "pb_n_down", "quiet")
 EYES = EYES + PB + PBN
+
+
+def _quiet(o, h, l, c):
+    """the silence filter, candle by candle (the same rule as the chart feed) -> 1.0 where the candle is shown"""
+    k = np.zeros(len(c))
+    rh = rl = None
+    for i in range(len(c)):
+        ci = c[i]
+        if ci != ci:
+            continue
+        if rh is None or ci > rh or ci < rl:
+            k[i] = 1.0
+            rh, rl = h[i], l[i]
+    return k
 NAMES = SERIES + CLOCK + DAY + EYES
 # function -> (min args, max args, which args are constant whole numbers (index), max for those)
 FUNCS = {"ema": (2, 2), "sma": (2, 2), "rsi": (2, 2), "stdev": (2, 2), "highest": (2, 2), "lowest": (2, 2),
@@ -285,9 +302,15 @@ def evaluate(src, B):
         elif x in PBN:                                 # counted inside each finished top candle's time
             if C.tf != "M1":
                 raise FormulaError("%s is read on the 1-minute chart only" % x)
+            if "_quiet" not in memo:
+                memo["_quiet"] = _quiet(C.o, C.h, C.l, C.c)
+            q = memo["_quiet"] > 0
+            if x == "quiet":
+                memo[k] = memo["_quiet"]
+                return memo[k]
             po = np.asarray(C.eyes.get("pb_open", np.full(len(C.t), np.nan)), float)
             pc = np.asarray(C.eyes.get("pb_close", np.full(len(C.t), np.nan)), float)
-            col = (C.c > C.o) if x == "pb_n_up" else (C.c < C.o)
+            col = q & ((C.c >= C.o) if x == "pb_n_up" else (C.c < C.o))      # silence-chart candles only, its colours
             new = np.ones(len(C.t), bool)
             new[1:] = (po[1:] != po[:-1]) | (pc[1:] != pc[:-1])
             seg = np.cumsum(new)
