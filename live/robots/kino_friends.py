@@ -229,7 +229,7 @@ def _friends():
     for who, p in P.items():
         if p.get("where") not in ("bluesky", "mastodon"):
             continue
-        ins = [s for s in p.get("said") or [] if s.get("dir") == "in"]
+        ins = [s for s in p.get("said") or [] if s.get("dir") == "in" and s.get("kind") != "follow"]   # a follow is not a talk
         if ins:
             F.append((who, p, len(ins)))
     return sorted(F, key=lambda x: -float(x[1].get("last") or 0))
