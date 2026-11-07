@@ -847,7 +847,8 @@ def _act0(j, person, W=None):
             pass
         body = ("A message for you to send from Messenger to %s (they have no email; Facebook is how to reach them):\n\n"
                 "1. Open: %s\n2. Tap Message, paste this%s, send:\n\n%s\n\nWhen they answer, paste their reply to me in our chat "
-                "(or forward it to kinoverse26@gmail.com) and I take it from there." % (
+                "(or forward it to kinoverse26@gmail.com) and I take it from there.\n\nIf their page's contact info shows an EMAIL (Facebook often does, "
+                "I cannot see it), just send it to me instead: I will write them a proper email with the preview and its picture." % (
                     p.get("name") or "this business", url, " and add the picture below (their new site)" if _img else "", tx))
         try:
             import kino_mail as KM
