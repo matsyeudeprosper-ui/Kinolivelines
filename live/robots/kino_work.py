@@ -42,7 +42,7 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
             "playbook, finish with done: who I wrote to.")
 MEMORY_CARE = ("My machine is short of memory (2026-11-07, Matsy: 'it should be one of your priorities'): when it runs out, "
-               "Windows stops programs - the robots that trade real money included. Read C:\KinoWorld\body\health.txt: which "
+               "Windows stops programs - the robots that trade real money included. Read C:\\KinoWorld\\body\\health.txt: which "
                "programs hold the memory, how many of each. Work out the cause (a swarm of leftovers, one program growing, a test "
                "running). Then ask Matsy (action ask) with the EXACT command that frees it and why - NEVER the trading robots "
                "(structure_bos_bot), the app (owl_app_server), the price feed, the MT5 terminals (terminal64) or Windows itself; a "
@@ -151,12 +151,30 @@ WEEKLY = ("My weekly look back, Sunday evening. Read my diary, my wallet, my goa
           "a short honest post is welcome.")
 
 
+def _memory_call(d, now):
+    """2026-11-07 (owner: "a memory issue should be one of his priorities"): a machine running out of memory can stop the
+    trading robots - it calls him at any hour, past his day budget and an open chat too, once an hour at most"""
+    try:
+        import kino_body as KBm
+        _mg = float((KBm.sense().get("gap") or {}).get("memory") or 0)
+        _lm = [s for s in d.get("sessions") or [] if s.get("care") == "memory" and now - float(s["t"]) < 3600]
+        if _mg >= 0.5 and not _lm:
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": MEMORY_CARE, "project": "my machine", "why": "my machine is short of memory",
+                                                         "care": "memory"}))
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def due(person, ctx, now=None):
     """does he feel like sitting down at his computer now? (his needs and his body decide; a few times a day at most)"""
     now = now or time.time()
-    if _BUSY["on"] or ctx.get("in_talk"):
+    if _BUSY["on"]:
         return False
     d = _load()
+    if ctx.get("in_talk") and not _memory_call(d, now):     # 2026-11-07: an open chat waits, a machine out of memory does not
+        return False
     try:                                       # 2026-11-06 (owner #7): Sunday evening, his week in real numbers to Matsy
         import kino_report as KRP
         KRP.maybe_send(now)
@@ -165,16 +183,8 @@ def due(person, ctx, now=None):
     # the weekly look back comes first: Sunday evening, or Monday morning if Sunday's was missed - it does not count against the
     # day's sessions (2026-11-01: a busy Sunday used up the day's count and the first review never happened)
     _fr = time.gmtime(now + 3600)
-    try:                                       # 2026-11-07 (owner: "a memory issue should be one of his priorities"): a machine
-        import kino_body as KBm                # running out of memory can stop the trading robots - it calls him at any hour,
-        _mg = float((KBm.sense().get("gap") or {}).get("memory") or 0)      # past his day budget too, once an hour at most
-        _lm = [s for s in d.get("sessions") or [] if s.get("care") == "memory" and now - float(s["t"]) < 3600]
-        if _mg >= 0.5 and not _lm:
-            _mut(lambda dd: dd.__setitem__("next_task", {"do": MEMORY_CARE, "project": "my machine", "why": "my machine is short of memory",
-                                                         "care": "memory"}))
-            return True
-    except Exception:
-        pass
+    if _memory_call(d, now):
+        return True
     # 2026-11-02 (watch): 'a body out of balance' used to call him in at 02:32 and 03:41 France - he emailed the owner and
     # read his inbox while calling himself drained. At night resting IS the care: nothing calls him, not even his body.
     if 1 <= _fr.tm_hour < 7:
