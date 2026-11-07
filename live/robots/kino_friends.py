@@ -369,3 +369,22 @@ def text_of(url):
     except Exception:
         pass
     return ""
+
+
+def watch_lines(since):
+    """for the session's Kino watch: every exchange on Bluesky/Mastodon since a time - who said what, both ways"""
+    try:
+        import kino_online as KO
+        P = KO._load()["people"]
+    except Exception:
+        return []
+    out = []
+    for who, p in P.items():
+        if p.get("where") not in ("bluesky", "mastodon"):
+            continue
+        for s in p.get("said") or []:
+            if float(s.get("t") or 0) >= since:
+                out.append((s["t"], "%s %s %s (%s): %s" % (time.strftime("%d/%m %H:%M", time.gmtime(s["t"])),
+                                                          "KINO ->" if s["dir"] == "out" else "IN <-", who, p.get("where"),
+                                                          " ".join(str(s.get("text") or "").split())[:260])))
+    return [x[1] for x in sorted(out)]

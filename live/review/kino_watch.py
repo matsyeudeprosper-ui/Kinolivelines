@@ -152,6 +152,12 @@ try:
     print("\n== scorecard today: " + ", ".join("%s=%s" % (k, v) for k, v in _S.items() if k not in ("day", "uid")))
 except Exception as _e:
     print("\n== scorecard: " + str(_e)[:80])
+try:                                   # 2026-11-07 (owner: "keep me posted on Kino's conversations on social media")
+    import kino_friends as _KFw
+    _sl = _KFw.watch_lines(since)
+    print("\n== SOCIAL since last watch: " + ("\n   " + "\n   ".join(_sl) if _sl else "nothing new"))
+except Exception as _e:
+    print("\n== social: " + str(_e)[:80])
 try:                                   # 2026-11-07 (owner: "make sure these 3 run properly"): emails, postcards, friends
     import kino_work as _KWr
     print("\n== " + _KWr.routine_line())
