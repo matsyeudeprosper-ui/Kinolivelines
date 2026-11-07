@@ -5454,7 +5454,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-05",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-06"
   },
   {
    "id": "pb_z_q1316_fh05_ww20",
@@ -5490,7 +5492,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-05",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-06"
   },
   {
    "id": "pb_z_q1316_fh05_ww15",
@@ -5526,7 +5530,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-05",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-06"
   },
   {
    "id": "pb_z_q1316_fh05_w15",
@@ -5562,7 +5568,9 @@
    },
    "by": "chercheur",
    "date": "2026-11-05",
-   "status": "pending"
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-06"
   },
   {
    "id": "pb_z_q1316_fh05_ww20_nc3",
@@ -5590,7 +5598,7 @@
    },
    "by": "chercheur",
    "date": "2026-11-05",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 8.85,
     "worst": 44.58,
@@ -5614,6 +5622,411 @@
      "trades": 39,
      "diff_net": 67.08,
      "diff_worst": -73.47
+    }
+   },
+   "verdict": "A",
+   "done": "2026-11-06"
+  },
+  {
+   "id": "pb_aa_q1316_fh05_cost5",
+   "family": "structure",
+   "title_fr": "Miser moins aux heures risquées et ne pas prendre les stops trop serrés",
+   "title_en": "Bet less at risky hours and skip stops that are too tight",
+   "why_fr": "Garder les mises réduites, et refuser un trade dont le stop est si serré que le coût d'entrée en mange plus de 5 %. Vrais trades : stops sous 150 points, 149 trades, -48 $. Testé : +22 $ sur 42 jours, +24 $ sur 69, trou 25 au lieu de 41 ; 4 % et 6 % gagnent aussi. Prudence : 40 trades seulement.",
+   "why_en": "Keep the reduced stakes, and refuse a trade whose stop is so tight that the entry cost eats more than 5 % of it. Real trades: stops under 150 points, 149 trades, -$48. Tested: +$22 over 42 days, +$24 over 69, hole 25 instead of 41; 4 % and 6 % gain too. Caution: only 40 trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "cost_max": 5
+   },
+   "by": "chercheur",
+   "date": "2026-11-06",
+   "status": "done",
+   "pretest": {
+    "base_net": -30.55,
+    "base_worst": 87.34,
+    "vs": "filtre seul / filter alone",
+    "at": "2026-11-06",
+    "net": 50.81,
+    "worst": 25.4,
+    "h1": 8.85,
+    "h2": 57.98,
+    "trades": 40,
+    "long": {
+     "days": 69,
+     "diff_net": 67.31,
+     "h1": -14.36,
+     "h2": 87.27,
+     "worst": 25.4,
+     "base_worst": 88.41
+    }
+   },
+   "verdict": "A",
+   "done": "2026-11-07"
+  },
+  {
+   "id": "pb_aa_q1316_fh05_ch350",
+   "family": "structure",
+   "title_fr": "Miser moins aux heures risquées et ne pas courir après le prix",
+   "title_en": "Bet less at risky hours and do not chase the price",
+   "why_fr": "Garder les mises réduites, et ne pas entrer quand la dernière heure a déjà couru 350 points dans le sens du trade. Face aux mises seules : +13 $ sur 42 jours, +7 $ sur 69, trou 37 au lieu de 41, 58 trades. Face au filtre seul : +72 $, les deux moitiés mieux.",
+   "why_en": "Keep the reduced stakes, and do not enter when the last hour already ran 350 points the trade's way. Against the stakes alone: +$13 over 42 days, +$7 over 69, hole 37 instead of 41, 58 trades. Against the filter alone: +$72, both halves better.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "chase_pts": 350
+   },
+   "by": "chercheur",
+   "date": "2026-11-06",
+   "status": "done",
+   "pretest": {
+    "base_net": -30.55,
+    "base_worst": 87.34,
+    "vs": "filtre seul / filter alone",
+    "at": "2026-11-06",
+    "net": 41.55,
+    "worst": 37.2,
+    "h1": 27.94,
+    "h2": 38.76,
+    "trades": 58,
+    "long": {
+     "days": 69,
+     "diff_net": 50.72,
+     "h1": -8.19,
+     "h2": 73.75,
+     "worst": 37.2,
+     "base_worst": 88.41
+    }
+   },
+   "verdict": "A",
+   "done": "2026-11-07"
+  },
+  {
+   "id": "pb_aa_q1316_fh05_cost5_nc3",
+   "family": "structure",
+   "title_fr": "Sans stops trop serrés, permettre trois trades de plus dans le même sens",
+   "title_en": "Without too-tight stops, allow three more trades the same way",
+   "why_fr": "Idée hors du cadre. Refuser les stops trop serrés retire 30 trades sur 70 : c'est ce que le critique reproche. Alors en rendre là où le robot gagne : jusqu'à trois trades de plus dans le même sens, qui gagnent après une pause et avec un stop large. Pas encore testé.",
+   "why_en": "Out-of-the-box idea. Refusing too-tight stops removes 30 trades out of 70: that is the critic's objection. So give some back where the robot wins: up to three more trades the same way, which win after a pause and with a wide stop. Not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 3,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "cost_max": 5
+   },
+   "by": "chercheur",
+   "date": "2026-11-06",
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-07"
+  },
+  {
+   "id": "pb_aa_q1316_fh05_ch350_nf06",
+   "family": "structure",
+   "title_fr": "Miser moins aux heures risquées, ne pas courir, ne pas entrer endormi",
+   "title_en": "Bet less at risky hours, do not chase, do not enter a sleeping market",
+   "why_fr": "Les deux freins qui marchaient sur le filtre (ne pas courir après 350 points, rien quand le marché dort presque), posés cette fois sur les mises réduites. Chacun seul y gagne sur 42 et 69 jours (+13 $ et +5 $). Ensemble, pas encore testé.",
+   "why_en": "The two brakes that worked on the filter (do not chase after 350 points, nothing when the market almost sleeps), set this time on the reduced stakes. Each alone gains there over 42 and 69 days (+$13 and +$5). Together, not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "chase_pts": 350,
+    "nerv_floor": 0.6
+   },
+   "by": "chercheur",
+   "date": "2026-11-06",
+   "status": "done",
+   "verdict": "A",
+   "done": "2026-11-07"
+  },
+  {
+   "id": "pb_aa_q1316_fh05_nf06",
+   "family": "meteo",
+   "title_fr": "Miser moins aux heures risquées et ne pas entrer quand le marché dort",
+   "title_en": "Bet less at risky hours and do not enter when the market sleeps",
+   "why_fr": "Garder les mises réduites, et ne pas entrer quand le marché bouge à moins de 60 % de son allure habituelle. Testé : +5 $ sur 42 jours et sur 69, trou 37 au lieu de 41, 3 trades de moins. Petit, mais jamais négatif sur une moitié.",
+   "why_en": "Keep the reduced stakes, and do not enter when the market moves at under 60 % of its usual pace. Tested: +$5 over 42 days and over 69, hole 37 instead of 41, 3 trades fewer. Small, but never negative on a half.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "nerv_floor": 0.6
+   },
+   "by": "chercheur",
+   "date": "2026-11-06",
+   "status": "done",
+   "pretest": {
+    "base_net": -30.55,
+    "base_worst": 87.34,
+    "vs": "filtre seul / filter alone",
+    "at": "2026-11-06",
+    "net": 33.59,
+    "worst": 36.52,
+    "h1": 9.57,
+    "h2": 49.44,
+    "trades": 67,
+    "long": {
+     "days": 69,
+     "diff_net": 48.72,
+     "h1": -20.49,
+     "h2": 63.9,
+     "worst": 36.52,
+     "base_worst": 88.41
+    }
+   },
+   "verdict": "A",
+   "done": "2026-11-07"
+  },
+  {
+   "id": "pb_ab_q1316_fh05_cost5_ch350",
+   "family": "structure",
+   "title_fr": "Miser moins aux heures risquées, sans stops serrés ni course au prix",
+   "title_en": "Bet less at risky hours, skip tight stops and price chases",
+   "why_fr": "Les deux freins qui gagnent chacun sur les mises réduites, ensemble : pas de stop trop serré, pas d'entrée quand l'heure a déjà couru 350 points. Testé ce soir face aux mises seules : +32 $ sur 42 jours, les deux moitiés mieux, trou 25 au lieu de 41 ; +36 $ sur 69 jours. Prudence : 35 trades.",
+   "why_en": "The two brakes that each gain on the reduced stakes, together: no too-tight stop, no entry when the hour already ran 350 points. Tested tonight against the stakes alone: +$32 over 42 days, both halves better, hole 25 instead of 41; +$36 over 69 days. Caution: 35 trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "cost_max": 5,
+    "chase_pts": 350
+   },
+   "pretest": {
+    "base_net": -41.3,
+    "base_worst": 87.34,
+    "vs": "filtre seul / filter alone",
+    "at": "2026-11-07",
+    "net": 57.73,
+    "worst": 25.4,
+    "h1": 17.31,
+    "h2": 74.16,
+    "trades": 35,
+    "long": {
+     "days": 69,
+     "diff_net": 108.55,
+     "h1": 14.11,
+     "h2": 87.92,
+     "worst": 25.4,
+     "base_worst": 88.41,
+     "trades": 62
+    }
+   },
+   "by": "chercheur",
+   "date": "2026-11-07",
+   "status": "pending"
+  },
+  {
+   "id": "pb_ab_choch_q1316_fh05_cost5",
+   "family": "structure",
+   "title_fr": "Filtre plus souple, mises réduites, sans stops trop serrés",
+   "title_en": "Looser filter, reduced stakes, no too-tight stops",
+   "why_fr": "Idée hors du cadre. Le critique reproche au refus des stops serrés de ne garder que 40 trades. Alors assouplir le filtre, plus proche du rythme des vrais comptes : 97 trades au lieu de 42, +44 $ sur 42 jours contre +48 $. Prudence : trou 54 au lieu de 25, seconde moitié 8 $ moins bien.",
+   "why_en": "Out-of-the-box idea. The critic's objection to refusing tight stops is that only 40 trades remain. So loosen the filter, closer to the real accounts' pace: 97 trades instead of 42, +$44 over 42 days against +$48. Caution: hole 54 instead of 25, second half $8 worse.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "cost_max": 5
+   },
+   "pretest": {
+    "base_net": -41.3,
+    "base_worst": 87.34,
+    "vs": "filtre seul / filter alone",
+    "at": "2026-11-07",
+    "net": 44.19,
+    "worst": 53.53,
+    "h1": 17.99,
+    "h2": 47.51,
+    "trades": 97
+   },
+   "by": "chercheur",
+   "date": "2026-11-07",
+   "status": "pending"
+  },
+  {
+   "id": "pb_ab_choch_q1316_fh05_cost5_ch350",
+   "family": "structure",
+   "title_fr": "Filtre plus souple, mises réduites, sans stops serrés ni course au prix",
+   "title_en": "Looser filter, reduced stakes, no tight stops, no price chase",
+   "why_fr": "Le filtre plus souple garde plus de trades mais creuse un trou plus gros (54 au lieu de 25). Ne pas courir après 350 points a réduit le trou partout où je l'ai posé (37 au lieu de 41 sur les mises seules). Ensemble, pas encore testé.",
+   "why_en": "The looser filter keeps more trades but digs a bigger hole (54 instead of 25). Not chasing after 350 points cut the hole wherever I set it (37 instead of 41 on the stakes alone). Together, not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "cost_max": 5,
+    "chase_pts": 350
+   },
+   "by": "chercheur",
+   "date": "2026-11-07",
+   "status": "pending",
+   "pretest": {
+    "net": 71.53,
+    "worst": 41.91,
+    "h1": 69.96,
+    "h2": -11.35,
+    "base_net": -165.53,
+    "base_worst": 232.45,
+    "base_h1": -21.26,
+    "base_h2": -148.93,
+    "verdict": "A",
+    "trades": 85,
+    "at": "2026-11-06 20:13",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 165.76,
+     "diff_worst": -190.54
+    },
+    "real": {
+     "n_real": 126,
+     "trades": 34,
+     "diff_net": 98.17,
+     "diff_worst": -97.17
+    }
+   }
+  },
+  {
+   "id": "pb_ab_choch_q1316_fh05_ch350",
+   "family": "structure",
+   "title_fr": "Filtre plus souple, mises réduites, sans course au prix",
+   "title_en": "Looser filter, reduced stakes, no price chase",
+   "why_fr": "Sur 69 jours, ne pas courir après le prix est le frein le plus solide : +13 $, les deux moitiés mieux, 106 trades gardés. Le filtre plus souple garde deux fois plus de trades. Les deux ensemble, sans refuser les stops serrés, pour garder beaucoup de trades. Pas encore testé.",
+   "why_en": "Over 69 days, not chasing the price is the sturdiest brake: +$13, both halves better, 106 trades kept. The looser filter keeps twice as many trades. Both together, without refusing tight stops, to keep many trades. Not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "size_hours": [
+     13,
+     14,
+     15,
+     16
+    ],
+    "hour_size": 0.25,
+    "flip_hot_size": 0.5,
+    "chase_pts": 350
+   },
+   "by": "chercheur",
+   "date": "2026-11-07",
+   "status": "pending",
+   "pretest": {
+    "net": 3.53,
+    "worst": 72.12,
+    "h1": 47.07,
+    "h2": -41.07,
+    "base_net": -165.53,
+    "base_worst": 232.45,
+    "base_h1": -21.26,
+    "base_h2": -148.93,
+    "verdict": "A",
+    "trades": 173,
+    "at": "2026-11-06 20:14",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 91.35,
+     "diff_worst": -160.33
+    },
+    "real": {
+     "n_real": 126,
+     "trades": 62,
+     "diff_net": 97.2,
+     "diff_worst": -88.92
     }
    }
   }

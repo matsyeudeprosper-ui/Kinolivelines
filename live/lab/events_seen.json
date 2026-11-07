@@ -42,7 +42,8 @@
   "chase_size",
   "battery_pb_reproduce",
   "pile_field_dist",
-  "htf_capture_check"
+  "htf_capture_check",
+  "quick_restart_size"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -65,6 +66,10 @@
   "ask_1792843213_loss_quick15",
   "ask_1792904411_europe",
   "ask_1792990818_day_after_loss",
-  "ask_1793583077_cont_rested"
+  "ask_1793583077_cont_rested",
+  "ask_1793926857_flip_after_loss",
+  "ask_1793926857_flip_day",
+  "ask_1793945390_gap_30_60",
+  "ask_1794016633_loss_quick15"
  ]
 }

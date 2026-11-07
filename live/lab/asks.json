@@ -332,6 +332,19 @@
    "answered": "2026-11-06T07:20:00Z",
    "answer_fr": "Plus souvent gagné, oui : soixante-dix trades, 54 % contre 45 %. Mais l'argent ne suit pas : à peu près zéro, les pertes sont plus grosses que les gains, et la seconde moitié retombe à 46 %. Ce qui tient vraiment, c'est la pause de 15 à 30 minutes, et surtout ne pas repartir en moins de 15 minutes. Pas de proposition.",
    "answer_en": "Won more often, yes: seventy trades, 54% against 45%. But the money does not follow: about zero, losses bigger than wins, and the second half drops to 46%. What really holds is the 15 to 30 minute pause, and above all not restarting within 15 minutes. No proposal."
+  },
+  {
+   "id": "ask_1794016633_loss_quick15",
+   "seed": "loss_quick15",
+   "seed_fr": "Trade repris moins de 15 minutes après une perte",
+   "seed_en": "Trade taken less than 15 minutes after a loss",
+   "by": "labo",
+   "date": "2026-11-07",
+   "note": "54 trades, 28 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answered": "2026-11-07T02:30:00Z",
+   "answer_fr": "Vrai sur les vrais comptes : cinquante-quatre trades repris moins de quinze minutes après une perte, à peine plus d'un sur quatre gagné, les deux moitiés d'accord. Dans le test, le filtre en écarte presque tous (six restent, à peu près à zéro) et aucun réglage ne sait encore miser moins sur eux : je l'ai demandé, la demande attend d'être construite.",
+   "answer_en": "True on the real accounts: fifty-four trades restarted within fifteen minutes of a loss, barely more than one in four won, both halves agree. In the test the filter removes almost all of them (six remain, about flat) and no setting can yet bet less on them: I asked for one, the request is waiting to be built."
   }
  ]
 }

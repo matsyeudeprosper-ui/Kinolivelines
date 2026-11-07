@@ -78,7 +78,8 @@
     "b": 120
    },
    "built_date": "2026-10-02",
-   "built_commit": "110e616"
+   "built_commit": "110e616",
+   "c_nights": 0
   },
   {
    "id": "sleepy_floor",
@@ -670,6 +671,17 @@
    "what_en": "For the trades of 2 and 3 November, compare the 'h1 i' value in the journal's htf_entry column with the one-hour internal small trend rebuilt from one-minute candles at the same time. Write the result (agree / disagree, trade by trade) in a short report. If it is frozen, fix it. Nothing else changes.",
    "why_fr": "Depuis lundi matin, la vingtaine de trades fermés montrent tous « h1 i = 1 » (petite tendance à la hausse), alors que le prix a baissé d'environ 1 750 points. La mesure du quart d'heure était déjà restée figée en octobre. Ma piste la plus nette (« quand l'heure va déjà dans notre sens, on perd » : 6 sur 6 perdus depuis le 26) repose sur cette mesure.",
    "why_en": "Since Monday morning, all of the twenty or so closed trades show 'h1 i = 1' (small trend up), while price fell about 1,750 points. The quarter-hour reading had already stayed frozen in October. My clearest lead ('when the hour already points our way, we lose': 6 of 6 lost since the 26th) rests on this reading.",
+   "status": "open"
+  },
+  {
+   "id": "quick_restart_size",
+   "date": "2026-11-06",
+   "title_fr": "Miser moins sur un trade repris trop vite, au lieu de le refuser",
+   "title_en": "Bet less on a trade restarted too fast, instead of refusing it",
+   "what_fr": "Deux réglages : quick_min (0 à 30 minutes, 0 = éteint) et quick_size (0,25 à 1,0, 1,0 = éteint). Un trade pris moins de quick_min minutes après la fermeture du trade précédent, gagné OU perdu, est pris avec la mise multipliée par quick_size, ses trades de rattrapage aussi. Le trade est toujours pris. Par défaut rien ne change. Plus large que la demande du 28 octobre (après une perte seulement).",
+   "what_en": "Two settings: quick_min (0 to 30 minutes, 0 = off) and quick_size (0.25 to 1.0, 1.0 = off). A trade taken less than quick_min minutes after the previous trade closed, won OR lost, is taken with the stake multiplied by quick_size, its catch-up trades too. The trade is always taken. By default nothing changes. Wider than the 28 October request (after a loss only).",
+   "why_fr": "Vrais trades : repris en moins de 15 minutes, 102 trades, 35 % gagnés, -92 $, les deux moitiés d'accord ; repris 15 à 30 minutes après, 48 trades, 62 % gagnés, +24 $. Mais refuser ces trades (une pause) coûte dans le test : il rate un gagnant de 11 $. Miser moins garderait ce gagnant et réduirait les pertes, comme les mises réduites de 13 h à 17 h.",
+   "why_en": "Real trades: restarted within 15 minutes, 102 trades, 35 % won, -$92, both halves agree; restarted 15 to 30 minutes later, 48 trades, 62 % won, +$24. But refusing those trades (a pause) costs in the test: it misses an $11 winner. Betting less would keep that winner and shrink the losses, like the reduced stakes from 13:00 to 17:00.",
    "status": "open"
   }
  ]

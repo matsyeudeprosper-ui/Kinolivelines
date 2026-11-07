@@ -1033,6 +1033,135 @@
     "drag: --drag auto unchanged (+8.99, C); --drag 1 output not comparable (variant charged vs uncharged base, -456). It trades fewer, so a per-trade charge cannot be its weakness",
     "runs: 5 (ext 700, ext 600, ext 800, ext 700 drag auto, ext 700 drag 1)"
    ]
+  },
+  {
+   "id": "pb_z_q1316_fh05_ww10",
+   "date": "2026-11-06",
+   "verdict": "bloque",
+   "fr": "Le gain vient des mises réduites déjà jugées, pas de la pause. Ce matin, la même idée sans pause gagne 29 $ ; avec 10 minutes de pause après un gain, 13 $ : la pause coûte 15 $, surtout un bon trade de 11 $ manqué. À 5, 15 et 20 minutes, pareil. Pour changer d'avis : la pause seule meilleure sur les deux moitiés, plusieurs nuits de suite.",
+   "en": "The gain comes from the reduced stakes already judged, not from the pause. Replayed this morning, the same idea without the pause earns $29; with a 10-minute pause after a win, $13: the pause costs $15, mostly one missed $11 winner. At 5, 15 and 20 minutes it does worse too. To change my mind: the pause alone better on both halves, several nights running.",
+   "checks": [
+    "reproduction: harness 11-06 (new bars, rules in place -145.78 / 285 tr) idea +13.35 / hole 39.66 / 64 tr (h1 +45.29 / h2 -38.66); card +4.90 / 65 tr on a shorter base (-63.34) - read diffs, not levels",
+    "fair reference = parent without the pause (13-17 quarter stake + nervous-flip half, trend filter): +28.70 / hole 41.40 / 70 tr (h1 +42.41 / h2 -24.98). Pause increment: -15.35 net, hole 1.7 smaller, 6 trades fewer",
+    "dose: wait 5 +18.46 (-10.24 vs parent); wait 10 +13.35 (-15.35); battery tonight wait 15 -3.55 and wait 20 -0.98 vs wait 10 +4.90. Every dose below the no-pause parent on this run; the pretest '+3 $ over 42 days' flipped sign on new bars = noise",
+    "halves: increment h1 +2.88 (one -2.88 trade skipped), h2 -13.68 (a +11.27 winner skipped; at dose 5 replaced by -3.78) - the second half pays for the pause",
+    "shapes: card byref base and capped account identical (+68.24 / -83.85) - the cap never bites, shape tells nothing about the pause",
+    "concentration: the increment is essentially one trade (+11.27 late winner lost) plus a few 1-3 $ swaps; the package itself rests on two trades +18.80 and +17.30, more than its whole net",
+    "long window (card, package vs rules in place): 69 d +52 but h1 -151 / h2 +198, verdict B - a loss on the older weeks, carried by the stake package; pause alone not isolated there",
+    "real trades (card): 37 kept of 126, net still -36.17 (+47.74 vs real) - still a losing robot on the real trades",
+    "drag: wait 10 at $1/trade -70.91 / hole 81.67 / 63 tr (h1 +11.22 / h2 -93.04). Parent at $1 not run; it has ~7 more trades, so ~$7-9 more charge - not enough to close the $15 gap. The package loses at $1 a trade",
+    "past: registry 'wait' 30/60 min after every trade rejected C (-106/-107); battery wait10/20/30 C tonight; pb_t_ch350_nf06_wait15 doubted 10-29 (pause tiny, < one trade). No twin, not archived; history A x1 (first night)",
+    "mechanism: plausible on paper (real restarts <15 min after a win: 44 tr, 45 % won, -25 $), but in the replay it touches ~6 trades and the deciding one is a winner it skips",
+    "overlap: the 13-17 quarter stake (pb_y_q1316_fh05, doute 11-03) + an old rejected pause at a smaller dose - new clothes",
+    "runs: 4 (wait 10, wait 0, wait 5, wait 10 drag 1)"
+   ]
+  },
+  {
+   "id": "pb_z_q1316_fh05_w15",
+   "date": "2026-11-06",
+   "verdict": "bloque",
+   "fr": "Le gain vient des mises réduites, pas de la pause. Sur 42 jours, sans pause la même idée gagne 25 $ ; avec 15 minutes de pause après chaque trade, 2 $. La pause coûte 23 $, surtout sur la seconde moitié. À 10 et 20 minutes, pareil. À 1 $ par trade : -80 $. Pour changer d'avis : la pause seule meilleure sur les deux moitiés, plusieurs nuits.",
+   "en": "The gain comes from the reduced stakes already judged, not from the pause. Over the last 42 days, without the pause the same idea earns $25; with a 15-minute pause after every trade, $2. The pause costs $23, mostly in the second half. At 10 and 20 minutes, worse too. At $1 a trade: -$80. To change my mind: the pause alone better on both halves, several nights running.",
+   "checks": [
+    "reproduction: harness 11-06 (rules in place -154.51 / 285 tr) idea +1.77 / hole 47.95 / 61 tr (h1 +42.00 / h2 -46.95); card -0.78 / 62 tr on a shorter base (-63.34) - read diffs vs the parent, not vs the rules in place",
+    "fair reference = parent without the pause (13-17 quarter stake + nervous change-of-direction half stake, trend filter): +25.19 / hole 42.58 / 70 tr (h1 +40.08 / h2 -26.15). Pause increment at 15: -23.42 net, hole 5.4 BIGGER, 9 trades fewer",
+    "dose: wait 10 +7.45 (-17.74 vs parent), wait 15 +1.77 (-23.42), wait 20 +7.39 (-17.80). Every setting below no pause; 15 is the worst of the three - no rule, the pause just removes trades",
+    "halves: increment h1 +1.9 to +2.9 (noise), h2 -15 to -21 at every setting - the second half pays for the pause",
+    "shapes: card byref base and capped account identical (+62.56 / -79.14) - the daily cap never bites, shape tells nothing about the pause",
+    "concentration: the card's +62.56 vs rules in place belongs to the stake package; the pause's own effect is negative at every setting",
+    "long window (card): 69 d +58.61 vs rules, but h1 -138.72 / h2 +193.40, verdict B - a loss on the older weeks; pause not isolated there",
+    "real trades (card): 36 kept of 126, net -33.07 (+50.84 vs real) - still a losing robot on the real trades",
+    "drag: wait 15 at $1/trade -80.24 / hole 86.45 / 60 tr (h1 +9.42 / h2 -100.57). Parent has ~10 more trades (~$10 more charge) - does not close a $23 gap",
+    "past: registry 'wait' 30/60 min after every trade rejected C (-106/-107); sibling pb_z_q1316_fh05_ww10 (pause after a win only) blocked this morning on the same evidence; pb_t_ch350_nf06_wait15 doubted 10-29. No twin, not archived; history A x1 (first night)",
+    "mechanism: the real-trade fact (restart <15 min after a loss: 50 tr, 26 % won, -63 $) is plausible, but in the replay the pause skips more winners than losers in the second half",
+    "overlap: the 13-17 quarter stake (pb_y_q1316_fh05, doute 11-03) + an old rejected pause at a smaller setting - new clothes",
+    "runs: 5 (wait 15, wait 0, wait 10, wait 20, wait 15 drag 1)"
+   ]
+  },
+  {
+   "id": "pb_z_q1316_fh05_ww20",
+   "date": "2026-11-06",
+   "verdict": "bloque",
+   "fr": "Le gain vient des mises réduites déjà jugées, pas de la pause. Sur 42 jours, sans pause la même idée gagne 29 $ ; avec 20 minutes de pause après un gain, 8 $. Elle coûte 20 $, presque tout sur un trade (+11 $ devenu -8 $). À 15 et 30 minutes, pareil. Pour changer d'avis : la pause seule meilleure sur les deux moitiés, plusieurs nuits.",
+   "en": "The gain comes from the reduced stakes already judged, not from the pause. Over 42 days, without the pause the same idea earns $29; with a 20-minute pause after a win, $8. The pause costs $20, almost all on one trade: an $11 winner becomes an $8 loss. At 15 and 30 minutes, the same. To change my mind: the pause alone better on both halves, several nights.",
+   "checks": [
+    "reproduction: harness 11-06 (rules in place -154.51 / 286 tr) idea +8.21 / hole 41.50 / 61 tr (h1 +41.56 / h2 -40.06); card -0.98 / 62 tr on the shorter card base (-63.34) - read diffs vs the parent. NB --hour-size 13-16 gives hours 13-15 only (first run, +2.31, mis-set); 13-17 reproduces the card's 13,14,15,16",
+    "fair reference = parent without the pause (pb_y_q1316_fh05 stake package + trend filter): +28.70 / hole 41.40 / 70 tr (h1 +42.41 / h2 -24.98), identical to this morning's ww10 reference. Pause increment at 20: -20.49 net, hole +0.10, 9 trades fewer",
+    "dose: wait 15 +4.90 / hole 44.38 (-23.80 vs parent); wait 20 +8.21 (-20.49); wait 30 +7.54 / hole 47.02 (-21.16). With ww10 this morning (+13.35, -15.35), every setting from 10 to 30 is below no pause - no sign flip, consistently negative. The pretest staircase (+3, +13, +16 up to 20 min) does not reproduce",
+    "halves: increment h1 -0.85 (3 fewer trades), h2 -15.08 (7 fewer trades) - helps neither half; the second half pays most",
+    "shapes: card byref base and capped account identical (+62.36 / -79.14) - the daily cap never bites, so shape tells nothing about the pause",
+    "concentration: at wait 20 the parent's late +11.27 winner is replaced by a -8.27 loss (swing 19.54 ~ the whole -20.49 increment); the package itself rests on two trades +18.80 and +17.30, more than its whole net",
+    "long window (card, idea vs rules in place): 69 d +48.80 but h1 -149.07 / h2 +193.94, verdict B - a loss on the older weeks, carried by the stake package; pause alone not isolated there",
+    "real trades (card): 36 kept of 126, net -38.17 (+45.74 vs real, by trading 3.5x less) - still a losing robot on the real trades",
+    "drag $1/trade: idea -70.42 / hole 79.89 / 60 tr (h1 +9.48 / h2 -90.81) vs parent -61.89 / hole 86.40 / 67 tr - with 7 fewer trades charged the pause is still $8.53 worse; both lose heavily at $1 a trade",
+    "past: siblings pb_z_q1316_fh05_ww10 and pb_z_q1316_fh05_w15 both bloque this morning on the same evidence; registry 'wait' 30/60 min rejected C (-106/-107); pb_t_ch350_nf06_wait15 doute 10-29. No twin, not archived; history A x1 (first night)",
+    "mechanism: the chercheur's fact (real restarts 15-30 min after a win won 11 of 14) argues for trading in that window, not for skipping the first 20 min; the <15 min bucket (44 tr, 45 % won, -25 $) is plausible, but in the replay the pause touches ~9 trades and the deciding one is a winner it skips",
+    "overlap: the 13-17 quarter stake (pb_y_q1316_fh05, doute 11-03) + the win-pause blocked this morning at 10 min - new clothes, third setting of the same idea today",
+    "runs: 7 (wait 20 hours 13-15 mis-set, wait 0, wait 15, wait 20, wait 30, wait 20 drag 1, wait 0 drag 1)"
+   ]
+  },
+  {
+   "id": "pb_aa_q1316_fh05_cost5",
+   "date": "2026-11-07",
+   "verdict": "doute",
+   "fr": "Refuser les stops trop serrés aide à chaque réglage (+29 $ à 4 %, +30 $ à 5 %, +15 $ à 6 %), sur les deux moitiés ; le plus gros trou passe de 41 à 25. Mon inquiétude : la deuxième moitié perd encore, deux trades font 36 $ des 48 $, et à 1 $ par trade il reste +9 $. Les vrais trades perdent 30 $.",
+   "en": "Refusing too-tight stops helps at every setting: +$29 at 4 %, +$30 at 5 %, +$15 at 6 %, in both halves, and the biggest hole drops from 41 to 25. My worry: the second half still loses at every setting, two trades make $36 of the $48, and at $1 a trade only +$9 is left. On the real trades the robot loses $30.",
+   "checks": [
+    "dose (harness, deployed rules as base, stakes 13-17 UTC x0.25 + nervous flip x0.5 kept): cost 0 (stake package alone) +17.41 / hole 41.40 / 73 tr; cost 4 +46.35 / 25.78 / 35; cost 5 +47.78 / 25.40 / 42; cost 6 +32.08 / 32.53 / 58 - no sign flip, the stop rule adds +15 to +30 over the package alone at every step",
+    "halves: cost 5 h1 +47.76 / h2 -12.15 vs package alone h1 +39.88 / h2 -20.77 - the cost rule improves both halves (+7.9 / +8.6), but the idea's h2 is negative at every dose (cost 4 -13.99, cost 6 -38.11); deployed base h2 -148.93",
+    "shapes: card byref base and valere identical (+98.97, hole -99.74) - not carried by one account shape",
+    "long window (card): 69 d +106.31 vs rules in place, but h1 -146.04 / h2 +259.29, verdict B - a loss on the older weeks; pretest vs package alone +67.31 with h1 -14.36 / h2 +87.27, so the cost part also loses the older half of the long window",
+    "real trades (card): 24 kept of 126, net -30.02 (+53.89 vs real, mostly by trading 5x less) - still a losing robot on the real trades",
+    "concentration: two trades +18.80 and +17.30 = 36.10 of +47.78; the +18.80 trade exists only with the cost rule (knock-on of refused trades, not in the package-alone run); curve jumps +34.6 on 10-09 alone",
+    "drag: auto = none (measured gap not yet on 30 trades, raw). drag $1/trade: +9.16 / hole 35.17 / 41 tr, h1 +34.02 / h2 -35.05 vs base -168.46 - survives a dollar a trade, barely, and only by the first half",
+    "mechanism: plain and sound - the spread is a fixed toll, so on a tight stop it eats a big share of the risk and the 0.8 target needs a higher win rate; that is the strongest part. The 13-17 UTC quarter stake has no such sentence beyond 'it lost there'",
+    "past / overlap: cost 5 already doute three times (pb_t_ch350_nf06_cost5 10-29, pb_v_ch350_cost5_ny05 10-31, pb_w_ch350_cost5_ny1316 11-01), all with the same 'h2 still loses, real trades lose' worry; stake package pb_y_q1316_fh05 doute 11-03. Old pieces recombined, no twin yet, not archived, history A x1 (first night)",
+    "note: harness --hour-size 13-16 parses to hours 13-15 (end excluded); the card's [13,14,15,16] needs 13-17. First run mis-set: +46.60 / 29.92 / 42 tr",
+    "runs: 8 (cost 5 hours mis-set, cost 5, cost 4, cost 6, cost 0, cost 5 drag 1, cost 5 drag auto)"
+   ]
+  },
+  {
+   "id": "pb_aa_q1316_fh05_nf06",
+   "date": "2026-11-07",
+   "verdict": "doute",
+   "fr": "Ne pas entrer quand le marché dort ajoute seulement 5 $ en 42 jours : trois trades refusés, tous dans la deuxième moitié ; la première moitié ne change pas d'un centime. À 50 % de l'allure habituelle, rien ne change. Presque tout le gain vient des mises réduites, déjà jugées. Ma crainte : le robot perd encore sur la deuxième moitié, sur les vrais trades, et à 1 $ par trade.",
+   "en": "Not entering when the market sleeps adds only $5 over 42 days: three trades refused, all in the second half; the first half does not change by a cent. At 50 % of the usual pace, nothing changes. Nearly all the gain comes from the reduced stakes, already judged. My worry: the robot still loses on the second half, on the real trades, and at $1 a trade.",
+   "checks": [
+    "reproduction (harness tonight, hours 13-17 so the card's 13,14,15,16 are all in): idea +30.90 / hole 36.52 / 70 tr (h1 +48.49 / h2 -17.59) vs deployed -165.53 / 232.45 - base moved again since the snapshot (-70 -> -166), read diffs",
+    "fair reference = same package without the pace floor: +26.01 / hole 41.40 / 73 tr (h1 +48.49 / h2 -22.48). The floor itself: +4.89 net, hole -4.88, 3 trades refused - matches the card's '+5, hole 37 instead of 41, 3 fewer'",
+    "dose: floor 0.5 -> identical to no floor (+26.01 / 41.40 / 73), 0.6 -> +30.90 / 36.52 / 70, 0.7 -> +32.68 / 34.74 / 69. No sign flip, slope in the right direction, but the whole effect is 3-4 trades",
+    "halves: h1 identical at every dose (+48.49) - the floor never fires there; all of +4.89 is in h2 (-22.48 -> -17.59). 'Never negative on a half' is true only because one half is zero; the idea's own h2 still loses",
+    "shapes: card byref base and capped account identical (+95.2 / -97.61) - this replay has no daily cap, shape tells nothing",
+    "long window (card, 69 d): package +90.83 vs today's rules, verdict B, but h1 -149.41 / h2 +236.26 - a loss on the older weeks; pretest increment there +48.72 with h1 -20.49, so 'never negative on a half' does not hold on 69 days",
+    "real trades (card): 38 of 126 kept, net -25.68 (+58.23 vs real, by trading 3x less) - still a losing robot on the real trades",
+    "concentration: the floor's +4.89 is three refused trades, smaller than one ordinary loss (-7.81, -8.94 unchanged); top trades +18.80 / +17.30 untouched, they carry the package",
+    "drag: auto came back raw again (drag None, no measured gap on 30 trades). $1 a trade: -55.19 / hole 75.52 / 67 tr (h1 +12.83 / h2 -74.62) vs deployed -164.73 - the package loses at $1 a trade; the floor refuses trades, so drag helps it a little rather than hurting",
+    "past: floor 0.6 already in pb_w_ch350_nf06_ny1316q (doute 11-01) and pb_x_ch350_nf06_nc2 (bloque); stake package pb_y_q1316_fh05 doute 11-03, sibling pb_aa_q1316_fh05_cost5 doute. No twin, not archived, history A x1",
+    "mechanism: plausible - a break in a very quiet market has no fuel and stalls before the target - but the registry's own 'nerv' note says trades just below normal pace win more (64%), so the case rests on the very quiet tail only, 3 trades",
+    "overlap: old pieces recombined - the 13-17 quarter stake + nervous change-of-direction half stake (doubted) plus the 0.6 floor (doubted). The title's 'do not enter when the market sleeps' is ~5% of the gain vs today's rules",
+    "runs: 8 (idea hours mis-set 13-15, idea, no floor, 0.5, 0.7, idea drag auto, no floor drag auto, idea drag 1)"
+   ]
+  },
+  {
+   "id": "pb_aa_q1316_fh05_cost5_nc3",
+   "date": "2026-11-07",
+   "verdict": "bloque",
+   "fr": "Les trois trades de plus dans le même sens coûtent de l'argent. Sur 42 jours : 48 $ avec un seul, 37 $ avec deux, 29 $ avec trois ; le plus gros trou passe de 25 à 33. La perte tombe sur la deuxième moitié. À 1 $ par trade : -27 $ au lieu de +9 $. Pour changer d'avis : ces trades gagnants sur les deux moitiés, plusieurs nuits.",
+   "en": "The three more trades the same way cost money: over 42 days, $48 with one more trade, $37 with two, $29 with three, and the biggest hole grows from 25 to 33. All of the loss falls in the second half. At $1 a trade: -$27 instead of +$9. To change my mind: those extra trades winning on both halves, several nights running.",
+   "checks": [
+    "reproduction: harness 11-07 (data moved: rules in place -165.53 / hole 232.45 / 297 tr) idea +29.38 / hole 33.05 / 47 tr (h1 +47.76 on 15 / h2 -10.95 on 37); card said +16.53 - read diffs vs the parent, not levels",
+    "dose n_cont (cost 5 + stake package kept): 1 (= parent pb_aa_q1316_fh05_cost5) +47.78 / hole 25.40 / 42 tr; 2 +37.03 / 25.40 / 45; 3 +29.38 / 33.05 / 47; 4 identical to 3 to the cent (a fourth never fires). Monotone DOWN: each step costs money - the piece is -18.40 net and +7.65 of hole",
+    "halves: h1 identical at every n_cont (+47.76, 15 tr) - the extra trades never fire there; all 5 extra trades are in h2, which goes -12.15 (1) / -3.30 (2) / -10.95 (3): the piece's h2 sign moves between neighbours = noise, and the full net only falls",
+    "shapes: byref uncapped and capped identical on the card (+86.95 / -93.22) - the daily cap never bites, no extra evidence",
+    "long window 69 d (card): diff +86.61 vs deployed, h1 -138.67 / h2 +240.89, verdict B - the gain is the parent's pieces; the older half loses",
+    "real trades (card): 27 kept of 126, net -18.51 (diff +65.40 vs the real outcome) - loses less than the robot did, does not win",
+    "concentration: best two trades +18.80 + 17.30 = 36.1 > the whole net 29.38, both in h1 and both already in the parent; without them the idea is negative",
+    "drag: --drag auto came back raw (no measured gap on 30 trades yet); --drag 1: idea -26.53 / hole 53.21 (h2 -46.33) vs parent n_cont 1 +9.16 / hole 35.17 - at $1 a trade the extra trades cost ~$36 and turn the package from a small win into a loss",
+    "past: cont23 (two or three more trades after a loss) rejected C (-52 / -58 over 42 d); flip1 deployed found one extra trade best; pb_y_q1316_fh05_nc3 bloque 11-06 (same piece on the sister package); pb_x_ch350_nc3_* doute/bloque 11-02. No twin, not archived, history 1 night",
+    "mechanism: the chercheur's reason ('give back trades where the robot wins: after a pause, wide stop') is not what n_cont does - it adds same-way trades after a loss with no pause and no stop condition; the numbers measured the opposite, as cont23 did",
+    "overlap: = parent pb_aa_q1316_fh05_cost5 (doute 11-07) + cont23 at three trades; a twin would duel the parent's trades plus five losing ones - the parent can carry its own twin",
+    "runs: 7 (idea, n_cont 1 / 2 / 4, idea drag 1, n_cont 1 drag 1, idea drag auto)"
+   ]
   }
  ]
 }
