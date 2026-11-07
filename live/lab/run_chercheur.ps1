@@ -3,6 +3,8 @@
 #   2. a headless Claude Code session reads the night and writes its note +
 #      new proposals (lab/CHERCHEUR.md is the mission)
 #   3. the lab's outputs are committed and pushed
+# 2026-11-07 (owner): the old lab is PAUSED - Kino's trading lab (robots/kino_lab.py) replaced it. Delete lab\PAUSED to bring it back.
+if (Test-Path "C:\Projects\KinoliveLines\live\lab\PAUSED") { exit 0 }
 $live = "C:\Projects\KinoliveLines\live"
 $lab = Join-Path $live "lab"
 $log = Join-Path $lab "chercheur.log"

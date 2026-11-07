@@ -227,7 +227,9 @@ if (-not (Get-ScheduledTask -TaskName "OwlProofRefresh" -ErrorAction SilentlyCon
 }
 # 2026-10-23: brick_watch.py is owned by the scheduled task "KL Brick Watch" (at logon, restarts it on failure);
 # launching it here too gave TWO copies every day since 2026-10-22 (both write brick_watch.log/status).
-foreach ($extra in @("owl_mode_switch.py", "harvest_journal.py")) {
+# 2026-11-07 (owner: "pause the old lab, and make sure it doesn't come back after a reboot"): harvest_journal.py removed -
+# the harvest bots are retired; its scheduled task "KL Harvest Journal" is disabled too
+foreach ($extra in @("owl_mode_switch.py")) {
     if (-not (ProcRunning $extra)) {
         Say ("starting " + $extra)
         Start-Process pythonw -ArgumentList $extra -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
