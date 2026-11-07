@@ -212,10 +212,16 @@ def routine_line(now=None):
         P = KSr._j(KSr.STORE, {"items": []})["items"]
         em = sum(1 for p in P for x in p.get("sent") or [] if now - float(x["t"]) < 86400)
         met = len(KFr.met_today())
+        _sc = (now - float(KFr._load().get("t") or 0)) / 3600       # when he last looked for people (every 2 h)
         pc = ("on, %d leads waiting" % len(card_leads())) if KPr.on() else "off (no credit yet)"
     except Exception as e:
         em, met, pc = "?", "?", "? (%s)" % e
-    warn = [w for w, x in (("NO HUNT IN 26 H", h > 26), ("NO FRIEND TIME IN 26 H", fr > 26)) if x]
+    try:
+        _sc
+    except NameError:
+        _sc = 999
+    warn = [w for w, x in (("NO HUNT IN 26 H", h > 26), ("NO FRIEND TIME IN 26 H", fr > 26),
+                           ("NO PEOPLE SCOUTING IN 5 H (see kino_friends.log)", _sc > 5)) if x]
     return "ROUTINE: hunt %.0f h ago (emails 24 h: %s) | friends %.0f h ago (new people today: %s) | postcards %s%s%s" % (
         h, em, fr, met, pc, (" | last card round %.0f h ago" % cd) if cd < 999 else "", (" | " + ", ".join(warn)) if warn else "")
 
@@ -788,9 +794,9 @@ def _act0(j, person, W=None):
                 if _no:
                     return _no
         _rs = KP.mastodon(W, j.get("text") or j.get("content") or "", reply_to=j.get("url"), log=os.path.join(HERE, "kino_post_calls.log"))
-        if j.get("url") and not _pend and not str(_rs).lower().startswith(("not", "refused", "error")):
+        if j.get("url") and not _pend and str(_rs).lower().startswith("posted"):
             KFG.met(_who or "?", "mastodon", j.get("url"), j.get("text") or j.get("content") or "")
-        if j.get("url") and not str(_rs).lower().startswith(("not", "refused", "error")):
+        if j.get("url") and str(_rs).lower().startswith("posted"):
             KFG.maybe_expect(_who, "mastodon", j.get("text") or j.get("content") or "")
         return _rs
     if a in ("deploy", "domain"):          # 2026-11-05: Kinoverse hosting (Cloudflare Pages) and the client's own domain
@@ -1086,9 +1092,9 @@ def _act0(j, person, W=None):
                 if _no:
                     return _no
         _rs = KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
-        if j.get("url") and not _pend and not str(_rs).lower().startswith(("not", "refused", "error")):
+        if j.get("url") and not _pend and str(_rs).lower().startswith("posted"):
             KFG.met(_who or "?", "bluesky", j.get("url"), j.get("text") or j.get("content") or "")
-        if j.get("url") and not str(_rs).lower().startswith(("not", "refused", "error")):
+        if j.get("url") and str(_rs).lower().startswith("posted"):
             KFG.maybe_expect(_who, "bluesky", j.get("text") or j.get("content") or "")
         return _rs
     if a == "post":

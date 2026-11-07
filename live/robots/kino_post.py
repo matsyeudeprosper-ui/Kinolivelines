@@ -189,7 +189,14 @@ def _destamp(text):
     return t or str(text or "")
 
 
-def writer(W, channel, text, log=None):
+REPLY_NOTE = ("THIS IS NOT A POST - it is a REPLY to a person, in a conversation (07/11, Matsy: friends first, work comes "
+              "from friends, never push it). Judge it as a friend would: does it answer what THEY said, is it warm and real, "
+              "does it invite them to keep talking? Questions 2, 3 and 7 below become exactly that. It must NOT push the "
+              "demo, Kinoverse, a link or anything for sale - if it does, rewrite it without. Hold it only if it says "
+              "nothing real. A reply is short (one to three sentences), in their language.")
+
+
+def writer(W, channel, text, log=None, reply=False):
     """2026-11-05 (owner: "the same Kino everywhere... his writing very strategic to get leads"): his own reread before a public
     post -> (verdict, text, why). verdict "post" | "rewrite" | "hold"; any failure lets the draft through unchanged"""
     text = _destamp(text)
@@ -204,7 +211,8 @@ def writer(W, channel, text, log=None):
     except Exception:
         pass
     try:
-        j = W.ask_json(EDITOR.format(voice=vo, strategy=_strategy_head(), style=STYLE.get(channel, channel)),
+        _strat = (REPLY_NOTE + "\n\n" + __import__("kino_friends").RULES) if reply else _strategy_head()
+        j = W.ask_json(EDITOR.format(voice=vo, strategy=_strat, style=STYLE.get(channel, channel)),
                        "WHERE: %s\n\nWHAT YOU POSTED HERE LATELY (newest last):\n%s\n\n%sYOUR DRAFT:\n<<<\n%s\n>>>\nJSON only." % (
                            channel, rl, (st + "\n\n") if st else "", text),
                        models=("sonnet",), timeout=90, log=log, warm=False)
@@ -218,9 +226,9 @@ def writer(W, channel, text, log=None):
     return j["verdict"], _destamp(t2), str(j.get("why") or "")[:300]
 
 
-def _reread(W, channel, text, limit, log):
+def _reread(W, channel, text, limit, log, reply=False):
     """-> (final text, None) or (None, the sentence for him when he held it)"""
-    v, t2, why = writer(W, channel, text, log)
+    v, t2, why = writer(W, channel, text, log, reply=reply)
     if v == "hold":
         _record(channel, text[:120], False, "held after his own reread: " + why, text=text)
         return None, "you reread it and held it: %s" % (why or "not worth posting now")
@@ -441,7 +449,7 @@ def bluesky(W, text, log=None, reply_to=None):
         return "a post needs text"
     if len(text) > 300:
         return "too long for Bluesky: %d characters, 300 at most" % len(text)
-    text, _held = _reread(W, "bluesky", text, 300, log)      # 2026-11-05: his own reread - same voice, strategic, no repeats
+    text, _held = _reread(W, "bluesky", text, 300, log, reply=bool(reply_to))      # 2026-11-05: his own reread - same voice, strategic, no repeats
     if _held:
         return _held
     no = _gate(W, "bluesky", text[:120], text, log)
@@ -543,7 +551,7 @@ def mastodon(W, text, reply_to=None, log=None):
         return "a note needs text"
     if len(text) > 1000:
         return "too long: %d characters, 1000 at most" % len(text)
-    text, _held = _reread(W, "mastodon", text, 1000, log)      # 2026-11-05: his own reread - same voice, strategic, no repeats
+    text, _held = _reread(W, "mastodon", text, 1000, log, reply=bool(reply_to))      # 2026-11-05: his own reread - same voice, strategic, no repeats
     if _held:
         return _held
     no = _gate(W, "mastodon", text[:120], text, log)

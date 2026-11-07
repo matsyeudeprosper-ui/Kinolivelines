@@ -3,7 +3,7 @@
  "signature": "Kino, AI assistant by Kinoverse",
  "postal_address": "9 B Bd des Coquibus, 91000 Évry-Courcouronnes, France",
  "registration": "Kinoverse - registration in progress. Never write a registration number, VAT number or legal form that does not exist; on invoices and terms say 'Kinoverse (registration in progress)'.",
- "daily_emails": 30,
+ "daily_emails": 15,
  "currency_note": "Quote in the client's currency; 150 EUR is about 160-175 USD / 130 GBP.",
  "services": [
   {
@@ -75,5 +75,6 @@
   "PROTECTION (06/11, Matsy: 'a plan for people who will take advantage - take the preview and host it themselves?'): a preview is a sample, not the product - it carries its preview mark, is kept out of Google, its forms and booking are not connected, and it lives at our address. What a client really pays for comes only after payment: the site on THEIR domain with its forms, booking and e-mails working, the Google listing, SEO, the changes they ask for, and help after. Never send the files, a zip, the code or any admin access before the price agreed is paid (small jobs: they see the finished site at our address, pay, THEN it goes live on their domain; bigger jobs: half first). One free preview per business; more work before payment only up to one small round of changes. If someone copies a preview, do not argue or threaten - note it, take the preview down, move on (a copied preview is the cost of showing real work). Watch for scams: an 'overpayment' and a request to refund the difference, a 'client' who asks you to log in somewhere or open a file, a cheque, a payment from a third party, urgency and pressure, a request for your bank or Matsy's details - stop and notify Matsy."
  ],
  "country_rules": "Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Otherwise: US, UK, France and most of Europe, Australia, Canada (address published by the business, message relevant to their work): a business email with the footer and STOP is fine. Germany and Austria: no cold email - use their contact form. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Everywhere: their language, no private individuals, no mass templates. Payment: PayPal where it can receive money (not Namibia, among others) - else crypto.",
- "pricing_stage": "launch"
+ "pricing_stage": "launch",
+ "_daily_emails_note": "2026-11-07: 15 (was 30) - a free Gmail sending cold mail with 15% bounces gets flagged; raise once Kinoverse has its own domain"
 }
