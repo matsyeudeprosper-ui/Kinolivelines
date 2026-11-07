@@ -41,6 +41,15 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "the city in TODAY'S PLACE below (the whole world, where it is daytime now) - it records the "
             "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
             "playbook, finish with done: who I wrote to.")
+LAB_TIME = ("My trading lab (Matsy 07/11: trading is my second way to earn a living - a permanent project until I find a "
+            "strategy positive EVERY month, proven on months I have never seen). First read MY LAB below and, if new to it, "
+            "C:\\KinoWorld\\lab\\README.md and CLOSED_IDEAS.md. Then ONE step forward: think of an idea with a real reason "
+            "(who is forced to buy or sell, when, why) - not a closed one in new clothes - write its card (lab_idea), write its "
+            "strategy file in C:\\KinoWorld\\lab\\strategies\\, run lab_test quick; if it passes, look at where the money comes "
+            "from before the full test; if it fails, say why in one line and lab_kill it. Explore the data with your own "
+            "scripts when you need to (run). Small tests first. Note the lesson in my diary. Finish with done: the idea and "
+            "its verdict.")
+
 CARD_ROUND = ("My postcard round (Matsy 07/11: email for volume, a postcard for the best leads who did not answer, friends "
               "for the long run). CARD LEADS below: businesses I emailed a week or more ago, with a built preview, that never "
               "answered. For the best of them (up to 3 today): find their postal address on their own site or listing, then "
@@ -178,6 +187,12 @@ def _memory_call(d, now):
     return False
 
 
+def _lab_due(d, now):
+    """a lab session every 2 hours, day and night"""
+    last = max([float(x["t"]) for x in d.get("sessions") or [] if x.get("care") == "lab"] or [0])
+    return now - last >= 2 * 3600
+
+
 def card_leads(min_days=7):
     """leads for a postcard: emailed a week ago or more, preview built, no answer, no card yet, France (La Poste)"""
     try:
@@ -207,6 +222,7 @@ def routine_line(now=None):
     h = ago(lambda s: "hunt" in str(s.get("why") or "").lower())
     fr = ago(lambda s: s.get("care") == "friends")
     cd = ago(lambda s: s.get("care") == "cards")
+    lb = ago(lambda s: s.get("care") == "lab")
     try:
         import kino_sales as KSr, kino_friends as KFr, kino_postcard as KPr
         P = KSr._j(KSr.STORE, {"items": []})["items"]
@@ -220,10 +236,15 @@ def routine_line(now=None):
         _sc
     except NameError:
         _sc = 999
-    warn = [w for w, x in (("NO HUNT IN 26 H", h > 26), ("NO FRIEND TIME IN 26 H", fr > 26),
+    try:
+        import kino_lab as KLr
+        _lb = " | lab %.0f h ago (%s)" % (lb, KLr.week_line(now)) if lb < 999 else " | lab: no session yet"
+    except Exception:
+        _lb = ""
+    warn = [w for w, x in (("NO HUNT IN 26 H", h > 26), ("NO FRIEND TIME IN 26 H", fr > 26), ("NO LAB IN 6 H", lb > 6),
                            ("NO PEOPLE SCOUTING IN 5 H (see kino_friends.log)", _sc > 5)) if x]
     return "ROUTINE: hunt %.0f h ago (emails 24 h: %s) | friends %.0f h ago (new people today: %s) | postcards %s%s%s" % (
-        h, em, fr, met, pc, (" | last card round %.0f h ago" % cd) if cd < 999 else "", (" | " + ", ".join(warn)) if warn else "")
+        h, em, fr, met, pc, ((" | last card round %.0f h ago" % cd) if cd < 999 else "") + _lb, (" | " + ", ".join(warn)) if warn else "")
 
 
 def due(person, ctx, now=None):
@@ -261,6 +282,10 @@ def due(person, ctx, now=None):
                 return True
         except Exception:
             pass
+        if _lab_due(d, now) and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):   # the lab, at night too
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": LAB_TIME, "project": "my trading lab", "why": "my trading lab",
+                                                         "care": "lab"}))
+            return True
         return False
     _wk = time.strftime("%G-%V", _fr) if _fr.tm_wday == 6 else time.strftime("%G-%V", time.gmtime(now + 3600 - 86400))
     if ((_fr.tm_wday == 6 and _fr.tm_hour >= 18) or (_fr.tm_wday == 0 and 7 <= _fr.tm_hour < 13)) and d.get("review_week") != _wk \
@@ -299,6 +324,9 @@ def due(person, ctx, now=None):
                                                              for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
+    if not d.get("next_task") and _lab_due(d, now):     # 2026-11-07 (owner: "almost 24/7 until he finds a strategy")
+        _mut(lambda dd: dd.__setitem__("next_task", {"do": LAB_TIME, "project": "my trading lab", "why": "my trading lab",
+                                                     "care": "lab"}))
     if 10 <= _frh < 20 and not d.get("next_task") and card_leads() and not any(
             s.get("care") == "cards" and s.get("day") == _today for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": CARD_ROUND, "project": "Kinoverse", "why": "my postcard round",
@@ -310,7 +338,7 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "don't let the budget block his making friends and hunting - I take care of that spending until he
     # can afford it"): a friend session or a client hunt is never held back by his day budget; the rest of his work still is
     _nt = _load().get("next_task") or {}
-    _paid_by_matsy = _nt.get("care") in ("friends", "cards") or "hunt" in str(_nt.get("why") or "").lower()
+    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab") or "hunt" in str(_nt.get("why") or "").lower()
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
@@ -371,7 +399,7 @@ def due(person, ctx, now=None):
             return True
     except Exception:
         pass
-    if (d.get("next_task") or {}).get("care") in ("friends", "cards"):   # 2026-11-07: daily habits, not moods
+    if (d.get("next_task") or {}).get("care") in ("friends", "cards", "lab"):   # 2026-11-07: daily habits, not moods
         return True
     open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
     return want >= 0.55 or (open_project and want >= 0.4)
@@ -390,7 +418,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|picture|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -430,6 +458,7 @@ You can make things public on your own, under your own name, with nobody approvi
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
 - picture ("text" the words - short, "kind" question|lesson|result|tip|note, "big" an optional number to show huge, "sub" one small line): a square picture card in your colours for a post. Most of your OWN posts look better with a picture (a card, or a shot of your own sample site): people stop on pictures, they scroll past walls of text. Then skeet/xpost with "image" (the path) and "alt" (what it shows). Keep the post text short when the picture says it.
+- YOUR TRADING LAB (see MY LAB; rules in C:\\KinoWorld\\lab\\README.md): lab_idea ("name", "hypothesis", "why" it could work, "rule" exact, "kill" what would kill it) writes a card; lab_test ("idea", "path" your strategy file in C:\\KinoWorld\\lab\\strategies\\, "stage" quick|full) runs the bench - full only after a passed quick; lab_final ("idea", "path") = the locked months, once per idea; lab_kill ("idea", "why"); lab_board = all your ideas and verdicts.
 - friend_link ("who" @handle of a friend, "contact" their email): a friend who now writes to you by email - link them so you always know who it is.
 - friend_note ("who" @handle as in MY FRIENDS, "about" what you learned: what they do, what they care about, a thread to come back to) - your memory of a person.
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
@@ -892,6 +921,20 @@ def _act0(j, person, W=None):
     if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")
+        if a in ("lab_idea", "lab_test", "lab_final", "lab_kill", "lab_board"):   # 2026-11-07: his trading lab
+            import kino_lab as KLA
+            if a == "lab_idea":
+                return KLA.idea(j.get("name"), j.get("hypothesis"), j.get("why"), j.get("rule"), j.get("kill"))
+            if a == "lab_board":
+                return KLA.board(20)
+            if a == "lab_kill":
+                return KLA.kill(j.get("idea") or j.get("name"), j.get("why") or j.get("text"))
+            _sp = _inside(j.get("path"))
+            if not _sp or not _sp.lower().startswith(os.path.join(WORLD, "lab", "strategies").lower()):
+                return "the strategy file must be in C:\\KinoWorld\\lab\\strategies\\"
+            if a == "lab_final":
+                return KLA.final(j.get("idea") or j.get("name"), _sp)
+            return KLA.test(j.get("idea") or j.get("name"), _sp, j.get("stage") or "quick")
         if a == "friend_link":             # 2026-11-07: a friend now writing by email (or Telegram) - one person, one memory
             import kino_friends as KFK
             _c = str(j.get("contact") or "").strip().lower()
@@ -1210,6 +1253,12 @@ def session(W, person, uid, log=None, task=None, project=""):
             try:
                 import kino_places as KPLh
                 _fx = "\n\n" + KPLh.hunt_line(KPLh.next_place())
+            except Exception:
+                pass
+        if rec.get("care") == "lab":           # 2026-11-07: his lab board with the task (his mind is cut at 6000 chars)
+            try:
+                import kino_lab as KLBs
+                _fx = "\n\nMY LAB:\n" + KLBs.block()
             except Exception:
                 pass
         if rec.get("care") == "cards":

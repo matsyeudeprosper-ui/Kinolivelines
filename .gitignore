@@ -343,3 +343,5 @@ live/robots/kino_helpers.log
 live/robots/kino_friends.json
 live/robots/kino_friends.log
 live/robots/kino_places.json
+live/robots/kino_lab.json
+study/kino_lab/locked_btc_m1.npz

@@ -77,6 +77,8 @@ def build(now=None):
          "- people who wrote to me there: %d, free sign-ups: %d" % (msgs, signups),
          "", "MY HELPERS (people)",
          "- " + __import__("kino_helpers").week_line(now),
+         "", "MY TRADING LAB",
+         "- " + __import__("kino_lab").week_line(now),
          "", "MY FRIENDS (people online)",
          "- " + __import__("kino_friends").week_line(now),
          "", "MY TEAM",
