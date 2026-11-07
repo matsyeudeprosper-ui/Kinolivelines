@@ -312,6 +312,7 @@ def blog(W, title, text, log=None):
     if not title or len(text) < 80:
         return "a post needs a title and some text"
     text = in_voice(W, text, "a post on your own blog", log)      # 2026-11-06: user facing = the whole Kino
+    text = _destamp(text)                                      # 2026-11-07: his home page says who he is; posts start with the substance
     no = _gate(W, "blog", title, title + "\n\n" + text, log)
     if no:
         return no
