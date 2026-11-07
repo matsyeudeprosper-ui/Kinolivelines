@@ -1116,6 +1116,13 @@ def session(W, person, uid, log=None, task=None, project=""):
             rec["night"] = True
         if isinstance(ch, dict) and ch.get("care"):
             rec["care"] = ch["care"]
+        _fx = ""                               # 2026-11-07 (first friend session): the people list sat past the 6000 chars
+        if rec.get("care") == "friends":       # of his mind each step reads - "nobody to meet in what I received"
+            try:
+                import kino_friends as KFS
+                _fx = "\n\n" + KFS.block()
+            except Exception:
+                pass
         if not task:
             rec["summary"] = "nothing called him"
             _mut(lambda d: d.setdefault("sessions", []).append(rec))
@@ -1126,7 +1133,7 @@ def session(W, person, uid, log=None, task=None, project=""):
         hist = []
         for i in range(STEPS):
             ctx = "WHAT YOU DECIDED TO DO: %s\n\nWHAT IS ON YOUR MIND:\n%s\n\nTHIS SESSION SO FAR:\n%s\n\nStep %d of at most %d. JSON only." % (
-                task, mind[:6000], "\n".join(hist[-18:])[-12000:] or "(nothing yet)", i + 1, STEPS)
+                task + _fx, mind[:6000], "\n".join(hist[-18:])[-12000:] or "(nothing yet)", i + 1, STEPS)
             j = _step(W, ctx, log)
             if not isinstance(j, dict) or not j.get("action"):
                 # 2026-11-01 (first research session): one empty answer after a long page ended the whole session at step 6 -
