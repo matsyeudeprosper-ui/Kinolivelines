@@ -34,7 +34,10 @@ EYES = ("trend", "bos_up", "bos_down", "choch_up", "choch_down")
 # pb_dir = direction of its last finished candle (+1 / -1), pb_open..pb_close = that candle, pb_live_dir = the one in
 # progress, pb_trend = its own trend. Unknown (no series for that minute) = a condition with them is false.
 PB = ("pb_dir", "pb_live_dir", "pb_trend", "pb_open", "pb_high", "pb_low", "pb_close")
-EYES = EYES + PB
+# 2026-11-07 (owner: "enter on the FIRST candle going the other way once the top candle closed"): pb_n_up / pb_n_down =
+# how many green / red 1-minute closes since the pullback chart's last candle finished, this one included (1 = the first)
+PBN = ("pb_n_up", "pb_n_down")
+EYES = EYES + PB + PBN
 NAMES = SERIES + CLOCK + DAY + EYES
 # function -> (min args, max args, which args are constant whole numbers (index), max for those)
 FUNCS = {"ema": (2, 2), "sma": (2, 2), "rsi": (2, 2), "stdev": (2, 2), "highest": (2, 2), "lowest": (2, 2),
@@ -279,6 +282,22 @@ def evaluate(src, B):
             else: v = ((hr >= 12) & (hr < 21)).astype(float)
         elif x in DAY:
             v = _day_facts(C)[x]
+        elif x in PBN:                                 # counted inside each finished top candle's time
+            if C.tf != "M1":
+                raise FormulaError("%s is read on the 1-minute chart only" % x)
+            po = np.asarray(C.eyes.get("pb_open", np.full(len(C.t), np.nan)), float)
+            pc = np.asarray(C.eyes.get("pb_close", np.full(len(C.t), np.nan)), float)
+            col = (C.c > C.o) if x == "pb_n_up" else (C.c < C.o)
+            new = np.ones(len(C.t), bool)
+            new[1:] = (po[1:] != po[:-1]) | (pc[1:] != pc[:-1])
+            seg = np.cumsum(new)
+            cs = np.cumsum(col.astype(float))
+            start = np.zeros(len(C.t))
+            first = np.nonzero(new)[0]
+            base = np.concatenate([[0.0], cs])[first]          # the count before each segment began
+            start = base[seg - 1]
+            v = cs - start
+            v[np.isnan(po) | np.isnan(pc)] = np.nan
         else:                                          # the eyes: only on the 1-minute chart
             if C.tf != "M1":
                 raise FormulaError("%s is read on the 1-minute chart only" % x)

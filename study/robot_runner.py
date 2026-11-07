@@ -67,7 +67,11 @@ def arm_for(name, parts, bars, S, pieces=None, opps=None):
     cfg_b["storm"] = float(fe.get("storm", 99.0))          # no storm piece: no storm ceiling
     cfg_b["movement"] = int(fe.get("movement", 0))
     cfg_b["nerv_gate"] = bool(fe.get("nerv_gate", False))
-    cfg = H.cfg_strict(dict(cfg_b, drag=DRAG, limits_live=1))
+    # 2026-11-07 (owner: "same result for every strategy - is the tester testing our exact strategy?"): the money package's
+    # kill line (-60 $) stopped every losing test at about -60 and left the rest of the window empty, so different ideas
+    # looked alike. A test now runs the WHOLE window; where the kill line would have fired is reported beside it.
+    _kill = float(cfg_b.get("kill_net") or 0.0)
+    cfg = H.cfg_strict(dict(cfg_b, drag=DRAG, limits_live=1, kill_net=0.0))
     try:          # 2026-10-22: a package with debt_gate false (the 'simple' money: the member's idea alone) takes every
         _pk = (json.load(open(os.path.join(LIVE, "owl_packages.json"), encoding="utf-8")).get("packages") or {}).get(pkg) or {}
         if _pk.get("debt_gate") is False:            # follow-on trade while in the red, like the live bot (DEBT_GATE)
@@ -75,10 +79,12 @@ def arm_for(name, parts, bars, S, pieces=None, opps=None):
     except Exception:
         pass
     rec = eng(parts.get("recovery") or "rattrapage-limite").get("recovery", "current")
-    return DslArm(name, cfg, bars, S, dsl=dsl, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
+    _arm = DslArm(name, cfg, bars, S, dsl=dsl, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
                     stop="protected", allowance="all_bos" if rec == "all_bos" else "current",
                     gate="trend" if fe.get("gate") == "trend" else "none",
                     order="live", cap_rule="adaptive", cap="on", opps=opps)
+    _arm.kill_line = _kill
+    return _arm
 
 
 def robot_opps(parts, pieces, opps, S, bars):
@@ -242,6 +248,12 @@ def run_pair(arms, TM, BID, ASK, END, opps, bars):
             streak = streak + 1 if p <= 0 else 0; mx = max(mx, streak)
         hold = sorted((t["tc"] - (t.get("fill_ms") or t["tc"])) / 60000.0 for t in a["trades_list"])
         out[arm.name] = {k: a[k] for k in ("net", "cc_dd", "mtm_dd", "trades", "wins", "win_rate", "profit_factor", "first_half", "later_half")}
+        _kl, _run, _kh = float(getattr(arm, "kill_line", 0.0) or 0.0), 0.0, None
+        for t in a["trades_list"]:
+            _run += t["pnl"]
+            if _kl and _kh is None and _run <= _kl:
+                _kh = time.strftime("%Y-%m-%d", time.gmtime(t["tc"] / 1000))
+        out[arm.name].update({"kill_line": _kl or None, "kill_would_hit": _kh})
         out[arm.name].update({"curve": sorted(curve.items()), "max_loss_streak": mx, "best": max(pn) if pn else None, "worst": min(pn) if pn else None,
                               "hold_median_min": round(hold[len(hold) // 2], 1) if hold else None})
     return out
