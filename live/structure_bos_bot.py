@@ -1882,6 +1882,7 @@ def main():
     last_book = time.time() - 60
     warned_funds = 0.0
     last_house = 0.0
+    _add_gone = 0                  # broker answers "no position" in a row (drop the armed bullet at 3)
 
     while True:
         # user 2026-09-08: act ON the candle close - wake right
@@ -2042,10 +2043,30 @@ def main():
                             else:
                                 say(f"ADD FAILED retcode="
                                     f"{_r3.retcode if _r3 else None}")
+                        else:
+                            # 2026-11-07 (owner: "the real and the test the same"): a
+                            # touched midpoint is never silent, even with no bullet
+                            say(f"COMBAT: 0 balle au mi-chemin ({_ad['lvl']:.2f}) - "
+                                f"dette ${st['debt']:.2f}, bocal ${st['chest']:.2f}, "
+                                f"serie {st.get('loss_streak', 0)}")
                         save_state(st)
-            if st.get("add") and not my_positions() and not st.get("ghost"):
-                st["add"] = None
-                save_state(st)
+            # 2026-11-07: 06/11 live dropped 3 armed bullets with no log line while the
+            # test fired them. positions_get() returns None on a terminal hiccup, which
+            # read as "no trade open" and wiped the plan. Drop it only after the broker
+            # really answers "no position" on 3 checks in a row, and say so.
+            if st.get("add") and not st.get("ghost"):
+                _pg = mt5.positions_get(symbol=SYMBOL)
+                if _pg is not None and not any(p.magic == MAGIC for p in _pg):
+                    _add_gone += 1
+                    if _add_gone >= 3:
+                        if not st["add"].get("done"):
+                            say(f"COMBAT: balle annulee, plus de trade ouvert "
+                                f"(niveau {st['add']['lvl']:.2f} pas touche)")
+                        st["add"] = None
+                        _add_gone = 0
+                        save_state(st)
+                else:
+                    _add_gone = 0
             # TOUCH continuation (user 2026-09-09, measured first:
             # +263/DD67 vs +207/DD85 close-only; flips keep the
             # close rule). Checked every ~1s wake on live ticks.
