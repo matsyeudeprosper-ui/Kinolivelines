@@ -44,15 +44,15 @@ header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 8px}
 .hero:after{content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.10),transparent 70%)}
 .eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de}
 .hh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:relative;z-index:1}
-.hn{font-size:1.02rem;color:#d6e6f3;margin-top:8px}.hn b{font-size:2.3rem;font-weight:900;color:#fff;letter-spacing:-.03em;margin-right:6px;vertical-align:-3px}
+.hn{font-size:1.02rem;color:#d6e6f3;margin-top:0;position:relative;z-index:1}.hn b{font-size:2.3rem;font-weight:900;color:#fff;letter-spacing:-.03em;margin-right:6px;vertical-align:-3px}
 .hl{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:800;color:#8df0bb;background:rgba(46,204,113,.13);border:1px solid rgba(46,204,113,.3);border-radius:99px;padding:5px 10px}
 .hl i{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}
 .hp{font-size:.9rem;line-height:1.5;color:#d6e6f3;margin-top:10px;max-width:560px;position:relative;z-index:1}
-.pp6{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-top:20px;z-index:1}
+.pp6{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:18px;z-index:1}
 .pp6:before{content:"";position:absolute;left:8%;right:8%;top:17px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(46,204,113,.55))}
 .ps{position:relative;border:0;background:none;color:#d6e6f3;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0;min-width:0}
 .ps b{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:.92rem;font-weight:900;color:#fff;background:color-mix(in srgb,var(--c) 30%,#0f2236);border:2px solid var(--c);box-shadow:0 0 0 4px rgba(11,26,42,.6)}
-.ps span{font-size:.64rem;font-weight:700;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ps span{font-size:.7rem;font-weight:700;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .ps.z b{opacity:.45}
 .pcap{font-size:.72rem;color:#9fc2de;text-align:center;margin-top:10px;position:relative;z-index:1}
 .st3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.025);position:relative;z-index:1}
@@ -107,7 +107,8 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .cal{flex:none;width:48px;text-align:center;border-radius:11px;background:var(--surface3);padding:6px 0;align-self:flex-start}
 .cal b{display:block;font-size:1.05rem;font-weight:900;line-height:1.1}
 .cal small{display:block;font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.ses p{font-size:.86rem;color:var(--text2);line-height:1.5;min-width:0;overflow-wrap:anywhere}
+.ses p{font-size:.86rem;color:var(--text2);line-height:1.5;min-width:0;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.ses p.full{display:block}
 .empty{padding:18px;border-radius:18px;border:1px dashed var(--border2);color:var(--muted);font-size:.9rem;line-height:1.5;text-align:center}
 @media (max-width:520px){.ps span{font-size:.58rem}.hn b{font-size:2rem}}
 </style>
@@ -117,7 +118,6 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 <header><div class="hrow">
  <a href="account" id="back" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
  <div class="ttl"><h1 id="h1">Le labo de Kino</h1><div id="h1s"></div></div>
- <span class="live" onclick="load()"><i></i><span id="livet">En direct</span></span>
 </div></header>
 <div id="top"></div>
 <nav><div class="chips" id="chips"></div></nav>
@@ -147,17 +147,15 @@ function reach(x){const s=x.stage,t=x.tests||[];return {card:1,quick:t.some(z=>z
 function bars(m){if(!m)return '';const v=Object.values(m),mx=Math.max(1,...v.map(Math.abs));return '<span class="mb">'+v.map(x=>'<i style="height:'+Math.max(3,26*Math.abs(x)/mx)+'px;background:'+(x>0?'var(--up)':'var(--down)')+'"></i>').join('')+'</span>';}
 function renderTop(){const I=D.ideas||[];const R=I.map(reach);
  const n=k=>R.filter(r=>r[k]).length,tests=I.reduce((a,x)=>a+(x.tests||[]).length,0),dead=I.filter(x=>x.stage==='dead'||x.stage==='tested'||x.stage==='final failed').length;
- const PIPE=[['card',T('Fiches','Cards'),'var(--violet)'],['quick',T('Rapide','Quick'),'var(--warn)'],['qpass',T('Rapide ✓','Quick ✓'),'var(--accent)'],['fpass',T('Complet ✓','Full ✓'),'var(--accent)'],['final',T('Final ✓','Final ✓'),'var(--up)'],['paper',T('Papier','Paper'),'var(--up)']];
+ // 2026-11-07 (owner: "too busy - polish"): one number, one line, the pipeline, three tiles - the rest is in the cards
+ const PIPE=[['card',T('Idées','Ideas'),'var(--violet)'],['qpass',T('Rapide','Quick'),'var(--accent)'],['fpass',T('Complet','Full'),'var(--accent)'],['final',T('Final','Final'),'var(--up)'],['paper',T('Papier','Paper'),'var(--up)']];
  const last=(D.sessions||[]).slice(-1)[0];
- $('top').innerHTML='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Le labo de trading de Kino','Kino\'s trading lab')+'</div><div class="hn"><b>'+I.length+'</b>'+T('idées essayées','ideas tried')+'</div></div>'+
-  (last?'<span class="hl"><i></i>'+T('au travail','working')+'</span>':'')+'</div>'+
-  '<p class="hp">'+T('Kino cherche une stratégie positive <b>chaque mois</b>. Chaque idée avance de gauche à droite ; la dernière épreuve se joue sur des mois qu\'il n\'a jamais vus.','Kino is looking for a strategy that is positive <b>every month</b>. Each idea moves left to right; the last test runs on months he has never seen.')+'</p>'+
+ $('top').innerHTML='<div class="card hero">'+
+  '<div class="hn"><b>'+I.length+'</b>'+(I.length===1?T('idée essayée','idea tried'):T('idées essayées','ideas tried'))+'</div>'+
+  '<p class="hp">'+T('Le but : un gain <b>chaque mois</b>, prouvé sur des mois qu\'il n\'a jamais vus.','The goal: a gain <b>every month</b>, proven on months he has never seen.')+'</p>'+
   '<div class="pp6">'+PIPE.map(s=>{const c=s[0]==='paper'?0:n(s[0]);return '<div class="ps'+(c?'':' z')+'" style="--c:'+s[2]+'"><b>'+c+'</b><span>'+s[1]+'</span></div>';}).join('')+'</div>'+
-  '<div class="pcap">'+T('Fiche → test rapide (2 mois) → test complet (7 mois) → examen final (mois cachés) → 4 semaines sur papier → argent réel','Card → quick test (2 months) → full test (7 months) → final exam (hidden months) → 4 weeks on paper → real money')+'</div>'+
-  '<div class="st3"><div><b>'+tests+'</b><span>'+T('tests lancés','tests run')+'</span></div><div><b>'+n('qpass')+'</b><span>'+T('passé une étape','passed a step')+'</span></div><div><b>'+dead+'</b><span>'+T('écartées','dropped')+'</span></div></div>'+
-  '<div class="bar">'+T('<b>La barre</b> (votre accord du 07/11) : chaque mois positif sur les mois cachés, 75 % des semaines positives, mieux que 95 % de robots au hasard.','<b>The bar</b> (agreed 07/11): every month positive on the hidden months, 75% of weeks positive, better than 95% of random robots.')+'</div>'+
-  (last?'<div class="pulse"><span class="dot"></span><span>'+T('Dernière séance ','Last session ')+ago(last.t)+' · '+T('une séance toutes les 2 h, jour et nuit','a session every 2 h, day and night')+'</span></div>':'')+'</div>';
- $('h1s').textContent=T('ses idées, ses tests, ses verdicts','his ideas, tests and verdicts');
+  '<div class="st3"><div><b>'+tests+'</b><span>'+T('tests','tests')+'</span></div><div><b>'+I.filter(x=>!['dead','tested','final failed'].includes(x.stage)).length+'</b><span>'+T('en course','still in')+'</span></div><div><b>'+dead+'</b><span>'+T('écartées','dropped')+'</span></div></div></div>';
+ $('h1s').textContent=last?T('dernière séance ','last session ')+ago(last.t):T('ses idées et ses tests','his ideas and tests');
 }
 function chips(){const I=D.ideas||[];const C=[['all',T('Toutes','All'),I.length],['alive',T('En course','Still in'),I.filter(x=>!['dead','tested','final failed'].includes(x.stage)).length],['out',T('Écartées','Dropped'),I.filter(x=>['dead','tested','final failed'].includes(x.stage)).length]];
  $('chips').innerHTML=C.map(c=>'<button class="chip'+(F===c[0]?' on':'')+'" onclick="F=\''+c[0]+'\';render()">'+c[1]+'<em>'+c[2]+'</em></button>').join('');}
@@ -179,9 +177,9 @@ function card(x,i){const m=ST[x.stage]||ST.card,t=x.tests||[],lt=t[t.length-1],o
 function render(){renderTop();chips();const I=(D.ideas||[]).slice().reverse().filter(x=>F==='all'||(F==='out')===['dead','tested','final failed'].includes(x.stage));
  $('list').innerHTML=I.length?I.map(card).join(''):'<div class="empty">'+T('Pas encore d\'idée ici. Kino passe au labo toutes les 2 heures, jour et nuit.','No idea here yet. Kino works in the lab every 2 hours, day and night.')+'</div>';
  $('sesh').textContent=T('Ses dernières séances','His last sessions');
- const S=(D.sessions||[]).slice().reverse();
- $('ses').innerHTML=S.length?S.map(x=>'<div class="ses"><span class="cal"><b>'+new Date(x.t*1000).getDate()+'</b><small>'+ftime(x.t)+'</small></span><p>'+esc(x.summary||T('(en cours)','(running)'))+'</p></div>').join(''):'<div class="empty">'+T('Pas encore de séance.','No session yet.')+'</div>';
- $('livet').textContent=T('En direct','Live');}
+ const S=(D.sessions||[]).slice(-4).reverse();
+ $('ses').innerHTML=S.length?S.map(x=>'<div class="ses"><span class="cal"><b>'+new Date(x.t*1000).getDate()+'</b><small>'+ftime(x.t)+'</small></span><p onclick="this.classList.toggle(\'full\')">'+esc(x.summary||T('(en cours)','(running)'))+'</p></div>').join(''):'<div class="empty">'+T('Pas encore de séance.','No session yet.')+'</div>';
+ }
 function load(){fetch('kino_lab_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{D=d;render();}).catch(()=>{$('list').innerHTML='<div class="empty">'+T('Impossible de charger le labo.','Could not load the lab.')+'</div>';});}
 if(EN)document.documentElement.lang='en';
 $('h1').textContent=T('Le labo de Kino','Kino\'s trading lab');
