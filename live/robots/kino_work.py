@@ -1378,6 +1378,26 @@ def block(lang="fr"):
         L.append(KSR.record_line())
     except Exception:
         pass
+    try:                                       # 2026-11-07 (owner: "he doesn't seem aware of his lab"): his chat half knows it too
+        import kino_lab as KLW
+        _d = KLW._load()
+        _I = _d.get("ideas") or []
+        _last = _I[-1] if _I else None
+        L.append(("YOUR TRADING LAB (your own project, Matsy 07/11: trading is your second way to earn a living - you work on it "
+                  "every 2 hours, day and night, until a strategy is positive EVERY month on months you never saw; then paper "
+                  "trading, then a small pot from Matsy): %s%s" if en else
+                  "TON LABO DE TRADING (ton propre projet, Matsy 07/11 : le trading est ta deuxième façon de gagner ta vie - tu y "
+                  "travailles toutes les 2 heures, jour et nuit, jusqu'à une stratégie positive CHAQUE mois sur des mois jamais vus ; "
+                  "puis sur papier, puis une petite somme de Matsy) : %s%s") % (
+            KLW.week_line(),
+            ("; last idea: %s [%s]" if en else "; dernière idée : %s [%s]") % (_last["name"], _last["stage"]) if _last else ""))
+    except Exception:
+        pass
+    try:                                       # 2026-11-07: his friendships online, in the chat half too
+        import kino_friends as KFW
+        L.append(("YOUR FRIENDS ONLINE (Bluesky, Mastodon): " if en else "TES AMIS EN LIGNE (Bluesky, Mastodon) : ") + KFW.week_line())
+    except Exception:
+        pass
     try:                                       # 2026-11-01: his own money (half of what he earns; his life is paid from it)
         import kino_wallet as KWL
         L.append(KWL.line(en))
