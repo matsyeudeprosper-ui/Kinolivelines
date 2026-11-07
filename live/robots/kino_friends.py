@@ -354,3 +354,18 @@ def friend_of(channel_id):
     except Exception:
         pass
     return ""
+
+
+def text_of(url):
+    """the words of the post he answers (his candidates, or someone who wrote to him) - for his reread of a reply"""
+    for c in _load()["cands"]:
+        if c["url"] == url:
+            return "%s: %s" % (c["who"], c["text"][:600])
+    try:
+        import kino_online as KO
+        x = next((x for x in KO._load()["pending"] if x.get("url") == url), None)
+        if x:
+            return "%s: %s" % (x["who"], x["text"][:600])
+    except Exception:
+        pass
+    return ""
