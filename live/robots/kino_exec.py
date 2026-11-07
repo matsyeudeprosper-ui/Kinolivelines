@@ -51,6 +51,9 @@ JSON only: {"items": [{"what": "...", "goal": "goal id", "kind": "...", "when": 
 
 REVIEW_SYSTEM = """You are Kino. The day is over. Look back honestly: YOUR PLAN for today against WHAT REALLY HAPPENED (your word -
 commitments kept and broken; the episodes of the day; test results; your bets; the research desk). First person, French.
+A MISTAKE of yours only when WHAT REALLY HAPPENED shows it plainly (your words against the facts) - a question someone asked you
+is not a mistake of yours (06/11: "I got the wages-news time wrong" when he had said 14:30 correctly; 05/11: a sell he never
+sent, confessed). When unsure, say what happened, not that you failed.
 JSON only: {"text": "3-5 sentences: what you did, what you did not, how it felt - no self-praise, no drama", "done": ["item ids really done"],
 "missed": ["item ids not done"], "lesson": "one line, or ''", "focus": "tomorrow's ONE focus, one line",
 "goal_progress": {"goal id": "one line of real progress, or ''"}, "goal_done": ["goal ids reached"]}"""
