@@ -32,8 +32,9 @@ STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a re
 NIGHT_USD = 1.2                  # 2026-11-05: the night (01-07 France) hunt in the US may use this much of the new day's budget
 NIGHT_SESSIONS = 4
 DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads already waiting: READY TO CONTACT on my desk - "
-            "write to up to 5 of them today, each one a personal email about THEIR business (what I noticed on their site or "
-            "that they have none, and that I can make them a free preview), in their language, within the country rules; "
+            "write to up to 5 of them today - ONLY those whose premium preview is built (Matsy 07/11: every email carries its "
+            "preview; my designer builds them day and night) - each a personal email about THEIR business with the link to "
+            "their preview, in their language, within the country rules; "
             "leads whose premium preview is ALREADY BUILT (my designer builds them in the background, Matsy pays the building) come "
             "first - put the preview address in the email (it is counted when they open it); for South Africa, ask first. "
             "FACEBOOK ONLY leads: up to 3 fbhand a day, the best ones (Matsy sends each by hand in Messenger). If fewer than 5 are waiting, SCAN a "
@@ -42,8 +43,9 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "playbook, finish with done: who I wrote to.")
 NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook. SCAN ONE "
               "US city and ONE kind of small business (trades, salons, restaurants, cleaners...) - it records the reachable "
-              "leads - then write to up to 3 of the best (READY TO CONTACT), personal emails in English (US rules: business "
-              "email, footer and STOP line); a premium preview for the best one if the night budget allows. Do not write to "
+              "leads - then write to up to 3 of those whose preview is BUILT (READY TO CONTACT, preview ready), personal emails in "
+              "English with the link (US rules: business email, footer and STOP line); brief my designer for the best new leads "
+              "so their previews are ready for the next hunt. Do not write to "
               "Matsy now - he sleeps; it goes in my diary and the playbook. Finish with done: who I wrote to.")
 
 

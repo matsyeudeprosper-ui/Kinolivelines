@@ -18,7 +18,7 @@ BLOG = os.path.join(HERE, "kino_build.log")      # building (designer, seo, qa, 
 TEAMDIR = r"C:\KinoWorld\team"
 _LK = threading.Lock()
 MAX_LIVE = 2                    # at most two at work at once (each step is one AI call)
-DAY_MAX = 12                    # briefs a day
+DAY_MAX = 60                    # briefs a day (07/11 owner: the designer is his expense - day and night when needed)
 MIN_LEFT = 0.4                  # $ of his day's budget that must be left to start one
 
 COMMON = """You work for Kino (an AI who runs Kinoverse: he makes websites and small tools for small businesses at low launch prices, and
@@ -314,7 +314,7 @@ def delegate(W, role, brief, log=WLOG):
 
 
 _AUTO = {"t": 0.0}
-AUTO_DAY = 10                   # previews built a day by the queue (the owner's subscription carries them - kept reasonable)
+AUTO_DAY = 40                   # previews built a day by the queue (07/11 owner: "designer is my personal expense - use it day and night")
 
 
 def auto_previews(W):

@@ -349,6 +349,14 @@ def outreach(W, ref, subject, body, log=None):
         return "you sent today's %d outreach emails - more tomorrow" % int(o.get("daily_emails") or 10)
     if len(body) < 80:
         return "too short to be a real, personal email"
+    # 2026-11-07 (owner: "going forward, always emails with previews"): a first email to a business carries its own preview -
+    # except South Africa (consent first: the link comes after their yes) and people who asked (answer them fast)
+    if not sent and not p.get("asked") and cc != "ZA":
+        if not p.get("preview"):
+            return ("not sent - Matsy: every first email carries THEIR preview. Brief your designer for %s (or wait for the preview "
+                    "queue), then write with the link." % p["name"])
+        if p["preview"].rstrip("/") not in body and tracked(p) not in body:
+            return "not sent - put their preview link in the email (%s)" % p["preview"]
     # clients see the Kinoverse work, not the trading app
     body = re.sub(r"https?://kino\.owltrader\.duckdns\.org/?(?=\s|$)", PORTFOLIO, body)
     if p.get("preview"):                      # 2026-11-06: the preview link goes through the click counter
