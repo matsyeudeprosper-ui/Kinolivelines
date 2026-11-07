@@ -248,6 +248,13 @@ def country_code(c):
     s = str(c or "").strip()
     if len(s) == 2:
         return s.upper()
+    try:                                       # 2026-11-07 (owner: the whole world): every country he hunts in
+        import kino_places as _KPLc
+        _c = _KPLc.name_to_cc(s)
+        if _c:
+            return _c
+    except Exception:
+        pass
     return _CC.get(s.lower(), s.upper()[:2])
 
 
@@ -332,8 +339,15 @@ def outreach(W, ref, subject, body, log=None):
     body = str(body or "").strip()
     yes = p.get("stage") in ("replied", "quoted", "won", "delivered")
     if not p.get("asked") and not yes:
-        if cc in ("DE", "AT"):
-            return "%s is in %s: cold email is not allowed there without their consent - use the contact form on their site" % (p["name"], cc)
+        try:
+            import kino_places as _KPLo
+            _cf, _sk = _KPLo.CONSENT_FIRST | {"DE", "AT"}, _KPLo.SKIP
+        except Exception:
+            _cf, _sk = {"DE", "AT"}, set()
+        if cc in _sk:
+            return "%s is in %s: a sanctioned country - no work there" % (p["name"], cc)
+        if cc in _cf:
+            return "%s is in %s: cold business email is not allowed there without prior consent - use the contact form on their site" % (p["name"], cc)
         if cc == "ZA" and sent:
             return "South Africa: you may ask once for consent; without a yes, no second email"
         # 2026-11-05 (watch): the Atlas email put the preview link straight into the first message - the rule was only words
@@ -637,7 +651,12 @@ def scan(place, kind, max_sites=40):
     # 2026-11-06 (owner: "turn leads into emails" - a hunt found 65 reachable businesses and wrote to none): the reachable ones
     # are recorded at once, so they wait on his desk as READY TO CONTACT
     cc = country_code(str(r.get("place") or "").split(",")[-1].strip())
-    lang = {"FR": "fr", "BE": "fr", "CH": "fr", "LU": "fr", "ES": "es", "MX": "es", "AR": "es", "CO": "es", "DE": "de", "AT": "de",
+    try:                                       # 2026-11-07: the language of every country he hunts in
+        import kino_places as _KPLl
+        _lw = _KPLl.lang_of(cc) if cc in _KPLl.WORLD else None
+    except Exception:
+        _lw = None
+    lang = _lw or {"FR": "fr", "BE": "fr", "CH": "fr", "LU": "fr", "ES": "es", "MX": "es", "AR": "es", "CO": "es", "DE": "de", "AT": "de",
             "IT": "it", "PT": "pt", "BR": "pt", "NL": "nl"}.get(cc, "en")
     city = str(place).strip()
     n = 0

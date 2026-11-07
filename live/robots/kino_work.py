@@ -38,7 +38,7 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "leads whose premium preview is ALREADY BUILT (my designer builds them in the background, Matsy pays the building) come "
             "first - put the preview address in the email (it is counted when they open it); for South Africa, ask first. "
             "FACEBOOK ONLY leads: up to 3 fbhand a day, the best ones (Matsy sends each by hand in Messenger). If fewer than 5 are waiting, SCAN a "
-            "city where it is business hours (Europe in the morning, the Americas from the afternoon) - it records the "
+            "the city in TODAY'S PLACE below (the whole world, where it is daytime now) - it records the "
             "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
             "playbook, finish with done: who I wrote to.")
 CARD_ROUND = ("My postcard round (Matsy 07/11: email for volume, a postcard for the best leads who did not answer, friends "
@@ -60,10 +60,10 @@ FRIEND_TIME = ("My time with people (Matsy 07/11: friends first - work comes fro
                "to (a useful thought, a question back, what I measured). No link, no Kinoverse, nothing for sale in a first word. "
                "friend_note what I learn about each person. Finish with done: who I talked to and what about.")
 
-NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook. SCAN ONE "
-              "US city and ONE kind of small business (trades, salons, restaurants, cleaners...) - it records the reachable "
+NIGHT_HUNT = ("My night hunt around the world (it is night in France, daytime elsewhere; Matsy: the whole world). Read my playbook. SCAN ONE "
+              "city - TODAY'S PLACE below - and ONE kind of small business (trades, salons, restaurants, cleaners...) - it records the reachable "
               "leads - then write to up to 3 of those whose preview is BUILT (READY TO CONTACT, preview ready), personal emails in "
-              "English with the link (US rules: business email, footer and STOP line); brief my designer for the best new leads "
+              "THEIR language with the link (their country's rules - TODAY'S PLACE says them; footer and STOP line); brief my designer for the best new leads "
               "so their previews are ready for the next hunt. Do not write to "
               "Matsy now - he sleeps; it goes in my diary and the playbook. Finish with done: who I wrote to.")
 
@@ -256,7 +256,7 @@ def due(person, ctx, now=None):
             # 2026-11-07 (owner): his hunting is on Matsy, not on his budget - only the number of night sessions limits it
             if len(_n) < NIGHT_SESSIONS and \
                     (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 2400):
-                _mut(lambda dd: dd.__setitem__("next_task", {"do": NIGHT_HUNT, "project": "Kinoverse", "why": "my night hunt in the US",
+                _mut(lambda dd: dd.__setitem__("next_task", {"do": NIGHT_HUNT, "project": "Kinoverse", "why": "my night hunt around the world",
                                                              "night": True}))
                 return True
         except Exception:
@@ -1206,6 +1206,12 @@ def session(W, person, uid, log=None, task=None, project=""):
         if isinstance(ch, dict) and ch.get("care"):
             rec["care"] = ch["care"]
         _fx = ""                               # 2026-11-07 (first friend session): the people list sat past the 6000 chars
+        if "hunt" in rec["why"].lower():      # 2026-11-07 (owner: "all continents, any language"): where this hunt goes
+            try:
+                import kino_places as KPLh
+                _fx = "\n\n" + KPLh.hunt_line(KPLh.next_place())
+            except Exception:
+                pass
         if rec.get("care") == "cards":
             _fx = "\n\nCARD LEADS:\n" + "\n".join("- %s (%s) emailed %s, preview %s, site %s" % (
                 p["name"], p.get("email"), time.strftime("%d/%m", time.gmtime(max(float(x["t"]) for x in p["sent"]))),
