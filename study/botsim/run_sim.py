@@ -93,10 +93,13 @@ def state_from_log(logf, t0):
 
 
 def balance_at(logf, t0):
-    """the account balance at t0: the start line at/after t0 within a minute, else the last one before"""
+    """the account balance at t0: the start line at/after t0 within a minute, else the last one before.
+    2026-11-07: the daily 'lot resized ... (balance $X' line counts too - a start line days old missed trades in between
+    (06/11: seeded 200.59 -> lot 0.02, the real balance was 199.38 -> lot 0.01)"""
     best = None
     for ln in open(logf, encoding="utf-8", errors="replace"):
-        m = re.match(r"(\S+) BOS-BOT starting on \d+ balance ([0-9.]+)", ln)
+        m = (re.match(r"(\S+) BOS-BOT starting on \d+ balance ([0-9.]+)", ln)
+             or re.match(r"(\S+) lot resized to [0-9.]+ \(balance \$([0-9.]+)", ln))
         if m:
             t = ts(m.group(1))
             if t <= t0 + 60:
