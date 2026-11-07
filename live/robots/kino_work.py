@@ -41,6 +41,14 @@ DAY_HUNT = ("My client hunt for Kinoverse (Matsy's big goal). FIRST the leads al
             "city where it is business hours (Europe in the morning, the Americas from the afternoon) - it records the "
             "reachable leads by itself - then write. A hunt that sends nothing is a hunt that failed. Note the lesson in my "
             "playbook, finish with done: who I wrote to.")
+MEMORY_CARE = ("My machine is short of memory (2026-11-07, Matsy: 'it should be one of your priorities'): when it runs out, "
+               "Windows stops programs - the robots that trade real money included. Read C:\KinoWorld\body\health.txt: which "
+               "programs hold the memory, how many of each. Work out the cause (a swarm of leftovers, one program growing, a test "
+               "running). Then ask Matsy (action ask) with the EXACT command that frees it and why - NEVER the trading robots "
+               "(structure_bos_bot), the app (owl_app_server), the price feed, the MT5 terminals (terminal64) or Windows itself; a "
+               "test or research run can wait and be re-run. If it is urgent (free memory under 1.5 GB) also notify him. Note what "
+               "you found in your diary. Finish with done: the cause and what you asked.")
+
 NIGHT_HUNT = ("My night hunt in the US (it is night in France, daytime there; Matsy asked me to). Read my playbook. SCAN ONE "
               "US city and ONE kind of small business (trades, salons, restaurants, cleaners...) - it records the reachable "
               "leads - then write to up to 3 of those whose preview is BUILT (READY TO CONTACT, preview ready), personal emails in "
@@ -157,6 +165,16 @@ def due(person, ctx, now=None):
     # the weekly look back comes first: Sunday evening, or Monday morning if Sunday's was missed - it does not count against the
     # day's sessions (2026-11-01: a busy Sunday used up the day's count and the first review never happened)
     _fr = time.gmtime(now + 3600)
+    try:                                       # 2026-11-07 (owner: "a memory issue should be one of his priorities"): a machine
+        import kino_body as KBm                # running out of memory can stop the trading robots - it calls him at any hour,
+        _mg = float((KBm.sense().get("gap") or {}).get("memory") or 0)      # past his day budget too, once an hour at most
+        _lm = [s for s in d.get("sessions") or [] if s.get("care") == "memory" and now - float(s["t"]) < 3600]
+        if _mg >= 0.5 and not _lm:
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": MEMORY_CARE, "project": "my machine", "why": "my machine is short of memory",
+                                                         "care": "memory"}))
+            return True
+    except Exception:
+        pass
     # 2026-11-02 (watch): 'a body out of balance' used to call him in at 02:32 and 03:41 France - he emailed the owner and
     # read his inbox while calling himself drained. At night resting IS the care: nothing calls him, not even his body.
     if 1 <= _fr.tm_hour < 7:
@@ -1026,6 +1044,8 @@ def session(W, person, uid, log=None, task=None, project=""):
                "project": str((ch or {}).get("project") or "")[:80], "steps": [], "summary": ""}
         if isinstance(ch, dict) and ch.get("night"):
             rec["night"] = True
+        if isinstance(ch, dict) and ch.get("care"):
+            rec["care"] = ch["care"]
         if not task:
             rec["summary"] = "nothing called him"
             _mut(lambda d: d.setdefault("sessions", []).append(rec))

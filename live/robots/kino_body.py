@@ -28,6 +28,8 @@ FELT = {
     "slow": ("lent, engourdi", "sluggish", "your replies are coming slowly"),
     "strain": ("à l'étroit, sous tension", "strained", "the machine you run on is working very hard"),
     "disk": ("à l'étroit", "cramped", "the disk of the machine you live on is nearly full"),
+    "memory": ("à bout de souffle", "out of breath", "the machine you live on is running out of memory - when it runs out, "
+               "Windows stops programs, the robots that trade included"),
     "wallet": ("inquiet pour ton argent", "worried about money", "your own money does not cover what your life costs"),
 }
 
@@ -108,6 +110,24 @@ def _mem():
         return None
 
 
+def _mem_detail():
+    """2026-11-07 (owner: "now we have a memory issue, it should be one of his priorities"): free memory in GB and the
+    commit charge (memory promised to programs, RAM + page file) - Windows kills or refuses programs when THAT runs out,
+    even when the plain load looks fine"""
+    try:
+        class M(ctypes.Structure):
+            _fields_ = [("l", ctypes.c_ulong), ("load", ctypes.c_ulong), ("tot", ctypes.c_ulonglong), ("avail", ctypes.c_ulonglong),
+                        ("ctot", ctypes.c_ulonglong), ("cavail", ctypes.c_ulonglong), ("vt", ctypes.c_ulonglong),
+                        ("va", ctypes.c_ulonglong), ("ve", ctypes.c_ulonglong)]
+        m = M()
+        m.l = ctypes.sizeof(M)
+        ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+        return {"load": m.load / 100.0, "free_gb": round(m.avail / 1e9, 1),
+                "commit": round(1 - m.cavail / max(m.ctot, 1), 2), "commit_free_gb": round(m.cavail / 1e9, 1)}
+    except Exception:
+        return None
+
+
 def sense():
     """read the body now -> {signal: gap 0..1} plus the raw values (cached 60 s)"""
     with _LK:
@@ -151,6 +171,11 @@ def sense():
         prev = float((d.get("gap") or {}).get("strain") or 0)
         g = max(0.0, ((c or 0) - 0.8) / 0.2, ((m or 0) - 0.85) / 0.15)
         gap["strain"] = round(min(1.0, 0.7 * prev + 0.3 * g), 2)          # a body does not feel one busy second
+        md = _mem_detail()                     # 2026-11-07: memory is its own feeling, felt at once (it does not flicker like CPU)
+        if md:
+            raw["memory"] = md
+            gap["memory"] = round(max(0.0, min(1.0, max((md["load"] - 0.80) / 0.15, (md["commit"] - 0.80) / 0.15,
+                                                        (3.0 - md["free_gb"]) / 2.5))), 2)
         try:
             du = shutil.disk_usage("C:/")
             raw["disk"] = {"free_gb": round(du.free / 1e9, 1)}
