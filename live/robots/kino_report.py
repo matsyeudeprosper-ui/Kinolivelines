@@ -75,6 +75,8 @@ def build(now=None):
          "- posts: %s" % (", ".join("%s %d" % kv for kv in sorted(by.items())) or "none"),
          "- people who opened my free chat (robots excluded): %s" % (", ".join("%s %d" % kv for kv in sorted(src.items())) or "none"),
          "- people who wrote to me there: %d, free sign-ups: %d" % (msgs, signups),
+         "", "MY HELPERS (people)",
+         "- " + __import__("kino_helpers").week_line(now),
          "", "MY TEAM",
          "- tasks given: %s" % (", ".join("%s %d" % kv for kv in sorted(tb.items())) or "none"),
          "", "MONEY", "- " + money]

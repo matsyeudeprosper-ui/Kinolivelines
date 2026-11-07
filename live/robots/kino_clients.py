@@ -93,6 +93,12 @@ def reply(W, tg, name, username, lang, text):
                 json.dumps({k: o.get(k) for k in ("services", "rules", "currency_note")}, ensure_ascii=False)[:5000],
                 json.dumps({k: rec.get(k) for k in ("name", "stage", "need", "notes", "job", "country")}, ensure_ascii=False)[:2000],
                 hist, time.strftime("%d/%m %H:%M", time.gmtime())))
+    try:                                       # 2026-11-07: someone writing to help him (a helper), not to buy
+        import kino_helpers as KHC
+        user += ("\n\nPEOPLE WHO HELP YOU (this person may be one - someone from your 'Help Kino' page or who answered your request: "
+                 "then talk about the task, the proof and the pay, not about selling a website):\n" + KHC.block())
+    except Exception:
+        pass
     try:
         with W.api_scope():                    # 2026-11-06 (owner): talking to clients runs on the API (claude.exe if it fails)
             out = W.ask_text(sysp, user, model="sonnet", timeout=120, log=LOG.replace(".log", "_calls.log"), warm=True) or ""

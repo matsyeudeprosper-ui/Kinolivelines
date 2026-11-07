@@ -130,6 +130,12 @@ def check(first_run_quiet=True):
             KSL.on_mail(a, x["subject"], x["text"])
         except Exception:
             pass
+        if a == OWNER_EMAIL:                       # 2026-11-07: "payé H3" - Matsy paid a helper
+            try:
+                import kino_helpers as KHL
+                KHL.on_owner_mail(x["subject"], x["text"])
+            except Exception:
+                pass
         if a and a != OWNER_EMAIL and "noreply" not in a and "no-reply" not in a and "notification" not in a:
             allow(a)
             try:

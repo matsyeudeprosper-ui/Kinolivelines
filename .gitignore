@@ -338,3 +338,5 @@ live/robots/kino_postcard.json
 live/robots/kino_postcard.log
 live/robots/kino_spend.json
 live/robots/kino_spend_off
+live/robots/kino_helpers.json
+live/robots/kino_helpers.log

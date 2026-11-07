@@ -284,7 +284,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -323,6 +323,10 @@ You can make things public on your own, under your own name, with nobody approvi
   gets your message and the link and sends it in Messenger; it is marked contacted.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
+- YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
+  "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
+  "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
+  help_pay ("task", "paypal" their PayPal email) sends Matsy the payment request; help_paid ("task") when he says it is paid.
 - card ("who" a lead with a built preview, "text" your personal note in French - printed on the back, "street", "cp" 5
   digits, "city" - from their own site or listing): a REAL POSTCARD through La Poste (2.30 EUR, from your spending rules -
   see YOUR SPENDING): front = their own site on a phone, back = your note + a QR code to their preview. For the best leads who
@@ -485,6 +489,11 @@ def _mind(person, uid):
         _dr = json.load(open(os.path.join(HERE, "kino_direction.json"), encoding="utf-8")).get("text")
         if _dr:
             L.append("DIRECTION: " + _dr)
+    except Exception:
+        pass
+    try:                                       # 2026-11-07 (owner): his human helpers and their tasks
+        import kino_helpers as KHB
+        L.append(KHB.block())
     except Exception:
         pass
     try:                                       # 2026-11-06 (owner): what he may spend on his own, and what is spent
@@ -748,6 +757,22 @@ def _act0(j, person, W=None):
         return "%s - weakness %s/10: %s | email on their site: %s" % (
             r["url"], "?" if r["score"] is None else r["score"], "; ".join(r["problems"]) or "nothing obvious - a decent site",
             ", ".join(r["emails"]) or "none found")
+    if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid"):   # 2026-11-07 (owner): his human helpers
+        import kino_helpers as KHP
+        tid = j.get("task") or j.get("id")
+        if a == "help_task":
+            return KHP.task(j.get("what") or j.get("text"), j.get("why"), j.get("proof"), j.get("pay") or 0, j.get("hours") or 48,
+                            j.get("place") or "")
+        if a == "help_ask":
+            return KHP.ask(tid, j.get("who") or j.get("to"), j.get("text") or j.get("body"), W=W)
+        if a == "help_accept":
+            return KHP.accept(tid, j.get("helper") or j.get("who"), j.get("price") or 0, j.get("contact") or "")
+        if a == "help_done":
+            return KHP.done(tid, j.get("proof") or j.get("text"), str(j.get("ok", True)).lower() not in ("false", "0", "no"),
+                            j.get("note") or "")
+        if a == "help_pay":
+            return KHP.pay(tid, j.get("paypal") or j.get("to"))
+        return KHP.paid(tid)
     if a == "card":                        # 2026-11-06 (owner: postcards, his own spending - no confirmation, Matsy told after)
         import kino_postcard as KPC
         return KPC.card_for(j.get("who") or j.get("name"), j.get("text") or j.get("message"), j.get("street"), j.get("cp"),
