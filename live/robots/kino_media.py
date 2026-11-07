@@ -83,3 +83,102 @@ def shot(url, name, caption=""):
     out = os.path.join(MEDIA, name + ".png")
     bg.save(out, optimize=True)
     return {"ok": True, "path": out}
+
+
+# ------------------------------------------------------------------ picture cards (2026-11-07, owner: "make his Bluesky alive")
+INTER = os.path.join(os.path.dirname(HERE), "static", "InterVariable.woff2")
+KINDS = {                                     # label, accent colour
+    "question": ("A question", (124, 108, 255)),
+    "lesson": ("What I learned", (34, 211, 238)),
+    "result": ("What I measured", (52, 211, 153)),
+    "tip": ("A small tip", (251, 191, 36)),
+    "note": ("A note from Kino", (244, 114, 182)),
+}
+
+
+def _inter(size, weight):
+    from PIL import ImageFont
+    try:
+        f = ImageFont.truetype(INTER, size)
+        try:
+            f.set_variation_by_axes([32 if size >= 60 else 14, weight])
+        except Exception:
+            pass
+        return f
+    except Exception:
+        return _font(size, weight >= 600)
+
+
+def _wrap(d, text, font, width):
+    words, lines, cur = str(text).split(), [], ""
+    for w_ in words:
+        t = (cur + " " + w_).strip()
+        if d.textlength(t, font=font) <= width:
+            cur = t
+        else:
+            if cur:
+                lines.append(cur)
+            cur = w_
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def card(text, kind="note", sub="", big="", name=""):
+    """a square picture for a post: his words big and calm on his own colours -> {"ok", "path"} in C:\KinoWorld\media.
+    kind: question | lesson | result | tip | note; big: an optional number to show huge (a result); sub: one small line"""
+    import math, random
+    from PIL import Image, ImageDraw, ImageFilter
+    S, K = 1080, 2
+    s = S * K
+    label, acc = KINDS.get(kind, KINDS["note"])
+    img = Image.new("RGB", (s, s), (10, 14, 22))
+    glow = Image.new("RGB", (s, s), (0, 0, 0))
+    g = ImageDraw.Draw(glow)
+    rnd = random.Random(hash(text) & 0xffff)
+    cx, cy = s * (0.78 + rnd.random() * 0.1), s * (0.12 + rnd.random() * 0.1)
+    for r_, a in ((s * 0.55, 34), (s * 0.35, 46), (s * 0.18, 60)):
+        g.ellipse((cx - r_, cy - r_, cx + r_, cy + r_), fill=tuple(int(c * a / 255) for c in acc))
+    glow = glow.filter(ImageFilter.GaussianBlur(s * 0.08))
+    img = Image.blend(img, Image.eval(glow, lambda v: v), 0.0)
+    img = Image.fromarray(__import__("numpy").clip(__import__("numpy").asarray(img, dtype="int16") +
+                                                   __import__("numpy").asarray(glow, dtype="int16"), 0, 255).astype("uint8"))
+    d = ImageDraw.Draw(img)
+    for _ in range(26):                       # his thoughts: a few faint linked dots
+        x1, y1 = rnd.random() * s, rnd.random() * s * 0.35
+        x2, y2 = x1 + (rnd.random() - 0.5) * s * 0.2, y1 + (rnd.random() - 0.5) * s * 0.15
+        d.line((x1, y1, x2, y2), fill=(40, 52, 90), width=K * 2)
+        d.ellipse((x1 - 5 * K, y1 - 5 * K, x1 + 5 * K, y1 + 5 * K), fill=(60, 80, 140))
+    m = 96 * K
+    d.rounded_rectangle((m, 120 * K, m + d.textlength(label.upper(), font=_inter(30 * K, 700)) + 56 * K, 186 * K), radius=33 * K,
+                        fill=tuple(int(c * 0.22) for c in acc), outline=acc, width=2 * K)
+    d.text((m + 28 * K, 134 * K), label.upper(), font=_inter(30 * K, 700), fill=acc)
+    y = 260 * K
+    if big:
+        f = _inter(200 * K, 800)
+        d.text((m, y - 20 * K), str(big), font=f, fill=acc)
+        y += 250 * K
+    size = 64 if len(text) < 90 else 54 if len(text) < 160 else 46
+    f = _inter(size * K, 650)
+    for ln in _wrap(d, text, f, s - 2 * m)[:9]:
+        d.text((m, y), ln, font=f, fill=(242, 245, 250))
+        y += int(size * K * 1.32)
+    if sub:
+        y += 24 * K
+        fs = _inter(32 * K, 450)
+        for ln in _wrap(d, sub, fs, s - 2 * m)[:3]:
+            d.text((m, y), ln, font=fs, fill=(160, 170, 195))
+            y += 46 * K
+    # signature: his presence dot + name
+    by = s - 140 * K
+    d.ellipse((m, by, m + 56 * K, by + 56 * K), fill=(34, 211, 238))
+    d.ellipse((m + 14 * K, by + 14 * K, m + 42 * K, by + 42 * K), fill=(230, 250, 255))
+    d.text((m + 80 * K, by + 4 * K), "Kino", font=_inter(36 * K, 700), fill=(242, 245, 250))
+    d.text((m + 80 * K + d.textlength("Kino  ", font=_inter(36 * K, 700)), by + 10 * K), "an AI · kinoverse",
+           font=_inter(28 * K, 450), fill=(140, 150, 180))
+    img = img.resize((S, S), Image.LANCZOS)
+    os.makedirs(MEDIA, exist_ok=True)
+    nm = re.sub(r"[^a-z0-9_-]+", "-", str(name or ("card-" + time.strftime("%Y%m%d-%H%M%S"))).lower())[:50]
+    p = os.path.join(MEDIA, nm + ".png")
+    img.save(p, optimize=True)
+    return {"ok": True, "path": p}

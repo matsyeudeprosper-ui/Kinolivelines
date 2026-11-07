@@ -390,7 +390,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|picture|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -429,6 +429,8 @@ You can make things public on your own, under your own name, with nobody approvi
   gets your message and the link and sends it in Messenger; it is marked contacted.
 - xhand ("url" an X post, "text" your reply <=280 chars): X refuses your replies to people who have not mentioned you -
   this sends Matsy the reply and the link to post it by hand; once they answer, the conversation is yours again.
+- picture ("text" the words - short, "kind" question|lesson|result|tip|note, "big" an optional number to show huge, "sub" one small line): a square picture card in your colours for a post. Most of your OWN posts look better with a picture (a card, or a shot of your own sample site): people stop on pictures, they scroll past walls of text. Then skeet/xpost with "image" (the path) and "alt" (what it shows). Keep the post text short when the picture says it.
+- friend_link ("who" @handle of a friend, "contact" their email): a friend who now writes to you by email - link them so you always know who it is.
 - friend_note ("who" @handle as in MY FRIENDS, "about" what you learned: what they do, what they care about, a thread to come back to) - your memory of a person.
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
@@ -890,6 +892,14 @@ def _act0(j, person, W=None):
     if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")
+        if a == "friend_link":             # 2026-11-07: a friend now writing by email (or Telegram) - one person, one memory
+            import kino_friends as KFK
+            _c = str(j.get("contact") or "").strip().lower()
+            if "@" in _c and not _c.startswith(("email:", "telegram:")) and "." in _c.split("@")[-1]:
+                _c = "email:" + _c
+            if not _c.startswith(("email:", "telegram:")):
+                return "contact must be their email address (or telegram:<id>)"
+            return "linked: %s is %s - you will know them there" % (KFK.link(j.get("who"), _c), _c)
         if a == "friend_note":
             import kino_friends as KFN
             return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
@@ -912,6 +922,11 @@ def _act0(j, person, W=None):
             return "NOT SENT - postcards are off until Matsy credits the postcard account"
         return KPC.card_for(j.get("who") or j.get("name"), j.get("text") or j.get("message"), j.get("street"), j.get("cp"),
                             j.get("city"))
+    if a == "picture":                     # 2026-11-07 (owner: "make his Bluesky alive - pictures people enjoy")
+        import kino_media as KMP
+        r = KMP.card(j.get("text") or "", j.get("kind") or "note", j.get("sub") or "", j.get("big") or "", j.get("name") or "")
+        return ("picture ready: %s - post it with skeet or xpost (\"image\": that path, \"alt\": what it shows)" % r["path"]) \
+            if r.get("ok") else "picture: %s" % r.get("err")
     if a == "shot":                        # 2026-11-06 (owner: posts with media): a page on a phone, as an image to post
         import kino_media as KMD
         r = KMD.shot(j.get("url") or "", j.get("name") or j.get("path") or "shot", j.get("text") or j.get("caption") or "")
@@ -1091,7 +1106,11 @@ def _act0(j, person, W=None):
                 _no = KFG.first(_who or "?", _wh or "bluesky", j.get("url"), j.get("text") or j.get("content") or "")
                 if _no:
                     return _no
-        _rs = KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"))
+        _img = _inside(j.get("image")) if j.get("image") else None
+        if j.get("image") and not (_img and os.path.exists(_img)):
+            return "NOT POSTED - the image must be a file in your world (make one with picture or shot)"
+        _rs = KP.bluesky(W, j.get("text") or j.get("content") or "", log=os.path.join(HERE, "kino_post_calls.log"), reply_to=j.get("url"),
+                         image=_img, alt=j.get("alt") or "")
         if j.get("url") and not _pend and str(_rs).lower().startswith("posted"):
             KFG.met(_who or "?", "bluesky", j.get("url"), j.get("text") or j.get("content") or "")
         if j.get("url") and str(_rs).lower().startswith("posted"):

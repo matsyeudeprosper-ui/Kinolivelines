@@ -136,7 +136,10 @@ def check(first_run_quiet=True):
                 KHL.on_owner_mail(x["subject"], x["text"])
             except Exception:
                 pass
-        if a and a != OWNER_EMAIL and "noreply" not in a and "no-reply" not in a and "notification" not in a:
+        # 2026-11-07: a service's welcome/billing mail ("accounts@dynadot.com", an HTML newsletter) is not a person waiting for him
+        _auto = (re.match(r"(accounts?|billing|support|info|news|newsletter|hello|team|mailer|postmaster|bounce|alerts?|security|"
+                          r"donotreply|do-not-reply)[@.+-]", a) or str(x.get("text") or "").lstrip().startswith("<"))
+        if a and a != OWNER_EMAIL and not _auto and "noreply" not in a and "no-reply" not in a and "notification" not in a:
             allow(a)
             try:
                 import kino_online as KON

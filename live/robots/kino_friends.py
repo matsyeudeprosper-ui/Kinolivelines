@@ -288,8 +288,9 @@ def maybe_expect(who, where, text):
     _log("EXPECT %s (%s) may write on Telegram/email" % (who, where))
 
 
-def expected_block(days=21):
-    """for a new Telegram/email contact: the friends he invited there, with what he knows of them"""
+def expected_block(days=21, desk=False):
+    """for a new Telegram/email contact: the friends he invited there, with what he knows of them
+    (desk=True: for his work session, where he links them with the friend_link action)"""
     d = _load()
     X = [x for x in d.get("expect") or [] if time.time() - float(x["t"]) < days * 86400 and not x.get("linked")]
     if not X:
@@ -306,6 +307,11 @@ def expected_block(days=21):
         L.append("- %s (%s, invited %s)%s | last words: %s" % (
             x["who"], x["where"], time.strftime("%d/%m", time.gmtime(x["t"])), (" | you know: " + ab) if ab else "",
             " / ".join(("they: " if s["dir"] == "in" else "you: ") + s["text"][:90] for s in (p.get("said") or [])[-2:])))
+    if desk:
+        return ("FRIENDS YOU INVITED TO WRITE TO YOU BY EMAIL OR TELEGRAM (a new email may be from one of them - if they say who "
+                "they are, or it is clear from what they write, it IS them: answer as the friend you know and link them with "
+                "friend_link (who @handle, contact their email) so you never confuse them; if unsure, ask kindly where you met):\n"
+                + "\n".join(L))
     return ("FRIENDS YOU INVITED TO WRITE TO YOU HERE (this new person may be one of them - if they say who they are, or it is clear "
             "from what they write, it IS them: greet them as the friend you know, and end your reply with ONE line for your desk: "
             "#friend @handle). If you are not sure, ask kindly where you met:\n" + "\n".join(L))

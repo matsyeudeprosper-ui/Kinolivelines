@@ -442,7 +442,40 @@ def _bsky_ref(url, tok):
     return {"root": root, "parent": parent}, "@" + str((th.get("author") or {}).get("handle"))
 
 
-def bluesky(W, text, log=None, reply_to=None):
+def _bsky_blob(path, tok, max_kb=950):
+    """2026-11-07 (owner: "make his Bluesky alive - pictures"): an image in his world -> a Bluesky blob (+ its width, height).
+    Bluesky takes about 1 MB an image: a bigger one is saved again as a JPEG until it fits."""
+    import io, urllib.request
+    from PIL import Image
+    im = Image.open(path)
+    w, h = im.size
+    data = open(path, "rb").read()
+    mime = "image/png" if path.lower().endswith(".png") else "image/jpeg"
+    q = 90
+    while len(data) > max_kb * 1024 and q >= 40:
+        b = io.BytesIO()
+        im.convert("RGB").save(b, "JPEG", quality=q)
+        data, mime, q = b.getvalue(), "image/jpeg", q - 10
+    r = urllib.request.Request(BSKY + "com.atproto.repo.uploadBlob", data=data,
+                               headers={"Content-Type": mime, "Authorization": "Bearer " + tok, "User-Agent": "kino"}, method="POST")
+    with urllib.request.urlopen(r, timeout=60) as x:
+        return json.loads(x.read())["blob"], w, h
+
+
+def bluesky_look(avatar=None, banner=None):
+    """his Bluesky picture and header image (brand work done for him, not a post)"""
+    tok, did, handle = _bsky_session()
+    old = _bsky("com.atproto.repo.getRecord?repo=%s&collection=app.bsky.actor.profile&rkey=self" % did, None, tok).get("value") or {}
+    if avatar:
+        old["avatar"] = _bsky_blob(avatar, tok)[0]
+    if banner:
+        old["banner"] = _bsky_blob(banner, tok)[0]
+    old["$type"] = "app.bsky.actor.profile"
+    _bsky("com.atproto.repo.putRecord", {"repo": did, "collection": "app.bsky.actor.profile", "rkey": "self", "record": old}, tok)
+    return "https://bsky.app/profile/" + handle
+
+
+def bluesky(W, text, log=None, reply_to=None, image=None, alt=""):
     """a post on his Bluesky (kinoverse.bsky.social) -> a sentence for him; reply_to = the post he answers"""
     text = str(text or "").strip()
     if not text:
@@ -466,6 +499,10 @@ def bluesky(W, text, log=None, reply_to=None):
         f = _facets(text)
         if f:
             rec["facets"] = f
+        if image:                              # 2026-11-07: a picture with the post (alt text for people who cannot see it)
+            _b, _w, _h = _bsky_blob(image, tok)
+            rec["embed"] = {"$type": "app.bsky.embed.images", "images": [{"alt": str(alt or text)[:900], "image": _b,
+                                                                          "aspectRatio": {"width": _w, "height": _h}}]}
         to = None
         if reply_to:
             rec["reply"], to = _bsky_ref(reply_to, tok)

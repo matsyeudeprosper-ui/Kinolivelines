@@ -78,6 +78,22 @@ def block(en=True):
     P = sorted(d["people"].items(), key=lambda kv: -float(kv[1].get("last") or 0))[:8]
     out = []
     W = pending()
+    try:                                       # 2026-11-07 (owner: "a friend who writes by email - will he recognise them?")
+        import kino_friends as KFo
+        _fr = []
+        for x in W:
+            if x.get("where") == "email":
+                fo = KFo.friend_of("email:" + str(x.get("who") or "").lower())
+                if fo:
+                    _fr.append("(the email from %s) " % x["who"] + fo)
+        if _fr:
+            out.append("\n".join(_fr))
+        elif any(x.get("where") == "email" for x in W):
+            xb = KFo.expected_block(desk=True)
+            if xb:
+                out.append(xb)
+    except Exception:
+        pass
     if W:
         out.append("WAITING FOR YOUR ANSWER: " + " | ".join(
             ("%s by email: \"%s\" (answer with email to %s)" % (x["who"], x["text"][:240], x["who"])) if x["where"] == "email" else
