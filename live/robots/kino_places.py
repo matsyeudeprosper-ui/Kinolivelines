@@ -123,11 +123,11 @@ def next_place(now=None, mark=True):
     st = _load()
     ok = []
     for cc in WORLD:
-        if cc in SKIP or cc in CONSENT_FIRST:
+        if cc in SKIP or cc in CONSENT_FIRST or PAY.get(cc, 0.6) <= 0:
             continue
         o, h = open_now(cc, now)
-        if o:
-            ok.append((float(st.get(cc) or 0), random.random(), cc, h))
+        if o:                                  # easy-to-pay countries come back sooner: 1 -> 2 days earlier, 0.3 -> 0.6 days
+            ok.append((float(st.get(cc) or 0) - PAY.get(cc, 0.6) * 2 * 86400, random.random(), cc, h))
     if not ok:
         return None
     ok.sort()
@@ -157,3 +157,14 @@ def hunt_line(p):
                                                             "ar": "Arabic", "th": "Thai", "vi": "Vietnamese", "id": "Indonesian",
                                                             "ja": "Japanese", "ko": "Korean", "tr": "Turkish"}.get(p["lang"], p["lang"]),
                 p["rule"]))
+
+
+# 2026-11-07 (owner: "favour the countries where people can pay via PayPal or crypto - going where people struggle to pay is a
+# waste"): how easily a small business there pays a website online (PayPal/cards/crypto common, budget for a 150-500 EUR site).
+# 1 = easy, 0.6 = fair, 0.3 = harder (rarer turns), 0 = not hunted (payments blocked or a banking crisis)
+PAY = {cc: 1.0 for cc in ("FR", "BE", "CH", "LU", "GB", "IE", "ES", "PT", "NL", "SE", "NO", "FI", "GR", "CZ", "HR", "MT", "CY",
+                          "US", "CA", "AU", "NZ", "SG", "AE", "IL", "JP", "KR", "MY")}
+PAY.update({cc: 0.6 for cc in ("RO", "MX", "BR", "AR", "CL", "CO", "PE", "UY", "CR", "DO", "JM", "MA", "TN", "ZA", "MU", "TR", "IN",
+                               "PH", "TH", "VN", "ID", "KE")})
+PAY.update({cc: 0.3 for cc in ("SN", "CI", "CM", "NG", "GH", "TZ", "UG", "RW", "EG", "GA")})
+PAY.update({cc: 0.0 for cc in ("CD", "CG", "HT", "LB", "BJ")})
