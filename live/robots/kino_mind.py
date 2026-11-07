@@ -650,7 +650,9 @@ def my_robot_short():
     w = sum(1 for t in tr if t["r"] > 0)
     di = (r.get("diary") or [{}])[-1]
     ch = (r.get("changes") or [{}])[-1]
-    return ("'%s' sur %s depuis le %s, argent fictif : %d trades, %d gagnés (%d %%), total %+.1f R ; 5 derniers %s%s. "
+    # 2026-11-07 (watch): "currently at -15 R" reached the owner - R is jargon (plain-words rule): said as "times the risk"
+    return ("'%s' sur %s depuis le %s, argent fictif : %d trades, %d gagnés (%d %%), au total %+.1f fois la mise risquée par "
+            "trade (dis-le ainsi, jamais « R ») ; 5 derniers %s%s. "
             "Ton dernier changement (%s) : %s. Ton journal : %s" % (
                 r["robot"].get("name"), g.get("market"), r.get("born"), len(tr), w, round(100 * w / len(tr)) if tr else 0,
                 sum(t["r"] for t in tr), json.dumps([round(t["r"], 1) for t in tr[-5:]]),
