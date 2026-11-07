@@ -151,7 +151,12 @@ def observe(stream, t, close, attend=0.5):
     if out and out["surprise"]:
         try:                                         # a real surprise reaches his feelings and competes for his attention
             import kino_inner as KI
-            KI.feel("curiosity", min(0.3, 0.06 * abs(out["z"])), why="the chart did what I did not expect (%+.0f instead of about %+.0f)" % (out["move"], out["guess"]))
+            # 2026-11-07 (watch): "-92 instead of +7" was told to the owner as "a test of my idea on past prices, -92 $" - it
+            # is his own silent guess of the next candle, in price points: the feeling carries what the numbers are
+            KI.feel("curiosity", min(0.3, 0.06 * abs(out["z"])),
+                    why="the chart surprised me: its last candle moved %+.0f points of price when my own silent guess of that candle "
+                        "was about %+.0f (a guess I make for myself on each candle - price points, not money, not a test or a trade)"
+                        % (out["move"], out["guess"]))
             KI.add_thought("The chart surprised me: I expected about %+.0f (usually ±%.0f) and it moved %+.0f." % (out["guess"], out["spread"], out["move"]),
                            "perception", strength=min(0.85, 0.3 + 0.1 * abs(out["z"])), src="percept", half_h=1)
         except Exception:
