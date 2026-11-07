@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a0e16">
+<title>Le labo de Kino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e16;--card:#111726;--card2:#141b2d;--line:#1f2840;--line2:#2a3556;--ink:#eef1f8;--ink2:#c9d0e0;--mute:#8d98b3;
+  --a:#7c6cff;--b:#22d3ee;--ok:#34d399;--bad:#f87171;--warn:#fbbf24;--grad:linear-gradient(135deg,#7c6cff,#22d3ee)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink2);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 60px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.top a{color:var(--mute);text-decoration:none;font-size:14px}
+h1{margin:6px 0 4px;color:var(--ink);font-size:clamp(26px,5vw,34px);letter-spacing:-.03em;font-weight:800}
+.sub{color:var(--mute);margin:0 0 22px;max-width:680px}
+.bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.stat{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.stat b{display:block;color:var(--ink);font-size:24px;font-weight:800;letter-spacing:-.02em}
+.stat span{font-size:13px;color:var(--mute)}
+.funnel{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 26px}
+.step{flex:1 1 120px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.step b{color:var(--ink);display:block;font-size:14px}
+.step i{font-style:normal;color:var(--mute)}
+h2{color:var(--ink);font-size:20px;margin:28px 0 12px;letter-spacing:-.02em}
+.idea{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px}
+.idea-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.idea h3{margin:0;color:var(--ink);font-size:17px}
+.idea .when{color:var(--mute);font-size:12.5px;white-space:nowrap}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700;margin-top:6px}
+.b-card{background:#1f2840;color:var(--ink2)}.b-dead{background:rgba(248,113,113,.14);color:var(--bad)}
+.b-pass{background:rgba(52,211,153,.14);color:var(--ok)}.b-final{background:var(--grad);color:#fff}
+.b-tested{background:rgba(251,191,36,.12);color:var(--warn)}
+.idea p{margin:10px 0 0;font-size:14px}
+.idea p em{font-style:normal;color:var(--mute)}
+.tests{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.t{display:grid;grid-template-columns:110px 70px 1fr;gap:8px;font-size:13.5px;padding:6px 0;border-bottom:1px dashed rgba(42,53,86,.6)}
+.t:last-child{border-bottom:0}
+.t .ok{color:var(--ok);font-weight:700}.t .no{color:var(--bad);font-weight:700}
+.months{color:var(--mute)}
+.months span{display:inline-block;margin-right:8px}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+.sess{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:14px}
+.sess .when{color:var(--mute);font-size:12.5px;display:block;margin-bottom:4px}
+.empty{color:var(--mute);background:var(--card);border:1px dashed var(--line2);border-radius:14px;padding:18px}
+@media (max-width:640px){.bar{grid-template-columns:repeat(2,1fr)}.t{grid-template-columns:90px 54px 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="./">← OwlNest</a></div>
+  <h1>Le labo de Kino</h1>
+  <p class="sub">Kino cherche une stratégie de trading positive <b>chaque mois</b>. Chaque idée doit passer toutes les étapes, et la dernière se joue sur des mois qu'il n'a jamais vus. Rien n'est arrangé : ce que vous voyez est exactement ce que le banc de test a mesuré.</p>
+
+  <div class="bar" id="bar"></div>
+
+  <div class="funnel">
+    <div class="step"><b>1 · Fiche</b><i>l'idée, pourquoi, ce qui la tuerait</i></div>
+    <div class="step"><b>2 · Test rapide</b><i>2 mois, contre 50 robots au hasard</i></div>
+    <div class="step"><b>3 · Test complet</b><i>7 mois, chaque mois positif</i></div>
+    <div class="step"><b>4 · Examen final</b><i>mois cachés, chaque mois positif</i></div>
+    <div class="step"><b>5 · Sur papier</b><i>4 semaines en direct</i></div>
+    <div class="step"><b>6 · Argent réel</b><i>une petite somme de vous</i></div>
+  </div>
+
+  <h2>Ses idées</h2>
+  <div id="ideas"></div>
+
+  <h2>Ses dernières séances au labo</h2>
+  <div id="sess"></div>
+</div>
+<script>
+var STAGES = {"card": ["Fiche écrite", "b-card"], "tested": ["Testée - pas assez bonne", "b-tested"], "dead": ["Abandonnée", "b-dead"],
+  "quick passed": ["Test rapide réussi", "b-pass"], "full passed": ["Test complet réussi", "b-pass"],
+  "final failed": ["Examen final raté", "b-dead"], "FINAL PASSED - paper trading next": ["Examen final réussi", "b-final"]};
+var STEP = {"quick": "Rapide", "full": "Complet", "final": "Final"};
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+function d(t) { var x = new Date(t * 1000); return x.toLocaleDateString("fr-FR", {day: "2-digit", month: "2-digit"}) + " " + x.toLocaleTimeString("fr-FR", {hour: "2-digit", minute: "2-digit"}); }
+function money(v) { return v == null ? "-" : (v >= 0 ? "+" : "") + Number(v).toFixed(2) + " $"; }
+function load() {
+  fetch("kino_lab_data", {cache: "no-store"}).then(function (r) { return r.json(); }).then(function (D) {
+    var I = D.ideas || [], tests = 0, best = "aucune";
+    I.forEach(function (x) { tests += (x.tests || []).length; });
+    var order = ["card", "tested", "dead", "quick passed", "full passed", "final failed", "FINAL PASSED - paper trading next"];
+    var top = I.slice().sort(function (a, b) { return order.indexOf(b.stage) - order.indexOf(a.stage); })[0];
+    if (top) best = (STAGES[top.stage] || [top.stage])[0];
+    var pass = I.filter(function (x) { return (x.tests || []).some(function (t) { return t.pass; }); }).length;
+    document.getElementById("bar").innerHTML =
+      '<div class="stat"><b>' + I.length + '</b><span>idées essayées</span></div>' +
+      '<div class="stat"><b>' + tests + '</b><span>tests lancés</span></div>' +
+      '<div class="stat"><b>' + pass + '</b><span>idées qui ont passé une étape</span></div>' +
+      '<div class="stat"><b style="font-size:16px;line-height:1.5">' + esc(best) + '</b><span>le plus loin atteint</span></div>';
+    var h = "";
+    I.slice().reverse().forEach(function (x) {
+      var st = STAGES[x.stage] || [x.stage, "b-card"];
+      h += '<div class="idea"><div class="idea-h"><div><h3>' + esc(x.name) + '</h3><span class="badge ' + st[1] + '">' + esc(st[0]) + '</span></div>' +
+        '<span class="when">' + d(x.t) + '</span></div>' +
+        '<p><em>L\'idée :</em> ' + esc(x.hypothesis) + '</p>' +
+        (x.why ? '<p><em>Pourquoi ça pourrait marcher :</em> ' + esc(x.why) + '</p>' : '') +
+        '<p><em>Ce qui la tuerait :</em> ' + esc(x.kill) + '</p>' +
+        (x.dead_why ? '<p><em>Abandonnée parce que :</em> ' + esc(x.dead_why) + '</p>' : '');
+      if ((x.tests || []).length) {
+        h += '<div class="tests">';
+        x.tests.forEach(function (t) {
+          var m = "";
+          if (t.months) Object.keys(t.months).forEach(function (k) { var v = t.months[k]; m += '<span class="' + (v > 0 ? "pos" : "neg") + '">' + k.slice(2) + " " + (v > 0 ? "+" : "") + v.toFixed(0) + '</span>'; });
+          h += '<div class="t"><span>' + d(t.t) + ' · ' + (STEP[t.stage] || t.stage) + '</span>' +
+            (t.ok === false ? '<span class="no">refusé</span><span class="months">' + esc(t.why || "") + '</span>' :
+              '<span class="' + (t.pass ? "ok" : "no") + '">' + (t.pass ? "réussi" : "raté") + '</span>' +
+              '<span>' + money(t.net) + ' · ' + (t.trades || 0) + ' trades · hasard aussi bon : ' + (t.random_as_good == null ? "-" : t.random_as_good) +
+              '<br><span class="months">' + m + '</span></span>') + '</div>';
+        });
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+    document.getElementById("ideas").innerHTML = h || '<div class="empty">Pas encore d\'idée. Kino travaille au labo toutes les 2 heures, jour et nuit : la première fiche arrive bientôt.</div>';
+    var s = "";
+    (D.sessions || []).slice().reverse().forEach(function (x) { s += '<div class="sess"><span class="when">' + d(x.t) + '</span>' + esc(x.summary || "(en cours)") + '</div>'; });
+    document.getElementById("sess").innerHTML = s || '<div class="empty">Pas encore de séance.</div>';
+  }).catch(function () { document.getElementById("ideas").innerHTML = '<div class="empty">Impossible de charger le labo.</div>'; });
+}
+load(); setInterval(load, 60000);
+</script>
+</body>
+</html>

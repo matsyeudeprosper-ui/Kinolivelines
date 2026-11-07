@@ -38440,6 +38440,18 @@ class H(BaseHTTPRequestHandler):
             self._send(__import__("kino_worldpage").page(), "text/html; charset=utf-8")
         elif sub == "couts" and is_admin(user):       # 2026-10-27: Kino's cost per member vs the plan price
             self._send(costs_page(), "text/html; charset=utf-8")
+        elif sub == "kino-lab" and is_admin(user):          # 2026-11-07 (owner: "where do I see the trading lab?")
+            self._send(open(os.path.join(DIR, "owl_kinolab_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+        elif sub == "kino_lab_data" and is_admin(user):
+            try:
+                import kino_lab as _KLd, kino_work as _KWd
+                _d = _KLd._load()
+                _S = [x for x in (_KWd._load().get("sessions") or []) if x.get("care") == "lab"][-8:]
+                _out = {"ideas": _d.get("ideas") or [], "sessions": [{"t": x["t"], "summary": str(x.get("summary") or "")[:600]} for x in _S],
+                        "now": time.time()}
+            except Exception as _e:
+                _out = {"ideas": [], "sessions": [], "err": str(_e)[:200]}
+            self._send(json.dumps(_out, ensure_ascii=False), "application/json")
         elif sub == "funnel" and is_admin(user):
             self._send(funnel_page().replace("</body></html>", usage_html() + "</body></html>"), "text/html; charset=utf-8")
         elif sub == "api":
