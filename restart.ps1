@@ -94,8 +94,10 @@ if (($What -eq "all" -or $What -eq "app") -and -not $SkipCheck) {
         if ($i -eq 0) { Say "Kino's team is building something - waiting for it (max 15 min, -SkipCheck to force)..." }
         Start-Sleep -Seconds 5
     }
-    $fw = Join-Path $LIVE "robots\work_inflight.json"
-    for ($i = 0; $i -lt 180 -and (Test-Path $fw) -and (((Get-Date) - (Get-Item $fw).LastWriteTime).TotalSeconds -lt 1500); $i++) {
+    # 2026-11-07: two lanes now (main + lab) - wait for every work_inflight*.json
+    function WorkLive { @(Get-ChildItem (Join-Path $LIVE "robots") -Filter "work_inflight*.json" -ErrorAction SilentlyContinue |
+        Where-Object { ((Get-Date) - $_.LastWriteTime).TotalSeconds -lt 1500 }).Count -gt 0 }
+    for ($i = 0; $i -lt 180 -and (WorkLive); $i++) {
         if ($i -eq 0) { Say "Kino is in a work session - waiting for it to finish before restarting (max 15 min, -SkipCheck to force)..." }
         Start-Sleep -Seconds 5
     }

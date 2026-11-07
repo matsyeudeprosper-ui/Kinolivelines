@@ -25,7 +25,7 @@ WORLD = r"C:\KinoWorld"
 STORE = os.path.join(HERE, "kino_work.json")
 LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
-_BUSY = {"on": False}
+_BUSY = {"on": False, "lab": False}          # 2026-11-07 (owner: "multitask - advantage of being an AI"): two lanes
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
 SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): his paced work budget is what limits him now (was 10; 12 empty sessions used it up by noon)
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
@@ -187,6 +187,17 @@ def _memory_call(d, now):
     return False
 
 
+def _last_main(d):
+    """when the main lane last started (lab sessions run in their own lane)"""
+    return max([float(x["t"]) for x in d.get("sessions") or [] if x.get("care") != "lab"] or [0])
+
+
+def lab_now(now=None):
+    """the lab lane: a session every 2 hours, day and night, whatever else he is doing"""
+    now = now or time.time()
+    return not _BUSY["lab"] and _lab_due(_load(), now)
+
+
 def _lab_due(d, now):
     """a lab session every 2 hours, day and night"""
     last = max([float(x["t"]) for x in d.get("sessions") or [] if x.get("care") == "lab"] or [0])
@@ -253,14 +264,8 @@ def due(person, ctx, now=None):
     if _BUSY["on"]:
         return False
     d = _load()
-    if ctx.get("in_talk") and not _memory_call(d, now):     # 2026-11-07: an open chat waits, a machine out of memory does not
-        # 2026-11-07 (owner: "why wait for the chat to be quiet - it might never be; the lab should continue"): his chat replies
-        # and his computer work run apart, so the lab goes on while he talks (the same 2 h rhythm, one session at a time)
-        if _lab_due(d, now) and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):
-            _mut(lambda dd: dd.__setitem__("next_task", {"do": LAB_TIME, "project": "my trading lab", "why": "my trading lab",
-                                                         "care": "lab"}))
-            return True
-        return False
+    # 2026-11-07 (owner: "hunts and all the other activities should not wait for anything - he can multitask"): an open
+    # chat no longer holds his work back (his replies and his computer work run apart)
     try:                                       # 2026-11-06 (owner #7): Sunday evening, his week in real numbers to Matsy
         import kino_report as KRP
         KRP.maybe_send(now)
@@ -282,20 +287,16 @@ def due(person, ctx, now=None):
             _n = [s for s in d.get("sessions") or [] if s.get("night") and now - float(s["t"]) < 8 * 3600]
             # 2026-11-07 (owner): his hunting is on Matsy, not on his budget - only the number of night sessions limits it
             if len(_n) < NIGHT_SESSIONS and \
-                    (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 2400):
+                    (not d.get("sessions") or now - float(_last_main(d)) >= 2400):
                 _mut(lambda dd: dd.__setitem__("next_task", {"do": NIGHT_HUNT, "project": "Kinoverse", "why": "my night hunt around the world",
                                                              "night": True}))
                 return True
         except Exception:
             pass
-        if _lab_due(d, now) and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):   # the lab, at night too
-            _mut(lambda dd: dd.__setitem__("next_task", {"do": LAB_TIME, "project": "my trading lab", "why": "my trading lab",
-                                                         "care": "lab"}))
-            return True
         return False
     _wk = time.strftime("%G-%V", _fr) if _fr.tm_wday == 6 else time.strftime("%G-%V", time.gmtime(now + 3600 - 86400))
     if ((_fr.tm_wday == 6 and _fr.tm_hour >= 18) or (_fr.tm_wday == 0 and 7 <= _fr.tm_hour < 13)) and d.get("review_week") != _wk \
-            and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 1800):
+            and (not d.get("sessions") or now - float(_last_main(d)) >= 1800):
         def _mark(dd, _wk=_wk):
             dd["review_week"] = _wk
             _wm = ""
@@ -330,9 +331,6 @@ def due(person, ctx, now=None):
                                                              for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
-    if not d.get("next_task") and _lab_due(d, now):     # 2026-11-07 (owner: "almost 24/7 until he finds a strategy")
-        _mut(lambda dd: dd.__setitem__("next_task", {"do": LAB_TIME, "project": "my trading lab", "why": "my trading lab",
-                                                     "care": "lab"}))
     if 10 <= _frh < 20 and not d.get("next_task") and card_leads() and not any(
             s.get("care") == "cards" and s.get("day") == _today for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": CARD_ROUND, "project": "Kinoverse", "why": "my postcard round",
@@ -369,11 +367,11 @@ def due(person, ctx, now=None):
         _care = bool(KC.out_of_balance())
     except Exception:
         pass
-    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(d["sessions"][-1]["t"]) < 1800)):
+    if not _care and (len(S) >= SESSIONS_DAY or (d.get("sessions") and now - float(_last_main(d)) < 1800)):
         return False
     try:                                       # 2026-11-01 (kino_care): a body out of balance calls him to look after it
         import kino_care as KC
-        if KC.out_of_balance() and (not d.get("sessions") or now - float(d["sessions"][-1]["t"]) >= 3600):
+        if KC.out_of_balance() and (not d.get("sessions") or now - float(_last_main(d)) >= 3600):
             return True
     except Exception:
         pass
@@ -1223,20 +1221,20 @@ def _step(W, ctx, log):
     return j
 
 
-def session(W, person, uid, log=None, task=None, project=""):
-    """one work session -> summary dict or None"""
-    if _BUSY["on"]:
+def session(W, person, uid, log=None, task=None, project="", lane="on", care=None, why=None):
+    """one work session -> summary dict or None (lane "on" = the main one, "lab" = the trading lab, side by side)"""
+    if _BUSY[lane]:
         return None
-    _BUSY["on"] = True
+    _BUSY[lane] = True
     t0 = time.time()
-    _WIF = os.path.join(HERE, "work_inflight.json")     # 2026-11-06: restart.ps1 waits while this exists
+    _WIF = os.path.join(HERE, "work_inflight.json" if lane == "on" else "work_inflight_%s.json" % lane)   # restart.ps1 waits
     try:
         json.dump({"t": t0, "task": str(task or "")[:200], "pid": os.getpid()}, open(_WIF, "w", encoding="utf-8"))
     except Exception:
         pass
     try:
         mind = _mind(person, uid)
-        nt = None if task else _load().get("next_task")     # 2026-11-01: a session his rhythm set (the Sunday look back)
+        nt = None if (task or lane != "on") else _load().get("next_task")     # 2026-11-01: a session his rhythm set
         if nt:
             _mut(lambda d: d.pop("next_task", None))
             # 2026-11-06 (watch): a hunt queued in the morning ran in the afternoon with the morning's words - the 34 waiting
@@ -1245,7 +1243,7 @@ def session(W, person, uid, log=None, task=None, project=""):
                 nt = dict(nt, do=DAY_HUNT)
             elif "night hunt" in str(nt.get("why") or ""):
                 nt = dict(nt, do=NIGHT_HUNT)
-        ch = {"do": task, "project": project, "why": "the owner asked me to work on it"} if task else nt or \
+        ch = {"do": task, "project": project, "why": why or "the owner asked me to work on it", "care": care} if task else nt or \
             W.ask_json(CHOOSE, mind[:12000] + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
         task = str((ch or {}).get("do") or "").strip() if isinstance(ch, dict) else ""
         rec = {"t": t0, "day": time.strftime("%Y-%m-%d", time.gmtime(t0)), "task": task[:300], "why": str((ch or {}).get("why") or "")[:300],
@@ -1348,7 +1346,7 @@ def session(W, person, uid, log=None, task=None, project=""):
             pass
         return rec
     finally:
-        _BUSY["on"] = False
+        _BUSY[lane] = False
         try:
             os.remove(_WIF)
         except Exception:

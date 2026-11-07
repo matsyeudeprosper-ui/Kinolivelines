@@ -25203,6 +25203,11 @@ def _urge_tick():
                     if pm == "kino" and _KWk.due(pm, ctx, now):
                         threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
                                          kwargs={"log": os.path.join(DIR, "robots", "kino_work.log")}, daemon=True).start()
+                    if pm == "kino" and _KWk.lab_now(now):   # 2026-11-07 (owner: multitask): the lab lane, side by side
+                        threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
+                                         kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.LAB_TIME,
+                                                 "project": "my trading lab", "lane": "lab", "care": "lab",
+                                                 "why": "my trading lab"}, daemon=True).start()
                 except Exception:
                     pass
                 if pm == "kino" and now - _MAIL_T.get("t", 0) > 300:   # 2026-11-01 (kino_mail): his mailbox, every 5 min
