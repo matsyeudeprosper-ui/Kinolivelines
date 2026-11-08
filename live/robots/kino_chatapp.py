@@ -21,7 +21,7 @@ import time
 # it IS that person - their Kino Chat account is linked to that channel, and Kino Chat reads what was said there.
 HERE = os.path.dirname(os.path.abspath(__file__))
 LINKS = os.path.join(HERE, "kino_chatlinks.json")           # {"tok": {tok: channel key}, "uid": {uid: [channel keys]}}
-BASE = "https://owltrader.duckdns.org"
+BASE = "https://chat.owltrader.duckdns.org"   # 2026-11-08: its own address, owltrader links belong to the OwlNest app
 _LK = threading.Lock()
 
 
