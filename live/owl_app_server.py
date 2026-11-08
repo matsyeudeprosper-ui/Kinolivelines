@@ -17092,6 +17092,8 @@ def chat_start(user, body):
             pass
     if robot is not None:
         robot["market"] = "BTCUSD"
+    if str(body.get("app") or "") == "kinochat":         # 2026-11-08: Kino Chat chats - Kino talks as a person, not a trader
+        c["app"] = "kinochat"
     try:
         _chat_prewarm_bg(user, c)
     except Exception:
@@ -17130,15 +17132,25 @@ def chat_start(user, body):
         # not the trading-robot builder - no trading unless THEY bring it up
         _chat_save(c)
         _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
-        threading.Thread(target=_chat_quick, args=(cid, user, "FIRST MEETING - %s just installed Kino Chat and opened it for the very first "
-                                                   "time; you have never met. Language: %s. They came to talk with YOU - not for trading. Be warm, "
-                                                   "short and curious about them: who they are, what is on their mind today. Say in a few words "
-                                                   "who you are: an AI companion AND a capable coworker - a friend to talk to, and help with real work (writing an "
-                                                   "email, a letter, a CV or a post, preparing a plan, searching the web, reading a document or photo they send); "
-                                                   "for a business, you and the Kinoverse team also build websites and run social media and ads. One or two "
-                                                   "short sentences for all that, natural, never a list or a pitch; then ask about them. "
-                                                   "Do NOT mention trading, markets, robots or the app's other features unless they bring it up. "
-                                                   "Never a form, never a sales line." % (user.get("name") or "someone new", "English" if en else "French")),
+        _kn = ""
+        try:
+            _rc(); _kn = __import__("kino_chatapp").elsewhere(user.get("id"))
+        except Exception:
+            pass
+        if _kn:                                           # 2026-11-08 (owner): a person he already knows - no first meeting
+            threading.Thread(target=_chat_quick, args=(cid, user, "%s, whom you already know from another channel (see what you "
+                                                       "remember below), just opened Kino Chat. Language: %s. Not a first meeting: "
+                                                       "greet them like the friend you know, in one short line, and carry on from where "
+                                                       "you stopped there - naturally, no introduction.\n\n%s" % (
+                                                           user.get("name") or "someone", "English" if en else "French", _kn)),
+                             daemon=True).start()
+            return {"ok": True, "id": cid}
+        # 2026-11-08 (owner: "a normal person does not start with all those things before I said hi"): just a human hello
+        threading.Thread(target=_chat_quick, args=(cid, user, "FIRST MEETING - %s just opened Kino Chat for the very first time and is "
+                                                   "here right now; you have never met. Language: %s. Do what a real person does when someone "
+                                                   "new walks in: a short, warm hello with their first name - one line, maybe one light, "
+                                                   "natural question - and then let THEM talk. No introduction of what you are or what you "
+                                                   "can do, no list, no pitch, no trading." % (user.get("name") or "someone new", "English" if en else "French")),
                          daemon=True).start()
         return {"ok": True, "id": cid}
     if not rid and not known:
@@ -36306,6 +36318,13 @@ class H(BaseHTTPRequestHandler):
                 _r = handle_login(_fk)
             if isinstance(_r, tuple) and _r[0] == "redirect" and re.match(r"^https://[^/]+/[A-Za-z0-9_-]+/", _r[1]):
                 _tk = _r[1].split("/")[3]
+                if _g("k"):                                     # 2026-11-08: came in through their personal link = a person Kino knows
+                    try:
+                        _ku = user_by_token(_tk)
+                        if _ku is not None:
+                            _KCA.claim(_g("k"), _ku.get("id"))
+                    except Exception:
+                        pass
                 self.send_response(302)
                 self.send_header("Location", "/%s/kinochat" % _tk)
                 try:
@@ -39188,6 +39207,11 @@ class H(BaseHTTPRequestHandler):
             if sub in ("atelier", "kinochat"):
                 if not _ok:
                     self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers(); return
+                if sub == "kinochat" and _q.get("k"):           # already signed in, opened their personal link: link the person
+                    try:
+                        _rc(); __import__("kino_chatapp").claim(_q["k"][0], user.get("id"))
+                    except Exception:
+                        pass
                 # 2026-11-08 (owner: "a WhatsApp kind of simple screen"): Kino Chat = its own light page, same account, same chats
                 _ap = open(os.path.join(DIR, "kinochat_page.html" if sub == "kinochat" else "owl_atelier_page.html"), encoding="utf-8").read()
                 self._send(_ap, "text/html; charset=utf-8")

@@ -71,6 +71,17 @@ def _log(t):
         pass
 
 
+def _kc_line(tg):
+    """2026-11-08 (owner): their own Kino Chat link - the app where the same conversation goes on (only when it fits)"""
+    try:
+        import kino_chatapp as KCA
+        return ("KINO CHAT: if they would like an app to talk with you any time, give them THEIR personal link %s - signing up "
+                "through it, they find you there with this same conversation (Android app and web). Only when it fits, never pushed.\n\n"
+                % KCA.invite_link(ckey(tg)))
+    except Exception:
+        return ""
+
+
 def reply(W, tg, name, username, lang, text):
     """a message from a client on Telegram -> {"say", "note"}"""
     import kino_sales as KS
@@ -100,7 +111,7 @@ def reply(W, tg, name, username, lang, text):
     sysp = ROLE + "\n\nWHO YOU ARE AND HOW YOU TALK (the same Kino everywhere; written in French, it applies in any language):\n" + vo
     user = (("CHANNEL: WhatsApp (business use only: talk about their project and your work; small talk is fine, but for long "
              "chats about anything else, point them kindly to Telegram @Kino_owl_bot or the Kino Chat app)\n\n" if wa else
-             "CHANNEL: Telegram\n\n") + "THE OFFER AND ITS RULES: %s\n\nTHIS PERSON'S FILE: %s\n\nTHE CONVERSATION (UTC, newest last):\n%s\n\nNow: %s UTC. "
+             "CHANNEL: Telegram\n\n") + _kc_line(tg) + "THE OFFER AND ITS RULES: %s\n\nTHIS PERSON'S FILE: %s\n\nTHE CONVERSATION (UTC, newest last):\n%s\n\nNow: %s UTC. "
             "Your reply to their last message:" % (
                 json.dumps({k: o.get(k) for k in ("services", "rules", "currency_note")}, ensure_ascii=False)[:5000],
                 json.dumps({k: rec.get(k) for k in ("name", "stage", "need", "notes", "job", "country")}, ensure_ascii=False)[:2000],

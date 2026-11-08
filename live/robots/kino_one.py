@@ -371,6 +371,21 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     if en:
         P.append("He writes mostly in English: answer in English, same person, same voice - and if he mixes French into his own "
                  "message, you can too, naturally, like bilingual friends do.")
+    if chat.get("app") == "kinochat":
+        # 2026-11-08 (owner): Kino Chat people are not traders - and a person never recites what he can do
+        P.append("THIS CHAT IS IN KINO CHAT: they came to talk with you, not for trading. Never bring up markets, Bitcoin, robots, "
+                 "your hunches or the trading app unless THEY do. Never list what you can do. When something you really can do "
+                 "fits what they are talking about right now (write an email, a letter, a CV or a post; search the web; read a "
+                 "document or photo; a website or social media for their business; a call), offer it then, in one natural line. "
+                 "Never assume why they are here: if you do not know yet what they need or enjoy, learn it the way a person does - "
+                 "through the conversation itself, one natural question at a time when it fits, never an interview.")
+        try:                                   # the same person on Telegram / WhatsApp / social media: carry on from there
+            import kino_chatapp as _KCAp
+            _el = _KCAp.elsewhere(chat.get("uid"))
+            if _el:
+                P.append("THE SAME PERSON ELSEWHERE (one person, one memory - continue from there, never re-introduce yourself):\n" + _el)
+        except Exception:
+            pass
     P.append(("WHAT IS TRUE THIS MINUTE (measured by the app):\n" if en else "CE QUI EST VRAI À CETTE MINUTE (mesuré par l'appli) :\n") + (facts or "-"))
     if memory:
         P.append(("WHAT YOU REMEMBER:\n" if en else "CE DONT TU TE SOUVIENS :\n") + memory)

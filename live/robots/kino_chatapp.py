@@ -9,6 +9,111 @@ Kino Chat = the trading app's own chat page (owl_atelier_page.html) in a chat-on
 The APK (live/apk_kinochat, package org.duckdns.owltrader.kinochat) is a Trusted Web Activity on /kinochat.
 """
 import html as _h
+import json
+import os
+import re
+import secrets
+import threading
+import time
+
+# 2026-11-08 (owner: "if he is a known friend, the conversation just continues from where they stopped - Telegram, social
+# media, trading app or email"): Kino gives a person he knows a personal Kino Chat link; whoever signs up / signs in through
+# it IS that person - their Kino Chat account is linked to that channel, and Kino Chat reads what was said there.
+HERE = os.path.dirname(os.path.abspath(__file__))
+LINKS = os.path.join(HERE, "kino_chatlinks.json")           # {"tok": {tok: channel key}, "uid": {uid: [channel keys]}}
+BASE = "https://owltrader.duckdns.org"
+_LK = threading.Lock()
+
+
+def _ld():
+    try:
+        d = json.load(open(LINKS, encoding="utf-8"))
+    except Exception:
+        d = {}
+    d.setdefault("tok", {}); d.setdefault("uid", {})
+    return d
+
+
+def _sv(d):
+    json.dump(d, open(LINKS + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(LINKS + ".tmp", LINKS)
+
+
+def invite_link(key):
+    """this person's own Kino Chat link (telegram:<id>, whatsapp:<phone>, mailto:<email>, bluesky:@handle ...) - same link each time"""
+    key = str(key or "").strip()
+    if not key:
+        return BASE + "/kinochat"
+    with _LK:
+        d = _ld()
+        tok = next((t for t, k in d["tok"].items() if k == key), None)
+        if tok is None:
+            tok = secrets.token_urlsafe(9).replace("-", "x").replace("_", "y")
+            d["tok"][tok] = key
+            _sv(d)
+    return BASE + "/kinochat?k=" + tok
+
+
+def claim(tok, uid):
+    """someone came in through a personal link: their Kino Chat account is that person -> the channel key, or None"""
+    tok = re.sub(r"[^A-Za-z0-9]", "", str(tok or ""))[:40]
+    if not tok or not uid:
+        return None
+    with _LK:
+        d = _ld()
+        key = d["tok"].get(tok)
+        if not key:
+            return None
+        L = d["uid"].setdefault(str(uid), [])
+        if key not in L:
+            L.append(key)
+            _sv(d)
+    try:                                   # one person, one memory: the friend he met on Bluesky/Telegram is this account too
+        import kino_online as KO
+        who = next((w for w, p in KO._load()["people"].items() if key in (p.get("also") or []) or w == key.split(":", 1)[-1]), None)
+        if who:
+            import kino_friends as KF
+            KF.link(who, "kinochat:%s" % uid)
+    except Exception:
+        pass
+    return key
+
+
+def keys_of(uid):
+    return list(_ld()["uid"].get(str(uid), []))
+
+
+def elsewhere(uid, n=14):
+    """for Kino's prompt in Kino Chat: who this person is on his other channels and the last words said there"""
+    out = []
+    try:
+        import kino_friends as KF
+        fo = KF.friend_of("kinochat:%s" % uid)
+        if fo:
+            out.append(fo)
+    except Exception:
+        pass
+    for key in keys_of(uid):
+        try:
+            if key.startswith(("telegram:", "whatsapp:")):
+                import kino_clients as KC
+                tg = key.split(":", 1)[1] if key.startswith("telegram:") else "wa:" + key.split(":", 1)[1]
+                M = (KC._load(tg).get("msgs") or [])[-n:]
+                if M:
+                    out.append("YOUR CONVERSATION WITH THEM ON %s (UTC, newest last):\n" % key.split(":")[0].upper() + "\n".join(
+                        "[%s] %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(m["t"])), "them" if m["who"] == "them" else "you",
+                                         str(m["text"])[:300]) for m in M))
+            if not out or key not in " ".join(out):
+                try:
+                    import kino_friends as KF
+                    fo = KF.friend_of(key)
+                    if fo and fo not in out:
+                        out.append(fo)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    return "\n\n".join(out)
 
 _KC_HEAD = """<script>window.KC=1;
 /* 2026-11-08 owner: "find a professional way to introduce all the things Kino can do - friend, but also an excellent coworker" */
@@ -54,7 +159,9 @@ def start_page(msg="", en=False):
     T = (lambda f, e: e) if en else (lambda f, e: f)
     return """<!doctype html><html lang="%s"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kino Chat</title><link rel="manifest" href="/kinochat.webmanifest"><meta name="theme-color" content="#0B0F14">
-<script>try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(L)}catch(e){}</script>
+<script>var KQ=(location.search.match(/[?&]k=([A-Za-z0-9]+)/)||[])[1]||'';
+try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(L+(KQ?'?k='+KQ:''))}catch(e){}
+document.addEventListener('DOMContentLoaded',function(){if(KQ)document.querySelectorAll('form').forEach(function(f){var i=document.createElement('input');i.type='hidden';i.name='k';i.value=KQ;f.appendChild(i)})});</script>
 <style>:root{--bg:#0B0F14;--card:#141a22;--ink:#e9eef4;--mut:#93a1b1;--acc:#8b85ff;--line:#222c38}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
 main{max-width:420px;margin:0 auto;padding:36px 16px 50px}.av{width:96px;height:96px;border-radius:50%%;margin:0 auto 14px;background:url(/kinochat.png) center/cover}
