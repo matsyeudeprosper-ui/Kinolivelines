@@ -17057,6 +17057,37 @@ def kino_adopt(user, body):
     return {"ok": True, "id": cid, "test": tr.get("ok")}
 
 
+def _kgr():
+    _rc()
+    import kino_groups as _KG
+    return _KG
+
+
+# 2026-11-08 (owner: "inviting a friend to join a group chat with Kino"): groups in Kino Chat (robots/kino_groups.py)
+def grp_list(user, body):
+    return {"ok": True, "groups": _kgr().mine(user.get("id"))}
+
+
+def grp_new(user, body):
+    return _kgr().new(user.get("id"), user.get("name") or user.get("id"), body.get("title"))
+
+
+def grp_get(user, body):
+    return _kgr().get(user.get("id"), str(body.get("id") or ""), body.get("since") or 0)
+
+
+def grp_send(user, body):
+    return _kgr().send(user.get("id"), str(body.get("id") or ""), body.get("text"))
+
+
+def grp_join(user, body):
+    return _kgr().join(user.get("id"), user.get("name") or user.get("id"), body.get("inv"))
+
+
+def grp_leave(user, body):
+    return _kgr().leave(user.get("id"), str(body.get("id") or ""))
+
+
 def chat_start(user, body):
     """a new chat; with robot=<id> of one of my robots, the chat starts from that robot (editing)"""
     os.makedirs(CHAT_DIR, exist_ok=True)
@@ -36326,7 +36357,8 @@ class H(BaseHTTPRequestHandler):
                     except Exception:
                         pass
                 self.send_response(302)
-                self.send_header("Location", "/%s/kinochat" % _tk)
+                _gq = re.sub(r"[^A-Za-z0-9]", "", _g("g"))[:20]          # 2026-11-08: came through a group invite
+                self.send_header("Location", "/%s/kinochat%s" % (_tk, ("?g=" + _gq) if _gq else ""))
                 try:
                     _lu = user_by_token(_tk)
                     if _lu is not None and not _lu.get("public"):
@@ -36471,6 +36503,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
+                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
@@ -36494,6 +36527,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
+                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,

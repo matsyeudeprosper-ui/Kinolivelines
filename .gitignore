@@ -373,3 +373,6 @@ live/apk_kinochat/*.log
 live/apk_kinochat/manifest-checksum.txt
 live/static/kinochat.apk
 live/robots/kino_chatlinks.json
+live/robots/kino_groups/
+live/robots/kino_groups.log
+live/robots/kino_groups_calls.log

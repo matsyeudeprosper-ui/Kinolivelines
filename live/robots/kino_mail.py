@@ -230,6 +230,14 @@ def send(to, subject, body, why=""):
                     return {"ok": False, "why": "not sent - the check said: %s" % why2}
             except Exception:
                 pass
+        if a != OWNER_EMAIL and "/kinochat" not in str(body):
+            try:                                   # 2026-11-08 (owner): their own Kino Chat link - the same conversation goes on there
+                import kino_chatapp as KCA
+                fr = bool(re.search(r"[éèàçù]|\b(bonjour|merci|vous|je|tu)\b", str(body), re.I))
+                body = str(body).rstrip() + ("\n\n--\nKino · Pour discuter avec moi à tout moment : %s" if fr else
+                                             "\n\n--\nKino · To chat with me any time: %s") % KCA.invite_link("mailto:" + a)
+            except Exception:
+                pass
         send_now(a, subject, body)
         try:                                       # 2026-11-05: a mail to a client with a running job is news for them
             import kino_sales as KSL

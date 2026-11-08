@@ -103,6 +103,13 @@ def elsewhere(uid, n=14):
                     out.append("YOUR CONVERSATION WITH THEM ON %s (UTC, newest last):\n" % key.split(":")[0].upper() + "\n".join(
                         "[%s] %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(m["t"])), "them" if m["who"] == "them" else "you",
                                          str(m["text"])[:300]) for m in M))
+            if key.startswith("mailto:"):         # the emails between them (kept in his people book)
+                import kino_online as KO
+                p = KO._load()["people"].get(key.split(":", 1)[1]) or {}
+                S = (p.get("said") or [])[-n:]
+                if S:
+                    out.append("YOUR EMAILS WITH THEM (newest last):\n" + "\n".join(
+                        ("they: " if s.get("dir") == "in" else "you: ") + str(s.get("text"))[:300] for s in S))
             if not out or key not in " ".join(out):
                 try:
                     import kino_friends as KF
@@ -159,9 +166,10 @@ def start_page(msg="", en=False):
     T = (lambda f, e: e) if en else (lambda f, e: f)
     return """<!doctype html><html lang="%s"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kino Chat</title><link rel="manifest" href="/kinochat.webmanifest"><meta name="theme-color" content="#0B0F14">
-<script>var KQ=(location.search.match(/[?&]k=([A-Za-z0-9]+)/)||[])[1]||'';
-try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(L+(KQ?'?k='+KQ:''))}catch(e){}
-document.addEventListener('DOMContentLoaded',function(){if(KQ)document.querySelectorAll('form').forEach(function(f){var i=document.createElement('input');i.type='hidden';i.name='k';i.value=KQ;f.appendChild(i)})});</script>
+<script>var KQ=(location.search.match(/[?&]k=([A-Za-z0-9]+)/)||[])[1]||'',GQ=(location.search.match(/[?&]g=([A-Za-z0-9]+)/)||[])[1]||'';
+try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(L+(KQ||GQ?'?'+(KQ?'k='+KQ:'')+(KQ&&GQ?'&':'')+(GQ?'g='+GQ:''):''))}catch(e){}
+document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('form').forEach(function(f){[['k',KQ],['g',GQ]].forEach(function(x){if(!x[1])return;var i=document.createElement('input');i.type='hidden';i.name=x[0];i.value=x[1];f.appendChild(i)})});
+if(GQ){var s=document.querySelector('p.s');if(s)s.textContent=(document.documentElement.lang==='en'?'You are invited to a group with Kino. Create your free account, or sign in:':'Tu es invité dans un groupe avec Kino. Crée ton compte gratuit, ou connecte-toi :')}});</script>
 <style>:root{--bg:#0B0F14;--card:#141a22;--ink:#e9eef4;--mut:#93a1b1;--acc:#8b85ff;--line:#222c38}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
 main{max-width:420px;margin:0 auto;padding:36px 16px 50px}.av{width:96px;height:96px;border-radius:50%%;margin:0 auto 14px;background:url(/kinochat.png) center/cover}
