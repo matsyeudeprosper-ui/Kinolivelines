@@ -647,3 +647,25 @@ def start():
     threading.Thread(target=s.serve_forever, daemon=True).start()
     threading.Thread(target=join_relays, daemon=True).start()
     _log("START on 127.0.0.1:%d as %s" % (PORT, ACTOR))
+
+
+def follow(who):
+    """2026-11-07 (review): follow a person on the fediverse (@user@host) - how people meet there too"""
+    who = str(who or "").strip().lstrip("@")
+    if "@" not in who:
+        return False
+    user, host = who.split("@", 1)
+    try:
+        wf = json.load(urllib.request.urlopen(urllib.request.Request(
+            "https://%s/.well-known/webfinger?resource=acct:%s@%s" % (host, urllib.parse.quote(user), host),
+            headers={"User-Agent": "kino-fedi/1 (+%s)" % BASE, "Accept": "application/jrd+json"}), timeout=15))
+        href = next(l["href"] for l in wf.get("links") or [] if l.get("rel") == "self")
+        a = _fetch(href)
+        inbox = (a.get("endpoints") or {}).get("sharedInbox") or a.get("inbox")
+        act = {"@context": AS, "id": ACTOR + "#follow-" + uuid.uuid4().hex[:8], "type": "Follow", "actor": ACTOR, "object": href}
+        ok = _deliver(inbox, act)
+        _log("FOLLOW %s -> %s" % (who, ok))
+        return ok
+    except Exception as e:
+        _log("FOLLOW-FAIL %s %s" % (who, str(e)[:150]))
+        return False

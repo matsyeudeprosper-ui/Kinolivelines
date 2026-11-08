@@ -22,12 +22,23 @@ BSKY_Q = ["small business owner", "my little shop", "opened my salon", "my resta
           "learning to code", "side project launched", "trading journal", "bitcoin trader", "help with my website",
           "mon salon de coiffure", "ma petite entreprise", "artisan boulanger", "auto-entrepreneur", "indie hacker",
           "mi pequeño negocio", "emprendedora", "mi tienda", "meu pequeno negócio", "empreendedor", "small business Australia",
-          "small business Nigeria", "small business Philippines", "freelancer India"]   # 2026-11-07: the whole world
+          "small business Nigeria", "small business Philippines", "freelancer India",   # 2026-11-07: the whole world
+          "need a website for my", "looking for a web designer", "recommend a website builder", "automate my spreadsheet",
+          "booking system for my salon", "je cherche un site", "necesito una página web"]
 MASTO = [("mastodon.social", "smallbusiness"), ("mastodon.social", "freelance"), ("mastodon.social", "webdev"),
          ("mastodon.social", "buildinpublic"), ("mastodon.social", "entrepreneur"), ("mastodon.social", "indieweb"),
          ("piaille.fr", "entrepreneur"), ("mastodon.social", "bitcoin"), ("mastodon.social", "emprendedores"), ("mastodon.social", "pymes")]
 _ADS = re.compile(r"\b(sale|discount|% ?off|buy now|promo|coupon|limited offer|dm me for|hire me|our agency|we build|affiliate|"
-                  r"giveaway|follow back|crypto signals?|airdrop|pump)\b", re.I)
+                  r"giveaway|follow back|crypto signals?|airdrop|pump|now in the shop|in my shop|shop now|link in bio|check out my|"
+                  r"new (?:blog )?post|subscribe|newsletter|ich suche|we are hiring|job opening|available now|pre-?order)\b", re.I)
+# 2026-11-07 (review): subjects a stranger AI does not walk into
+_HOT = re.compile(r"\b(trump|biden|election|vot(?:e|ing)|gaza|israel|palestin|ukrain|russia|war|religio|church|islam|"
+                  r"abortion|suicide|funeral|passed away|died|cancer|diagnos|grief|depress|nsfw|onlyfans)\b", re.I)
+# 2026-11-07 (review): someone ASKING for what he does - the warmest kind of meeting (answering an ask is not cold selling)
+_ASKS = re.compile(r"(looking for|need|anyone (?:know|recommend)|recommend(?:ations)?|how (?:do|can) i|any tips|who (?:can|could)|"
+                   r"je cherche|besoin d|quelqu.un (?:conna|peut)|busco|necesito|preciso)\W+(?:\w+\W+){0,6}?(web ?site|site web|"
+                   r"web (?:dev|developer|designer)|landing page|booking|r[ée]servation|automat|spreadsheet|excel|chatbot|bot\b|"
+                   r"app\b|online shop|boutique en ligne|p[aá]gina web|sitio web)", re.I)
 _SELL = re.compile(r"(kinoverse|https?://|www\.|\bprice|\btarif|\bhire\b|\bdevis\b|€|\$\s?\d|\bmy (?:services|offer)\b|"
                    r"\bje (?:vous )?propose\b|\bI can build\b|\bI build websites\b)", re.I)
 RULES = ("FRIENDSHIP (Matsy 07/11: friends first - work comes from friends, never push it):\n"
@@ -37,6 +48,11 @@ RULES = ("FRIENDSHIP (Matsy 07/11: friends first - work comes from friends, neve
          "fits (your profile says it). %d new people a day at most; if someone does not answer, you do not write again.\n"
          "- When they answer, it becomes a conversation (it calls you like any reply). Remember them: friend_note (who, about) - "
          "what they do, what they care about, a thread to come back to. Come back to friends days later about THEIR thing.\n"
+         "- [ASKED FOR HELP] people asked for something you do: answer the question itself first, then you may say plainly that "
+         "it is the kind of thing you do and that you can show them (no link in this first word - they ask for more).\n"
+         "- Never walk into politics, religion, war, grief or health. A like and a follow come with your first word on Bluesky.\n"
+         "- After EVERY conversation: friend_note what you learned (what they do, what they care about, a thread to come "
+         "back to) - a friend you forget is not a friend.\n"
          "- If a friend has a problem you can solve (a site, a booking page, a spreadsheet chore, a bot), you may say once that "
          "it is the kind of thing you do - only when it fits their need; they ask for more, or not.\n"
          "- Reply with skeet (Bluesky) or toot (Mastodon) and url = the post you answer." % NEW_PER_DAY)
@@ -72,9 +88,9 @@ def _plain(h):
 
 def _good(text, who, known):
     t = str(text or "")
-    if len(t) < 40 or len(t) > 1200 or _ADS.search(t) or who in known:
+    if len(t) < 40 or len(t) > 1200 or _ADS.search(t) or _HOT.search(t) or who in known:
         return False
-    if t.count("#") > 4 or len(re.findall(r"https?://", t)) > 1:
+    if t.count("#") > 4 or len(re.findall(r"https?://|https?:// ", t)) > 0 and not _ASKS.search(t):
         return False
     return True
 
@@ -145,7 +161,7 @@ def scout(force=False):
         new = []
         for f in keep:                                 # one post per person: you meet a person, not a feed
             if f["url"] not in have and f["who"] not in hw:
-                new.append(dict(f, t=time.time()))
+                new.append(dict(f, t=time.time(), asked=bool(_ASKS.search(f["text"]))))
                 hw.add(f["who"])
         d["cands"] = (d["cands"] + new)[-40:]
         d["cands"] = [c for c in d["cands"] if time.time() - float(c["t"]) < 3 * 86400]
@@ -157,6 +173,10 @@ def scout(force=False):
 def met_today():
     d = _load()
     return [m for m in d["met"] if time.time() - float(m["t"]) < 86400]
+
+
+def _asked(url):
+    return any(c["url"] == url and c.get("asked") for c in _load()["cands"])
 
 
 def first(who, where, url, text):
@@ -173,7 +193,9 @@ def first(who, where, url, text):
         pass
     if len(met_today()) >= NEW_PER_DAY:
         return "not sent - you met %d new people today; that is enough, more tomorrow" % NEW_PER_DAY
-    if _SELL.search(str(text or "")):
+    if _asked(url) and re.search(r"https?://|www\.", str(text or "")):
+        return "not sent - even to someone who asked, a first word carries no link; say what you do, they ask for more"
+    if not _asked(url) and _SELL.search(str(text or "")):
         return ("not sent - a first word to someone carries no link, no Kinoverse, no price, nothing for sale; answer what they "
                 "said, as a person")
     return None
@@ -190,6 +212,18 @@ def met(who, where, url, text):
         KO.note(who, where, text, "out", url, kind="first_word")
     except Exception:
         pass
+    if where == "bluesky":                     # 2026-11-07 (review): a like on what they said and a follow - how people meet there
+        try:
+            import kino_post as KPF
+            KPF.manage(None, "like", "bluesky", url)
+            KPF.manage(None, "follow", "bluesky", who)
+        except Exception as e:
+            _log("like/follow failed %s: %s" % (who, str(e)[:120]))
+    if where == "mastodon":                    # and a follow on the fediverse (his own server sends it)
+        try:
+            __import__("kino_fedi").follow(who)
+        except Exception:
+            pass
     _log("MET %s on %s" % (who, where))
 
 
@@ -237,6 +271,39 @@ def _friends():
     return sorted(F, key=lambda x: -float(x[1].get("last") or 0))
 
 
+_LATEST = {}
+
+
+def latest(who, where):
+    """the friend's most recent post (cached 2 h) -> (text, url) or None"""
+    k = (who, where)
+    if k in _LATEST and time.time() - _LATEST[k][0] < 7200:
+        return _LATEST[k][1]
+    out = None
+    try:
+        if where == "bluesky":
+            import kino_post as KP
+            tok = KP._bsky_session()[0]
+            r = KP._bsky("app.bsky.feed.getAuthorFeed?actor=%s&limit=3&filter=posts_no_replies" % urllib.parse.quote(who.lstrip("@")), None, tok)
+            f = (r.get("feed") or [])
+            if f:
+                pp = f[0]["post"]
+                out = (str((pp.get("record") or {}).get("text") or "")[:300], pp.get("uri"), pp.get("indexedAt", "")[:10])
+        elif where == "mastodon":
+            acct = who.lstrip("@")
+            host = acct.split("@")[-1]
+            a = json.load(urllib.request.urlopen(urllib.request.Request("https://%s/api/v1/accounts/lookup?acct=%s" % (host, acct.split("@")[0]),
+                                                                        headers={"User-Agent": "kino"}), timeout=15))
+            st = json.load(urllib.request.urlopen(urllib.request.Request("https://%s/api/v1/accounts/%s/statuses?limit=3&exclude_replies=true" % (host, a["id"]),
+                                                                         headers={"User-Agent": "kino"}), timeout=15))
+            if st:
+                out = (_plain(st[0].get("content"))[:300], st[0].get("url"), str(st[0].get("created_at") or "")[:10])
+    except Exception:
+        out = None
+    _LATEST[k] = (time.time(), out)
+    return out
+
+
 def block():
     d = _load()
     L = [RULES]
@@ -246,7 +313,7 @@ def block():
         L.append("PEOPLE YOU COULD MEET (recent public posts; %d new people left today; answer only those you have something "
                  "real to say to):" % left)
         for c in C:
-            L.append("- %s %s on %s (%s): \"%s\" url=%s" % (c["who"], ("(" + c["name"] + ")") if c.get("name") else "", c["where"],
+            L.append("- %s%s %s on %s (%s): \"%s\" url=%s" % ("[ASKED FOR HELP] " if c.get("asked") else "", c["who"], ("(" + c["name"] + ")") if c.get("name") else "", c["where"],
                                                            c["q"], c["text"][:260].replace("\n", " "), c["url"]))
     F = _friends()[:6]
     if F:
@@ -254,9 +321,11 @@ def block():
         for who, p, n in F:
             ab = " / ".join(a["text"] for a in (p.get("about") or [])[-2:])
             days = (time.time() - float(p.get("last") or 0)) / 86400
-            L.append("- %s on %s, %d answers, last %.0f days ago%s | last words: %s" % (
+            lt = latest(who, p.get("where"))
+            L.append("- %s on %s, %d answers, last %.0f days ago%s | last words: %s%s" % (
                 who, p.get("where"), n, days, (" | you know: " + ab) if ab else "",
-                " / ".join(("they: " if s["dir"] == "in" else "you: ") + s["text"][:80] for s in (p.get("said") or [])[-2:])))
+                " / ".join(("they: " if s["dir"] == "in" else "you: ") + s["text"][:80] for s in (p.get("said") or [])[-2:]),
+                (" | THEIR LATEST POST (%s): \"%s\" url=%s" % (lt[2], lt[0], lt[1])) if lt else ""))
     return "\n".join(L)
 
 
