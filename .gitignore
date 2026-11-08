@@ -349,3 +349,6 @@ study/pb_series/
 live/robots/kino_zernio.json
 live/robots/kino_zernio.json.tmp
 live/robots/kino_zernio.log
+live/robots/kino_guestcall.json
+live/robots/kino_guestcall.json.tmp
+live/robots/kino_guestcall.log

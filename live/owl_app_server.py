@@ -36264,6 +36264,19 @@ class H(BaseHTTPRequestHandler):
     def _do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
+        if len(_parts) == 3 and _parts[0] == "appel" and _parts[2] in ("start", "end") and re.match(r"^[A-Za-z0-9_-]{12,40}$", _parts[1]):
+            # 2026-11-07: a guest's live call with Kino (kino_guestcall: minutes, the OpenAI live line, his Telegram memory)
+            _rdg = os.path.join(DIR, "robots")
+            if _rdg not in sys.path:
+                sys.path.insert(0, _rdg)
+            try:
+                _bg = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0) or 0), 40000)).decode("utf-8", "replace") or "{}")
+            except Exception:
+                _bg = {}
+            _KG = __import__("kino_guestcall")
+            _rg = _KG.start(_parts[1], str(_bg.get("sdp") or "")) if _parts[2] == "start" else _KG.end(_parts[1], _bg.get("secs"), _bg.get("tr") or "")
+            self._send(json.dumps(_rg, ensure_ascii=False), "application/json")
+            return
         if len(_parts) == 2 and _parts[0] == "c" and re.match(r"^[A-Za-z0-9_-]{12,40}$", _parts[1]):
             # 2026-11-07: the client's page - approve a post / ask a change / post alone / their ad budget cap
             import urllib.parse as _upz
@@ -38083,6 +38096,17 @@ class H(BaseHTTPRequestHandler):
             # 2026-11-01 (owner: "draft all the bases needed"): the public legal pages (legal_pages.py)
             import legal_pages as _LGP
             self._send(_LGP.render(parts[0], "lang=en" in (self.path.split("?") + [""])[1]), "text/html; charset=utf-8")
+            return
+        if len(parts) == 2 and parts[0] == "appel" and re.match(r"^[A-Za-z0-9_-]{12,40}$", parts[1]):
+            # 2026-11-07 (owner: "add the call button" on Telegram): a guest's call page, 5 free minutes a month
+            _rdg = os.path.join(DIR, "robots")
+            if _rdg not in sys.path:
+                sys.path.insert(0, _rdg)
+            _pgg = __import__("kino_guestcall").page(parts[1])
+            if _pgg is None:
+                self._not_found()
+            else:
+                self._send(_pgg, "text/html; charset=utf-8")
             return
         if parts and parts[0] == "c" and len(parts) in (2, 4) and re.match(r"^[A-Za-z0-9_-]{12,40}$", parts[1]):
             # 2026-11-07 (owner: social media + ads service on Zernio): a client's own page - connect networks, approve posts

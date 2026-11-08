@@ -35,6 +35,8 @@ How you work with a client - like a good independent professional:
 - If they write in another language, answer in it. Short messages, like a person on Telegram - no lists unless they ask.
 - If something needs Matsy (a contract signature, an ID), say you will arrange it.
 - If they say stop or not interested: thank them, and that is the end.
+- You can also TALK by voice: when they want to call or hear you, or a talk would be easier than typing, end your reply
+  with a line #call - a "Call Kino" button appears under your message (a free live call, a few minutes a month).
 When you agree a scope and price, or they send something you must act on, end your reply with ONE line for your own desk:
 #note <what was agreed or what you must do next> - it is not shown to them."""
 
@@ -125,6 +127,17 @@ def reply(W, tg, name, username, lang, text):
         except Exception:
             pass
         out = (out[:mf.start()] + out[mf.end():]).strip()
+    call = None                               # 2026-11-07 (owner: "add the call button"): a live voice call link under his message
+    mc = re.search(r"(?m)^\s*#call\s*$", out)
+    if mc or re.search(r"(?i)\b(appel|appeler|call me|call you|phone|t[eé]l[eé]phone|vocal|voice|parler de vive voix)\b", str(text)[:300]) \
+            or str(text).strip().lower().startswith(("/call", "/appel")):
+        if mc:
+            out = (out[:mc.start()] + out[mc.end():]).strip()
+        try:
+            import kino_guestcall as KGC
+            call = KGC.link(tg)
+        except Exception:
+            call = None
     m = re.search(r"(?m)^\s*#note\s+(.+)$", out)
     if m:
         note = m.group(1).strip()[:500]
@@ -140,7 +153,7 @@ def reply(W, tg, name, username, lang, text):
         if rec.get("job"):
             KS.job(rec["id"], note=note, client_update=True)
     _log("%s @%s | them: %s | kino: %s%s" % (tg, username, str(text)[:100], out[:120], (" | note: " + note) if note else ""))
-    return {"say": out, "note": note}
+    return {"say": out, "note": note, "call": call}
 
 
 def send(tg, text):

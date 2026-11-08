@@ -292,6 +292,13 @@ def client_bridge(token, cid, frm, text, msg_id):
             for part in [x.strip() for x in (r.get("say") or "").split("\n\n") if x.strip()][:5]:
                 tg(token, "sendMessage", chat_id=cid, text=part)
                 time.sleep(0.8)
+            if r.get("call"):                    # 2026-11-07 (owner: "add the call button"): a live voice call with Kino
+                fr = str((frm or {}).get("language_code") or "fr").startswith("fr")
+                tg(token, "sendMessage", chat_id=cid,
+                   text="\U0001F4DE " + ("Un appel de vive voix avec Kino, gratuit (quelques minutes par mois) :" if fr else
+                                         "A live voice call with Kino, free (a few minutes a month):"),
+                   reply_markup=json.dumps({"inline_keyboard": [[{"text": "\U0001F4DE " + ("Appeler Kino" if fr else "Call Kino"),
+                                                                   "url": r["call"]}]]}))
         except Exception as e:
             say(f"client bridge error: {e}")
     threading.Thread(target=run, daemon=True).start()
