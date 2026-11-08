@@ -166,6 +166,27 @@ body.th header>.av{animation:breathe 1.6s ease-in-out infinite}
 .ths button.on{border-color:var(--acc)}.ths button span{position:absolute;left:0;right:0;bottom:3px;font:600 11px Inter,system-ui;color:#fff;text-shadow:0 1px 3px #000}
 .seg{display:flex;gap:6px;margin:8px 0 18px}.seg button{flex:1;border:1px solid var(--border);background:none;color:var(--ink);border-radius:12px;padding:10px 0;cursor:pointer;font-family:Inter,system-ui}.seg button.on{background:var(--acc);color:#04120a;border-color:var(--acc);font-weight:700}
 .shc h4{margin:6px 0 0;font-size:14px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+/* Kino's Moments (2026-11-08): his own posts, like a status */
+header>.av.mom{box-shadow:0 0 0 2px var(--bar),0 0 0 4.5px transparent;background-clip:padding-box;cursor:pointer}
+header>.av.mom:before{content:"";position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(var(--acc),var(--vio),var(--me1),var(--acc));z-index:-1;animation:spin 6s linear infinite}
+header>.av{cursor:pointer}
+@keyframes spin{to{transform:rotate(360deg)}}
+#mv{position:fixed;inset:0;z-index:55;background:#000;display:none;flex-direction:column;color:#fff;touch-action:none}#mv.on{display:flex;animation:up .2s ease-out}
+#mvbars{display:flex;gap:4px;padding:10px 10px 0;padding-top:max(10px,env(safe-area-inset-top))}#mvbars i{flex:1;height:3px;border-radius:2px;background:#ffffff40;overflow:hidden}#mvbars i b{display:block;height:100%;width:0;background:#fff}
+#mvh{display:flex;align-items:center;gap:10px;padding:10px 12px}#mvh .av{width:36px;height:36px}#mvh .av:after{display:none}#mvh span{flex:1;font-size:14px}#mvh small{display:block;color:#ffffffa8;font-size:12px}
+#mvh button{border:0;background:none;color:#fff;font-size:24px;cursor:pointer}
+#mvb{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 28px;position:relative;overflow:hidden}
+#mvb .tx{font:600 24px/1.4 Inter,system-ui;white-space:pre-wrap;text-shadow:0 2px 12px #0006}#mvb .tx.s{font-size:19px}#mvb .tx.xs{font-size:16px;font-weight:500}
+#mvb img{max-width:100%;max-height:55vh;object-fit:contain;border-radius:14px;margin:0 auto 16px;display:block;box-shadow:0 10px 40px #0008}
+#mvb .ch{position:absolute;right:16px;bottom:12px;font-size:12px;color:#ffffffb0}
+#mvf{display:flex;gap:8px;padding:10px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+#mvf input{flex:1;min-width:0;border-radius:24px;border:1px solid #ffffff55;background:#ffffff14;color:#fff;padding:12px 16px;font:15px Inter,system-ui;outline:none}#mvf input::placeholder{color:#ffffffb0}
+#mvf button{width:48px;height:48px;border-radius:50%;border:0;background:var(--acc2);color:#fff;font-size:18px;flex:none;cursor:pointer}
+#mvf a{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#ffffff1f;color:#fff;text-decoration:none;flex:none;font-size:18px}
+.ncard{display:flex;gap:12px;align-items:center;margin:10px 4px;padding:12px 14px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);box-shadow:0 6px 18px #0005;animation:bin .3s ease-out}
+.ncard i{font-style:normal;font-size:26px}.ncard span{flex:1;font-size:14px;color:var(--mut)}.ncard b{display:block;color:var(--ink);font-size:15px}
+.ncard button{border:0;border-radius:12px;padding:9px 12px;font:600 13px Inter,system-ui;cursor:pointer;background:var(--acc2);color:#fff}.ncard button.x{background:none;color:var(--mut);padding:9px 4px}
 </style></head><body>
 <header>
  <button class="ib" id="back" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -197,6 +218,8 @@ body.th header>.av{animation:breathe 1.6s ease-in-out infinite}
 <div id="call"><div class="av"></div><h2>Kino</h2><p id="cst"></p><p id="ctm"></p><button class="hang" id="hang">✆</button></div>
 <div id="rdv"><header><button class="ib" id="rdx" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div class="who"><b>Kino<i>✦</i></b><small id="rdt"></small></div>
  <button class="ib" id="rds" aria-label="Écouter">🔊</button><button class="ib" id="rdc2" aria-label="Copier">📋</button><button class="ib" id="rdsh" aria-label="Partager">📤</button></header><div id="rdc"></div></div>
+<div id="mv"><div id="mvbars"></div><div id="mvh"><div class="av"></div><span><b>Kino</b><small id="mvt"></small></span><button id="mvx" aria-label="Fermer">✕</button></div>
+ <div id="mvb"></div><div id="mvf"><input id="mvi" autocomplete="off"><button id="mvs" aria-label="Envoyer">➤</button><a id="mvl" target="_blank" rel="noopener" aria-label="Voir">↗</a></div></div>
 <canvas id="fx"></canvas>
 <div id="toast"></div>
 <script>
@@ -313,7 +336,7 @@ function sendDoc(f){var nm=f.name||'document';if(/\.doc$/i.test(nm)){toast(T('An
   post('chat_doc',{id:CID,data:r.result,name:nm,note:note}).then(function(j){if(j&&j.ok){FAST=Date.now()+90000;load(true).then(loop)}else toast(T('Document refusé (PDF, Word .docx ou texte).','Document refused (PDF, Word .docx or text).'),4000)}).catch(function(){toast(T('Hors ligne.','Offline.'))})};r.readAsDataURL(f)}
 
 // ---- 2026-11-08 (owner: "hold a message for a menu, swipe right to reply - like the trading app"): message features
-var RXL=['👍','❤️','😂','😮','😢','👎'];
+var RXL=['👍','💚','😂','😮','😢','👎'];
 function starGet(){try{return JSON.parse(localStorage.getItem('kcStar')||'[]')}catch(e){return []}}
 function starred(t){return starGet().some(function(x){return x.t===t})}
 function gmsg(t){return G&&G.msgs.filter(function(m){return Math.abs(m.t-t)<1e-3})[0]}
@@ -419,22 +442,22 @@ function tone(f1,f2,d,v){if(!SND)return;try{AC=AC||new (window.AudioContext||win
 function sndSend(){tone(520,880,.12,.05)}function sndIn(){tone(660,990,.09,.05);setTimeout(function(){tone(990,1320,.14,.04)},90)}
 // effects: confetti, hearts, stars - when the words call for it
 var FXR=[[/(🎉|🥳|🎂|bravo|félicitations|felicitations|congrat|joyeux anniversaire|happy birthday|on a réussi|we did it|youpi|hourra)/i,'conf'],
- [/(❤️|😍|🥰|💕|je t'aime|je t’aime|love you|merci du fond|thank you so much)/i,'love'],[/(✨|🌟|⭐|incroyable|amazing|magnifique|génial|genial|awesome)/i,'star']];
+ [/(❤️|💚|😍|🥰|💕|je t'aime|je t’aime|love you|merci du fond|thank you so much)/i,'love'],[/(✨|🌟|⭐|incroyable|amazing|magnifique|génial|genial|awesome)/i,'star']];
 function fxFor(t){for(var k=0;k<FXR.length;k++)if(FXR[k][0].test(t||''))return FXR[k][1];return null}
 function fx(kind){var cv=$('fx'),x=cv.getContext('2d'),W=cv.width=innerWidth,H=cv.height=innerHeight,P=[],C3=['#22c55e','#8b7dff','#3b82f6','#f472b6','#facc15','#fb923c'];
- var E=kind==='love'?['❤️','💖','💕','😍']:kind==='star'?['✨','⭐','🌟']:null;
+ var E=kind==='love'?['💚','💚','✨','🍀']:kind==='star'?['✨','⭐','🌟']:null;
  for(var k=0;k<(E?38:140);k++)P.push({x:E?Math.random()*W:W/2+(Math.random()-.5)*80,y:E?H+20+Math.random()*120:H*.42,vx:E?(Math.random()-.5)*1.2:(Math.random()-.5)*16,vy:E?-(2.5+Math.random()*3.5):-(6+Math.random()*12),
   r:Math.random()*6.28,vr:(Math.random()-.5)*.3,c:C3[k%C3.length],e:E?E[k%E.length]:null,s:E?20+Math.random()*20:6+Math.random()*6});
  var t0=performance.now();(function fr(t){var el=t-t0;x.clearRect(0,0,W,H);P.forEach(function(p){p.x+=p.vx;p.y+=p.vy;if(!E){p.vy+=.35;p.vx*=.99}p.r+=p.vr;x.save();x.globalAlpha=Math.max(0,1-el/2600);x.translate(p.x,p.y);x.rotate(p.r);
   if(p.e){x.font=p.s+'px serif';x.fillText(p.e,0,0)}else{x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2)}x.restore()});if(el<2600)requestAnimationFrame(fr);else x.clearRect(0,0,W,H)})(t0)}
 // double tap = heart
 function quickHeart(b,cx,cy){LHEART=Date.now();var m=mOf(b);if(!m)return;var grp=b.dataset.t!=null;if(!grp&&m.role!=='ai'){lpOpen(b);return}
- var h=document.createElement('div');h.className='hrt';h.textContent='❤️';h.style.left=cx+'px';h.style.top=cy+'px';document.body.appendChild(h);setTimeout(function(){h.remove()},850);
- try{navigator.vibrate&&navigator.vibrate([10,40,10])}catch(e){}var cur=grp?(m.rx&&m.rx[G.me]):m.mreact;if(cur!=='❤️')react(b,m,'❤️')}
+ var h=document.createElement('div');h.className='hrt';h.textContent='💚';h.style.left=cx+'px';h.style.top=cy+'px';document.body.appendChild(h);setTimeout(function(){h.remove()},850);
+ try{navigator.vibrate&&navigator.vibrate([10,40,10])}catch(e){}var cur=grp?(m.rx&&m.rx[G.me]):m.mreact;if(cur!=='💚')react(b,m,'💚')}
 // after each paint: new-bubble animation, sound, effects, suggestions, Kino breathing
 function afterPaint(M,th){document.body.classList.toggle('th',!!th);var last=M[M.length-1],mx=0;M.forEach(function(m){if(m.t>mx)mx=m.t});
  if(ANIM_T>=0){M.forEach(function(m){if(m.t>ANIM_T&&m.role==='ai'){sndIn();var k=fxFor(m.text);if(k)setTimeout(function(){fx(k)},250)}})}
- if(mx>ANIM_T)ANIM_T=mx;chipsPaint(last,th)}
+ var fresh=ANIM_T>=0&&mx>ANIM_T&&last&&last.role==='ai';if(mx>ANIM_T)ANIM_T=mx;chipsPaint(last,th);if(fresh)setTimeout(nOffer,1500)}
 function chipsPaint(last,th){var box=$('chips'),L=(!th&&!GID&&!QRY&&last&&last.role==='ai'&&last.chips)||[],key=last?String(last.t):'';
  if(!L.length||CHIPOFF===key||tx.value.trim()){box.innerHTML='';return}
  box.innerHTML=L.slice(0,4).map(function(c){return '<button>'+esc(c)+'</button>'}).join('');
@@ -466,11 +489,66 @@ function lookSh(){var th=lsg('kcTheme','nuit'),fs=lsg('kcFs','16px');
  shOpen('<h3>🎨 '+T('Apparence','Appearance')+'</h3><h4>'+T('Thème','Theme')+'</h4><div class="ths">'+THS.map(function(x){return '<button data-th="'+x[0]+'" class="'+(x[0]===th?'on':'')+'" style="background:'+x[2]+'"><span>'+x[1]+'</span></button>'}).join('')+'</div>'+
   '<h4>'+T('Taille du texte','Text size')+'</h4><div class="seg">'+FSS.map(function(x){return '<button data-fs="'+x[0]+'" class="'+(x[0]===fs?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div>'+
   '<h4>'+T('Sons','Sounds')+'</h4><div class="seg"><button data-sn="1" class="'+(SND?'on':'')+'">🔔 '+T('Activés','On')+'</button><button data-sn="0" class="'+(SND?'':'on')+'">🔕 '+T('Coupés','Off')+'</button></div>'+
-  '<h4>'+T('Effets','Effects')+'</h4><div class="seg"><button data-fx="conf">🎉</button><button data-fx="love">❤️</button><button data-fx="star">✨</button></div>'+
-  '<p style="font-size:13px">'+T('Les effets partent tout seuls quand un message les appelle : « bravo 🎉 », « merci ❤️ »… Deux tapes sur un message de Kino = ❤️.','Effects fire on their own when a message calls for them: “congrats 🎉”, “love it ❤️”… Double-tap a Kino message = ❤️.')+'</p>');
+  '<h4>'+T('Effets','Effects')+'</h4><div class="seg"><button data-fx="conf">🎉</button><button data-fx="love">💚</button><button data-fx="star">✨</button></div>'+
+  '<p style="font-size:13px">'+T('Les effets partent tout seuls quand un message les appelle : « bravo 🎉 », « merci 💚 »… Deux tapes sur un message de Kino = 💚.','Effects fire on their own when a message calls for them: “congrats 🎉”, “love it 💚”… Double-tap a Kino message = 💚.')+'</p>');
  $('shc').onclick=function(e){var b=e.target.closest('button');if(!b)return;
   if(b.dataset.th){lss('kcTheme',b.dataset.th);look();lookSh()}else if(b.dataset.fs){lss('kcFs',b.dataset.fs);look();lookSh()}
   else if(b.dataset.sn){lss('kcSnd',b.dataset.sn);look();lookSh();if(SND)sndIn()}else if(b.dataset.fx){shClose();fx(b.dataset.fx)}}}
+
+// ---- 2026-11-08 Kino's Moments: his own posts, like a status - tap his photo
+var MOM=[],MK=0,MT=null,MT0=0,MDUR=7000,MPAUSE=false,MLEFT=0;
+var MGR=['linear-gradient(160deg,#0f766e,#1e1b4b)','linear-gradient(160deg,#7c3aed,#db2777)','linear-gradient(160deg,#0369a1,#0f172a)','linear-gradient(160deg,#c2410c,#7f1d1d)','linear-gradient(160deg,#15803d,#0c4a6e)','linear-gradient(160deg,#4338ca,#0e7490)'];
+function momSeen(){return +lsg('kcMomSeen','0')}
+function momLoad(){return post('kino_moments',{}).then(function(j){MOM=(j&&j.moments)||[];var av=document.querySelector('header>.av');
+ av.classList.toggle('mom',!!MOM.length&&MOM[MOM.length-1].t>momSeen())}).catch(function(){})}
+function ago(t){var m=Math.round((Date.now()/1000-t)/60);if(m<60)return T('il y a ','')+Math.max(1,m)+' min'+T('',' ago');var h=Math.round(m/60);if(h<24)return T('il y a ','')+h+' h'+T('',' ago');return dayOf(t)}
+function momOpen(){if(!MOM.length){toast(T('Kino n’a encore rien partagé cette semaine.','Kino has not shared anything this week.'));return}
+ var k=MOM.findIndex(function(m){return m.t>momSeen()});MK=k<0?0:k;$('mv').classList.add('on');try{history.pushState({mv:1},'')}catch(e){}momShow()}
+function momShow(){var m=MOM[MK];if(!m)return momClose();clearTimeout(MT);
+ $('mvbars').innerHTML=MOM.map(function(_,k){return '<i><b style="width:'+(k<MK?'100%':'0')+'"></b></i>'}).join('');
+ $('mvt').textContent=ago(m.t);var L=(m.text||'').length;
+ $('mvb').style.background=m.img?'#000':MGR[Math.floor(m.t)%MGR.length];
+ $('mvb').innerHTML=(m.img?'<img src="'+B+'kino_moment_img?t='+m.t+'" alt="">':'')+'<div class="tx'+(L>260||m.img?' xs':L>140?' s':'')+'">'+esc(m.text)+'</div><span class="ch">'+({x:'X',bluesky:'Bluesky',mastodon:'Mastodon'}[m.ch]||'')+'</span>';
+ $('mvl').href=m.url||'#';$('mvl').style.display=m.url?'grid':'none';$('mvi').placeholder=T('Répondre à Kino…','Reply to Kino…');
+ MDUR=Math.min(15000,5000+L*35);MLEFT=MDUR;MPAUSE=false;momRun();
+ if(m.t>momSeen())lss('kcMomSeen',String(m.t))}
+function momRun(){MT0=Date.now();var bar=$('mvbars').children[MK].firstChild,done=1-MLEFT/MDUR;bar.style.transition='none';bar.style.width=(done*100)+'%';void bar.offsetWidth;
+ bar.style.transition='width '+MLEFT+'ms linear';bar.style.width='100%';clearTimeout(MT);MT=setTimeout(function(){MK++;if(MK<MOM.length)momShow();else momClose()},MLEFT)}
+function momPause(){if(MPAUSE)return;MPAUSE=true;clearTimeout(MT);MLEFT=Math.max(300,MLEFT-(Date.now()-MT0));var bar=$('mvbars').children[MK].firstChild,w=getComputedStyle(bar).width;bar.style.transition='none';bar.style.width=w}
+function momResume(){if(!MPAUSE)return;MPAUSE=false;momRun()}
+function momClose(){clearTimeout(MT);$('mv').classList.remove('on');$('mvi').value='';momLoad();if(history.state&&history.state.mv)try{history.back()}catch(e){}}
+$('mvx').onclick=function(e){e.stopPropagation();momClose()};
+window.addEventListener('popstate',function(){if($('mv').classList.contains('on')){clearTimeout(MT);$('mv').classList.remove('on');momLoad()}});
+(function(){var down=0,hx=0;$('mvb').addEventListener('pointerdown',function(e){down=Date.now();hx=e.clientX;momPause()});
+ $('mvb').addEventListener('pointerup',function(e){var held=Date.now()-down>350;if(held){momResume();return}
+  if(hx<innerWidth*.33){MK=Math.max(0,MK-1);momShow()}else{MK++;if(MK<MOM.length)momShow();else momClose()}});
+ $('mvb').addEventListener('pointercancel',momResume)})();
+$('mvi').addEventListener('focus',momPause);$('mvi').addEventListener('blur',function(){if(!$('mvi').value.trim())momResume()});
+function momReply(){var t=$('mvi').value.trim(),m=MOM[MK];if(!t||!m||!CID)return;if(GID)grpClose();
+ REPLY={i:0,who:'ai',text:'📸 '+T('Moment','Moment')+' · '+String(m.text).replace(/\s+/g,' ').slice(0,170)};$('mvi').value='';momClose();
+ tx.value=t;auto();send();toast(T('Envoyé à Kino','Sent to Kino'))}
+$('mvs').onclick=momReply;$('mvi').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();momReply()}});
+document.querySelector('header>.av').addEventListener('click',function(e){e.stopPropagation();momOpen()});
+setTimeout(momLoad,1500);setInterval(function(){if(document.visibilityState==='visible')momLoad()},600000);
+// ---- 2026-11-08 notifications: Kino reaches you when the app is closed
+var NREG=null;
+function nSupported(){return 'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
+function nReg(){if(NREG)return Promise.resolve(NREG);return navigator.serviceWorker.getRegistration(B).then(function(r){return r||navigator.serviceWorker.register(B+'sw.js',{scope:B})}).then(function(r){NREG=r;return r})}
+function nState(){if(!nSupported())return Promise.resolve(null);return nReg().then(function(r){return r.pushManager.getSubscription()}).catch(function(){return null})}
+function nOn(){if(!nSupported()){toast(T('Pas disponible sur cet appareil.','Not available on this device.'));return Promise.resolve(false)}
+ return Notification.requestPermission().then(function(p){if(p!=='granted'){toast(T('Refusé : autorise les notifications de Kino Chat dans les réglages du téléphone.','Refused: allow Kino Chat notifications in your phone settings.'),4500);return false}
+  return Promise.all([nReg(),fetch(B+'push_key').then(function(r){return r.json()})]).then(function(a){var key=a[1]&&a[1].key;if(!key)return false;
+   var pd='='.repeat((4-key.length%4)%4),bin=atob((key+pd).replace(/-/g,'+').replace(/_/g,'/')),arr=new Uint8Array(bin.length);for(var k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);
+   return a[0].pushManager.subscribe({userVisibleOnly:true,applicationServerKey:arr}).then(function(sub){return fetch(B+'push_sub',{method:'POST',body:JSON.stringify(sub)}).then(function(){toast('🔔 '+T('C’est fait : Kino te prévient quand il t’écrit.','Done: Kino lets you know when he writes.'));return true})})})}).catch(function(){toast(T('Pas possible sur cet appareil.','Not possible on this device.'));return false})}
+function nOff(){return nState().then(function(s){if(!s)return;return fetch(B+'push_unsub',{method:'POST',body:JSON.stringify(s)}).then(function(){return s.unsubscribe()}).then(function(){toast('🔕 '+T('Notifications coupées.','Notifications off.'))})})}
+function notifSh(){nState().then(function(s){shOpen('<h3>🔔 '+T('Notifications','Notifications')+'</h3><p>'+T('Quand l’appli est fermée, Kino te prévient dès qu’il t’écrit. La nuit, il garde ses messages pour le matin, sauf l’important.','When the app is closed, Kino lets you know as soon as he writes. At night he keeps his messages for the morning, except what matters.')+'</p>'+
+ '<div class="seg"><button data-n="1" class="'+(s?'on':'')+'">🔔 '+T('Activées','On')+'</button><button data-n="0" class="'+(s?'':'on')+'">🔕 '+T('Coupées','Off')+'</button></div>');
+ $('shc').onclick=function(e){var b=e.target.closest('[data-n]');if(!b)return;(b.dataset.n==='1'?nOn():nOff()).then(function(){setTimeout(notifSh,300)})}})}
+// a gentle offer, once, after a real exchange - never at the door
+function nOffer(){if(!nSupported()||Notification.permission!=='default'||lsg('kcNAsk','')||GID)return;var M=(C&&C.msgs)||[];
+ if(M.filter(function(m){return m.role==='user'}).length<3)return;lss('kcNAsk','1');
+ var d=document.createElement('div');d.className='ncard';d.innerHTML='<i>🔔</i><span><b>'+T('Je te préviens quand je t’écris ?','Shall I let you know when I write?')+'</b>'+T('Même appli fermée.','Even with the app closed.')+'</span><button>'+T('Oui','Yes')+'</button><button class="x">✕</button>';
+ $('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight;d.querySelector('button').onclick=function(){d.remove();nOn()};d.querySelector('.x').onclick=function(){d.remove()}}
 // ---- menu: only what a chat needs
 function shOpen(h){$('shc').innerHTML=h;$('sh').classList.add('on')}function shClose(){$('sh').classList.remove('on')}
 $('sh').onclick=function(e){if(e.target===this)shClose()};
@@ -479,6 +557,8 @@ var MENU=[['🔍',T('Chercher','Search'),function(){$('srch').classList.add('on'
  ['👥',T('Groupes','Groups'),groups],
  ['⭐',T('Messages importants','Starred messages'),starSh],
  ['🎨',T('Apparence','Appearance'),lookSh],
+ ['🔔',T('Notifications','Notifications'),notifSh],
+ ['📸',T('Moments de Kino','Kino’s moments'),momOpen],
  ['💌',T('Inviter un ami','Invite a friend'),invite],
  ['🧹',T('Vider la discussion','Clear chat'),clearChat],
  ['✨',T('Ce que Kino sait faire','What Kino can do'),function(){tourGo()}],

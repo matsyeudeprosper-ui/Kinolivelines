@@ -275,10 +275,12 @@ SW = (
     "const u=(e.notification.data&&e.notification.data.url)||'';"
     "if(e.action==='like'){const k=u.indexOf('/atelier?c=');if(k>0){e.waitUntil(fetch(u.slice(0,k)+'/chat_like',{method:'POST',"
     "headers:{'Content-Type':'application/json'},body:JSON.stringify({id:decodeURIComponent(u.slice(k+11).split('&')[0])})}).catch(()=>{}));}return;}"
+    # 2026-11-08: on the Kino Chat host (chat.owltrader...) a tap opens Kino Chat
+    "const v2=(self.location.hostname.indexOf('chat.')===0&&u.indexOf('/atelier')>0)?u.split('/atelier')[0]+'/kinochat':u;"
     "e.waitUntil(clients.matchAll({type:'window',"
     "includeUncontrolled:true}).then(cs=>{"
-    "for(const c of cs){if('focus' in c){if(u&&c.navigate){return c.navigate(u).then(w=>w&&w.focus()).catch(()=>c.focus());}return c.focus();}}"
-    "return clients.openWindow(u||'.');}));});")
+    "for(const c of cs){if('focus' in c){if(v2&&c.navigate){return c.navigate(v2).then(w=>w&&w.focus()).catch(()=>c.focus());}return c.focus();}}"
+    "return clients.openWindow(v2||'.');}));});")
 
 VAPID_FILE = os.path.join(DIR, "owl_push_vapid.json")
 PUSH_SUBS_FILE = os.path.join(DIR, "owl_push_subs.json")
@@ -17083,6 +17085,34 @@ def grp_send(user, body):
     return _kgr().send(user.get("id"), str(body.get("id") or ""), body.get("text"), body.get("reply"))
 
 
+def _moments():
+    """2026-11-08 (owner: "more significant upgrade"): Kino's own wall posts as Moments in Kino Chat (like a status). Only
+    his own posts - never his replies to people (older entries have no reply flag: only X ones count, X is his shop window)."""
+    try:
+        P = json.load(open(os.path.join(DIR, "robots", "kino_posts.json"), encoding="utf-8")).get("posts") or []
+    except Exception:
+        return []
+    out, seen = [], set()
+    for p in P:
+        if not p.get("ok") or not p.get("text") or p.get("channel") not in ("x", "bluesky", "mastodon"):
+            continue
+        if ("reply" in p and p["reply"]) or ("reply" not in p and p["channel"] != "x"):
+            continue
+        if time.time() - float(p.get("t") or 0) > 14 * 86400:
+            continue
+        k = re.sub(r"\W+", "", p["text"].lower())[:50]
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(p)
+    return out[-12:]
+
+
+def kino_moments(user, body):
+    return {"ok": True, "moments": [{"t": p["t"], "ch": p["channel"], "text": p["text"], "url": p.get("url") or "",
+                                     "img": bool(p.get("img") and os.path.isfile(p["img"]))} for p in _moments()]}
+
+
 def grp_react(user, body):
     return _kgr().react(user.get("id"), str(body.get("id") or ""), body.get("t"), str(body.get("e") or ""))
 
@@ -27237,7 +27267,7 @@ def _read_shot(cid, user, fn, note):
         pass
 
 
-CHAT_REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "🔥", "🙏")
+CHAT_REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "🔥", "🙏", "💚")
 
 
 def chat_react(user, body):
@@ -27256,7 +27286,7 @@ def chat_react(user, body):
         M = c.get("msgs") or []
         if 0 <= i < len(M) and M[i].get("role") == "ai":
             M[i]["mreact"] = None if M[i].get("mreact") == e else e
-            return M[i].get("text") if M[i]["mreact"] in ("😂", "🔥", "❤️") else None
+            return M[i].get("text") if M[i]["mreact"] in ("😂", "🔥", "❤️", "💚") else None
     jk = _chat_mut(c["id"], put)
     if jk:                       # 2026-10-19 (owner humanity item 3): a shared moment - Kino may come back to it, rarely
         _mem_note_safe(user.get("id"), lambda mm: mm.__setitem__("jokes", ((mm.get("jokes") or []) + [{"t": int(time.time()), "text": str(jk)[:160],
@@ -36515,7 +36545,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react",
+                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react", "kino_moments",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
@@ -36539,7 +36569,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
-                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react,
+                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react, "kino_moments": kino_moments,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
@@ -39213,6 +39243,18 @@ class H(BaseHTTPRequestHandler):
                 else:
                     self.send_response(200); self.send_header("Content-Type", "audio/mpeg"); self.send_header("Content-Length", str(len(_mp3)))
                     self.send_header("Cache-Control", "private, max-age=86400"); self.end_headers(); self.wfile.write(_mp3)
+            except Exception:
+                self._not_found()
+        elif sub == "kino_moment_img":
+            try:                                            # 2026-11-08: only a picture that one of his moments points to
+                _mt = float((self.path.split("t=", 1)[1].split("&")[0]) if "t=" in self.path else 0)
+                _mp = next((p for p in _moments() if abs(float(p["t"]) - _mt) < 1e-3 and p.get("img")), None)
+                if not _mp or not os.path.isfile(_mp["img"]):
+                    self._not_found()
+                else:
+                    _dat = open(_mp["img"], "rb").read()
+                    self.send_response(200); self.send_header("Content-Type", "image/png" if _mp["img"].lower().endswith(".png") else "image/jpeg")
+                    self.send_header("Content-Length", str(len(_dat))); self.send_header("Cache-Control", "private, max-age=86400"); self.end_headers(); self.wfile.write(_dat)
             except Exception:
                 self._not_found()
         elif sub == "kino_fab.js":

@@ -262,10 +262,15 @@ def check(W, text, log=None):
     return bool(j.get("ok")), str(j.get("why") or "")[:300]
 
 
-def _record(channel, what, ok, why, url="", text=None):
+def _record(channel, what, ok, why, url="", text=None, reply=None, image=None):
     d = _load()
-    d["posts"].append({"t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "channel": channel, "what": str(what)[:200],
-                       "ok": ok, "why": why, "url": url, "text": str(text)[:1200] if text else None})
+    it = {"t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "channel": channel, "what": str(what)[:200],
+          "ok": ok, "why": why, "url": url, "text": str(text)[:1200] if text else None}
+    if reply is not None:                     # 2026-11-08: Kino Chat's Moments show his own posts, never his replies
+        it["reply"] = bool(reply)
+    if image and ok:
+        it["img"] = str(image)
+    d["posts"].append(it)
     d["posts"] = d["posts"][-300:]
     _save(d)
 
@@ -552,7 +557,7 @@ def bluesky(W, text, log=None, reply_to=None, image=None, alt=""):
     except Exception as e:
         _record("bluesky", text[:120], False, str(e)[:200])
         return "the post failed: %s" % str(e)[:200]
-    _record("bluesky", text[:120], True, "", url, text=text)
+    _record("bluesky", text[:120], True, "", url, text=text, reply=bool(reply_to), image=image)
     if reply_to:
         try:
             import kino_online as KO
@@ -597,7 +602,7 @@ def xpost(W, text, log=None, reply_to=None, image=None):
     if not r.get("ok"):
         _record("x", text[:120], False, str(r.get("err"))[:200])
         return "not posted on X: %s" % str(r.get("err"))[:200]
-    _record("x", text[:120], True, "", r["url"], text=text)
+    _record("x", text[:120], True, "", r["url"], text=text, reply=bool(reply_to), image=image)
     return "posted on X: %s" % r["url"]
 
 
@@ -646,7 +651,7 @@ def mastodon(W, text, reply_to=None, log=None):
     except Exception as e:
         _record("mastodon", text[:120], False, str(e)[:200])
         return "the note failed: %s" % str(e)[:200]
-    _record("mastodon", text[:120], True, "", nid, text=text)
+    _record("mastodon", text[:120], True, "", nid, text=text, reply=bool(reply_to))
     if reply_to:
         try:
             import kino_online as KO

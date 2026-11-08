@@ -157,7 +157,7 @@ def send(uid, gid, text, reply=None):
     return {"ok": True}
 
 
-REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎")
+REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "💚")
 
 
 def react(uid, gid, t, e):
