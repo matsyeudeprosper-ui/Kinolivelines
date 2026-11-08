@@ -88,6 +88,21 @@ NIGHT_HUNT = ("My night hunt around the world (it is night in France, daytime el
               "Matsy now - he sleeps; it goes in my diary and the playbook. Finish with done: who I wrote to.")
 
 
+MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to me because I am known for taking care of almost "
+                "any matter, in any country; I never limit myself - I always find a way). For each mission below, most urgent "
+                "first: 1) the REAL goal behind the words; 2) every road I have: my browser and the web (read, compare, fill a "
+                "contact form once allow_site opens it), my email as their assistant who says so, a helper in the physical world "
+                "(help_task: go somewhere, look, photograph, pick up, drop off, queue), a real postcard or letter (card), my team "
+                "(delegate) for long parts, a tool I build (tool_propose), the person themselves for a fact only they have, Matsy "
+                "(ask) for what truly needs him; 3) pick the surest and cheapest road and keep a plan B; 4) DO the next concrete "
+                "step now; 5) report with the action mission: id, tell = a short clear update for the person in THEIR language "
+                "(what I did, what happens next, when), status working|waiting|watching|done|stuck, next_h = when I come back. "
+                "Never 'I can't': when one road is closed I take another; only if every road fails do I tell them honestly what "
+                "I tried and what they can do. Never pretend to be them, never log into their accounts, never promise what I do "
+                "not control, always say I am an AI writing for them. A watcher (it repeats): look, and tell them ONLY when "
+                "something new and useful appears (otherwise mission with no tell, status watching).")
+
+
 def _log(line):
     try:
         open(LOG, "a", encoding="utf-8").write(time.strftime("%m-%d %H:%M:%S ") + line + "\n")
@@ -288,6 +303,16 @@ def due(person, ctx, now=None):
     _fr = time.gmtime(now + 3600)
     if _memory_call(d, now):
         return True
+    try:                                       # 2026-11-08 (owner: Kino s'en occupe): a client mission due calls him first
+        import kino_missions as KMIS
+        _mb = KMIS.block()
+        if _mb and not d.get("next_task") and (not d.get("sessions") or now - float(_last_main(d)) >= 300):
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": MISSION_TIME + "\n\nMISSIONS DUE NOW:\n" + _mb,
+                                                         "project": "client missions", "why": "people count on me",
+                                                         "care": "missions"}))
+            return True
+    except Exception:
+        pass
     try:                                       # 2026-11-07 (final review): someone answered him online - he answers first, at any
         import kino_online as KONf             # hour (their day may be our night), in a friend time (it starts with the waiting)
         if KONf.pending(24) and not d.get("next_task") and (not d.get("sessions") or now - float(_last_main(d)) >= 600):
@@ -374,7 +399,7 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "don't let the budget block his making friends and hunting - I take care of that spending until he
     # can afford it"): a friend session or a client hunt is never held back by his day budget; the rest of his work still is
     _nt = _load().get("next_task") or {}
-    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab", "wall") or "hunt" in str(_nt.get("why") or "").lower()
+    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab", "wall", "missions") or "hunt" in str(_nt.get("why") or "").lower()
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
@@ -454,7 +479,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -499,6 +524,9 @@ You can make things public on your own, under your own name, with nobody approvi
 - friend_note ("who" @handle as in MY FRIENDS, "about" what you learned: what they do, what they care about, a thread to come back to) - your memory of a person.
 - whatsapp_open ("who" wa:<phone>, "name" their first name, "text" your one or two sentences, "kind" update|share): opens a WhatsApp talk after 24 h of silence with an approved opener (a few cents) - only people who gave you their WhatsApp; inside 24 h use telegram with who = wa:<phone>.
 - SOCIAL MEDIA + ADS CLIENTS (services "Social media management" and "Ads management"; you post FOR them through Zernio): social_client ("name" business, "to" their email, "service" social|ads|both, "lang", "price" agreed) once they said yes - it gives THEIR page link (send it: they connect their networks there with one click each, never a password); social_post ("who" client, "text" the post in THEIR voice and language, "when" YYYY-MM-DD HH:MM their time, "image" a path or https, "nets" optional list) - waits for their yes on their page until they choose to let you post alone; tell them once a week when a batch waits; social_inbox ("who") = comments and Google reviews with no answer yet; social_reply ("who", "kind" review|comment, "id", "account", "post" for a comment, "text" - warm, short, as the business, never argue, a bad review gets an apology + an offer to fix it offline); social_report ("who") = their numbers for the monthly report; ads_accounts ("who"); ads_boost ("who", "post" Zernio post id, "account", "ad_account", "budget_eur" per day, "days") - only inside the monthly budget the CLIENT confirmed on their page; their money, so say exactly what and how much first.
+- mission ("id" a client mission, "tell" a short update for that person in their language - it lands in their chat and on their
+  phone; leave it out when there is nothing new for them, "status" working|waiting|watching|done|stuck, "next_h" hours until
+  you come back to it, "note" a private line for yourself): your work FOR a person (see CLIENT MISSIONS when they are due).
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
@@ -821,6 +849,13 @@ def _act0(j, person, W=None):
     if a == "note":
         diary(j.get("text") or "")
         return "noted in your diary"
+    if a == "mission":                     # 2026-11-08: a step on a client mission (kino_missions)
+        try:
+            import kino_missions as KMIS
+            return KMIS.update(str(j.get("id") or ""), tell=str(j.get("tell") or ""), status=j.get("status") or None,
+                               note=str(j.get("note") or ""), next_h=j.get("next_h"))
+        except Exception as e:
+            return "mission update failed: %s" % e
     if a == "email":
         try:
             import kino_mail as KM

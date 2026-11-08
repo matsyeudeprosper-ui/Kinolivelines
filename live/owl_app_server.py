@@ -17134,6 +17134,12 @@ def _chat_job_quote(cid, user, c, v):
     _done = after and len(str(_last.get("text") or "")) > 350      # he delivered it in the same message
     _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
                                                         "status": ("owed" if _done else "trust") if after else "waiting", "after": after}))
+    if after and not _done:
+        try:
+            import kino_missions as _KMs
+            _KMs.create(user.get("id"), cid, what, name=user.get("name") or "", lang=_rc().member_lang(c, "fr"), ref=ref, eur=eur, paid=False)
+        except Exception:
+            pass
 
 
 def _chat_deliver(cid, user, v):
@@ -17247,6 +17253,22 @@ def _reminder_tick():
                            urgent=True, tag="remind-" + r["id"])
         except Exception:
             pass
+        try:                                            # 2026-11-08: his mission reports -> their chat + a push
+            import kino_missions as _KMs
+            for q in _KMs.drain():
+                def _put(cc, q=q):
+                    _chat_msg(cc, "ai", text=q["text"], mission=q["mid"], one=True, quick=True)   # his own words from his work session: never re-judged
+                    if q.get("status") == "done" and q.get("ref"):
+                        for m in cc.get("msgs") or []:
+                            if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == q["ref"] and m["pay"].get("status") in ("paid", "trust"):
+                                m["pay"]["status"] = "delivered" if m["pay"]["status"] == "paid" else "owed"
+                    return True
+                _chat_mut(q["cid"], _put)
+                _cq = _chat_load(_user_by_id(q["uid"]) or {}, q["cid"]) or {}
+                queue_push(q["uid"], "Kino", q["text"][:170], path=("kinochat" if _cq.get("app") == "kinochat" else "atelier?c=" + q["cid"]),
+                           tag="mission-" + q["mid"])
+        except Exception:
+            pass
 
 
 def chat_paid(user, body):
@@ -17308,10 +17330,11 @@ def _chat_job_paid(x):
                      "If it needs the outside world (something posted, a helper), say exactly what happens next and when. send = true." % (
                          ("%.2f" % float(x.get("usd") or 0)).rstrip("0").rstrip("."), x.get("what"))),
                      kwargs={"notify": True}, daemon=True).start()
-    try:
-        import kino_urge as _KUj
-        _KUj.add("kino", "A PAID JOB from %s in Kino Chat: \"%s\" (%s EUR). It is being delivered in their chat; if it needs your "
-                 "computer, a helper or the outside world, do it in your next work session." % (x.get("name") or x["uid"], x.get("what"), x.get("usd")))
+    try:                                              # 2026-11-08 (owner: Kino s'en occupe): the work goes on in his sessions
+        _rc()
+        import kino_missions as _KMs
+        _KMs.create(x["uid"], x["cid"], x.get("what"), name=x.get("name") or "", lang=x.get("lang") or "fr", ref=x["ref"],
+                    eur=float(x.get("usd") or 0), paid=True)
     except Exception:
         pass
 
@@ -22076,6 +22099,17 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _chat_deliver(cid, user, v)
             elif k == "rappel" and v:
                 _reminder_add(user, cid, v)
+            elif k == "mission" and v and (c.get("app") == "kinochat" or is_admin(user)):
+                try:
+                    import kino_missions as _KMs
+                    _mw, _, _mr = str(v).partition("|")
+                    _rh = re.search(r"(\d+)\s*h", _mr)
+                    _free = [m for m in _KMs.for_uid(uid) if m["status"] in _KMs.OPEN and not m.get("paid") and not m.get("ref")]
+                    if len(_free) < 2 or is_admin(user):
+                        _KMs.create(uid, cid, _mw.strip(), name=user.get("name") or "", lang=_rc().member_lang(c, "fr"),
+                                    repeat_h=max(24, int(_rh.group(1))) if _rh else None)
+                except Exception:
+                    pass
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
@@ -40109,6 +40143,15 @@ if __name__ == "__main__":
     try:                                                               # 2026-11-01: his site (Mastodon home, shop) up with the app,
         sys.path.insert(0, os.path.join(DIR, "robots")) if os.path.join(DIR, "robots") not in sys.path else None
         __import__("kino_fedi").start()                                # not ~5 min later at the first urge tick
+    except Exception:
+        pass
+    if not globals().get("_REMIND_ON"):                                # 2026-11-08: reminders + mission reports, from the start
+        globals()["_REMIND_ON"] = True
+        threading.Thread(target=_reminder_tick, daemon=True).start()
+    try:                                                               # 2026-11-08: a paid Kino Chat job becomes a mission at once
+        import kino_pay as _KPh0
+        if _chat_job_paid not in _KPh0.ON_PAID:
+            _KPh0.ON_PAID.append(_chat_job_paid)
     except Exception:
         pass
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()

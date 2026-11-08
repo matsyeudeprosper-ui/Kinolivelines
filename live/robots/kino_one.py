@@ -152,7 +152,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -388,6 +388,13 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                    "waiting": "quoted, not paid yet - do not do it yet", "claimed": "they say they paid, the owner is checking - not yet",
                    "paid": "PAID - deliver it now if not done", "delivered": "delivered", "cancelled": "cancelled"}
             pass
+        try:                                   # 2026-11-08: what he is taking care of for this person, and where it stands
+            import kino_missions as _KMp
+            _ml = _KMp.chat_line(chat.get("uid") or "")
+            if _ml:
+                P.append("MISSIONS YOU ARE CARRYING OUT FOR THEM (your work sessions do them; their updates reach this chat): " + _ml)
+        except Exception:
+            pass
         _files = [m.get("name") for m in chat.get("msgs") or [] if m.get("role") == "file" and m.get("name")]
         if _files:
             P.append("PDFS YOU MADE IN THIS CHAT (you can attach them to an email): " + "; ".join(_files[-8:]))
@@ -412,9 +419,15 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "warm line, then on its own line: #prix <euros> | <the job in a few words> - the app shows a PayPal button. "
                  "Up to 9 EUR they pay AFTER, only if happy: do it right away. Above, do it once the app says it is paid; until "
                  "then keep helping for free (the writing, the advice) so they could do it themselves. One price, no haggling "
-                 "show; if they truly cannot pay, say so kindly and keep helping for free. PAPERWORK (your strong side, France "
-                 "first): explain any official letter (CAF, impôts, France Travail, CPAM, bank, landlord, a fine, a court, a "
-                 "school) in plain words - what it says, what to do, by when, what happens if they do nothing - write their "
+                 "show; if they truly cannot pay, say so kindly and keep helping for free. KINO S'EN OCCUPE - you are known for "
+                 "taking care of almost any matter, in any country: never answer that you cannot; find the road (the web, "
+                 "your email as their assistant, a helper in the physical world, a real letter, your team, a tool you build) "
+                 "and say how you will get it done. Anything that takes time or the world (contact several places, chase an "
+                 "answer, watch job offers or flats every day, send someone somewhere) becomes a mission: paid ones open by "
+                 "themselves once paid (or right away for a pay-after job); a free one (a daily watcher, a free follow-up - "
+                 "2 at most) you open with a line #mission <exactly what, for whom, the goal> | every 24h (leave out the "
+                 "'every' part for a one-off). PAPERWORK (your strong side, in THEIR country - tax office, social benefits, "
+                 "immigration, a bank, a landlord, a fine, a court, a school): explain any official letter in plain words - what it says, what to do, by when, what happens if they do nothing - write their "
                  "answer for free, say when a professional (lawyer, social worker) is the right person; posting it for them is "
                  "the paid part. REMINDERS (free): add on its own line #rappel <YYYY-MM-DD HH:MM in THEIR local time> | <what, "
                  "in their words> - their phone rings with it then. JOB APPLICATIONS go from THEIR OWN email, never yours (an "
