@@ -153,7 +153,7 @@ def _bsky_profiles(handles, tok):
 
 # news outlets, magazines, job boards: not people either
 _MEDIA = re.compile(r"\b(news|actu(?:alit[ée]s?)?|magazine|mag\b|m[ée]dia|journal|r[ée]daction|newsletter|headlines|"
-                    r"offres? d.emploi|job board|jobs?\b|recrut|h/f|press|presse|podcast|radio|tv|diario|peri[oó]dico|noticias|informaci[oó]n|informativo|revista|jornal|not[ií]cias|portal|feira|feria)\b", re.I)
+                    r"offres? d.emploi|job board|jobs?\b|recrut|h/f|press|presse|podcast|radio|tv|diario|peri[oó]dico|noticias|informaci[oó]n|informativo|revista|jornal|not[ií]cias|portal|feira|feria|periodismo|actualidad)\b", re.I)
 _LINKISH = re.compile(r"\b[\w-]+\.(?:com|fr|net|org|io|co|city|be|nl|de|es|info|news)/", re.I)
 
 
@@ -170,6 +170,8 @@ def human(prof, text, who="", name=""):
         return "shares a link (promotion or news)"
     if fg >= 1500 and fo >= 1000 and 0.7 <= fg / max(fo, 1) <= 1.4:
         return "follow-for-follow account (%d following, %d followers)" % (fg, fo)
+    if po >= 5000 and fg <= 30:            # a publisher: tens of thousands of posts, following almost nobody
+        return "publisher (%d posts, following %d)" % (po, fg)
     if po >= 60 and fo <= 5:
         return "auto-poster (%d posts, %d followers)" % (po, fo)
     if _BRAND.search(str(prof.get("bio") or "")) or _BRAND.search(str(text or "")):
