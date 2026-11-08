@@ -189,7 +189,7 @@ button.g{background:transparent;border:1px solid var(--acc);color:var(--acc)}.ms
 <input name="login" placeholder="%s" required maxlength="40" autocomplete="username" autocapitalize="none">
 <input name="password" type="password" placeholder="%s" required maxlength="64" autocomplete="current-password">
 <button class="g">%s</button></form></div>
-<p class="f" id="apk" style="display:none"><a href="/kinochat.apk" style="color:var(--acc);font-weight:600">&#128241; KINOAPK</a></p>
+<p class="f" id="apk" style="display:none"><a href="https://kinoverse26-byte.github.io/app/KinoChat.apk" style="color:var(--acc);font-weight:600">&#128241; KINOAPK</a></p>
 <script>if(/Android/i.test(navigator.userAgent)&&!matchMedia('(display-mode: standalone)').matches&&document.referrer.indexOf('android-app://')<0)document.getElementById('apk').style.display='block'</script>
 <p class="f">%s</p></main></body></html>""".replace("KINOAPK", "Installer l'app Kino Chat (Android)" if not en else "Install the Kino Chat app (Android)") % (
         "en" if en else "fr",
