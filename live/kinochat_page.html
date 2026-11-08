@@ -469,10 +469,9 @@ document.addEventListener('click',function(e){var c=e.target.closest('[data-cp]'
 var RDM=null;
 document.addEventListener('click',function(e){var r=e.target.closest('[data-rd]');if(!r)return;var m=C&&C.msgs[+r.dataset.rd];if(!m)return;RDM=m;
  $('rdc').innerHTML='<div class="who2"><div class="av"></div>'+dayOf(m.t)+' · '+hm(m.t)+' · '+Math.max(1,Math.round((m.text||'').split(/\s+/).length/200))+' min</div><div class="in">'+md(m.text)+'</div>';
- $('rdt').textContent=T('Mode lecture','Reading mode');$('rdv').classList.add('on');$('rdc').scrollTop=0;try{history.pushState({rd:1},'')}catch(x){}});
+ $('rdt').textContent=T('Mode lecture','Reading mode');$('rdv').classList.add('on');$('rdc').scrollTop=0;});
 function rdClose(){$('rdv').classList.remove('on');if(AU){AU.pause();AU=null}}
-$('rdx').onclick=function(){if(history.state&&history.state.rd)history.back();else rdClose()};
-window.addEventListener('popstate',function(){if($('rdv').classList.contains('on'))rdClose()});
+$('rdx').onclick=rdClose;
 $('rds').onclick=function(){if(RDM)sayIt(RDM.text||'')};
 $('rdc2').onclick=function(){if(RDM)try{navigator.clipboard.writeText(RDM.text||'').then(function(){toast(T('Copié','Copied'))})}catch(e){}};
 $('rdsh').onclick=function(){if(RDM&&navigator.share)navigator.share({title:'Kino',text:RDM.text||''}).catch(function(){})};
@@ -503,7 +502,7 @@ function momLoad(){return post('kino_moments',{}).then(function(j){MOM=(j&&j.mom
  av.classList.toggle('mom',!!MOM.length&&MOM[MOM.length-1].t>momSeen())}).catch(function(){})}
 function ago(t){var m=Math.round((Date.now()/1000-t)/60);if(m<60)return T('il y a ','')+Math.max(1,m)+' min'+T('',' ago');var h=Math.round(m/60);if(h<24)return T('il y a ','')+h+' h'+T('',' ago');return dayOf(t)}
 function momOpen(){if(!MOM.length){toast(T('Kino n’a encore rien partagé cette semaine.','Kino has not shared anything this week.'));return}
- var k=MOM.findIndex(function(m){return m.t>momSeen()});MK=k<0?0:k;$('mv').classList.add('on');try{history.pushState({mv:1},'')}catch(e){}momShow()}
+ var k=MOM.findIndex(function(m){return m.t>momSeen()});MK=k<0?0:k;$('mv').classList.add('on');momShow()}
 function momShow(){var m=MOM[MK];if(!m)return momClose();clearTimeout(MT);
  $('mvbars').innerHTML=MOM.map(function(_,k){return '<i><b style="width:'+(k<MK?'100%':'0')+'"></b></i>'}).join('');
  $('mvt').textContent=ago(m.t);var L=(m.text||'').length;
@@ -516,9 +515,8 @@ function momRun(){MT0=Date.now();var bar=$('mvbars').children[MK].firstChild,don
  bar.style.transition='width '+MLEFT+'ms linear';bar.style.width='100%';clearTimeout(MT);MT=setTimeout(function(){MK++;if(MK<MOM.length)momShow();else momClose()},MLEFT)}
 function momPause(){if(MPAUSE)return;MPAUSE=true;clearTimeout(MT);MLEFT=Math.max(300,MLEFT-(Date.now()-MT0));var bar=$('mvbars').children[MK].firstChild,w=getComputedStyle(bar).width;bar.style.transition='none';bar.style.width=w}
 function momResume(){if(!MPAUSE)return;MPAUSE=false;momRun()}
-function momClose(){clearTimeout(MT);$('mv').classList.remove('on');$('mvi').value='';momLoad();if(history.state&&history.state.mv)try{history.back()}catch(e){}}
+function momClose(){clearTimeout(MT);$('mv').classList.remove('on');$('mvi').value='';momLoad()}
 $('mvx').onclick=function(e){e.stopPropagation();momClose()};
-window.addEventListener('popstate',function(){if($('mv').classList.contains('on')){clearTimeout(MT);$('mv').classList.remove('on');momLoad()}});
 (function(){var down=0,hx=0;$('mvb').addEventListener('pointerdown',function(e){down=Date.now();hx=e.clientX;momPause()});
  $('mvb').addEventListener('pointerup',function(e){var held=Date.now()-down>350;if(held){momResume();return}
   if(hx<innerWidth*.33){MK=Math.max(0,MK-1);momShow()}else{MK++;if(MK<MOM.length)momShow();else momClose()}});
@@ -548,7 +546,22 @@ function notifSh(){nState().then(function(s){shOpen('<h3>🔔 '+T('Notifications
 function nOffer(){if(!nSupported()||Notification.permission!=='default'||lsg('kcNAsk','')||GID)return;var M=(C&&C.msgs)||[];
  if(M.filter(function(m){return m.role==='user'}).length<3)return;lss('kcNAsk','1');
  var d=document.createElement('div');d.className='ncard';d.innerHTML='<i>🔔</i><span><b>'+T('Je te préviens quand je t’écris ?','Shall I let you know when I write?')+'</b>'+T('Même appli fermée.','Even with the app closed.')+'</span><button>'+T('Oui','Yes')+'</button><button class="x">✕</button>';
- $('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight;d.querySelector('button').onclick=function(){d.remove();nOn()};d.querySelector('.x').onclick=function(){d.remove()}}
+ $('chips').parentNode.insertBefore(d,$('chips'));d.querySelector('button').onclick=function(){d.remove();nOn()};d.querySelector('.x').onclick=function(){d.remove()}}
+
+// ---- 2026-11-08 (review): the phone's back button closes what is open first - story, reading, menu, sheet, search,
+// reply, group - like WhatsApp; only with nothing open does it leave the app
+function uiTop(){if($('mv').classList.contains('on')){momClose();return true}
+ if($('rdv').classList.contains('on')){rdClose();return true}
+ if($('lpm')){lpClose();return true}
+ if($('sh').classList.contains('on')){shClose();return true}
+ if($('menu').classList.contains('on')||$('atm').classList.contains('on')){$('menu').classList.remove('on');$('atm').classList.remove('on');return true}
+ if($('srch').classList.contains('on')){$('sx').click();return true}
+ if(REPLY){replyClear();return true}
+ if(GID){grpClose();return true}
+ return false}
+var GUARD=false;function guard(){if(GUARD)return;try{history.pushState({kc:1},'');GUARD=true}catch(e){}}
+document.addEventListener('pointerdown',guard,{passive:true});
+window.addEventListener('popstate',function(){GUARD=false;if(uiTop())guard();else history.back()});
 // ---- menu: only what a chat needs
 function shOpen(h){$('shc').innerHTML=h;$('sh').classList.add('on')}function shClose(){$('sh').classList.remove('on')}
 $('sh').onclick=function(e){if(e.target===this)shClose()};
