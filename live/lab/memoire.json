@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-08T19:16:39Z",
+ "updated": "2026-11-08T20:39:33Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -4057,6 +4057,15 @@
     "--by kind --by gap"
    ],
    "saw": "New real close 19:16 Sun: FLIP-BOS SELL lost -0.59, pace 1.357 (nervous), first trade after weekend (gap >3 h). 323 real tr 47% -167.34. Pile flip_hot 86 tr 42% -91.86 PF 0.58 halves 43/41 (both losing); inside, 1.0-1.3 nervous 44 tr 36% -69.00. FLIP-BOS overall 170 tr 44% -119.78 PF 0.65; BOS 151 tr 50% -38.12. Twin noday 38 tr -16.95 (barely moved). No harness run."
+  },
+  {
+   "t": "2026-11-08T20:39:33Z",
+   "looked": [
+    "wake_context (1 close, twin moved)",
+    "scrutiny --pile flip_hot",
+    "--by kind --by gap"
+   ],
+   "saw": "New real close 20:38 Sun: FLIP-BOS SELL won +0.67, pace 1.034 (nervous 1.0-1.3), right after the 19:16 loss. 324 real tr. Pile flip_hot now 87 tr 43% -91.19 PF 0.58 halves 43/42 (both losing); 1.0-1.3 nervous 45 tr 38% -68.33; after a loss 51 tr 37% -81.01. Gap <15 min 102 tr 35% -91.69 unchanged; 15-30 still best 48 tr 62% +24.38. Twin noday 41 tr -17.03 (flat). A small win does not move flip_nervous. No harness run."
   }
  ],
  "lessons": [
