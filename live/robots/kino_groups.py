@@ -139,7 +139,7 @@ def get(uid, gid, since=0):
     return _view(g, uid, since)
 
 
-def send(uid, gid, text):
+def send(uid, gid, text, reply=None):
     text = str(text or "").strip()[:4000]
     if not text:
         return {"ok": False, "err": "empty"}
@@ -147,10 +147,36 @@ def send(uid, gid, text):
         g = _load(gid)
         if not g or not _member(g, uid):
             return {"ok": False, "err": "missing"}
-        g["msgs"].append({"who": uid, "name": _member(g, uid)["name"], "t": time.time(), "text": text})
+        m = {"who": uid, "name": _member(g, uid)["name"], "t": time.time(), "text": text}
+        if isinstance(reply, dict) and reply.get("text"):      # 2026-11-08 (owner: swipe to reply, like the trading app)
+            m["reply"] = {"name": str(reply.get("name") or "")[:40], "text": str(reply["text"])[:200], "t": float(reply.get("t") or 0)}
+        g["msgs"].append(m)
         g["msgs"] = g["msgs"][-1000:]
         _save(g)
     _later(gid, 4)
+    return {"ok": True}
+
+
+REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎")
+
+
+def react(uid, gid, t, e):
+    """2026-11-08: a reaction on a group message (one per person; the same again removes it)"""
+    if e not in REACTS:
+        return {"ok": False}
+    with _LK:
+        g = _load(gid)
+        if not g or not _member(g, uid):
+            return {"ok": False, "err": "missing"}
+        m = next((x for x in g["msgs"] if abs(float(x["t"]) - float(t or 0)) < 1e-3), None)
+        if not m or m["who"] == "sys":
+            return {"ok": False}
+        rx = m.setdefault("rx", {})
+        if rx.get(uid) == e:
+            rx.pop(uid)
+        else:
+            rx[uid] = e
+        _save(g)
     return {"ok": True}
 
 
@@ -194,7 +220,7 @@ def _kino_turn(gid):
     except Exception:
         pass
     hist = "\n".join("[%s] %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(m["t"])), "(info)" if m["who"] == "sys" else
-                                       ("you (Kino)" if m["who"] == "kino" else m["name"]), m["text"]) for m in g["msgs"][-40:])
+                                       ("you (Kino)" if m["who"] == "kino" else m["name"]), (("(replying to %s: \"%s\") " % (m["reply"]["name"], m["reply"]["text"][:80])) if m.get("reply") else "") + m["text"]) for m in g["msgs"][-40:])
     user = ("YOU ARE IN A GROUP CHAT in the Kino Chat app: \"%s\". The people in it: %s - and you, Kino.\n"
             "How you behave in a group, like a real friend in a group chat: you read everything; you answer when someone speaks "
             "to you or asks something you can help with, or when you have something genuinely worth adding. When people talk "

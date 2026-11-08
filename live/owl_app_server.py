@@ -17080,7 +17080,11 @@ def grp_get(user, body):
 
 
 def grp_send(user, body):
-    return _kgr().send(user.get("id"), str(body.get("id") or ""), body.get("text"))
+    return _kgr().send(user.get("id"), str(body.get("id") or ""), body.get("text"), body.get("reply"))
+
+
+def grp_react(user, body):
+    return _kgr().react(user.get("id"), str(body.get("id") or ""), body.get("t"), str(body.get("e") or ""))
 
 
 def grp_join(user, body):
@@ -36511,7 +36515,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear",
+                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
@@ -36535,7 +36539,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
-                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear,
+                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
