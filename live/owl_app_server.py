@@ -17129,6 +17129,63 @@ def _chat_job_quote(cid, user, c, v):
     _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url, "status": "waiting"}))
 
 
+def _chat_deliver(cid, user, v):
+    """2026-11-08 (owner: "stand out from ChatGPT/Claude"): Kino wrote #pdf <kind> | <title> with the document between <<< and
+    >>> -> the document leaves the bubble and comes back as a designed PDF to download. Only for a PAID job not yet delivered
+    (or the owner); the job's card turns 'delivered'"""
+    _rc()
+    import kino_docs as _KDo
+    kind, _, title = str(v).partition("|")
+    kind = kind.strip().lower()
+    kind = {"letter": "lettre", "lettre": "lettre", "cv": "cv", "resume": "cv"}.get(kind, "doc")
+    title = (title.strip() or {"cv": "CV", "lettre": "Lettre"}.get(kind, "Document"))[:80]
+    cc = _chat_load(user, cid) or {}
+    M = cc.get("msgs") or []
+    job = next((m for m in reversed(M) if m.get("role") == "pay" and (m.get("pay") or {}).get("status") == "paid"), None)
+    if job is None and not is_admin(user):
+        return
+    mi = next((i for i in range(len(M) - 1, -1, -1) if M[i].get("role") == "ai"), None)
+    if mi is None:
+        return
+    chat_part, doc = _KDo.split(M[mi].get("text") or "")
+    if not doc:
+        return
+    t0 = M[mi].get("t")
+
+    def put(c2):
+        for m in c2.get("msgs") or []:
+            if m.get("role") == "ai" and m.get("t") == t0:
+                m["text"] = chat_part or ("📄 " + title)
+                m["doc_src"] = doc[:20000]
+        return True
+    _chat_mut(cid, put)
+    lang = _rc().member_lang(cc, "fr")
+
+    def run():
+        try:
+            os.makedirs(CHAT_IMG, exist_ok=True)
+            fn = "%s_%d.pdf" % (cid, int(time.time() * 1000))
+            _KDo.make(kind, title, doc, os.path.join(CHAT_IMG, fn), lang=lang)
+            ref = (job or {}).get("pay", {}).get("ref")
+
+            def put2(c3):
+                c3.setdefault("msgs", []).append({"role": "file", "t": int(time.time()), "file": fn, "name": title + ".pdf",
+                                                  "kind": kind, "ref": ref or "", "size": os.path.getsize(os.path.join(CHAT_IMG, fn))})
+                for m in c3.get("msgs") or []:
+                    if ref and m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == ref:
+                        m["pay"]["status"] = "delivered"
+                return True
+            _chat_mut(cid, put2)
+        except Exception as e:
+            _chat_mut(cid, lambda c3: _chat_msg(c3, "sys", text=("Le PDF n'a pas pu être créé, Kino réessaie." if lang != "en" else
+                                                                 "The PDF could not be made, Kino will retry.")))
+            try:
+                io.open(os.path.join(DIR, "robots", "kino_docs.log"), "a", encoding="utf-8").write("%s %s %r\n" % (time.strftime("%m-%d %H:%M:%S"), cid, e))
+            except Exception:
+                pass
+    threading.Thread(target=run, daemon=True).start()
+
+
 def chat_paid(user, body):
     """the person pressed "I've paid" on a pay card -> the owner's Approve/Refuse card + a push to him"""
     c = _chat_load(user, str(body.get("id") or ""))
@@ -17174,7 +17231,9 @@ def _chat_job_paid(x):
     _chat_mut(x["cid"], put)
     _CHAT_Q[x["cid"]] = _CHAT_Q.get(x["cid"], 0) + 1
     threading.Thread(target=_chat_quick, args=(x["cid"], u, "PAYMENT CONFIRMED - they paid %s EUR for: %s. Thank them in one short line and "
-                     "START THE JOB NOW: if it is writing, a plan or research, deliver it here in this message (complete, ready to use). "
+                     "START THE JOB NOW: if it is a document (CV, letter, plan, report), deliver it complete in this message the "
+                     "document way (one warm line, the document between <<< and >>>, then #pdf <cv|lettre|doc> | <title>); if you "
+                     "are missing facts you truly need (their name, dates...), ask for them in one short message first. "
                      "If it needs the outside world (something posted, a helper), say exactly what happens next and when. send = true." % (
                          ("%.2f" % float(x.get("usd") or 0)).rstrip("0").rstrip("."), x.get("what"))),
                      kwargs={"notify": True}, daemon=True).start()
@@ -21942,6 +22001,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     pass
             elif k == "prix" and v and c.get("app") == "kinochat" and not is_admin(user):
                 _chat_job_quote(cid, user, c, v)
+            elif k == "pdf" and (c.get("app") == "kinochat" or is_admin(user)):
+                _chat_deliver(cid, user, v)
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
@@ -39407,7 +39468,7 @@ class H(BaseHTTPRequestHandler):
             if _c is None or not _f.startswith(_c["id"] + "_") or not any(m.get("file") == _f for m in _c.get("msgs") or []):
                 self._not_found()
             else:
-                self._send_file_fresh(os.path.join(CHAT_IMG, _f), "image/png" if _f.endswith(".png") else "image/jpeg")
+                self._send_file_fresh(os.path.join(CHAT_IMG, _f), "application/pdf" if _f.endswith(".pdf") else ("image/png" if _f.endswith(".png") else "image/jpeg"))
         elif sub in ("atelier", "kinochat", "chat_get", "chat_list", "chat_ping"):
             # 2026-10-19 (owner): L'atelier - build a robot by chatting with the AI (Strategie members + admin, from disk)
             _ok = kino_ok(user)

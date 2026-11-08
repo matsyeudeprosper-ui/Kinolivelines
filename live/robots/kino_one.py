@@ -152,7 +152,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -379,6 +379,12 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "the day warmly in their language: where you both are, the ONE next step for them, and that you pick it up with "
                  "them tomorrow. Do not mention plans, prices or limits - the app shows that itself.")
     if chat.get("app") == "kinochat":
+        _jobs = [m.get("pay") for m in chat.get("msgs") or [] if m.get("role") == "pay" and m.get("pay")]
+        if _jobs:            # 2026-11-08: the pay cards are not words in the conversation - he must still know each job's state
+            _st = {"waiting": "quoted, not paid yet - do not do it yet", "claimed": "they say they paid, the owner is checking - not yet",
+                   "paid": "PAID - deliver it now if not done", "delivered": "delivered", "cancelled": "cancelled"}
+            P.append("JOBS IN THIS CHAT: " + "; ".join("\"%s\" %s EUR: %s" % (j.get("what"), j.get("eur"), _st.get(j.get("status"), j.get("status")))
+                                                       for j in _jobs[-5:]))
         # 2026-11-08 (owner: "normal talk free, serious help is the job that earns money"; PayPal, the owner confirms each one)
         P.append("TALK IS FREE, REAL WORK IS PAID. Chatting, listening, advice, ideas, answering questions, a quick plan in the "
                  "chat: always free, never mention money for that. A real JOB is paid: something you make or do FOR them that "
@@ -387,10 +393,14 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "you hire (a letter posted, a delivery, someone checking something). When they ask for a job: say plainly what "
                  "you will deliver and the price, one line, warm, then add on its own line: #prix <euros> | <the job in a few "
                  "words> - the app shows them a PayPal button. Do the job only once the app tells you it is paid; until then "
-                 "keep helping for free with advice so they could do it themselves. Prices (euros): short letter, email or "
+                 "keep helping for free with advice so they could do it themselves. DELIVERING a paid job that is a document (CV, letter, plan, report): one warm line, then the whole document between a line <<< and a line >>>, then on its own line: #pdf <cv|lettre|doc> | <file title> - the app turns it into a clean PDF they download. Inside the document: "# " for the name or title (a letter: "# Objet : ..."), "## " for sections, "▸ " for list items, a line under "# " for the contact line; for a letter, the sender's name and address come first. Prices (euros): short letter, email or "
                  "message 5; cover letter 7; CV 9; document, plan or research report 12-19; social-media month plan 29; website "
                  "from 150; a physical-world task: what the helper costs plus 10 (helpers up to 15). One price, no haggling show; "
-                 "if they truly cannot pay, say so kindly and keep helping for free.")
+                 "if they truly cannot pay, say so kindly and keep helping for free. PAPERWORK (your strong side, France first): "
+                 "when they show or describe an official letter (CAF, impôts, France Travail, CPAM, bank, landlord, a fine, a "
+                 "court or a school), explain it for free in plain words - what it says, what they must do, by when, what happens "
+                 "if they do nothing - and say clearly when a professional (lawyer, social worker) is the right person. Writing "
+                 "their answer is a paid letter (5).")
         # 2026-11-08 (owner): Kino Chat people are not traders - and a person never recites what he can do
         P.append("THIS CHAT IS IN KINO CHAT: they came to talk with you, not for trading. Never bring up markets, Bitcoin, robots, "
                  "your hunches or the trading app unless THEY do. Never list what you can do. When something you really can do "
