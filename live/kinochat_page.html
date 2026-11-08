@@ -141,7 +141,7 @@ function bubble(m,i,prev){var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==
  else if(m.audio)inner='<div class="au"><button data-au="'+esc(m.audio)+'">▶</button><span></span></div>'+(m.text?'<small style="color:#ffffffa0">'+md(m.text)+'</small>':'');
  else inner=md(m.text||'');
  return '<div class="m'+(me?' me':'')+(gap?' gap':'')+'" data-i="'+i+'"><div class="b">'+inner+'<span class="t">'+hm(m.t)+(me?'<span class="tk'+(m.t<=LASTAI?' rd':'')+'">✓✓</span>':'')+'</span></div></div>'}
-function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY;
+function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY;
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
  list.forEach(function(m,i){var d=dayOf(m.t);if(d!==lastDay){h+='<div class="day"><span>'+d+'</span></div>';lastDay=d;prev=null}h+=bubble(m,i,prev);prev=m});
@@ -213,6 +213,7 @@ var MENU=[['🔍',T('Chercher','Search'),function(){$('srch').classList.add('on'
  ['🖼️',T('Photos et documents','Photos and documents'),media],
  ['👥',T('Groupes','Groups'),groups],
  ['💌',T('Inviter un ami','Invite a friend'),invite],
+ ['🧹',T('Vider la discussion','Clear chat'),clearChat],
  ['✨',T('Ce que Kino sait faire','What Kino can do'),function(){tourGo()}],
  ['🚪',T('Me déconnecter','Sign out'),function(){try{localStorage.removeItem('kcLink')}catch(e){}location.href='/kinochat?out=1'}]];
 $('menu').innerHTML=MENU.map(function(x,i){return '<button data-k="'+i+'">'+x[0]+'&nbsp; '+x[1]+'</button>'}).join('');
@@ -227,6 +228,8 @@ function media(){var M=(C&&C.msgs)||[],im=M.filter(function(m){return m.role==='
  if(im.length)h+='<div class="grid">'+im.map(function(m){var u=B+'chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file);return '<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt=""></a>'}).join('')+'</div>';
  h+=dc.map(function(m){return '<div class="dl">📄 <span><b>'+esc(m.name||'document')+'</b><br><small style="color:var(--mut)">'+dayOf(m.t)+'</small></span></div>'}).join('');
  shOpen(h+'<button class="btn g" onclick="this.closest(\'.sh\').classList.remove(\'on\')">'+T('Fermer','Close')+'</button>')}
+function clearChat(){if(!CID||!confirm(T('Vider la discussion ? Les messages disparaissent de cet écran. Kino, lui, se souvient de vous.','Clear the chat? The messages disappear from this screen. Kino still remembers you.')))return;
+ post('chat_manage',{id:CID,act:'clear'}).then(function(j){if(j&&j.ok){SIG='';load(true);toast(T('Discussion vidée.','Chat cleared.'))}else toast(T('Pas possible.','Not possible.'))}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
 function invite(){var link=location.origin+'/kinochat',txt=T('Je parle avec Kino, une IA sympa et très utile. Essaie : ','I talk with Kino, a friendly and really useful AI. Try it: ')+link;
  if(navigator.share){navigator.share({title:'Kino Chat',text:txt,url:link}).catch(function(){});return}
  shOpen('<h3>'+T('Inviter un ami','Invite a friend')+'</h3><p>'+T('Envoie-lui ce lien :','Send them this link:')+'</p><p style="color:var(--ink);word-break:break-all">'+esc(link)+'</p><button class="btn" id="cpy">'+T('Copier le lien','Copy the link')+'</button>');
@@ -269,6 +272,7 @@ var COLORS=['#f59e0b','#ec4899','#38bdf8','#a78bfa','#f97316','#14b8a6','#eab308
 function colorOf(uid){var h=0;for(var i=0;i<uid.length;i++)h=(h*31+uid.charCodeAt(i))|0;return COLORS[Math.abs(h)%COLORS.length]}
 var GMENU=[['💌',T('Inviter dans le groupe','Invite to the group'),function(){grpInvite()}],
  ['👥',T('Tous mes groupes','All my groups'),function(){groups()}],
+ ['🧹',T('Vider la discussion','Clear chat'),function(){if(!confirm(T('Vider cette discussion ? Les messages disparaissent de ton écran (pas de celui des autres).','Clear this chat? The messages disappear from your screen (not from the others’).')))return;post('grp_clear',{id:GID}).then(function(){GSIG='';grpLoad(true)})}],
  ['🚪',T('Quitter le groupe','Leave the group'),function(){if(!confirm(T('Quitter ce groupe ?','Leave this group?')))return;post('grp_leave',{id:GID}).then(function(){grpClose()})}],
  ['💬',T('Retour à Kino','Back to Kino'),function(){grpClose()}]];
 function groups(){post('grp_list',{}).then(function(j){var L=(j&&j.groups)||[];

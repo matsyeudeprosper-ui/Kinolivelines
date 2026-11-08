@@ -16544,8 +16544,11 @@ def chat_manage(user, body):
     """2026-10-20 (owner review item 7): archive / bring back / delete a conversation from the chat (delete = moved aside)"""
     c = _chat_load(user, str(body.get("id") or ""))
     act = str(body.get("act") or "")
-    if c is None or act not in ("archive", "unarchive", "delete"):
+    if c is None or act not in ("archive", "unarchive", "delete", "clear"):
         return {"ok": False}
+    if act == "clear":           # 2026-11-08 (owner: "clear chat like in WhatsApp"): Kino Chat hides what came before; Kino still remembers
+        _chat_mut(c["id"], lambda cc: cc.__setitem__("kc_clear_t", time.time()))
+        return {"ok": True}
     if act == "delete":
         tr = os.path.join(CHAT_DIR, "_trash")
         os.makedirs(tr, exist_ok=True)
@@ -17082,6 +17085,10 @@ def grp_send(user, body):
 
 def grp_join(user, body):
     return _kgr().join(user.get("id"), user.get("name") or user.get("id"), body.get("inv"))
+
+
+def grp_clear(user, body):
+    return _kgr().clear(user.get("id"), str(body.get("id") or ""))
 
 
 def grp_leave(user, body):
@@ -26438,6 +26445,7 @@ def chat_get(user, cid, ui=""):
         out["can_undo"] = bool(c.get("robot_hist"))
         try:
             _pf = _mem_get(user.get("id")).get("prefs") or {}
+            out["kc_clear_t"] = c.get("kc_clear_t") or 0          # 2026-11-08: Kino Chat "clear chat" (view only)
             out["tour_done"] = bool(_pf.get("tour_done")) or _chat_day_count(user.get("id")) > 0 and len([m for m in c.get("msgs") or [] if m.get("role") == "user"]) > 3
         except Exception:
             pass
@@ -36503,7 +36511,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave",
+                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
@@ -36527,7 +36535,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
-                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave,
+                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,

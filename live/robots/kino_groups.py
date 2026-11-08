@@ -66,7 +66,7 @@ def _view(g, uid, since=0):
     return {"ok": True, "id": g["id"], "title": g["title"], "owner": g["owner"] == uid, "me": uid,
             "members": [{"uid": m["uid"], "name": m["name"]} for m in g["members"]],
             "inv": g["inv"], "kino": bool(g.get("kino_typing")),
-            "msgs": [m for m in g["msgs"] if m["t"] > float(since or 0)][-300:]}
+            "msgs": [m for m in g["msgs"] if m["t"] > max(float(since or 0), float((_member(g, uid) or {}).get("clear_t") or 0))][-300:]}
 
 
 def mine(uid):
@@ -116,6 +116,18 @@ def leave(uid, gid):
         g["msgs"].append({"who": "sys", "name": "", "t": time.time(), "text": "%s a quitté le groupe" % nm})
         if g["owner"] == uid and g["members"]:
             g["owner"] = g["members"][0]["uid"]
+        _save(g)
+    return {"ok": True}
+
+
+def clear(uid, gid):
+    """2026-11-08 (owner: "clear chat like in WhatsApp"): this member no longer sees what came before - the others still do"""
+    with _LK:
+        g = _load(gid)
+        m = g and _member(g, uid)
+        if not m:
+            return {"ok": False, "err": "missing"}
+        m["clear_t"] = time.time()
         _save(g)
     return {"ok": True}
 
