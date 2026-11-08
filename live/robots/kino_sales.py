@@ -1033,3 +1033,14 @@ def find_businesses(place, kind, limit=25, with_site=False):
     no_site = sum(1 for x in out if not x["website"])
     _log("FIND %s in %s -> %d (%d without a website)" % (kind, place, len(out), no_site))
     return {"ok": True, "place": g[0].get("display_name"), "total": len(out), "without_site": no_site, "items": out[:int(limit)]}
+
+
+def hunt_desk():
+    """2026-11-07 (review): the part of his desk a hunt acts on - who is READY (preview + email), who OPENED, who is DUE a
+    follow-up - carried with the hunt's own task (his mind is cut at 6000 characters and this sat past the cut: a Brisbane
+    hunt scanned a new city while 23 French leads with a built preview waited). -> (text, number ready with a preview)"""
+    b = block()
+    keep = [l for l in b.split("\n") if l.startswith(("READY TO CONTACT", "FACEBOOK ONLY", "OPENED YOUR PREVIEW", "No answer after"))]
+    d = _j(STORE, {"items": []})["items"]
+    n_ready = sum(1 for p in d if p["stage"] in ("found", "checked", "preview") and p.get("email") and not p.get("sent") and p.get("preview"))
+    return "\n".join(keep), n_ready

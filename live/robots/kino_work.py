@@ -1262,11 +1262,21 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
             rec["care"] = ch["care"]
         _fx = ""                               # 2026-11-07 (first friend session): the people list sat past the 6000 chars
         if "hunt" in rec["why"].lower():      # 2026-11-07 (owner: "all continents, any language"): where this hunt goes
-            try:
-                import kino_places as KPLh
-                _fx = "\n\n" + KPLh.hunt_line(KPLh.next_place())
+            _nr = 0
+            try:                               # 2026-11-07 (review): his desk first - the waiting leads, the openers, the follow-ups
+                import kino_sales as KSh
+                _dk, _nr = KSh.hunt_desk()
+                _fx = "\n\nYOUR DESK (act on this FIRST - these businesses already have their preview built):\n" + _dk
             except Exception:
                 pass
+            if _nr < 5:                        # a new city only when the desk runs low
+                try:
+                    import kino_places as KPLh
+                    _fx += "\n\n" + KPLh.hunt_line(KPLh.next_place())
+                except Exception:
+                    pass
+            else:
+                _fx += "\n\n%d businesses with a built preview are waiting: write to up to 5 of them now - no new city this time." % _nr
         if rec.get("care") == "lab":           # 2026-11-07: his lab board with the task (his mind is cut at 6000 chars)
             try:
                 import kino_lab as KLBs
