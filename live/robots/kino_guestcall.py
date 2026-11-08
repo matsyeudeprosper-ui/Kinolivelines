@@ -217,7 +217,7 @@ def page(tok):
 @media (prefers-color-scheme:dark){:root{--bg:#131316;--card:#1d1d22;--ink:#f2f2f4;--mut:#a0a0a8;--acc:#8b85ff}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
 main{max-width:460px;margin:0 auto;padding:40px 16px;text-align:center}.av{width:120px;height:120px;border-radius:50%%;margin:10px auto 18px;
-background:var(--acc) url(/static/kino_avatar.png) center/cover;box-shadow:0 0 0 0 var(--acc);transition:box-shadow .3s}
+background:var(--acc) url(/kinochat.png) center/cover;box-shadow:0 0 0 0 var(--acc);transition:box-shadow .3s}
 .av.talk{box-shadow:0 0 0 14px color-mix(in srgb,var(--acc) 30%%,transparent)}h1{margin:0;font-size:26px}.mut{color:var(--mut)}
 button{border:0;border-radius:40px;padding:16px 34px;font:600 18px system-ui;color:#fff;background:var(--acc);cursor:pointer;margin-top:26px}
 button.end{background:var(--red)}#tm{font-variant-numeric:tabular-nums;font-size:22px;margin-top:14px}

@@ -36222,7 +36222,7 @@ class H(BaseHTTPRequestHandler):
             if ctype.startswith("text/html"):
                 _pp = [x for x in self.path.split("?")[0].split("/") if x]
                 _pg = _pp[1] if len(_pp) > 1 else ""
-                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kino_tts", "app") and not _pg.startswith("chat_"):
+                if _pp and len(_pp) <= 2 and _pp[0] != "s" and _pg not in ("atelier", "kinochat", "kino_tts", "app") and not _pg.startswith("chat_"):
                     _uk = user_by_token(_pp[0])
                     if _uk and kino_ok(_uk):
                         _b = body.decode("utf-8") if isinstance(body, bytes) else body
@@ -36269,6 +36269,40 @@ class H(BaseHTTPRequestHandler):
     def _do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
+        if p in ("/kinochat/join", "/kinochat/login"):
+            # 2026-11-07 (owner: Kino Chat app): a free account in one step, or the trading app's own account -> the chat page
+            import urllib.parse as _upk
+            _rdk = os.path.join(DIR, "robots")
+            if _rdk not in sys.path:
+                sys.path.insert(0, _rdk)
+            import kino_chatapp as _KCA
+            _en = not (self.headers.get("Accept-Language") or "fr").lower().startswith("fr")
+            _fk = _upk.parse_qs(self.rfile.read(min(int(self.headers.get("Content-Length", 0) or 0), 4000)).decode("utf-8", "replace"))
+            _g = lambda k: (_fk.get(k, [""])[0] or "").strip()
+            if p.endswith("/join"):
+                _r = _activate_free(_g("name")[:40], _g("password")[:64], "", ident=_g("ident"))
+                if isinstance(_r, tuple) and _r[0] == "redirect":
+                    try:
+                        fn_count("kinochat_signup")
+                    except Exception:
+                        pass
+            else:
+                _r = handle_login(_fk)
+            if isinstance(_r, tuple) and _r[0] == "redirect" and re.match(r"^https://[^/]+/[A-Za-z0-9_-]+/", _r[1]):
+                _tk = _r[1].split("/")[3]
+                self.send_response(302)
+                self.send_header("Location", "/%s/kinochat" % _tk)
+                try:
+                    _lu = user_by_token(_tk)
+                    if _lu is not None and not _lu.get("public"):
+                        self.send_header("Set-Cookie", SESS_SET % _tk)
+                except Exception:
+                    pass
+                self.end_headers()
+            else:
+                self._send(_KCA.start_page(("Identifiant ou mot de passe incorrect, ou identifiant déjà pris." if not _en else
+                                            "Wrong username or password, or that username is taken."), _en), "text/html; charset=utf-8")
+            return
         if len(_parts) == 3 and _parts[0] == "appel" and _parts[2] in ("start", "end") and re.match(r"^[A-Za-z0-9_-]{12,40}$", _parts[1]):
             # 2026-11-07: a guest's live call with Kino (kino_guestcall: minutes, the OpenAI live line, his Telegram memory)
             _rdg = os.path.join(DIR, "robots")
@@ -38102,6 +38136,32 @@ class H(BaseHTTPRequestHandler):
             import legal_pages as _LGP
             self._send(_LGP.render(parts[0], "lang=en" in (self.path.split("?") + [""])[1]), "text/html; charset=utf-8")
             return
+        if len(parts) == 1 and parts[0] in ("kinochat.apk", "kinochat_apk.json"):   # 2026-11-07: the Kino Chat Android app
+            if parts[0].endswith(".json"):
+                self._send_file_fresh(os.path.join(DIR, "static", "kinochat_apk.json"), "application/json")
+            else:
+                try:
+                    fn_count("kinochat_apk_dl")
+                except Exception:
+                    pass
+                self._send_file_fresh(os.path.join(DIR, "static", "kinochat.apk"), "application/vnd.android.package-archive",
+                                      disposition='attachment; filename="KinoChat.apk"')
+            return
+        if len(parts) == 1 and parts[0] == "kinochat.png":       # Kino's face (Kino Chat, the call page, the APK icon)
+            self._send_file_fresh(os.path.join(DIR, "static", "kino_avatar.png"), "image/png")
+            return
+        if len(parts) == 1 and parts[0] in ("kinochat", "kinochat.webmanifest"):
+            # 2026-11-07 (owner: "Kino Chat" app): the start page the APK opens, and its web manifest
+            _rdk = os.path.join(DIR, "robots")
+            if _rdk not in sys.path:
+                sys.path.insert(0, _rdk)
+            import kino_chatapp as _KCA
+            if parts[0] == "kinochat.webmanifest":
+                self._send(json.dumps(_KCA.MANIFEST), "application/manifest+json")
+            else:
+                self._send(_KCA.start_page(en=not (self.headers.get("Accept-Language") or "fr").lower().startswith("fr")),
+                           "text/html; charset=utf-8")
+            return
         if len(parts) == 2 and parts[0] == "appel" and re.match(r"^[A-Za-z0-9_-]{12,40}$", parts[1]):
             # 2026-11-07 (owner: "add the call button" on Telegram): a guest's call page, 5 free minutes a month
             _rdg = os.path.join(DIR, "robots")
@@ -39104,15 +39164,19 @@ class H(BaseHTTPRequestHandler):
                 self._not_found()
             else:
                 self._send_file_fresh(os.path.join(CHAT_IMG, _f), "image/png" if _f.endswith(".png") else "image/jpeg")
-        elif sub in ("atelier", "chat_get", "chat_list", "chat_ping"):
+        elif sub in ("atelier", "kinochat", "chat_get", "chat_list", "chat_ping"):
             # 2026-10-19 (owner): L'atelier - build a robot by chatting with the AI (Strategie members + admin, from disk)
             _ok = kino_ok(user)
             import urllib.parse as _upr
             _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
-            if sub == "atelier":
+            if sub in ("atelier", "kinochat"):
                 if not _ok:
                     self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers(); return
-                self._send(open(os.path.join(DIR, "owl_atelier_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+                _ap = open(os.path.join(DIR, "owl_atelier_page.html"), encoding="utf-8").read()
+                if sub == "kinochat":                                  # 2026-11-07: Kino Chat (same account, same history)
+                    _rc()
+                    _ap = __import__("kino_chatapp").inject(_ap)
+                self._send(_ap, "text/html; charset=utf-8")
             elif not _ok:
                 self._send(json.dumps({"err": "strategy"}), "application/json")
             elif sub == "chat_get":

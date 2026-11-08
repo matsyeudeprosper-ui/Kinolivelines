@@ -32,12 +32,13 @@ _LOCK = threading.Lock()
 # 2026-11-04 (owner: "our custom chart behind a pay wall ... maybe this way it won't take days for backtesting"): "custom_chart" =
 # the silence filter, the pullback chart, the higher charts and the structure drawn on them (Pro, Premium); below, plain candles.
 # "custom_tests" = robot tests a month that use the pullback chart (its states are the slow part of a test: ~50 ms a bar).
+# 2026-11-07 (owner: Kino Chat / Telegram calls): free plans get 5 call minutes a month (~0.25 $ each).
 PLAN_INFO = {
-    "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 5, "tests": 2, "voice": 0,
+    "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 5, "tests": 2, "voice": 5,
                          "markets": False, "background": False, "auto_h": 0, "custom_chart": False, "custom_tests": 0},
     "decouverte_trial": {"label": "Découverte · essai", "label_en": "Discovery · trial", "usd": 0, "replies": 30, "tests": 2,
-                         "voice": 0, "markets": False, "background": True, "auto_h": 1, "custom_chart": False, "custom_tests": 0},
-    "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": None, "month": 400, "tests": 5, "voice": 0,
+                         "voice": 5, "markets": False, "background": True, "auto_h": 1, "custom_chart": False, "custom_tests": 0},
+    "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": None, "month": 400, "tests": 5, "voice": 5,
                          "markets": False, "background": True, "auto_h": 0, "custom_chart": False, "custom_tests": 0},
     "pro":              {"label": "Pro", "label_en": "Pro", "usd": 49, "replies": None, "month": 1200, "tests": None, "voice": 30,
                          "markets": True, "background": True, "auto_h": 10, "custom_chart": True, "custom_tests": 10},

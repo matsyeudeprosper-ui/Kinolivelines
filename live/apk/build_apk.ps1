@@ -71,8 +71,12 @@ $static = Join-Path $live "static"
 Copy-Item $apk (Join-Path $static "owlnest.apk") -Force
 # the proof: the SHA-256 of the signing certificate
 $fp = (& keytool -list -v -keystore (Join-Path $here "owlnest.jks") -alias owlnest -storepass $env:BUBBLEWRAP_KEYSTORE_PASSWORD 2>$null | Select-String "SHA256:" | Select-Object -First 1).ToString().Split(":", 2)[1].Trim()
-$al = @(@{ relation = @("delegate_permission/common.handle_all_urls"); target = @{ namespace = "android_app"; package_name = $m.packageId; sha256_cert_fingerprints = @($fp) } })
-ConvertTo-Json $al -Depth 6 | Set-Content -Path (Join-Path $static "assetlinks.json") -Encoding ascii
+# 2026-11-07: two apps (OwlNest, Kino Chat) own this site - keep the other app's entry, replace this one's
+$alp = Join-Path $static "assetlinks.json"
+$keep = @()
+if (Test-Path $alp) { $keep = @((Get-Content $alp -Raw | ConvertFrom-Json) | Where-Object { $_.target.package_name -ne $m.packageId }) }
+$al = @($keep) + @(@{ relation = @("delegate_permission/common.handle_all_urls"); target = @{ namespace = "android_app"; package_name = $m.packageId; sha256_cert_fingerprints = @($fp) } })
+ConvertTo-Json -InputObject @($al) -Depth 6 | Set-Content -Path $alp -Encoding ascii
 $sha = (Get-FileHash $apk -Algorithm SHA256).Hash.ToLower()
 $info = @{ version = $m.appVersionName; versionCode = [int]$m.appVersionCode; size = (Get-Item $apk).Length; sha256 = $sha
            date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd"); package = $m.packageId; url = "/owlnest.apk" }
