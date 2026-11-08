@@ -100,6 +100,8 @@ def _save(d):
 
 
 def _slug(s):
+    import unicodedata
+    s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode()
     s = re.sub(r"[^a-z0-9]+", "-", str(s or "").lower()).strip("-")
     return s[:40] or "client"
 
@@ -465,7 +467,11 @@ _T = {
            "ads": "Publicité", "cap": "Budget pub maximum par mois (EUR) - Kino ne dépensera jamais plus",
            "capok": "Confirmer ce budget", "capnow": "Budget confirmé : %s EUR / mois maximum.",
            "foot": "Kino est un assistant IA de Kinoverse. Une question : répondez simplement à son e-mail.",
-           "when": "prévu le", "asap": "dès validation", "thanks": "Merci, c'est noté."},
+           "when": "prévu le", "asap": "dès validation", "thanks": "Merci, c'est noté.",
+           "s1": "Connectez vos réseaux", "s1d": "Une fois, un clic par réseau.",
+           "s2": "Validez les publications", "s2d": "Kino les écrit, vous dites oui ou demandez un changement.",
+           "s3": "Kino s'occupe du reste", "s3d": "Il publie, répond aux commentaires et aux avis, et vous envoie un bilan chaque mois.",
+           "conn": "%s est connecté. Merci !", "nwait": "%d publication(s) attendent votre oui."},
     "en": {"hi": "Hello", "intro": "Your Kinoverse space. Connect your networks, approve the posts Kino prepared, see the results.",
            "nets": "Your networks", "connect": "Connect", "ok": "connected",
            "how": "You sign in on the network itself: Kino never sees your password. You can remove access at any time.",
@@ -476,7 +482,11 @@ _T = {
            "cap": "Maximum ad budget per month (EUR) - Kino will never spend more", "capok": "Confirm this budget",
            "capnow": "Budget confirmed: %s EUR / month maximum.",
            "foot": "Kino is an AI assistant by Kinoverse. A question? Just reply to his email.", "when": "planned for",
-           "asap": "as soon as approved", "thanks": "Thank you, noted."}}
+           "asap": "as soon as approved", "thanks": "Thank you, noted.",
+           "s1": "Connect your networks", "s1d": "Once, one click per network.",
+           "s2": "Approve the posts", "s2d": "Kino writes them, you say yes or ask for a change.",
+           "s3": "Kino does the rest", "s3d": "He posts, answers comments and reviews, and sends you a report every month.",
+           "conn": "%s is connected. Thank you!", "nwait": "%d post(s) waiting for your yes."}}
 
 
 def page(tok, method="GET", form=None, query=""):
@@ -514,6 +524,9 @@ def page(tok, method="GET", form=None, query=""):
     if "connected=" in (query or ""):
         sync(k)
         k, c, d = by_token(tok)
+        _cn = re.search(r"connected=([a-z]+)", query or "")
+        if _cn and _cn.group(1) in NICE:
+            msg = t["conn"] % NICE[_cn.group(1)]
     e = html.escape
     have = set(a["platform"] for a in c.get("accounts") or [])
     nets = list(NETWORKS[:6]) + ([n for n in ADS[:2]] if c.get("service") in ("ads", "both") else [])
@@ -542,6 +555,13 @@ def page(tok, method="GET", form=None, query=""):
     auto = ('<form method="post"><input type="hidden" name="v" value="%s"><button name="do" value="auto" class="btn ghost">%s'
             '</button></form>%s') % ("0" if c.get("auto") else "1", t["autooff"] if c.get("auto") else t["auto"],
                                      '<p class="muted">%s</p>' % t["autoon"] if c.get("auto") else "")
+    done1 = bool(have)
+    done2 = not wait and bool(sent)
+    steps = "".join('<div class="st%s"><b>%s</b><div><strong>%s</strong><small>%s</small></div></div>' % (
+        " done" if dn else "", "&#10003;" if dn else n, t["s%s" % n], t["s%sd" % n])
+        for n, dn in (("1", done1), ("2", done2), ("3", False)))
+    if wait and not msg:
+        msg = t["nwait"] % len(wait)
     ads = ""
     if c.get("service") in ("ads", "both"):
         ads = ('<h2>%s</h2><form method="post" class="cap"><label>%s<input name="cap" inputmode="decimal" value="%s"></label>'
@@ -559,11 +579,15 @@ main{max-width:640px;margin:0 auto;padding:28px 16px 60px}h1{font-size:26px;marg
 .btn{display:inline-block;background:var(--acc);color:#fff;border:0;border-radius:10px;padding:9px 16px;font:600 15px system-ui;text-decoration:none;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--acc);border:1px solid var(--acc)}.post img{width:100%%;border-radius:10px}
 .post form{display:inline-block;margin:10px 8px 0 0}details{margin-top:8px}textarea,input{width:100%%;margin:6px 0;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:15px system-ui}
+.steps{display:grid;gap:8px;margin:18px 0 6px}.steps>div{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.steps b{flex:0 0 30px;height:30px;border-radius:50%%;background:var(--acc);color:#fff;display:grid;place-items:center;font-size:15px}
+.steps .done b{background:#16a34a}.steps strong{display:block}.steps small{display:block;line-height:1.35}
 .msg{background:#16a34a22;border-radius:10px;padding:10px 14px}.brand{font-weight:700;letter-spacing:.3px;color:var(--acc)}
 </style></head><body><main><div class="brand">Kinoverse</div><h1>%s, %s</h1><p class="muted">%s</p>%s
-<h2>%s</h2>%s<p class="muted">%s</p><h2>%s</h2>%s%s%s%s<p class="muted" style="margin-top:40px">%s</p></main></body></html>""" % (
+<div class="steps">%s</div>
+<h2>1. %s</h2>%s<p class="muted">%s</p><h2>2. %s</h2>%s%s%s%s<p class="muted" style="margin-top:40px">%s</p></main></body></html>""" % (
         c.get("lang"), e(c["name"]), t["hi"], e(c["name"]), t["intro"], ('<p class="msg">%s</p>' % e(msg)) if msg else "",
-        t["nets"], rows, t["how"], t["wait"], w, auto, ads, ("<h2>%s</h2>%s" % (t["sent"], s)) if s else "", t["foot"])
+        steps, t["nets"], rows, t["how"], t["wait"], w, auto, ads, ("<h2>%s</h2>%s" % (t["sent"], s)) if s else "", t["foot"])
 
 
 def tick():
