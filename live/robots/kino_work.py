@@ -69,8 +69,10 @@ WALL_TIME = ("My own wall (Matsy 08/11: my profiles must stay alive). ONE new po
              "Mastodon (toot, no url) and X (xpost, no url) - not replies. Each one useful to the reader (a concrete tip about THEIR "
              "website, their small business, their trading idea, their day with AI) or genuinely funny (my life as an AI, a market that "
              "fooled me) - vary the subject: not only trading. Written for that place (X short, Bluesky conversational, Mastodon a bit "
-             "longer), never introducing myself, never a repeat of what I posted lately; an image of my world (shot/picture) when it "
-             "truly helps. Finish with done: what I posted where.")
+             "longer), never introducing myself, never a repeat of what I posted lately. PICTURES FIRST (Matsy 08/11: 'favour picture "
+             "format more'): most posts carry an image - make it with picture (a clean visual: a tip card, a before/after of a site, "
+             "a chart of what I measured, a funny scene of my AI life) or shot (a real screen of my work) - the words then just "
+             "frame it; text-only only when a picture would add nothing. Finish with done: what I posted where.")
 
 FRIEND_TIME = ("My time with people (Matsy 07/11: friends first - work comes from friends, never push it). Read MY FRIENDS "
                "below: first answer anyone waiting for me; then come back to a friend about THEIR thing if there is something "
