@@ -152,7 +152,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -342,6 +342,8 @@ def parse(raw, partial=False):
             acts.append(("ordre", v))
         elif k in ("price",):
             acts.append(("prix", v))
+        elif k in ("remind",):
+            acts.append(("rappel", v))
         elif k in ("look", "check", "verifie", "vérifie"):
             acts.append(("regarde", v))
         elif k in ("search", "web"):
@@ -381,7 +383,9 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     if chat.get("app") == "kinochat":
         _jobs = [m.get("pay") for m in chat.get("msgs") or [] if m.get("role") == "pay" and m.get("pay")]
         if _jobs:            # 2026-11-08: the pay cards are not words in the conversation - he must still know each job's state
-            _st = {"waiting": "quoted, not paid yet - do not do it yet", "claimed": "they say they paid, the owner is checking - not yet",
+            _st = {"trust": "small job, they pay AFTER if happy - deliver it now if you have not already (if it is above, it is done)", "owed": "delivered, they pay if happy - do not chase "
+                   "them more than once, kindly", "claimed_after": "delivered, they say they paid - the owner is checking",
+                   "waiting": "quoted, not paid yet - do not do it yet", "claimed": "they say they paid, the owner is checking - not yet",
                    "paid": "PAID - deliver it now if not done", "delivered": "delivered", "cancelled": "cancelled"}
             P.append("JOBS IN THIS CHAT: " + "; ".join("\"%s\" %s EUR: %s" % (j.get("what"), j.get("eur"), _st.get(j.get("status"), j.get("status")))
                                                        for j in _jobs[-5:]))
@@ -400,7 +404,12 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "when they show or describe an official letter (CAF, impôts, France Travail, CPAM, bank, landlord, a fine, a "
                  "court or a school), explain it for free in plain words - what it says, what they must do, by when, what happens "
                  "if they do nothing - and say clearly when a professional (lawyer, social worker) is the right person. Writing "
-                 "their answer is a paid letter (5).")
+                 "their answer is a paid letter (5). SMALL JOBS UP TO 9 EUR: they pay AFTER, only if happy - quote with #prix as "
+                 "usual and deliver it in the same message or the next one. REMINDERS: when they ask you to remind them of "
+                 "something (free), add on its own line: #rappel <YYYY-MM-DD HH:MM in THEIR local time> | <what, in their words> - "
+                 "their phone rings with it at that time. EMAILS FOR A PAYING CLIENT: when a paid job needs an email sent (a job "
+                 "application, a reply to a business), and they gave you the address and agreed to the text, send it from your "
+                 "own address: #email <address> | <subject> | <message> (a new address is approved by the owner first).")
         # 2026-11-08 (owner): Kino Chat people are not traders - and a person never recites what he can do
         P.append("THIS CHAT IS IN KINO CHAT: they came to talk with you, not for trading. Never bring up markets, Bitcoin, robots, "
                  "your hunches or the trading app unless THEY do. Never list what you can do. When something you really can do "

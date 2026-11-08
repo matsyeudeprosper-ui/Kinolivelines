@@ -207,6 +207,10 @@ header>.av{cursor:pointer}
 .mis{padding:12px 0;border-bottom:1px solid var(--border)}.mis b{display:block}.mis .mr{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;font-size:14px}
 .mis .tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:9px;background:var(--surface2);color:var(--mut)}.mis .tag.ok{background:color-mix(in srgb,var(--acc) 22%,transparent);color:var(--acc)}
 .mis a{color:var(--acc);font-size:14px;font-weight:600}
+
+.rmd{text-align:center;margin:8px 0}.rmd span{display:inline-block;font-size:13px;color:var(--ink);background:color-mix(in srgb,var(--vio) 18%,var(--surface));border:1px solid color-mix(in srgb,var(--vio) 40%,var(--border));padding:6px 12px;border-radius:12px}
+.kn{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start}.kn span{flex:1;color:var(--ink)}.kn button{border:0;background:none;color:var(--mut);font-size:16px;cursor:pointer;padding:2px 6px}
+.shc h4.kh{margin-top:16px}
 </style></head><body>
 <header>
  <button class="ib" id="back" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -277,8 +281,8 @@ function hm(t){var d=new Date((t||0)*1000);return String(d.getHours()).padStart(
 function dayOf(t){var d=new Date((t||0)*1000),n=new Date(),y=new Date(Date.now()-864e5);
  if(d.toDateString()===n.toDateString())return T('Aujourd’hui','Today');if(d.toDateString()===y.toDateString())return T('Hier','Yesterday');
  return d.toLocaleDateString(EN?'en-GB':'fr-FR',{weekday:'long',day:'numeric',month:'long'})}
-function shown(m){if(m.role==='user'||m.role==='image'||m.role==='doc'||(m.role==='pay'&&m.pay)||(m.role==='file'&&m.file))return true;return m.role==='ai'&&(m.text||'').trim()}
-function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='file')return fileCard(m,i);var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==me),inner='';
+function shown(m){if(m.role==='user'||m.role==='image'||m.role==='doc'||(m.role==='pay'&&m.pay)||(m.role==='file'&&m.file)||(m.role==='remind'&&m.what))return true;return m.role==='ai'&&(m.text||'').trim()}
+function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='file')return fileCard(m,i);if(m.role==='remind')return remindPill(m);var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==me),inner='';
  var q=m.reply&&m.reply.text?'<span class="qt" data-q="'+(+m.reply.i||0)+'"><b>'+(m.reply.who==='ai'?'Kino':T('Toi','You'))+'</b>'+esc(m.reply.text)+'</span>':'';
  if(m.role==='image'){var u=B+'chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file||'');inner='<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt=""></a>'+(m.text?md(m.text):'')}
  else if(m.role==='doc')inner='<div class="doc"><i>📄</i><span><b>'+esc(m.name||'document')+'</b><small>'+esc((m.kind||'').toUpperCase())+(m.size?' · '+Math.max(1,Math.round(m.size/1024))+' Ko':'')+'</small></span></div>'+(m.note?md(m.note):'');
@@ -623,8 +627,11 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
 
 // ---- 2026-11-08 (owner: "talk is free, real work is paid - PayPal, I approve each payment"): Kino's price card
 function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).replace('.',EN?'.':',');
- return '<div class="m gap"><div class="payc'+(st==='paid'||st==='delivered'?' ok':'')+'"><div class="pw">💼 '+T('Travail proposé par Kino','Job offered by Kino')+'</div><div class="pt">'+esc(p.what)+'</div><div class="pe">'+eur+' €</div>'+
+ return '<div class="m gap"><div class="payc'+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'"><div class="pw">💼 '+T('Travail proposé par Kino','Job offered by Kino')+'</div><div class="pt">'+esc(p.what)+'</div><div class="pe">'+eur+' €</div>'+
   (st==='paid'?'<div class="ps">✓ '+T('Payé, merci ! Kino s’y met.','Paid, thank you! Kino is on it.')+'</div>':
+   st==='trust'?'<div class="ps" style="margin-bottom:8px">🤝 '+T('Kino le fait d’abord. Tu paies après, seulement si ça te plaît.','Kino does it first. You pay after, only if you like it.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+T('Payer avec PayPal','Pay with PayPal')+'</a><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé','I’ve paid')+'</button></div>':
+   st==='claimed_after'?'<div class="ps">⏳ '+T('Merci ! Paiement en cours de vérification.','Thank you! Payment being checked.')+'</div>':
+   st==='owed'?'<div class="ps" style="margin-bottom:8px">✓ '+T('Livré. Ça te plaît ? Tu peux payer maintenant.','Delivered. Happy with it? You can pay now.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+T('Payer avec PayPal','Pay with PayPal')+'</a><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé','I’ve paid')+'</button></div>':
    st==='delivered'?'<div class="ps">✓ '+T('Livré : ton document est juste en dessous.','Delivered: your document is right below.')+'</div>':
    st==='claimed'?'<div class="ps">⏳ '+T('Paiement en cours de vérification (quelques heures en général).','Payment being checked (usually a few hours).')+'</div>':
    '<div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+T('Payer avec PayPal','Pay with PayPal')+'</a><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé','I’ve paid')+'</button></div><div class="ps">'+T('Discuter reste gratuit. Kino commence dès que le paiement est confirmé.','Chatting stays free. Kino starts as soon as the payment is confirmed.')+'</div>')+'</div></div>'}
@@ -641,13 +648,28 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-fsh]
  fetch(fileUrl(f)).then(function(r){return r.blob()}).then(function(bl){var fl=new File([bl],nm,{type:'application/pdf'});
   if(navigator.canShare&&navigator.canShare({files:[fl]}))return navigator.share({files:[fl],title:nm});window.open(fileUrl(f),'_blank')}).catch(function(){})});
 function missions(){var M=(C&&C.msgs)||[],P=M.filter(function(m){return m.role==='pay'&&m.pay}),F=M.filter(function(m){return m.role==='file'});
- var lab={waiting:T('À payer','To pay'),claimed:T('Paiement vérifié…','Checking payment…'),paid:T('En cours','In progress'),delivered:T('Livré','Delivered'),cancelled:T('Annulé','Cancelled')};
+ var lab={trust:T('En cours · payé après','In progress · pay after'),owed:T('Livré · à payer si satisfait','Delivered · pay if happy'),claimed_after:T('Paiement vérifié…','Checking payment…'),waiting:T('À payer','To pay'),claimed:T('Paiement vérifié…','Checking payment…'),paid:T('En cours','In progress'),delivered:T('Livré','Delivered'),cancelled:T('Annulé','Cancelled')};
  var h='<h3>💼 '+T('Mes missions','My jobs')+'</h3>';
  if(!P.length)h+='<p>'+T('Pas encore de mission. Discuter avec Kino est gratuit ; pour un vrai travail (CV, lettre, plan, site, une tâche dans la vraie vie…), demande-lui : il te dit le prix avant de commencer.','No jobs yet. Talking with Kino is free; for real work (a CV, a letter, a plan, a website, a task in the real world…), ask him: he tells you the price before starting.')+'</p>';
  h+=P.slice().reverse().map(function(m){var p=m.pay,st=p.status||'waiting',fs=F.filter(function(f){return f.ref===p.ref});
-  return '<div class="mis"><b>'+esc(p.what)+'</b><div class="mr"><span>'+String(p.eur).replace('.',EN?'.':',')+' € · '+dayOf(m.t)+'</span><span class="tag'+(st==='paid'||st==='delivered'?' ok':'')+'">'+(lab[st]||st)+'</span></div>'+
+  return '<div class="mis"><b>'+esc(p.what)+'</b><div class="mr"><span>'+String(p.eur).replace('.',EN?'.':',')+' € · '+dayOf(m.t)+'</span><span class="tag'+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'">'+(lab[st]||st)+'</span></div>'+
    fs.map(function(f){return '<a href="'+fileUrl(f.file)+'" target="_blank" rel="noopener">📄 '+esc(f.name)+'</a>'}).join('<br>')+'</div>'}).join('');
  shOpen(h+'<button class="btn g" onclick="this.closest(\'.sh\').classList.remove(\'on\')">'+T('Fermer','Close')+'</button>')}
+
+// ---- 2026-11-08: reminders (#rappel) and what Kino knows about me
+function remindPill(m){var d=new Date(m.at*1000),when=d.toLocaleDateString(EN?'en-GB':'fr-FR',{weekday:'short',day:'numeric',month:'short'})+' '+hm(m.at);
+ return '<div class="rmd"><span>⏰ '+T('Rappel prévu','Reminder set')+' · '+esc(when)+' · '+esc(m.what)+'</span></div>'}
+function knowSh(){shOpen('<h3>🧠 '+T('Ce que Kino sait de moi','What Kino knows about me')+'</h3><div class="empty" style="margin:20px 0">…</div>');
+ getJ('kino_data').then(function(D){var N=D.notes||[],MA=D.memory_all||{};
+  var row=function(k,i,t,fx){return '<div class="kn"><span>'+esc(typeof t==='string'?t:(t.text||t.what||''))+'</span>'+(fx?'<button data-kf="'+k+'" data-ki="'+i+'">✎</button>':'')+'<button data-kd="'+k+'" data-ki="'+i+'">✕</button></div>'};
+  var sec=function(lab,k,L,fx){return L&&L.length?'<h4 class="kh">'+lab+'</h4>'+L.map(function(t,i){return row(k,i,t,fx)}).join(''):''};
+  var h='<h3>🧠 '+T('Ce que Kino sait de moi','What Kino knows about me')+'</h3><p>'+T('C’est sa mémoire de toi. ✎ pour corriger (il le saura), ✕ pour qu’il oublie. Ça reste entre vous.','This is his memory of you. ✎ to correct it (he will know), ✕ to make him forget. It stays between you.')+'</p>';
+  var body=sec(T('Ce qu’il retient','What he remembers'),'note',N,true)+sec(T('Ce que tu lui as demandé de toujours faire','What you asked him to always do'),'standing',MA.standing,true)+
+   sec(T('Vos décisions','Your decisions'),'decision',MA.decisions,true)+sec(T('Vos moments','Your moments'),'moment',MA.moments,false)+sec(T('Vos blagues','Your jokes'),'joke',MA.jokes,false);
+  shOpen(h+(body||'<p>'+T('Rien encore : il apprend en parlant avec toi.','Nothing yet: he learns as you talk.')+'</p>'));
+  $('shc').onclick=function(e){var d=e.target.closest('[data-kd]'),f=e.target.closest('[data-kf]');
+   if(d){if(!confirm(T('Kino oubliera cette information. Sûr ?','Kino will forget this. Sure?')))return;post('kino_mem',{kind:d.dataset.kd,i:+d.dataset.ki,act:'del'}).then(knowSh)}
+   if(f){var t=prompt(T('Ce qui est vrai :','What is true:'));if(t&&t.trim())post('kino_mem',{kind:f.dataset.kf,i:+f.dataset.ki,act:'fix',text:t.trim()}).then(knowSh)}}}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
 // ---- menu: only what a chat needs
 function shOpen(h){$('shc').innerHTML=h;$('sh').classList.add('on')}function shClose(){$('sh').classList.remove('on')}
 $('sh').onclick=function(e){if(e.target===this)shClose()};
@@ -655,6 +677,7 @@ var MENU=[['🔍',T('Chercher','Search'),function(){$('srch').classList.add('on'
  ['🖼️',T('Photos et documents','Photos and documents'),media],
  ['👥',T('Groupes','Groups'),groups],
  ['💼',T('Mes missions','My jobs'),missions],
+ ['🧠',T('Ce que Kino sait de moi','What Kino knows about me'),knowSh],
  ['⭐',T('Messages importants','Starred messages'),starSh],
  ['🎨',T('Apparence','Appearance'),lookSh],
  ['🔔',T('Notifications','Notifications'),notifSh],

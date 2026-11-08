@@ -17126,7 +17126,14 @@ def _chat_job_quote(cid, user, c, v):
     ref = _KPj.manual(eur, what, kind="chatjob", method="paypal", cur="EUR", uid=user.get("id"), cid=cid,
                       lang=_rc().member_lang(c, "fr"), name=user.get("name") or user.get("id"))
     url = "https://kino.owltrader.duckdns.org/pay/%s/%s" % (ref, _KSj._token(ref))
-    _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url, "status": "waiting"}))
+    # 2026-11-08 (owner: "pay only if satisfied" for small jobs): up to 9 EUR, Kino delivers first - unless this person
+    # already has a delivered small job left unpaid
+    _owes = any((m.get("pay") or {}).get("status") == "owed" for m in (c.get("msgs") or []) if m.get("role") == "pay")
+    after = eur <= 9 and not _owes
+    _last = next((m for m in reversed((_chat_load(user, cid) or c).get("msgs") or []) if m.get("role") == "ai"), {})
+    _done = after and len(str(_last.get("text") or "")) > 350      # he delivered it in the same message
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
+                                                        "status": ("owed" if _done else "trust") if after else "waiting", "after": after}))
 
 
 def _chat_deliver(cid, user, v):
@@ -17141,7 +17148,7 @@ def _chat_deliver(cid, user, v):
     title = (title.strip() or {"cv": "CV", "lettre": "Lettre"}.get(kind, "Document"))[:80]
     cc = _chat_load(user, cid) or {}
     M = cc.get("msgs") or []
-    job = next((m for m in reversed(M) if m.get("role") == "pay" and (m.get("pay") or {}).get("status") == "paid"), None)
+    job = next((m for m in reversed(M) if m.get("role") == "pay" and (m.get("pay") or {}).get("status") in ("paid", "trust")), None)
     if job is None and not is_admin(user):
         return
     mi = next((i for i in range(len(M) - 1, -1, -1) if M[i].get("role") == "ai"), None)
@@ -17173,7 +17180,7 @@ def _chat_deliver(cid, user, v):
                                                   "kind": kind, "ref": ref or "", "size": os.path.getsize(os.path.join(CHAT_IMG, fn))})
                 for m in c3.get("msgs") or []:
                     if ref and m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == ref:
-                        m["pay"]["status"] = "delivered"
+                        m["pay"]["status"] = "owed" if m["pay"].get("status") == "trust" else "delivered"
                 return True
             _chat_mut(cid, put2)
         except Exception as e:
@@ -17184,6 +17191,62 @@ def _chat_deliver(cid, user, v):
             except Exception:
                 pass
     threading.Thread(target=run, daemon=True).start()
+
+
+REMIND_FILE = os.path.join(DIR, "robots", "kino_reminders.json")
+_REMIND_LK = threading.Lock()
+
+
+def _reminder_add(user, cid, v):
+    """2026-11-08 (owner: "next"): #rappel <YYYY-MM-DD HH:MM local> | <what> -> at that time a push + a line from Kino in the chat"""
+    m = re.match(r"\s*(\d{4}-\d{2}-\d{2})[ T](\d{1,2}):(\d{2})\s*\|\s*(.+)$", str(v))
+    if not m:
+        return
+    try:
+        loc = datetime.strptime("%s %02d:%s" % (m.group(1), int(m.group(2)), m.group(3)), "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+    except Exception:
+        return
+    at = loc.timestamp() + int(_tz_of(user.get("id")).get("off") or 0) * 60
+    if not time.time() - 120 < at < time.time() + 366 * 86400:
+        return
+    what = m.group(4).strip()[:200]
+    with _REMIND_LK:
+        try:
+            R = json.load(open(REMIND_FILE, encoding="utf-8"))
+        except Exception:
+            R = []
+        if sum(1 for r in R if r.get("uid") == user.get("id") and not r.get("done")) >= 30:
+            return
+        R.append({"id": os.urandom(5).hex(), "uid": user.get("id"), "cid": cid, "at": at, "what": what, "t": time.time()})
+        json.dump(R, open(REMIND_FILE, "w", encoding="utf-8"), ensure_ascii=False)
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "remind", what=what, at=int(at)))
+
+
+def _reminder_tick():
+    while True:
+        time.sleep(30)
+        try:
+            with _REMIND_LK:
+                try:
+                    R = json.load(open(REMIND_FILE, encoding="utf-8"))
+                except Exception:
+                    R = []
+                due = [r for r in R if not r.get("done") and r["at"] <= time.time()]
+                for r in due:
+                    r["done"] = time.time()
+                if due:
+                    json.dump([r for r in R if not r.get("done") or time.time() - r["done"] < 7 * 86400], open(REMIND_FILE, "w", encoding="utf-8"), ensure_ascii=False)
+            for r in due:
+                _chat_mut(r["cid"], lambda cc, r=r: _chat_msg(cc, "ai", text="⏰ " + r["what"], reminder=True))
+                cc0 = None
+                try:
+                    cc0 = _chat_load(_user_by_id(r["uid"]) or {}, r["cid"])
+                except Exception:
+                    pass
+                queue_push(r["uid"], "⏰ Kino", r["what"], path=("kinochat" if (cc0 or {}).get("app") == "kinochat" else "atelier?c=" + r["cid"]),
+                           urgent=True, tag="remind-" + r["id"])
+        except Exception:
+            pass
 
 
 def chat_paid(user, body):
@@ -17201,8 +17264,8 @@ def chat_paid(user, body):
 
     def put(cc):
         for x in cc.get("msgs") or []:
-            if x.get("role") == "pay" and (x.get("pay") or {}).get("ref") == ref and x["pay"].get("status") == "waiting":
-                x["pay"]["status"] = "claimed"
+            if x.get("role") == "pay" and (x.get("pay") or {}).get("ref") == ref and x["pay"].get("status") in ("waiting", "owed", "trust"):
+                x["pay"]["status"] = "claimed" if x["pay"]["status"] == "waiting" else "claimed_after"
         return True
     _chat_mut(c["id"], put)
     try:
@@ -17223,13 +17286,21 @@ def _chat_job_paid(x):
     if not u:
         return
 
+    _was = {}
+
     def put(cc):
         for m in cc.get("msgs") or []:
             if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == x["ref"]:
-                m["pay"]["status"] = "paid"
+                _was["s"] = m["pay"].get("status")
+                m["pay"]["status"] = "delivered" if m["pay"].get("after") and _was["s"] in ("owed", "claimed_after") else "paid"
         return True
     _chat_mut(x["cid"], put)
     _CHAT_Q[x["cid"]] = _CHAT_Q.get(x["cid"], 0) + 1
+    if _was.get("s") in ("owed", "claimed_after"):        # already delivered (paid after): just a warm thank-you
+        threading.Thread(target=_chat_quick, args=(x["cid"], u, "PAYMENT RECEIVED - they paid %s EUR for \"%s\", which you already "
+                         "delivered. Thank them warmly in one short line. send = true." % (x.get("usd"), x.get("what"))),
+                         kwargs={"notify": True}, daemon=True).start()
+        return
     threading.Thread(target=_chat_quick, args=(x["cid"], u, "PAYMENT CONFIRMED - they paid %s EUR for: %s. Thank them in one short line and "
                      "START THE JOB NOW: if it is a document (CV, letter, plan, report), deliver it complete in this message the "
                      "document way (one warm line, the document between <<< and >>>, then #pdf <cv|lettre|doc> | <title>); if you "
@@ -22003,6 +22074,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _chat_job_quote(cid, user, c, v)
             elif k == "pdf" and (c.get("app") == "kinochat" or is_admin(user)):
                 _chat_deliver(cid, user, v)
+            elif k == "rappel" and v:
+                _reminder_add(user, cid, v)
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
@@ -22011,7 +22084,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _rules_set(uid, v)
             elif k == "suivi" and v:
                 _followup_add(uid, v)
-            elif k == "email" and v and _person(uid) == "kino":   # 2026-11-01 (kino_mail): his own mailbox (owner's chats only for now)
+            elif k == "email" and v and (_person(uid) == "kino" or (c.get("app") == "kinochat" and any(
+                    (m.get("pay") or {}).get("status") in ("paid", "trust", "owed", "delivered", "claimed_after")
+                    for m in (_chat_load(user, cid) or {}).get("msgs") or [] if m.get("role") == "pay"))):   # 2026-11-01 (kino_mail): his own mailbox (owner's chats only for now)
                 _pm = [x.strip() for x in v.split("|", 2)]
                 if len(_pm) == 3 and "@" in _pm[0]:
                     _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation")
@@ -25423,6 +25498,9 @@ def _urge_tick():
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
                     _KHq = __import__("kino_hands")
                     _KHq.ON_REQUEST = _kino_req_card
+                    if not globals().get("_REMIND_ON"):    # 2026-11-08: reminders ring on time
+                        globals()["_REMIND_ON"] = True
+                        threading.Thread(target=_reminder_tick, daemon=True).start()
                     try:                                  # 2026-11-08: a paid Kino Chat job starts in its chat
                         import kino_pay as _KPh
                         if _chat_job_paid not in _KPh.ON_PAID:
