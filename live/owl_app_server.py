@@ -17149,8 +17149,8 @@ def _chat_deliver(cid, user, v):
     cc = _chat_load(user, cid) or {}
     M = cc.get("msgs") or []
     job = next((m for m in reversed(M) if m.get("role") == "pay" and (m.get("pay") or {}).get("status") in ("paid", "trust")), None)
-    if job is None and not is_admin(user):
-        return
+    # 2026-11-08 (owner review): writing is free like ChatGPT's - any document he writes comes as a PDF; a paid job is
+    # marked delivered when it is one
     mi = next((i for i in range(len(M) - 1, -1, -1) if M[i].get("role") == "ai"), None)
     if mi is None:
         return
