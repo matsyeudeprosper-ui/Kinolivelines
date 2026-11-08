@@ -276,6 +276,14 @@ def due(person, ctx, now=None):
     _fr = time.gmtime(now + 3600)
     if _memory_call(d, now):
         return True
+    try:                                       # 2026-11-07 (final review): someone answered him online - he answers first, at any
+        import kino_online as KONf             # hour (their day may be our night), in a friend time (it starts with the waiting)
+        if KONf.pending(24) and not d.get("next_task") and (not d.get("sessions") or now - float(_last_main(d)) >= 600):
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "someone answered me",
+                                                         "care": "friends"}))
+            return True
+    except Exception:
+        pass
     # 2026-11-02 (watch): 'a body out of balance' used to call him in at 02:32 and 03:41 France - he emailed the owner and
     # read his inbox while calling himself drained. At night resting IS the care: nothing calls him, not even his body.
     if 1 <= _fr.tm_hour < 7:
