@@ -201,6 +201,9 @@ def note_reply(uid, tz_off_min=0, plan=None):
         r = d.setdefault(uid, {})
         D = r.setdefault("days", {})
         k = _day(tz_off_min)
+        dcap = info(plan).get("replies") if plan and info(plan).get("month") is None else None
+        if dcap is not None and int(D.get(k, 0)) >= int(dcap) and int(r.get("extra") or 0) > 0:
+            r["extra"] = int(r["extra"]) - 1         # 2026-11-08: past the daily allowance, a gift/pack message is spent (once)
         D[k] = int(D.get(k, 0)) + 1
         for old in sorted(D)[:-8]:
             D.pop(old, None)
