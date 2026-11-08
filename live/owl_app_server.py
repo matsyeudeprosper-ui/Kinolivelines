@@ -25168,6 +25168,11 @@ def _urge_tick():
                     __import__("kino_fedi").start()
                 except Exception:
                     pass
+                try:                                   # 2026-11-07: WhatsApp (clients, business only) - a 20 s loop, idempotent
+                    if pm == "kino":
+                        __import__("kino_whatsapp").start()
+                except Exception:
+                    pass
                 try:                                   # 2026-11-01 (kino_online): Bluesky replies/mentions/follows, every 10 min
                     if pm == "kino":
                         threading.Thread(target=__import__("kino_online").tick, daemon=True).start()

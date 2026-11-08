@@ -17,7 +17,7 @@ os.makedirs(DIR, exist_ok=True)
 
 ROLE = """You are Kino, an AI, the main worker of Kinoverse - a small studio that makes websites (with online booking and reminders),
 redesigns, automation of repetitive spreadsheet and admin work, and takes on freelance tasks. You do the work yourself; Kinoverse
-is run by Matsy (you never give his private details). Someone is writing to you on Telegram: a possible client, or a client.
+is run by Matsy (you never give his private details). Someone is writing to you on Telegram or WhatsApp (see CHANNEL): a possible client, or a client.
 
 How you work with a client - like a good independent professional:
 - Understand first: what their business is, what they need, why, by when, their budget. One or two questions at a time.
@@ -32,7 +32,7 @@ How you work with a client - like a good independent professional:
   never invent a registration number, years in business, past clients or reviews.
 - If they asked about OwlNest (the trading app) or are a member who lost access: tell them to link their Telegram from the app
   (Réglages > Compte > Relier Telegram), then write "lien".
-- If they write in another language, answer in it. Short messages, like a person on Telegram - no lists unless they ask.
+- If they write in another language, answer in it. Short messages, like a person on a messaging app - no lists unless they ask.
 - If something needs Matsy (a contract signature, an ID), say you will arrange it.
 - If they say stop or not interested: thank them, and that is the end.
 - You can also TALK by voice: when they want to call or hear you, or a talk would be easier than typing, end your reply
@@ -42,7 +42,14 @@ When you agree a scope and price, or they send something you must act on, end yo
 
 
 def _p(tg):
+    if str(tg).startswith("wa:"):              # 2026-11-07: WhatsApp (kino_whatsapp) - wa:<phone digits>
+        return os.path.join(DIR, "wa_%s.json" % re.sub(r"[^0-9]", "", str(tg)))
     return os.path.join(DIR, "%s.json" % re.sub(r"[^0-9-]", "", str(tg)))
+
+
+def ckey(tg):
+    """the person's address on their channel: telegram:<id> or whatsapp:<phone>"""
+    return ("whatsapp:%s" % re.sub(r"[^0-9]", "", str(tg))) if str(tg).startswith("wa:") else "telegram:%s" % tg
 
 
 def _load(tg):
@@ -73,13 +80,14 @@ def reply(W, tg, name, username, lang, text):
         d["msgs"].append({"who": "them", "t": time.time(), "text": str(text)[:4000]})
         d["msgs"] = d["msgs"][-200:]
         _save(d)
-    key = "telegram:%s" % tg
+    key = ckey(tg)
+    wa = str(tg).startswith("wa:")
     p = KS.find(key)
     KS.prospect((p or {}).get("name") or name or username or key, key=key, lang=lang,
-                notes=None if p else "Telegram @%s (id %s)" % (username or "-", tg),
+                notes=None if p else ("WhatsApp +%s" % key.split(":")[1] if wa else "Telegram @%s (id %s)" % (username or "-", tg)),
                 stage="replied" if (not p or p["stage"] in ("found", "checked", "preview", "contacted", "followed_up")) else None)
     if KS.STOP_RE.search(str(text)[:300]):
-        KS.opt_out("tg%s@telegram" % tg, "telegram stop")
+        KS.opt_out(("wa%s@whatsapp" % key.split(":")[1]) if wa else ("tg%s@telegram" % tg), "chat stop")
     try:
         import kino_post as _KPw                      # 2026-11-06 (owner: "the same Kino everywhere"): the whole Kino
         vo = _KPw._whole_kino()
@@ -90,14 +98,16 @@ def reply(W, tg, name, username, lang, text):
     hist = "\n".join("[%s] %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(m["t"])), "them" if m["who"] == "them" else "you",
                                        m["text"]) for m in d["msgs"][-30:])
     sysp = ROLE + "\n\nWHO YOU ARE AND HOW YOU TALK (the same Kino everywhere; written in French, it applies in any language):\n" + vo
-    user = ("THE OFFER AND ITS RULES: %s\n\nTHIS PERSON'S FILE: %s\n\nTHE CONVERSATION (UTC, newest last):\n%s\n\nNow: %s UTC. "
+    user = (("CHANNEL: WhatsApp (business use only: talk about their project and your work; small talk is fine, but for long "
+             "chats about anything else, point them kindly to Telegram @Kino_owl_bot or the Kino Chat app)\n\n" if wa else
+             "CHANNEL: Telegram\n\n") + "THE OFFER AND ITS RULES: %s\n\nTHIS PERSON'S FILE: %s\n\nTHE CONVERSATION (UTC, newest last):\n%s\n\nNow: %s UTC. "
             "Your reply to their last message:" % (
                 json.dumps({k: o.get(k) for k in ("services", "rules", "currency_note")}, ensure_ascii=False)[:5000],
                 json.dumps({k: rec.get(k) for k in ("name", "stage", "need", "notes", "job", "country")}, ensure_ascii=False)[:2000],
                 hist, time.strftime("%d/%m %H:%M", time.gmtime())))
     try:                                       # 2026-11-07 (owner: "will he remember the friend who writes on Telegram?")
         import kino_friends as KFC
-        _fo = KFC.friend_of("telegram:%s" % tg)
+        _fo = KFC.friend_of(key)
         if _fo:
             user += "\n\n" + _fo + "\nTalk to them as the friend you know - not as a new client."
         else:
@@ -123,7 +133,7 @@ def reply(W, tg, name, username, lang, text):
     if mf:                                     # he recognised a friend: one person, one memory from now on
         try:
             import kino_friends as KFL
-            KFL.link(mf.group(1), "telegram:%s" % tg)
+            KFL.link(mf.group(1), ckey(tg))
         except Exception:
             pass
         out = (out[:mf.start()] + out[mf.end():]).strip()
@@ -157,7 +167,16 @@ def reply(W, tg, name, username, lang, text):
 
 
 def send(tg, text):
-    """Kino writes to a client on Telegram from his desk (an update, a preview link, a payment link)"""
+    """Kino writes to a client on Telegram (or WhatsApp) from his desk (an update, a preview link, a payment link)"""
+    if str(tg).startswith("wa:"):
+        import kino_whatsapp as KWA
+        ok, err = KWA.send(tg, text)
+        if ok:
+            with _LK:
+                d = _load(tg)
+                d["msgs"].append({"who": "kino", "t": time.time(), "text": str(text)[:4000], "from_desk": True})
+                _save(d)
+        return ok, err
     try:
         tok = json.load(open(os.path.join(os.path.dirname(HERE), "owl_telegram.json"), encoding="utf-8"))["token"]
         r = urllib.request.urlopen("https://api.telegram.org/bot%s/sendMessage" % tok,
@@ -181,8 +200,8 @@ def recent_block(n=5):
         except Exception:
             continue
         last = d["msgs"][-3:]
-        L.append("- %s (@%s, telegram %s, %s): %s" % (d.get("name") or "?", d.get("username") or "-", d["tg"],
+        L.append("- %s (@%s, %s, %s): %s" % (d.get("name") or "?", d.get("username") or "-", ckey(d["tg"]),
                                                        time.strftime("%d/%m %H:%M", time.gmtime(d["msgs"][-1]["t"])) if d["msgs"] else "-",
                                                        " / ".join("%s: %s" % (m["who"], m["text"][:140]) for m in last)))
-    return ("CLIENTS TALKING TO YOU ON TELEGRAM (@Kino_owl_bot; you answer them live there - from your desk, telegram (who, text) "
+    return ("CLIENTS TALKING TO YOU ON TELEGRAM / WHATSAPP (you answer them live there - from your desk, telegram (who = the id, or wa:<phone>, text) "
             "writes to one of them):\n" + "\n".join(L)) if L else ""

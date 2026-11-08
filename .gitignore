@@ -352,3 +352,6 @@ live/robots/kino_zernio.log
 live/robots/kino_guestcall.json
 live/robots/kino_guestcall.json.tmp
 live/robots/kino_guestcall.log
+live/robots/kino_whatsapp_state.json
+live/robots/kino_whatsapp_state.json.tmp
+live/robots/kino_whatsapp.log
