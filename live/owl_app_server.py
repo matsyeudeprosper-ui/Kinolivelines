@@ -39188,10 +39188,8 @@ class H(BaseHTTPRequestHandler):
             if sub in ("atelier", "kinochat"):
                 if not _ok:
                     self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers(); return
-                _ap = open(os.path.join(DIR, "owl_atelier_page.html"), encoding="utf-8").read()
-                if sub == "kinochat":                                  # 2026-11-07: Kino Chat (same account, same history)
-                    _rc()
-                    _ap = __import__("kino_chatapp").inject(_ap)
+                # 2026-11-08 (owner: "a WhatsApp kind of simple screen"): Kino Chat = its own light page, same account, same chats
+                _ap = open(os.path.join(DIR, "kinochat_page.html" if sub == "kinochat" else "owl_atelier_page.html"), encoding="utf-8").read()
                 self._send(_ap, "text/html; charset=utf-8")
             elif not _ok:
                 self._send(json.dumps({"err": "strategy"}), "application/json")
