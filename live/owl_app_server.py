@@ -17125,6 +17125,22 @@ def chat_start(user, body):
         except Exception:
             pass
         return {"ok": True, "id": cid}
+    if not rid and not known and str(body.get("app") or "") == "kinochat":
+        # 2026-11-08 (owner: "not all users will be traders"): someone who came through the Kino Chat app meets Kino the person,
+        # not the trading-robot builder - no trading unless THEY bring it up
+        _chat_save(c)
+        _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+        threading.Thread(target=_chat_quick, args=(cid, user, "FIRST MEETING - %s just installed Kino Chat and opened it for the very first "
+                                                   "time; you have never met. Language: %s. They came to talk with YOU - not for trading. Be warm, "
+                                                   "short and curious about them: who they are, what is on their mind today. Say in a few words "
+                                                   "who you are: an AI companion AND a capable coworker - a friend to talk to, and help with real work (writing an "
+                                                   "email, a letter, a CV or a post, preparing a plan, searching the web, reading a document or photo they send); "
+                                                   "for a business, you and the Kinoverse team also build websites and run social media and ads. One or two "
+                                                   "short sentences for all that, natural, never a list or a pitch; then ask about them. "
+                                                   "Do NOT mention trading, markets, robots or the app's other features unless they bring it up. "
+                                                   "Never a form, never a sales line." % (user.get("name") or "someone new", "English" if en else "French")),
+                         daemon=True).start()
+        return {"ok": True, "id": cid}
     if not rid and not known:
         # 2026-10-20 (owner list 7 item 5): a new member gets a real first meeting, in Kino's own words
         _chat_save(c)

@@ -10,16 +10,35 @@ The APK (live/apk_kinochat, package org.duckdns.owltrader.kinochat) is a Trusted
 """
 import html as _h
 
-_KC_HEAD = """<script>window.KC=1;try{localStorage.setItem('kcLink',location.pathname.replace(/\\/+$/,''))}catch(e){}
+_KC_HEAD = """<script>window.KC=1;
+/* 2026-11-08 owner: "find a professional way to introduce all the things Kino can do - friend, but also an excellent coworker" */
+function kcTourGo(){var en=typeof EN!=='undefined'&&EN,T=function(f,e){return en?e:f};var S=[
+['👋',T('Kino, ton compagnon et assistant IA','Kino, your AI companion and assistant'),T('Parle-lui de tout, à toute heure. Il se souvient de ce que tu lui dis : tu ne repars jamais de zéro.','Talk to him about anything, any time. He remembers what you tell him, so you never start from zero.')],
+['💼',T('Un collègue toujours disponible','A coworker on call'),T('Un e-mail, une lettre, un CV, un post à écrire ; un plan à préparer ; une recherche sur le web ; un document ou une photo à lire (bouton +).','An email, a letter, a CV or a post to write; a plan to prepare; a web search; a document or a photo to read (the + button).')],
+['🏪',T('Pour ton activité','For your business'),T('Avec l’équipe Kinoverse, Kino crée des sites web et gère réseaux sociaux et publicités. Demande-lui simplement.','With the Kinoverse team, Kino builds websites and runs social media and ads. Just ask him.')],
+['📞',T('Écris, parle ou appelle','Write, talk or call'),T('Écris, envoie un message vocal avec 🎤, ou appelle-le avec 📞 (5 minutes offertes chaque mois).','Write, send a voice message with 🎤, or call him with 📞 (5 free minutes every month).')],
+['📈',T('Et si tu trades','And if you trade'),T('Il construit et teste des robots de trading avec toi, sur le même compte que l’app OwlNest.','He builds and tests trading robots with you, on the same account as the OwlNest app.')]];
+var k=0,paint=function(){shOpen('<div class="tour"><div class="ti">'+S[k][0]+'</div><h4>'+S[k][1]+'</h4><p>'+S[k][2]+'</p><div class="tdots">'+S.map(function(_,i){return '<i class="'+(i===k?'on':'')+'"></i>'}).join('')+'</div><button class="btn pri" id="tnext">'+(k<S.length-1?T('Suivant','Next'):T('C’est parti','Let’s go'))+'</button></div>');
+var b=document.getElementById('tnext');if(b)b.onclick=function(){k++;if(k<S.length)paint();else shClose()}};paint();}try{localStorage.setItem('kcLink',location.pathname.replace(/\\/+$/,''))}catch(e){}
 document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('kcm');var t=document.getElementById('tx');
-if(t)t.placeholder=(document.documentElement.lang||'fr').indexOf('en')===0?'Write to Kino…':'Écris à Kino…';});</script>
+if(t)t.placeholder=(document.documentElement.lang||'fr').indexOf('en')===0?'Write to Kino…':'Écris à Kino…';
+/* 2026-11-08 owner: "not all users will be traders" - no robot / money items in Kino Chat's menu; a sign-out instead */
+if(typeof moreSh==='function'){var _m=moreSh;window.moreSh=function(b){_m(b);var d=document.getElementById('rxbar');if(!d)return;
+d.querySelectorAll('[data-a="n"],[data-a="r"]').forEach(function(x){x.remove()});var w=document.createElement('button');w.className='it';
+w.innerHTML='✨&nbsp; '+((typeof EN!=='undefined'&&EN)?'What Kino can do':'Ce que Kino sait faire');w.onclick=function(){d.remove();kcTourGo()};d.insertBefore(w,d.firstChild);
+var o=document.createElement('button');o.className='it';
+var en=typeof EN!=='undefined'&&EN;o.innerHTML='🚪&nbsp; '+(en?'Sign out':'Me déconnecter');o.onclick=function(){try{localStorage.removeItem('kcLink')}catch(e){}location.href='/kinochat?out=1'};d.appendChild(o);}}});</script>
 <link rel="manifest" href="/kinochat.webmanifest"><meta name="theme-color" content="#0B0F14">
-<style>body.kcm #chartb,body.kcm .ring,body.kcm #bp,body.kcm #bk,body.kcm #hint,body.kcm #tlb,body.kcm #strip,
+<style>body.kcm #chartb,body.kcm .ring,body.kcm #bp,body.kcm #bk,body.kcm #hint,body.kcm #tlb,body.kcm #strip,body.kcm #todayln,body.kcm .start,
 body.kcm button[onclick="rpOpen()"]{display:none!important}body.kcm .app{grid-template-columns:1fr!important}body.kcm .chat{background-image:radial-gradient(120% 50% at 50% 0%,rgba(109,92,246,.09),transparent 65%)!important}</style>"""
 
 
 def inject(page_html):
     """the trading app's chat page, in Kino Chat mode"""
+    page_html = page_html.replace("post('chat_start',{lang:", "post('chat_start',{app:'kinochat',lang:")   # Kino meets a person, not a trader
+    page_html = page_html.replace("function tourMaybe(){if(C&&C.tour_done)",   # Kino Chat's own tour, once per phone, members too
+                                  "function tourMaybe(){if(window.KC){try{if(localStorage.getItem('kcTour'))return;localStorage.setItem('kcTour','1')}"
+                                  "catch(e){return}return kcTourGo();}if(C&&C.tour_done)")
     i = page_html.find("</head>")
     return page_html[:i] + _KC_HEAD + page_html[i:] if i > 0 else _KC_HEAD + page_html
 

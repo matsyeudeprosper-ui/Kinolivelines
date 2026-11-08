@@ -414,7 +414,7 @@ header .kav .kpres{width:42px!important;height:42px!important}.kl .kpres,.rpso .
 <div class="toast" id="toast"></div>
 <script>var ASKP=null;try{ASKP=new URLSearchParams(location.search).get('ask');}catch(e){}
 
-const B=location.pathname.replace(/atelier\/?$/,'');
+const B=location.pathname.replace(/(atelier|kinochat)\/?$/,'');   /* 2026-11-08: Kino Chat (/<tok>/kinochat) posts to the same /<tok>/ API */
 try{if(!localStorage.getItem('kinoLangFix1')){localStorage.setItem('kinoLangFix1','1');if(localStorage.getItem('owlLang')==='en'&&sessionStorage.getItem('kinoLangFlip')!=='manual')localStorage.removeItem('owlLang');}}catch(e){}
 let EN=false;try{EN=localStorage.getItem('owlLang')==='en';}catch(e){}
 const T=(fr,en)=>EN?en:fr;
