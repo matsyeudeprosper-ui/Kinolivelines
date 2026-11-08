@@ -26257,9 +26257,26 @@ def chat_send(user, body):
         _tzo = int(_tz_of(user.get("id")).get("off") or 0)
         _pu = _person(user.get("id"))
         if _PL.kino_left(_pu, _pn, _tzo) == 0:
-            return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies"),
-                    "month": _PL.info(_pn).get("month"), "pack": _PL.PACK}
-        _PL.note_reply(_pu, _tzo, _pn)
+            # 2026-11-08 (owner: a Kino Chat newcomer hit the limit in the middle of building their project - "that sucks"):
+            # the allowance never cuts a live conversation mid-way. While they are actively talking (last message < 30 min),
+            # Kino gets GRACE more replies today; the last one is told to land the day warmly (where we are, the next step,
+            # back tomorrow). Only then the limit card shows.
+            _gd = time.strftime("%Y-%m-%d")
+            _gn = int((c.get("grace") or {}).get(_gd) or 0)
+            _lu = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") == "user"] or [0])
+            if _gn < CAP_GRACE and time.time() - _lu < 1800:
+                def _gput(cc, _gd=_gd, _gn=_gn):
+                    cc["grace"] = {_gd: _gn + 1}
+                    if _gn + 1 >= CAP_GRACE:
+                        cc["last_today"] = _gd
+                    return True
+                _chat_mut(c["id"], _gput)
+                c = _chat_load(user, c["id"]) or c
+            else:
+                return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies"),
+                        "month": _PL.info(_pn).get("month"), "pack": _PL.PACK}
+        else:
+            _PL.note_reply(_pu, _tzo, _pn)
     _ex = {"voice": True} if body.get("voice") else {}
     rp = body.get("reply") if isinstance(body.get("reply"), dict) else None     # 2026-10-20 (owner UI item 1): a quoted message
     if rp and str(rp.get("text") or "").strip():
@@ -27267,6 +27284,7 @@ def _read_shot(cid, user, fn, note):
         pass
 
 
+CAP_GRACE = 12          # 2026-11-08: replies past the allowance while a conversation is live (see chat_send)
 CHAT_REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "🔥", "🙏", "💚")
 
 
@@ -28031,6 +28049,8 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
     if float(c.get("judge_wait") or 0) > now:
         return                                        # 2026-10-24: the judge asked to wait
     M = c.get("msgs") or []
+    if c.get("app") == "kinochat" and not any(x.get("role") == "user" for x in M):
+        return                                        # 2026-11-08: a newcomer speaks first - his hello is already there
     last_any = max([float(x.get("t") or 0) for x in M if x.get("role") in ("user", "ai")] or [0])
     # 2026-10-25 00:35-00:46 (watch): the inner voice looked at this silence three times and said no ("il est minuit, un bébé,
     # fatigué, je le laisse respirer") - and this timer fired twice anyway, with trading drafts the judge had to rewrite into
@@ -28123,6 +28143,13 @@ def _initiative_tick(u, uid, m, ch, now, h0, busy):
             mats.append((_k, _ins + "||" + _a))
     except Exception:
         pass
+    # 2026-11-08 (owner: Kino Chat people are not traders): Pekos's first initiative was "my market hunches are right 29 times
+    # out of 60" before they had talked about anything. In Kino Chat, unless THEY talk trading, he opens only from what they
+    # said, his curiosity about their life, or his own non-trading work
+    if c.get("app") == "kinochat" and not re.search(r"(trad|bourse|bitcoin|btc|crypto|forex|robot|march[ée]|market|action|invest)",
+                                                      " ".join(str(x.get("text") or "") for x in M if x.get("role") == "user"), re.I):
+        mats = [x for x in mats if x[0] in ("followup", "human")] + [("own", "what YOU have been doing or learning lately that could matter to "
+                "THEM (your work for small businesses, a skill, an idea for what they told you) - never markets, bets, robots or trading")]
     _wk = [x for x in (m.get("initiative") or []) if now - float(x.get("t") or 0) < 7 * 86400]
     _last_use = {}
     for x in _wk:

@@ -371,6 +371,11 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     if en:
         P.append("He writes mostly in English: answer in English, same person, same voice - and if he mixes French into his own "
                  "message, you can too, naturally, like bilingual friends do.")
+    if chat.get("last_today") == time.strftime("%Y-%m-%d"):
+        # 2026-11-08 (owner): the day's allowance is used - this reply lands the day instead of stopping mid-sentence
+        P.append("THIS IS YOUR LAST REPLY TO THEM TODAY (their free daily messages are used up). Answer what they said, then land "
+                 "the day warmly in their language: where you both are, the ONE next step for them, and that you pick it up with "
+                 "them tomorrow. Do not mention plans, prices or limits - the app shows that itself.")
     if chat.get("app") == "kinochat":
         # 2026-11-08 (owner): Kino Chat people are not traders - and a person never recites what he can do
         P.append("THIS CHAT IS IN KINO CHAT: they came to talk with you, not for trading. Never bring up markets, Bitcoin, robots, "

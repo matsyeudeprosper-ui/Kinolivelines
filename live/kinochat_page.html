@@ -187,6 +187,10 @@ header>.av{cursor:pointer}
 .ncard{display:flex;gap:12px;align-items:center;margin:10px 4px;padding:12px 14px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);box-shadow:0 6px 18px #0005;animation:bin .3s ease-out}
 .ncard i{font-style:normal;font-size:26px}.ncard span{flex:1;font-size:14px;color:var(--mut)}.ncard b{display:block;color:var(--ink);font-size:15px}
 .ncard button{border:0;border-radius:12px;padding:9px 12px;font:600 13px Inter,system-ui;cursor:pointer;background:var(--acc2);color:#fff}.ncard button.x{background:none;color:var(--mut);padding:9px 4px}
+
+#mvb .ic{font-size:64px;margin-bottom:18px;text-align:center}#mvb .kk{font:700 13px Inter,system-ui;letter-spacing:.8px;text-transform:uppercase;color:#ffffffc0;margin-bottom:10px}
+#mvb .cta{align-self:center;margin-top:26px;border:0;border-radius:24px;padding:13px 22px;background:#fff;color:#0b0f14;font:700 15px Inter,system-ui;cursor:pointer;box-shadow:0 8px 24px #0006;text-decoration:none}
+.capc{text-align:center}.capc .ic{font-size:52px;margin:6px 0 4px}.capc p{line-height:1.55}
 </style></head><body>
 <header>
  <button class="ib" id="back" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -296,7 +300,7 @@ tx.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&match
 function send(){if(GID)return grpSend();var t=tx.value.trim();if(!t||!CID)return;tx.value='';auto();PEND.push(t);sndSend();var fk=fxFor(t);if(fk)setTimeout(function(){fx(fk)},200);var SB={id:CID,text:t};if(REPLY&&!REPLY.g)SB.reply=REPLY;replyClear();paint(true);FAST=Date.now()+90000;
  var tries=[0,1500,3500,6000],k=0;(function go1(){post('chat_send',SB).then(function(j){
    if(j&&j.ok===false){PEND=PEND.filter(function(p){return p!==t});paint(true);
-    toast(j.err==='cap'?T('Tu as atteint la limite de messages de ton offre.','You reached your plan’s message limit.'):j.err==='busy'?T('Kino répond encore, un instant…','Kino is still answering, one moment…'):T('Pas parti, réessaie.','Not sent, try again.'));if(j.err==='busy'){tx.value=t;auto()}}
+    if(j.err==='cap'){tx.value=t;auto();capSh(j)}else toast(j.err==='busy'?T('Kino répond encore, un instant…','Kino is still answering, one moment…'):T('Pas parti, réessaie.','Not sent, try again.'));if(j.err==='busy'){tx.value=t;auto()}}
    load().then(loop)}).catch(function(){k++;if(k<tries.length)setTimeout(go1,tries[k]);else{PEND=PEND.filter(function(p){return p!==t});paint(true);tx.value=t;auto();toast(T('Hors ligne : ton message est resté dans la case.','Offline: your message stayed in the box.'))}})})()}
 // ---- the round button: tap = send, hold = voice message
 var rec=null,chunks=[],t0=0,holdT=null,held=false;
@@ -494,23 +498,50 @@ function lookSh(){var th=lsg('kcTheme','nuit'),fs=lsg('kcFs','16px');
   if(b.dataset.th){lss('kcTheme',b.dataset.th);look();lookSh()}else if(b.dataset.fs){lss('kcFs',b.dataset.fs);look();lookSh()}
   else if(b.dataset.sn){lss('kcSnd',b.dataset.sn);look();lookSh();if(SND)sndIn()}else if(b.dataset.fx){shClose();fx(b.dataset.fx)}}}
 
+
+// ---- 2026-11-08 (owner: "use the status to advise and self-promote some of his skills, with a direct link to the landing page")
+var LAND=EN?'https://kinoverse26-byte.github.io/':'https://kinoverse26-byte.github.io/fr/';
+var SKILLS=[
+ ['🌐',T('Site web','Website'),T('Ton commerce n’a pas de site, ou il date ? Je t’en montre un d’abord, gratuitement. Tu ne paies que s’il te plaît.','Your business has no website, or an old one? I show you one first, for free. You only pay if you like it.'),'url',T('Voir mon travail','See my work')],
+ ['📱',T('Réseaux sociaux','Social media'),T('Une page Instagram ou Facebook qui ne bouge plus fait fuir les clients. Je peux la faire vivre pour toi : posts, photos, planning.','An Instagram or Facebook page that stopped moving scares customers away. I can keep it alive for you: posts, pictures, a schedule.'),'ask',T('Demander à Kino','Ask Kino'),T('Tu peux m’aider avec mes réseaux sociaux ?','Can you help me with my social media?')],
+ ['📄',T('CV','CV'),T('Envoie-moi ton CV en photo. Je te le rends clair, propre et prêt à envoyer, en français ou en anglais.','Send me a photo of your CV. I give it back clear, clean and ready to send, in English or French.'),'ask',T('Refaire mon CV','Redo my CV'),T('Tu peux m’aider à refaire mon CV ?','Can you help me redo my CV?')],
+ ['✉️',T('Courrier','Letters'),T('Un courrier compliqué (impôts, banque, propriétaire) ? Envoie-moi la photo : je t’explique simplement et je t’aide à répondre.','A tricky letter (taxes, bank, landlord)? Send me a photo: I explain it simply and help you answer.'),'ask',T('J’ai un courrier','I have a letter'),T('J’ai reçu un courrier, tu peux m’aider à le comprendre ?','I got a letter, can you help me understand it?')],
+ ['📍',T('Astuce','Tip'),T('Pour beaucoup de clients, Google Maps est la première vitrine d’un commerce. Des horaires faux, c’est des clients perdus. Vérifie la tienne aujourd’hui.','For many customers, Google Maps is a shop’s first window. Wrong opening hours mean lost customers. Check yours today.'),'ask',T('Vérifie avec moi','Check it with me'),T('Tu peux regarder ma fiche Google Maps avec moi ?','Can you look at my Google Maps listing with me?')],
+ ['💡',T('Idée de business','Business idea'),T('Tu cherches un revenu ? On part de ce que tu sais déjà faire, et je t’aide à trouver tes premiers clients, pas à pas.','Looking for an income? We start from what you already know how to do, and I help you find your first customers, step by step.'),'ask',T('On en parle','Let’s talk'),T('J’aimerais lancer une petite activité, tu m’aides ?','I’d like to start a small business, will you help me?')],
+ ['📞',T('Appel','Call'),T('Tu préfères parler qu’écrire ? Appuie sur 📞 en haut : on discute de vive voix, comme au téléphone.','Rather talk than type? Tap 📞 at the top: we chat out loud, like a phone call.'),'call',T('M’appeler','Call me')],
+ ['👥',T('Groupes','Groups'),T('Crée un groupe avec tes amis et moi. Je lis tout, et je réponds quand on m’appelle, comme un ami de plus.','Make a group with your friends and me. I read everything and answer when you call on me, like one more friend.'),'grp',T('Créer un groupe','Make a group')],
+ ['✍️',T('Écrire','Writing'),T('Un mail difficile, une lettre de motivation, un message pour un client… Dis-moi l’idée, je te propose le texte.','A tough email, a cover letter, a message to a client… Tell me the idea, I draft the text.'),'ask',T('Écrire avec Kino','Write with Kino'),T('Tu peux m’aider à écrire un message ?','Can you help me write a message?')]];
+function skillMoments(){var d=new Date(),day=Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/864e5),t0=new Date(d.getFullYear(),d.getMonth(),d.getDate(),8,0,0).getTime()/1000;
+ if(d.getHours()<8)t0-=86400;var out=[];for(var k=0;k<2;k++){var s=SKILLS[(day*2+k)%SKILLS.length];out.push({t:t0+k,skill:s,text:s[2]})}return out}
 // ---- 2026-11-08 Kino's Moments: his own posts, like a status - tap his photo
 var MOM=[],MK=0,MT=null,MT0=0,MDUR=7000,MPAUSE=false,MLEFT=0;
 var MGR=['linear-gradient(160deg,#0f766e,#1e1b4b)','linear-gradient(160deg,#7c3aed,#db2777)','linear-gradient(160deg,#0369a1,#0f172a)','linear-gradient(160deg,#c2410c,#7f1d1d)','linear-gradient(160deg,#15803d,#0c4a6e)','linear-gradient(160deg,#4338ca,#0e7490)'];
 function momSeen(){return +lsg('kcMomSeen','0')}
-function momLoad(){return post('kino_moments',{}).then(function(j){MOM=(j&&j.moments)||[];var av=document.querySelector('header>.av');
+function momLoad(){if($('mv').classList.contains('on'))return Promise.resolve();return post('kino_moments',{}).then(function(j){MOM=((j&&j.moments)||[]).concat(skillMoments()).sort(function(a,b){return a.t-b.t});var av=document.querySelector('header>.av');
  av.classList.toggle('mom',!!MOM.length&&MOM[MOM.length-1].t>momSeen())}).catch(function(){})}
 function ago(t){var m=Math.round((Date.now()/1000-t)/60);if(m<60)return T('il y a ','')+Math.max(1,m)+' min'+T('',' ago');var h=Math.round(m/60);if(h<24)return T('il y a ','')+h+' h'+T('',' ago');return dayOf(t)}
 function momOpen(){if(!MOM.length){toast(T('Kino n’a encore rien partagé cette semaine.','Kino has not shared anything this week.'));return}
  var k=MOM.findIndex(function(m){return m.t>momSeen()});MK=k<0?0:k;$('mv').classList.add('on');momShow()}
-function momShow(){var m=MOM[MK];if(!m)return momClose();clearTimeout(MT);
+function momShow(){var m=MOM[MK];if(!m)return momClose();clearTimeout(MT);if(m.skill)return skillShow(m);
  $('mvbars').innerHTML=MOM.map(function(_,k){return '<i><b style="width:'+(k<MK?'100%':'0')+'"></b></i>'}).join('');
  $('mvt').textContent=ago(m.t);var L=(m.text||'').length;
  $('mvb').style.background=m.img?'#000':MGR[Math.floor(m.t)%MGR.length];
  $('mvb').innerHTML=(m.img?'<img src="'+B+'kino_moment_img?t='+m.t+'" alt="">':'')+'<div class="tx'+(L>260||m.img?' xs':L>140?' s':'')+'">'+esc(m.text)+'</div><span class="ch">'+({x:'X',bluesky:'Bluesky',mastodon:'Mastodon'}[m.ch]||'')+'</span>';
- $('mvl').href=m.url||'#';$('mvl').style.display=m.url?'grid':'none';$('mvi').placeholder=T('Répondre à Kino…','Reply to Kino…');
+ $('mvl').href=m.url||'#';$('mvl').style.display=m.url?'grid':'none';$('mvi').style.display='';$('mvs').style.display='';$('mvi').placeholder=T('Répondre à Kino…','Reply to Kino…');
  MDUR=Math.min(15000,5000+L*35);MLEFT=MDUR;MPAUSE=false;momRun();
  if(m.t>momSeen())lss('kcMomSeen',String(m.t))}
+
+function skillShow(m){var s=m.skill;
+ $('mvbars').innerHTML=MOM.map(function(_,k){return '<i><b style="width:'+(k<MK?'100%':'0')+'"></b></i>'}).join('');
+ $('mvt').textContent=T('Ce que je peux faire pour toi','What I can do for you');
+ $('mvb').style.background=MGR[(SKILLS.indexOf(s)+2)%MGR.length];
+ $('mvb').innerHTML='<div class="ic">'+s[0]+'</div><div class="kk">'+esc(s[1])+'</div><div class="tx s">'+esc(s[2])+'</div>'+
+  (s[3]==='url'?'<a class="cta" href="'+LAND+'" target="_blank" rel="noopener">'+esc(s[4])+' ↗</a>':'<button class="cta" data-cta="1">'+esc(s[4])+'</button>');
+ var c=$('mvb').querySelector('[data-cta]');if(c){c.addEventListener('pointerdown',function(e){e.stopPropagation()});c.addEventListener('pointerup',function(e){e.stopPropagation()});
+  c.onclick=function(e){e.stopPropagation();momClose();if(s[3]==='ask'){tx.value=s[5];auto();tx.focus()}else if(s[3]==='call')$('callb').click();else if(s[3]==='grp')groups()}}
+ var a=$('mvb').querySelector('a.cta');if(a){a.addEventListener('pointerdown',function(e){e.stopPropagation()});a.addEventListener('pointerup',function(e){e.stopPropagation()})}
+ $('mvl').href=LAND;$('mvl').style.display='grid';$('mvi').placeholder=T('Une question pour Kino…','A question for Kino…');
+ MDUR=9000;MLEFT=MDUR;MPAUSE=false;momRun();if(m.t>momSeen())lss('kcMomSeen',String(m.t))}
 function momRun(){MT0=Date.now();var bar=$('mvbars').children[MK].firstChild,done=1-MLEFT/MDUR;bar.style.transition='none';bar.style.width=(done*100)+'%';void bar.offsetWidth;
  bar.style.transition='width '+MLEFT+'ms linear';bar.style.width='100%';clearTimeout(MT);MT=setTimeout(function(){MK++;if(MK<MOM.length)momShow();else momClose()},MLEFT)}
 function momPause(){if(MPAUSE)return;MPAUSE=true;clearTimeout(MT);MLEFT=Math.max(300,MLEFT-(Date.now()-MT0));var bar=$('mvbars').children[MK].firstChild,w=getComputedStyle(bar).width;bar.style.transition='none';bar.style.width=w}
@@ -523,7 +554,7 @@ $('mvx').onclick=function(e){e.stopPropagation();momClose()};
  $('mvb').addEventListener('pointercancel',momResume)})();
 $('mvi').addEventListener('focus',momPause);$('mvi').addEventListener('blur',function(){if(!$('mvi').value.trim())momResume()});
 function momReply(){var t=$('mvi').value.trim(),m=MOM[MK];if(!t||!m||!CID)return;if(GID)grpClose();
- REPLY={i:0,who:'ai',text:'📸 '+T('Moment','Moment')+' · '+String(m.text).replace(/\s+/g,' ').slice(0,170)};$('mvi').value='';momClose();
+ REPLY=m.skill?null:{i:0,who:'ai',text:'📸 '+T('Moment','Moment')+' · '+String(m.text).replace(/\s+/g,' ').slice(0,170)};if(m.skill)$('rbar').classList.remove('on');$('mvi').value='';momClose();
  tx.value=t;auto();send();toast(T('Envoyé à Kino','Sent to Kino'))}
 $('mvs').onclick=momReply;$('mvi').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();momReply()}});
 document.querySelector('header>.av').addEventListener('click',function(e){e.stopPropagation();momOpen()});
@@ -562,6 +593,17 @@ function uiTop(){if($('mv').classList.contains('on')){momClose();return true}
 var GUARD=false;function guard(){if(GUARD)return;try{history.pushState({kc:1},'');GUARD=true}catch(e){}}
 document.addEventListener('pointerdown',guard,{passive:true});
 window.addEventListener('popstate',function(){GUARD=false;if(uiTop())guard();else history.back()});
+
+// ---- 2026-11-08 (owner: a newcomer hit the limit mid-project): Kino already landed the day in his last reply; this card says
+// it kindly, keeps their words in the box, and shows the ways on
+function capSh(j){var lab=j.label||'';var month=!!j.month;
+ shOpen('<div class="capc"><div class="ic">🌙</div><h3>'+T('On a bien avancé aujourd’hui','We got a lot done today')+'</h3><p>'+(month?
+  T('Ta formule '+esc(lab)+' compte '+j.month+' réponses par mois, et elles sont utilisées. Prends 300 messages de plus, ou attends le mois prochain : Kino n’oublie rien.','Your '+esc(lab)+' plan counts '+j.month+' replies a month, and they are used. Get 300 more messages, or wait for next month: Kino forgets nothing.')
+  :T('Tes messages gratuits du jour sont utilisés. Kino reprend demain matin, exactement là où vous en étiez : ton message t’attend dans la case.','Your free messages for today are used. Kino picks up tomorrow morning, exactly where you left off: your message is waiting in the box.'))+'</p>'+
+  (month?'<button class="btn" id="cpk">'+T('300 messages · 9 $','300 messages · 9 $')+'</button>':'')+
+  '<a class="btn" style="text-decoration:none;box-sizing:border-box" target="_blank" href="'+B+'#offres">'+T('Parler plus : voir les formules','Talk more: see the plans')+'</a>'+
+  '<button class="btn g" onclick="this.closest(\'.sh\').classList.remove(\'on\')">'+T('À demain','See you tomorrow')+'</button></div>');
+ var b=$('cpk');if(b)b.onclick=function(){b.disabled=true;post('msg_pack_buy',{pack:'msgs-300'}).then(function(r){if(r&&r.ok&&r.url)window.open(r.url,'_blank');else b.disabled=false})}}
 // ---- menu: only what a chat needs
 function shOpen(h){$('shc').innerHTML=h;$('sh').classList.add('on')}function shClose(){$('sh').classList.remove('on')}
 $('sh').onclick=function(e){if(e.target===this)shClose()};
