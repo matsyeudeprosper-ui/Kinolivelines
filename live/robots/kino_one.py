@@ -275,7 +275,7 @@ def unknown_figures(say, ctx):
     ("-37 $" for -36,85 $, "une centaine" is not checked at all)"""
     known = [v for v in (_num(m.group(0)) for m in _NUM.finditer(str(ctx))) if v is not None]
     bad = []
-    for m in re.finditer(r"([+-]?\d[\d\s  ]*(?:[.,]\d+)?)\s?(\$|%|dollars?)", str(say)):
+    for m in re.finditer(r"([+-]?\d[\d\s  ]*(?:[.,]\d+)?)\s?(\$|%|dollars?\b)", str(say)):
         v = _num(m.group(1))
         if v is None or v <= 5:
             continue

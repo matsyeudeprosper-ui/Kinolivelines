@@ -120,8 +120,62 @@ def _masto(host, tag):
         acct = a.get("acct") or ""
         out.append({"where": "mastodon", "who": "@" + (acct if "@" in acct else acct + "@" + host), "name": a.get("display_name") or "",
                     "text": _plain(s.get("content")), "url": s.get("url") or s.get("uri"), "at": s.get("created_at", ""),
-                    "replies": int(s.get("replies_count") or 0), "q": "#" + tag})
+                    "replies": int(s.get("replies_count") or 0), "q": "#" + tag,
+                    "prof": {"followers": a.get("followers_count"), "following": a.get("following_count"),
+                             "posts": a.get("statuses_count"), "bio": _plain(a.get("note")), "bot": bool(a.get("bot")),
+                             "created": a.get("created_at", "")}})
     return out
+
+
+# 2026-11-07 (owner: "are they real humans or bots and ads?" - 3 of his first 4 talks were an advert account and two
+# auto-posters): friends come from real people. A brand VOICE is skipped, a person running a small business is not.
+_BRAND = re.compile(r"\b(we (?:make|build|help|create|are a|offer)|our (?:app|team|company|agency|services|products|store|channel)|"
+                    r"download (?:it|now|our|the app)|app store|google play|subscribe|official account|dm us|shop now|"
+                    r"available (?:on|now)|join our|book a demo|free trial)\b", re.I)
+
+
+def _bsky_profiles(handles, tok):
+    import kino_post as KP
+    out = {}
+    H = list(dict.fromkeys(h.lstrip("@") for h in handles))
+    for i in range(0, len(H), 25):
+        q = "&".join("actors=" + urllib.parse.quote(h) for h in H[i:i + 25])
+        try:
+            for pr in KP._bsky("app.bsky.actor.getProfiles?" + q, None, tok).get("profiles") or []:
+                out["@" + pr.get("handle", "")] = {"followers": pr.get("followersCount"), "following": pr.get("followsCount"),
+                                                   "posts": pr.get("postsCount"), "bio": pr.get("description") or "",
+                                                   "bot": any(str(l.get("val")) in ("bot", "automated") for l in pr.get("labels") or []),
+                                                   "created": pr.get("createdAt", "")}
+        except Exception as e:
+            _log("profiles failed: %s" % str(e)[:120])
+    return out
+
+
+# news outlets, magazines, job boards: not people either
+_MEDIA = re.compile(r"\b(news|actu(?:alit[ée]s?)?|magazine|mag\b|m[ée]dia|journal|r[ée]daction|newsletter|headlines|"
+                    r"offres? d.emploi|job board|jobs?\b|recrut|h/f|press|presse|podcast|radio|tv)\b", re.I)
+_LINKISH = re.compile(r"\b[\w-]+\.(?:com|fr|net|org|io|co|city|be|nl|de|es|info|news)/", re.I)
+
+
+def human(prof, text, who="", name=""):
+    """-> None (looks like a real person) or why not"""
+    if not prof:
+        return None
+    fo, fg, po = int(prof.get("followers") or 0), int(prof.get("following") or 0), int(prof.get("posts") or 0)
+    if prof.get("bot"):
+        return "labelled a bot"
+    if _MEDIA.search(" ".join([str(prof.get("bio") or ""), str(who), str(name)])):
+        return "news / media / jobs account"
+    if _LINKISH.search(str(text or "")) and not _ASKS.search(str(text or "")):
+        return "shares a link (promotion or news)"
+    if fg >= 1500 and fo >= 1000 and 0.7 <= fg / max(fo, 1) <= 1.4:
+        return "follow-for-follow account (%d following, %d followers)" % (fg, fo)
+    if po >= 60 and fo <= 5:
+        return "auto-poster (%d posts, %d followers)" % (po, fo)
+    if _BRAND.search(str(prof.get("bio") or "")) or _BRAND.search(str(text or "")):
+        if not _ASKS.search(str(text or "")):
+            return "a brand voice, not a person"
+    return None
 
 
 def scout(force=False):
@@ -154,6 +208,21 @@ def scout(force=False):
         except Exception as e:
             _log("masto scout failed: %s" % str(e)[:150])
     keep = [f for f in found if f["url"] and _good(f["text"], f["who"], known | met)]
+    try:                                       # the real-person check (Bluesky profiles in one batch; Mastodon came with the post)
+        _bp = _bsky_profiles([f["who"] for f in keep if f["where"] == "bluesky"], tok) if any(f["where"] == "bluesky" for f in keep) else {}
+    except Exception:
+        _bp = {}
+    _why = {}
+    k2 = []
+    for f in keep:
+        w = human(f.get("prof") if f["where"] == "mastodon" else _bp.get(f["who"]), f["text"], f["who"], f.get("name") or "")
+        if w:
+            _why[w.split(" (")[0]] = _why.get(w.split(" (")[0], 0) + 1
+        else:
+            k2.append(f)
+    if _why:
+        _log("NOT PEOPLE skipped: %s" % json.dumps(_why))
+    keep = k2
     with _LK:
         d = _load()
         have = {c["url"] for c in d["cands"]}
