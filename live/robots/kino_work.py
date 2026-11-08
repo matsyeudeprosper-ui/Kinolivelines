@@ -438,7 +438,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -481,6 +481,7 @@ You can make things public on your own, under your own name, with nobody approvi
 - YOUR TRADING LAB (see MY LAB; rules in C:\\KinoWorld\\lab\\README.md): lab_idea ("name", "hypothesis", "why" it could work, "rule" exact, "kill" what would kill it) writes a card; lab_test ("idea", "path" your strategy file in C:\\KinoWorld\\lab\\strategies\\, "stage" quick|full) runs the bench - full only after a passed quick; lab_final ("idea", "path") = the locked months, once per idea; lab_kill ("idea", "why"); lab_board = all your ideas and verdicts.
 - friend_link ("who" @handle of a friend, "contact" their email): a friend who now writes to you by email - link them so you always know who it is.
 - friend_note ("who" @handle as in MY FRIENDS, "about" what you learned: what they do, what they care about, a thread to come back to) - your memory of a person.
+- SOCIAL MEDIA + ADS CLIENTS (services "Social media management" and "Ads management"; you post FOR them through Zernio): social_client ("name" business, "to" their email, "service" social|ads|both, "lang", "price" agreed) once they said yes - it gives THEIR page link (send it: they connect their networks there with one click each, never a password); social_post ("who" client, "text" the post in THEIR voice and language, "when" YYYY-MM-DD HH:MM their time, "image" a path or https, "nets" optional list) - waits for their yes on their page until they choose to let you post alone; tell them once a week when a batch waits; social_inbox ("who") = comments and Google reviews with no answer yet; social_reply ("who", "kind" review|comment, "id", "account", "post" for a comment, "text" - warm, short, as the business, never argue, a bad review gets an apology + an offer to fix it offline); social_report ("who") = their numbers for the monthly report; ads_accounts ("who"); ads_boost ("who", "post" Zernio post id, "account", "ad_account", "budget_eur" per day, "days") - only inside the monthly budget the CLIENT confirmed on their page; their money, so say exactly what and how much first.
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
@@ -691,6 +692,10 @@ def _mind(person, uid):
         _cb = KCL.recent_block()
         if _cb:
             L.append(_cb)
+        import kino_zernio as KZB              # 2026-11-07: his social/ads clients (empty until the first one)
+        _zb = KZB.block()
+        if _zb:
+            L.append(_zb)
     except Exception:
         pass
     try:                                       # 2026-11-05 (owner: "a master promoter of himself"): what his work brought back
@@ -960,6 +965,26 @@ def _act0(j, person, W=None):
         if not _c.startswith(("email:", "telegram:")):
             return "contact must be their email address (or telegram:<id>)"
         return "linked: %s is %s - you will know them there" % (KFK.link(j.get("who"), _c), _c)
+    if a in ("social_client", "social_post", "social_inbox", "social_reply", "social_report", "ads_accounts", "ads_boost"):
+        import kino_zernio as KZ          # 2026-11-07 (owner): social media management + ads management for clients, on Zernio
+        who = j.get("who") or j.get("client") or j.get("name")
+        if a == "social_client":
+            return KZ.client(j.get("name") or who, j.get("to") or j.get("email"), j.get("service") or "social", j.get("lang") or "fr",
+                             j.get("tz") or "Europe/Paris", j.get("price") or "", j.get("notes") or j.get("why") or "")
+        if a == "social_post":
+            _n = j.get("nets")
+            return KZ.draft(who, j.get("text") or j.get("body"), j.get("when") or "", j.get("image") or "",
+                            _n if isinstance(_n, list) else ([x.strip() for x in str(_n).split(",")] if _n else None), j.get("why") or "")
+        if a == "social_inbox":
+            return KZ.inbox(who)
+        if a == "social_reply":
+            return KZ.reply(who, j.get("kind") or "comment", j.get("id"), j.get("text"), j.get("account"), j.get("post") or "")
+        if a == "social_report":
+            return KZ.report(who, j.get("days") or 30)
+        if a == "ads_accounts":
+            return KZ.ads_accounts(who)
+        return KZ.boost(who, j.get("post"), j.get("account"), j.get("ad_account"), j.get("budget_eur"), j.get("days") or 7,
+                        j.get("goal") or "engagement")
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")

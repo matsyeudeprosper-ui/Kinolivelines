@@ -36264,7 +36264,20 @@ class H(BaseHTTPRequestHandler):
     def _do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
-        if p == "/meet_chat":                            # 2026-11-01: "Meet Kino" - a visitor's message (kino_meet: limits, API key)
+        if len(_parts) == 2 and _parts[0] == "c" and re.match(r"^[A-Za-z0-9_-]{12,40}$", _parts[1]):
+            # 2026-11-07: the client's page - approve a post / ask a change / post alone / their ad budget cap
+            import urllib.parse as _upz
+            _rdz = os.path.join(DIR, "robots")
+            if _rdz not in sys.path:
+                sys.path.insert(0, _rdz)
+            _fz = _upz.parse_qs(self.rfile.read(min(int(self.headers.get("Content-Length", 0) or 0), 8000)).decode("utf-8", "replace"))
+            _pg = __import__("kino_zernio").page(_parts[1], "POST", _fz, "")
+            if _pg is None:
+                self._not_found()
+            else:
+                self._send(_pg, "text/html; charset=utf-8")
+            return
+        if p == "/meet_chat":                          # 2026-11-01: "Meet Kino" - a visitor's message (kino_meet: limits, API key)
             try:
                 _b = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 12000)).decode("utf-8", "replace") or "{}")
             except Exception:
@@ -38070,6 +38083,25 @@ class H(BaseHTTPRequestHandler):
             # 2026-11-01 (owner: "draft all the bases needed"): the public legal pages (legal_pages.py)
             import legal_pages as _LGP
             self._send(_LGP.render(parts[0], "lang=en" in (self.path.split("?") + [""])[1]), "text/html; charset=utf-8")
+            return
+        if parts and parts[0] == "c" and len(parts) in (2, 4) and re.match(r"^[A-Za-z0-9_-]{12,40}$", parts[1]):
+            # 2026-11-07 (owner: social media + ads service on Zernio): a client's own page - connect networks, approve posts
+            _rdz = os.path.join(DIR, "robots")
+            if _rdz not in sys.path:
+                sys.path.insert(0, _rdz)
+            import kino_zernio as _KZ
+            if len(parts) == 4 and parts[2] == "connect":
+                _u = _KZ.connect_url(parts[1], parts[3])
+                if _u:
+                    self.send_response(302); self.send_header("Location", _u); self.end_headers()
+                else:
+                    self._not_found()
+                return
+            _pg = _KZ.page(parts[1], "GET", None, self.path.split("?", 1)[1] if "?" in self.path else "") if len(parts) == 2 else None
+            if _pg is None:
+                self._not_found()
+            else:
+                self._send(_pg, "text/html; charset=utf-8")
             return
         if len(parts) == 2 and parts[0] == "s":          # 2026-10-21 item 10: a robot's journey, view-only, shared by its owner
             _sp_ = share_page(parts[1])

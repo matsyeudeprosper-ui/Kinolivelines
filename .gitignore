@@ -346,3 +346,6 @@ live/robots/kino_places.json
 live/robots/kino_lab.json
 study/kino_lab/locked_btc_m1.npz
 study/pb_series/
+live/robots/kino_zernio.json
+live/robots/kino_zernio.json.tmp
+live/robots/kino_zernio.log
