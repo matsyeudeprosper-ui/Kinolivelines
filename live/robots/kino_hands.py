@@ -169,7 +169,7 @@ def decide(rid, yes, by="owner", note=""):
             import kino_mail as KM
             m = json.loads(r["command"])
             KM.allow(m["to"])
-            KM.send_now(m["to"], m.get("subject") or "", m.get("body") or "")
+            KM.send_now(m["to"], m.get("subject") or "", m.get("body") or "", files=m.get("files") or None)
             res, code = "sent", 0
         except Exception as e:
             res, code = str(e)[:300], None

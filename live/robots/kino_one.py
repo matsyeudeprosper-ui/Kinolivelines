@@ -387,6 +387,11 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                    "them more than once, kindly", "claimed_after": "delivered, they say they paid - the owner is checking",
                    "waiting": "quoted, not paid yet - do not do it yet", "claimed": "they say they paid, the owner is checking - not yet",
                    "paid": "PAID - deliver it now if not done", "delivered": "delivered", "cancelled": "cancelled"}
+            pass
+        _files = [m.get("name") for m in chat.get("msgs") or [] if m.get("role") == "file" and m.get("name")]
+        if _files:
+            P.append("PDFS YOU MADE IN THIS CHAT (you can attach them to an email): " + "; ".join(_files[-8:]))
+        if _jobs:
             P.append("JOBS IN THIS CHAT: " + "; ".join("\"%s\" %s EUR: %s" % (j.get("what"), j.get("eur"), _st.get(j.get("status"), j.get("status")))
                                                        for j in _jobs[-5:]))
         # 2026-11-08 (owner: "normal talk free, serious help is the job that earns money"; PayPal, the owner confirms each one)
@@ -413,7 +418,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "the paid part. REMINDERS (free): add on its own line #rappel <YYYY-MM-DD HH:MM in THEIR local time> | <what, "
                  "in their words> - their phone rings with it then. SENDING AN EMAIL for a paying client: once they gave the "
                  "address and agreed to the text: #email <address> | <subject> | <message> (a new address is approved by the "
-                 "owner first).")
+                 "owner first); to attach PDFs you made in this chat, add a 4th part with words from their names: "
+                 "#email <address> | <subject> | <message> | CV, lettre.")
         # 2026-11-08 (owner): Kino Chat people are not traders - and a person never recites what he can do
         P.append("THIS CHAT IS IN KINO CHAT: they came to talk with you, not for trading. Never bring up markets, Bitcoin, robots, "
                  "your hunches or the trading app unless THEY do. Never list what you can do. When something you really can do "

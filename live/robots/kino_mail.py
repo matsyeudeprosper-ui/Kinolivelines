@@ -179,7 +179,7 @@ def _html(body, link, img_cid):
             % "".join(paras))
 
 
-def send_now(to, subject, body, image=None, link=None):
+def send_now(to, subject, body, image=None, link=None, files=None):
     """2026-11-07 (owner: "include an image preview of their new site in the email - some people are afraid of links"): with
     image (a file) the email is text + HTML, the picture inline next to the link, clickable"""
     c = _cred()
@@ -198,6 +198,18 @@ def send_now(to, subject, body, image=None, link=None):
         m.attach(im)
     else:
         m = MIMEText(str(body), "plain", "utf-8")
+    files = [f for f in (files or []) if f and os.path.isfile(f[0] if isinstance(f, (list, tuple)) else f)][:5]
+    if files:                                       # 2026-11-08 (owner): a client's CV / letter goes WITH the application
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.application import MIMEApplication
+        outer = MIMEMultipart("mixed")
+        outer.attach(m)
+        for f in files:
+            path, name = (f[0], f[1]) if isinstance(f, (list, tuple)) else (f, os.path.basename(f))
+            part = MIMEApplication(open(path, "rb").read(), _subtype="pdf" if path.lower().endswith(".pdf") else "octet-stream")
+            part.add_header("Content-Disposition", "attachment", filename=("utf-8", "", name))
+            outer.attach(part)
+        m = outer
     m["From"] = "Kino <%s>" % c["address"]
     m["To"] = to
     m["Subject"] = str(subject)[:200]
@@ -205,7 +217,8 @@ def send_now(to, subject, body, image=None, link=None):
     S.login(c["address"], c["app_password"])
     S.sendmail(c["address"], [email.utils.parseaddr(to)[1]], m.as_string())
     S.quit()
-    item = {"t": time.time(), "to": to, "subject": str(subject)[:200], "text": str(body)[:4000]}
+    item = {"t": time.time(), "to": to, "subject": str(subject)[:200], "text": str(body)[:4000],
+            "files": [(f[1] if isinstance(f, (list, tuple)) else os.path.basename(f)) for f in files]}
     _mut(lambda d: d.setdefault("sent", []).append(item))
     try:
         open(os.path.join(WORLD, "outbox", "%s_sent.txt" % time.strftime("%Y%m%d_%H%M%S")), "w", encoding="utf-8").write(
@@ -216,7 +229,7 @@ def send_now(to, subject, body, image=None, link=None):
     return True
 
 
-def send(to, subject, body, why=""):
+def send(to, subject, body, why="", files=None):
     """he writes: to an allowed contact it goes now; to someone new it waits for the owner's yes"""
     a = email.utils.parseaddr(to)[1].lower()
     if not a or "@" not in a:
@@ -238,7 +251,7 @@ def send(to, subject, body, why=""):
                                              "\n\n--\nKino · To chat with me any time: %s") % KCA.invite_link("mailto:" + a)
             except Exception:
                 pass
-        send_now(a, subject, body)
+        send_now(a, subject, body, files=files)
         try:                                       # 2026-11-05: a mail to a client with a running job is news for them
             import kino_sales as KSL
             KSL.client_wrote(a)
@@ -252,8 +265,10 @@ def send(to, subject, body, why=""):
             pass
         return {"ok": True, "sent": True}
     import kino_hands as KH
-    r = KH.request("send an email to %s: %s" % (a, str(subject)[:100]), why or "Kino wants to write to someone new",
-                   command=json.dumps({"to": a, "subject": subject, "body": body}, ensure_ascii=False), kind="email")
+    r = KH.request("send an email to %s: %s%s" % (a, str(subject)[:100], (" (+%d attached)" % len(files)) if files else ""),
+                   why or "Kino wants to write to someone new",
+                   command=json.dumps({"to": a, "subject": subject, "body": body, "files": [list(f) if isinstance(f, (list, tuple)) else f for f in (files or [])]},
+                                      ensure_ascii=False), kind="email")
     return {"ok": True, "sent": False, "request": (r or {}).get("id")}
 
 

@@ -22087,9 +22087,20 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             elif k == "email" and v and (_person(uid) == "kino" or (c.get("app") == "kinochat" and any(
                     (m.get("pay") or {}).get("status") in ("paid", "trust", "owed", "delivered", "claimed_after")
                     for m in (_chat_load(user, cid) or {}).get("msgs") or [] if m.get("role") == "pay"))):   # 2026-11-01 (kino_mail): his own mailbox (owner's chats only for now)
-                _pm = [x.strip() for x in v.split("|", 2)]
+                _pm = [x.strip() for x in v.split("|", 3)]
+                _fa = []
+                if len(_pm) == 4:               # 2026-11-08: "| CV, lettre" = the PDFs he made in this chat whose name matches
+                    _want = [w.strip().lower() for w in re.split(r"[,;]", _pm[3]) if w.strip()]
+                    _mine = [m for m in (_chat_load(user, cid) or {}).get("msgs") or [] if m.get("role") == "file" and m.get("file")]
+                    for m in reversed(_mine):
+                        nm = str(m.get("name") or "")
+                        if any(w in nm.lower() for w in _want) or any(w in ("tout", "all", "pdf") for w in _want):
+                            if os.path.isfile(os.path.join(CHAT_IMG, m["file"])) and nm not in [x[1] for x in _fa]:
+                                _fa.append([os.path.join(CHAT_IMG, m["file"]), nm])
+                    _fa = _fa[:3]
+                    _pm = _pm[:3]
                 if len(_pm) == 3 and "@" in _pm[0]:
-                    _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation")
+                    _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation", files=_fa or None)
                     _KO._log(cid, "EMAIL", "%s -> %s" % (_pm[0], _rm))
                     # (an email to someone new becomes an approve card through kino_hands.ON_REQUEST)
             elif k == "travail" and v and _person(uid) == "kino":   # 2026-11-01: from the chat, a session at his own computer
