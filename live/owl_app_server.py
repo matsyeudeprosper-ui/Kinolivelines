@@ -17108,6 +17108,84 @@ def _moments():
     return out[-12:]
 
 
+def _chat_job_quote(cid, user, c, v):
+    """2026-11-08 (owner: "normal talk free; serious help = the jobs Kino makes money with; PayPal - I approve each payment"):
+    Kino wrote #prix <euros> | <job> -> an order (kino_pay, kind chatjob, EUR) and a pay card in the chat"""
+    _rc()
+    import kino_pay as _KPj, kino_shop as _KSj
+    m = re.match(r"\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|eur|euros?)?\s*\|?\s*(.*)$", str(v), re.I)
+    if not m:
+        return
+    eur = float(m.group(1).replace(",", "."))
+    what = (m.group(2) or "").strip(" |")[:120] or "Kino"
+    if not 2 <= eur <= 500:
+        return
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if sum(1 for x in _KPj._load()["invoices"] if x.get("kind") == "chatjob" and x.get("uid") == user.get("id") and x.get("day") == day) >= 5:
+        return
+    ref = _KPj.manual(eur, what, kind="chatjob", method="paypal", cur="EUR", uid=user.get("id"), cid=cid,
+                      lang=_rc().member_lang(c, "fr"), name=user.get("name") or user.get("id"))
+    url = "https://kino.owltrader.duckdns.org/pay/%s/%s" % (ref, _KSj._token(ref))
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url, "status": "waiting"}))
+
+
+def chat_paid(user, body):
+    """the person pressed "I've paid" on a pay card -> the owner's Approve/Refuse card + a push to him"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    ref = re.sub(r"[^0-9a-f]", "", str(body.get("ref") or ""))[:10]
+    if c is None or not ref:
+        return {"ok": False}
+    pm = next((x for x in c.get("msgs") or [] if x.get("role") == "pay" and (x.get("pay") or {}).get("ref") == ref), None)
+    if pm is None:
+        return {"ok": False}
+    _rc()
+    import kino_pay as _KPj
+    _KPj.claim(ref, user.get("name") or user.get("id"))
+
+    def put(cc):
+        for x in cc.get("msgs") or []:
+            if x.get("role") == "pay" and (x.get("pay") or {}).get("ref") == ref and x["pay"].get("status") == "waiting":
+                x["pay"]["status"] = "claimed"
+        return True
+    _chat_mut(c["id"], put)
+    try:
+        if True:
+            queue_push("kino", "💶 Paiement à vérifier", "%s dit avoir payé %s € (KINO-%s) pour « %s ». Vérifie ton PayPal puis Approuve." % (
+                user.get("name") or user.get("id"), ("%.2f" % pm["pay"]["eur"]).rstrip("0").rstrip("."), ref.upper(), pm["pay"]["what"]),
+                path="atelier", tag="paycheck")
+    except Exception:
+        pass
+    return {"ok": True}
+
+
+def _chat_job_paid(x):
+    """kino_pay.ON_PAID: a Kino Chat job is confirmed paid -> the card turns green and Kino starts the job in that chat"""
+    if x.get("kind") != "chatjob" or not x.get("cid") or not x.get("uid"):
+        return
+    u = _user_by_id(x["uid"])
+    if not u:
+        return
+
+    def put(cc):
+        for m in cc.get("msgs") or []:
+            if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == x["ref"]:
+                m["pay"]["status"] = "paid"
+        return True
+    _chat_mut(x["cid"], put)
+    _CHAT_Q[x["cid"]] = _CHAT_Q.get(x["cid"], 0) + 1
+    threading.Thread(target=_chat_quick, args=(x["cid"], u, "PAYMENT CONFIRMED - they paid %s EUR for: %s. Thank them in one short line and "
+                     "START THE JOB NOW: if it is writing, a plan or research, deliver it here in this message (complete, ready to use). "
+                     "If it needs the outside world (something posted, a helper), say exactly what happens next and when. send = true." % (
+                         ("%.2f" % float(x.get("usd") or 0)).rstrip("0").rstrip("."), x.get("what"))),
+                     kwargs={"notify": True}, daemon=True).start()
+    try:
+        import kino_urge as _KUj
+        _KUj.add("kino", "A PAID JOB from %s in Kino Chat: \"%s\" (%s EUR). It is being delivered in their chat; if it needs your "
+                 "computer, a helper or the outside world, do it in your next work session." % (x.get("name") or x["uid"], x.get("what"), x.get("usd")))
+    except Exception:
+        pass
+
+
 def kino_moments(user, body):
     return {"ok": True, "moments": [{"t": p["t"], "ch": p["channel"], "text": p["text"], "url": p.get("url") or "",
                                      "img": bool(p.get("img") and os.path.isfile(p["img"]))} for p in _moments()]}
@@ -21862,6 +21940,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                                                                              "Test de chance retiré de la file.")))
                 except Exception:
                     pass
+            elif k == "prix" and v and c.get("app") == "kinochat" and not is_admin(user):
+                _chat_job_quote(cid, user, c, v)
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
@@ -25282,6 +25362,12 @@ def _urge_tick():
                 try:                                   # 2026-11-01 (phase 3): his requests reach the owner as approve cards
                     _KHq = __import__("kino_hands")
                     _KHq.ON_REQUEST = _kino_req_card
+                    try:                                  # 2026-11-08: a paid Kino Chat job starts in its chat
+                        import kino_pay as _KPh
+                        if _chat_job_paid not in _KPh.ON_PAID:
+                            _KPh.ON_PAID.append(_chat_job_paid)
+                    except Exception:
+                        pass
                     # 2026-11-05 (owner: "whenever he needs me he can contact me by email or a push notification"): his
                     # work desk reaches the owner's phone; the work module falls back to an email
                     __import__("kino_work").NOTIFY = lambda tx: queue_push("kino", "Kino", tx, urgent=True, tag="kino-needs")
@@ -26256,7 +26342,11 @@ def chat_send(user, body):
         _pn = plan_name(user)
         _tzo = int(_tz_of(user.get("id")).get("off") or 0)
         _pu = _person(user.get("id"))
-        if _PL.kino_left(_pu, _pn, _tzo) == 0:
+        _left = _PL.kino_left(_pu, _pn, _tzo)
+        _kcfree = c.get("app") == "kinochat" and _pn in ("decouverte", "decouverte_trial")
+        if _kcfree:          # 2026-11-08 (owner: "normal talk free - real work is what we charge"): a wide daily room to talk
+            _left = max(0, KC_FREE_DAY - _PL.replies_today(_pu, _tzo)) + _PL.extra(_pu)
+        if _left == 0:
             # 2026-11-08 (owner: a Kino Chat newcomer hit the limit in the middle of building their project - "that sucks"):
             # the allowance never cuts a live conversation mid-way. While they are actively talking (last message < 30 min),
             # Kino gets GRACE more replies today; the last one is told to land the day warmly (where we are, the next step,
@@ -26276,7 +26366,10 @@ def chat_send(user, body):
                 return {"ok": False, "err": "cap", "plan": _pn, "label": _PL.info(_pn)["label"], "cap": _PL.info(_pn).get("replies"),
                         "month": _PL.info(_pn).get("month"), "pack": _PL.PACK}
         else:
-            _PL.note_reply(_pu, _tzo, _pn)
+            _PL.note_reply(_pu, _tzo, _pn if not _kcfree or _PL.replies_today(_pu, _tzo) >= KC_FREE_DAY else None)
+            if c.get("last_today"):                  # room again (a gift, a pack, a higher allowance): not the last reply any more
+                _chat_mut(c["id"], lambda cc: cc.pop("last_today", None) or True)
+                c = _chat_load(user, c["id"]) or c
     _ex = {"voice": True} if body.get("voice") else {}
     rp = body.get("reply") if isinstance(body.get("reply"), dict) else None     # 2026-10-20 (owner UI item 1): a quoted message
     if rp and str(rp.get("text") or "").strip():
@@ -27284,6 +27377,7 @@ def _read_shot(cid, user, fn, note):
         pass
 
 
+KC_FREE_DAY = 60        # 2026-11-08: Kino Chat free talk a day (jobs are paid apart; see _chat_job_quote)
 CAP_GRACE = 12          # 2026-11-08: replies past the allowance while a conversation is live (see chat_send)
 CHAT_REACTS = ("👍", "❤️", "😂", "😮", "😢", "👎", "🔥", "🙏", "💚")
 
@@ -36572,7 +36666,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react", "kino_moments",
+                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react", "kino_moments", "chat_paid",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
@@ -36596,7 +36690,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
-                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react, "kino_moments": kino_moments,
+                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react, "kino_moments": kino_moments, "chat_paid": chat_paid,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,

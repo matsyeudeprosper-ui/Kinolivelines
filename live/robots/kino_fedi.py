@@ -533,6 +533,8 @@ class H(BaseHTTPRequestHandler):
                 return self._html(KSI.message("Already paid", "This one is paid - thank you!"))
             x2 = dict(x)
             x2["method"] = "PayPal"
+            if x.get("kind") == "chatjob":
+                return self._html(KSI.job_pay(x, ref, tok))
             return self._html(KSI.paypal({"title": x["what"], "price": float(x["usd"])}, ref, tok))
         if p.startswith("/paid/"):
             import kino_shop as KS, kino_pay as KPY, hmac as _hm
@@ -541,6 +543,13 @@ class H(BaseHTTPRequestHandler):
             if not re.fullmatch(r"[0-9a-f]{10}", ref) or not _hm.compare_digest(KS._token(ref), tok):
                 return self._html(KSI.message("Not found", "This link is not valid."), 404)
             KPY.claim(ref, (q.get("email") or [""])[0])
+            _xj = next((i for i in KPY._load()["invoices"] if i["ref"] == ref), {})
+            if _xj.get("kind") == "chatjob":
+                _fr = _xj.get("lang") != "en"
+                return self._html(KSI.message("Merci !" if _fr else "Thank you!", ("Je vérifie le paiement, en général en quelques heures. "
+                                              "Kino commence dès qu’il est confirmé et te le dit dans Kino Chat.") if _fr else (
+                                              "The payment is being checked, usually within a few hours. Kino starts as soon as it is "
+                                              "confirmed and tells you in Kino Chat.")))
             return self._html(KSI.message("Thank you!", "I'm checking the payment now - it's usually confirmed within a few hours. "
                                           "Your download page: %s/got/%s/%s (it opens as soon as it's confirmed%s)." % (
                                               BASE, ref, tok, ", and I'll email you the link" if (q.get("email") or [""])[0] else "")))

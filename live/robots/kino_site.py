@@ -251,6 +251,33 @@ def paypal(p, ref, token):
                 "is confirmed.</p></div>" % (_e(p["title"]), p["price"], link, p["price"], ref.upper(), ref, token, ref, token))
 
 
+def job_pay(x, ref, token):
+    """2026-11-08 (owner: Kino Chat jobs, PayPal, the owner confirms each payment): the page a person opens from the pay card"""
+    c = cfg()
+    fr = x.get("lang") != "en"
+    amount = ("%.2f" % float(x["usd"])).rstrip("0").rstrip(".")
+    cur = x.get("cur") or "USD"
+    sym = "€" if cur == "EUR" else "$"
+    link = "https://paypal.me/%s/%s%s" % (c["paypal_me"], amount, cur)
+    if fr:
+        body = ("<div class='box'><span class='pill'>PayPal</span><h2 style='margin-top:18px'>%s - %s %s</h2><ol>"
+                "<li>Ouvre <a href='%s' target='_blank' rel='noopener'><b>PayPal</b></a> et envoie <b>%s %s</b>.</li>"
+                "<li>Dans la note, écris ce code :<br><span class='code'>KINO-%s</span></li>"
+                "<li>Reviens dans Kino Chat et appuie sur <b>« J’ai payé »</b> sous la carte.</li></ol>"
+                "<form action='/paid/%s/%s' method='get'><button class='btn p' type='submit'>J’ai payé</button></form>"
+                "<p class='t' style='margin-top:20px'>Le paiement est vérifié à la main, en général en quelques heures. Kino commence dès "
+                "qu’il est confirmé et te le dit dans la conversation.</p></div>")
+    else:
+        body = ("<div class='box'><span class='pill'>PayPal</span><h2 style='margin-top:18px'>%s - %s %s</h2><ol>"
+                "<li>Open <a href='%s' target='_blank' rel='noopener'><b>PayPal</b></a> and send <b>%s %s</b>.</li>"
+                "<li>In the note, write this code:<br><span class='code'>KINO-%s</span></li>"
+                "<li>Come back to Kino Chat and press <b>“I’ve paid”</b> under the card.</li></ol>"
+                "<form action='/paid/%s/%s' method='get'><button class='btn p' type='submit'>I’ve paid</button></form>"
+                "<p class='t' style='margin-top:20px'>Payments are checked by hand, usually within a few hours. Kino starts as soon as it "
+                "is confirmed and tells you in the conversation.</p></div>")
+    return page("PayPal", body % (_e(x["what"]), amount, sym, link, amount, sym, ref.upper(), ref, token))
+
+
 def support():
     c = cfg()
     pp = ("<a class='btn' href='https://paypal.me/%s' target='_blank' rel='noopener'>Tip with PayPal</a>" % _e(c["paypal_me"])) if c.get("paypal_me") else ""

@@ -191,6 +191,13 @@ header>.av{cursor:pointer}
 #mvb .ic{font-size:64px;margin-bottom:18px;text-align:center}#mvb .kk{font:700 13px Inter,system-ui;letter-spacing:.8px;text-transform:uppercase;color:#ffffffc0;margin-bottom:10px}
 #mvb .cta{align-self:center;margin-top:26px;border:0;border-radius:24px;padding:13px 22px;background:#fff;color:#0b0f14;font:700 15px Inter,system-ui;cursor:pointer;box-shadow:0 8px 24px #0006;text-decoration:none}
 .capc{text-align:center}.capc .ic{font-size:52px;margin:6px 0 4px}.capc p{line-height:1.55}
+
+/* paid jobs (2026-11-08) */
+.payc{max-width:82%;margin:6px 0 10px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 16%,var(--surface)),var(--surface));border:1px solid color-mix(in srgb,var(--acc) 45%,var(--border));box-shadow:0 6px 20px #0006}
+.payc .pw{font-size:13px;color:var(--mut);margin-bottom:2px}.payc .pt{font-weight:700;font-size:16px}.payc .pe{font:800 28px Inter,system-ui;color:var(--acc);margin:6px 0 10px}
+.payc .pb{display:flex;gap:8px;flex-wrap:wrap}.payc a,.payc button{border:0;border-radius:12px;padding:10px 14px;font:700 14px Inter,system-ui;cursor:pointer;text-decoration:none}
+.payc a{background:#0070ba;color:#fff}.payc button{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
+.payc .ps{font-size:13px;color:var(--mut);margin-top:8px}.payc.ok{border-color:var(--acc)}.payc.ok .ps{color:var(--acc);font-weight:700}
 </style></head><body>
 <header>
  <button class="ib" id="back" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -261,8 +268,8 @@ function hm(t){var d=new Date((t||0)*1000);return String(d.getHours()).padStart(
 function dayOf(t){var d=new Date((t||0)*1000),n=new Date(),y=new Date(Date.now()-864e5);
  if(d.toDateString()===n.toDateString())return T('Aujourd’hui','Today');if(d.toDateString()===y.toDateString())return T('Hier','Yesterday');
  return d.toLocaleDateString(EN?'en-GB':'fr-FR',{weekday:'long',day:'numeric',month:'long'})}
-function shown(m){if(m.role==='user'||m.role==='image'||m.role==='doc')return true;return m.role==='ai'&&(m.text||'').trim()}
-function bubble(m,i,prev){var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==me),inner='';
+function shown(m){if(m.role==='user'||m.role==='image'||m.role==='doc'||(m.role==='pay'&&m.pay))return true;return m.role==='ai'&&(m.text||'').trim()}
+function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==me),inner='';
  var q=m.reply&&m.reply.text?'<span class="qt" data-q="'+(+m.reply.i||0)+'"><b>'+(m.reply.who==='ai'?'Kino':T('Toi','You'))+'</b>'+esc(m.reply.text)+'</span>':'';
  if(m.role==='image'){var u=B+'chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file||'');inner='<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt=""></a>'+(m.text?md(m.text):'')}
  else if(m.role==='doc')inner='<div class="doc"><i>📄</i><span><b>'+esc(m.name||'document')+'</b><small>'+esc((m.kind||'').toUpperCase())+(m.size?' · '+Math.max(1,Math.round(m.size/1024))+' Ko':'')+'</small></span></div>'+(m.note?md(m.note):'');
@@ -272,7 +279,7 @@ function bubble(m,i,prev){var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==
  if(m.role==='ai'&&(m.text||'').length>650)inner+='<br><button class="rdb" data-rd="'+i+'">⤢ '+T('Lire en plein écran','Read full screen')+'</button>';
  var rx=m.mreact||'';
  return '<div class="m'+(me?' me':'')+(gap?' gap':'')+(rx?' rx':'')+(ANIM_T>=0&&m.t>ANIM_T?' nw':'')+'" data-i="'+i+'"><div class="b'+(emo?' emo':'')+'" data-i="'+i+'">'+q+inner+'<span class="t">'+(starred(m.t)?'<span class="star">⭐</span>':'')+(m.edited?'<span class="ed">'+T('modifié','edited')+'</span> ':'')+hm(m.t)+(me?'<span class="tk'+(m.t<=LASTAI?' rd':'')+'">✓✓</span>':'')+'</span>'+(rx?'<span class="rxb">'+rx+'</span>':'')+'</div></div>'}
-function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[]);
+function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')}).join('')+'|'+JSON.stringify(C&&C.pins||[]);
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
  list.forEach(function(m){var d=dayOf(m.t);if(d!==lastDay){h+='<div class="day"><span>'+d+'</span></div>';lastDay=d;prev=null}h+=bubble(m,C.msgs.indexOf(m),prev);prev=m});
@@ -604,6 +611,16 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
   '<a class="btn" style="text-decoration:none;box-sizing:border-box" target="_blank" href="'+B+'#offres">'+T('Parler plus : voir les formules','Talk more: see the plans')+'</a>'+
   '<button class="btn g" onclick="this.closest(\'.sh\').classList.remove(\'on\')">'+T('À demain','See you tomorrow')+'</button></div>');
  var b=$('cpk');if(b)b.onclick=function(){b.disabled=true;post('msg_pack_buy',{pack:'msgs-300'}).then(function(r){if(r&&r.ok&&r.url)window.open(r.url,'_blank');else b.disabled=false})}}
+
+// ---- 2026-11-08 (owner: "talk is free, real work is paid - PayPal, I approve each payment"): Kino's price card
+function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).replace('.',EN?'.':',');
+ return '<div class="m gap"><div class="payc'+(st==='paid'?' ok':'')+'"><div class="pw">💼 '+T('Travail proposé par Kino','Job offered by Kino')+'</div><div class="pt">'+esc(p.what)+'</div><div class="pe">'+eur+' €</div>'+
+  (st==='paid'?'<div class="ps">✓ '+T('Payé, merci ! Kino s’y met.','Paid, thank you! Kino is on it.')+'</div>':
+   st==='claimed'?'<div class="ps">⏳ '+T('Paiement en cours de vérification (quelques heures en général).','Payment being checked (usually a few hours).')+'</div>':
+   '<div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+T('Payer avec PayPal','Pay with PayPal')+'</a><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé','I’ve paid')+'</button></div><div class="ps">'+T('Discuter reste gratuit. Kino commence dès que le paiement est confirmé.','Chatting stays free. Kino starts as soon as the payment is confirmed.')+'</div>')+'</div></div>'}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-paid]');if(!b)return;
+ if(!confirm(T('Tu as bien envoyé le paiement PayPal avec le code ?','Did you send the PayPal payment with the code?')))return;b.disabled=true;
+ post('chat_paid',{id:CID,ref:b.dataset.paid}).then(function(j){if(j&&j.ok){toast(T('Merci ! On vérifie et Kino te dit dès que c’est bon.','Thanks! It’s being checked, Kino tells you when it’s confirmed.'));load(true)}else b.disabled=false}).catch(function(){b.disabled=false})});
 // ---- menu: only what a chat needs
 function shOpen(h){$('shc').innerHTML=h;$('sh').classList.add('on')}function shClose(){$('sh').classList.remove('on')}
 $('sh').onclick=function(e){if(e.target===this)shClose()};

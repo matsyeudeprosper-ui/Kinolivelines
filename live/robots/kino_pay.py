@@ -80,18 +80,28 @@ def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DA
     return ref, url
 
 
-def manual(amount, what, kind="shop", method="paypal"):
-    """an order to be paid outside NOWPayments (PayPal...) -> ref; it becomes paid when the owner confirms he received it"""
+def manual(amount, what, kind="shop", method="paypal", **extra):
+    """an order to be paid outside NOWPayments (PayPal...) -> ref; it becomes paid when the owner confirms he received it.
+    2026-11-08: extra = cur ("EUR"), uid, cid, lang for a job agreed in Kino Chat"""
     amount = round(float(amount), 2)
     if not 1 <= amount <= MAX_USD:
         raise ValueError("amount out of range")
     ref = uuid.uuid4().hex[:10]
     with _LK:
         d = _load()
-        d["invoices"].append({"ref": ref, "t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "usd": amount,
-                              "what": str(what)[:150], "payer": "", "url": "", "status": "waiting", "kind": kind, "method": method})
+        it = {"ref": ref, "t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "usd": amount,
+              "what": str(what)[:150], "payer": "", "url": "", "status": "waiting", "kind": kind, "method": method}
+        it.update({k: v for k, v in extra.items() if k in ("cur", "uid", "cid", "lang", "name")})
+        d["invoices"].append(it)
         _save(d)
     return ref
+
+
+ON_PAID = []          # 2026-11-08: the app hangs a callback here (a paid Kino Chat job -> Kino starts it in that chat)
+
+
+def _sym(x):
+    return "€" if x.get("cur") == "EUR" else "$"
 
 
 def claim(ref, email_=""):
@@ -106,10 +116,10 @@ def claim(ref, email_=""):
         y["payer"] = str(email_ or "")[:100]
         _save(d)
     import kino_hands as KH
-    KH.request("did you receive %.2f $ by %s with the code KINO-%s?" % (x["usd"], x.get("method") or "PayPal", ref.upper()),
-               "For \"%s\"%s. Check your %s: if %.2f $ arrived with KINO-%s in the note, press Approve - the buyer gets the "
+    KH.request("did you receive %.2f %s by %s with the code KINO-%s?" % (x["usd"], _sym(x), x.get("method") or "PayPal", ref.upper()),
+               "For \"%s\"%s. Check your %s: if %.2f %s arrived with KINO-%s in the note, press Approve - the buyer gets the "
                "delivery and Kino his half. If nothing came, Refuse." % (
-                   x["what"], (" - buyer " + email_) if email_ else "", x.get("method") or "PayPal", x["usd"], ref.upper()),
+                   x["what"], (" - from " + email_) if email_ else "", x.get("method") or "PayPal", x["usd"], _sym(x), ref.upper()),
                command=ref, kind="paycheck")
     return True
 
@@ -154,8 +164,13 @@ def paid(order_id, usd, pid):
         mine = KWL.income(usd, x["what"], x["ref"])
     except Exception:
         pass
-    line = "MONEY ARRIVED - %.2f $ paid for \"%s\"%s; %.2f $ of it is yours. It is in the owner's account; tell him." % (
-        float(usd or 0), x["what"], (" by " + x["payer"]) if x.get("payer") else "", mine)
+    line = "MONEY ARRIVED - %.2f %s paid for \"%s\"%s; %.2f of it is yours. It is in the owner's account; tell him." % (
+        float(usd or 0), _sym(x), x["what"], (" by " + x["payer"]) if x.get("payer") else "", mine)
+    for cb in ON_PAID:
+        try:
+            cb(dict(x))
+        except Exception:
+            pass
     try:
         import kino_urge as KU
         KU.add("kino", line)
