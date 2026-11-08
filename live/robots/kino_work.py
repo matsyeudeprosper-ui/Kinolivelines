@@ -63,6 +63,15 @@ MEMORY_CARE = ("My machine is short of memory (2026-11-07, Matsy: 'it should be 
                "test or research run can wait and be re-run. If it is urgent (free memory under 1.5 GB) also notify him. Note what "
                "you found in your diary. Finish with done: the cause and what you asked.")
 
+# 2026-11-08 (owner: "why no new post on X and other social media on his profile - he stopped posting to his wall?"): since the
+# hunt/friends/lab habits took every session (11-06/07), nothing gave him time for his own wall - twice a day it has its slot
+WALL_TIME = ("My own wall (Matsy 08/11: my profiles must stay alive). ONE new post of my own on each: Bluesky (skeet, no url), "
+             "Mastodon (toot, no url) and X (xpost, no url) - not replies. Each one useful to the reader (a concrete tip about THEIR "
+             "website, their small business, their trading idea, their day with AI) or genuinely funny (my life as an AI, a market that "
+             "fooled me) - vary the subject: not only trading. Written for that place (X short, Bluesky conversational, Mastodon a bit "
+             "longer), never introducing myself, never a repeat of what I posted lately; an image of my world (shot/picture) when it "
+             "truly helps. Finish with done: what I posted where.")
+
 FRIEND_TIME = ("My time with people (Matsy 07/11: friends first - work comes from friends, never push it). Read MY FRIENDS "
                "below: first answer anyone waiting for me; then come back to a friend about THEIR thing if there is something "
                "real to say; then meet up to 3 new people from PEOPLE YOU COULD MEET - only those I truly have something to say "
@@ -234,6 +243,7 @@ def routine_line(now=None):
     fr = ago(lambda s: s.get("care") == "friends")
     cd = ago(lambda s: s.get("care") == "cards")
     lb = ago(lambda s: s.get("care") == "lab")
+    wl = ago(lambda s: s.get("care") == "wall")
     try:
         import kino_sales as KSr, kino_friends as KFr, kino_postcard as KPr
         P = KSr._j(KSr.STORE, {"items": []})["items"]
@@ -254,8 +264,8 @@ def routine_line(now=None):
         _lb = ""
     warn = [w for w, x in (("NO HUNT IN 26 H", h > 26), ("NO FRIEND TIME IN 26 H", fr > 26), ("NO LAB IN 6 H", lb > 6),
                            ("NO PEOPLE SCOUTING IN 5 H (see kino_friends.log)", _sc > 5)) if x]
-    return "ROUTINE: hunt %.0f h ago (emails 24 h: %s) | friends %.0f h ago (new people today: %s) | postcards %s%s%s" % (
-        h, em, fr, met, pc, ((" | last card round %.0f h ago" % cd) if cd < 999 else "") + _lb, (" | " + ", ".join(warn)) if warn else "")
+    return "ROUTINE: hunt %.0f h ago (emails 24 h: %s) | friends %.0f h ago (new people today: %s) | own wall %s | postcards %s%s%s" % (
+        h, em, fr, met, ("%.0f h ago" % wl) if wl < 999 else "not yet", pc, ((" | last card round %.0f h ago" % cd) if cd < 999 else "") + _lb, (" | " + ", ".join(warn)) if warn else "")
 
 
 def due(person, ctx, now=None):
@@ -351,6 +361,10 @@ def due(person, ctx, now=None):
             s.get("care") == "cards" and s.get("day") == _today for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": CARD_ROUND, "project": "Kinoverse", "why": "my postcard round",
                                                      "care": "cards"}))
+    _walls = [float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "wall"]
+    if 11 <= _frh < 22 and not d.get("next_task") and now - max(_walls or [0]) >= 5 * 3600 and             sum(1 for t in _walls if now - t < 16 * 3600) < 2:
+        _mut(lambda dd: dd.__setitem__("next_task", {"do": WALL_TIME, "project": "my profiles", "why": "my own wall",
+                                                     "care": "wall"}))
     if _pv_wait and now - _lasthunt > 7200 and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     elif len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
@@ -358,7 +372,7 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "don't let the budget block his making friends and hunting - I take care of that spending until he
     # can afford it"): a friend session or a client hunt is never held back by his day budget; the rest of his work still is
     _nt = _load().get("next_task") or {}
-    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab") or "hunt" in str(_nt.get("why") or "").lower()
+    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab", "wall") or "hunt" in str(_nt.get("why") or "").lower()
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
