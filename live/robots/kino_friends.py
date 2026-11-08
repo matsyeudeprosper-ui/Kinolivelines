@@ -207,11 +207,7 @@ def met(who, where, url, text):
         d["met"] = (d["met"] + [{"t": time.time(), "who": who, "where": where, "url": url, "text": str(text)[:300]}])[-300:]
         d["cands"] = [c for c in d["cands"] if c["url"] != url and c["who"] != who]
         _save(d)
-    try:
-        import kino_online as KO
-        KO.note(who, where, text, "out", url, kind="first_word")
-    except Exception:
-        pass
+    # 2026-11-07: the posted text is noted by kino_post itself (after his reread) - the draft is not a second memory
     if where == "bluesky":                     # 2026-11-07 (review): a like on what they said and a follow - how people meet there
         try:
             import kino_post as KPF
