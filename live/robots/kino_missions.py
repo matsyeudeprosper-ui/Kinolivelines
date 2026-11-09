@@ -54,6 +54,16 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
         M = d["missions"]
         if ref and any(m.get("ref") == ref for m in M):
             return next(m["id"] for m in M if m.get("ref") == ref)
+        # 2026-11-08 (owner's screenshot: two reports for one job): the price card and his "#travail" in the SAME reply opened
+        # two missions. A mission for the same person opened in the last 3 minutes is the same work - merge into it.
+        _same = next((m for m in reversed(M) if m["uid"] == uid and m["cid"] == cid and m["status"] in OPEN
+                      and time.time() - m["t"] < 180 and not (ref and m.get("ref"))), None)
+        if _same is not None:
+            if ref:
+                _same.update(ref=ref, eur=float(eur or 0), paid=bool(paid))
+            if what not in _same["what"]:
+                _same["what"] = (_same["what"] + " | " + what)[:900]
+            return _same["id"]
         if sum(1 for m in M if m["uid"] == uid and m["status"] in OPEN) >= MAX_OPEN_PER_PERSON:
             return None
         mid = "m" + os.urandom(4).hex()
