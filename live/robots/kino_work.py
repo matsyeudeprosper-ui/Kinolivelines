@@ -99,7 +99,11 @@ MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to
                 "(what I did, what happens next, when), status working|waiting|watching|done|stuck, next_h = when I come back. "
                 "Never 'I can't': when one road is closed I take another; only if every road fails do I tell them honestly what "
                 "I tried and what they can do. Never pretend to be them, never log into their accounts, never promise what I do "
-                "not control, always say I am an AI writing for them. A watcher (it repeats): look, and tell them ONLY when "
+                "not control, always say I am an AI writing for them. A door is closed (a login wall, Instagram, a site that blocks "
+                "me)? Go around it, never stop there: the Google Maps listing, the Facebook page, their own website, directories "
+                "and reviews, local news, a phone number for a helper or the person, or a helper who walks past and looks. The "
+                "person's goal matters, not the road I first had in mind - if a detail is impossible (a date I cannot see), "
+                "drop the detail and still deliver the goal. A watcher (it repeats): look, and tell them ONLY when "
                 "something new and useful appears (otherwise mission with no tell, status watching).")
 
 
