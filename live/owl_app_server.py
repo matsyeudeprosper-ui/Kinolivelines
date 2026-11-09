@@ -17108,6 +17108,81 @@ def _moments():
     return out[-12:]
 
 
+_REQ = threading.local()
+PAYAFTER_DAY = 15          # pay-after jobs started a day, all people together (caps what fraud could cost)
+TRUST_FILE = os.path.join(DIR, "robots", "kino_trust_pay.json")
+_PHYS_RE = re.compile(r"(courrier postal|par la poste|lettre recommand|recommandée|recommandé|by post|registered (letter|mail)|"
+                      r"colis|parcel|livraison|livrer|deliver|helper|coursier|sur place|in person|acheter|achat|buy|purchase|"
+                      r"imprim|print|appeler|téléphoner|phone call|call them|calling)", re.I)
+
+
+def _trust_load():
+    try:
+        return json.load(open(TRUST_FILE, encoding="utf-8"))
+    except Exception:
+        return {"ips": {}, "blocked": {}}
+
+
+def _trust_note_ip(uid):
+    ip = getattr(_REQ, "ip", "") or ""
+    if not ip or ip.startswith(("127.", "::1")):
+        return
+    d = _trust_load()
+    L = d["ips"].setdefault(ip, [])
+    if uid not in L:
+        L.append(uid)
+        d["ips"][ip] = L[-20:]
+        json.dump(d, open(TRUST_FILE, "w", encoding="utf-8"))
+
+
+def _payafter_ok(user, c, what):
+    """2026-11-08 (owner: "how do we avoid cheaters who get jobs without ever paying?"): pay-after is a gift of trust, so:
+    only pure AI work (nothing that costs real money: post, helpers, calls, purchases), not on a brand-new account, not for
+    a person - or anyone sharing their connection - who owes or never paid, and a daily cap for everyone together.
+    -> (ok, why)"""
+    uid = user.get("id")
+    if _PHYS_RE.search(str(what or "")):
+        return False, "real costs"
+    d = _trust_load()
+    if uid in d.get("blocked", {}):
+        return False, "unpaid before"
+    age_h = (time.time() - float(user.get("created") or 0)) / 3600 if user.get("created") else 999
+    talk = sum(1 for m in c.get("msgs") or [] if m.get("role") == "user")
+    if age_h < 24 and talk < 15:
+        return False, "new account"
+    _rc()
+    import kino_pay as _KPt
+    I = _KPt._load()["invoices"]
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if sum(1 for x in I if x.get("kind") == "chatjob" and x.get("after") and x.get("day") == day) >= PAYAFTER_DAY:
+        return False, "daily cap"
+    linked = {uid}
+    for ip, L in d.get("ips", {}).items():
+        if uid in L:
+            linked.update(L)
+    if any(u in d.get("blocked", {}) for u in linked):
+        return False, "linked to unpaid"
+    if any(x.get("kind") == "chatjob" and x.get("after") and x.get("uid") in linked and x.get("status") == "waiting"
+           and time.time() - float(x.get("t") or 0) > 3600 for x in I):
+        return False, "owes already"
+    return True, ""
+
+
+def _payafter_sweep():
+    """an unpaid pay-after job after 7 days: one kind reminder at day 3 (by Kino), then the person loses pay-after for good"""
+    try:
+        _rc()
+        import kino_pay as _KPt
+        d = _trust_load()
+        for x in _KPt._load()["invoices"]:
+            if x.get("kind") == "chatjob" and x.get("after") and x.get("status") == "waiting" and time.time() - float(x.get("t") or 0) > 7 * 86400:
+                if x.get("uid") and x["uid"] not in d.setdefault("blocked", {}):
+                    d["blocked"][x["uid"]] = {"t": time.time(), "ref": x["ref"], "eur": x.get("usd")}
+        json.dump(d, open(TRUST_FILE, "w", encoding="utf-8"))
+    except Exception:
+        pass
+
+
 def _chat_job_quote(cid, user, c, v):
     """2026-11-08 (owner: "normal talk free; serious help = the jobs Kino makes money with; PayPal - I approve each payment"):
     Kino wrote #prix <euros> | <job> -> an order (kino_pay, kind chatjob, EUR) and a pay card in the chat"""
@@ -17148,7 +17223,19 @@ def _chat_job_quote(cid, user, c, v):
     # 2026-11-08 (owner: "pay only if satisfied" for small jobs): up to 9 EUR, Kino delivers first - unless this person
     # already has a delivered small job left unpaid
     _owes = any((m.get("pay") or {}).get("status") == "owed" for m in (c.get("msgs") or []) if m.get("role") == "pay")
-    after = eur <= 9 and not _owes
+    _pok, _pwhy = _payafter_ok(user, c, what) if eur <= 9 and not _owes else (False, "")
+    after = eur <= 9 and not _owes and _pok
+    if eur <= 9 and not after:
+        _KO._log(cid, "PAYAFTER_NO", "%s: %s" % (_pwhy or "owes", what[:80]))
+        _fr1 = _rc().member_lang(c, "fr") != "en"
+        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Pour ce travail, le paiement se fait avant : Kino commence dès qu'il est confirmé."
+                                                            if _fr1 else "For this job, payment comes first: Kino starts as soon as it is confirmed.")))
+    with _KPj._LK:                                    # remember it was a pay-after job (the 7-day check)
+        _dd = _KPj._load()
+        for _x in _dd["invoices"]:
+            if _x["ref"] == ref:
+                _x["after"] = bool(after)
+        _KPj._save(_dd)
     _last = next((m for m in reversed((_chat_load(user, cid) or c).get("msgs") or []) if m.get("role") == "ai"), {})
     _done = after and len(str(_last.get("text") or "")) > 350      # he delivered it in the same message
     _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
@@ -17248,8 +17335,12 @@ def _reminder_add(user, cid, v):
 
 
 def _reminder_tick():
+    _sw = 0
     while True:
         time.sleep(30)
+        if time.time() - _sw > 3600:
+            _sw = time.time()
+            _payafter_sweep()
         try:
             with _REMIND_LK:
                 try:
@@ -26573,6 +26664,10 @@ def chat_send(user, body):
     text = str(body.get("text") or "").strip()
     if not text:
         return {"ok": False, "err": "empty"}
+    try:
+        _trust_note_ip(user.get("id"))                # 2026-11-08: linked accounts share their pay-after record
+    except Exception:
+        pass
     if not is_admin(user):                           # 2026-10-27: the plan's replies a day (owl_plans), per person
         _pn = plan_name(user)
         _tzo = int(_tz_of(user.get("id")).get("off") or 0)
@@ -36667,6 +36762,10 @@ class H(BaseHTTPRequestHandler):
             self._server_error(_e)
 
     def do_POST(self):
+        try:
+            _REQ.ip = (self.headers.get("X-Forwarded-For") or self.client_address[0]).split(",")[0].strip()
+        except Exception:
+            _REQ.ip = ""
         try:
             self._do_POST()
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
