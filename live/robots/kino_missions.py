@@ -87,6 +87,10 @@ def update(mid, tell="", status=None, note="", next_h=None):
         if m is None:
             return
         now = time.time()
+        # 2026-11-08 (first real mission): three reports in one minute, the list twice - a new report within 15 min of the
+        # last one REPLACES it in their chat (one message, one push)
+        _lt = max([x["t"] for x in m["log"] if x["kind"] == "tell"] or [0])
+        out["_replace"] = bool(tell) and now - _lt < 900
         if note:
             m["log"].append({"t": now, "kind": "note", "text": str(note)[:800]})
         if tell:
@@ -113,8 +117,9 @@ def update(mid, tell="", status=None, note="", next_h=None):
                 Q = json.load(open(OUTBOX, encoding="utf-8"))
             except Exception:
                 Q = []
+            Q = [q for q in Q if not (q.get("mid") == mid and out.get("_replace"))]      # not delivered yet: the newer one wins
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
-                      "ref": out.get("ref") or "", "t": time.time()})
+                      "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace"))})
             json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
     return "mission %s: %s%s" % (mid, out["status"], " - %s has your message in their chat" % (out.get("name") or "they") if tell else "")
 

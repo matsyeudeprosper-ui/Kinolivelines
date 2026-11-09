@@ -17257,13 +17257,21 @@ def _reminder_tick():
             import kino_missions as _KMs
             for q in _KMs.drain():
                 def _put(cc, q=q):
-                    _chat_msg(cc, "ai", text=q["text"], mission=q["mid"], one=True, quick=True)   # his own words from his work session: never re-judged
+                    _prev = next((m for m in reversed(cc.get("msgs") or []) if m.get("mission") == q["mid"]), None)
+                    if q.get("replace") and _prev is not None and time.time() - float(_prev.get("t") or 0) < 1200:
+                        _prev["text"] = q["text"]                  # the newer report replaces the one from minutes ago
+                        _prev["t"] = int(time.time())
+                        q["_quiet"] = True
+                    else:
+                        _chat_msg(cc, "ai", text=q["text"], mission=q["mid"], one=True, quick=True)   # his own words from his work session: never re-judged
                     if q.get("status") == "done" and q.get("ref"):
                         for m in cc.get("msgs") or []:
                             if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == q["ref"] and m["pay"].get("status") in ("paid", "trust"):
                                 m["pay"]["status"] = "delivered" if m["pay"]["status"] == "paid" else "owed"
                     return True
                 _chat_mut(q["cid"], _put)
+                if q.get("_quiet"):
+                    continue
                 _cq = _chat_load(_user_by_id(q["uid"]) or {}, q["cid"]) or {}
                 queue_push(q["uid"], "Kino", q["text"][:170], path=("kinochat" if _cq.get("app") == "kinochat" else "atelier?c=" + q["cid"]),
                            tag="mission-" + q["mid"])
