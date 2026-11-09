@@ -38,7 +38,7 @@ def _cfg():
         return {}
 
 
-def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DAY):
+def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DAY, ref=None, currency="usd"):
     """one NOWPayments invoice on the owner's account -> (ref, url) or raises ValueError with a reason for him"""
     try:
         amount = round(float(amount), 2)
@@ -57,9 +57,10 @@ def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DA
         raise ValueError("the payment account is not set up")
     api = "https://api-sandbox.nowpayments.io" if c.get("np_sandbox") else "https://api.nowpayments.io"
     origin = c.get("public_origin") or "https://owltrader.duckdns.org"
-    ref = uuid.uuid4().hex[:10]
+    _given = ref                                 # 2026-11-08: a Kino Chat job also payable in crypto - same order, same ref
+    ref = ref or uuid.uuid4().hex[:10]
     back = success_url(ref) if callable(success_url) else (success_url or "https://kinoverse26-byte.github.io")
-    body = {"price_amount": amount, "price_currency": "usd", "order_id": "kino|earn-%s|%d" % (ref, int(time.time())),
+    body = {"price_amount": amount, "price_currency": currency, "order_id": "kino|earn-%s|%d" % (ref, int(time.time())),
             "order_description": ("Kino (an AI): " + what)[:200], "ipn_callback_url": origin + "/np_ipn",
             "success_url": back, "cancel_url": "https://kinoverse26-byte.github.io"}
     try:
@@ -74,8 +75,12 @@ def create(amount, what, payer="", success_url=None, kind="link", per_day=PER_DA
         raise ValueError("the invoice could not be made")
     with _LK:
         d = _load()
-        d["invoices"].append({"ref": ref, "t": time.time(), "day": day, "usd": amount, "what": what, "payer": str(payer)[:100],
-                              "url": url, "status": "waiting", "kind": kind})
+        x0 = next((i for i in d["invoices"] if i["ref"] == ref), None) if _given else None
+        if x0 is not None:
+            x0["np_url"] = url
+        else:
+            d["invoices"].append({"ref": ref, "t": time.time(), "day": day, "usd": amount, "what": what, "payer": str(payer)[:100],
+                                  "url": url, "status": "waiting", "kind": kind})
         _save(d)
     return ref, url
 

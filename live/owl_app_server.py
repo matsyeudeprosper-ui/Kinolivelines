@@ -17389,6 +17389,36 @@ def _reminder_tick():
             pass
 
 
+def chat_pay_crypto(user, body):
+    """2026-11-08 (owner: NOWPayments + paypal.me for now): the crypto button of a price card -> a NOWPayments invoice for the
+    SAME order (its ref), made on first click; the IPN confirms it by itself and Kino starts - no manual check"""
+    c = _chat_load(user, str(body.get("id") or ""))
+    ref = re.sub(r"[^0-9a-f]", "", str(body.get("ref") or ""))[:10]
+    if c is None or not ref:
+        return {"ok": False}
+    pm = next((x for x in c.get("msgs") or [] if x.get("role") == "pay" and (x.get("pay") or {}).get("ref") == ref), None)
+    if pm is None or pm["pay"].get("status") not in ("waiting", "trust", "owed"):
+        return {"ok": False, "err": "state"}
+    if pm["pay"].get("np"):
+        return {"ok": True, "url": pm["pay"]["np"]}
+    _rc()
+    import kino_pay as _KPj
+    try:
+        _, url = _KPj.create(float(pm["pay"]["eur"]), pm["pay"]["what"], payer=user.get("name") or user.get("id"),
+                             success_url="https://chat.owltrader.duckdns.org/kinochat", kind="chatjob", per_day=200,
+                             ref=ref, currency="eur")
+    except ValueError as e:
+        return {"ok": False, "err": str(e)[:120]}
+
+    def put(cc):
+        for x in cc.get("msgs") or []:
+            if x.get("role") == "pay" and (x.get("pay") or {}).get("ref") == ref:
+                x["pay"]["np"] = url
+        return True
+    _chat_mut(c["id"], put)
+    return {"ok": True, "url": url}
+
+
 def chat_paid(user, body):
     """the person pressed "I've paid" on a pay card -> the owner's Approve/Refuse card + a push to him"""
     c = _chat_load(user, str(body.get("id") or ""))
@@ -17400,7 +17430,8 @@ def chat_paid(user, body):
         return {"ok": False}
     _rc()
     import kino_pay as _KPj
-    _KPj.claim(ref, user.get("name") or user.get("id"))
+    _who = re.sub(r"\s+", " ", str(body.get("who") or "")).strip()[:80]
+    _KPj.claim(ref, ("%s (PayPal: %s)" % (user.get("name") or user.get("id"), _who)) if _who else (user.get("name") or user.get("id")))
 
     def put(cc):
         for x in cc.get("msgs") or []:
@@ -17410,8 +17441,9 @@ def chat_paid(user, body):
     _chat_mut(c["id"], put)
     try:
         if True:
-            queue_push("kino", "💶 Paiement à vérifier", "%s dit avoir payé %s € (KINO-%s) pour « %s ». Vérifie ton PayPal puis Approuve." % (
-                user.get("name") or user.get("id"), ("%.2f" % pm["pay"]["eur"]).rstrip("0").rstrip("."), ref.upper(), pm["pay"]["what"]),
+            queue_push("kino", "💶 Paiement à vérifier", "%s dit avoir payé %s € par PayPal%s (code KINO-%s) pour « %s ». Vérifie ton PayPal puis Approuve." % (
+                user.get("name") or user.get("id"), ("%.2f" % pm["pay"]["eur"]).rstrip("0").rstrip("."),
+                (" au nom de « %s »" % _who) if _who else "", ref.upper(), pm["pay"]["what"]),
                 path="atelier", tag="paycheck")
     except Exception:
         pass
@@ -17427,6 +17459,12 @@ def _chat_job_paid(x):
         return
 
     _was = {}
+    if x.get("payment") and x.get("payment") != "paypal-confirmed":
+        try:
+            queue_push("kino", "💶 Paiement reçu (crypto)", "%s a payé %s € pour « %s » - confirmé par NOWPayments, Kino s'y met." % (
+                x.get("name") or x["uid"], x.get("usd"), x.get("what")), path="atelier", tag="paycheck")
+        except Exception:
+            pass
 
     def put(cc):
         for m in cc.get("msgs") or []:
@@ -37000,7 +37038,7 @@ class H(BaseHTTPRequestHandler):
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "tests_overview", "test_range", "test_cancel", "tests_proof", "blind_build", "blind_get", "blind_vote", "robot_plug_apply", "robot_plug_undo", "market_plug_apply", "market_choices", "market_plug_set",
                                               "robot_markets", "robot_test_market", "robot_test_markets", "robot_control",
-                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react", "kino_moments", "chat_paid",
+                                              "grp_list", "grp_new", "grp_get", "grp_send", "grp_join", "grp_leave", "grp_clear", "grp_react", "kino_moments", "chat_paid", "chat_pay_crypto",
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
@@ -37024,7 +37062,7 @@ class H(BaseHTTPRequestHandler):
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo, "market_plug_apply": market_plug_apply, "market_choices": market_choices, "market_plug_set": market_plug_set,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
                        "robot_test_markets": robot_test_markets, "robot_control": robot_control,
-                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react, "kino_moments": kino_moments, "chat_paid": chat_paid,
+                       "grp_list": grp_list, "grp_new": grp_new, "grp_get": grp_get, "grp_send": grp_send, "grp_join": grp_join, "grp_leave": grp_leave, "grp_clear": grp_clear, "grp_react": grp_react, "kino_moments": kino_moments, "chat_paid": chat_paid, "chat_pay_crypto": chat_pay_crypto,
                        "chat_start": chat_start, "chat_send": chat_send, "chat_edit": chat_edit, "chat_test": chat_test,
                        "chat_check": chat_check, "chat_fires": chat_fires, "chat_fires_vote": chat_fires_vote, "chat_chart": chat_chart, "chat_show": chat_show, "chat_demo": chat_demo, "chat_open": chat_open, "chat_image": chat_image,
                        "ai_nudge_seen": ai_nudge_seen, "kino_forget": kino_forget,
