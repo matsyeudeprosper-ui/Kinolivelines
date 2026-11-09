@@ -17113,6 +17113,25 @@ def _chat_job_quote(cid, user, c, v):
     Kino wrote #prix <euros> | <job> -> an order (kino_pay, kind chatjob, EUR) and a pay card in the chat"""
     _rc()
     import kino_pay as _KPj, kino_shop as _KSj
+    if re.match(r"\s*(annul|cancel)", str(v), re.I):      # 2026-11-08: "#prix annule" = the latest open quote is cancelled for real
+        _cr = {}
+
+        def _cx(cc):
+            for mm in reversed(cc.get("msgs") or []):
+                if mm.get("role") == "pay" and (mm.get("pay") or {}).get("status") in ("waiting", "trust"):
+                    mm["pay"]["status"] = "cancelled"
+                    _cr["ref"] = mm["pay"].get("ref")
+                    return True
+            return True
+        _chat_mut(cid, _cx)
+        if _cr.get("ref"):
+            with _KPj._LK:
+                _dd = _KPj._load()
+                for _x in _dd["invoices"]:
+                    if _x["ref"] == _cr["ref"] and _x.get("status") == "waiting":
+                        _x["status"] = "cancelled"
+                _KPj._save(_dd)
+        return
     m = re.match(r"\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|eur|euros?)?\s*\|?\s*(.*)$", str(v), re.I)
     if not m:
         return
@@ -22105,6 +22124,16 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _chat_job_quote(cid, user, c, v)
             elif k == "pdf" and (c.get("app") == "kinochat" or is_admin(user)):
                 _chat_deliver(cid, user, v)
+            elif k == "email" and v and c.get("app") == "kinochat" and _person(uid) != "kino" and not any(
+                    (m.get("pay") or {}).get("status") in ("paid", "trust", "owed", "delivered", "claimed_after")
+                    for m in (_chat_load(user, cid) or {}).get("msgs") or [] if m.get("role") == "pay"):
+                # 2026-11-08 (owner's Pekos test): no open job -> the mail was dropped in silence and he would have said "sent"
+                _fr0 = _rc().member_lang(c, "fr") != "en"
+                _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Mail non envoyé : écrire aux commerces pour toi est une mission. Kino te "
+                                                                    "propose d'abord le prix (moins de 9 € : tu paies après, si ça te plaît)."
+                                                                    if _fr0 else "Email not sent: writing to businesses for you is a job. Kino "
+                                                                    "first offers you the price (under 9 EUR: you pay after, if you like it).")))
+                _KO._log(cid, "EMAIL_REFUSED", "no open job: %s" % v[:150])
             elif k == "rappel" and v:
                 _reminder_add(user, cid, v)
             elif k == "travail" and v and _person(uid) != "kino":

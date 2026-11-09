@@ -628,8 +628,9 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
 
 // ---- 2026-11-08 (owner: "talk is free, real work is paid - PayPal, I approve each payment"): Kino's price card
 function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).replace('.',EN?'.':',');
- return '<div class="m gap"><div class="payc'+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'"><div class="pw">💼 '+T('Travail proposé par Kino','Job offered by Kino')+'</div><div class="pt">'+esc(p.what)+'</div><div class="pe">'+eur+' €</div>'+
+ return '<div class="m gap"><div class="payc'+(st==='cancelled'?'" style="opacity:.55':'')+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'"><div class="pw">💼 '+T('Travail proposé par Kino','Job offered by Kino')+'</div><div class="pt">'+esc(p.what)+'</div><div class="pe">'+eur+' €</div>'+
   (st==='paid'?'<div class="ps">✓ '+T('Payé, merci ! Kino s’y met.','Paid, thank you! Kino is on it.')+'</div>':
+   st==='cancelled'?'<div class="ps">✕ '+T('Devis annulé. Rien à payer.','Quote cancelled. Nothing to pay.')+'</div>':
    st==='trust'?'<div class="ps" style="margin-bottom:8px">🤝 '+T('Kino le fait d’abord. Tu paies après, seulement si ça te plaît.','Kino does it first. You pay after, only if you like it.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+T('Payer avec PayPal','Pay with PayPal')+'</a><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé','I’ve paid')+'</button></div>':
    st==='claimed_after'?'<div class="ps">⏳ '+T('Merci ! Paiement en cours de vérification.','Thank you! Payment being checked.')+'</div>':
    st==='owed'?'<div class="ps" style="margin-bottom:8px">✓ '+T('Livré. Ça te plaît ? Tu peux payer maintenant.','Delivered. Happy with it? You can pay now.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+T('Payer avec PayPal','Pay with PayPal')+'</a><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé','I’ve paid')+'</button></div>':
