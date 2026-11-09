@@ -22099,6 +22099,20 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _chat_deliver(cid, user, v)
             elif k == "rappel" and v:
                 _reminder_add(user, cid, v)
+            elif k == "travail" and v and _person(uid) != "kino":
+                # 2026-11-08 (owner's Pekos test): for anyone but the owner, "#travail" was dropped in silence - Kino believed
+                # the work was running and promised it twice. It becomes a real one-off mission for his work sessions.
+                try:
+                    import kino_missions as _KMs
+                    _free = [m for m in _KMs.for_uid(uid) if m["status"] in _KMs.OPEN and not m.get("paid") and not m.get("ref")]
+                    _mid = _KMs.create(uid, cid, v.strip(), name=user.get("name") or "", lang=_rc().member_lang(c, "fr")) if len(_free) < 3 else None
+                    _KO._log(cid, "MISSION", "%s <- #travail %s" % (_mid or "REFUSED (3 free open)", v[:150]))
+                    if not _mid:
+                        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Kino a déjà 3 tâches gratuites en cours pour toi : celle-ci attend qu'une se termine."
+                                                                            if _rc().member_lang(c, "fr") != "en" else
+                                                                            "Kino already has 3 free tasks running for you: this one waits for one to finish.")))
+                except Exception:
+                    pass
             elif k == "mission" and v and (c.get("app") == "kinochat" or is_admin(user)):
                 try:
                     import kino_missions as _KMs
