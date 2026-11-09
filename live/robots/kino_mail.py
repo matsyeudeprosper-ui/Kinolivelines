@@ -265,6 +265,14 @@ def send(to, subject, body, why="", files=None):
             pass
         return {"ok": True, "sent": True}
     import kino_hands as KH
+    try:                                           # 2026-11-08 (owner refused 2 mails; Kino asked again 90 min later): a refused
+        for x in KH._rload():                      # address is not asked again for 14 days
+            if x.get("kind") == "email" and x.get("status") in ("refused", "waiting") and time.time() - float(x.get("t") or 0) < 14 * 86400:
+                if json.loads(x.get("command") or "{}").get("to", "").lower() == a:
+                    return {"ok": False, "why": ("the owner declined an email to %s - do not ask again" % a) if x["status"] == "refused"
+                            else "an email to %s already waits for the owner's OK" % a}
+    except Exception:
+        pass
     r = KH.request("send an email to %s: %s%s" % (a, str(subject)[:100], (" (+%d attached)" % len(files)) if files else ""),
                    why or "Kino wants to write to someone new",
                    command=json.dumps({"to": a, "subject": subject, "body": body, "files": [list(f) if isinstance(f, (list, tuple)) else f for f in (files or [])]},

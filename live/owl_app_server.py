@@ -22316,6 +22316,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 if len(_pm) == 3 and "@" in _pm[0]:
                     _rm = __import__("kino_mail").send(_pm[0], _pm[1], _pm[2], why="asked in the conversation", files=_fa or None)
                     _KO._log(cid, "EMAIL", "%s -> %s" % (_pm[0], _rm))
+                    if c.get("app") == "kinochat" and isinstance(_rm, dict):
+                        _fr2 = _rc().member_lang(c, "fr") != "en"
+                        if not _rm.get("ok"):                 # 2026-11-08: never silent - he and they both see it
+                            _tx = (("Mail à %s non envoyé." % _pm[0]) if _fr2 else ("Email to %s not sent." % _pm[0]))
+                        elif not _rm.get("sent"):
+                            _tx = (("Mail à %s prêt : il part dès qu'il est validé." % _pm[0]) if _fr2 else ("Email to %s ready: it goes out once approved." % _pm[0]))
+                        else:
+                            _tx = (("Mail envoyé à %s." % _pm[0]) if _fr2 else ("Email sent to %s." % _pm[0]))
+                        _chat_mut(cid, lambda cc, _tx=_tx: _chat_msg(cc, "sys", text=_tx))
                     # (an email to someone new becomes an approve card through kino_hands.ON_REQUEST)
             elif k == "travail" and v and _person(uid) == "kino":   # 2026-11-01: from the chat, a session at his own computer
                 import kino_work as _KWt
