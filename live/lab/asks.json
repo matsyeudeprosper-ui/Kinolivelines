@@ -345,6 +345,16 @@
    "answered": "2026-11-07T02:30:00Z",
    "answer_fr": "Vrai sur les vrais comptes : cinquante-quatre trades repris moins de quinze minutes après une perte, à peine plus d'un sur quatre gagné, les deux moitiés d'accord. Dans le test, le filtre en écarte presque tous (six restent, à peu près à zéro) et aucun réglage ne sait encore miser moins sur eux : je l'ai demandé, la demande attend d'être construite.",
    "answer_en": "True on the real accounts: fifty-four trades restarted within fifteen minutes of a loss, barely more than one in four won, both halves agree. In the test the filter removes almost all of them (six remain, about flat) and no setting can yet bet less on them: I asked for one, the request is waiting to be built."
+  },
+  {
+   "id": "ask_1794348322_day_after_loss",
+   "seed": "day_after_loss",
+   "seed_fr": "Trade pris le jour (8 h - minuit UTC) juste après une perte",
+   "seed_en": "Trade taken by day (08:00 - midnight UTC) right after a loss",
+   "by": "labo",
+   "date": "2026-11-10",
+   "note": "110 trades, 39 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
