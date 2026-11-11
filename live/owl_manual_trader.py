@@ -792,10 +792,25 @@ def manage_positions():
         px = tick.bid if d == 1 else tick.ask
         if (px - half) * d < 0:
             continue
-        ok, info = modify({"ticket": p.ticket, "sl": round(e, 2), "tp": float(p.tp)})
+        # 2026-11-11 (owner 11-10 14:35: "doesn't close exactly 0.00 pnl but rather 0.01 USD"): the stop goes a hair past
+        # the entry so a stop-out books +be_plus_usd (default 0.01 $) instead of 0.00. Price gap from MT5's own profit maths.
+        be_sl = e
+        try:
+            want = float(cfg.get("be_plus_usd", 0.01) or 0)
+            if want > 0:
+                otype = mt5.ORDER_TYPE_BUY if d == 1 else mt5.ORDER_TYPE_SELL
+                per1 = mt5.order_calc_profit(otype, SYMBOL, float(p.volume), e, e + d * 1.0)
+                if per1 and per1 > 0:
+                    si = mt5.symbol_info(SYMBOL)
+                    step = float(getattr(si, "trade_tick_size", 0) or getattr(si, "point", 0) or 0.01)
+                    n = math.ceil(round(want / per1 / step, 6))
+                    be_sl = e + d * n * step
+        except Exception:
+            be_sl = e
+        ok, info = modify({"ticket": p.ticket, "sl": round(be_sl, 2), "tp": float(p.tp)})
         if ok:
             _BE_DONE[p.ticket] = 9
-            say(f"BREAKEVEN AUTO #{p.ticket}: mi-chemin de l'objectif atteint ({half:.2f}), stop a l'entree {e:.2f}")
+            say(f"BREAKEVEN AUTO #{p.ticket}: mi-chemin de l'objectif atteint ({half:.2f}), stop a l'entree {e:.2f} -> {be_sl:.2f}")
             push(_t("\U0001f6e1 Stop à l'équilibre", "\U0001f6e1 Stop at breakeven"),
                  _t(f"Mi-chemin de l'objectif atteint : le stop est maintenant à votre entrée ({e:.0f}).",
                     f"Halfway to the target: the stop is now at your entry ({e:.0f})."))
