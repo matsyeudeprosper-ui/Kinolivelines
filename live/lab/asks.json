@@ -355,6 +355,16 @@
    "date": "2026-11-10",
    "note": "110 trades, 39 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
    "status": "open"
+  },
+  {
+   "id": "ask_1794381432_europe",
+   "seed": "europe",
+   "seed_fr": "En journée (08–16 h UTC)",
+   "seed_en": "During the day (08–16 UTC)",
+   "by": "labo",
+   "date": "2026-11-11",
+   "note": "107 trades, 41 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
