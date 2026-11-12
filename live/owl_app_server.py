@@ -22302,9 +22302,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 # 2026-11-08 (owner's Pekos test): no open job -> the mail was dropped in silence and he would have said "sent"
                 _fr0 = _rc().member_lang(c, "fr") != "en"
                 _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=("Mail non envoyé : écrire aux commerces pour toi est une mission. Kino te "
-                                                                    "propose d'abord le prix (moins de 9 € : tu paies après, si ça te plaît)."
+                                                                    "propose d'abord le prix (jusqu'à 9 € : tu paies après, si ça te plaît)."
                                                                     if _fr0 else "Email not sent: writing to businesses for you is a job. Kino "
-                                                                    "first offers you the price (under 9 EUR: you pay after, if you like it).")))
+                                                                    "first offers you the price (up to 9 EUR: you pay after, if you like it).")))
                 _KO._log(cid, "EMAIL_REFUSED", "no open job: %s" % v[:150])
             elif k == "rappel" and v:
                 _reminder_add(user, cid, v)
