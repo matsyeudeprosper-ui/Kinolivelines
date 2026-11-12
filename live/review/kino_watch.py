@@ -20,6 +20,10 @@ except Exception:
     _P = {}
 _ROOT = _P.get(UID, UID)
 UIDS = {_ROOT} | {u for u, r in _P.items() if r == _ROOT}
+# 2026-11-12 (owner: "Pekos is me, to test Kino as a stranger"): watched too, but NOT in persons.json - Kino must keep
+# treating Pekos as a stranger
+if UID == "kino":
+    UIDS |= {"pekos"}
 now = time.time()
 try:
     st = json.load(open(STATE, encoding="utf-8"))
