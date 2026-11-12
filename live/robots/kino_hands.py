@@ -181,6 +181,19 @@ def decide(rid, yes, by="owner", note=""):
                 _rsave(R)
         _log("DONE %s email %s" % (rid, res))
         return r
+    if r.get("kind") == "domain":                    # 2026-11-12: a client's domain, bought only on the owner's yes
+        if yes:
+            try:
+                import kino_cf as KCF
+                m = json.loads(r["command"])
+                b = KCF.buy_domain(m["domain"], rid, contact=m.get("contact"))
+                res = ("bought (%s, %.2f USD) - run domain for %s to put the site and mail on it" % (b.get("state"), b.get("usd") or 0, m.get("who"))
+                       if b.get("ok") else "not bought: %s" % b.get("err"))
+            except Exception as e:
+                res = "failed: %s" % str(e)[:200]
+            mark(rid, result=res, done_t=time.time())
+            _log("DONE %s domain %s" % (rid, res))
+        return r
     if r.get("kind") == "paycheck":                  # 2026-11-01: a PayPal payment the owner confirms he received
         if yes:
             try:

@@ -287,3 +287,72 @@ def setup(name, domain, mail=None, forward_to=None, send=False):
     if send:
         out["send"] = send_domain(domain)
     return out
+
+
+# ---- 2026-11-12 (owner: "Kino s'occupe" - he also buys the client's domain, with a margin). Cloudflare Registrar API (beta):
+# at cost, billed to the card on the Kinoverse Cloudflare account. Not every extension (.fr is NOT sold by Cloudflare).
+# Guardrails: a purchase only goes through an owner approval card (kino_hands kind "domain") - never straight from Kino;
+# hard caps per domain and per month; every buy written to robots/kino_domains.json.
+BUYS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_domains.json")
+MAX_ONE_USD = 30.0
+MAX_MONTH_USD = 120.0
+MARGIN_EUR = {"min_price_eur": 25}           # what the client pays per year at least (cost ~10-12 USD -> margin)
+
+
+def domain_check(names):
+    """[{"name", "ok": registrable, "usd": first year, "renew_usd", "why"}] - nothing is bought"""
+    names = [_dom(n) for n in (names if isinstance(names, (list, tuple)) else [names]) if n][:10]
+    r = _req("POST", "accounts/%s/registrar/domain-check" % _c()["account_id"], {"domains": names})
+    out = []
+    for x in (r.get("result") or {}).get("domains") or []:
+        p = x.get("pricing") or {}
+        out.append({"name": x.get("name"), "ok": bool(x.get("registrable")), "usd": p.get("registration_cost"),
+                    "renew_usd": p.get("renewal_cost"), "why": x.get("reason")})
+    return out
+
+
+def domain_ideas(q):
+    r = _req("GET", "accounts/%s/registrar/domain-search?q=%s" % (_c()["account_id"], urllib.request.quote(str(q)[:60])))
+    return [{"name": x.get("name"), "ok": bool(x.get("registrable")), "usd": (x.get("pricing") or {}).get("registration_cost")}
+            for x in ((r.get("result") or {}).get("domains") or [])[:8]]
+
+
+def _buys():
+    try:
+        return json.load(open(BUYS, encoding="utf-8"))
+    except Exception:
+        return {"buys": []}
+
+
+def buy_domain(domain, approved_rid, contact=None):
+    """ONLY called from an approved owner card (kino_hands.decide, kind 'domain'). Registers the domain, then it is a zone here."""
+    d = _dom(domain)
+    if not approved_rid:
+        return {"ok": False, "err": "a purchase needs the owner's approval"}
+    chk = (domain_check([d]) or [{}])[0]
+    if not chk.get("ok"):
+        return {"ok": False, "err": "not available: %s" % (chk.get("why") or "taken")}
+    usd = float(chk.get("usd") or 0)
+    B = _buys()
+    month = time.strftime("%Y-%m", time.gmtime())
+    spent = sum(float(b.get("usd") or 0) for b in B["buys"] if b.get("month") == month and b.get("ok"))
+    if usd <= 0 or usd > MAX_ONE_USD:
+        return {"ok": False, "err": "price %.2f USD is over the %.0f USD limit for one domain" % (usd, MAX_ONE_USD)}
+    if spent + usd > MAX_MONTH_USD:
+        return {"ok": False, "err": "monthly domain budget reached (%.2f of %.0f USD)" % (spent, MAX_MONTH_USD)}
+    body = {"domain_name": d}
+    if contact and contact.get("email"):
+        body["contacts"] = {"registrant": contact}
+    r = _req("POST", "accounts/%s/registrar/registrations" % _c()["account_id"], body)
+    res = r.get("result") or {}
+    ok = bool(r.get("success"))
+    B["buys"].append({"t": time.time(), "month": month, "domain": d, "usd": usd, "ok": ok, "rid": approved_rid,
+                      "state": res.get("state"), "err": None if ok else str(r.get("errors"))[:300]})
+    open(BUYS, "w", encoding="utf-8").write(json.dumps(B, ensure_ascii=False, indent=1))
+    _log("BUY %s %.2f USD %s %s" % (d, usd, "ok" if ok else "FAILED", res.get("state") or r.get("errors")))
+    return {"ok": ok, "state": res.get("state"), "usd": usd, "err": None if ok else str(r.get("errors"))[:200]}
+
+
+def buy_status(domain):
+    r = _req("GET", "accounts/%s/registrar/registrations/%s/registration-status" % (_c()["account_id"], _dom(domain)))
+    return (r.get("result") or {}).get("state") or r.get("errors")

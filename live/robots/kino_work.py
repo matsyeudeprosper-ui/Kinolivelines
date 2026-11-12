@@ -486,7 +486,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -574,6 +574,9 @@ You can make things public on your own, under your own name, with nobody approvi
   their own inbox, and sending. The client does at most two things, both told back to you: paste 2 nameservers where they
   bought the domain, and click one Cloudflare confirmation email. Run domain again later to finish and check - it only adds
   what is missing. You can never delete a domain, record or mailbox: if one must go, ask the owner.
+  domain_check ("domains" one or more names, or "ideas" a few words) tells you which are free and the cost; domain_buy
+  ("domain", "who", "why") - ONLY once the client has PAID - asks the owner to approve; it is bought on his yes, then run
+  domain. Charge the client at least 25 EUR a year for it (it costs you ~10-12). A .fr is not sold here: the owner buys it.
   telegram ("who" the client, "text") writes to a client who talks to you on Telegram (@Kino_owl_bot) - an update, a preview
   link, a payment link; they also write to you there and you answer them live. Your own portfolio site: deploy with "who":
   "kinoverse" - your Kinoverse page (services, prices, sample sites, honest case studies, that you are an AI, how to reach you:
@@ -921,6 +924,26 @@ def _act0(j, person, W=None):
         if j.get("url") and str(_rs).lower().startswith("posted"):
             KFG.maybe_expect(_who, "mastodon", j.get("text") or j.get("content") or "")
         return _rs
+    if a in ("domain_check", "domain_buy"):  # 2026-11-12 (owner: Kino buys the client's domain, with a margin)
+        import kino_cf as KCF, kino_hands as KH
+        names = j.get("domains") or j.get("domain") or ""
+        names = names if isinstance(names, list) else [x for x in re.split(r"[,\s]+", str(names)) if x]
+        if a == "domain_check":
+            if not names and j.get("ideas"):
+                return "; ".join("%s %s" % (x["name"], ("free, %s USD/yr" % x["usd"]) if x["ok"] else "taken")
+                                 for x in KCF.domain_ideas(j["ideas"])) or "no ideas found"
+            return "; ".join("%s: %s" % (x["name"], ("free, %s USD first year, %s USD/yr after" % (x["usd"], x["renew_usd"]))
+                             if x["ok"] else ("not possible (%s)" % (x["why"] or "taken"))) for x in KCF.domain_check(names)) or "nothing to check"
+        d = KCF._dom(names[0] if names else "")
+        chk = (KCF.domain_check([d]) or [{}])[0]
+        if not chk.get("ok"):
+            return "%s cannot be bought here (%s) - pick another (a .fr is not sold by Cloudflare: the owner buys it by hand)" % (d, chk.get("why") or "taken")
+        who = j.get("who") or ""
+        rq = KH.request("Buy the domain %s for %s (%s USD first year)" % (d, who or "a client", chk.get("usd")),
+                        str(j.get("why") or "paid client job")[:400],
+                        json.dumps({"domain": d, "who": who, "contact": j.get("contact")}), kind="domain")
+        return ("asked the owner to approve buying %s (%s USD) - it is bought the moment he says yes; then run domain" % (d, chk.get("usd"))
+                if rq else "already waiting for the owner's answer on %s" % d)
     if a in ("deploy", "domain"):          # 2026-11-05: Kinoverse hosting (Cloudflare Pages) and the client's own domain
         import kino_sales as KSL, kino_cf as KCF
         who = j.get("who") or j.get("name")
