@@ -45,6 +45,16 @@ def _mut(fn):
         return r
 
 
+def _words(t):
+    import re
+    return {w for w in re.findall(r"\w+", str(t or "").lower()) if len(w) > 3}
+
+
+def _alike(a, b, th):
+    A, B = _words(a), _words(b)
+    return bool(A and B) and len(A & B) / float(min(len(A), len(B))) >= th
+
+
 def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repeat_h=None, budget=0.0):
     """budget (12/11) = the part of a paid job the client prepaid for others (provider, helper, item) - Kino may spend up to it"""
     what = " ".join(str(what or "").split())[:600]
@@ -59,6 +69,12 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
         # two missions. A mission for the same person opened in the last 3 minutes is the same work - merge into it.
         _same = next((m for m in reversed(M) if m["uid"] == uid and m["cid"] == cid and m["status"] in OPEN
                       and time.time() - m["t"] < 180 and not (ref and m.get("ref"))), None)
+        # 2026-11-12 (Pekos chat): the same "find the two replies, word for word" was opened 4 min apart (outside the 3-min
+        # merge), both waited 3.5 h for a work session and BOTH delivered. An open, unpaid mission in this chat asking the
+        # same thing (most of its words) is that mission, whatever its age.
+        if _same is None and not ref:
+            _same = next((m for m in reversed(M) if m["uid"] == uid and m["cid"] == cid and m["status"] in OPEN
+                          and not m.get("ref") and _alike(what, m["what"], 0.6)), None)
         if _same is not None:
             if ref:
                 _same.update(ref=ref, eur=float(eur or 0), paid=bool(paid), budget_eur=float(budget or 0))
@@ -123,6 +139,14 @@ def update(mid, tell="", status=None, note="", next_h=None):
     if not out:
         return "no mission %s" % mid
     if tell:
+        # 2026-11-12 (Pekos chat): two missions for one ask -> the same replies pasted twice, 4 min apart. A report that
+        # repeats one already sent to this chat in the last 6 h stays in the log and does not go out again.
+        _dup = next((x for m in _load()["missions"] if m["cid"] == out["cid"] for x in m["log"]
+                     if x["kind"] == "tell" and time.time() - x["t"] < 6 * 3600 and x["t"] < time.time() - 1
+                     and _alike(tell, x["text"], 0.7)), None)
+        if _dup is not None:
+            return "mission %s: %s - NOT sent: this chat already has the same report (%s), no need to say it twice" % (
+                mid, out["status"], _ago(_dup["t"]))
         with _LK:
             try:
                 Q = json.load(open(OUTBOX, encoding="utf-8"))
@@ -174,5 +198,10 @@ def chat_line(uid):
     M = for_uid(uid)
     if not M:
         return ""
+    # 2026-11-12 (Pekos chat): "open" read as "my desk is opening the files now" four times while the job sat untouched
+    # for 3.5 h. A mission nobody has worked on yet says so.
     return "; ".join("%s \"%s\" - %s%s" % (m["id"], m["what"][:120], m["status"],
-                                          (", last: " + m["log"][-1]["text"][:140]) if m["log"] else "") for m in M[-6:])
+                                          (", last: " + m["log"][-1]["text"][:140]) if m["log"] else
+                                          (" - QUEUED, NOT STARTED YET (waiting %s for your next work session; nothing has been "
+                                           "opened or sent - never say it is being done right now)" % _ago(m["t"]).replace(" ago", "")
+                                           if m["status"] in OPEN else "")) for m in M[-6:])

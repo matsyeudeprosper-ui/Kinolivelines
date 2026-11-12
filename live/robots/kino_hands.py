@@ -65,7 +65,11 @@ def run(cmd, timeout=120, max_out=12000):
     ps1 = os.path.join(WORLD, "tools", "_run_%s.ps1" % rid)
     out = os.path.join(WORLD, "tools", "_out_%s.txt" % rid)
     open(ps1, "w", encoding="utf-8-sig").write(
-        "$ErrorActionPreference='Continue'\r\ntry {\r\n& {\r\n%s\r\n} *>&1 | Out-File -FilePath '%s' -Encoding utf8 -Width 200\r\n} catch {\r\n"
+        # 2026-11-12 (Pekos chat): PowerShell 5.1 reads a BOM-less UTF-8 file as ANSI - Get-Content turned a Bluesky reply's
+        # dash into "â€”" in the words he pasted "word for word". His world's files are UTF-8: read them so by default.
+        "$ErrorActionPreference='Continue'\r\n$PSDefaultParameterValues['Get-Content:Encoding']='UTF8'\r\n"
+        "$PSDefaultParameterValues['Select-String:Encoding']='UTF8'\r\n$PSDefaultParameterValues['Import-Csv:Encoding']='UTF8'\r\n"
+        "try {\r\n& {\r\n%s\r\n} *>&1 | Out-File -FilePath '%s' -Encoding utf8 -Width 200\r\n} catch {\r\n"
         "\"ERROR: \" + $_.Exception.Message | Out-File -FilePath '%s' -Encoding utf8 -Append\r\nexit 1\r\n}\r\nexit $LASTEXITCODE\r\n" % (cmd, out, out))
     line = 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%s"' % ps1
     si, pi = _SI(), _PI()
