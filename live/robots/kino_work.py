@@ -313,7 +313,14 @@ def due(person, ctx, now=None):
     try:                                       # 2026-11-08 (owner: Kino s'en occupe): a client mission due calls him first
         import kino_missions as KMIS
         _mb = KMIS.block()
-        if _mb and not d.get("next_task") and (not d.get("sessions") or now - float(_last_main(d)) >= 300):
+        # 2026-11-12 (Pekos chat): a queued client hunt sat in next_task for 1.5 h (rest gap, day caps) and every due
+        # mission waited behind it - a person's 9 EUR job and a promised reply. His own routine yields to people.
+        _nt0 = d.get("next_task") or {}
+        _yield = bool(_nt0) and (_nt0.get("care") in ("friends", "cards", "lab", "wall")
+                                 or _nt0.get("project") in ("Kinoverse", "my friends", "my profiles"))
+        if _mb and (not _nt0 or _yield) and (not d.get("sessions") or now - float(_last_main(d)) >= 300):
+            if _yield:
+                _log("MISSIONS FIRST - queued %s yields" % _nt0.get("project"))
             _mut(lambda dd: dd.__setitem__("next_task", {"do": MISSION_TIME + "\n\nMISSIONS DUE NOW:\n" + _mb,
                                                          "project": "client missions", "why": "people count on me",
                                                          "care": "missions"}))
