@@ -62,6 +62,18 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 .dg:not(.on) .bar i{animation-duration:5s;opacity:.5}
 @keyframes lvp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+#jobd{display:none}
+#jobd.on{display:flex;align-items:center;gap:8px;margin:4px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;line-height:1.3;
+ background:color-mix(in srgb,var(--acc) 9%,var(--bar));border:1px solid color-mix(in srgb,var(--acc) 28%,transparent);animation:pop .25s ease-out;-webkit-tap-highlight-color:transparent}
+#jobd.on.live{box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent),0 4px 18px color-mix(in srgb,var(--acc) 18%,transparent)}
+#jobd .ic{display:inline-block;animation:bob 1.5s ease-in-out infinite;flex:none}
+#jobd .jl{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+#jobd .jl b{font-weight:600}
+#jobd .tx{background:linear-gradient(90deg,var(--ink),var(--acc),var(--ink));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 2.2s linear infinite}
+#jobd .jr{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--mut);font-size:11.5px}
+#jobd .jc{flex:none;color:var(--mut);font-size:14px}
+#jobd .lv{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:lvp 1.4s ease-in-out infinite}
+#jobsb .dg{max-width:none;margin:8px 0}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-8deg)}}
 @keyframes blink{50%{opacity:0}}
 footer{display:flex;align-items:flex-end;gap:8px;padding:8px 10px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:var(--bg)}
@@ -256,6 +268,7 @@ html[data-th="clair"] .tk.rd{color:#3a9ee0}
 <div id="chips"></div>
 <div id="rbar"><span id="rbt"></span><button id="rbx" aria-label="Annuler">✕</button></div>
 <button id="down" aria-label="Bas">⌄<i></i></button>
+<div id="jobd"></div>
 <footer>
  <div class="box">
   <button class="ib" id="att" aria-label="Joindre"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -340,13 +353,28 @@ function jobCards(){var J=(C.jobs||[]),dg=C.doing&&C.doing.text?C.doing:null,out
     '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div>'):'')+
    '<div class="bar"><i></i></div></div>'});
  return out}
-function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
+// 2026-11-12 (owner: "like the Claude Code terminal - sticky near the text box, visible even when we talk about something
+// else; with 2 missions one summary line '2 tâches en cours'; tap it and a panel slides up with the details")
+var JOBSH=false;
+function jobList(){var J=(C&&C.jobs||[]).slice(),dg=C&&C.doing&&C.doing.text?C.doing:null;
+ if(dg&&!J.some(function(j){return j.id===dg.mid}))J.push({id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t});return J}
+function jobDock(){var el=$('jobd');if(!el)return;var J=GID?[]:jobList(),dg=C&&C.doing&&C.doing.text?C.doing:null,now=Date.now()/1000;
+ if(!J.length){if(el.innerHTML)el.innerHTML='';el.className='';if(JOBSH&&$('sh').classList.contains('on'))shClose();JOBSH=false;return}
+ var j0=dg?(J.filter(function(j){return j.id===dg.mid})[0]||J[0]):J[0],txt,right;
+ if(dg){txt=dg.text;var mn=Math.max(0,Math.floor((now-(dg.since||dg.t))/60));right='<span class="lv"></span>'+(mn?mn+' min':T('en direct','live'))}
+ else{txt=j0.stage||j0.title||(j0.new?T('Reçue, je m\'y mets','Received, I\'m on it'):T('En cours','In progress'));
+  right=j0.eta&&j0.eta>now+120?'⏱ '+jobHM(j0.eta):''}
+ var lead=J.length>1?'<b>'+T(J.length+' tâches en cours',J.length+' tasks running')+'</b> · ':(j0.title?'<b>'+esc(j0.title)+'</b> · ':'');
+ var h='<span class="ic">'+(dg?esc(dg.icon||'✨'):'🧩')+'</span><span class="jl">'+lead+'<span class="'+(dg?'tx':'')+'">'+esc(txt)+'</span></span><span class="jr">'+right+'</span><span class="jc">⌃</span>';
+ if(el.innerHTML!==h)el.innerHTML=h;el.className='on'+(dg?' live':'');if(!el.onclick)el.onclick=jobOpen;
+ if(JOBSH&&$('sh').classList.contains('on')){var b=$('jobsb');if(b)b.innerHTML=jobCards()}else JOBSH=false}
+function jobOpen(){JOBSH=true;shOpen('<h3>'+T('Ce que je fais pour toi','What I am doing for you')+'</h3><div id="jobsb">'+jobCards()+'</div>')}
+function paint(force){try{jobDock()}catch(e){}if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
  list.forEach(function(m){var d=dayOf(m.t);if(d!==lastDay){h+='<div class="day"><span>'+d+'</span></div>';lastDay=d;prev=null}h+=bubble(m,C.msgs.indexOf(m),prev);prev=m});
  if(!QRY)PEND.forEach(function(p){h+='<div class="m me gap"><div class="b">'+md(p)+'<span class="t">🕓</span></div></div>'});
  var th=C&&C.status==='thinking';
- if(!QRY&&C)h+=jobCards();
  if(!QRY&&th)h+='<div class="m gap"><div class="b">'+(C.draft?md(C.draft)+' ':'')+'<span class="dots"><span></span><span></span><span></span></span>'+(C.draft?'':'<span class="thk">'+THK[Math.floor(Date.now()/4000)%THK.length]+'</span>')+'</div></div>';
  if(!h)h='<div class="empty">'+(QRY?T('Rien trouvé.','Nothing found.'):'')+'</div>';
  var nAi=(C&&C.msgs||[]).filter(function(m){return m.role==='ai'}).length;if(!atEnd&&!force&&nAi>NAI0&&NAI0)NEWN+=nAi-NAI0;NAI0=nAi;
