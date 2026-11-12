@@ -38823,6 +38823,9 @@ class H(BaseHTTPRequestHandler):
         if len(parts) == 1 and parts[0] == "kinochat.png":       # Kino's face (Kino Chat, the call page, the APK icon)
             self._send_file_fresh(os.path.join(DIR, "static", "kino_avatar.png"), "image/png")
             return
+        if len(parts) == 1 and parts[0] in ("kinochat_round.png", "kinochat_og.png"):   # 2026-11-12: round splash icon, share card
+            self._send_file_fresh(os.path.join(DIR, "static", parts[0]), "image/png")
+            return
         if len(parts) == 1 and parts[0] in ("kinochat", "kinochat.webmanifest"):
             # 2026-11-07 (owner: "Kino Chat" app): the start page the APK opens, and its web manifest
             _rdk = os.path.join(DIR, "robots")
@@ -40411,5 +40414,30 @@ if __name__ == "__main__":
             _KPh0.ON_PAID.append(_chat_job_paid)
     except Exception:
         pass
+
+    def _hang_watch():
+        """2026-11-12 (22:29-22:34 UTC the app stopped answering, 5th time since 11-06; boot_all killed it and nothing said
+        why): every 60 s ask ourselves for /ping-less root; no answer in 25 s -> every thread's stack into app_hang_dump.txt"""
+        import urllib.request, traceback, sys as _sys
+        time.sleep(120)
+        last = 0
+        while True:
+            time.sleep(60)
+            try:
+                urllib.request.urlopen("http://127.0.0.1:%d/" % PORT, timeout=25).read(64)
+            except Exception as e:
+                if time.time() - last < 600:
+                    continue
+                last = time.time()
+                try:
+                    fr = _sys._current_frames()
+                    names = {t.ident: t.name for t in threading.enumerate()}
+                    with open(os.path.join(DIR, "app_hang_dump.txt"), "a", encoding="utf-8") as f:
+                        f.write("\n===== %s no answer (%s) - %d threads =====\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), e, len(fr)))
+                        for tid, frame in fr.items():
+                            f.write("\n--- %s\n%s" % (names.get(tid, tid), "".join(traceback.format_stack(frame)[-12:])))
+                except Exception:
+                    pass
+    threading.Thread(target=_hang_watch, daemon=True, name="hang_watch").start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 

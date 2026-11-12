@@ -158,14 +158,21 @@ def inject(page_html):
 MANIFEST = {
     "name": "Kino Chat", "short_name": "Kino Chat", "start_url": "/kinochat", "scope": "/", "display": "standalone",
     "background_color": "#0B0F14", "theme_color": "#0B0F14", "description": "Talk with Kino, anytime.",
-    "icons": [{"src": "/kinochat.png", "sizes": "1000x1000", "type": "image/png", "purpose": "any"},
+    "icons": [{"src": "/kinochat_round.png", "sizes": "1000x1000", "type": "image/png", "purpose": "any"},
               {"src": "/kinochat.png", "sizes": "1000x1000", "type": "image/png", "purpose": "maskable"}]}
 
 
+# 2026-11-12 (owner: a translate banner at start; a shared group link showed the OwlNest logo): no translation offer, and the
+# link preview (WhatsApp, Telegram, SMS) shows Kino Chat's own card
 def start_page(msg="", en=False):
     T = (lambda f, e: e) if en else (lambda f, e: f)
-    return """<!doctype html><html lang="%s"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    return """<!doctype html><html lang="%s" translate="no" class="notranslate"><head><meta charset="utf-8"><meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kino Chat</title><link rel="manifest" href="/kinochat.webmanifest"><meta name="theme-color" content="#0B0F14">
+<link rel="icon" type="image/png" href="/kinochat_round.png"><link rel="apple-touch-icon" href="/kinochat.png">
+<meta property="og:site_name" content="Kino Chat"><meta property="og:title" content="Kino Chat">
+<meta property="og:description" content="L'assistant IA qui s'occupe de tout - rejoins la conversation."><meta property="og:type" content="website">
+<meta property="og:image" content="https://chat.owltrader.duckdns.org/kinochat_og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://chat.owltrader.duckdns.org/kinochat_og.png">
 <script>var KQ=(location.search.match(/[?&]k=([A-Za-z0-9]+)/)||[])[1]||'',GQ=(location.search.match(/[?&]g=([A-Za-z0-9]+)/)||[])[1]||'';
 try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(L+(KQ||GQ?'?'+(KQ?'k='+KQ:'')+(KQ&&GQ?'&':'')+(GQ?'g='+GQ:''):''))}catch(e){}
 document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('form').forEach(function(f){[['k',KQ],['g',GQ]].forEach(function(x){if(!x[1])return;var i=document.createElement('input');i.type='hidden';i.name=x[0];i.value=x[1];f.appendChild(i)})});
