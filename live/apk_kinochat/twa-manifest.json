@@ -1,6 +1,6 @@
 {
     "packageId":  "org.duckdns.owltrader.kinochat",
-    "host":  "chat.owltrader.duckdns.org",
+    "host":  "chat.kinoverseai.com",
     "name":  "Kino Chat",
     "launcherName":  "Kino Chat",
     "display":  "standalone",
@@ -12,21 +12,21 @@
     "navigationDividerColorDark":  "#0B0F14",
     "backgroundColor":  "#0B0F14",
     "enableNotifications":  true,
-    "startUrl":  "/kinochat?v=2",
-    "iconUrl":  "https://chat.owltrader.duckdns.org/kinochat_round.png",
-    "maskableIconUrl":  "https://chat.owltrader.duckdns.org/kinochat.png",
+    "startUrl":  "/kinochat?v=3",
+    "iconUrl":  "https://chat.kinoverseai.com/kinochat_round.png",
+    "maskableIconUrl":  "https://chat.kinoverseai.com/kinochat.png",
     "splashScreenFadeOutDuration":  300,
     "signingKey":  {
                        "path":  "./owlnest.jks",
                        "alias":  "owlnest"
                    },
-    "appVersionName":  "1.1",
-    "appVersionCode":  2,
+    "appVersionName":  "1.2",
+    "appVersionCode":  3,
     "shortcuts":  [
 
                   ],
     "generatorApp":  "bubblewrap-cli",
-    "webManifestUrl":  "https://chat.owltrader.duckdns.org/kinochat.webmanifest",
+    "webManifestUrl":  "https://chat.kinoverseai.com/kinochat.webmanifest",
     "fallbackType":  "customtabs",
     "features":  {
 
@@ -37,7 +37,7 @@
     "enableSiteSettingsShortcut":  true,
     "isChromeOSOnly":  false,
     "isMetaQuest":  false,
-    "fullScopeUrl":  "https://chat.owltrader.duckdns.org/",
+    "fullScopeUrl":  "https://chat.kinoverseai.com/",
     "minSdkVersion":  21,
     "orientation":  "default",
     "fingerprints":  [
@@ -52,5 +52,5 @@
     "displayOverride":  [
 
                         ],
-    "appVersion":  "1.1"
+    "appVersion":  "1.2"
 }

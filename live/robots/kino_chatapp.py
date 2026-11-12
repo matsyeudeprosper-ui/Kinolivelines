@@ -21,7 +21,7 @@ import time
 # it IS that person - their Kino Chat account is linked to that channel, and Kino Chat reads what was said there.
 HERE = os.path.dirname(os.path.abspath(__file__))
 LINKS = os.path.join(HERE, "kino_chatlinks.json")           # {"tok": {tok: channel key}, "uid": {uid: [channel keys]}}
-BASE = "https://chat.owltrader.duckdns.org"   # 2026-11-08: its own address, owltrader links belong to the OwlNest app
+BASE = "https://chat.kinoverseai.com"   # 2026-11-12: chat.kinoverseai.com (was chat.owltrader.duckdns.org, still served)
 _LK = threading.Lock()
 
 
@@ -171,10 +171,11 @@ def start_page(msg="", en=False):
 <link rel="icon" type="image/png" href="/kinochat_round.png"><link rel="apple-touch-icon" href="/kinochat.png">
 <meta property="og:site_name" content="Kino Chat"><meta property="og:title" content="Kino Chat">
 <meta property="og:description" content="L'assistant IA qui s'occupe de tout - rejoins la conversation."><meta property="og:type" content="website">
-<meta property="og:image" content="https://chat.owltrader.duckdns.org/kinochat_og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://chat.owltrader.duckdns.org/kinochat_og.png">
+<meta property="og:image" content="https://chat.kinoverseai.com/kinochat_og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://chat.kinoverseai.com/kinochat_og.png">
 <script>var KQ=(location.search.match(/[?&]k=([A-Za-z0-9]+)/)||[])[1]||'',GQ=(location.search.match(/[?&]g=([A-Za-z0-9]+)/)||[])[1]||'';
-try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(L+(KQ||GQ?'?'+(KQ?'k='+KQ:'')+(KQ&&GQ?'&':'')+(GQ?'g='+GQ:''):''))}catch(e){}
+var NO=location.host==='chat.owltrader.duckdns.org'?'https://chat.kinoverseai.com':'';
+try{var L=localStorage.getItem('kcLink');if(L&&/^\\/[A-Za-z0-9_-]+\\/kinochat$/.test(L)&&location.search.indexOf('out=1')<0)location.replace(NO+L+(KQ||GQ?'?'+(KQ?'k='+KQ:'')+(KQ&&GQ?'&':'')+(GQ?'g='+GQ:''):''));else if(NO)location.replace(NO+location.pathname+location.search)}catch(e){if(NO)location.replace(NO+location.pathname+location.search)}
 document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('form').forEach(function(f){[['k',KQ],['g',GQ]].forEach(function(x){if(!x[1])return;var i=document.createElement('input');i.type='hidden';i.name=x[0];i.value=x[1];f.appendChild(i)})});
 if(GQ){var s=document.querySelector('p.s');if(s)s.textContent=(document.documentElement.lang==='en'?'You are invited to a group with Kino. Create your free account, or sign in:':'Tu es invité dans un groupe avec Kino. Crée ton compte gratuit, ou connecte-toi :')}});</script>
 <style>:root{--bg:#0B0F14;--card:#141a22;--ink:#e9eef4;--mut:#93a1b1;--acc:#8b85ff;--line:#222c38}

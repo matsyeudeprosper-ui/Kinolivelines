@@ -300,6 +300,8 @@ html[data-th="clair"] .tk.rd{color:#3a9ee0}
 <canvas id="fx"></canvas>
 <div id="toast"></div>
 <script>
+// 2026-11-12 (owner: "the old URL is still there"): Kino Chat lives on chat.kinoverseai.com - the old address forwards, same link
+if(location.host==='chat.owltrader.duckdns.org')location.replace('https://chat.kinoverseai.com'+location.pathname+location.search+location.hash);
 (function(){
 var $=function(i){return document.getElementById(i)};
 var B=location.pathname.replace(/kinochat\/?$/,'');           // /<token>/

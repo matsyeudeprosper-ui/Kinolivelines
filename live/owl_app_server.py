@@ -17415,7 +17415,7 @@ def chat_pay_crypto(user, body):
     import kino_pay as _KPj
     try:
         _, url = _KPj.create(float(pm["pay"]["eur"]), pm["pay"]["what"], payer=user.get("name") or user.get("id"),
-                             success_url="https://chat.owltrader.duckdns.org/kinochat", kind="chatjob", per_day=200,
+                             success_url="https://chat.kinoverseai.com/kinochat", kind="chatjob", per_day=200,
                              ref=ref, currency="eur")
     except ValueError as e:
         return {"ok": False, "err": str(e)[:120]}
