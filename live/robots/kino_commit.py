@@ -32,8 +32,9 @@ EXTRACT_SYSTEM = """You read ONE message that Kino (an AI friend who builds trad
 List what Kino COMMITS TO DO himself after this message - firm, first person: "je lance le test", "je regarde et je te dis",
 "je te prépare un robot", "je reviens dans 10 min", "je te dis quand le test tombe".
 NOT: conditionals ("si tu veux je..."), questions, offers, things already done in this message, the member's actions, generic
-"on verra". Nothing firm = empty list.
-kind: test = start a robot test | build = build or change a robot | show = put something on a chart | check = look into
+"on verra", and paid work that starts ONCE THEY PAY ("I do it all once it's paid", a quote with a payment button) - that is an
+offer until paid, not a promise for now (12/11: a quoted website was marked broken 13 min later). Nothing firm = empty list.
+kind: test = start a robot test | build = build or change a TRADING ROBOT only (never a website, a text, a domain) | show = put something on a chart | check = look into
 something and come back | tell = tell them when something happens later | other.
 minutes = when it must be kept: as Kino said; else test 3, build 10, show 2, check 10, tell 1440, other 30.
 what: in the member's language, at most 12 words, the thing itself ("lancer le test du robot Nasdaq").
@@ -239,6 +240,9 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
                         else:
                             _bump(x["id"])
                 elif x["kind"] == "build":
+                    if not c.get("robot") or _awaits_payment(c, x["t"]):   # 12/11: a website promise woke the robot builder
+                        resolve(cid, x["id"], "blocked", "not a robot build, or waits for their payment")
+                        continue
                     H["build"](cid, uid)
                     _bump(x["id"])
                 elif x["kind"] == "show":
@@ -276,6 +280,14 @@ def _test_evidence(c, since):
         return False
 
 
+def _awaits_payment(c, since):
+    """a payment card of this chat, still waiting, posted around or after the promise"""
+    for m in reversed((c or {}).get("msgs") or []):
+        if m.get("role") == "pay" and float(m.get("t") or 0) >= since - 600 and                 str((m.get("pay") or {}).get("status") or "waiting") in ("waiting", "trust", "owed"):
+            return True
+    return False
+
+
 def _build_evidence(c, since):
     for m in reversed((c or {}).get("msgs") or []):
         if float(m.get("t") or 0) < since - 5:
@@ -304,6 +316,9 @@ def tick(H):
             continue
         try:
             c = H["chat"](x["cid"]) or {}
+            if _awaits_payment(c, x["t"]):                # 12/11: quoted paid work starts once paid - not broken, not retried
+                resolve(x["cid"], x["id"], "blocked", "waits for their payment")
+                continue
             ok = _test_evidence(c, x["t"]) if x["kind"] == "test" else _build_evidence(c, x["t"])
             if ok:
                 resolve(x["cid"], x["id"], "kept", "test queued" if x["kind"] == "test" else "robot built")

@@ -17217,6 +17217,11 @@ def _chat_job_quote(cid, user, c, v):
     day = time.strftime("%Y-%m-%d", time.gmtime())
     if sum(1 for x in _KPj._load()["invoices"] if x.get("kind") == "chatjob" and x.get("uid") == user.get("id") and x.get("day") == day) >= 5:
         return
+    # 2026-11-12 (watch): the same 59 EUR card went out 3 times in 16 min - one waiting card for the same amount is enough
+    if any(mm.get("role") == "pay" and (mm.get("pay") or {}).get("status") == "waiting"
+           and abs(float((mm.get("pay") or {}).get("eur") or 0) - eur) < 0.01 and time.time() - float(mm.get("t") or 0) < 86400
+           for mm in ((_chat_load(user, cid) or c).get("msgs") or [])[-30:]):
+        return
     ref = _KPj.manual(eur, what, kind="chatjob", method="paypal", cur="EUR", uid=user.get("id"), cid=cid,
                       lang=_rc().member_lang(c, "fr"), name=user.get("name") or user.get("id"))
     url = "https://kino.owltrader.duckdns.org/pay/%s/%s" % (ref, _KSj._token(ref))
