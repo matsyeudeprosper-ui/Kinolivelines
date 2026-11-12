@@ -68,8 +68,29 @@ def answered_by(who):
         _save(d)
 
 
+_BULK = re.compile(r"(^|[.@])(no-?reply|noreply|updates?|marketing|newsletter|news|notifications?|mailer|info|hello|team|"
+                   r"launched|digest|bounce|promo)[.@]", re.I)
+
+
+def _not_a_person(x):
+    """2026-11-12 (watch): newsletters (updates.resend.com, launched.websitelaunches.com, marketing.zernio.com) and a
+    prospect's STOP sat in pending -> 'someone answered me' called a friend session again and again (33 today). Mail
+    from a bulk sender or from someone who opted out is not a conversation waiting for him."""
+    if x.get("where") != "email":
+        return False
+    a = str(x.get("who") or "").lower()
+    if _BULK.search(a):
+        return True
+    try:
+        import kino_sales as KS
+        O = KS._j(KS.OPTOUT, {"emails": [], "domains": []})
+        return a in [e.lower() for e in O.get("emails") or []] or a.split("@")[-1] in (O.get("domains") or [])
+    except Exception:
+        return False
+
+
 def pending(max_age_h=72):
-    return [x for x in _load()["pending"] if time.time() - float(x.get("t") or 0) < max_age_h * 3600]
+    return [x for x in _load()["pending"] if time.time() - float(x.get("t") or 0) < max_age_h * 3600 and not _not_a_person(x)]
 
 
 def block(en=True):

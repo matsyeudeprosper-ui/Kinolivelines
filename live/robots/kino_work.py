@@ -481,8 +481,10 @@ def due(person, ctx, now=None):
                 return False
     except Exception:
         pass
-    S = [s for s in d.get("sessions") or [] if s.get("day") == today]
-    if len(S) >= SESSIONS_DAY + 2:                     # (two more a day can go to looking after his body)
+    # 2026-11-12 (watch): 19 sessions that died at step 0 (the plan's usage limit) counted as a day of work - only sessions
+    # that did something use up the day
+    S = [s for s in d.get("sessions") or [] if s.get("day") == today and s.get("steps")]
+    if len(S) >= SESSIONS_DAY + 2:                    # (two more a day can go to looking after his body)
         return False
     _care = False
     try:
