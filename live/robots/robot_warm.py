@@ -5,7 +5,7 @@ So the workshop keeps up to WARM ready processes per system prompt: started in a
 robot_interview.call - no tools, no MCP, no session, empty folder), each one answers ONE message and is thrown
 away, and a fresh one starts behind it. Nobody in the workshop for IDLE seconds = no process kept (each ~175 MB).
 """
-import hashlib, io, json, os, queue, re, subprocess, threading, time
+import collections, hashlib, io, json, os, queue, re, subprocess, threading, time
 
 import robot_interview as IV
 
@@ -162,6 +162,12 @@ def _spawn(sp, model):
                             text=True, encoding="utf-8", errors="replace", creationflags=0x08000000)   # normal priority: at below-normal a busy CPU starved it (api 2 s, total 60-140 s)
 
 
+_BOOTS = collections.deque()   # 2026-11-12 (VPS at 90 % CPU): times of warm-up boots, all keys
+BOOTS_PER_MIN = 6             # ~11 keys fought over 6 slots: each fill evicted another key, whose refill evicted the next -
+                              # 25 boots a minute for 43 real calls in 30 min. Now only a PINNED key may evict, and warm-up
+                              # boots are capped; a key that finds the pool full simply answers cold when it is called.
+
+
 def _fill(key):
     """top the pool up to WARM live processes (called outside the caller's wait)"""
     with _LOCK:
@@ -170,14 +176,24 @@ def _fill(key):
         for p, t in _POOL.get(key, []):
             if (p, t) not in L:
                 _kill(p)
-        if len(L) < WARM:                    # one at a time: a starting process is CPU-hungry for ~10 s
+        _POOL[key] = L
+        now = time.time()
+        while _BOOTS and now - _BOOTS[0] > 60:
+            _BOOTS.popleft()
+        if len(L) >= WARM:
+            return
+        if len(_BOOTS) >= BOOTS_PER_MIN:
+            short = True                     # rate cap: try again later, no eviction
+        elif _live_total_locked() >= MAX_TOTAL and key not in PINNED:
+            return                           # pool full: a non-pinned key never evicts another (that was the thrash)
+        else:                                # one at a time: a starting process is CPU-hungry for ~10 s
             _cap_locked(key)
             try:
-                L.append((_spawn(sp, model), time.time()))
+                L.append((_spawn(sp, model), now))
+                _BOOTS.append(now)
             except Exception:
                 pass
-        _POOL[key] = L
-        short = len(L) < WARM
+            short = len(L) < WARM
     if short:
         threading.Timer(12, _fill, args=(key,)).start()
 
