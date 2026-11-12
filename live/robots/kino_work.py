@@ -107,7 +107,49 @@ MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to
                 "and reviews, local news, a phone number for a helper or the person, or a helper who walks past and looks. The "
                 "person's goal matters, not the road I first had in mind - if a detail is impossible (a date I cannot see), "
                 "drop the detail and still deliver the goal. A watcher (it repeats): look, and tell them ONLY when "
-                "something new and useful appears (otherwise mission with no tell, status watching).")
+                "something new and useful appears (otherwise mission with no tell, status watching). "
+                "LIVE LINE (the person watches you work, like a friend over your shoulder): in EVERY step's JSON add \"for\": "
+                "the mission id this step serves, and \"doing\": what you are doing right now for them, 4-10 words, in THEIR "
+                "language, present tense, concrete and a little lively (\"Je compare les avis de 3 réparateurs à Draveil\", "
+                "\"Reading Ageps's site for a quote form\") - never internal words (step, JSON, tool names, Matsy).")
+
+
+# 2026-11-12 (owner: "like the Claude Code terminal - even while we wait there is a line saying what he is doing; make it
+# more interesting"): each mission step leaves a live line for the person's chat - robots/kino_doing.json {cid: {...}}
+DOING = os.path.join(HERE, "kino_doing.json")
+_DOING_ICON = {"search": "🔎", "find": "📍", "fetch": "🌐", "browse": "🌐", "read": "📄", "run": "⚙️", "write": "✍️",
+               "email": "✉️", "outreach": "✉️", "toot": "💬", "skeet": "💬", "xpost": "💬", "mission": "📨", "help_task": "🙋",
+               "help_ask": "🙋", "card": "💌", "delegate": "👥", "note": "🗒️", "site": "🏗️", "deploy": "🚀", "preview": "🎨",
+               "images": "🖼️", "picture": "🖼️", "shot": "📸", "domain_check": "🌍", "domain_buy": "🌍", "invoice": "🧾"}
+
+
+def doing_set(cid, mid, action, text, step):
+    try:
+        try:
+            D = json.load(open(DOING, encoding="utf-8"))
+        except Exception:
+            D = {}
+        now = time.time()
+        D = {k: v for k, v in D.items() if now - float(v.get("t") or 0) < 3600}
+        x = D.get(cid) or {}
+        trail = ([x.get("text")] + (x.get("trail") or []))[:2] if x.get("text") and x.get("mid") == mid else []
+        D[cid] = {"t": now, "since": x.get("since") if x.get("mid") == mid else now, "mid": mid, "icon": _DOING_ICON.get(action, "✨"),
+                  "text": str(text)[:120], "trail": [t for t in trail if t], "step": step}
+        tmp = DOING + ".tmp"
+        json.dump(D, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
+        os.replace(tmp, DOING)
+    except Exception:
+        pass
+
+
+def doing_end(cids=None):
+    """the session is over: their live line goes (all of this session's chats)"""
+    try:
+        D = json.load(open(DOING, encoding="utf-8"))
+        D = {k: v for k, v in D.items() if cids is not None and k not in cids}
+        json.dump(D, open(DOING, "w", encoding="utf-8"), ensure_ascii=False)
+    except Exception:
+        pass
 
 
 def _log(line):
@@ -1472,6 +1514,7 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
         # task still listed the mission as due -> he posted again, was refused, and told Pekos "nothing is posted yet".
         # What he did in the world this session stays in front of him to the end; a missions session re-reads the due list.
         done_w = []
+        _doing_cids = set()
         for i in range(STEPS):
             _task = task
             if rec.get("care") == "missions" and "MISSIONS DUE NOW:" in task:
@@ -1500,6 +1543,18 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
             if a == "done":
                 rec["summary"] = str(j.get("text") or "")[:600]
                 break
+            if rec.get("care") == "missions" and j.get("doing"):      # 2026-11-12: the person's live line
+                try:
+                    import kino_missions as KMd
+                    _mm = KMd.get(str(j.get("for") or j.get("id") or "").strip())
+                    if _mm is None:
+                        _dm = KMd.due()
+                        _mm = _dm[0] if len(_dm) == 1 else None
+                    if _mm is not None:
+                        doing_set(_mm["cid"], _mm["id"], a, j.get("doing"), i + 1)
+                        _doing_cids.add(_mm["cid"])
+                except Exception:
+                    pass
             seen = _act(j, person, W)
             st = {"thought": str(j.get("thought") or "")[:200], "action": a,
                   "detail": str(j.get("cmd") or j.get("path") or j.get("q") or j.get("url") or j.get("text") or j.get("to") or j.get("what") or "")[:300],
@@ -1510,6 +1565,8 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                      "help_task", "help_ask", "help_pay", "invoice", "card", "telegram", "notify", "deploy", "site", "domain_buy"):
                 done_w.append("- step %d %s %s -> %s" % (i + 1, a, str(j.get("id") or j.get("url") or j.get("to") or "")[:90],
                                                      str(seen)[:160].replace("\n", " ")))
+        if _doing_cids:
+            doing_end(_doing_cids)
         try:
             if _BR.get("b"):
                 _BR.pop("b").close()

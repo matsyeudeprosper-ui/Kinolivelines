@@ -44,6 +44,16 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 .dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--mut);animation:d 1.2s infinite}
 .dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
 @keyframes d{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.dg{margin:8px auto 4px;max-width:86%;padding:9px 13px 10px;border-radius:16px;background:color-mix(in srgb,var(--acc) 9%,var(--bar));border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);font-size:13.5px;line-height:1.35;animation:pop .25s ease-out}
+.dg .hd{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.dg .tr{color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dg .tr.o2{opacity:.4}.dg .tr.o1{opacity:.7}
+.dg .now{display:flex;align-items:flex-start;gap:7px;margin-top:2px}
+.dg .ic{display:inline-block;animation:bob 1.5s ease-in-out infinite}
+.dg .tx{background:linear-gradient(90deg,var(--ink),var(--acc),var(--ink));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shim 2.2s linear infinite}
+.dg .cur{display:inline-block;width:7px;height:14px;margin-left:3px;vertical-align:-2px;background:var(--acc);animation:blink 1s steps(1) infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-8deg)}}
+@keyframes blink{50%{opacity:0}}
 footer{display:flex;align-items:flex-end;gap:8px;padding:8px 10px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:var(--bg)}
 .box{flex:1;min-width:0;display:flex;align-items:flex-end;background:var(--surface2);border:1px solid var(--border);border-radius:26px;padding:2px 4px;box-shadow:0 4px 14px #0006}
 .box .ib{width:42px;height:44px;color:var(--mut)}
@@ -303,12 +313,17 @@ function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='fil
  if(m.role==='ai'&&(m.text||'').length>650)inner+='<br><button class="rdb" data-rd="'+i+'">⤢ '+T('Lire en plein écran','Read full screen')+'</button>';
  var rx=m.mreact||'';
  return '<div class="m'+(me?' me':'')+(gap?' gap':'')+(rx?' rx':'')+(ANIM_T>=0&&m.t>ANIM_T?' nw':'')+'" data-i="'+i+'"><div class="b'+(emo?' emo':'')+'" data-i="'+i+'">'+q+inner+'<span class="t">'+(starred(m.t)?'<span class="star">⭐</span>':'')+(m.edited?'<span class="ed">'+T('modifié','edited')+'</span> ':'')+hm(m.t)+(me?'<span class="tk'+(m.t<=LASTAI?' rd':'')+'">✓✓</span>':'')+'</span>'+(rx?'<span class="rxb">'+rx+'</span>':'')+'</div></div>'}
-function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[]);
+function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+(C&&C.doing_q||0)+'|'+Math.floor(Date.now()/60000);
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
  list.forEach(function(m){var d=dayOf(m.t);if(d!==lastDay){h+='<div class="day"><span>'+d+'</span></div>';lastDay=d;prev=null}h+=bubble(m,C.msgs.indexOf(m),prev);prev=m});
  if(!QRY)PEND.forEach(function(p){h+='<div class="m me gap"><div class="b">'+md(p)+'<span class="t">🕓</span></div></div>'});
  var th=C&&C.status==='thinking';
+ if(!QRY&&C&&C.doing&&C.doing.text){var dg=C.doing,mn=Math.max(0,Math.floor((Date.now()/1000-(dg.since||dg.t))/60)),tr=(dg.trail||[]).slice(0,2);
+  h+='<div class="dg"><div class="hd"><span>'+T('Kino travaille pour toi','Kino is working for you')+'</span><span>'+(mn?mn+' min':T('à l'instant','just now'))+'</span></div>'+
+   (tr[1]?'<div class="tr o2">✓ '+esc(tr[1])+'</div>':'')+(tr[0]?'<div class="tr o1">✓ '+esc(tr[0])+'</div>':'')+
+   '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div></div>'}
+ else if(!QRY&&C&&C.doing_q>0&&!th)h+='<div class="dg"><div class="now"><span class="ic">⏳</span><span class="tr" style="white-space:normal">'+(C.doing_q>1?T(C.doing_q+' demandes dans ma liste : je m'y mets à mon prochain passage au bureau',C.doing_q+' requests in my queue: I start at my next desk time'):T('Ta demande est dans ma liste : je m'y mets à mon prochain passage au bureau','Your request is in my queue: I start at my next desk time'))+'</span></div></div>';
  if(!QRY&&th)h+='<div class="m gap"><div class="b">'+(C.draft?md(C.draft)+' ':'')+'<span class="dots"><span></span><span></span><span></span></span>'+(C.draft?'':'<span class="thk">'+THK[Math.floor(Date.now()/4000)%THK.length]+'</span>')+'</div></div>';
  if(!h)h='<div class="empty">'+(QRY?T('Rien trouvé.','Nothing found.'):'')+'</div>';
  var nAi=(C&&C.msgs||[]).filter(function(m){return m.role==='ai'}).length;if(!atEnd&&!force&&nAi>NAI0&&NAI0)NEWN+=nAi-NAI0;NAI0=nAi;

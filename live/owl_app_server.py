@@ -26959,6 +26959,16 @@ def chat_get(user, cid, ui=""):
         threading.Thread(target=_chat_quick, args=(c["id"], user), daemon=True).start()
         c["status"] = "thinking"
     c["draft"] = _CHAT_DRAFT.get(c["id"]) or _CHAT_DRAFT.get(c["id"] + ":b") or ""
+    try:                                             # 2026-11-12 (owner: a live line of what Kino is doing on their job)
+        _dg = json.load(open(os.path.join(DIR, "robots", "kino_doing.json"), encoding="utf-8")).get(c["id"])
+        c["doing"] = _dg if _dg and time.time() - float(_dg.get("t") or 0) < 240 else None
+        if not c["doing"]:
+            import kino_missions as _KMq
+            _q = [m for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and m["status"] in _KMq.OPEN
+                  and not m.get("log") and not m.get("repeat_h")]
+            c["doing_q"] = len(_q)
+    except Exception:
+        c["doing"] = None
     try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood
         c["decisions_v"] = _decisions_for(user, c)
         c.update(_kino_presence(user, c))
