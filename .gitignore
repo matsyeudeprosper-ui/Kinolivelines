@@ -376,3 +376,5 @@ live/robots/kino_chatlinks.json
 live/robots/kino_groups/
 live/robots/kino_groups.log
 live/robots/kino_groups_calls.log
+live/robots/kino_market.json
+live/robots/kino_doing.json

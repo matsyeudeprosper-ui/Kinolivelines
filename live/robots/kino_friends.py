@@ -17,7 +17,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_friends.json")
 LOG = os.path.join(HERE, "kino_friends.log")
 _LK = threading.Lock()
-NEW_PER_DAY = 10                    # new people a day: a person meets a few, a spammer meets hundreds (5 -> 8 -> 10, owner 07/11)
+HELP_PER_DAY = 15                   # 2026-11-12 (owner: "maximise chance, lots of activity"): answers to people who ASKED, apart
+HELP_Q = ["need help writing a letter", "can anyone help me with", "looking for someone to fix", "need a cv", "help with my resume",
+          "anyone know a good plumber", "need a translator", "help me find a", "je cherche quelqu'un pour", "besoin d'aide pour",
+          "qui peut m'aider", "aide pour un courrier", "cherche un artisan", "busco a alguien que", "necesito ayuda con",
+          "need a logo for my", "need someone to build", "recommend a lawyer", "help with paperwork", "how do i write to my landlord"]
+NEW_PER_DAY = 10                   # new people a day: a person meets a few, a spammer meets hundreds (5 -> 8 -> 10, owner 07/11)
 BSKY_Q = ["small business owner", "my little shop", "opened my salon", "my restaurant", "freelance web designer", "building in public",
           "learning to code", "side project launched", "trading journal", "bitcoin trader", "help with my website",
           "mon salon de coiffure", "ma petite entreprise", "artisan boulanger", "auto-entrepreneur", "indie hacker",
@@ -35,10 +40,13 @@ _ADS = re.compile(r"\b(sale|discount|% ?off|buy now|promo|coupon|limited offer|d
 _HOT = re.compile(r"\b(trump|biden|election|vot(?:e|ing)|gaza|israel|palestin|ukrain|russia|war|religio|church|islam|"
                   r"abortion|suicide|funeral|passed away|died|cancer|diagnos|grief|depress|nsfw|onlyfans)\b", re.I)
 # 2026-11-07 (review): someone ASKING for what he does - the warmest kind of meeting (answering an ask is not cold selling)
-_ASKS = re.compile(r"(looking for|need|anyone (?:know|recommend)|recommend(?:ations)?|how (?:do|can) i|any tips|who (?:can|could)|"
+_ASKS = re.compile(r"(looking for|need|help (?:me|with)|anyone (?:know|recommend)|qui peut|aidez|ayuda|recommend(?:ations)?|how (?:do|can) i|any tips|who (?:can|could)|"
                    r"je cherche|besoin d|quelqu.un (?:conna|peut)|busco|necesito|preciso)\W+(?:\w+\W+){0,6}?(web ?site|site web|"
                    r"web (?:dev|developer|designer)|landing page|booking|r[ée]servation|automat|spreadsheet|excel|chatbot|bot\b|"
-                   r"app\b|online shop|boutique en ligne|p[aá]gina web|sitio web)", re.I)
+                   r"app\b|online shop|boutique en ligne|p[aá]gina web|sitio web|letter|lettre|courrier|paperwork|papiers|"
+                   r"d[ée]marche|cv\b|resume|r[ée]sum[ée]|translat|traduct|repair|r[ée]par|fix\b|plumber|plombier|electrician|"
+                   r"[ée]lectricien|moving|d[ée]m[ée]nag|logo|flyer|tax|imp[oô]ts|landlord|propri[ée]taire|visa|lawyer|"
+                   r"avocat|carta|abogado|traducci)", re.I)
 _SELL = re.compile(r"(kinoverse|https?://|www\.|\bprice|\btarif|\bhire\b|\bdevis\b|€|\$\s?\d|\bmy (?:services|offer)\b|"
                    r"\bje (?:vous )?propose\b|\bI can build\b|\bI build websites\b)", re.I)
 RULES = ("FRIENDSHIP (Matsy 07/11: friends first - work comes from friends, never push it):\n"
@@ -202,6 +210,8 @@ def scout(force=False):
         tok = KP._bsky_session()[0]
         for k in range(2):
             found += _bsky(BSKY_Q[(qi * 2 + k) % len(BSKY_Q)], tok)
+        for k in range(2):                     # 2026-11-12: two help-hunt searches every round
+            found += _bsky(HELP_Q[(qi * 2 + k) % len(HELP_Q)], tok)
     except Exception as e:
         _log("bsky scout failed: %s" % str(e)[:150])
     for k in range(2):
@@ -262,7 +272,11 @@ def first(who, where, url, text):
             return "not sent - you already wrote to %s and they did not answer; you do not write again" % who
     except Exception:
         pass
-    if len(met_today()) >= NEW_PER_DAY:
+    _mt = met_today()
+    if _asked(url):                                        # someone who asked for help: their own allowance
+        if sum(1 for m in _mt if m.get("asked")) >= HELP_PER_DAY:
+            return "not sent - you answered %d people who asked for help today; more tomorrow" % HELP_PER_DAY
+    elif sum(1 for m in _mt if not m.get("asked")) >= NEW_PER_DAY:
         return "not sent - you met %d new people today; that is enough, more tomorrow" % NEW_PER_DAY
     if _asked(url) and re.search(r"https?://|www\.", str(text or "")):
         return "not sent - even to someone who asked, a first word carries no link; say what you do, they ask for more"
@@ -275,7 +289,8 @@ def first(who, where, url, text):
 def met(who, where, url, text):
     with _LK:
         d = _load()
-        d["met"] = (d["met"] + [{"t": time.time(), "who": who, "where": where, "url": url, "text": str(text)[:300]}])[-300:]
+        _ak = any(c["url"] == url and c.get("asked") for c in d["cands"])
+        d["met"] = (d["met"] + [{"t": time.time(), "who": who, "where": where, "url": url, "text": str(text)[:300], "asked": _ak}])[-300:]
         d["cands"] = [c for c in d["cands"] if c["url"] != url and c["who"] != who]
         _save(d)
     # 2026-11-07: the posted text is noted by kino_post itself (after his reread) - the draft is not a second memory

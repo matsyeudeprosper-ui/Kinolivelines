@@ -358,7 +358,7 @@ def due(person, ctx, now=None):
         # 2026-11-12 (Pekos chat): a queued client hunt sat in next_task for 1.5 h (rest gap, day caps) and every due
         # mission waited behind it - a person's 9 EUR job and a promised reply. His own routine yields to people.
         _nt0 = d.get("next_task") or {}
-        _yield = bool(_nt0) and (_nt0.get("care") in ("friends", "cards", "lab", "wall")
+        _yield = bool(_nt0) and (_nt0.get("care") in ("friends", "cards", "lab", "wall", "market")
                                  or _nt0.get("project") in ("Kinoverse", "my friends", "my profiles"))
         if _mb and (not _nt0 or _yield) and (not d.get("sessions") or now - float(_last_main(d)) >= 300):
             if _yield:
@@ -437,6 +437,16 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "can we increase friend time" -> "a little more"): 5 times a day - again 2.5 h after the last one, 10:00-22:00 France
     _lastfr = max([float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "friends"] or [0])
     # 2026-11-07 (owner: "the whole world - some countries are awake; why 10h-22h?"): around the clock, every 3 h
+    # 2026-11-12 (owner: "make himself known" - a permanent project): MARKET TIME twice a day in his waking hours
+    _lastmk = max([float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "market"] or [0])
+    if 9 <= _frh < 23 and not d.get("next_task") and now - _lastmk >= 5 * 3600:
+        try:
+            import kino_market as KMK
+            _mut(lambda dd: dd.__setitem__("next_task", {"do": KMK.MARKET_TIME, "project": "being known",
+                                                         "why": "I make myself known", "care": "market"}))
+            d = _load()
+        except Exception:
+            pass
     if not d.get("next_task") and now - _lastfr >= 3 * 3600:
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
@@ -455,7 +465,7 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "don't let the budget block his making friends and hunting - I take care of that spending until he
     # can afford it"): a friend session or a client hunt is never held back by his day budget; the rest of his work still is
     _nt = _load().get("next_task") or {}
-    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab", "wall", "missions") or "hunt" in str(_nt.get("why") or "").lower()
+    _paid_by_matsy = _nt.get("care") in ("friends", "cards", "lab", "wall", "missions", "market") or "hunt" in str(_nt.get("why") or "").lower()
     try:                                       # 2026-11-05 (owner: $3 a day for his work): the day's budget is spent - he rests
         import kino_wallet as KWa
         _al = KWa.allowance()
@@ -516,7 +526,7 @@ def due(person, ctx, now=None):
             return True
     except Exception:
         pass
-    if (d.get("next_task") or {}).get("care") in ("friends", "cards", "lab"):   # 2026-11-07: daily habits, not moods
+    if (d.get("next_task") or {}).get("care") in ("friends", "cards", "lab", "market"):   # 2026-11-07: daily habits, not moods
         return True
     open_project = any(p.get("status") == "active" for p in d.get("projects") or [])
     return want >= 0.55 or (open_project and want >= 0.4)
@@ -535,7 +545,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|bench_add|bench_find|market_note|market_boost|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -578,6 +588,8 @@ You can make things public on your own, under your own name, with nobody approvi
 - YOUR TRADING LAB (see MY LAB; rules in C:\\KinoWorld\\lab\\README.md): lab_idea ("name", "hypothesis", "why" it could work, "rule" exact, "kill" what would kill it) writes a card; lab_test ("idea", "path" your strategy file in C:\\KinoWorld\\lab\\strategies\\, "stage" quick|full) runs the bench - full only after a passed quick; lab_final ("idea", "path") = the locked months, once per idea; lab_kill ("idea", "why"); lab_board = all your ideas and verdicts.
 - friend_link ("who" @handle of a friend, "contact" their email): a friend who now writes to you by email - link them so you always know who it is.
 - friend_note ("who" @handle as in MY FRIENDS, "about" what you learned: what they do, what they care about, a thread to come back to) - your memory of a person.
+- HELPER BENCH (people ready before a mission needs them): bench_add ("name", "skill" repair|moving|cleaning|delivery|photo|translation|design|writing|typing|web|legal|accounting|tutoring|errands|other, "city", "contact" public email/form/profile/phone, "price" if shown, "source" where you found them, "about" one line, "ok" true only after a good test); bench_find ("skill", "city") - look here FIRST when a mission needs a person.
+- BEING KNOWN: market_note ("kind" answer|post|lead|sale, "channel", "text") after each thing you do to be known (posts in a MARKET TIME session are counted for you); market_boost ("post", "account", "ad_account", "budget_eur" per day, "days") - a paid boost of Kinoverse's own best post, refused while ads are OFF.
 - whatsapp_open ("who" wa:<phone>, "name" their first name, "text" your one or two sentences, "kind" update|share): opens a WhatsApp talk after 24 h of silence with an approved opener (a few cents) - only people who gave you their WhatsApp; inside 24 h use telegram with who = wa:<phone>.
 - SOCIAL MEDIA + ADS CLIENTS (services "Social media management" and "Ads management"; you post FOR them through Zernio): social_client ("name" business, "to" their email, "service" social|ads|both, "lang", "price" agreed) once they said yes - it gives THEIR page link (send it: they connect their networks there with one click each, never a password); social_post ("who" client, "text" the post in THEIR voice and language, "when" YYYY-MM-DD HH:MM their time, "image" a path or https, "nets" optional list) - waits for their yes on their page until they choose to let you post alone; tell them once a week when a batch waits; social_inbox ("who") = comments and Google reviews with no answer yet; social_reply ("who", "kind" review|comment, "id", "account", "post" for a comment, "text" - warm, short, as the business, never argue, a bad review gets an apology + an offer to fix it offline); social_report ("who") = their numbers for the monthly report; ads_accounts ("who"); ads_boost ("who", "post" Zernio post id, "account", "ad_account", "budget_eur" per day, "days") - only inside the monthly budget the CLIENT confirmed on their page; their money, so say exactly what and how much first.
 - mission ("id" a client mission, "tell" a short update for that person in their language - it lands in their chat and on their
@@ -1161,6 +1173,17 @@ def _act0(j, person, W=None):
             return KZ.ads_accounts(who)
         return KZ.boost(who, j.get("post"), j.get("account"), j.get("ad_account"), j.get("budget_eur"), j.get("days") or 7,
                         j.get("goal") or "engagement")
+    if a in ("bench_add", "bench_find", "market_note", "market_boost"):   # 2026-11-12: being known + his helper bench
+        import kino_market as KMK
+        if a == "bench_add":
+            return KMK.bench_add(j.get("name") or j.get("who"), j.get("skill"), j.get("city") or j.get("place") or "",
+                                 j.get("contact") or j.get("to") or "", j.get("price") or "", j.get("source") or j.get("url") or "",
+                                 bool(j.get("ok")), j.get("about") or "")
+        if a == "bench_find":
+            return KMK.bench_find(j.get("skill") or "", j.get("city") or j.get("place") or "")
+        if a == "market_note":
+            return KMK.note(j.get("kind") or "post", j.get("channel") or j.get("where") or "?", j.get("text") or "")
+        return KMK.boost(j.get("post"), j.get("account"), j.get("ad_account"), j.get("budget_eur") or 0, j.get("days") or 1)
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
@@ -1565,6 +1588,14 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                      "help_task", "help_ask", "help_pay", "invoice", "card", "telegram", "notify", "deploy", "site", "domain_buy"):
                 done_w.append("- step %d %s %s -> %s" % (i + 1, a, str(j.get("id") or j.get("url") or j.get("to") or "")[:90],
                                                      str(seen)[:160].replace("\n", " ")))
+                if rec.get("care") == "market" and a in ("skeet", "toot", "xpost", "social_post", "post") and "posted" in str(seen).lower()[:80]:
+                    try:
+                        import kino_market as KMK
+                        KMK.note("answer" if j.get("url") and a in ("skeet", "toot") else "post",
+                                 {"skeet": "bluesky", "toot": "mastodon", "xpost": "twitter", "post": "blog"}.get(a, "zernio"),
+                                 str(j.get("text") or j.get("content") or "")[:150])
+                    except Exception:
+                        pass
         if _doing_cids:
             doing_end(_doing_cids)
         try:
