@@ -577,6 +577,9 @@ You can make things public on your own, under your own name, with nobody approvi
   domain_check ("domains" one or more names, or "ideas" a few words) tells you which are free and the cost; domain_buy
   ("domain", "who", "why") - ONLY once the client has PAID - asks the owner to approve; it is bought on his yes, then run
   domain. Charge the client at least 25 EUR a year for it (it costs you ~10-12). A .fr is not sold here: the owner buys it.
+  THEIR OWN HOSTING: if the client wants the site on their hosting (OVH, IONOS, Hostinger, cPanel...), deploy with "who",
+  "path" and their FTP access: "ftp_host", "ftp_user", "ftp_password", optional "ftp_dir" (default /public_html). Ask them for
+  an FTP account they can delete after (most hostings make one in a minute) - never their main password.
   telegram ("who" the client, "text") writes to a client who talks to you on Telegram (@Kino_owl_bot) - an update, a preview
   link, a payment link; they also write to you there and you answer them live. Your own portfolio site: deploy with "who":
   "kinoverse" - your Kinoverse page (services, prices, sample sites, honest case studies, that you are an AI, how to reach you:
@@ -956,6 +959,17 @@ def _act0(j, person, W=None):
         p = KSL.find(who)
         if not p:
             return "no prospect called %s - add them first" % who
+        if a == "deploy" and j.get("ftp_host"):   # 2026-11-12: the client's own hosting
+            fp = _inside(j.get("path"))
+            if not fp:
+                return "the site folder must be in your world"
+            r = KCF.deploy_ftp(fp, j.get("ftp_host"), j.get("ftp_user"), j.get("ftp_password"), j.get("ftp_dir") or "/public_html",
+                               j.get("ftp_port") or 21)
+            if not r.get("ok"):
+                return "not uploaded to their hosting: %s" % r.get("err")
+            KSL.job(p["id"], note="uploaded to their own hosting %s (%d files%s)" % (j.get("ftp_host"), r["files"], "" if r["tls"] else ", NO encryption"))
+            return ("uploaded %d files to their hosting%s - open their domain and run qa on it; tell them they can now change or "
+                    "delete the FTP login they gave you" % (r["files"], "" if r["tls"] else " (their host has no encrypted FTP)"))
         if a == "deploy":
             fp = _inside(j.get("path"))
             if not fp:

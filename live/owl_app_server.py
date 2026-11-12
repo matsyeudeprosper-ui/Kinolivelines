@@ -19490,6 +19490,32 @@ LOOKUP_SYS = ("You look things up for Kino in the DATA below (an AI friend who t
               "DATA, say exactly what is missing. No advice, no opinion.")
 
 
+def _kino_domain(q, who=""):
+    """2026-11-12 (owner: "give him all abilities"): #domaine in the chat - check names / ideas, or ask the owner to buy one"""
+    try:
+        import kino_cf as _KCF, kino_hands as _KHd
+        q = str(q or "").strip()
+        m = re.match(r"(?i)(achat|achete|achète|buy)\s+(\S+)", q)
+        if m:
+            d = _KCF._dom(m.group(2))
+            chk = (_KCF.domain_check([d]) or [{}])[0]
+            if not chk.get("ok"):
+                return "%s ne peut pas être acheté ici (%s)" % (d, chk.get("why") or "pris")
+            rq = _KHd.request("Buy the domain %s for %s (%s USD first year)" % (d, who or "a client", chk.get("usd")),
+                              "asked from the chat", json.dumps({"domain": d, "who": who}), kind="domain")
+            return ("demande d'achat de %s (%s USD) envoyée au propriétaire - acheté dès son oui" % (d, chk.get("usd"))
+                    if rq else "une demande pour %s attend déjà la réponse du propriétaire" % d)
+        names = [x for x in re.split(r"[,\s]+", q) if "." in x]
+        if names:
+            return "; ".join("%s : %s" % (x["name"], ("libre, %s USD la 1re année, %s USD/an ensuite" % (x["usd"], x["renew_usd"]))
+                             if x["ok"] else ("impossible ici (%s)" % ("extension non vendue - un .fr s'achète à la main"
+                                                                         if x["why"] == "extension_not_supported" else x["why"] or "déjà pris")))
+                             for x in _KCF.domain_check(names)) or "rien à vérifier"
+        return "idées libres : " + ("; ".join("%s (%s USD/an)" % (x["name"], x["usd"]) for x in _KCF.domain_ideas(q) if x["ok"]) or "aucune")
+    except Exception as e:
+        return "vérification impossible (%s)" % str(e)[:80]
+
+
 def _kino_websearch(q):
     """2026-11-01: his '#cherche <question>' in chat - the same reading-only web his work sessions use (kino_web: a search,
     then the first pages read). The owner asked him to check his daughter's school site; he answered he had no web search."""
@@ -21921,14 +21947,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         # 2026-11-03 (owner: "think before speaking on hard questions"): he works it out the way a person does - look, see what
         # that tells him, look again where it points - up to 3 rounds, each round seeing everything found so far; the
         # message is written once he stops looking (or after the third round)
-        _lk = [(k, v) for k, v in acts if k in ("regarde", "cherche") and v][:2]
+        _lk = [(k, v) for k, v in acts if k in ("regarde", "cherche", "domaine") and v][:2]
         _found, _asked = [], set()
         _rounds = 0
         while _lk and _rounds < 3:
             _rounds += 1
             _CHAT_ACT[cid] = ("🔎 regarde…" if lang != "en" else "🔎 looking it up…") if _rounds == 1 else \
                              ("🔎 je creuse…" if lang != "en" else "🔎 digging further…")
-            _new = [(q_, _kino_websearch(q_) if k_ == "cherche" else _kino_lookup(user, c, q_)) for k_, q_ in _lk if q_ not in _asked]
+            _new = [(q_, _kino_websearch(q_) if k_ == "cherche" else _kino_domain(q_, str(user.get("id") or "")) if k_ == "domaine"
+                     else _kino_lookup(user, c, q_)) for k_, q_ in _lk if q_ not in _asked]
             _asked.update(q_ for _, q_ in _lk)
             _found += _new
             _KO._log(cid, "LOOKUP", "round %d: " % _rounds + " | ".join("%s -> %s" % (q_[:80], a_[:160]) for q_, a_ in _new))
@@ -21945,8 +21972,8 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             if not (r3 and (r3.get("say") or r3.get("acts"))):
                 break
             say, fil = r3["say"], r3["fil"] or fil
-            _lk = [(k, v) for k, v in r3["acts"] if k in ("regarde", "cherche") and v and v not in _asked][:2] if not _last else []
-            acts = [x for x in r3["acts"] if x[0] not in ("regarde", "cherche")]
+            _lk = [(k, v) for k, v in r3["acts"] if k in ("regarde", "cherche", "domaine") and v and v not in _asked][:2] if not _last else []
+            acts = [x for x in r3["acts"] if x[0] not in ("regarde", "cherche", "domaine")]
         _CHAT_ACT.pop(cid, None)
     except Exception as e:
         try:

@@ -85,6 +85,11 @@ Agir : tu peux vraiment faire des choses. Après ton message, ajoute une ligne p
 #cherche <ta recherche>         tu cherches toi-même sur le web (un moteur de recherche, puis tu lis les pages) : ton message
                                 attend ce que tu trouves, puis tu l'écris avec - pour ce qu'on ne trouve que dehors (un site,
                                 une école, une info du jour). Tu lis seulement, tu ne remplis rien en ligne.
+#domaine <noms ou mots>         tu vérifies toi-même si des noms de domaine sont libres et leur prix (ex : « barbier-viry.com
+                                barbier-viry.net », ou quelques mots pour des idées) : ton message attend la réponse. Un .fr
+                                ne s'achète pas chez toi (le propriétaire l'achète à la main). « #domaine achat <nom> » : SEULEMENT
+                                une fois que le client a payé - le propriétaire reçoit la demande et l'achat se fait sur son oui ;
+                                ton bureau met ensuite le site et le mail dessus (#travail).
 #travail <ce qu'il faut faire>  tu t'assois à ton ordinateur (ton monde) pour le faire : programmes, fichiers, web, navigateur
                                 qui remplit des formulaires et t'inscrit sur des sites, blog, GitHub, mail - ça tourne en
                                 arrière-plan, tu reviens lui dire quand c'est fait
@@ -153,7 +158,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -349,6 +354,8 @@ def parse(raw, partial=False):
             acts.append(("regarde", v))
         elif k in ("search", "web"):
             acts.append(("cherche", v))
+        elif k in ("domain",):
+            acts.append(("domaine", v))
         elif k in ("work",):
             acts.append(("travail", v))
         else:
@@ -421,7 +428,9 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "hosting with https, puts it on their domain, makes contact@their-domain land in their own inbox, and the app "
                  "takes the payment (#prix). Their DOMAIN: if they own one you connect it; a NEW one you buy in their name once "
                  "paid, the yearly fee included in your price (the buying is being switched on by the owner - if it is not on "
-                 "yet when paid, the owner buys it, never the client). So never take back a website promise for those reasons. When they want one of these: say plainly what you will do and the price, one "
+                 "yet when paid, the owner buys it, never the client); check names yourself with #domaine. If they want it on THEIR own "
+                 "hosting, your desk uploads it there with an FTP access they give (one they can delete after). So never take "
+                 "back a website promise for those reasons. When they want one of these: say plainly what you will do and the price, one "
                  "warm line, then on its own line: #prix <euros> | <the job in a few words> - the app shows a PayPal button. "
                  "Up to 9 EUR they pay AFTER, only if happy: do it right away. Above, do it once the app says it is paid; until "
                  "then keep helping for free (the writing, the advice) so they could do it themselves. One price, no haggling "

@@ -356,3 +356,52 @@ def buy_domain(domain, approved_rid, contact=None):
 def buy_status(domain):
     r = _req("GET", "accounts/%s/registrar/registrations/%s/registration-status" % (_c()["account_id"], _dom(domain)))
     return (r.get("result") or {}).get("state") or r.get("errors")
+
+
+# ---- 2026-11-12 (owner: "unless the client wants it on his own hosting account - Kino should handle that too"): upload the
+# finished site to the client's hosting by FTP (TLS first, plain FTP only if the host has no TLS). Their login is used for
+# this one upload and never written anywhere (not in a log, not in a file). SFTP is not supported yet.
+def deploy_ftp(folder, host, user, password, remote_dir="/public_html", port=21):
+    import ftplib
+    folder = os.path.realpath(str(folder or ""))
+    if not os.path.isfile(os.path.join(folder, "index.html")):
+        return {"ok": False, "err": "the folder needs an index.html"}
+    host = str(host or "").replace("ftp://", "").replace("ftps://", "").strip("/")
+    tls = True
+    try:
+        F = ftplib.FTP_TLS(timeout=40)
+        F.connect(host, int(port or 21))
+        F.login(user, password)
+        F.prot_p()
+    except Exception as e:
+        if "530" in str(e):
+            return {"ok": False, "err": "the hosting refused the login (530) - check the FTP user and password"}
+        tls = False
+        try:
+            F = ftplib.FTP(timeout=40)
+            F.connect(host, int(port or 21))
+            F.login(user, password)
+        except Exception as e2:
+            return {"ok": False, "err": "cannot connect to %s: %s" % (host, str(e2)[:120])}
+    n = 0
+    try:
+        base = "/" + str(remote_dir or "").strip("/")
+        for dp, _dn, fn in os.walk(folder):
+            rel = os.path.relpath(dp, folder).replace("\\", "/")
+            rdir = base if rel == "." else base.rstrip("/") + "/" + rel
+            cur = ""
+            for part in [p for p in rdir.split("/") if p]:
+                cur += "/" + part
+                try:
+                    F.mkd(cur)
+                except Exception:
+                    pass
+            for f in fn:
+                with open(os.path.join(dp, f), "rb") as fh:
+                    F.storbinary("STOR %s/%s" % (rdir.rstrip("/"), f), fh)
+                n += 1
+        F.quit()
+    except Exception as e:
+        return {"ok": False, "err": "upload stopped after %d files: %s" % (n, str(e)[:150])}
+    _log("FTP %s %d files -> %s%s (%s)" % (os.path.basename(folder), n, host, remote_dir, "tls" if tls else "PLAIN"))
+    return {"ok": True, "files": n, "tls": tls}
