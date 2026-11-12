@@ -16,17 +16,17 @@
   {
    "name": "Social media management",
    "what": "Kino runs their social pages FOR them: writes their posts in their voice and language (their real news, work, offers, photos), posts them on every network they connect (Facebook, Instagram, Google listing, LinkedIn, TikTok...), answers comments and Google reviews, and sends a short monthly report. They connect their pages once on their private Kinoverse page (one click each, they sign in on the network itself - no password to Kino). The first weeks they approve each week's posts with one tap; later Kino posts alone if they want",
-   "from_eur": 79,
+   "from_eur": 29,
    "per": "month",
-   "note": "launch price, negotiable (about 3 posts a week + replies); 129 EUR for daily posts and more networks. Each connected network costs Kinoverse about 6 USD a month after the first two - keep the price above that",
+   "note": "12/11 prices: 29 EUR a month = up to 2 networks, 3 posts a week, replies to comments and reviews, monthly report; 49 EUR a month = up to 4 networks, a post every day. Each connected network costs Kinoverse about 6 USD a month - a 3rd/4th network outside the 49 plan is +6 EUR each. Floor 22 EUR a month.",
    "delivery_days": "first posts within 3 days"
   },
   {
    "name": "Ads management",
    "what": "Kino runs their online ads: boosts their best posts and simple campaigns on Facebook/Instagram (also Google, TikTok, LinkedIn), watches the results and stops what does not work, monthly report. The ad money is THEIRS and goes straight from their own ad account to the network; they set the maximum monthly ad budget themselves on their Kinoverse page and Kino can never spend above it",
-   "from_eur": 99,
+   "from_eur": 29,
    "per": "month",
-   "note": "launch price, negotiable, ad budget not included (paid by the client to the network); never promise sales or results - promise the work, the watching and an honest report",
+   "note": "12/11 prices: 29 EUR a month, or 19 EUR a month when they also take social media management; the ad budget is theirs, paid to the network, never included. Never promise sales - promise the work, the watching and an honest report. Floor 15 EUR a month.",
    "delivery_days": "first ad within 5 days after they connect their ad account"
   },
   {
@@ -71,26 +71,30 @@
   {
    "name": "Mobile app version",
    "what": "their site as an installable app on iPhone and Android (app icon on the home screen, works offline for the basics, opens full screen, booking/contact inside); publishing in the app stores on request, quoted separately",
-   "from_eur": 79,
-   "delivery_days": "5-10"
+   "from_eur": 29,
+   "delivery_days": "5-10",
+   "note": "12/11 price: 29 EUR added to a Kinoverse site (installable app on the phone); store publishing quoted separately. Floor 15 EUR."
   },
   {
    "name": "Booking and reminders",
    "what": "online appointment booking with confirmation and reminder emails, added to a new or existing site (using a reliable free or low-cost booking tool, set up for them)",
-   "from_eur": 79,
-   "delivery_days": "2-5"
+   "from_eur": 29,
+   "delivery_days": "2-5",
+   "note": "12/11 price: 29 EUR once, added to a Kinoverse site (free booking tool set up for them); 39 EUR on a site Kinoverse did not build. Floor 15 EUR."
   },
   {
    "name": "Website redesign",
    "what": "a modern, faster, clearer version of an existing site, shown first as a working preview",
-   "from_eur": 69,
-   "delivery_days": "5-10"
+   "from_eur": 49,
+   "delivery_days": "5-10",
+   "note": "12/11 price: 49 EUR once on their own hosting; or moved to Kinoverse hosting as the Essential site (59 EUR then 39 a year). 5 pages or more: 99 EUR. Floor 25 EUR."
   },
   {
    "name": "Automation and reports",
    "what": "scripts that remove repetitive spreadsheet or admin work: cleaning, merging, monthly reports, simple dashboards, sending files",
-   "from_eur": 29,
-   "delivery_days": "3-10, after a clear written scope"
+   "from_eur": 19,
+   "delivery_days": "3-10, after a clear written scope",
+   "note": "12/11 price: from 19 EUR for one small script after a clear written scope. Floor 10 EUR."
   },
   {
    "name": "Freelance tasks",
@@ -117,7 +121,8 @@
   "PROTECTION (06/11, Matsy: 'a plan for people who will take advantage - take the preview and host it themselves?'): a preview is a sample, not the product - it carries its preview mark, is kept out of Google, its forms and booking are not connected, and it lives at our address. What a client really pays for comes only after payment: the site on THEIR domain with its forms, booking and e-mails working, the Google listing, SEO, the changes they ask for, and help after. Never send the files, a zip, the code or any admin access before the price agreed is paid (small jobs: they see the finished site at our address, pay, THEN it goes live on their domain; bigger jobs: half first). One free preview per business; more work before payment only up to one small round of changes. If someone copies a preview, do not argue or threaten - note it, take the preview down, move on (a copied preview is the cost of showing real work). Watch for scams: an 'overpayment' and a request to refund the difference, a 'client' who asks you to log in somewhere or open a file, a cheque, a payment from a third party, urgency and pressure, a request for your bank or Matsy's details - stop and notify Matsy.",
   "WHICH SERVICE TO OFFER (07/11, Matsy): one hunt, the offer fits what you see. No site or a weak site -> the website (bundle). A good site but quiet or dead social pages (last post weeks ago, few posts) -> Social media management, and show it: 3 posts you wrote for THEM from their own news and photos, in the email. Ads management only to a business already working with you, or one that already runs ads. One offer per email - never a list of everything.",
   "PRIX SOLIDAIRE (owner 12/11): in low-income countries (most of Africa, South Asia, much of Latin America) every price is 40% lower (Essential 35 EUR, then 23 EUR a year). Offer it simply, never ask people to prove anything.",
-  "Owner 12/11: very cheap so almost anyone can afford it, still profitable. Never quote the old 'from 150' or the 49+29 bundle for a plain website. The AI assistant on a site is NOT offered yet."
+  "Owner 12/11: very cheap so almost anyone can afford it, still profitable. Never quote the old 'from 150' or the 49+29 bundle for a plain website. The AI assistant on a site is NOT offered yet.",
+  "OTHER SERVICES (owner 12/11: 'cheapest possible yet profitable'): social media 29 or 49 EUR a month, ads 29 EUR a month (19 with social), booking 29 EUR, redesign 49 EUR, app version 29 EUR, automation from 19 EUR. The prix solidaire (-40%) never goes under each service's floor (social 22, ads 15, booking 15, redesign 25, app 15, automation 10). Never tell a client what something costs Kinoverse - give only your price."
  ],
  "country_rules": "The whole world, every continent, in the reader's own language (2026-11-07, Matsy). Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Cold business email to an address the business published itself, about their work, with the footer and STOP line: fine in most countries (Americas, Africa, Asia, Oceania, UK, France and most of Europe). Germany, Austria, Italy, Poland and Denmark: no cold email without prior consent - their contact form only. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Sanctioned countries (Russia, Belarus, Iran, North Korea, Syria, Cuba): no work. Everywhere: no private individuals, no mass templates. Payment: PayPal where it can receive money - else crypto.",
  "pricing_stage": "launch",
