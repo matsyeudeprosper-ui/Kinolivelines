@@ -12,7 +12,8 @@ COSTS = os.path.join(LIVE, "robots", "brain_costs.jsonl")
 STATE = os.path.join(LIVE, "review", "brain_auth_alarm_state.json")
 OWNER = "kino"   # the owner's Telegram is linked on the "kino" account
 WINDOW, MIN_FAILS, REPEAT = 900, 3, 3 * 3600
-AUTH_WORDS = ("authenticate", "oauth", "credit balance", "not logged in", "invalid api key", "login")
+AUTH_WORDS = ("authenticate", "oauth", "credit balance", "not logged in", "invalid api key", "login",
+              "hit your", "usage limit", "5-hour limit", "weekly limit")      # 11-12 02:06: the plan's 5-hour limit, same silence
 
 
 def _tail(path, nbytes=400000):
@@ -76,7 +77,9 @@ def main():
     down = fails >= MIN_FAILS and oks == 0
     msg = None
     if down and (not st.get("down") or now - float(st.get("told") or 0) > REPEAT):
-        what = "plus de crédit sur l'API" if "credit" in err.lower() else "la connexion Claude a expiré"
+        el = err.lower()
+        what = ("la limite d'usage Claude est atteinte (elle se remet à zéro toute seule)" if ("limit" in el and "credit" not in el)
+                else "plus de crédit sur l'API" if "credit" in el else "la connexion Claude a expiré")
         msg = ("⚠️ Kino ne peut plus réfléchir : %s (%d échecs en 15 min, aucune réussite).\n"
                "À faire : sur le serveur, ouvrir Claude Code et taper /login.\n(%s)" % (what, fails, err[:160]))
         st["told"] = now
