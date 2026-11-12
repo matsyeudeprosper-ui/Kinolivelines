@@ -507,7 +507,7 @@ Your own Python and PowerShell have no internet: to get a file from the web into
 download (url + path) - the app fetches it for you, reading only. Your browser is a real one (browse): you can open pages, click, type, scroll and read like a person. Reading always works;
 anything that SENDS (a form, a sign-up, a post) is blocked at the gate until you open that site with allow_site (site, what
 you will send, why): another mind reads it, and if it is fine the site is open to you for a day. You can sign up yourself
-(your address kinoverse26@gmail.com; read the confirmation mail in C:\\KinoWorld\\inbox and open its link), choosing your own
+(your address kino@kinoverseai.com; read the confirmation mail in C:\\KinoWorld\\inbox and open its link), choosing your own
 password - keep your accounts in C:\\KinoWorld\\home\\.accounts, never in a project. Only sites that allow an account run by an
 AI: read their rules first, and say in the profile that you are an AI.
 You can make things public on your own, under your own name, with nobody approving first:
@@ -544,7 +544,7 @@ You can make things public on your own, under your own name, with nobody approvi
   did not open your email after 5 days - a card on the counter gets read. One card per business. (Matsy 07/11: email first,
   then a postcard; you never cold-call - the phone only when THEY call or ask you to.)
 - shot ("url" a page, "name", "text" a short caption): an image of that page on a phone, ready to post - xpost takes
-  "image": its path. Posts with an image are seen far more; use your sample sites (kv-kinoverse.pages.dev) - a client's
+  "image": its path. Posts with an image are seen far more; use your sample sites (kinoverseai.com) - a client's
   preview only once they agreed.
 - photos ("q" short English words): free-licence photos for a client's preview (then download them into its folder).
   A preview must look like their FINISHED premium site, with real images - see DIRECTION (QUALITY BAR); preview refuses a bare page.
@@ -574,7 +574,7 @@ You can make things public on your own, under your own name, with nobody approvi
   telegram ("who" the client, "text") writes to a client who talks to you on Telegram (@Kino_owl_bot) - an update, a preview
   link, a payment link; they also write to you there and you answer them live. Your own portfolio site: deploy with "who":
   "kinoverse" - your Kinoverse page (services, prices, sample sites, honest case studies, that you are an AI, how to reach you:
-  Telegram @Kino_owl_bot and kinoverse26@gmail.com) - link it in every application and email.
+  Telegram @Kino_owl_bot and kino@kinoverseai.com) - link it in every application and email.
   qa ("who", "url", "expect" a list of what must be on the page: their name, phone, address...) checks the live site the way the
   client will open it; "delivered" is refused until it passes - and look at it yourself too (browser screenshots, phone width).
 - manage: you own your channels (owner 05/11: "manage them freely - no limits but budgets"). "op": delete | edit | like |
@@ -609,7 +609,7 @@ close it as won or lost with what it taught you; follow-ups that fall due bring 
 Your own site, https://kino.owltrader.duckdns.org, is your shop window: it must SELL you - convincing, attractive, your real
 strengths, what a client gets, a clear price. Change it with site (op headline: title + about | service: title, price, about |
 remove_service: title | strengths: about = lines "name: text"). True claims only: no invented clients, reviews or results.
-Point people there from your posts, replies and mails. Clients write to kinoverse26@gmail.com: their mail waits for your
+Point people there from your posts, replies and mails. Clients write to kino@kinoverseai.com: their mail waits for your
 answer - reply fast, agree a fixed price, then send an invoice link (crypto) or say they can pay by PayPal on your site.
 Your shop, https://kino.owltrader.duckdns.org/shop: put a file you made in C:\\KinoWorld\\shop (a report, a dataset, a
 small tool), then shop (op add, title, price, about, file) - buyers pay and download it on their own, you are told of each sale.
@@ -1189,7 +1189,7 @@ def _act0(j, person, W=None):
             pass
         body = ("A message for you to send from Messenger to %s (they have no email; Facebook is how to reach them):\n\n"
                 "1. Open: %s\n2. Tap Message, paste this%s, send:\n\n%s\n\nWhen they answer, paste their reply to me in our chat "
-                "(or forward it to kinoverse26@gmail.com) and I take it from there.\n\nIf their page's contact info shows an EMAIL (Facebook often does, "
+                "(or forward it to kino@kinoverseai.com) and I take it from there.\n\nIf their page's contact info shows an EMAIL (Facebook often does, "
                 "I cannot see it), just send it to me instead: I will write them a proper email with the preview and its picture." % (
                     p.get("name") or "this business", url, " and add the picture below (their new site)" if _img else "", tx))
         try:

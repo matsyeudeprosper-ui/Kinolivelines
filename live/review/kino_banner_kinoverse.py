@@ -101,7 +101,7 @@ d.text((x0, int(h * 0.30)), "I build websites & apps", font=font(96, 750), fill=
 d.text((x0, int(h * 0.30) + 112), "for small businesses.", font=font(96, 750), fill=(242, 245, 250))
 d.text((x0, int(h * 0.30) + 250), "Made for you, shown to you before you pay - and I test", font=font(40, 450), fill=(170, 182, 210))
 d.text((x0, int(h * 0.30) + 302), "trading ideas against chance, honest when it was luck.", font=font(40, 450), fill=(170, 182, 210))
-d.text((x0, int(h * 0.30) + 382), "Kino · an AI by Kinoverse  ·  kv-kinoverse.pages.dev", font=font(32, 600), fill=(157, 146, 255))
+d.text((x0, int(h * 0.30) + 382), "Kino · an AI by Kinoverse  ·  kinoverseai.com", font=font(32, 600), fill=(157, 146, 255))
 
 out = img.convert("RGB").resize((W, H), Image.LANCZOS)
 out.save(os.path.join(OUT, "kino_banner_kinoverse.png"), optimize=True)

@@ -1,4 +1,4 @@
-"""kino_mail.py (2026-11-01, owner: "we get him an email address") - Kino's own mailbox, kinoverse26@gmail.com.
+"""kino_mail.py (2026-11-01, owner: "we get him an email address") - Kino's own mailbox, kino@kinoverseai.com (read in the kinoverse26 Gmail box).
 
 Like a person with an email address: new mail arrives in his inbox (a copy goes to C:\\KinoWorld\\inbox so his hands can read
 it), it reaches him as a reason to talk or to act, and he can write. Writing to someone he has already been allowed to write to
@@ -18,6 +18,11 @@ STORE = os.path.join(HERE, "kino_mail.json")
 LOG = os.path.join(HERE, "kino_mail.log")
 _LK = threading.Lock()
 OWNER_EMAIL = "matsyeudeprosper@gmail.com"     # the owner: always allowed
+# 2026-11-12 (owner: "update all places where we have Gmail to point to the @kinoverse one"): Kino's public address is on his
+# own domain. Mail to it (and to any *@kinoverseai.com) is forwarded by Cloudflare Email Routing into the Gmail box, which IMAP
+# still reads. Sending goes through Resend SMTP (domain verified, DKIM/SPF), Gmail SMTP only as a fallback.
+PUBLIC = "kino@kinoverseai.com"
+RESEND = os.path.join(os.path.dirname(SECRET), "resend.json")
 
 
 def _log(line):
@@ -49,10 +54,7 @@ def _cred():
 
 
 def address():
-    try:
-        return _cred()["address"]
-    except Exception:
-        return None
+    return PUBLIC
 
 
 def _dec(s):
@@ -210,13 +212,26 @@ def send_now(to, subject, body, image=None, link=None, files=None):
             part.add_header("Content-Disposition", "attachment", filename=("utf-8", "", name))
             outer.attach(part)
         m = outer
-    m["From"] = "Kino <%s>" % c["address"]
     m["To"] = to
     m["Subject"] = str(subject)[:200]
-    S = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=40)
-    S.login(c["address"], c["app_password"])
-    S.sendmail(c["address"], [email.utils.parseaddr(to)[1]], m.as_string())
-    S.quit()
+    m["Reply-To"] = PUBLIC
+    rcpt = [email.utils.parseaddr(to)[1]]
+    try:
+        rk = json.load(open(RESEND, encoding="utf-8"))
+        rk = rk.get("send_key") or rk.get("api_key")
+        m["From"] = "Kino <%s>" % PUBLIC
+        S = smtplib.SMTP_SSL("smtp.resend.com", 465, timeout=40)
+        S.login("resend", rk)
+        S.sendmail(PUBLIC, rcpt, m.as_string())
+        S.quit()
+    except Exception as e:
+        _log("RESEND FAILED (%s) - via Gmail" % str(e)[:120])
+        del m["From"]
+        m["From"] = "Kino <%s>" % c["address"]
+        S = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=40)
+        S.login(c["address"], c["app_password"])
+        S.sendmail(c["address"], rcpt, m.as_string())
+        S.quit()
     item = {"t": time.time(), "to": to, "subject": str(subject)[:200], "text": str(body)[:4000],
             "files": [(f[1] if isinstance(f, (list, tuple)) else os.path.basename(f)) for f in files]}
     _mut(lambda d: d.setdefault("sent", []).append(item))
@@ -292,7 +307,7 @@ def block(lang="fr"):
           "(%s is HIS address - he is the owner of the app). Anyone else: it waits for his OK first." if en else
           "Ton adresse mail à toi : %s (la tienne - tu écris avec #email <adresse> | <sujet> | <message>). Part tout de suite vers : %s "
           "(%s est SON adresse - c'est lui le propriétaire de l'appli). Quelqu'un d'autre : ça attend d'abord son accord.") % (
-        address() or "kinoverse26@gmail.com", ", ".join(contacts()), OWNER_EMAIL)]
+        address(), ", ".join(contacts()), OWNER_EMAIL)]
     if R:
         # 2026-11-01 01:44 (watch): he only had sender + subject, said "got your reply" and could not tell what it said - a person
         # who has mail reads it: the text is part of what he knows (the owner's chats only - see the server)

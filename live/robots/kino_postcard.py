@@ -17,7 +17,7 @@ KEYS = r"C:\ProgramData\kino_secret\merci_facteur.json"
 STATE = os.path.join(HERE, "kino_postcard.json")
 LOG = os.path.join(HERE, "kino_postcard.log")
 API = "https://www.merci-facteur.com/api/1.2/prod/service/"
-EMAIL = "kinoverse26@gmail.com"
+EMAIL = "kino@kinoverseai.com"
 SENDER = {"civilite": "", "nom": "Kinoverse", "prenom": "", "societe": "Kinoverse", "adresse1": "9 B Bd des Coquibus",
           "adresse2": "", "adresse3": "", "cp": "91000", "ville": "Évry-Courcouronnes", "pays": "france", "phone": "", "email": EMAIL}
 WEEK_MAX = 5
@@ -194,7 +194,7 @@ def make(name, place_line, preview_url, qr_url, message, slug):
     d.text((380, H - 270), "Votre aperçu", font=_font(38, True), fill=(40, 40, 48))
     d.text((380, H - 220), "scannez avec l'appareil photo", font=_font(30), fill=(110, 110, 120))
     d.text((380, H - 180), "de votre téléphone", font=_font(30), fill=(110, 110, 120))
-    d.text((100, H - 60), "Kinoverse · 9 B Bd des Coquibus, 91000 Évry · STOP : kinoverse26@gmail.com", font=_font(20), fill=(130, 130, 140))
+    d.text((100, H - 60), "Kinoverse · 9 B Bd des Coquibus, 91000 Évry · STOP : kino@kinoverseai.com", font=_font(20), fill=(130, 130, 140))
     out = r"C:\KinoWorld\media"
     f, b = os.path.join(out, "carte_%s_recto.jpg" % slug), os.path.join(out, "carte_%s_verso.jpg" % slug)
     front.save(f, quality=92)

@@ -181,7 +181,7 @@ ul{margin:4px 0;padding-left:18px}li{margin:2px 0}.row{display:flex;justify-cont
         _e(p), _ago(t), max(1, round(sz / 1024))) for t, p, sz in F) if F else "<span class='sub'>Rien encore.</span>"))
     Rv = list(reversed((M.get("received") or [])[-8:]))
     Sv = list(reversed((M.get("sent") or [])[-8:]))
-    H.append("<h2>Son courrier · kinoverse26@gmail.com</h2>")
+    H.append("<h2>Son courrier · kino@kinoverseai.com</h2>")
     for x in Sv:
         H.append("<div class='card'><b>➜ %s</b> <span class='t'>à %s · %s</span><pre>%s</pre></div>" % (_e(x.get("subject")), _e(x.get("to")), _ago(x.get("t")), _e(str(x.get("text"))[:500])))
     for x in Rv:

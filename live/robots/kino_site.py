@@ -16,7 +16,7 @@ import html, json, os, re, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 CFG = os.path.join(HERE, "kino_site.json")
 BASE = "https://kino.owltrader.duckdns.org"
-EMAIL = "kinoverse26@gmail.com"
+EMAIL = "kino@kinoverseai.com"
 
 DEFAULT = {
     "headline": "I turn trading ideas into hard numbers.",

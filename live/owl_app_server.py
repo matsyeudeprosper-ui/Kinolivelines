@@ -39076,7 +39076,7 @@ class H(BaseHTTPRequestHandler):
             else:
                 _pv = _KSv.on_click(parts[1], _uav)
             self.send_response(302)
-            self.send_header("Location", _pv or "https://kv-kinoverse.pages.dev/")
+            self.send_header("Location", _pv or "https://kinoverseai.com/")
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return

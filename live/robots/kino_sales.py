@@ -49,7 +49,7 @@ def offer():
     return _j(OFFER, {})
 
 
-PORTFOLIO = "https://kv-kinoverse.pages.dev"     # 2026-11-05 (watch): his Atlas email was signed with the trading app's address
+PORTFOLIO = "https://kinoverseai.com"     # 2026-11-05 (watch): his Atlas email was signed with the trading app's address
 PORTFOLIO_FR = PORTFOLIO + "/fr/"                 # 2026-11-06 (owner: "French people land on the French version I hope?")
 
 
@@ -731,7 +731,7 @@ def stock_photos(q, n=12):
     for extra in ("&source=stocksnap,rawpixel&license=cc0", "&license_type=commercial&aspect_ratio=wide&size=large"):
         url = "https://api.openverse.org/v1/images/?q=%s&page_size=%d%s" % (urllib.parse.quote(str(q or "")[:80]), n, extra)
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Kinoverse/1.0 (https://kv-kinoverse.pages.dev)"})
+            req = urllib.request.Request(url, headers={"User-Agent": "Kinoverse/1.0 (https://kinoverseai.com)"})
             d = json.loads(urllib.request.urlopen(req, timeout=20).read().decode("utf-8"))
         except Exception as e:
             _log("PHOTOS-ERR %s %s" % (q, e))
@@ -957,7 +957,7 @@ def qa(ref, url=None, expect=None):
 # ------------------------------------------------------------------ 2026-11-05 (live run, owner watching: X and web search gave noise,
 # OpenStreetMap was the right idea but his generic fetch was refused): finding real local businesses systematically.
 # OpenStreetMap (open data, ODbL): Nominatim for the place, Overpass for the businesses. Honest User-Agent, one query at a time.
-_UA = {"User-Agent": "Kinoverse/1.0 (kinoverse26@gmail.com)"}
+_UA = {"User-Agent": "Kinoverse/1.0 (kino@kinoverseai.com)"}
 KINDS = {"hairdresser": "shop=hairdresser", "barber": "shop=hairdresser", "salon": "shop=hairdresser", "beauty": "shop=beauty",
          "nails": "shop=beauty", "restaurant": "amenity=restaurant", "cafe": "amenity=cafe", "bar": "amenity=bar",
          "bakery": "shop=bakery", "butcher": "shop=butcher", "florist": "shop=florist", "clothes": "shop=clothes",

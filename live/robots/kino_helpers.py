@@ -19,8 +19,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_helpers.json")
 LOG = os.path.join(HERE, "kino_helpers.log")
 PER_TASK, PER_MONTH = 15.0, 50.0
-PAGE_FR = "https://kv-kinoverse.pages.dev/fr/aidez-kino.html"
-PAGE_EN = "https://kv-kinoverse.pages.dev/help-kino.html"
+PAGE_FR = "https://kinoverseai.com/fr/aidez-kino.html"
+PAGE_EN = "https://kinoverseai.com/help-kino.html"
 _LK = threading.Lock()
 _FORBID = re.compile(r"(?:photo|picture|pic|film|video|vid[eé]o)\w*\W+(?:\w+\W+){0,4}?(?:person|personne|people|gens|enfant|child|"
                      r"kid|visage|face|someone|quelqu|passant|passer-?by)|suivre (?:quelqu|une personne)|"
