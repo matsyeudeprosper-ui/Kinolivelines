@@ -262,8 +262,8 @@ def send(to, subject, body, why="", files=None):
             try:                                   # 2026-11-08 (owner): their own Kino Chat link - the same conversation goes on there
                 import kino_chatapp as KCA
                 fr = bool(re.search(r"[éèàçù]|\b(bonjour|merci|vous|je|tu)\b", str(body), re.I))
-                body = str(body).rstrip() + ("\n\n--\nKino · Pour discuter avec moi à tout moment : %s" if fr else
-                                             "\n\n--\nKino · To chat with me any time: %s") % KCA.invite_link("mailto:" + a)
+                body = str(body).rstrip() + ("\n\n--\nKino · Discutons dans l'appli gratuite Kino Chat (téléphone ou ordinateur) : %s" if fr else
+                                             "\n\n--\nKino · Let's talk in the free Kino Chat app (phone or computer): %s") % KCA.invite_link("mailto:" + a)
             except Exception:
                 pass
         send_now(a, subject, body, files=files)

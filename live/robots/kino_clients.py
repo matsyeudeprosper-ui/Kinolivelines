@@ -79,8 +79,11 @@ def _kc_line(tg):
     """2026-11-08 (owner): their own Kino Chat link - the app where the same conversation goes on (only when it fits)"""
     try:
         import kino_chatapp as KCA
-        return ("KINO CHAT: if they would like an app to talk with you any time, give them THEIR personal link %s - signing up "
-                "through it, they find you there with this same conversation (Android app and web). Only when it fits, never pushed.\n\n"
+        return ("KINO CHAT IS YOUR HOME (owner 12/11: promote it as the main way to talk with you): once, early and naturally - "
+                "after the first real exchange, not in your very first line - invite them to carry on in the free Kino Chat app with "
+                "THEIR personal link %s (signing up through it, they find this same conversation there; Android app, or any "
+                "browser on iPhone and computer). One warm sentence on why it is nicer for them (everything in one place, photos, "
+                "voice, quicker answers). Said once; if they prefer to stay here, that is fine - never repeat it unless they ask.\n\n"
                 % KCA.invite_link(ckey(tg)))
     except Exception:
         return ""
