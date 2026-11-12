@@ -304,9 +304,32 @@ def who_wrote(url):
         x = next((x for x in KO._load()["pending"] if x.get("url") == url), None)
         if x:
             return x["who"], x["where"]
+        # 2026-11-12 (Pekos chat): he answered elarigent and BareMind on THEIR earlier posts (no longer candidates, no longer
+        # pending) -> author unknown -> treated as strangers -> "10 new people today" blocked three sessions of replies to
+        # two friends who had written back. The post's author is found from what they already said to him.
+        k = _author_key(url)
+        m = re.match(r"https?://([^/]+)/@([^/@]+)/", str(url or ""))
+        if m and ("@%s@%s" % (m.group(2), m.group(1))).lower() in {w.lower() for w in KO._load()["people"]}:
+            return next(w for w in KO._load()["people"] if w.lower() == ("@%s@%s" % (m.group(2), m.group(1))).lower()), "mastodon"
+        if k:
+            for who, p in KO._load()["people"].items():
+                if any(_author_key(s.get("url")) == k for s in p.get("said") or [] if s.get("dir") == "in"):
+                    return who, p.get("where") or ("bluesky" if k.startswith("did:") else "mastodon")
     except Exception:
         pass
     return None, None
+
+
+def _author_key(url):
+    """who a post belongs to, from its address: the did of an at:// uri, or host + account of a Mastodon status"""
+    u = str(url or "")
+    m = re.match(r"at://(did:[^/]+)/", u)
+    if m:
+        return m.group(1)
+    m = re.match(r"https?://([^/]+)/(?:ap/)?(?:users/([^/]+)|@([^/]+))/", u)
+    if m:
+        return "%s/%s" % (m.group(1).lower(), (m.group(2) or m.group(3)).lower())
+    return ""
 
 
 def note_about(who, about):
