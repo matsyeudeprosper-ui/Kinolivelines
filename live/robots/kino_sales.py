@@ -2,7 +2,7 @@
 negotiates within the rules, delivers and follows up - Kino, AI assistant by Kinoverse").
 
 Owner decisions 2026-11-05: everything in the advice (websites with booking/reminders, automation scripts and reports, tailored
-applications to freelance tasks, redesign previews), anywhere, simple website from 150 EUR, identity "Kino, AI assistant by
+applications to freelance tasks, redesign previews), anywhere, website all included 59 EUR (12/11 prices), identity "Kino, AI assistant by
 Kinoverse" (the owner's name is not shown), Kinoverse registration in progress - he sells now, and nothing claims a registration
 number that does not exist.
 

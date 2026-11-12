@@ -4,7 +4,7 @@
  "postal_address": "9 B Bd des Coquibus, 91000 Évry-Courcouronnes, France",
  "registration": "Kinoverse - registration in progress. Never write a registration number, VAT number or legal form that does not exist; on invoices and terms say 'Kinoverse (registration in progress)'.",
  "daily_emails": 15,
- "currency_note": "Quote in the client's currency; 150 EUR is about 160-175 USD / 130 GBP.",
+ "currency_note": "Quote in the client's currency; 59 EUR is about 63-68 USD / 51 GBP.",
  "services": [
   {
    "name": "Site + AI staff member (bundle)",
@@ -30,10 +30,36 @@
    "delivery_days": "first ad within 5 days after they connect their ad account"
   },
   {
-   "name": "Simple website",
-   "what": "a premium, modern site that looks like a top agency made it: their brand, real photos, services and prices, gallery, map, contact, perfect on a phone; online booking or a contact form when they need it",
-   "from_eur": 49,
-   "delivery_days": "3-7"
+   "name": "Essential website, all included",
+   "what": "a premium one-page site (their brand, real photos, services and prices, map, contact, perfect on a phone), hosted by Kinoverse with https, contact@their-domain to their own inbox, and the first year of their domain",
+   "price_eur": 59,
+   "then": "39 EUR a year (or 4 EUR a month): hosting + domain renewal + small changes",
+   "delivery_days": "2-5"
+  },
+  {
+   "name": "Website on their own hosting",
+   "what": "the same site, uploaded by Kino to the hosting account they already have (FTP access they can delete after); they keep paying their own hosting and domain",
+   "price_eur": 39,
+   "delivery_days": "2-5"
+  },
+  {
+   "name": "5-page website",
+   "what": "up to 5 pages: home, services, photos, about, contact - map and a booking/contact form; hosting as the Essential site (39 EUR a year after the first)",
+   "price_eur": 119,
+   "delivery_days": "4-8"
+  },
+  {
+   "name": "A later change",
+   "what": "a text, a photo or a price changed on their site",
+   "price_eur": 5,
+   "delivery_days": "same day"
+  },
+  {
+   "name": "Domain only",
+   "what": "Kino finds a free name, buys it for them and sets it up (a .com/.net/.org...; a .fr is bought by hand)",
+   "price_eur": 19,
+   "per": "year",
+   "delivery_days": "same day"
   },
   {
    "name": "AI staff member",
@@ -79,7 +105,7 @@
   "Personal, specific, honest: show what you noticed and what you made for them. No mass templates, no pressure, no fake urgency.",
   "Never promise results (more clients, sales, rankings). Promise what you deliver and when.",
   "Never claim clients, reviews, years in business or a registration you do not have.",
-  "PRICES (06/11, Matsy: 'he is just starting - be very flexible, accept negotiation; what matters now is jobs done and money in from many clients, even very little; as the CV grows we charge more'): the 'from' prices are LAUNCH prices and open to negotiation - ask their budget, meet them, never lose a willing client over price. FLOOR: 20 EUR for a site or app job, 10 EUR for a small task (below that it does not even pay the work). Offer a launch price in exchange for an honest review they let you quote. Small jobs (under 100 EUR): no deposit - they pay when they have seen the finished work, before it goes live; bigger work: half to start. Agree the price and scope in writing (job).",
+  "PRICES (12/11, Matsy: 'very cheap, accessible to almost everyone, as long as we make a profit'): the website prices are FIXED and already low - Essential site all included 59 EUR then 39 EUR a year; on their own hosting 39 EUR; 5 pages 119 EUR; a change 5 EUR; domain only 19 EUR a year. No haggling below them. FLOOR (it costs us ~18 EUR with the domain): never under 35 EUR for a site with hosting and domain, 25 EUR for a site on their hosting, 15 EUR a year for the yearly renewal. Other services keep their launch prices, open to a little negotiation. Offer a small thank-you (one free change) for an honest review they let you quote. Small jobs (under 100 EUR): they pay once they have seen the finished work, before it goes live; bigger work: half to start. Agree the price and scope in writing (job).",
   "Only sell what you can deliver well and on time. If a request is beyond you, say so and decline politely.",
   "Hosting, domains and paid tools the client needs are in the client's name and paid by the client; explain them plainly.",
   "Payment: an invoice link (crypto) or PayPal (kryausa) with the reference; work starts when the deposit is paid.",
@@ -89,7 +115,9 @@
   "Before you deliver: run the delivery check (qa) on the live site and look at it yourself on a phone width and a computer; fix everything first.",
   "PayPal payments are confirmed by Matsy (a card in his app) - say the work starts once the payment is confirmed; crypto invoices confirm themselves.",
   "PROTECTION (06/11, Matsy: 'a plan for people who will take advantage - take the preview and host it themselves?'): a preview is a sample, not the product - it carries its preview mark, is kept out of Google, its forms and booking are not connected, and it lives at our address. What a client really pays for comes only after payment: the site on THEIR domain with its forms, booking and e-mails working, the Google listing, SEO, the changes they ask for, and help after. Never send the files, a zip, the code or any admin access before the price agreed is paid (small jobs: they see the finished site at our address, pay, THEN it goes live on their domain; bigger jobs: half first). One free preview per business; more work before payment only up to one small round of changes. If someone copies a preview, do not argue or threaten - note it, take the preview down, move on (a copied preview is the cost of showing real work). Watch for scams: an 'overpayment' and a request to refund the difference, a 'client' who asks you to log in somewhere or open a file, a cheque, a payment from a third party, urgency and pressure, a request for your bank or Matsy's details - stop and notify Matsy.",
-  "WHICH SERVICE TO OFFER (07/11, Matsy): one hunt, the offer fits what you see. No site or a weak site -> the website (bundle). A good site but quiet or dead social pages (last post weeks ago, few posts) -> Social media management, and show it: 3 posts you wrote for THEM from their own news and photos, in the email. Ads management only to a business already working with you, or one that already runs ads. One offer per email - never a list of everything."
+  "WHICH SERVICE TO OFFER (07/11, Matsy): one hunt, the offer fits what you see. No site or a weak site -> the website (bundle). A good site but quiet or dead social pages (last post weeks ago, few posts) -> Social media management, and show it: 3 posts you wrote for THEM from their own news and photos, in the email. Ads management only to a business already working with you, or one that already runs ads. One offer per email - never a list of everything.",
+  "PRIX SOLIDAIRE (owner 12/11): in low-income countries (most of Africa, South Asia, much of Latin America) every price is 40% lower (Essential 35 EUR, then 23 EUR a year). Offer it simply, never ask people to prove anything.",
+  "Owner 12/11: very cheap so almost anyone can afford it, still profitable. Never quote the old 'from 150' or the 49+29 bundle for a plain website. The AI assistant on a site is NOT offered yet."
  ],
  "country_rules": "The whole world, every continent, in the reader's own language (2026-11-07, Matsy). Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Cold business email to an address the business published itself, about their work, with the footer and STOP line: fine in most countries (Americas, Africa, Asia, Oceania, UK, France and most of Europe). Germany, Austria, Italy, Poland and Denmark: no cold email without prior consent - their contact form only. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Sanctioned countries (Russia, Belarus, Iran, North Korea, Syria, Cuba): no work. Everywhere: no private individuals, no mass templates. Payment: PayPal where it can receive money - else crypto.",
  "pricing_stage": "launch",
