@@ -1468,9 +1468,23 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
         _log("%s START %s | %s" % (person, task[:150], rec["why"][:100]))
         diary("I sat down at my computer: %s" % task)
         hist = []
+        # 2026-11-12 (Pekos chat): at step 25 of 27 the steps that POSTED two replies (steps 8-9) had left hist[-18:] and the
+        # task still listed the mission as due -> he posted again, was refused, and told Pekos "nothing is posted yet".
+        # What he did in the world this session stays in front of him to the end; a missions session re-reads the due list.
+        done_w = []
         for i in range(STEPS):
-            ctx = "WHAT YOU DECIDED TO DO: %s\n\nWHAT IS ON YOUR MIND:\n%s\n\nTHIS SESSION SO FAR:\n%s\n\nStep %d of at most %d. JSON only." % (
-                task + _fx, mind[:6000], "\n".join(hist[-18:])[-12000:] or "(nothing yet)", i + 1, STEPS)
+            _task = task
+            if rec.get("care") == "missions" and "MISSIONS DUE NOW:" in task:
+                try:
+                    import kino_missions as KMr
+                    _task = task.split("MISSIONS DUE NOW:")[0] + "MISSIONS DUE NOW (re-read this step):\n" + (
+                        KMr.block() or "none left - every mission is handled for now")
+                except Exception:
+                    pass
+            ctx = "WHAT YOU DECIDED TO DO: %s\n\nWHAT IS ON YOUR MIND:\n%s\n\n%sTHIS SESSION SO FAR:\n%s\n\nStep %d of at most %d. JSON only." % (
+                _task + _fx, mind[:6000],
+                ("ALREADY DONE IN THE WORLD THIS SESSION (do not do these again):\n%s\n\n" % "\n".join(done_w[-20:])) if done_w else "",
+                "\n".join(hist[-18:])[-12000:] or "(nothing yet)", i + 1, STEPS)
             j = _step(W, ctx, log)
             if not isinstance(j, dict) or not j.get("action"):
                 # 2026-11-01 (first research session): one empty answer after a long page ended the whole session at step 6 -
@@ -1492,6 +1506,10 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                   "seen": seen[:400]}
             rec["steps"].append(st)
             hist.append("- %s | %s %s\n  -> %s" % (st["thought"], a, st["detail"][:200], seen[:1500]))
+            if a in ("toot", "skeet", "xpost", "post", "publish", "email", "mission", "outreach", "social_post", "social_reply",
+                     "help_task", "help_ask", "help_pay", "invoice", "card", "telegram", "notify", "deploy", "site", "domain_buy"):
+                done_w.append("- step %d %s %s -> %s" % (i + 1, a, str(j.get("id") or j.get("url") or j.get("to") or "")[:90],
+                                                     str(seen)[:160].replace("\n", " ")))
         try:
             if _BR.get("b"):
                 _BR.pop("b").close()

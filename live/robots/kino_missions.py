@@ -108,6 +108,24 @@ def due(now=None):
 def update(mid, tell="", status=None, note="", next_h=None):
     """his step on a mission -> a sentence for him. tell = words for the person (their chat + a push)"""
     out = {}
+    _dupmsg = ""
+    if tell:
+        _m0 = get(mid)
+        if _m0 is not None:
+            # 2026-11-12 (Pekos chat): two missions for one ask -> the same replies pasted twice, 4 min apart. A report that
+            # repeats the one still showing in this chat (each mission's LAST report - a newer one within 15 min replaces
+            # the older bubble) in the last 6 h does not go out again, and is not logged as told.
+            _lasts = []
+            for m in _load()["missions"]:
+                if m["cid"] == _m0["cid"]:
+                    T = [x for x in m["log"] if x["kind"] == "tell"]
+                    if T:
+                        _lasts.append(T[-1])
+            _dup = next((x for x in _lasts if time.time() - x["t"] < 6 * 3600 and _alike(tell, x["text"], 0.7)), None)
+            if _dup is not None:
+                _dupmsg = " - NOT sent: this chat already has the same report (%s), no need to say it twice" % _ago(_dup["t"])
+                note = ((note + " | ") if note else "") + "unsent repeat: " + str(tell)[:300]
+                tell = ""
 
     def f(d):
         m = next((x for x in d["missions"] if x["id"] == mid), None)
@@ -139,14 +157,6 @@ def update(mid, tell="", status=None, note="", next_h=None):
     if not out:
         return "no mission %s" % mid
     if tell:
-        # 2026-11-12 (Pekos chat): two missions for one ask -> the same replies pasted twice, 4 min apart. A report that
-        # repeats one already sent to this chat in the last 6 h stays in the log and does not go out again.
-        _dup = next((x for m in _load()["missions"] if m["cid"] == out["cid"] for x in m["log"]
-                     if x["kind"] == "tell" and time.time() - x["t"] < 6 * 3600 and x["t"] < time.time() - 1
-                     and _alike(tell, x["text"], 0.7)), None)
-        if _dup is not None:
-            return "mission %s: %s - NOT sent: this chat already has the same report (%s), no need to say it twice" % (
-                mid, out["status"], _ago(_dup["t"]))
         with _LK:
             try:
                 Q = json.load(open(OUTBOX, encoding="utf-8"))
@@ -156,7 +166,7 @@ def update(mid, tell="", status=None, note="", next_h=None):
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
                       "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace"))})
             json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
-    return "mission %s: %s%s" % (mid, out["status"], " - %s has your message in their chat" % (out.get("name") or "they") if tell else "")
+    return "mission %s: %s%s" % (mid, out["status"], (" - %s has your message in their chat" % (out.get("name") or "they")) if tell else _dupmsg)
 
 
 def drain():
