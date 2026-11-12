@@ -25817,6 +25817,11 @@ def _urge_tick():
                                          kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.LAB_TIME,
                                                  "project": "my trading lab", "lane": "lab", "care": "lab",
                                                  "why": "my trading lab"}, daemon=True).start()
+                    if pm == "kino" and _KWk.mission_now(now):   # 2026-11-12 (owner: "it feels slow"): people's jobs, own lane
+                        threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
+                                         kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.mission_task(),
+                                                 "project": "client missions", "lane": "mis", "care": "missions",
+                                                 "why": "people count on me"}, daemon=True).start()
                 except Exception:
                     pass
                 if pm == "kino" and now - _MAIL_T.get("t", 0) > 300:   # 2026-11-01 (kino_mail): his mailbox, every 5 min
@@ -26962,11 +26967,11 @@ def chat_get(user, cid, ui=""):
     try:                                             # 2026-11-12 (owner: a live line of what Kino is doing on their job)
         _dg = json.load(open(os.path.join(DIR, "robots", "kino_doing.json"), encoding="utf-8")).get(c["id"])
         c["doing"] = _dg if _dg and time.time() - float(_dg.get("t") or 0) < 240 else None
-        if not c["doing"]:
-            import kino_missions as _KMq
-            _q = [m for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and m["status"] in _KMq.OPEN
-                  and not m.get("log") and not m.get("repeat_h")]
-            c["doing_q"] = len(_q)
+        import kino_missions as _KMq                 # 2026-11-12 (owner: "no estimate, it leaves him with questions"): job cards
+        c["jobs"] = [{"id": m["id"], "title": m.get("title") or "", "stage": m.get("stage") or "",
+                      "new": not m.get("log"), "eta": int(float(m.get("next_t") or 0)), "status": m["status"],
+                      "watch": bool(m.get("repeat_h")), "t": int(m["t"])}
+                     for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and m["status"] in _KMq.OPEN][-3:]
     except Exception:
         c["doing"] = None
     try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood

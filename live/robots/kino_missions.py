@@ -105,8 +105,19 @@ def due(now=None):
     return [m for m in _load()["missions"] if m["status"] in OPEN and float(m.get("next_t") or 0) <= now]
 
 
-def update(mid, tell="", status=None, note="", next_h=None):
-    """his step on a mission -> a sentence for him. tell = words for the person (their chat + a push)"""
+def update(mid, tell="", status=None, note="", next_h=None, title="", stage=""):
+    """his step on a mission -> a sentence for him. tell = words for the person (their chat + a push).
+    title / stage (2026-11-12, owner: "the client has no estimate, it leaves him with questions"): the job card they see -
+    a short name of the job and where it stands, in their language; next_t is the "next update around" time on it."""
+    if title or stage:
+        def _ts(d):
+            m = next((x for x in d["missions"] if x["id"] == mid), None)
+            if m is not None:
+                if title:
+                    m["title"] = " ".join(str(title).split())[:60]
+                if stage:
+                    m["stage"] = " ".join(str(stage).split())[:110]
+        _mut(_ts)
     out = {}
     _dupmsg = ""
     if tell:
@@ -210,8 +221,15 @@ def chat_line(uid):
         return ""
     # 2026-11-12 (Pekos chat): "open" read as "my desk is opening the files now" four times while the job sat untouched
     # for 3.5 h. A mission nobody has worked on yet says so.
-    return "; ".join("%s \"%s\" - %s%s" % (m["id"], m["what"][:120], m["status"],
-                                          (", last: " + m["log"][-1]["text"][:140]) if m["log"] else
-                                          (" - QUEUED, NOT STARTED YET (waiting %s for your next work session; nothing has been "
-                                           "opened or sent - never say it is being done right now)" % _ago(m["t"]).replace(" ago", "")
-                                           if m["status"] in OPEN else "")) for m in M[-6:])
+    # 2026-11-12: their job card shows the stage and "next update around HH:MM" - what he says matches it
+    def _nx(m):
+        if m["status"] not in OPEN:
+            return ""
+        mins = (float(m.get("next_t") or 0) - time.time()) / 60
+        return (" | their card says: \"%s\", next update %s" % (m.get("stage") or "in progress",
+                                                               "in about %d min" % mins if mins > 2 else "now"))
+    return "; ".join("%s \"%s\" - %s%s%s" % (m["id"], m["what"][:120], m["status"],
+                                            (", last: " + m["log"][-1]["text"][:140]) if m["log"] else
+                                            (" - JUST RECEIVED, starts within minutes (nothing found or sent yet - say what comes "
+                                             "next and when, never that it is done)" if m["status"] in OPEN else ""),
+                                            _nx(m)) for m in M[-6:])

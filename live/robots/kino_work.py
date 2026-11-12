@@ -25,7 +25,7 @@ WORLD = r"C:\KinoWorld"
 STORE = os.path.join(HERE, "kino_work.json")
 LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
-_BUSY = {"on": False, "lab": False}          # 2026-11-07 (owner: "multitask - advantage of being an AI"): two lanes
+_BUSY = {"on": False, "lab": False, "mis": False}          # 2026-11-07 (owner: "multitask - advantage of being an AI"): two lanes
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
 SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): his paced work budget is what limits him now (was 10; 12 empty sessions used it up by noon)
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
@@ -110,8 +110,17 @@ MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to
                 "something new and useful appears (otherwise mission with no tell, status watching). "
                 "LIVE LINE (the person watches you work, like a friend over your shoulder): in EVERY step's JSON add \"for\": "
                 "the mission id this step serves, and \"doing\": what you are doing right now for them, 4-10 words, in THEIR "
-                "language, present tense, concrete and a little lively (\"Je compare les avis de 3 réparateurs à Draveil\", "
-                "\"Reading Ageps's site for a quote form\") - never internal words (step, JSON, tool names, Matsy).")
+                "language, present tense, about THEIR result and a little magic, never the method (\"Je repère les "
+                "réparateurs les mieux notés autour de toi\", \"Je compare leurs avis et leurs délais\") - never a site name, a "
+                "tool, a search, step, JSON or Matsy. "
+                "THE JOB CARD they see in their chat: in your mission action also give \"title\" (the job in 2-5 words, their "
+                "language: \"Réparateur lave-linge\") once, and \"stage\" (where it stands, one short line, their language, "
+                "results not methods: \"4 réparateurs repérés, je sélectionne les plus réactifs\") every time it moves; and "
+                "ALWAYS next_h while you are on it (0.5-3 h - the card says 'next update around HH:MM', and you keep that time). "
+                "A CONCIERGE, NOT A HELPDESK: the job stays yours - never hand it back to the person ('you could call them'), "
+                "never list your limits; a closed road is the next road you take (a contact form, an email, a helper who calls "
+                "or walks in, a message on their page). In a tell: what moved, what happens next, and when - in results, with "
+                "a little mystery, never your methods (no searches, sites, files, sessions, caps, tools).")
 
 
 # 2026-11-12 (owner: "like the Claude Code terminal - even while we wait there is a line saying what he is doing; make it
@@ -264,7 +273,28 @@ def _memory_call(d, now):
 
 def _last_main(d):
     """when the main lane last started (lab sessions run in their own lane)"""
-    return max([float(x["t"]) for x in d.get("sessions") or [] if x.get("care") != "lab"] or [0])
+    return max([float(x["t"]) for x in d.get("sessions") or [] if x.get("care") not in ("lab", "missions")] or [0])
+
+
+def mission_now(now=None):
+    """2026-11-12 (owner: "it feels slow, the client feels it is not moving"): the missions lane - a person's job starts
+    within a minute or two of being due, side by side with whatever else he is doing"""
+    now = now or time.time()
+    if _BUSY["mis"]:
+        return False
+    try:
+        import kino_missions as KMIS
+        if not KMIS.due(now):
+            return False
+    except Exception:
+        return False
+    last = max([float(x["t"]) for x in _load().get("sessions") or [] if x.get("care") == "missions"] or [0])
+    return now - last >= 90
+
+
+def mission_task():
+    import kino_missions as KMIS
+    return MISSION_TIME + "\n\nMISSIONS DUE NOW:\n" + KMIS.block()
 
 
 def lab_now(now=None):
@@ -352,23 +382,7 @@ def due(person, ctx, now=None):
     _fr = time.gmtime(now + 3600)
     if _memory_call(d, now):
         return True
-    try:                                       # 2026-11-08 (owner: Kino s'en occupe): a client mission due calls him first
-        import kino_missions as KMIS
-        _mb = KMIS.block()
-        # 2026-11-12 (Pekos chat): a queued client hunt sat in next_task for 1.5 h (rest gap, day caps) and every due
-        # mission waited behind it - a person's 9 EUR job and a promised reply. His own routine yields to people.
-        _nt0 = d.get("next_task") or {}
-        _yield = bool(_nt0) and (_nt0.get("care") in ("friends", "cards", "lab", "wall", "market")
-                                 or _nt0.get("project") in ("Kinoverse", "my friends", "my profiles"))
-        if _mb and (not _nt0 or _yield) and (not d.get("sessions") or now - float(_last_main(d)) >= 300):
-            if _yield:
-                _log("MISSIONS FIRST - queued %s yields" % _nt0.get("project"))
-            _mut(lambda dd: dd.__setitem__("next_task", {"do": MISSION_TIME + "\n\nMISSIONS DUE NOW:\n" + _mb,
-                                                         "project": "client missions", "why": "people count on me",
-                                                         "care": "missions"}))
-            return True
-    except Exception:
-        pass
+    # 2026-11-12: client missions have their own lane now (mission_now / mission_task) - they never queue behind his rhythm
     try:                                       # 2026-11-07 (final review): someone answered him online - he answers first, at any
         import kino_online as KONf             # hour (their day may be our night), in a friend time (it starts with the waiting)
         if KONf.pending(24) and not d.get("next_task") and (not d.get("sessions") or now - float(_last_main(d)) >= 600):
@@ -934,7 +948,8 @@ def _act0(j, person, W=None):
         try:
             import kino_missions as KMIS
             return KMIS.update(str(j.get("id") or ""), tell=str(j.get("tell") or ""), status=j.get("status") or None,
-                               note=str(j.get("note") or ""), next_h=j.get("next_h"))
+                               note=str(j.get("note") or ""), next_h=j.get("next_h"),
+                               title=str(j.get("title") or ""), stage=str(j.get("stage") or ""))
         except Exception as e:
             return "mission update failed: %s" % e
     if a == "email":
