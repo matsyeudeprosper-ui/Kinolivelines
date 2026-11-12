@@ -22322,6 +22322,19 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                                                                             "Kino already has 3 free tasks running for you: this one waits for one to finish.")))
                 except Exception:
                     pass
+            elif k == "mission" and v and re.match(r"\s*(stop|fin|done|annule|cancel)\s+m[0-9a-f]{8}\b", str(v), re.I):
+                # 2026-11-12 (Pekos: "no need" -> Kino "I'm dropping the hunt" while the job stayed open and its card kept
+                # asking for his number): the chat can close a job - #mission stop <id> (dropped) / #mission done <id>
+                try:
+                    import kino_missions as _KMs
+                    _mm = re.match(r"\s*(\w+)\s+(m[0-9a-f]{8})", str(v), re.I)
+                    _mx = _KMs.get(_mm.group(2))
+                    if _mx and _mx.get("uid") == uid:
+                        _KMs.update(_mx["id"], status="done" if _mm.group(1).lower() in ("fin", "done") else "cancelled",
+                                    note="closed from the chat: %s" % str(v)[:120])
+                        _KO._log(cid, "MISSION", "%s closed from the chat (%s)" % (_mx["id"], _mm.group(1)))
+                except Exception:
+                    pass
             elif k == "mission" and v and (c.get("app") == "kinochat" or is_admin(user)):
                 try:
                     import kino_missions as _KMs

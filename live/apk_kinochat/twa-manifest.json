@@ -13,7 +13,7 @@
     "backgroundColor":  "#0B0F14",
     "enableNotifications":  true,
     "startUrl":  "/kinochat?v=2",
-    "iconUrl":  "https://chat.owltrader.duckdns.org/kinochat.png",
+    "iconUrl":  "https://chat.owltrader.duckdns.org/kinochat_round.png",
     "maskableIconUrl":  "https://chat.owltrader.duckdns.org/kinochat.png",
     "splashScreenFadeOutDuration":  300,
     "signingKey":  {
