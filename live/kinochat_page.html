@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr" translate="no" class="notranslate"><head><meta charset="utf-8"><meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
-<title>Kino Chat</title><link rel="manifest" href="/kinochat.webmanifest"><meta name="theme-color" content="#151b24">
+<title>Kino Chat</title><link rel="manifest" href="/kinochat.webmanifest"><link rel="icon" type="image/png" href="/kinochat_round.png"><link rel="apple-touch-icon" href="/kinochat.png"><meta name="theme-color" content="#151b24">
 <!-- 2026-11-08 (owner: "remove almost all menu - a WhatsApp kind of simple screen: write, read, call, upload pictures and docs").
      Its own light page on the SAME account and the SAME conversations as the trading app's chat (same chat_* API). -->
 <style>
@@ -886,7 +886,7 @@ function grpSend(){var t=tx.value.trim();if(!t||!GID)return;tx.value='';auto();G
  post('grp_send',{id:GID,text:t,reply:RP}).then(function(j){if(!j||!j.ok){GPEND=GPEND.filter(function(p){return p!==t});tx.value=t;auto();toast(T('Pas parti, réessaie.','Not sent, try again.'))}grpLoad().then(loop)})
  .catch(function(){GPEND=GPEND.filter(function(p){return p!==t});tx.value=t;auto();paintG(true);toast(T('Hors ligne.','Offline.'))})}
 function grpInvite(){if(!G)return;var link=location.origin+'/kinochat?g='+G.inv,txt=T('Rejoins notre groupe « ','Join our group “')+G.title+T(' » avec Kino : ','” with Kino: ')+link;
- if(navigator.share){navigator.share({title:G.title,text:txt,url:link}).catch(function(){});return}
+ if(navigator.share){navigator.share({title:G.title,text:txt}).catch(function(){});return}  // 2026-11-12: link once (text+url doubled it)
  shOpen('<h3>'+T('Inviter dans le groupe','Invite to the group')+'</h3><p>'+T('Envoie ce lien à tes amis (WhatsApp, SMS, e-mail…) :','Send this link to your friends (WhatsApp, SMS, email…):')+'</p><p style="color:var(--ink);word-break:break-all">'+esc(link)+'</p><button class="btn" id="cpy">'+T('Copier le lien','Copy the link')+'</button>');
  $('cpy').onclick=function(){try{navigator.clipboard.writeText(txt).then(function(){toast(T('Copié','Copied'))})}catch(e){}}}
 $('back').onclick=function(){grpClose()};
