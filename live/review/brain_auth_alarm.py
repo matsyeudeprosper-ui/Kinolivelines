@@ -80,8 +80,9 @@ def main():
         el = err.lower()
         what = ("la limite d'usage Claude est atteinte (elle se remet à zéro toute seule)" if ("limit" in el and "credit" not in el)
                 else "plus de crédit sur l'API" if "credit" in el else "la connexion Claude a expiré")
-        msg = ("⚠️ Kino ne peut plus réfléchir : %s (%d échecs en 15 min, aucune réussite).\n"
-               "À faire : sur le serveur, ouvrir Claude Code et taper /login.\n(%s)" % (what, fails, err[:160]))
+        todo = ("Rien à faire : attendre la remise à zéro (ou ajouter du crédit API pour qu'il continue)." if "limite" in what
+                else "À faire : sur le serveur, ouvrir Claude Code et taper /login.")
+        msg = ("⚠️ Kino ne peut plus réfléchir : %s (%d échecs en 15 min, aucune réussite).\n%s\n(%s)" % (what, fails, todo, err[:160]))
         st["told"] = now
     elif st.get("down") and not down and oks > 0:
         msg = "✅ Kino réfléchit de nouveau (%d appels réussis ces 15 dernières minutes)." % oks
