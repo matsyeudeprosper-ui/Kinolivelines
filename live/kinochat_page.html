@@ -320,10 +320,10 @@ function paint(force){if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs|
  if(!QRY)PEND.forEach(function(p){h+='<div class="m me gap"><div class="b">'+md(p)+'<span class="t">🕓</span></div></div>'});
  var th=C&&C.status==='thinking';
  if(!QRY&&C&&C.doing&&C.doing.text){var dg=C.doing,mn=Math.max(0,Math.floor((Date.now()/1000-(dg.since||dg.t))/60)),tr=(dg.trail||[]).slice(0,2);
-  h+='<div class="dg"><div class="hd"><span>'+T('Kino travaille pour toi','Kino is working for you')+'</span><span>'+(mn?mn+' min':T('à l'instant','just now'))+'</span></div>'+
+  h+='<div class="dg"><div class="hd"><span>'+T('Kino travaille pour toi','Kino is working for you')+'</span><span>'+(mn?mn+' min':T('à l\'instant','just now'))+'</span></div>'+
    (tr[1]?'<div class="tr o2">✓ '+esc(tr[1])+'</div>':'')+(tr[0]?'<div class="tr o1">✓ '+esc(tr[0])+'</div>':'')+
    '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div></div>'}
- else if(!QRY&&C&&C.doing_q>0&&!th)h+='<div class="dg"><div class="now"><span class="ic">⏳</span><span class="tr" style="white-space:normal">'+(C.doing_q>1?T(C.doing_q+' demandes dans ma liste : je m'y mets à mon prochain passage au bureau',C.doing_q+' requests in my queue: I start at my next desk time'):T('Ta demande est dans ma liste : je m'y mets à mon prochain passage au bureau','Your request is in my queue: I start at my next desk time'))+'</span></div></div>';
+ else if(!QRY&&C&&C.doing_q>0&&!th)h+='<div class="dg"><div class="now"><span class="ic">⏳</span><span class="tr" style="white-space:normal">'+(C.doing_q>1?T(C.doing_q+' demandes dans ma liste : je m\'y mets à mon prochain passage au bureau',C.doing_q+' requests in my queue: I start at my next desk time'):T('Ta demande est dans ma liste : je m\'y mets à mon prochain passage au bureau','Your request is in my queue: I start at my next desk time'))+'</span></div></div>';
  if(!QRY&&th)h+='<div class="m gap"><div class="b">'+(C.draft?md(C.draft)+' ':'')+'<span class="dots"><span></span><span></span><span></span></span>'+(C.draft?'':'<span class="thk">'+THK[Math.floor(Date.now()/4000)%THK.length]+'</span>')+'</div></div>';
  if(!h)h='<div class="empty">'+(QRY?T('Rien trouvé.','Nothing found.'):'')+'</div>';
  var nAi=(C&&C.msgs||[]).filter(function(m){return m.role==='ai'}).length;if(!atEnd&&!force&&nAi>NAI0&&NAI0)NEWN+=nAi-NAI0;NAI0=nAi;
