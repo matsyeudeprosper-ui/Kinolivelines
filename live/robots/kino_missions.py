@@ -239,7 +239,8 @@ def chat_line(uid):
         if m["status"] not in OPEN:
             return ""
         mins = (float(m.get("next_t") or 0) - time.time()) / 60
-        return (" | their card says: \"%s\", next update %s" % (m.get("stage") or "in progress",
+        # 2026-11-12 (watch): "nothing is running" while a 'waiting' job sat on Pekos's card - open = still yours, still on their card
+        return (" | STILL OPEN, its card shows in their chat: \"%s\", next update %s" % (m.get("stage") or "in progress",
                                                                "in about %d min" % mins if mins > 2 else "now"))
     return "; ".join("%s \"%s\" - %s%s%s" % (m["id"], m["what"][:120], m["status"],
                                             (", last: " + m["log"][-1]["text"][:140]) if m["log"] else
