@@ -360,7 +360,8 @@ function jobList(){var J=(C&&C.jobs||[]).slice(),dg=C&&C.doing&&C.doing.text?C.d
  if(dg&&!J.some(function(j){return j.id===dg.mid}))J.push({id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t});return J}
 function jobDock(){var el=$('jobd');if(!el)return;var J=GID?[]:jobList(),dg=C&&C.doing&&C.doing.text?C.doing:null,now=Date.now()/1000;
  if(!J.length){if(el.innerHTML)el.innerHTML='';el.className='';if(JOBSH&&$('sh').classList.contains('on'))shClose();JOBSH=false;return}
- var j0=dg?(J.filter(function(j){return j.id===dg.mid})[0]||J[0]):J[0],txt,right;
+ var Jb=J.slice().sort(function(a,b){return ((b.stage?2:0)+(b.title?1:0))-((a.stage?2:0)+(a.title?1:0))||b.t-a.t});
+ var j0=dg?(J.filter(function(j){return j.id===dg.mid})[0]||Jb[0]):Jb[0],txt,right;
  if(dg){txt=dg.text;var mn=Math.max(0,Math.floor((now-(dg.since||dg.t))/60));right='<span class="lv"></span>'+(mn?mn+' min':T('en direct','live'))}
  else{txt=j0.stage||j0.title||(j0.new?T('Reçue, je m\'y mets','Received, I\'m on it'):T('En cours','In progress'));
   right=j0.eta&&j0.eta>now+120?'⏱ '+jobHM(j0.eta):''}
