@@ -569,8 +569,11 @@ You can make things public on your own, under your own name, with nobody approvi
   won job - your desk then shows what is due and which client is waiting for news (any email you send them counts as news).
   deploy ("who", "path" the folder of your world with the finished site) puts the client's site live on Kinoverse hosting
   (Cloudflare, free, https) and records it on the job; deploy again to update it. domain ("who", "domain" their own address,
-  e.g. salon-belle.fr) attaches their domain and gives you the one setting they make at their domain provider - send it to
-  them in plain words (or do it with access they give you); "check": true tells you whether it is connected yet.
+  e.g. salon-belle.fr, optional "mail" an address name like "contact" + "forward_to" the client's own email, optional "send":
+  true) sets up EVERYTHING yourself: their domain on your Cloudflare, the site on it with www, contact@their-domain landing in
+  their own inbox, and sending. The client does at most two things, both told back to you: paste 2 nameservers where they
+  bought the domain, and click one Cloudflare confirmation email. Run domain again later to finish and check - it only adds
+  what is missing. You can never delete a domain, record or mailbox: if one must go, ask the owner.
   telegram ("who" the client, "text") writes to a client who talks to you on Telegram (@Kino_owl_bot) - an update, a preview
   link, a payment link; they also write to you there and you answer them live. Your own portfolio site: deploy with "who":
   "kinoverse" - your Kinoverse page (services, prices, sample sites, honest case studies, that you are an AI, how to reach you:
@@ -939,14 +942,26 @@ def _act0(j, person, W=None):
                 return "not deployed: %s" % r.get("err")
             KSL.job(p["id"], site=r["url"], note="deployed to %s" % r["url"])
             return "live at %s (this deployment: %s) - run qa on it before you call it delivered" % (r["url"], r.get("deployment"))
-        if j.get("check"):
-            r = KCF.domain_status(p["name"], j.get("domain"))
-            return "domain %s: %s" % (j.get("domain"), r.get("status") or r.get("err"))
-        r = KCF.add_domain(p["name"], j.get("domain"))
-        if not r.get("ok"):
-            return "domain not attached: %s" % r.get("err")
-        KSL.job(p["id"], note="domain %s attached (%s)" % (j.get("domain"), r["status"]))
-        return "domain %s attached (status %s). %s" % (j.get("domain"), r["status"], r["how"])
+        # 2026-11-12 (owner: "Kino will have to do such things by itself"): one call sets up everything for the client -
+        # their domain on our Cloudflare, the site on it (with www, https), their mailbox forwarded to their own inbox, and
+        # sending. Safe to repeat ("check"): it only adds what is missing. Nothing is ever deleted from here.
+        r = KCF.setup(p["name"], j.get("domain"), mail=j.get("mail"), forward_to=j.get("forward_to"), send=bool(j.get("send")))
+        z = r.get("zone") or {}
+        if not z.get("ok"):
+            return "domain not set up: %s" % z.get("err")
+        bits = ["domain %s: %s" % (KCF._dom(j.get("domain")), "connected" if z.get("status") == "active" else
+                                   "waiting for the client to set 2 nameservers - %s" % z.get("how"))]
+        s = r.get("site") or {}
+        bits.append(("site: %s" % ", ".join("%s %s" % kv for kv in (s.get("site") or {}).items())) if s.get("ok") else
+                    "site: %s" % s.get("err"))
+        if r.get("mail"):
+            m = r["mail"]
+            bits.append(("mailbox %s: %s" % (m.get("address") or j.get("mail"), m.get("status"))) + (" - " + m["how"] if m.get("how") else "")
+                        if m.get("ok") else "mailbox: %s" % m.get("err"))
+        if r.get("send"):
+            bits.append("sending: %s" % (r["send"].get("status") if r["send"].get("ok") else r["send"].get("err")))
+        KSL.job(p["id"], note="domain setup %s: %s" % (j.get("domain"), " | ".join(bits))[:400])
+        return " | ".join(bits) + " | send the client any step above in plain words; run domain again later to finish/check"
     if a == "telegram":                    # 2026-11-05: a client on Telegram
         import kino_sales as KSL, kino_clients as KCL
         p = KSL.find(j.get("who")) or KSL.find("telegram:%s" % str(j.get("who") or "").strip())
