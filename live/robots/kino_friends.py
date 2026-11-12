@@ -188,6 +188,15 @@ def human(prof, text, who="", name=""):
     return None
 
 
+def _fresh(at, days=5):
+    try:
+        import calendar
+        t = calendar.timegm(time.strptime(str(at)[:19], "%Y-%m-%dT%H:%M:%S"))
+        return time.time() - t < days * 86400
+    except Exception:
+        return True                            # no date known: keep (the old behaviour)
+
+
 def scout(force=False):
     """a few places read, the people worth meeting kept (newest first, 40 at most)"""
     with _LK:
@@ -219,7 +228,9 @@ def scout(force=False):
             found += _masto(*MASTO[(qi * 2 + k) % len(MASTO)])
         except Exception as e:
             _log("masto scout failed: %s" % str(e)[:150])
-    keep = [f for f in found if f["url"] and _good(f["text"], f["who"], known | met)]
+    # 2026-11-12 (second market run): Bluesky search returned asks from January - answering a months-old post looks like a
+    # bot. Only posts from the last 5 days are people to meet.
+    keep = [f for f in found if f["url"] and _fresh(f.get("at")) and _good(f["text"], f["who"], known | met)]
     try:                                       # the real-person check (Bluesky profiles in one batch; Mastodon came with the post)
         _bp = _bsky_profiles([f["who"] for f in keep if f["where"] == "bluesky"], tok) if any(f["where"] == "bluesky" for f in keep) else {}
     except Exception:
