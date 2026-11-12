@@ -1540,6 +1540,12 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
             _fx = "\n\nCARD LEADS:\n" + "\n".join("- %s (%s) emailed %s, preview %s, site %s" % (
                 p["name"], p.get("email"), time.strftime("%d/%m", time.gmtime(max(float(x["t"]) for x in p["sent"]))),
                 p.get("preview"), p.get("url")) for p in card_leads()[:10])
+        if rec.get("care") == "market":        # 2026-11-12 (first market run: "the list of people asking isn't in my brief")
+            try:
+                import kino_market as KMK
+                _fx = "\n\n" + KMK.block()
+            except Exception:
+                pass
         if rec.get("care") == "friends":       # of his mind each step reads - "nobody to meet in what I received"
             try:
                 import kino_friends as KFS

@@ -229,7 +229,25 @@ def block():
     except Exception:
         ask_s = ""
     gaps = bench_gaps()
-    return ("CHANNELS LIVE: %s\nWAITING FOR AN ACCOUNT (Matsy opens them - do not try them): %s\n"
+    try:                                       # 2026-11-12 (first run: "no real client work in view to show"): his real work
+        import kino_missions as KMs
+        W = [m for m in KMs._load()["missions"] if time.time() - m["t"] < 14 * 86400 and m.get("log")
+             and m["status"] != "cancelled" and not re.search(r"fichiers|files|bluesky|mastodon", m["what"], re.I)][-8:]
+        work = "\n".join("- %s (%s)%s" % (m["what"][:140], m["status"], (" - last: " + m["log"][-1]["text"][:160]) if m["log"] else "")
+                         for m in W)
+    except Exception:
+        work = ""
+    try:
+        import kino_sales as KSs
+        P = KSs._j(KSs.STORE, {"items": []})["items"]
+        pv = [p for p in P if p.get("preview")]
+        work += "\n- website previews built for %d businesses (e.g. %s)" % (len(pv), ", ".join(
+            str(p.get("kind") or p.get("type") or "a shop") for p in pv[:4])) if pv else ""
+    except Exception:
+        pass
+    head = ("REAL WORK YOU CAN SHOW (no names, no private details - 'a man near Paris', 'a barber'):\n" + (work or "(none yet)")
+            + "\n\n")
+    return head + ("CHANNELS LIVE: %s\nWAITING FOR AN ACCOUNT (Matsy opens them - do not try them): %s\n"
             "THIS WEEK SO FAR: %s\n\nPEOPLE ASKING FOR HELP RIGHT NOW:\n%s\n\nYOUR BENCH: %d people (%d tested OK). Skills with "
             "nobody yet: %s\nADS: %s" % (
                 ", ".join(live), ", ".join(wait) or "none",
