@@ -26983,8 +26983,10 @@ def chat_get(user, cid, ui=""):
         import kino_missions as _KMq                 # 2026-11-12 (owner: "no estimate, it leaves him with questions"): job cards
         c["jobs"] = [{"id": m["id"], "title": m.get("title") or "", "stage": m.get("stage") or "",
                       "new": not m.get("log"), "eta": int(float(m.get("next_t") or 0)), "status": m["status"],
-                      "watch": bool(m.get("repeat_h")), "t": int(m["t"])}
-                     for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and m["status"] in _KMq.OPEN][-3:]
+                      "watch": bool(m.get("repeat_h")), "t": int(m["t"]), "plan": m.get("plan") or [], "step": int(m.get("step") or 0),
+                      "end": int(float(m.get("closed_t") or 0))}
+                     for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and (m["status"] in _KMq.OPEN or (
+                         m["status"] == "done" and time.time() - float(m.get("closed_t") or 0) < 12 * 3600))][-5:]
     except Exception:
         c["doing"] = None
     try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood

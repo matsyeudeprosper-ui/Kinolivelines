@@ -105,11 +105,13 @@ def due(now=None):
     return [m for m in _load()["missions"] if m["status"] in OPEN and float(m.get("next_t") or 0) <= now]
 
 
-def update(mid, tell="", status=None, note="", next_h=None, title="", stage=""):
+def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", plan=None, step=None):
     """his step on a mission -> a sentence for him. tell = words for the person (their chat + a push).
     title / stage (2026-11-12, owner: "the client has no estimate, it leaves him with questions"): the job card they see -
     a short name of the job and where it stands, in their language; next_t is the "next update around" time on it."""
-    if title or stage:
+    # plan / step (2026-11-12, owner: "a check list - what is already done and what is left"): the job's 3-6 steps in
+    # their words, and how many are done
+    if title or stage or plan or step is not None:
         def _ts(d):
             m = next((x for x in d["missions"] if x["id"] == mid), None)
             if m is not None:
@@ -117,6 +119,13 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage=""):
                     m["title"] = " ".join(str(title).split())[:60]
                 if stage:
                     m["stage"] = " ".join(str(stage).split())[:110]
+                if isinstance(plan, list) and plan:
+                    m["plan"] = [" ".join(str(p).split())[:70] for p in plan if str(p).strip()][:6]
+                if step is not None:
+                    try:
+                        m["step"] = max(0, min(int(step), len(m.get("plan") or [])))
+                    except Exception:
+                        pass
         _mut(_ts)
     out = {}
     _dupmsg = ""
@@ -154,6 +163,10 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage=""):
         if status and status in OPEN + ("done", "stuck", "cancelled"):
             if status != m["status"]:
                 m["log"].append({"t": now, "kind": "status", "text": status})
+                if status in ("done", "stuck", "cancelled"):
+                    m["closed_t"] = now
+                    if status == "done" and m.get("plan"):
+                        m["step"] = len(m["plan"])
             m["status"] = status
         if next_h is not None:
             try:

@@ -117,6 +117,9 @@ MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to
                 "language: \"Réparateur lave-linge\") once, and \"stage\" (where it stands, one short line, their language, "
                 "results not methods: \"4 réparateurs repérés, je sélectionne les plus réactifs\") every time it moves; and "
                 "ALWAYS next_h while you are on it (0.5-3 h - the card says 'next update around HH:MM', and you keep that time). "
+                "And a CHECKLIST on the card: \"plan\" = the job's 3-6 steps in their language, results not methods "
+                "([\"Trouver les réparateurs proches\", \"Comparer avis et prix\", \"Obtenir 2 devis\", \"Réserver la visite\"]) "
+                "the first time, and \"step\" = how many of them are done, every time it moves. "
                 "CONTACT FORMS for their job: you are the contact - your own email (kino@kinoverseai.com), as their "
                 "assistant, their first name and the need; in allow_site say it is for mission <id>. A form that "
                 "demands their phone or address: ask them ONCE in the job's tell ('je peux donner ton numéro à X pour qu'il "
@@ -953,7 +956,9 @@ def _act0(j, person, W=None):
             import kino_missions as KMIS
             return KMIS.update(str(j.get("id") or ""), tell=str(j.get("tell") or ""), status=j.get("status") or None,
                                note=str(j.get("note") or ""), next_h=j.get("next_h"),
-                               title=str(j.get("title") or ""), stage=str(j.get("stage") or ""))
+                               title=str(j.get("title") or ""), stage=str(j.get("stage") or ""),
+                               plan=j.get("plan") if isinstance(j.get("plan"), list) else None,
+                               step=j.get("step") if isinstance(j.get("step"), (int, float)) else None)
         except Exception as e:
             return "mission update failed: %s" % e
     if a == "email":

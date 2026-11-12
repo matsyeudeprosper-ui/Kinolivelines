@@ -73,7 +73,16 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 #jobd .jr{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--mut);font-size:11.5px}
 #jobd .jc{flex:none;color:var(--mut);font-size:14px}
 #jobd .lv{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:lvp 1.4s ease-in-out infinite}
-#jobsb .dg{max-width:none;margin:8px 0}
+#jobsb .dg{max-width:none;margin:8px 0;animation:none}
+.dg .cl{margin:6px 0 2px;display:flex;flex-direction:column;gap:3px}
+.dg .ci{display:flex;gap:8px;align-items:baseline;font-size:13px;color:var(--mut)}
+.dg .ci b{width:14px;flex:none;text-align:center;font-weight:700}
+.dg .ci.d b{color:var(--acc)}.dg .ci.d{opacity:.75}
+.dg .ci.n{color:var(--ink);font-weight:600}.dg .ci.n b{color:var(--acc);font-size:16px;line-height:1;animation:lvp 1.6s ease-in-out infinite}
+.dg .ci.w{opacity:.55}
+.dg.dn{opacity:.8;border-style:dashed}.dg.dn .jf{color:var(--acc)}
+.dg .bar.pg{position:relative}.dg .bar.pg s{position:absolute;left:0;top:0;bottom:0;background:var(--acc);border-radius:3px;transition:width .6s}
+.dg .bar.pg i{position:relative}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-8deg)}}
 @keyframes blink{50%{opacity:0}}
 footer{display:flex;align-items:flex-end;gap:8px;padding:8px 10px;padding-bottom:max(10px,env(safe-area-inset-bottom));background:var(--bg)}
@@ -340,26 +349,36 @@ function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='fil
 // its name, where it stands, the next update time; while Kino works on it, the live lines play inside it
 function jobHM(t){var d=new Date(t*1000),n=new Date(),hm=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
  return d.toDateString()===n.toDateString()?hm:(T('demain ','tomorrow ')+hm)}
-function jobCards(){var J=(C.jobs||[]),dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.now()/1000;
+function jobCards(){var J=(C.jobs||[]).slice().sort(function(a,b){return (a.status==='done'?1:0)-(b.status==='done'?1:0)}),dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.now()/1000;
  if(dg&&!J.some(function(j){return j.id===dg.mid}))J=J.concat([{id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t}]);
  J.forEach(function(j){var live=dg&&dg.mid===j.id,mn=live?Math.max(0,Math.floor((now-(dg.since||dg.t))/60)):0,tr=live?(dg.trail||[]).slice(0,2):[];
   var stage=j.stage||(j.new?T('Reçue, je m\'y mets','Received, I\'m on it'):T('En cours','In progress'));
   var foot=live?('<span class="lv"></span>'+T('en direct','live')+(mn?' · '+mn+' min':'')):
    (j.watch?T('Je veille, je te préviens dès qu\'il y a du nouveau','I keep watch and tell you as soon as there is news'):
     (j.eta&&j.eta>now+120?T('Prochain point vers ','Next update around ')+jobHM(j.eta):T('Je m\'y mets maintenant','Starting now')));
-  out+='<div class="dg'+(live?' on':'')+'"><div class="hd"><span>'+esc(j.title||T('Ta demande','Your request'))+'</span><span class="jf">'+foot+'</span></div>'+
-   '<div class="st2">'+esc(stage)+'</div>'+
+  var P=j.plan||[],st=Math.min(j.step||0,P.length),done=j.status==='done';
+  if(done){foot='✔ '+T('Terminé','Done')+(j.end?' · '+jobHM(j.end):'');st=P.length}
+  // 2026-11-12 (owner: "a check list - what is already done and what is left"): ✓ done, ● now, ○ next
+  var cl=P.length?'<div class="cl">'+P.map(function(p,i){var k=i<st?'d':(i===st?'n':'w');
+    return '<div class="ci '+k+'"><b>'+(k==='d'?'✓':(k==='n'?'●':'○'))+'</b>'+esc(p)+'</div>'}).join('')+'</div>':'';
+  var pct=P.length?Math.round(100*st/P.length):0;
+  out+='<div class="dg'+(live?' on':'')+(done?' dn':'')+'"><div class="hd"><span>'+esc(j.title||T('Ta demande','Your request'))+'</span><span class="jf">'+foot+'</span></div>'+
+   (done&&P.length?'':'<div class="st2">'+esc(stage)+'</div>')+cl+
    (live?((tr[1]?'<div class="tr o2">✓ '+esc(tr[1])+'</div>':'')+(tr[0]?'<div class="tr o1">✓ '+esc(tr[0])+'</div>':'')+
     '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div>'):'')+
-   '<div class="bar"><i></i></div></div>'});
+   (done?'':(P.length?'<div class="bar pg"><s style="width:'+pct+'%"></s>'+(live?'<i></i>':'')+'</div>':'<div class="bar"><i></i></div>'))+'</div>'});
  return out}
 // 2026-11-12 (owner: "like the Claude Code terminal - sticky near the text box, visible even when we talk about something
 // else; with 2 missions one summary line '2 tâches en cours'; tap it and a panel slides up with the details")
 var JOBSH=false;
 function jobList(){var J=(C&&C.jobs||[]).slice(),dg=C&&C.doing&&C.doing.text?C.doing:null;
  if(dg&&!J.some(function(j){return j.id===dg.mid}))J.push({id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t});return J}
-function jobDock(){var el=$('jobd');if(!el)return;var J=GID?[]:jobList(),dg=C&&C.doing&&C.doing.text?C.doing:null,now=Date.now()/1000;
- if(!J.length){if(el.innerHTML)el.innerHTML='';el.className='';if(JOBSH&&$('sh').classList.contains('on'))shClose();JOBSH=false;return}
+var JOBDL='',JOBLAST='';
+function jobDock(){var el=$('jobd');if(!el)return;var JA=GID?[]:jobList(),dg=C&&C.doing&&C.doing.text?C.doing:null,now=Date.now()/1000;
+ var J=JA.filter(function(j){return j.status!=='done'}),D=JA.filter(function(j){return j.status==='done'&&now-(j.end||0)<7200});
+ if(!J.length&&D.length){var hd='<span class="ic">✔</span><span class="jl"><b>'+esc(D[0].title||T('Ta demande','Your request'))+'</b> · '+T('Terminé','Done')+'</span><span class="jc">⌃</span>';
+  if(hd!==JOBDL){el.innerHTML=hd;JOBDL=hd}el.className='on';if(!el.onclick)el.onclick=jobOpen;jobPanel();return}
+ if(!J.length){if(JOBDL){el.innerHTML='';JOBDL=''}el.className='';if(JOBSH&&$('sh').classList.contains('on'))shClose();JOBSH=false;return}
  var Jb=J.slice().sort(function(a,b){return ((b.stage?2:0)+(b.title?1:0))-((a.stage?2:0)+(a.title?1:0))||b.t-a.t});
  var j0=dg?(J.filter(function(j){return j.id===dg.mid})[0]||Jb[0]):Jb[0],txt,right;
  if(dg){txt=dg.text;var mn=Math.max(0,Math.floor((now-(dg.since||dg.t))/60));right='<span class="lv"></span>'+(mn?mn+' min':T('en direct','live'))}
@@ -367,9 +386,11 @@ function jobDock(){var el=$('jobd');if(!el)return;var J=GID?[]:jobList(),dg=C&&C
   right=j0.eta&&j0.eta>now+120?'⏱ '+jobHM(j0.eta):''}
  var lead=J.length>1?'<b>'+T(J.length+' tâches en cours',J.length+' tasks running')+'</b> · ':(j0.title?'<b>'+esc(j0.title)+'</b> · ':'');
  var h='<span class="ic">'+(dg?esc(dg.icon||'✨'):'🧩')+'</span><span class="jl">'+lead+'<span class="'+(dg?'tx':'')+'">'+esc(txt)+'</span></span><span class="jr">'+right+'</span><span class="jc">⌃</span>';
- if(el.innerHTML!==h)el.innerHTML=h;el.className='on'+(dg?' live':'');if(!el.onclick)el.onclick=jobOpen;
- if(JOBSH&&$('sh').classList.contains('on')){var b=$('jobsb');if(b)b.innerHTML=jobCards()}else JOBSH=false}
-function jobOpen(){JOBSH=true;shOpen('<h3>'+T('Ce que je fais pour toi','What I am doing for you')+'</h3><div id="jobsb">'+jobCards()+'</div>')}
+ // 2026-11-12 (owner: "the panel is flashing"): rewrite only when the content really changed - a rewrite restarts every animation
+ if(h!==JOBDL){el.innerHTML=h;JOBDL=h}var cn='on'+(dg?' live':'');if(el.className!==cn)el.className=cn;if(!el.onclick)el.onclick=jobOpen;
+ jobPanel()}
+function jobPanel(){if(JOBSH&&$('sh').classList.contains('on')){var b=$('jobsb'),nh=jobCards();if(b&&nh!==JOBLAST){b.innerHTML=nh;JOBLAST=nh}}else JOBSH=false}
+function jobOpen(){JOBSH=true;JOBLAST=jobCards();shOpen('<h3>'+T('Ce que je fais pour toi','What I am doing for you')+'</h3><div id="jobsb">'+JOBLAST+'</div>')}
 function paint(force){try{jobDock()}catch(e){}if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
