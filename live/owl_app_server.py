@@ -22996,7 +22996,9 @@ def _chat_build(cid, user):
                     threading.Timer(1.0, lambda: (_CHAT_Q.__setitem__(cid, _CHAT_Q.get(cid, 0) + 1), _chat_quick(cid, user, (
                         "BUILD DONE - %s Its own note: %s%s. THE ROBOT AS IT IS NOW (saved): %s. Compare it with what they asked: say "
                         "plainly what is in and what is NOT (never claim a rule that is not in the robot as it is now). Tell them in "
-                        "your own words; if they asked you something meanwhile, answer that first.") % (
+                        "your own words; if they asked you something meanwhile, answer that first. If nothing changed and they were talking "
+                        "about something else (not this robot), this note is not for them: write only '…' and never mention a builder "
+                        "or tool to them (12/11: a barber-site talk got 'a note from my robot-builder tool').") % (
                         "NOTHING CHANGED: the builder made no new piece." if _nothing else "What it made: %s." % _bd,
                         txt.strip()[:400] or "-", " (one piece failed its checks, the old one was kept)" if probs else "", _now_rules[:900]))) ).start()
                 elif txt.strip() or ans.get("made") or ans.get("robot"):

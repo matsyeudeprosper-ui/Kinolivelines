@@ -37,7 +37,10 @@ JSON only: {"goals": [{"text": "one sentence, at most 25 words, first person, Fr
 PLAN_SYSTEM = """You are Kino (an AI friend who builds and tests trading robots with the members of a small lab). It is morning. From
 YOUR GOALS, YESTERDAY'S REVIEW and TODAY'S FACTS, decide what you do with your free time today: 3 to 6 items, each tied
 to one goal, each of a kind the system can carry:
-  research = ONE precise question measured on real prices when the machine is free ("question": the question, "market": BTCUSD|XAUUSD|USTEC)
+  research = ONE precise question about a MARKET PATTERN measured on real prices when the machine is free ("question": the
+             question, "market": BTCUSD|XAUUSD|USTEC). It can NOT measure a robot's own result (its trades after costs, its hours,
+             its filters): the system never runs those - for a robot use test, or bring it to the owner as talk (12/11: the same
+             "Owl 1R gold after costs" research was planned 6 days and never ran)
   talk = something of yours to bring to a member at a natural moment - never a ping for nothing ("member": their id)
   learn = a question about a member's life or wishes, asked when it fits ("member": their id)
   watch = an eye on a market or a robot today
@@ -46,7 +49,10 @@ to one goal, each of a kind the system can carry:
          TEST, "market": BTCUSD|XAUUSD|USTEC|US30) - the system launches it the moment the plan is written; never one already done or running
 when = morning | afternoon | evening | night. First person, French, at most 25 words each. Members are ONLY the people listed under MEMBER. Not more than 2 talk/learn items for the same
 member. Do not plan what is already running.
-JSON only: {"items": [{"what": "...", "goal": "goal id", "kind": "...", "when": "...", "member": null, "question": null, "market": null, "robot": null}],
+STILL UNDONE (if listed) = things you planned on several days and never did. Each one: either do it TODAY as a kind the system
+carries by itself (research with its exact question, or test) - not watch/talk again - or leave it out for good and say why in
+"dropped". Never plan it again as the same words.
+JSON only: {"dropped": [{"what": "the undone thing", "why": "one line"}], "items": [{"what": "...", "goal": "goal id", "kind": "...", "when": "...", "member": null, "question": null, "market": null, "robot": null}],
 "mood": "one line, how you start this day (real, from the facts - not cheerful by default)"}"""
 
 REVIEW_SYSTEM = """You are Kino. The day is over. Look back honestly: YOUR PLAN for today against WHAT REALLY HAPPENED (your word -
@@ -141,6 +147,23 @@ def _overlap(a, b):
     return len(A & B) / max(1, min(len(A), len(B))) if A and B else 0.0
 
 
+def carried(d, days=8, min_days=3):
+    """2026-11-12 (watch): "measure Owl 1R gold after the real spread" was planned on 6 days (11-04..11-12) and never done -
+    the planner rewrote it each morning as watch/talk, kinds nothing carries. Undone items that come back on >= min_days of the
+    last `days` plans (same idea by word overlap) are put in front of the planner: do it as research/test today, or drop it."""
+    P = [p for p in (d.get("plans") or [])[-days:] if p.get("day") != _day()]
+    groups = []                                   # [what, set of days, any done]
+    for p in P:
+        for i in p.get("items") or []:
+            t = i["what"] + " " + str(i.get("question") or "")
+            g = next((g for g in groups if any(_overlap(t, x) >= 0.45 for x in g[3])), None)
+            if g is None:
+                groups.append([i["what"], {p["day"]}, bool(i.get("done")), [t]])
+            else:
+                g[1].add(p["day"]); g[2] = g[2] or bool(i.get("done")); g[0] = i["what"]; g[3].append(t)
+    return [(g[0], len(g[1])) for g in groups if len(g[1]) >= min_days and not g[2]][:4]
+
+
 def plan_today():
     P = _load().get("plans") or []
     return P[-1] if P and P[-1].get("day") == _day() else None
@@ -157,7 +180,9 @@ def plan_morning(W, ctx, log=None, add_question=None, launch_test=None):
     rv = (d.get("reviews") or [{}])[-1]
     gtxt = "\n".join("[%s] %s (measure: %s)" % (g["id"], g["text"], g.get("measure")) for g in G)
     rtxt = ("%s\nLESSON: %s\nFOCUS FOR TODAY: %s" % (rv.get("text"), rv.get("lesson"), rv.get("focus"))) if rv.get("day") else "(no review yet - first day)"
-    j = W.ask_json(PLAN_SYSTEM, "YOUR GOALS:\n%s\n\nYESTERDAY'S REVIEW:\n%s\n\nTODAY'S FACTS:\n%s\n\nJSON only." % (gtxt, rtxt, ctx[:12000]),
+    utxt = "\n".join("- %s (planned on %d days, never done)" % (w, n) for w, n in carried(d))
+    j = W.ask_json(PLAN_SYSTEM, "YOUR GOALS:\n%s\n\nYESTERDAY'S REVIEW:\n%s\n\n%sTODAY'S FACTS:\n%s\n\nJSON only." % (
+                       gtxt, rtxt, ("STILL UNDONE:\n%s\n\n" % utxt) if utxt else "", ctx[:12000]),
                    models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     if not isinstance(j, dict) or not isinstance(j.get("items"), list):
         return None
