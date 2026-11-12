@@ -45,7 +45,8 @@ print(f"{len(scripts)} scripts, {bad} with a syntax error")
 # the robot pages). %%PLACEHOLDERS%% are filled by the server: replaced by null for the check.
 import glob
 LIVE = os.path.dirname(SRC)
-for hp in sorted(glob.glob(os.path.join(LIVE, "owl_*page*.html"))):
+# 2026-11-12: the Kino Chat page too (a lost backslash in a quote left every chat loading forever)
+for hp in sorted(glob.glob(os.path.join(LIVE, "owl_*page*.html")) + glob.glob(os.path.join(LIVE, "kinochat_page.html"))):
     h = open(hp, encoding="utf-8-sig").read()
     sc = re.findall(r"<script(?![^>]*src)[^>]*>([\s\S]*?)</script>", h)
     nb = 0
