@@ -538,6 +538,8 @@ You can make things public on your own, under your own name, with nobody approvi
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
   help_pay ("task", "paypal" their PayPal email) sends Matsy the payment request; help_paid ("task") when he says it is paid.
+  For a CLIENT'S paid job, add "mission" (its id) to help_task: the limit is then what that client prepaid for others on the
+  job (not 15/50) - negotiate the helper's price down, the client's money is not yours to waste.
 - card ("who" a lead with a built preview, "text" your personal note in French - printed on the back, "street", "cp" 5
   digits, "city" - from their own site or listing): a REAL POSTCARD through La Poste (2.30 EUR, from your spending rules -
   see YOUR SPENDING): front = their own site on a phone, back = your note + a QR code to their preview. For the best leads who
@@ -1118,7 +1120,7 @@ def _act0(j, person, W=None):
         tid = j.get("task") or j.get("id")
         if a == "help_task":
             return KHP.task(j.get("what") or j.get("text"), j.get("why"), j.get("proof"), j.get("pay") or 0, j.get("hours") or 48,
-                            j.get("place") or "")
+                            j.get("place") or "", mission=j.get("mission") or "")
         if a == "help_ask":
             return KHP.ask(tid, j.get("who") or j.get("to"), j.get("text") or j.get("body"), W=W)
         if a == "help_accept":

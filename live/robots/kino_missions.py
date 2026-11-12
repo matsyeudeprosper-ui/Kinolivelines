@@ -45,7 +45,8 @@ def _mut(fn):
         return r
 
 
-def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repeat_h=None):
+def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repeat_h=None, budget=0.0):
+    """budget (12/11) = the part of a paid job the client prepaid for others (provider, helper, item) - Kino may spend up to it"""
     what = " ".join(str(what or "").split())[:600]
     if not what or not uid or not cid:
         return None
@@ -60,7 +61,7 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
                       and time.time() - m["t"] < 180 and not (ref and m.get("ref"))), None)
         if _same is not None:
             if ref:
-                _same.update(ref=ref, eur=float(eur or 0), paid=bool(paid))
+                _same.update(ref=ref, eur=float(eur or 0), paid=bool(paid), budget_eur=float(budget or 0))
             if what not in _same["what"]:
                 _same["what"] = (_same["what"] + " | " + what)[:900]
             return _same["id"]
@@ -69,7 +70,7 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
         mid = "m" + os.urandom(4).hex()
         M.append({"id": mid, "uid": uid, "cid": cid, "name": str(name)[:60], "lang": lang, "what": what, "ref": ref,
                   "eur": float(eur or 0), "paid": bool(paid), "status": "open", "t": time.time(), "next_t": time.time(),
-                  "repeat_h": float(repeat_h) if repeat_h else None, "log": []})
+                  "repeat_h": float(repeat_h) if repeat_h else None, "log": [], "budget_eur": float(budget or 0)})
         d["missions"] = M[-500:]
         return mid
     return _mut(f)

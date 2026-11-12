@@ -96,7 +96,7 @@ def manual(amount, what, kind="shop", method="paypal", **extra):
         d = _load()
         it = {"ref": ref, "t": time.time(), "day": time.strftime("%Y-%m-%d", time.gmtime()), "usd": amount,
               "what": str(what)[:150], "payer": "", "url": "", "status": "waiting", "kind": kind, "method": method}
-        it.update({k: v for k, v in extra.items() if k in ("cur", "uid", "cid", "lang", "name")})
+        it.update({k: v for k, v in extra.items() if k in ("cur", "uid", "cid", "lang", "name", "third")})
         d["invoices"].append(it)
         _save(d)
     return ref

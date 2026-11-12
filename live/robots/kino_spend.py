@@ -26,6 +26,9 @@ KINDS = {
     "field_task": "a small paid job by a person (photos of a shop, a delivery, a flyer round) - fair pay, safe, legal",
     "gift": "a small gift or a meal for a client or a friend",
     "service": "a tool or service Kinoverse needs (hosting, a domain, an API credit)",
+    # 2026-11-12 (owner): a client's job - money the CLIENT prepaid for others (a mover, a helper, an item). Not Kino's own money:
+    # bounded by that job's prepaid budget only, never counted in his own day/month limits.
+    "client_job": "for a paid client job: the provider, helper or item the client prepaid for (give the mission id)",
 }
 NOTIFY = None                    # set by the app: a push to Matsy's phone
 _LK = threading.Lock()
@@ -59,11 +62,27 @@ def totals(now=None):
     now = now or time.time()
     day, month = time.strftime("%Y-%m-%d", time.gmtime(now)), time.strftime("%Y-%m", time.gmtime(now))
     S = _j().get("spends") or []
+    S = [x for x in S if x.get("kind") != "client_job"]          # the client's money is not Kino's budget
     return {"day": round(sum(x["eur"] for x in S if x["day"] == day), 2),
             "month": round(sum(x["eur"] for x in S if x["day"][:7] == month), 2)}
 
 
-def check(eur, kind, what):
+def job_left(mission):
+    """what is left of a client job's prepaid budget -> (left, mission) or (None, why)"""
+    try:
+        import kino_missions as KMi
+        m = KMi.get(mission)
+    except Exception:
+        m = None
+    if not m:
+        return None, "no such client job (mission id)"
+    if not m.get("paid"):
+        return None, "the client has not paid this job yet"
+    spent = sum(x["eur"] for x in (_j().get("spends") or []) if x.get("kind") == "client_job" and x.get("mission") == mission)
+    return round(float(m.get("budget_eur") or 0) - spent, 2), m
+
+
+def check(eur, kind, what, mission=""):
     eur = float(eur or 0)
     if frozen():
         return False, "spending is switched off by Matsy"
@@ -71,6 +90,15 @@ def check(eur, kind, what):
         return False, "not an allowed kind of spending (%s)" % ", ".join(KINDS)
     if eur <= 0:
         return False, "no amount"
+    if kind == "client_job":
+        left, m = job_left(mission)
+        if left is None:
+            return False, m
+        if eur > left + 0.005:
+            return False, "over what the client prepaid for this job (%.2f EUR left) - ask the client first" % left
+        if len(str(what or "").strip()) < 8:
+            return False, "say what it is for"
+        return True, ""
     if eur > PER_PURCHASE:
         return False, "over %.0f EUR for one purchase - ask Matsy (notify)" % PER_PURCHASE
     t = totals()
@@ -83,10 +111,10 @@ def check(eur, kind, what):
     return True, ""
 
 
-def record(eur, kind, what, ref=""):
+def record(eur, kind, what, ref="", mission=""):
     now = time.time()
     rec = {"t": now, "day": time.strftime("%Y-%m-%d", time.gmtime(now)), "eur": round(float(eur), 2), "kind": kind,
-           "what": str(what)[:200], "ref": str(ref)[:120]}
+           "what": str(what)[:200], "ref": str(ref)[:120], "mission": str(mission or "")[:20]}
     with _LK:
         d = _j()
         d.setdefault("spends", []).append(rec)

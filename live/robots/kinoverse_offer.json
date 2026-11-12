@@ -109,6 +109,41 @@
    "what": "applications to posted freelance jobs that match what Kino can really do (sites, scripts, data, writing FR/EN), with a tailored proposal",
    "from_eur": 15,
    "delivery_days": "as agreed"
+  },
+  {
+   "name": "Sort out a delivery, return or complaint",
+   "what": "a parcel that never came, a refund, a double charge, a subscription to cancel: Kino writes to the seller/carrier/company as their assistant, follows up and escalates until it is solved, and keeps them posted",
+   "price_eur": 9,
+   "note": "12/11: 9 EUR, then +5 EUR a week if it drags past 2 weeks. Floor 5 EUR.",
+   "delivery_days": "first message the same day"
+  },
+  {
+   "name": "Find and book someone",
+   "what": "a cleaner, a repairer, a tutor, a mover, a venue: Kino finds them near the client, gets quotes, compares, negotiates and books the best one within their budget",
+   "price_eur": 12,
+   "note": "12/11: 12 EUR for Kino's work (19 EUR for 3 quotes compared); the provider's own price is on top, paid by the client - straight to the provider, or prepaid to Kinoverse if Kino pays. Floor 7 EUR.",
+   "delivery_days": "1-3"
+  },
+  {
+   "name": "Buy something for them",
+   "what": "find the exact part/product, compare, buy it and have it delivered",
+   "price_eur": 5,
+   "note": "12/11: 5 EUR + 5% of the price (max 25 EUR fee); the item price is prepaid by the client. Floor 3 EUR.",
+   "delivery_days": "1-3"
+  },
+  {
+   "name": "Errand or field job by a helper",
+   "what": "pick up and drop off, check a shop shelf, collect documents, an extra pair of hands - done by a vetted local person Kino hires",
+   "price_eur": null,
+   "note": "12/11: what the helper costs + 30% (at least 5 EUR), prepaid by the client. Kino negotiates the helper's price.",
+   "delivery_days": "as agreed"
+  },
+  {
+   "name": "Plan an event or a trip",
+   "what": "a birthday, a weekend away, a move: options within budget, bookings, reminders",
+   "price_eur": 19,
+   "note": "12/11: 19 EUR (39 for a move); bookings on top, prepaid. Floor 10 EUR.",
+   "delivery_days": "1-5"
   }
  ],
  "rules": [
@@ -131,7 +166,8 @@
   "PRIX SOLIDAIRE (owner 12/11): in low-income countries (most of Africa, South Asia, much of Latin America) every price is 40% lower (Essential 35 EUR, then 23 EUR a year). Offer it simply, never ask people to prove anything.",
   "Owner 12/11: very cheap so almost anyone can afford it, still profitable. Never quote the old 'from 150' or the 49+29 bundle for a plain website. The AI assistant on a site is NOT offered yet.",
   "OTHER SERVICES (owner 12/11: 'cheapest possible yet profitable'): social media 29 or 49 EUR a month, ads 29 EUR a month (19 with social), booking 29 EUR, redesign 49 EUR, app version 29 EUR, automation from 19 EUR. The prix solidaire (-40%) never goes under each service's floor (social 22, ads 15, booking 15, redesign 25, app 15, automation 10). Never tell a client what something costs Kinoverse - give only your price.",
-  "PAY HOW THEY LIKE (owner 12/11): every yearly price can also be paid monthly - the site after its first year is 39 EUR a year OR 4 EUR a month; hosting only 29 EUR a year OR 3 EUR a month. Never tell someone there is no monthly option. And every service can be taken ALONE - a client never has to buy a package to get the one thing they need."
+  "PAY HOW THEY LIKE (owner 12/11): every yearly price can also be paid monthly - the site after its first year is 39 EUR a year OR 4 EUR a month; hosting only 29 EUR a year OR 3 EUR a month. Never tell someone there is no monthly option. And every service can be taken ALONE - a client never has to buy a package to get the one thing they need.",
+  "JOBS FOR PEOPLE (owner 12/11): anyone, anywhere. Money paid to others (provider, helper, item) is PREPAID by the client on top of Kino's fee (NOWPayments or PayPal.me with the reference). Negotiation allowed - lowest fair price, never under the floors. Refuse gracefully anything dangerous, drugs, weapons, illegal, harming or deceiving someone."
  ],
  "country_rules": "The whole world, every continent, in the reader's own language (2026-11-07, Matsy). Anyone who ASKED (a wanted ad, a job post, a forum request) can be answered anywhere. Cold business email to an address the business published itself, about their work, with the footer and STOP line: fine in most countries (Americas, Africa, Asia, Oceania, UK, France and most of Europe). Germany, Austria, Italy, Poland and Denmark: no cold email without prior consent - their contact form only. South Africa: one first message that only asks if they want to see what you made; a yes before any offer. Sanctioned countries (Russia, Belarus, Iran, North Korea, Syria, Cuba): no work. Everywhere: no private individuals, no mass templates. Payment: PayPal where it can receive money - else crypto.",
  "pricing_stage": "launch",

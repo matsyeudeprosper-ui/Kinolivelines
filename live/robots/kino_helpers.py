@@ -60,24 +60,38 @@ def month_paid(d=None):
     d = d or _j()
     m = time.strftime("%Y-%m", time.gmtime())
     return round(sum(float(t.get("price") or 0) for t in d["tasks"] if t.get("status") in ("approved", "awaiting_payment", "paid")
+                     and not t.get("mission")                     # 12/11: a client-paid job is not Kino's own helpers budget
                      and time.strftime("%Y-%m", time.gmtime(float(t.get("t_accept") or t["t"]))) == m), 2)
 
 
-def task(what, why, proof, pay=0, hours=48, place=""):
+def _job_cap(mission):
+    """12/11 (owner): for a client's paid job the limit is what the client prepaid for others, not 15/50"""
+    import kino_spend as KSP
+    left, m = KSP.job_left(mission)
+    return (left, "") if left is not None else (None, m)
+
+
+def task(what, why, proof, pay=0, hours=48, place="", mission=""):
     what, why, proof = str(what or "").strip(), str(why or "").strip(), str(proof or "").strip()
     if len(what) < 15 or len(proof) < 5:
         return "a task needs what exactly to do and the proof you expect back"
     if _FORBID.search(what):
         return "not a task you can give: nothing about private people, no logins or passwords, no pretending, no fake reviews"
     pay = round(float(pay or 0), 2)
-    if pay > PER_TASK:
+    if mission:
+        cap, why2 = _job_cap(mission)
+        if cap is None:
+            return "not for that client job: %s" % why2
+        if pay > cap + 0.005:
+            return "%.2f EUR is more than the client prepaid for others on this job (%.2f left) - negotiate lower or ask the client" % (pay, cap)
+    elif pay > PER_TASK:
         return "%.0f EUR is over the %.0f EUR limit for one task - make it smaller" % (pay, PER_TASK)
 
     def f(d):
         d["n"] = int(d.get("n") or 0) + 1
         tid = "H%d" % d["n"]
         d["tasks"].append({"id": tid, "t": time.time(), "what": what[:600], "why": why[:300], "proof": proof[:300], "pay": pay,
-                           "place": str(place or "")[:120], "due": time.time() + float(hours or 48) * 3600, "status": "open",
+                           "place": str(place or "")[:120], "due": time.time() + float(hours or 48) * 3600, "status": "open", "mission": str(mission or "")[:20],
                            "asked": [], "helper": None, "price": None})
         return tid
     tid = _mut(f)
@@ -143,9 +157,15 @@ def accept(tid, helper, price=0, contact=""):
     t = _t(d, tid)
     if not t:
         return "no task %s" % tid
-    if price > PER_TASK:
+    if t.get("mission"):
+        cap, why2 = _job_cap(t["mission"])
+        if cap is None:
+            return "not for that client job: %s" % why2
+        if price > cap + 0.005:
+            return "%.2f EUR is more than the client prepaid for others on this job (%.2f left)" % (price, cap)
+    elif price > PER_TASK:
         return "%.2f EUR is over the %.0f EUR limit for one task" % (price, PER_TASK)
-    if price and month_paid(d) + price > PER_MONTH:
+    elif price and month_paid(d) + price > PER_MONTH:
         return "this month's helpers budget (%.0f EUR) would be passed - %.2f already" % (PER_MONTH, month_paid(d))
     helper = str(helper or "").strip()[:80]
 
@@ -237,7 +257,8 @@ def paid(tid):
         return "task %s is not waiting for a payment" % tid
     try:
         import kino_spend as KSP
-        KSP.record(tt["price"], "field_task", "helper %s - task %s: %s" % (tt.get("helper"), tid, tt["what"][:80]), ref=tid)
+        KSP.record(tt["price"], "client_job" if tt.get("mission") else "field_task",
+                   "helper %s - task %s: %s" % (tt.get("helper"), tid, tt["what"][:80]), ref=tid, mission=tt.get("mission") or "")
     except Exception:
         pass
     _log("PAID %s" % tid)

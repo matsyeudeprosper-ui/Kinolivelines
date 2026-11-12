@@ -17211,7 +17211,12 @@ def _chat_job_quote(cid, user, c, v):
     if not m:
         return
     eur = float(m.group(1).replace(",", "."))
-    what = (m.group(2) or "").strip(" |")[:120] or "Kino"
+    what = (m.group(2) or "").strip(" |")[:160] or "Kino"
+    # 12/11 (owner: client prepays what Kino pays others): "#prix 70 | sofa moved | tiers 50" = 50 of the 70 is for the mover/helper/item
+    _tm = re.search(r"\|?\s*(?:tiers|others?|third[- ]?part(?:y|ies)|pour d'autres|prestataire)\s*:?\s*(\d+(?:[.,]\d{1,2})?)", what, re.I)
+    third = min(eur, float(_tm.group(1).replace(",", "."))) if _tm else 0.0
+    if _tm:
+        what = (what[:_tm.start()] + what[_tm.end():]).strip(" |")[:120] or "Kino"
     if not 2 <= eur <= 500:
         return
     day = time.strftime("%Y-%m-%d", time.gmtime())
@@ -17222,7 +17227,7 @@ def _chat_job_quote(cid, user, c, v):
            and abs(float((mm.get("pay") or {}).get("eur") or 0) - eur) < 0.01 and time.time() - float(mm.get("t") or 0) < 86400
            for mm in ((_chat_load(user, cid) or c).get("msgs") or [])[-30:]):
         return
-    ref = _KPj.manual(eur, what, kind="chatjob", method="paypal", cur="EUR", uid=user.get("id"), cid=cid,
+    ref = _KPj.manual(eur, what, kind="chatjob", method="paypal", cur="EUR", uid=user.get("id"), cid=cid, third=third,
                       lang=_rc().member_lang(c, "fr"), name=user.get("name") or user.get("id"))
     url = "https://kino.owltrader.duckdns.org/pay/%s/%s" % (ref, _KSj._token(ref))
     # 2026-11-08 (owner: "pay only if satisfied" for small jobs): up to 9 EUR, Kino delivers first - unless this person
@@ -17495,7 +17500,7 @@ def _chat_job_paid(x):
         _rc()
         import kino_missions as _KMs
         _KMs.create(x["uid"], x["cid"], x.get("what"), name=x.get("name") or "", lang=x.get("lang") or "fr", ref=x["ref"],
-                    eur=float(x.get("usd") or 0), paid=True)
+                    eur=float(x.get("usd") or 0), paid=True, budget=float(x.get("third") or 0))
     except Exception:
         pass
 
