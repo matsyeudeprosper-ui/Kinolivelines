@@ -19556,6 +19556,12 @@ def _kino_lookup(user, c, q):
         D.append("ROBOTS STATE:\n" + json.dumps(_state_data(uid, c), ensure_ascii=False, default=str)[:30000])
     except Exception:
         pass
+    try:                                              # 12/11 (watch): "what did your friends say?" opened a slow mission - his own
+        import kino_friends as _KFl                   # social exchanges (in and out, last 7 days) are now right here
+        D.append("YOUR OWN SOCIAL CONVERSATIONS (Bluesky / Mastodon, last 7 days, IN = they wrote to you):\n" +
+                 "\n".join(_KFl.watch_lines(time.time() - 7 * 86400)[-60:]))
+    except Exception:
+        pass
     for u_ in [uid] + [x for x in (_person_uids(_person(uid)) or []) if x != uid]:
         try:
             nd = json.load(open(os.path.join(DIR, "nest_data", "%s.json" % u_), encoding="utf-8"))
