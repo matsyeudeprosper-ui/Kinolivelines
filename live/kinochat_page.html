@@ -808,6 +808,18 @@ function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',due=g.due?jobHM(g.due)
   (g.proof?'<div class="gp"><span>📎 '+T('Preuve attendue','Proof expected')+'</span>'+esc(g.proof)+'</div>':'')+
   (g.pay&&(st==='sent'||st==='accepted')?'<div class="gs">'+T('Payé par PayPal dès que Kino a vérifié ta preuve.','Paid by PayPal once Kino has checked your proof.')+'</div>':'')+
   foot+'</div></div>'}
+// 2026-11-13 (owner: "I don't see any card"): Kino's requests to the owner (approve / refuse) were drawn only in the
+// OwlNest app - Kino Chat shows them too; the server lets only an admin answer
+function kreqCard(m,i){var r=m.req||{},st=m.status||'waiting',em=r.kind==='email',cmd='';
+ if(r.command){try{var e=JSON.parse(r.command);cmd=em?(T('À : ','To: ')+(e.to||'')+'\n'+T('Sujet : ','Subject: ')+(e.subject||'')+'\n\n'+(e.body||'')):
+  (e.url?(T('Lien : ','Link: ')+e.url+'\n'):'')+(e.deliver_to?(T('Livraison : ','Delivery: ')+e.deliver_to):'')||r.command}catch(x){cmd=r.command}}
+ var ic=r.kind==='proposal'?'💡':r.kind==='buy'?'🛒':r.kind==='site'?'🌐':em?'✉️':'🔐';
+ return '<div class="m gap"><div class="payc kreq"><div class="pw">'+ic+' '+T('Kino te demande','Kino asks you')+'</div><div class="pt">'+esc(r.what||'')+'</div>'+
+  (r.why?'<div class="gl">'+esc(r.why)+'</div>':'')+(cmd?'<pre class="kq">'+esc(cmd)+'</pre>':'')+
+  (st!=='waiting'?'<div class="ps">'+(st==='approved'?'✅ '+T('Accepté','Approved'):'❌ '+T('Refusé','Refused'))+'</div>':
+   '<div class="pb"><button data-kq="'+esc(r.id||'')+'" data-y="1">✅ '+T('Accepter','Approve')+'</button><button class="npb" data-kq="'+esc(r.id||'')+'" data-y="0">❌ '+T('Refuser','Refuse')+'</button></div>')+'</div></div>'}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kq]');if(!b)return;b.disabled=true;
+ post('kino_req',{id:b.dataset.kq,yes:+b.dataset.y}).then(function(j){toast(j&&j.ok?T('C’est noté.','Noted.'):T('Pas possible.','Not possible.'));load(true)}).catch(function(){toast(T('Hors ligne.','Offline.'))})});
 function gigAct(tid,act,text,photo){return post('chat_gig',{tid:tid,act:act,text:text||'',photo:photo||''}).then(function(j){
  if(j&&j.ok){toast(act==='accept'?(j.status==='taken'?T('Déjà prise, désolé !','Already taken, sorry!'):T('C’est noté, merci !','Noted, thank you!')):act==='decline'?T('Pas de souci.','No problem.'):T('Preuve envoyée !','Proof sent!'));load(true)}
  else toast(j&&j.err==='accept first'?T('Accepte d’abord la mission.','Accept the task first.'):j&&j.err==='gone'?T('Cette mission n’existe plus.','This task is gone.'):T('Ça n’a pas marché','That didn’t work')+(j&&j.err?' ('+j.err+')':'')+'.')}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
