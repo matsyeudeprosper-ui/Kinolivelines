@@ -63,6 +63,10 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 @keyframes lvp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 #jobd{display:none}
+.payc.kreq .gl{font-size:13px;color:var(--mut);margin:4px 0;white-space:pre-wrap}
+.payc.kreq pre.kq{white-space:pre-wrap;font-size:12px;opacity:.85;max-height:200px;overflow:auto;margin:6px 0;padding:8px;border-radius:8px;background:rgba(127,127,127,.12)}
+.payc.kreq .pb button[data-y='1']{background:var(--acc);color:#04130a;font-weight:700}
+.payc.kreq .pb button[data-y='0']{background:transparent;border:1px solid var(--border);color:var(--mut)}
 .payc.gig .gl{font-size:13px;color:var(--mut);margin:2px 0;border:0}
 .payc.gig .pb button[data-ga],.payc.gig .pb button[data-gp]{background:var(--acc);color:#04130a;font-weight:700}
 .payc.gig .pb button[data-gd]{background:transparent;border:1px solid var(--border);color:var(--mut)}
@@ -351,8 +355,8 @@ function hm(t){var d=new Date((t||0)*1000);return String(d.getHours()).padStart(
 function dayOf(t){var d=new Date((t||0)*1000),n=new Date(),y=new Date(Date.now()-864e5);
  if(d.toDateString()===n.toDateString())return T('Aujourd’hui','Today');if(d.toDateString()===y.toDateString())return T('Hier','Yesterday');
  return d.toLocaleDateString(EN?'en-GB':'fr-FR',{weekday:'long',day:'numeric',month:'long'})}
-function shown(m){if(m.role==='user'||m.role==='image'||m.role==='doc'||(m.role==='pay'&&m.pay)||(m.role==='gig'&&m.gig)||(m.role==='file'&&m.file)||(m.role==='remind'&&m.what))return true;return m.role==='ai'&&(m.text||'').trim()}
-function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='gig')return gigCard(m,i);if(m.role==='file')return fileCard(m,i);if(m.role==='remind')return remindPill(m);var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==me),inner='';
+function shown(m){if(m.role==='user'||m.role==='image'||m.role==='doc'||(m.role==='pay'&&m.pay)||(m.role==='gig'&&m.gig)||(m.role==='kreq'&&m.req)||(m.role==='file'&&m.file)||(m.role==='remind'&&m.what))return true;return m.role==='ai'&&(m.text||'').trim()}
+function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='gig')return gigCard(m,i);if(m.role==='kreq')return kreqCard(m,i);if(m.role==='file')return fileCard(m,i);if(m.role==='remind')return remindPill(m);var me=m.role!=='ai',gap=!prev||((prev.role!=='ai')!==me),inner='';
  var q=m.reply&&m.reply.text?'<span class="qt" data-q="'+(+m.reply.i||0)+'"><b>'+(m.reply.who==='ai'?'Kino':T('Toi','You'))+'</b>'+esc(m.reply.text)+'</span>':'';
  if(m.role==='image'){var u=B+'chat_img?id='+encodeURIComponent(CID)+'&f='+encodeURIComponent(m.file||'');inner='<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt=""></a>'+(m.text?md(m.text):'')}
  else if(m.role==='doc')inner='<div class="doc"><i>📄</i><span><b>'+esc(m.name||'document')+'</b><small>'+esc((m.kind||'').toUpperCase())+(m.size?' · '+Math.max(1,Math.round(m.size/1024))+' Ko':'')+'</small></span></div>'+(m.note?md(m.note):'');
@@ -771,6 +775,18 @@ function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',pay=g.pay?(String(g.pa
   st==='taken'?'<div class="ps">'+T('Quelqu’un l’a déjà prise. La prochaine sera pour toi !','Someone already took it. Next time!')+'</div>':
   st==='paid'?'<div class="ps">✓ '+T('Payé. Merci !','Paid. Thank you!')+'</div>':'';
  return '<div class="m gap"><div class="payc gig'+(st==='declined'||st==='taken'?'" style="opacity:.6':'')+'">'+body+foot+'</div></div>'}
+// 2026-11-13 (owner: "I don't see any card"): Kino's requests to the owner (approve / refuse) were drawn only in the
+// OwlNest app - Kino Chat shows them too; the server lets only an admin answer
+function kreqCard(m,i){var r=m.req||{},st=m.status||'waiting',em=r.kind==='email',cmd='';
+ if(r.command){try{var e=JSON.parse(r.command);cmd=em?(T('À : ','To: ')+(e.to||'')+'\n'+T('Sujet : ','Subject: ')+(e.subject||'')+'\n\n'+(e.body||'')):
+  (e.url?(T('Lien : ','Link: ')+e.url+'\n'):'')+(e.deliver_to?(T('Livraison : ','Delivery: ')+e.deliver_to):'')||r.command}catch(x){cmd=r.command}}
+ var ic=r.kind==='proposal'?'💡':r.kind==='buy'?'🛒':r.kind==='site'?'🌐':em?'✉️':'🔐';
+ return '<div class="m gap"><div class="payc kreq"><div class="pw">'+ic+' '+T('Kino te demande','Kino asks you')+'</div><div class="pt">'+esc(r.what||'')+'</div>'+
+  (r.why?'<div class="gl">'+esc(r.why)+'</div>':'')+(cmd?'<pre class="kq">'+esc(cmd)+'</pre>':'')+
+  (st!=='waiting'?'<div class="ps">'+(st==='approved'?'✅ '+T('Accepté','Approved'):'❌ '+T('Refusé','Refused'))+'</div>':
+   '<div class="pb"><button data-kq="'+esc(r.id||'')+'" data-y="1">✅ '+T('Accepter','Approve')+'</button><button class="npb" data-kq="'+esc(r.id||'')+'" data-y="0">❌ '+T('Refuser','Refuse')+'</button></div>')+'</div></div>'}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kq]');if(!b)return;b.disabled=true;
+ post('kino_req',{id:b.dataset.kq,yes:+b.dataset.y}).then(function(j){toast(j&&j.ok?T('C’est noté.','Noted.'):T('Pas possible.','Not possible.'));load(true)}).catch(function(){toast(T('Hors ligne.','Offline.'))})});
 function gigAct(tid,act,text,photo){return post('chat_gig',{tid:tid,act:act,text:text||'',photo:photo||''}).then(function(j){
  if(j&&j.ok){toast(act==='accept'?(j.status==='taken'?T('Déjà prise, désolé !','Already taken, sorry!'):T('C’est noté, merci !','Noted, thank you!')):act==='decline'?T('Pas de souci.','No problem.'):T('Preuve envoyée !','Proof sent!'));load(true)}
  else toast(T('Ça n’a pas marché.','That didn’t work.'))}).catch(function(){toast(T('Hors ligne.','Offline.'))})}

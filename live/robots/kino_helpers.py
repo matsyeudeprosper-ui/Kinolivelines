@@ -78,11 +78,17 @@ def task(what, why, proof, pay=0, hours=48, place="", mission=""):
     if _FORBID.search(what):
         return "not a task you can give: nothing about private people, no logins or passwords, no pretending, no fake reviews"
     pay = round(float(pay or 0), 2)
-    if mission:
+    own = False
+    if mission and pay > 0:
         cap, why2 = _job_cap(mission)
         if cap is None:
-            return "not for that client job: %s" % why2
-        if pay > cap + 0.005:
+            # 2026-11-13 (Pekos's toys: "the helper task was refused because he hasn't prepaid" -> Kino fell back to a plain
+            # request and Matsy got no gig card): a job nobody prepaid for others is paid from Kino's own helper budget
+            if pay > PER_TASK:
+                return ("nothing was prepaid for others on that job, so it comes from your own budget: %.0f EUR is over your "
+                        "%.0f EUR a task - make it smaller, or quote the client for it (#prix ... | tiers N)" % (pay, PER_TASK))
+            own = True
+        elif pay > cap + 0.005:
             return "%.2f EUR is more than the client prepaid for others on this job (%.2f left) - negotiate lower or ask the client" % (pay, cap)
     elif pay > PER_TASK:
         return "%.0f EUR is over the %.0f EUR limit for one task - make it smaller" % (pay, PER_TASK)
@@ -91,7 +97,7 @@ def task(what, why, proof, pay=0, hours=48, place="", mission=""):
         d["n"] = int(d.get("n") or 0) + 1
         tid = "H%d" % d["n"]
         d["tasks"].append({"id": tid, "t": time.time(), "what": what[:600], "why": why[:300], "proof": proof[:300], "pay": pay,
-                           "place": str(place or "")[:120], "due": time.time() + float(hours or 48) * 3600, "status": "open", "mission": str(mission or "")[:20],
+                           "place": str(place or "")[:120], "due": time.time() + float(hours or 48) * 3600, "status": "open", "mission": "" if own else str(mission or "")[:20], "for_mission": str(mission or "")[:20],
                            "asked": [], "helper": None, "price": None})
         return tid
     tid = _mut(f)
