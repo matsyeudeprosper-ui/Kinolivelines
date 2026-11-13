@@ -1315,8 +1315,8 @@ def member_lang(chat, default="fr", dominant=False):
         return L[0]
     # 2026-11-13 (watch: Pekos switched to French - "Bon je veux une nouvelle TV" then "5000 euro max" - and the second
     # reply came in English): when the last two clear sentences disagree, a real recent sentence (5+ words, < 30 min)
-    # is the language they speak NOW; a short phrase (a test's name) still cannot flip the chat
-    if L and _first[0] >= 5 and time.time() - _first[1] < 1800:
+    # (within 12 h) is the language they speak NOW; a short phrase (a test's name) still cannot flip the chat
+    if L and _first[0] >= 5 and time.time() - _first[1] < 43200:
         return L[0]
     return default
 
