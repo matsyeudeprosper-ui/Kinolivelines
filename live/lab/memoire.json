@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-08T20:39:33Z",
+ "updated": "2026-11-13T13:30:16Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -113,6 +113,7 @@
    "status": "renforce",
    "next": "Battery + critic on pb_y_q1316 / pb_y_q1216_fh05; 69 d of 12-16.",
    "evidence": [
+    "2026-11-13 13:30 veille: a CALM FLIP-BOS SELL at 13 h (pace 0.71) lost -6.12. Real 13 h 12 tr 25% -52.24 PF 0.11; 12 h 16 tr 31% -32.99; 16 h 12 tr 25% -47.65 (each hour peu). Calm does not save the NY open.",
     "2026-10-30: real 13-16 h 41 tr 15 won -116.66 both halves lose; lab robot 12-17 h 14 tr 2 won -50.37 on 10-28/29. Replay trio+hs12-17:0.5 42 d +25.7 vs trio +6.0 (h -6.8/+26.5) hole 40.7 vs 56; 69 d +88.96 vs +91.80 (h -20.9/+19.9). Skip 12-17 on trio: 42 d +34.9 hole 29.7 (h -0.2/+27.4), 69 d +62.9 (h -59.5/+19.5): refusal too strong on the long window, half stake right.",
     "2026-10-31: narrowed to 13-16 h (= real pile hours). vs brakes ch350+nf06 42 d: half +30.0 (h +3.8/+28.4) hole 50.5; quarter +45.6 (h +5.7/+42.6) hole 40.7; neighbours 12-15 half +19.3 (h1 -8.3), 14-17 half +15.2 (h1 +1.1): 13-16 peak, dose slope clean. 69 d: half +10.8 (h -17.6/+28.4), quarter +16.7 (h -26.5/+43.2), hole 70 -> 50 -> 41. Aug-Sep dislikes the cut; Oct carries it. Answers critic's 12-17 objection on 42 d only.",
     "2026-10-31 12:00 veille: new closes entered 13-16 h 4 tr 3 won +0.64 per 0.01 (against, peu); 08-13 h 7 tr 1 won -9.62. One week, too few to move it.",
@@ -472,6 +473,7 @@
    "status": "affaibli",
    "next": "Keep as a real-trade pile; no more day_loss_size money proposals unless real_pool_split shows it.",
    "evidence": [
+    "2026-11-13 13:30 veille (labo asks day_after_loss + europe): pile day_after_loss 111 tr 40% vs 52% -145.22 PF 0.50 (h 38/42); nervous 1.0-1.3 33 tr -72.60; calm <0.8 19 tr +9.92 (peu). Europe 08-16 h 108 tr 41% -139.85: after a loss 60 tr 33% -119.29, after a win 47 tr 49% -28.36. The day leak is the after-loss leak, overlapping NY open and nervous. Real pile holds; money dials (day_loss_size, noday) already failed in replay. Answered, no proposal.",
     "2026-10-26 06:30 veille (labo ask day_after_loss): pile 86 tr 38% vs 51% -138.16 PF 0.45 (h 37/40 agree). By hour: 08-16 h 57 tr 16 won (28%) -158.29 (13 h 7 tr 0 won -48.93; 16 h 9 tr 1 won -48.45); 17-23 h 29 tr 17 won (59%) +20.13 (peu). <15 min 47 tr 36% -55.66; 1.0-1.3 26 tr 31% -66.67; calm <0.8 16 tr +7.03. The chase is 08-16 h, not the evening. Answered, no proposal.",
     "2026-10-12: day_after_loss 39 tr 36% vs 57% -51.38 PF 0.49 (h 39/33); night after a loss 15 tr 67% +15.69. Europe after loss 18 tr 33% -36.0; US after loss 21 tr 38% -15.4.",
     "2026-10-12 12:00 veille: 11:29 FLIP-BOS SELL -1.92 and 11:57 BOS SELL -4.32, both day after a loss, both lost as predicted. Pile 41 tr 34% vs 56% -57.62 PF 0.46 (h 37/32); 1.0-1.3 11 tr 18%; <15 min 24 tr 29%. Past 30, halves agree.",
@@ -4066,6 +4068,17 @@
     "--by kind --by gap"
    ],
    "saw": "New real close 20:38 Sun: FLIP-BOS SELL won +0.67, pace 1.034 (nervous 1.0-1.3), right after the 19:16 loss. 324 real tr. Pile flip_hot now 87 tr 43% -91.19 PF 0.58 halves 43/42 (both losing); 1.0-1.3 nervous 45 tr 38% -68.33; after a loss 51 tr 37% -81.01. Gap <15 min 102 tr 35% -91.69 unchanged; 15-30 still best 48 tr 62% +24.38. Twin noday 41 tr -17.03 (flat). A small win does not move flip_nervous. No harness run."
+  },
+  {
+   "t": "2026-11-13T13:30:16Z",
+   "looked": [
+    "wake_context (1 close, 2 labo asks open)",
+    "scrutiny --by hour",
+    "--pile day_after_loss",
+    "--pile europe",
+    "tried/proposals for noday and day_loss_size"
+   ],
+   "saw": "New real close 13:30 Fri: FLIP-BOS SELL lost -6.12, pace 0.71 (CALM), 13 h. 334 real tr 48% -168.69 PF 0.76. 13 h now 12 tr 25% -52.24 PF 0.11; 12 h 16 tr 31% -32.99; 16 h 12 tr 25% -47.65. Pile day_after_loss 111 tr 40% vs 52% -145.22 PF 0.50 (h 38/42); inside 1.0-1.3 nervous 33 tr -72.60, calm <0.8 19 tr +9.92 (peu). Pile europe 108 tr 41% -139.85 PF 0.52 (h 40/42); inside after a loss 60 tr 33% -119.29 vs after a win 47 tr 49% -28.36. Answered both labo asks, no new run: day_loss_size 0.5 already subtracts (10-27, 10-31), noday halves disagree (10-30), twin noday ~-17. No harness run."
   }
  ],
  "lessons": [

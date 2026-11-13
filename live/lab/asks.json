@@ -354,7 +354,10 @@
    "by": "labo",
    "date": "2026-11-10",
    "note": "110 trades, 39 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answered": "2026-11-13T13:30:16Z",
+   "answer_fr": "Vrai sur les vrais comptes : cent onze trades pris le jour juste après une perte, quatre sur dix gagnés contre un sur deux ailleurs, les deux moitiés d'accord. Le trou vient surtout du marché nerveux et de midi à seize heures ; en marché calme, ça tient. Miser moitié après une perte, déjà testé, a fait moins bien : je suis plutôt la piste de l'ouverture de New York.",
+   "answer_en": "True on the real accounts: one hundred and eleven daytime trades right after a loss, four in ten won against one in two elsewhere, both halves agree. The hole is mostly a nervous market and noon to four; in a calm market, it holds. Betting half after a loss, already tested, did worse: I follow the New York open lead instead."
   },
   {
    "id": "ask_1794381432_europe",
@@ -364,7 +367,10 @@
    "by": "labo",
    "date": "2026-11-11",
    "note": "107 trades, 41 % gagnés contre 51 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answered": "2026-11-13T13:30:16Z",
+   "answer_fr": "Vrai sur les vrais comptes : cent huit trades entre huit et seize heures, quatre sur dix gagnés contre un sur deux ailleurs, les deux moitiés d'accord. Mais presque toute la perte vient des trades repris juste après une perte (soixante, un sur trois gagné). Couper toute la journée, testé, ne tient pas sur les deux moitiés, et le jumeau « pas de journée » perd aussi.",
+   "answer_en": "True on the real accounts: one hundred and eight trades between eight and four, four in ten won against one in two elsewhere, both halves agree. But almost all the loss comes from trades taken right after a loss (sixty, one in three won). Cutting the whole day, tested, does not hold on both halves, and the 'no daytime' twin loses too."
   }
  ]
 }
