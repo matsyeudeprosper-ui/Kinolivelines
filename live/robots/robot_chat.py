@@ -1307,9 +1307,18 @@ def member_lang(chat, default="fr", dominant=False):
         f, e = len(_LFR.findall(t)), len(_LEN.findall(t))
         if f != e:
             L.append("fr" if f > e else "en")
+            if len(L) == 1:
+                _first = (len(t.split()), float(m.get("t") or 0))
         if len(L) == 2:
             break
-    return L[0] if len(L) == 2 and L[0] == L[1] else default
+    if len(L) == 2 and L[0] == L[1]:
+        return L[0]
+    # 2026-11-13 (watch: Pekos switched to French - "Bon je veux une nouvelle TV" then "5000 euro max" - and the second
+    # reply came in English): when the last two clear sentences disagree, a real recent sentence (5+ words, < 30 min)
+    # is the language they speak NOW; a short phrase (a test's name) still cannot flip the chat
+    if L and _first[0] >= 5 and time.time() - _first[1] < 1800:
+        return L[0]
+    return default
 
 
 def member_lang2(chat):

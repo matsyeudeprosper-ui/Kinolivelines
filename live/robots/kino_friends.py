@@ -278,6 +278,13 @@ def first(who, where, url, text):
         P = KO._load()
         p = P["people"].get(who)
         if p and any(s.get("dir") == "in" for s in p.get("said") or []):
+            # 2026-11-12 (watch): he answered BareMind and elarigent at 17:47, they said nothing back, and at 00:33 he wrote
+            # to both again. A conversation, yes - but his last word still waits for theirs: he waits (a friend comes back
+            # days later about THEIR thing, not hours later about the same one)
+            S = sorted(p.get("said") or [], key=lambda s: float(s.get("t") or 0))
+            if S and S[-1].get("dir") == "out" and time.time() - float(S[-1].get("t") or 0) < 3 * 86400:
+                return ("not sent - your last message to %s is still unanswered (%s); wait for them, or come back in a "
+                        "few days about their own news" % (who, time.strftime("%d/%m %H:%M", time.gmtime(float(S[-1]["t"])))))
             return None                                    # they talk with him already: a conversation, not a first word
         if p and any(s.get("dir") == "out" for s in p.get("said") or []):
             return "not sent - you already wrote to %s and they did not answer; you do not write again" % who
