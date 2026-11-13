@@ -124,6 +124,10 @@ MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to
                 "assistant, their first name and the need; in allow_site say it is for mission <id>. A form that "
                 "demands their phone or address: ask them ONCE in the job's tell ('je peux donner ton numéro à X pour qu'il "
                 "te rappelle ?', status waiting) - never hand them the form to fill. "
+                "BUYING FOR THEM (Matsy 13/11): once they prepaid (the item + your fee), ask their delivery details if you "
+                "do not have them, then buy_request (mission, item, shop, url = the exact product page, price_eur, "
+                "deliver_to = name, address, phone) - it is placed for you and the mission wakes up when it is ordered; then "
+                "you tell them 'c'est commandé' and follow the delivery to the door. To them it is simply you ordering it. "
                 "THEIR JOB ONLY (Matsy 13/11: a STOP from YOUR own Kinoverse prospect went into Pekos's report): a tell "
                 "speaks of THEIR request and its results - never your own Kinoverse work (businesses you emailed for "
                 "yourself, who answered you or said STOP, your friends online, your numbers, other clients, Matsy). If a "
@@ -572,7 +576,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|bench_add|bench_find|market_note|market_boost|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|buy_request|bench_add|bench_find|market_note|market_boost|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -1203,6 +1207,34 @@ def _act0(j, person, W=None):
             return KZ.ads_accounts(who)
         return KZ.boost(who, j.get("post"), j.get("account"), j.get("ad_account"), j.get("budget_eur"), j.get("days") or 7,
                         j.get("goal") or "engagement")
+    if a == "buy_request":                 # 2026-11-13 (owner, option 1): a purchase for a client - Matsy places it, by hand
+        try:
+            import kino_missions as KMbr, kino_hands as KHbr
+            m = KMbr.get(str(j.get("mission") or j.get("id") or ""))
+            if not m:
+                return "no such mission - give the mission id this purchase is for"
+            price = float(j.get("price_eur") or 0)
+            if not m.get("paid"):
+                return ("not sent - they have not prepaid yet: quote it first (#prix total | item | tiers <item price>) and wait "
+                        "for the payment; until then nothing is bought")
+            if price <= 0 or price > float(m.get("budget_eur") or 0) + 0.01:
+                return "not sent - the price (%.2f EUR) is above what they prepaid for the item (%.2f EUR)" % (
+                    price, float(m.get("budget_eur") or 0))
+            if not (j.get("url") and j.get("deliver_to")):
+                return "not sent - give the exact product link (url) and where it goes (deliver_to: name, address, phone)"
+            cmd = {"mission": m["id"], "item": str(j.get("item") or "")[:160], "shop": str(j.get("shop") or "")[:80],
+                   "url": str(j.get("url"))[:400], "price_eur": round(price, 2), "deliver_to": str(j.get("deliver_to"))[:300],
+                   "client": m.get("name") or m["uid"]}
+            r = KHbr.request("Commander pour %s : %s - %.2f EUR chez %s" % (cmd["client"], cmd["item"], price, cmd["shop"] or "?"),
+                             "Prépayé par le client. Lien : %s | Livraison : %s | Commande avec ta carte puis ✅ (❌ si impossible)."
+                             % (cmd["url"], cmd["deliver_to"]), json.dumps(cmd, ensure_ascii=False), kind="buy")
+            if not r:
+                return "this purchase request is already waiting for Matsy"
+            KMbr.update(m["id"], status="waiting", next_h=6, note="purchase request %s sent to Matsy: %s" % (r["id"], cmd["item"]))
+            return ("sent to Matsy (request %s): he places the order and confirms; the mission wakes up by itself then. Tell "
+                    "the person it is being ordered - never that someone else does it" % r["id"])
+        except Exception as e:
+            return "buy request failed: %s" % e
     if a in ("bench_add", "bench_find", "market_note", "market_boost"):   # 2026-11-12: being known + his helper bench
         import kino_market as KMK
         if a == "bench_add":

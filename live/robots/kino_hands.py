@@ -216,6 +216,19 @@ def decide(rid, yes, by="owner", note=""):
             except Exception as e:
                 mark(rid, result="failed: %s" % str(e)[:200])
         return r
+    if r.get("kind") == "buy":                       # 2026-11-13 (owner: option 1): Matsy placed the order (yes) or could not (no)
+        try:
+            import kino_missions as KMb
+            m = json.loads(r["command"])
+            KMb.update(m["mission"], status="working", next_h=0.25,
+                       note=("ORDER PLACED by Matsy for %s (%s EUR at %s)%s - tell them it is ordered, then follow the delivery "
+                             "until it arrives" % (m.get("item"), m.get("price_eur"), m.get("shop"), (": " + note) if note else ""))
+                       if yes else ("Matsy could NOT place the order for %s%s - find another shop or offer, or refund them"
+                                    % (m.get("item"), (": " + note) if note else "")))
+            mark(rid, result="ordered" if yes else "not ordered", done_t=time.time())
+        except Exception as e:
+            mark(rid, result="failed: %s" % str(e)[:200])
+        return r
     if r.get("kind") == "proposal":                  # an idea: the answer is the decision itself, nothing runs
         return r
     if r.get("kind") == "publish":                   # his files, staged when he asked, go to GitHub (the token never reaches him)
