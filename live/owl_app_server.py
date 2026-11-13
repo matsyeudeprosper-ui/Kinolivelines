@@ -29158,8 +29158,26 @@ def _gig_update(uid, tid, status):
 def chat_gig(user, body):
     """the person's tap on a gig card: accept | decline | proof (text + photo)"""
     import kino_helpers as _KHg
-    r = _KHg.gig_answer(user.get("id"), str(body.get("tid") or ""), str(body.get("act") or ""),
-                        str(body.get("text") or "")[:1000], str(body.get("photo") or "")[:6_000_000])
+    # 2026-11-13 (owner tapped "J'accepte": "Ça n'a pas marché"): the card went to his account "std" while his Kino Chat may
+    # be signed in with another of his accounts - any account of the same person may answer the offer
+    me = user.get("id")
+    cands = [me]
+    try:
+        pm = _person(me)
+        if pm:
+            cands += [u.get("id") for u in users() if u.get("id") != me and _person(u.get("id")) == pm]
+    except Exception:
+        pass
+    r = {"ok": False, "err": "not offered"}
+    for uid_ in cands:
+        r = _KHg.gig_answer(uid_, str(body.get("tid") or ""), str(body.get("act") or ""),
+                            str(body.get("text") or "")[:1000], str(body.get("photo") or "")[:6_000_000])
+        if r.get("ok") or r.get("err") != "not offered":
+            break
+    try:
+        _KHg._log("TAP %s by %s (tried %s) -> %s" % (body.get("tid"), me, ",".join(map(str, cands)), r))
+    except Exception:
+        pass
     return r
 
 

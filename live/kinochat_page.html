@@ -767,7 +767,7 @@ function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',pay=g.pay?(String(g.pa
  due=g.due?jobHM(g.due):'';
  var body='<div class="pw">🙋 '+T('Une mission pour Kino','A task for Kino')+'</div><div class="pt">'+esc(g.what)+'</div>'+
   (g.place?'<div class="gl">📍 '+esc(g.place)+'</div>':'')+(due?'<div class="gl">⏱ '+T('Avant ','By ')+due+'</div>':'')+
-  (g.proof?'<div class="gl">📎 '+T('Preuve attendue : ','Proof expected: ')+esc(g.proof)+'</div>':'')+'<div class="pe">'+pay+'</div>';
+  (g.proof?'<div class="gl">📎 '+T('Preuve attendue : ','Proof expected: ')+esc(g.proof)+'</div>':'')+(g.pay?'<div class="pe">'+T('Tu gagnes ','You earn ')+pay+'</div><div class="gl">'+T('Payé par PayPal dès que Kino a vérifié ta preuve.','Paid by PayPal as soon as Kino has checked your proof.')+'</div>':'<div class="gl" style="margin-top:8px">🤝 '+T('Un service rendu, sans paiement','A favour, unpaid')+'</div>');
  var foot=st==='sent'?'<div class="pb"><button data-ga="'+esc(g.tid)+'">'+T('J’accepte','I accept')+'</button><button class="npb" data-gd="'+esc(g.tid)+'">'+T('Je ne peux pas','I can’t')+'</button></div>':
   st==='accepted'?'<div class="ps" style="margin-bottom:8px">✓ '+T('C’est pour toi. Envoie la preuve quand c’est fait.','It’s yours. Send the proof when it’s done.')+'</div><div class="pb"><button data-gp="'+esc(g.tid)+'">📷 '+T('Envoyer la preuve','Send the proof')+'</button></div>':
   st==='proof_sent'?'<div class="ps">⏳ '+T('Preuve envoyée, Kino vérifie.','Proof sent, Kino is checking.')+'</div>':
@@ -789,7 +789,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
  post('kino_req',{id:b.dataset.kq,yes:+b.dataset.y}).then(function(j){toast(j&&j.ok?T('C’est noté.','Noted.'):T('Pas possible.','Not possible.'));load(true)}).catch(function(){toast(T('Hors ligne.','Offline.'))})});
 function gigAct(tid,act,text,photo){return post('chat_gig',{tid:tid,act:act,text:text||'',photo:photo||''}).then(function(j){
  if(j&&j.ok){toast(act==='accept'?(j.status==='taken'?T('Déjà prise, désolé !','Already taken, sorry!'):T('C’est noté, merci !','Noted, thank you!')):act==='decline'?T('Pas de souci.','No problem.'):T('Preuve envoyée !','Proof sent!'));load(true)}
- else toast(T('Ça n’a pas marché.','That didn’t work.'))}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
+ else toast(j&&j.err==='accept first'?T('Accepte d’abord la mission.','Accept the task first.'):j&&j.err==='gone'?T('Cette mission n’existe plus.','This task is gone.'):T('Ça n’a pas marché','That didn’t work')+(j&&j.err?' ('+j.err+')':'')+'.')}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
 var GIGPH='';
 function gigProof(tid){GIGPH='';shOpen('<h3>📷 '+T('Envoyer la preuve','Send the proof')+'</h3><textarea id="gpt" rows="3" class="edta" placeholder="'+T('Ce que tu as fait, ce que tu as vu…','What you did, what you saw…')+'"></textarea>'+
  '<p><button class="btn" id="gpi" style="background:var(--surface2)">🖼️ '+T('Ajouter une photo','Add a photo')+'</button> <span id="gpn" style="color:var(--mut);font-size:13px"></span></p><button class="btn" id="gps">'+T('Envoyer à Kino','Send to Kino')+'</button>');

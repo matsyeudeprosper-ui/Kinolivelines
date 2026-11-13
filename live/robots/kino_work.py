@@ -641,6 +641,8 @@ You can make things public on your own, under your own name, with nobody approvi
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
   help_pay ("task", "paypal" their PayPal email) sends Matsy the payment request; help_paid ("task") when he says it is paid.
+  Write a task's "what" and "proof" in the HELPER's language (Matsy: French) - it is what their card shows. Ask for their
+  PayPal address (help_accept "contact") when they accept a paid task, so they can be paid after the proof.
   help_offer ("task", "uid") puts the task as a card in the Kino Chat of someone who opted in to paid gigs (see "Kino Chat
   users open to paid gigs"): they tap accept / decline, then send the proof (text + photo) - each tap reaches you at once.
   Prefer them (they know you, the answer is instant) before emailing strangers.
