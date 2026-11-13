@@ -29087,8 +29087,10 @@ def _gig_cid(uid):
                     c = json.load(open(p, encoding="utf-8"))
                 except Exception:
                     continue
-                if c.get("uid") == uid and c.get("app") == "kinochat" and os.path.getmtime(p) > bt:
-                    best, bt = c.get("id") or f[:-5], os.path.getmtime(p)
+                # 13/11: Matsy is a helper too and his main chat is the OwlNest one (Kino Chat shows the same account):
+                # the newest main conversation of the person, Kino Chat first (a _k... side thread is not one)
+                if c.get("uid") == uid and "_k" not in f and (c.get("app") == "kinochat") * 1e12 + os.path.getmtime(p) > bt:
+                    best, bt = c.get("id") or f[:-5], (c.get("app") == "kinochat") * 1e12 + os.path.getmtime(p)
     except Exception:
         pass
     return best
