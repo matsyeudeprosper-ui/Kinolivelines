@@ -26986,7 +26986,7 @@ def chat_get(user, cid, ui=""):
                       "watch": bool(m.get("repeat_h")), "t": int(m["t"]), "plan": m.get("plan") or [], "step": int(m.get("step") or 0),
                       "end": int(float(m.get("closed_t") or 0))}
                      for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and (m["status"] in _KMq.OPEN or (
-                         m["status"] == "done" and time.time() - float(m.get("closed_t") or 0) < 12 * 3600))][-5:]
+                         m["status"] == "done" and time.time() - float(m.get("closed_t") or 0) < 12 * 3600))][-8:]
     except Exception:
         c["doing"] = None
     try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood
