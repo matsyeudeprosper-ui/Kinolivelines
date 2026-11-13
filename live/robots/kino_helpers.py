@@ -289,6 +289,10 @@ def block():
     for t in T[-6:]:
         L.append("- task %s [%s] %s%s - proof: %s%s" % (t["id"], t["status"], t["what"][:120], (" - %.2f EUR" % t["pay"]) if t["pay"] else
                                                     " - a favour", t["proof"][:60], (" - with %s" % t["helper"]) if t.get("helper") else ""))
+    try:                                       # 2026-11-13: Kino Chat users open to paid gigs
+        L.append(workers_line())
+    except Exception:
+        pass
     return "\n".join(L)
 
 
@@ -300,3 +304,139 @@ def week_line(now=None):
     return "tasks given %d, done %d, paid %d (%.2f EUR), helpers in all %d" % (
         len(W), sum(1 for t in W if t["status"] in ("approved", "awaiting_payment", "paid")), len(paid_),
         sum(float(t.get("price") or 0) for t in paid_), len(d["helpers"]))
+
+
+# ---------------------------------------------------------------- gigs in Kino Chat (2026-11-13)
+# Owner: "build it - so even existing users who use Kino Chat for whatever can also, if they want, accept gig offers".
+# A Kino Chat user opts in (menu: small paid missions) -> Kino can OFFER them a task: a card in their chat with accept /
+# decline, then "send the proof" (text + photo). Every answer reaches Kino at once (an urge) and moves the task.
+ON_OFFER = None                     # set by the app: (uid, gig dict) -> posts the card in their chat
+ON_GIG_UPDATE = None                # set by the app: (uid, tid, status) -> updates the card's status in their chat
+PROOFS = os.path.join(HERE, "helper_proofs")
+
+
+def gig_optin(uid, on=True, name="", skills="", city=""):
+    def f(d):
+        W = d.setdefault("workers", {})
+        w = W.setdefault(uid, {"since": time.time()})
+        w.update(on=bool(on), name=str(name or w.get("name") or uid)[:60], t=time.time())
+        if skills:
+            w["skills"] = str(skills)[:160]
+        if city:
+            w["city"] = str(city)[:60]
+        return w
+    w = _mut(f)
+    _log("OPTIN %s %s" % (uid, "on" if on else "off"))
+    return w
+
+
+def workers(on_only=True):
+    return {u: w for u, w in (_j().get("workers") or {}).items() if w.get("on") or not on_only}
+
+
+def workers_line():
+    W = workers()
+    if not W:
+        return "Kino Chat users open to paid gigs: none yet"
+    return "Kino Chat users open to paid gigs (offer with help_offer task + uid): " + "; ".join(
+        "%s uid=%s%s%s (done %d)" % (w.get("name") or u, u, (", " + w["city"]) if w.get("city") else "",
+                                     (", " + w["skills"]) if w.get("skills") else "", int(w.get("done") or 0)) for u, w in list(W.items())[:12])
+
+
+def offer(tid, uid):
+    """Kino offers task tid to a Kino Chat user who opted in: a card in their chat"""
+    d = _j()
+    t = _t(d, tid)
+    if not t:
+        return "no task %s" % tid
+    w = (d.get("workers") or {}).get(uid)
+    if not w or not w.get("on"):
+        return "%s has not opted in to paid gigs - only people who said yes in their menu get offers" % uid
+    if t["status"] not in ("open", "asking"):
+        return "task %s is already %s" % (tid, t["status"])
+    if any(o.get("uid") == uid for o in t.get("offers") or []):
+        return "already offered to %s" % uid
+    gig = {"tid": t["id"], "what": t["what"], "place": t.get("place") or "", "due": int(t.get("due") or 0),
+           "pay": float(t.get("pay") or 0), "proof": t.get("proof") or "", "status": "sent"}
+
+    def f(dd):
+        tt = _t(dd, tid)
+        tt.setdefault("offers", []).append({"uid": uid, "t": time.time(), "status": "sent"})
+        if tt["status"] == "open":
+            tt["status"] = "asking"
+    _mut(f)
+    try:
+        if ON_OFFER:
+            ON_OFFER(uid, gig)
+    except Exception as e:
+        _log("ON_OFFER error %s" % e)
+        return "the card could not be posted: %s" % e
+    _log("OFFER %s -> %s" % (tid, uid))
+    return "offered %s to %s - a card with accept / decline is in their chat; their answer reaches you at once" % (tid, w.get("name") or uid)
+
+
+def gig_answer(uid, tid, act, text="", photo=""):
+    """the person's tap on the card: accept | decline | proof"""
+    d = _j()
+    t = _t(d, tid)
+    if not t:
+        return {"ok": False, "err": "gone"}
+    o = next((x for x in t.get("offers") or [] if x.get("uid") == uid), None)
+    if o is None:
+        return {"ok": False, "err": "not offered"}
+    w = (d.get("workers") or {}).get(uid) or {}
+    name = w.get("name") or uid
+    path = ""                                  # the proof photo (set below only for a proof - the urge text uses it)
+    if act == "accept":
+        if t.get("helper") and t["helper"].lower() != name.lower():
+            st = "taken"
+        else:
+            accept(tid, name, t.get("pay") or 0, "chat:" + uid)
+            st = "accepted"
+    elif act == "decline":
+        st = "declined"
+    elif act == "proof":
+        if o.get("status") != "accepted" and not (t.get("helper") or "").lower() == name.lower():
+            return {"ok": False, "err": "accept first"}
+        path = ""
+        if photo and str(photo).startswith("data:image"):
+            try:
+                import base64
+                os.makedirs(PROOFS, exist_ok=True)
+                path = os.path.join(PROOFS, "%s_%d.jpg" % (tid, int(time.time())))
+                open(path, "wb").write(base64.b64decode(str(photo).split(",", 1)[1]))
+            except Exception:
+                path = ""
+        st = "proof_sent"
+
+        def fp(dd):
+            tt = _t(dd, tid)
+            tt.setdefault("proofs_in", []).append({"t": time.time(), "uid": uid, "text": str(text or "")[:1000], "photo": path})
+        _mut(fp)
+    else:
+        return {"ok": False, "err": "act"}
+
+    def f(dd):
+        tt = _t(dd, tid)
+        for x in tt.get("offers") or []:
+            if x.get("uid") == uid:
+                x["status"] = st
+                x["t_answer"] = time.time()
+    _mut(f)
+    _log("GIG %s %s %s" % (tid, uid, st))
+    try:
+        if ON_GIG_UPDATE:
+            ON_GIG_UPDATE(uid, tid, st)
+    except Exception:
+        pass
+    try:
+        import kino_urge as KU
+        msg = {"accepted": "accepted your task %s - it is theirs now, tell them anything they need" % tid,
+               "taken": "wanted task %s but someone already has it - thank them, next time" % tid,
+               "declined": "cannot do task %s - offer it to someone else" % tid,
+               "proof_sent": "sent the proof for task %s: \"%s\"%s - check it (help_done ok true/false), then help_pay" % (
+                   tid, str(text or "")[:300], " + a photo (%s)" % path if path else "")}[st]
+        KU.add("kino", "A HELPER ANSWERED - %s %s" % (name, msg))
+    except Exception:
+        pass
+    return {"ok": True, "status": st}

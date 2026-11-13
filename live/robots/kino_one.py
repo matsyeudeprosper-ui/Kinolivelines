@@ -248,6 +248,11 @@ def transcript(msgs, n=40, lang="fr"):
                 if body else ("\n   " + ("WHAT IT SAYS (your summary): " if lang == "en" else "CE QU'IL DIT (ton résumé) : ") + str(m["seen"]))
                 if m.get("seen") else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
                                        "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
+        elif r == "gig" and m.get("gig"):         # 2026-11-13: a paid task he offered them as a card (accept / decline / proof)
+            g = m["gig"]
+            L.append("[%s] (%s %s: \"%s\", %s EUR - %s)" % (_hm(m.get("t")), "you offered them task" if lang == "en" else
+                                                          "tu lui as proposé la mission", g.get("tid"), str(g.get("what") or "")[:160],
+                                                          g.get("pay") or 0, g.get("status")))
         elif r == "demo" and m.get("kind") == "moments":
             # 2026-11-05 01:0x (watch): "Yes, that is the moment I mean" - he answered "which moment?", then said he had never
             # sent vote cards: the cards (no text) were invisible here. What he showed them, as they saw it
@@ -466,7 +471,14 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "and say how you will get it done. A CONCIERGE, NOT A HELPDESK (owner 12/11, after 'the phone-only ones I "
                  "can't call, a 2-minute call from you will go faster than waiting on me'): the job stays YOURS - never hand it "
                  "back to them ('you could call', 'it is faster if you do it'), never list what you cannot do, never replay "
-                 "your mistakes or apologise twice (one short 'my bad' at most, then the next move). BUYING IS PART OF IT "
+                 "your mistakes or apologise twice (one short 'my bad' at most, then the next move). THE WAYS, TOGETHER "
+                 "(owner 13/11, Pekos's toys: four times 'I have no time to post' and four times one road that still left "
+                 "him the work): when a job can be done several ways, show them the 2-3 ways YOU can take care of it that "
+                 "they may not know - for each: what you do, what is left for them (ideally nothing), what it brings or "
+                 "costs, how fast (e.g. 'a helper picks up the bag and sells it: you do nothing, ~15 EUR for you, 2 days' / "
+                 "'a resale shop takes it in one drop-off: cash today, less' / 'I post it under your name, you only hand it "
+                 "over') - say which one you would pick and why, and let them choose; then do it. Never offer a way that "
+                 "gives them back the work they asked you to take. BUYING IS PART OF IT "
                  "(owner 13/11, after 'je n'achète rien à ta place'): when they want the thing you found, OFFER to order it - "
                  "'je te la commande ?' - one price = the item + your fee (THE OFFER), quoted with #prix <total> | <item> | tiers "
                  "<item price>; once paid, the job orders it and you follow it to their door (ask their delivery name, "

@@ -29076,6 +29076,68 @@ def kino_post_switch(user, body):
     return {"ok": True, "off": _KPs.is_off()}
 
 
+def _gig_cid(uid):
+    """the Kino Chat conversation of this person where a gig card goes (their newest kinochat chat)"""
+    best, bt = None, 0
+    try:
+        for f in os.listdir(CHAT_DIR):
+            if f.startswith(str(uid) + "_") and f.endswith(".json"):
+                p = os.path.join(CHAT_DIR, f)
+                try:
+                    c = json.load(open(p, encoding="utf-8"))
+                except Exception:
+                    continue
+                if c.get("uid") == uid and c.get("app") == "kinochat" and os.path.getmtime(p) > bt:
+                    best, bt = c.get("id") or f[:-5], os.path.getmtime(p)
+    except Exception:
+        pass
+    return best
+
+
+def _gig_post(uid, gig):
+    """2026-11-13: Kino offers a paid gig -> a card in the person's Kino Chat + a push"""
+    cid = _gig_cid(uid)
+    if not cid:
+        raise RuntimeError("no Kino Chat conversation for %s" % uid)
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "gig", gig=dict(gig)))
+    try:
+        queue_push(uid, "Kino", ("Une petite mission payée pour toi : %.0f €" % gig.get("pay", 0)) if gig.get("pay") else
+                   "Kino a besoin d'un coup de main", urgent=True, tag="kino-gig")
+    except Exception:
+        pass
+
+
+def _gig_update(uid, tid, status):
+    cid = _gig_cid(uid)
+    if not cid:
+        return
+
+    def f(cc):
+        for m in reversed(cc.get("msgs") or []):
+            if m.get("role") == "gig" and (m.get("gig") or {}).get("tid") == tid:
+                m["gig"]["status"] = status
+                return True
+    _chat_mut(cid, f)
+
+
+def chat_gig(user, body):
+    """the person's tap on a gig card: accept | decline | proof (text + photo)"""
+    import kino_helpers as _KHg
+    r = _KHg.gig_answer(user.get("id"), str(body.get("tid") or ""), str(body.get("act") or ""),
+                        str(body.get("text") or "")[:1000], str(body.get("photo") or "")[:6_000_000])
+    return r
+
+
+def gig_optin(user, body):
+    """menu: 'small paid missions from Kino' on / off"""
+    import kino_helpers as _KHg
+    if body.get("get"):
+        w = _KHg._j().get("workers", {}).get(user.get("id")) or {}
+        return {"ok": True, "on": bool(w.get("on")), "city": w.get("city") or "", "skills": w.get("skills") or ""}
+    w = _KHg.gig_optin(user.get("id"), bool(body.get("on")), user.get("name") or "", str(body.get("skills") or ""), str(body.get("city") or ""))
+    return {"ok": True, "on": bool(w.get("on"))}
+
+
 def kino_req(user, body):
     """the owner's answer to one of Kino's requests"""
     if not is_admin(user):
@@ -37144,7 +37206,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "kino_ways", "chat_why", "chat_luck_cancel", "kino_wish",
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "chat_gig", "gig_optin", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "kino_ways", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "school", "robot_rules_vis", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
@@ -37171,7 +37233,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "kino_ways": kino_ways_api, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
+                       "chat_typing": chat_typing, "chat_gig": chat_gig, "gig_optin": gig_optin, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "kino_ways": kino_ways_api, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
                        "replay_get": replay_get, "replay_bars": replay_bars, "school": school, "robot_rules_vis": robot_rules_vis, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
@@ -40445,6 +40507,13 @@ if __name__ == "__main__":
         import kino_pay as _KPh0
         if _chat_job_paid not in _KPh0.ON_PAID:
             _KPh0.ON_PAID.append(_chat_job_paid)
+    except Exception:
+        pass
+
+    try:                                                               # 2026-11-13: gigs for Kino Chat users who opted in
+        import kino_helpers as _KHg
+        _KHg.ON_OFFER = _gig_post
+        _KHg.ON_GIG_UPDATE = _gig_update
     except Exception:
         pass
 

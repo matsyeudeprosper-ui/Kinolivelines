@@ -251,6 +251,17 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
                     pass                                  # "je te dis quand le test tombe": the result event does it - never a tray item ("dans 1426 min")
                 else:                                     # check / other: the promise watcher brings it back at its time
                     H["work_add"](cid, x["what"], max(2, int((x["due"] - x["t"]) / 60)))
+                    # 2026-11-13 (watch: Pekos "can you deal with it" -> "I'll handle it" / "I'm finding a shop near Viry" and
+                    # nothing ran for 2 h): in a Kino Chat client's chat a promise of work IS a job - with its card, in the
+                    # missions lane (look-alike promises merge into the open job)
+                    if c.get("app") == "kinochat" and uid != "kino":
+                        try:
+                            import kino_missions as KMc
+                            _mid = KMc.create(uid, cid, x["what"], name=str(c.get("name") or uid), lang=str(c.get("lang") or "fr"))
+                            if _mid:
+                                resolve(cid, x["id"], "blocked", "became job %s" % _mid)
+                        except Exception:
+                            pass
             except Exception:
                 pass
         return ids + new

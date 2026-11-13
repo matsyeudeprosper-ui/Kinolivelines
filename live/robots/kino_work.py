@@ -582,7 +582,7 @@ can get), tidying and looking after your world, answering mail, writing. Small a
 result you did not see.
 
 Answer ONE JSON object per step and nothing else:
-{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|buy_request|bench_add|bench_find|recruit|bench_status|market_note|market_boost|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
+{"thought": "one short sentence", "action": "run|write|read|note|mission|email|ask|search|fetch|download|browse|allow_site|propose|publish|post|skeet|xpost|xsearch|toot|manage|notify|prospect|preview|outreach|find|job|qa|deploy|domain|domain_check|domain_buy|telegram|invoice|lead|goal|shop|site|tool_propose|tool_run|delegate|team|photos|images|shot|card|help_task|help_ask|help_accept|help_done|help_pay|help_paid|friend_note|friend_link|help_offer|buy_request|bench_add|bench_find|recruit|bench_status|market_note|market_boost|whatsapp_open|social_client|social_post|social_inbox|social_reply|social_report|ads_accounts|ads_boost|picture|lab_idea|lab_test|lab_final|lab_kill|lab_board|audit|scan|xhand|fbhand|done",
  "cmd": "PowerShell command (run)", "path": "file path in your world (write/read/download)",
  "content": "short file content (write) - for a longer file (code, a report) leave it out and put the content BELOW the JSON,
             between a line ===FILE=== and a line ===END===",
@@ -637,6 +637,9 @@ You can make things public on your own, under your own name, with nobody approvi
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
   help_pay ("task", "paypal" their PayPal email) sends Matsy the payment request; help_paid ("task") when he says it is paid.
+  help_offer ("task", "uid") puts the task as a card in the Kino Chat of someone who opted in to paid gigs (see "Kino Chat
+  users open to paid gigs"): they tap accept / decline, then send the proof (text + photo) - each tap reaches you at once.
+  Prefer them (they know you, the answer is instant) before emailing strangers.
   For a CLIENT'S paid job, add "mission" (its id) to help_task: the limit is then what that client prepaid for others on the
   job (not 15/50) - negotiate the helper's price down, the client's money is not yours to waste.
   YOUR OWN DECISION (Matsy 13/11: "during his lifetime Kino can decide by himself to hire or pay a human for a human job"):
@@ -1265,9 +1268,11 @@ def _act0(j, person, W=None):
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
-    if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid"):   # 2026-11-07 (owner): his human helpers
+    if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid", "help_offer"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")
+        if a == "help_offer":              # 2026-11-13: a gig card in the Kino Chat of someone who opted in
+            return KHP.offer(tid, str(j.get("uid") or j.get("who") or "").strip())
         if a == "help_task":
             return KHP.task(j.get("what") or j.get("text"), j.get("why"), j.get("proof"), j.get("pay") or 0, j.get("hours") or 48,
                             j.get("place") or "", mission=j.get("mission") or "")
