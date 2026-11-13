@@ -31,7 +31,7 @@ WEIGHTS = (
     ("A NEED OF YOURS", 0.45),           # 2026-10-31 kino_psyche: curiosity, competence, connection, autonomy building up
     ("AN AFTERTHOUGHT", 0.55),           # 2026-10-31 kino_depth: an unfinished thread comes back (Zeigarnik)
     ("ON YOUR MIND", 0.3),
-    ("AN EMAIL ARRIVED", 0.7),
+    ("AN EMAIL ARRIVED", 0.7), ("AN OPERATOR ANSWERED", 0.75),   # 2026-11-13: a recruited operator replied
     ("YOUR WORK", 0.45),
     # 2026-11-01 (watch): reasons from his life outside the app were silently dropped (no weight) - a payment, a reply
     ("MONEY ARRIVED", 0.9), ("A MISTAKE OF YOURS", 0.9), ("SOMEONE ANSWERED YOU", 0.7), ("SOMEONE MENTIONED YOU", 0.6),

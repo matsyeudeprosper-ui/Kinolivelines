@@ -48,7 +48,15 @@ CHANNELS = {
     "malt":      {"status": "needs_account", "note": "French freelance market - Matsy signs in once in Kino's browser"},
 }
 SKILLS = ("repair", "moving", "cleaning", "delivery", "photo", "translation", "design", "writing", "typing", "web", "legal",
-          "accounting", "tutoring", "errands", "other")
+          "accounting", "tutoring", "errands", "phone", "community", "other")
+# 2026-11-13 (owner: "the operators / community managers hunting system - properly implemented and working"): two kinds on the
+# bench - PROVIDERS (a business he books FOR a client: plumber, mover) and OPERATORS (a person who works FOR KINO on small paid
+# tasks: calls a shop, runs an errand, runs a client's social media). Operators go through a pipeline:
+#   found -> contacted (his email, max RECRUIT_PER_DAY a day, STOP honoured) -> interested (they answered: rate, hours) ->
+#   tested (a first small paid task, help_task) -> ok (reliable) | no
+OPERATOR_ROLES = ("phone", "community", "errands", "translation", "writing", "design", "delivery", "photo", "typing")
+STATUSES = ("found", "contacted", "interested", "tested", "ok", "no")
+RECRUIT_PER_DAY = 5
 
 
 def _load():
@@ -101,27 +109,142 @@ def set_channel(name, status, note_=""):
 
 
 # ---------------------------------------------------------------- the bench (helpers ready before he needs them)
-def bench_add(name, skill, city="", contact="", price="", source="", ok=False, about=""):
+def _email_in(*xs):
+    for x in xs:
+        m = re.search(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", str(x or ""))
+        if m:
+            return m.group(0).lower()
+    return ""
+
+
+def bench_add(name, skill, city="", contact="", price="", source="", ok=False, about="", kind="", email=""):
     name = " ".join(str(name or "").split())[:80]
     skill = str(skill or "other").lower().strip()
-    if not name or not (contact or source):
+    if not name or not (contact or source or email):
         return "a bench entry needs a name and how to reach them (contact) or where you found them (source)"
     if skill not in SKILLS:
         skill = "other"
+    kind = kind if kind in ("provider", "operator") else ("operator" if skill in ("phone", "community") else "provider")
+    em = _email_in(email, contact)
 
     def f(d):
         for b in d["bench"]:
             if b["name"].lower() == name.lower() and (b.get("city") or "").lower() == str(city or "").lower():
-                b.update({k: v for k, v in (("contact", contact), ("price", price), ("source", source), ("about", about)) if v})
+                b.update({k: v for k, v in (("contact", contact), ("price", price), ("source", source), ("about", about),
+                                            ("email", em)) if v})
                 if ok:
                     b["ok"] = True
+                    b["status"] = "ok"
                 return "updated %s on your bench" % name
         d["bench"].append({"name": name, "skill": skill, "city": str(city or "")[:60], "contact": str(contact or "")[:160],
                            "price": str(price or "")[:60], "source": str(source or "")[:200], "about": str(about or "")[:200],
-                           "ok": bool(ok), "t": int(time.time()), "tried": 0})
+                           "ok": bool(ok), "t": int(time.time()), "tried": 0, "kind": kind, "email": em,
+                           "status": "ok" if ok else "found"})
         d["bench"] = d["bench"][-800:]
-        return "%s is on your bench (%s%s)" % (name, skill, (", " + city) if city else "")
+        return "%s is on your bench (%s %s%s)%s" % (name, kind, skill, (", " + city) if city else "",
+                                                    " - recruit them with recruit (name, subject, text)" if kind == "operator" and em else "")
     return _mut(f)
+
+
+def recruit(name, subject, text, lang="fr"):
+    """his first email to an OPERATOR he found: who he is, the kind of small paid tasks, their rate and availability"""
+    import kino_sales as KS
+    d = _load()
+    b = next((x for x in d["bench"] if x["name"].lower() == str(name or "").strip().lower()), None)
+    if b is None:
+        return "nobody called %s on your bench - bench_add them first (kind operator, with their public email)" % name
+    if b.get("kind") != "operator":
+        return "%s is a provider (a business you book for clients), not someone you recruit" % b["name"]
+    if not b.get("email"):
+        return "no public email for %s - recruit only through a public professional address" % b["name"]
+    if KS.opted_out(b["email"]):
+        return "%s asked not to be written to - never again" % b["name"]
+    if b.get("status") not in ("found", None):
+        return "%s is already %s - no second first email" % (b["name"], b.get("status"))
+    today = [x for x in d["bench"] if x.get("contacted_t") and time.time() - float(x["contacted_t"]) < 86400]
+    if len(today) >= RECRUIT_PER_DAY:
+        return "not sent - %d operators contacted in the last 24 h, that is enough; more tomorrow" % RECRUIT_PER_DAY
+    body = str(text or "").strip()
+    if len(body) < 80:
+        return "not sent - write a real short message (who you are, the kind of paid tasks, ask their rate and availability)"
+    import kino_mail as KM
+    KM.send_now(b["email"], str(subject or "Petites missions rémunérées")[:120], body + "\n\n" + KS.footer(lang))
+
+    def f(dd):
+        for x in dd["bench"]:
+            if x["name"] == b["name"]:
+                x.update(status="contacted", contacted_t=int(time.time()))
+    _mut(f)
+    note("recruit", "email", "%s (%s)" % (b["name"], b["skill"]))
+    return "sent to %s <%s> - their answer will come to your inbox and to this bench" % (b["name"], b["email"])
+
+
+def bench_status(name, status, price="", note_=""):
+    """what you learned: interested (their rate, hours), tested (first task done), ok (reliable), no"""
+    if status not in STATUSES:
+        return "status is one of %s" % ", ".join(STATUSES)
+
+    def f(d):
+        for x in d["bench"]:
+            if x["name"].lower() == str(name or "").strip().lower():
+                x["status"] = status
+                if status == "ok":
+                    x["ok"] = True
+                if price:
+                    x["price"] = str(price)[:60]
+                if note_:
+                    x["about"] = (str(x.get("about") or "") + " | " + str(note_))[-300:]
+                return "%s is now %s" % (x["name"], status)
+        return "nobody called %s on your bench" % name
+    return _mut(f)
+
+
+def on_mail(addr, subject, text):
+    """kino_mail: an email from someone on the bench - STOP is honoured, an answer moves them to 'interested'"""
+    a = _email_in(addr)
+    if not a:
+        return
+    d = _load()
+    b = next((x for x in d["bench"] if x.get("email") == a), None)
+    if b is None:
+        return
+    import kino_sales as KS
+    stop = bool(KS.STOP_RE.search(str(subject or "") + " " + str(text or "")[:400]))
+    if stop:
+        KS.opt_out(a, "operator said stop")
+
+    def f(dd):
+        for x in dd["bench"]:
+            if x.get("email") == a:
+                x["reply"] = (str(subject or "") + " | " + str(text or ""))[:600]
+                x["reply_t"] = int(time.time())
+                if stop:
+                    x["status"] = "no"
+                elif x.get("status") in ("found", "contacted"):
+                    x["status"] = "interested"
+    _mut(f)
+    note("recruit_reply", "email", "%s %s" % (b["name"], "STOP" if stop else "answered"))
+    if not stop:
+        try:
+            import kino_urge as KU
+            KU.add("kino", "AN OPERATOR ANSWERED - %s (%s) replied to your recruiting email: \"%s\". Answer them (your email "
+                           "action), note their rate and hours (bench_status interested), and give them a first small paid "
+                           "task when a mission needs one." % (b["name"], b["skill"], str(text or "")[:400]))
+        except Exception:
+            pass
+
+
+def operators_line():
+    d = _load()
+    O = [b for b in d["bench"] if b.get("kind") == "operator"]
+    c = {}
+    for b in O:
+        c[b.get("status") or "found"] = c.get(b.get("status") or "found", 0) + 1
+    waiting = [b for b in O if b.get("status") == "interested"]
+    return "OPERATORS (people who work for you): %d - %s%s" % (
+        len(O), ", ".join("%s %d" % (k, c[k]) for k in STATUSES if c.get(k)) or "none yet",
+        ("\nANSWERS TO HANDLE: " + "; ".join("%s (%s): %s" % (b["name"], b["skill"], (b.get("reply") or "")[:160]) for b in waiting[:5]))
+        if waiting else "")
 
 
 def bench_find(skill="", city=""):
@@ -247,6 +370,10 @@ def block():
         pass
     head = ("REAL WORK YOU CAN SHOW (no names, no private details - 'a man near Paris', 'a barber'):\n" + (work or "(none yet)")
             + "\n\n")
+    try:
+        head += operators_line() + "\n\n"
+    except Exception:
+        pass
     return head + ("CHANNELS LIVE: %s\nWAITING FOR AN ACCOUNT (Matsy opens them - do not try them): %s\n"
             "THIS WEEK SO FAR: %s\n\nPEOPLE ASKING FOR HELP RIGHT NOW:\n%s\n\nYOUR BENCH: %d people (%d tested OK). Skills with "
             "nobody yet: %s\nADS: %s" % (
@@ -266,9 +393,9 @@ def week_line(now=None):
     for x in wk:
         kinds[x["kind"]] = kinds.get(x["kind"], 0) + 1
     newb = sum(1 for b in d["bench"] if now - b["t"] < 7 * 86400)
-    return "%s | bench: %d people (+%d this week, %d tested OK) | ads %s" % (
+    return "%s | bench: %d people (+%d this week, %d tested OK) | %s | ads %s" % (
         ", ".join("%s %d" % kv for kv in sorted(kinds.items())) or "no marketing actions recorded",
-        len(d["bench"]), newb, sum(1 for b in d["bench"] if b.get("ok")),
+        len(d["bench"]), newb, sum(1 for b in d["bench"] if b.get("ok")), operators_line().split("\n")[0],
         ("ON %.0f EUR/month" % float(d["ads"]["cap_eur_month"])) if ads_on() else "OFF")
 
 
@@ -282,11 +409,15 @@ MARKET_TIME = (
     "2) SHOW: ONE post about real work I did for someone this week (no private names or details - 'a man in Essonne with a "
     "noisy washing machine'), before/after, what it took, in a warm human voice. On every LIVE channel (skeet, toot, and "
     "social_post who=kinoverse for the networks Zernio has). market_note kind=post.\n"
-    "3) BENCH: fill 2-3 of the empty skills below near where my people live (France first, then the countries I work in): "
-    "freelancers (ComeUp, Malt, Fiverr profiles), student job sites (StudentPop, StaffMe), task sites (Yoojo, AlloVoisins), "
-    "local trades (directories, Google Maps), and friends I met who said what they do. bench_add name, skill, city, contact "
-    "(public email / form / profile link / phone), price if shown, source. Only public business contacts, never private "
-    "data. A first small paid test (help_task) only when a mission needs them.\n"
+    "3) MY PEOPLE (Matsy 13/11: operators and community managers, properly): first handle ANSWERS TO HANDLE below (answer "
+    "them by email, bench_status interested with their rate and hours). Then RECRUIT 2-3 OPERATORS - people who will work for "
+    "me on small paid tasks: PHONE operators (call a shop or a craftsman for a client, French and English first), COMMUNITY "
+    "managers (post and answer for a client's page), ERRAND runners in Paris / Île-de-France: freelancers with a public "
+    "profile and a public professional email (Malt, ComeUp, Fiverr, their own site, LinkedIn 'disponible'), students on job "
+    "boards, virtual assistants. bench_add kind operator with their email, then recruit (one warm short email each). Also "
+    "1-2 PROVIDERS for an empty skill below (a business I can book for a client: bench_add kind provider). Only public "
+    "professional contacts, never private data. A first small paid test (help_task) when a mission needs them; after a "
+    "good test bench_status ok.\n"
     "4) done: what I did and what I learned about which channel answers.\n"
     "Never spam: never the same text twice, never more than one answer per person, never in politics, religion, grief or "
     "health. Channels marked WAITING are not mine yet - do not try them.")

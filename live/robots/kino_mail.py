@@ -132,6 +132,11 @@ def check(first_run_quiet=True):
             KSL.on_mail(a, x["subject"], x["text"])
         except Exception:
             pass
+        try:                                       # 2026-11-13: an operator he recruited answers -> his bench + an urge
+            import kino_market as KMKm
+            KMKm.on_mail(a, x["subject"], x["text"])
+        except Exception:
+            pass
         if a == OWNER_EMAIL:                       # 2026-11-07: "payé H3" - Matsy paid a helper
             try:
                 import kino_helpers as KHL
