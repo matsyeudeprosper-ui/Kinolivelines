@@ -291,7 +291,12 @@ def first(who, where, url, text):
     except Exception:
         pass
     _mt = met_today()
-    if _asked(url):                                        # someone who asked for help: their own allowance
+    # 2026-11-13 (watch): five first words to five strangers in 3 minutes at 03:35 - a person does not meet people that fast,
+    # and Bluesky flags it. At least 2 minutes between two new people.
+    _last = max([float(m["t"]) for m in _mt] or [0])
+    if time.time() - _last < 120:
+        return "not sent - you just met someone %d s ago; give it two minutes (do something else meanwhile)" % (time.time() - _last)
+    if _asked(url):                                       # someone who asked for help: their own allowance
         if sum(1 for m in _mt if m.get("asked")) >= HELP_PER_DAY:
             return "not sent - you answered %d people who asked for help today; more tomorrow" % HELP_PER_DAY
     elif sum(1 for m in _mt if not m.get("asked")) >= NEW_PER_DAY:
