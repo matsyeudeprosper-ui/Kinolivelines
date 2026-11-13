@@ -257,6 +257,14 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
                     if c.get("app") == "kinochat" and uid != "kino":
                         try:
                             import kino_missions as KMc
+                            # 13/11 (watch): a 2nd job for the same toys ("check what Easy Cash buys") -> two reports in one
+                            # minute. A chat with an open job: the promise joins it (and wakes it) instead of opening another.
+                            _op = [m_ for m_ in KMc.for_uid(uid) if m_.get("cid") == cid and m_["status"] in KMc.OPEN
+                                   and not m_.get("repeat_h")]
+                            if _op:
+                                KMc.update(_op[-1]["id"], note="also promised in the chat: %s" % x["what"][:200], next_h=0.25)
+                                resolve(cid, x["id"], "blocked", "joined job %s" % _op[-1]["id"])
+                                continue
                             _mid = KMc.create(uid, cid, x["what"], name=str(c.get("name") or uid), lang=str(c.get("lang") or "fr"))
                             if _mid:
                                 resolve(cid, x["id"], "blocked", "became job %s" % _mid)

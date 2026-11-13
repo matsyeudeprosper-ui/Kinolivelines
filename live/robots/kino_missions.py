@@ -219,7 +219,13 @@ def block(limit=6):
         return ""
     L = []
     for m in D:
-        hist = "; ".join("[%s %s] %s" % (_ago(x["t"]), x["kind"], x["text"][:220]) for x in m["log"][-8:]) or "nothing done yet"
+        try:                                   # 13/11 (watch): Pekos switched to French, the job kept writing English - the
+            import robot_chat as RCl           # language is the one they write in NOW, not the one at the job's start
+            _c = json.load(open(os.path.join(HERE, "chats", m["cid"] + ".json"), encoding="utf-8"))
+            m = dict(m, lang=RCl.member_lang(_c, m.get("lang") or "fr"))
+        except Exception:
+            pass
+        hist ="; ".join("[%s %s] %s" % (_ago(x["t"]), x["kind"], x["text"][:220]) for x in m["log"][-8:]) or "nothing done yet"
         L.append("- %s for %s (%s%s, opened %s, status %s%s): %s\n  so far: %s" % (
             m["id"], m.get("name") or m["uid"], ("PAID %.0f EUR" % m["eur"]) if m.get("paid") else "free",
             (", repeats every %.0f h" % m["repeat_h"]) if m.get("repeat_h") else "", _ago(m["t"]), m["status"],
