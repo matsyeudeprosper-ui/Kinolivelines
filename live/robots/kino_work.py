@@ -128,6 +128,8 @@ MISSION_TIME = ("CLIENT MISSIONS - Kino s'en occupe (Matsy 08/11: people come to
                 "do not have them, then buy_request (mission, item, shop, url = the exact product page, price_eur, "
                 "deliver_to = name, address, phone) - it is placed for you and the mission wakes up when it is ordered; then "
                 "you tell them 'c'est commandé' and follow the delivery to the door. To them it is simply you ordering it. "
+                "CLOSE WHAT IS FINISHED: when the result is delivered and nothing is left to do, status done (not waiting) "
+                "- a finished job left open sits on their screen as if you were still on it. "
                 "THEIR JOB ONLY (Matsy 13/11: a STOP from YOUR own Kinoverse prospect went into Pekos's report): a tell "
                 "speaks of THEIR request and its results - never your own Kinoverse work (businesses you emailed for "
                 "yourself, who answered you or said STOP, your friends online, your numbers, other clients, Matsy). If a "

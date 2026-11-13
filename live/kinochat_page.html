@@ -80,7 +80,7 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 #jobd .jc{flex:none;color:var(--mut);font-size:14px}
 #jobd .lv{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:lvp 1.4s ease-in-out infinite}
 #jobsb .dg{max-width:none;margin:8px 0;animation:none}
-#jobsb.car{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+#jobsb.car{display:flex;align-items:flex-start;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 #jobsb.car::-webkit-scrollbar{display:none}
 #jobsb.car .dg{flex:0 0 100%;scroll-snap-align:center;box-sizing:border-box}
 #jobdots{display:flex;justify-content:center;gap:7px;margin:6px 0 2px;min-height:8px}
@@ -377,8 +377,11 @@ function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.no
   var cl=P.length?'<div class="cl">'+P.map(function(p,i){var k=i<st?'d':(i===st?'n':'w');
     return '<div class="ci '+k+'"><b>'+(k==='d'?'✓':(k==='n'?'●':'○'))+'</b>'+esc(p)+'</div>'}).join('')+'</div>':'';
   var pct=P.length?Math.round(100*st/P.length):0;
-  out+='<div class="dg'+(live?' on':'')+(done?' dn':'')+'"><div class="hd"><span>'+esc(j.title||T('Ta demande','Your request'))+'</span><span class="jf">'+foot+'</span></div>'+
-   (done&&P.length?'':'<div class="st2">'+esc(stage)+'</div>')+cl+
+  // 2026-11-13 (owner: "these cards look like done work"): a finished job is one compact line, not a full card
+  if(done){out+='<div class="dg dn"><div class="hd"><span>'+esc(j.title||T('Ta demande','Your request'))+'</span><span class="jf">'+foot+'</span></div>'+
+   (j.stage?'<div class="st2">'+esc(j.stage)+'</div>':'')+'</div>';return}
+  out+='<div class="dg'+(live?' on':'')+'"><div class="hd"><span>'+esc(j.title||T('Ta demande','Your request'))+'</span><span class="jf">'+foot+'</span></div>'+
+   '<div class="st2">'+esc(stage)+'</div>'+cl+
    (live?((tr[1]?'<div class="tr o2">✓ '+esc(tr[1])+'</div>':'')+(tr[0]?'<div class="tr o1">✓ '+esc(tr[0])+'</div>':'')+
     '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div>'):'')+
    (done?'':(P.length?'<div class="bar pg"><s style="width:'+pct+'%"></s>'+(live?'<i></i>':'')+'</div>':'<div class="bar"><i></i></div>'))+'</div>'});
