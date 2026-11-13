@@ -1301,8 +1301,11 @@ def _act0(j, person, W=None):
         if a == "help_offer":              # 2026-11-13: a gig card in the Kino Chat of someone who opted in
             return KHP.offer(tid, str(j.get("uid") or j.get("who") or "").strip())
         if a == "help_task":
+            # 13/11 (watch): the Leboncoin gig was created without its mission, so Matsy's "yes" never reached the toys job -
+            # a task made while working on a mission (the step's "for") belongs to that mission
+            _for = str(j.get("mission") or j.get("for") or "")
             return KHP.task(j.get("what") or j.get("text"), j.get("why"), j.get("proof"), j.get("pay") or 0, j.get("hours") or 48,
-                            j.get("place") or "", mission=j.get("mission") or "")
+                            j.get("place") or "", mission=_for)
         if a == "help_ask":
             return KHP.ask(tid, j.get("who") or j.get("to"), j.get("text") or j.get("body"), W=W)
         if a == "help_accept":
