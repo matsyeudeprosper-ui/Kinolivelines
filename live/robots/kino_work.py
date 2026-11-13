@@ -314,7 +314,7 @@ def mission_now(now=None):
     except Exception:
         return False
     last = max([float(x["t"]) for x in _load().get("sessions") or [] if x.get("care") == "missions"] or [0])
-    return now - last >= 90
+    return now - last >= 600                 # 13/11: 90 s let the lane run 56 sessions in 2 h
 
 
 def mission_task():
@@ -1705,9 +1705,28 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
         diary("Done: %s" % rec["summary"])
         rec["s"] = round(time.time() - t0)
 
+        if rec.get("care") == "missions":
+            # 2026-11-13 (watch: 56 missions sessions in 2 h): a due mission the session did not touch stayed due, and the
+            # lane started again 90 s later, all day. What was due and still is waits an hour now.
+            try:
+                import kino_missions as KMe
+                _now = time.time()
+
+                def _push(dm):
+                    for m in dm["missions"]:
+                        if m["status"] in KMe.OPEN and float(m.get("next_t") or 0) <= _now:
+                            m["next_t"] = _now + 3600
+                KMe._mut(_push)
+            except Exception:
+                pass
+
         def f(d):
             d.setdefault("sessions", []).append(rec)
-            d["sessions"] = d["sessions"][-60:]
+            # 2026-11-13 (watch): 56 missions sessions pushed every friend and market session out of the last 60 - his
+            # routine thought he had not seen a friend for 999 h. The missions lane keeps its own 20, the rest 60.
+            _ms = [s for s in d["sessions"] if s.get("care") == "missions"][-20:]
+            _ot = [s for s in d["sessions"] if s.get("care") != "missions"][-60:]
+            d["sessions"] = sorted(_ms + _ot, key=lambda s: float(s.get("t") or 0))
             if rec["project"]:
                 P = d.setdefault("projects", [])
                 p = next((x for x in P if x["name"].lower() == rec["project"].lower()), None)
