@@ -432,6 +432,19 @@ def gig_answer(uid, tid, act, text="", photo=""):
                 x["t_answer"] = time.time()
     _mut(f)
     _log("GIG %s %s %s" % (tid, uid, st))
+    # 2026-11-13 (watch: Matsy accepted the Leboncoin gig at 21:48; at 23:36 the toys job still told Pekos "nobody has agreed"):
+    # the client's job this task serves hears it at once and wakes up
+    _mid = t.get("mission") or t.get("for_mission")
+    if _mid:
+        try:
+            import kino_missions as KMg
+            KMg.update(_mid, next_h=0.25, note={"accepted": "HELPER %s ACCEPTED task %s (%s) - it is being done; tell the client "
+                                                            "plainly that it is in hand, no 'paste it yourself'" % (name, tid, t["what"][:80]),
+                                                "taken": "", "declined": "helper %s declined task %s - offer it to someone else" % (name, tid),
+                                                "proof_sent": "HELPER %s SENT THE PROOF for task %s: \"%s\"%s - check it, then tell the client the "
+                                                              "result" % (name, tid, str(text or "")[:200], " + photo" if path else "")}.get(st) or "")
+        except Exception:
+            pass
     try:
         if ON_GIG_UPDATE:
             ON_GIG_UPDATE(uid, tid, st)
