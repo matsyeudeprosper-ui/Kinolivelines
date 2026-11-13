@@ -379,7 +379,53 @@ def _wait_focus(log=None):
         time.sleep(0.5)
 
 
+_LIMIT = {"until": 0.0}
+OLLAMA_FILE = r"C:\ProgramData\kino_secret\ollama.json"      # {"key": "...", "model": "gpt-oss:120b"} - written by the owner
+OLLAMA_URL = "https://ollama.com/api/chat"
+
+
+def _ollama(system, user, timeout=150, log=None, was=""):
+    """Ollama Cloud: the backup brain while Claude's plan limit is reached -> text or None"""
+    try:
+        cfg = json.load(open(OLLAMA_FILE, encoding="utf-8"))
+        key = str(cfg.get("key") or "").strip()
+        if not key:
+            return None
+        import urllib.request
+        body = json.dumps({"model": cfg.get("model") or "gpt-oss:120b", "stream": False,
+                           "messages": [{"role": "system", "content": str(system)},
+                                        {"role": "user", "content": user if isinstance(user, str) else json.dumps(user, ensure_ascii=False)}]}).encode("utf-8")
+        req = urllib.request.Request(OLLAMA_URL, data=body, headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
+        t0 = time.time()
+        with urllib.request.urlopen(req, timeout=min(int(timeout or 150), 180)) as r:
+            out = json.loads(r.read().decode("utf-8", "replace"))
+        txt = ((out.get("message") or {}).get("content") or "").strip() or None
+        try:
+            io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
+                {"t": int(time.time()), "m": "ollama:" + str(cfg.get("model") or "gpt-oss:120b"), "usd": 0, "tag": os.path.basename(log) if log else "",
+                 "err": None if txt else "empty", "ms": int((time.time() - t0) * 1000), "src": "fallback for " + str(was), "out": len(txt or "")}) + "\n")
+        except Exception:
+            pass
+        if log:
+            try:
+                io.open(log, "a", encoding="utf-8").write("\n--- ollama (Claude limit) ---\n%s\n" % ((txt or "(none)")[-6000:]))
+            except Exception:
+                pass
+        return txt
+    except Exception as e:
+        try:
+            io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
+                {"t": int(time.time()), "m": "ollama", "usd": 0, "err": "ollama: %s" % str(e)[:150], "src": "fallback for " + str(was)}) + "\n")
+        except Exception:
+            pass
+        return None
+
+
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
+    if time.time() < _LIMIT["until"] and os.path.exists(OLLAMA_FILE):   # 2026-11-13: Claude's limit reached a moment ago
+        _ot = _ollama(system, user, timeout, log, model)
+        if _ot is not None:
+            return _ot
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
     _wait_focus(log)
     if getattr(_TL, "brain", None) == "openai" and time.time() > _OA_DOWN["until"]:   # 2026-10-24 (Kino-O): through OpenAI
@@ -485,6 +531,9 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                         pass
                     if j.get("is_error") and "safeguards flagged" in str(j.get("result") or ""):
                         tm["flagged"] = True
+                    if j.get("is_error") and re.search(r"hit your|usage limit|5-hour limit|weekly limit|credit balance",
+                                                       str(j.get("result") or ""), re.I):
+                        tm["limit"] = True
                     out.put(j.get("result") if not j.get("is_error") else None)
                     return
         except Exception:
@@ -512,6 +561,13 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
     # same call once more on the other model instead of silence.
     # 2026-11-03 18:09-18:10 UTC: flagged on OPUS (the owner's model) twice - no retry existed that way, he "tripped twice".
     # A flag on one model is retried once on the other, whichever it was.
+    if txt is None and tm.get("limit"):
+        # 2026-11-13 (owner: "until I upgrade to Max, callbacks to the Ollama cloud API - I have keys"): the plan's limit
+        # silenced Kino 3 times in 2 days - the same call goes to Ollama Cloud, and the next 15 min go there directly
+        _LIMIT["until"] = time.time() + 900
+        _ot = _ollama(system, user, timeout, log, model)
+        if _ot is not None:
+            return _ot
     if txt is None and tm.get("flagged") and getattr(_TL, "member", False) and not getattr(_TL, "flag_retry", False):
         _alt = "sonnet" if model == "opus" else "opus"
         if log:
