@@ -19128,6 +19128,7 @@ def _kino_act(cid, user, act, en=False):
 
 
 _CHAT_ACT = {}          # cid -> what Kino is doing right now, shown under its name (2026-10-20 owner review item 8)
+_CHAT_QUICK = {}        # 2026-11-13: cid -> the quick search running inside a reply (the dock shows it)
 _CHAT_STEPS = {}        # cid -> [(t, text)] Kino's real steps while it builds (2026-10-20: visible thinking)
 
 
@@ -21970,6 +21971,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _rounds += 1
             _CHAT_ACT[cid] = ("🔎 regarde…" if lang != "en" else "🔎 looking it up…") if _rounds == 1 else \
                              ("🔎 je creuse…" if lang != "en" else "🔎 digging further…")
+            # 2026-11-13 (owner: "a work in progress indicator for background tasks that are not paid missions"): the dock
+            # shows the quick search while it runs
+            _CHAT_QUICK[cid] = {"t": time.time(), "text": " · ".join(q_[:60] for _, q_ in _lk)[:110], "round": _rounds}
             _new = [(q_, _kino_websearch(q_) if k_ == "cherche" else _kino_domain(q_, str(user.get("id") or "")) if k_ == "domaine"
                      else _kino_lookup(user, c, q_)) for k_, q_ in _lk if q_ not in _asked]
             _asked.update(q_ for _, q_ in _lk)
@@ -21988,9 +21992,21 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             if not (r3 and (r3.get("say") or r3.get("acts"))):
                 break
             say, fil = r3["say"], r3["fil"] or fil
-            _lk = [(k, v) for k, v in r3["acts"] if k in ("regarde", "cherche", "domaine") and v and v not in _asked][:2] if not _last else []
+            _more = [(k, v) for k, v in r3["acts"] if k in ("regarde", "cherche") and v and v not in _asked]
+            _lk = _more[:2] if not _last else []
             acts = [x for x in r3["acts"] if x[0] not in ("regarde", "cherche", "domaine")]
+            if _last and _more and c.get("app") == "kinochat":
+                # 2026-11-13 (Pekos's TV: three empty looks, then "je te cherche ça maintenant" - and the 4th look was dropped,
+                # a promise with nothing behind it): what he still wants to look for becomes a real job, with its card
+                try:
+                    import kino_missions as _KMs4
+                    _mid4 = _KMs4.create(uid, cid, "Chercher pour %s : %s - puis lui envoyer le résultat (liens vérifiés)" % (
+                        user.get("name") or uid, _more[0][1][:300]), name=user.get("name") or "", lang=lang)
+                    _KO._log(cid, "MISSION", "%s <- search still wanted after the last look: %s" % (_mid4, _more[0][1][:120]))
+                except Exception:
+                    pass
         _CHAT_ACT.pop(cid, None)
+        _CHAT_QUICK.pop(cid, None)
     except Exception as e:
         try:
             _KO._log(cid, "LOOKUP_ERROR", "%s %s" % (type(e).__name__, e))
@@ -26980,6 +26996,8 @@ def chat_get(user, cid, ui=""):
     try:                                             # 2026-11-12 (owner: a live line of what Kino is doing on their job)
         _dg = json.load(open(os.path.join(DIR, "robots", "kino_doing.json"), encoding="utf-8")).get(c["id"])
         c["doing"] = _dg if _dg and time.time() - float(_dg.get("t") or 0) < 240 else None
+        _qk = _CHAT_QUICK.get(c["id"])
+        c["quick"] = _qk if _qk and time.time() - float(_qk.get("t") or 0) < 180 else None
         import kino_missions as _KMq                 # 2026-11-12 (owner: "no estimate, it leaves him with questions"): job cards
         c["jobs"] = [{"id": m["id"], "title": m.get("title") or "", "stage": m.get("stage") or "",
                       "new": not m.get("log"), "eta": int(float(m.get("next_t") or 0)), "status": m["status"],

@@ -63,6 +63,12 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 @keyframes lvp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 #jobd{display:none}
+#jobq{display:none}
+#jobq.on{display:flex;align-items:center;gap:8px;margin:4px 10px 0;padding:6px 12px;border-radius:12px;font-size:12.5px;color:var(--ink);background:rgba(245,158,11,.08);border:1px dashed rgba(245,158,11,.55);animation:pop .25s ease-out}
+#jobq .ql{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#jobq .ql b{color:#f59e0b;font-weight:600}
+#jobq .qi{animation:bob 1.5s ease-in-out infinite}
+#jobq .dots span{background:#f59e0b}
 #jobd.on{display:flex;align-items:center;gap:8px;margin:4px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;line-height:1.3;
  background:color-mix(in srgb,var(--acc) 9%,var(--bar));border:1px solid color-mix(in srgb,var(--acc) 28%,transparent);animation:pop .25s ease-out;-webkit-tap-highlight-color:transparent}
 #jobd.on.live{box-shadow:0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent),0 4px 18px color-mix(in srgb,var(--acc) 18%,transparent)}
@@ -283,7 +289,7 @@ html[data-th="clair"] .tk.rd{color:#3a9ee0}
 <div id="chips"></div>
 <div id="rbar"><span id="rbt"></span><button id="rbx" aria-label="Annuler">✕</button></div>
 <button id="down" aria-label="Bas">⌄<i></i></button>
-<div id="jobd"></div>
+<div id="jobq"></div><div id="jobd"></div>
 <footer>
  <div class="box">
   <button class="ib" id="att" aria-label="Joindre"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -383,6 +389,11 @@ var JOBSH=false;
 function jobList(){var J=(C&&C.jobs||[]).slice(),dg=C&&C.doing&&C.doing.text?C.doing:null;
  if(dg&&!J.some(function(j){return j.id===dg.mid}))J.push({id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t});return J}
 var JOBDL='',JOBLAST='';
+// 2026-11-13 (owner: "background tasks that are not paid missions should have their own indicator, a different style"):
+// a quick search inside a reply shows here while it runs - amber, light, gone when the answer lands
+var JOBQ='';function quickDock(){var el=$('jobq');if(!el)return;var q=!GID&&C&&C.quick&&C.quick.text?C.quick:null;
+ var h=q?'<span class="qi">⚡</span><span class="ql"><b>'+T('Je cherche','Looking up')+'</b> · '+esc(q.text)+'</span><span class="dots"><span></span><span></span><span></span></span>':'';
+ if(h!==JOBQ){el.innerHTML=h;JOBQ=h;el.className=h?'on':''}}
 function jobDock(){var el=$('jobd');if(!el)return;var JA=GID?[]:jobList(),dg=C&&C.doing&&C.doing.text?C.doing:null,now=Date.now()/1000;
  var J=JA.filter(function(j){return j.status!=='done'}),D=JA.filter(function(j){return j.status==='done'&&now-(j.end||0)<7200});
  if(!J.length&&D.length){var hd='<span class="ic">✔</span><span class="jl"><b>'+esc(D[0].title||T('Ta demande','Your request'))+'</b> · '+T('Terminé','Done')+'</span><span class="jc">⌃</span>';
@@ -405,7 +416,7 @@ function jobDots(){var b=$('jobsb'),d=$('jobdots');if(!b||!d)return;var n=b.chil
 function jobPanel(){if(JOBSH&&$('sh').classList.contains('on')){var b=$('jobsb'),nh=jobCards();if(b&&nh!==JOBLAST){var x=b.scrollLeft;b.innerHTML=nh;b.scrollLeft=x;JOBLAST=nh;jobDots()}}else JOBSH=false}
 function jobOpen(){JOBSH=true;JOBLAST=jobCards();shOpen('<h3>'+T('Ce que je fais pour toi','What I am doing for you')+'</h3><div id="jobsb" class="car">'+JOBLAST+'</div><div id="jobdots"></div>');
  var b=$('jobsb');if(b)b.addEventListener('scroll',function(){clearTimeout(b._t);b._t=setTimeout(jobDots,60)},{passive:true});jobDots()}
-function paint(force){try{jobDock()}catch(e){}if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
+function paint(force){try{jobDock();quickDock()}catch(e){}if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
  list.forEach(function(m){var d=dayOf(m.t);if(d!==lastDay){h+='<div class="day"><span>'+d+'</span></div>';lastDay=d;prev=null}h+=bubble(m,C.msgs.indexOf(m),prev);prev=m});

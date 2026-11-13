@@ -98,7 +98,62 @@ def search(q, n=8):
         out.append({"title": _text(m.group(2))[:160], "url": url, "snippet": _text(m.group(3) or "")[:300]})
         if len(out) >= n:
             break
+    if not out:
+        # 2026-11-13 (watch: 33 searches came back empty - the TV for Pekos, the helper bench): DuckDuckGo now answers this
+        # server with a bot check page, and Bing serves scripts junk (hotels for "plombier Paris"). Claude's own web search
+        # (claude.exe, WebSearch tool, haiku) returns real results - it is the fallback.
+        try:
+            out = _claude_search(q, n)
+            _log("SEARCH(claude) %s -> %d" % (q[:120], len(out)))
+            return out
+        except Exception as e:
+            _log("SEARCH(claude) failed %s" % str(e)[:120])
     _log("SEARCH %s -> %d" % (q[:120], len(out)))
+    return out
+
+
+def _claude_search(q, n=8):
+    import json as _j, os as _o, subprocess as _sp
+    exe = _o.path.join(_o.environ.get("USERPROFILE", r"C:\Users\Administrator"), ".local", "bin", "claude.exe")
+    prompt = ("Search the web for: %s\nReply ONLY with a JSON array of up to %d objects {\"title\", \"url\", \"snippet\"} taken "
+              "from real search results (no invented links), most useful first." % (q, n))
+    r = _sp.run([exe, "-p", prompt, "--allowedTools", "WebSearch", "--model", "haiku", "--output-format", "text",
+                 "--no-session-persistence"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
+                creationflags=0x08000000)
+    m = re.search(r"\[.*\]", r.stdout or "", re.S)
+    if not m:
+        return []
+    out = []
+    for x in _j.loads(m.group(0)):
+        u = str(x.get("url") or "")
+        if u.startswith("http"):
+            out.append({"title": str(x.get("title") or "")[:160], "url": u, "snippet": str(x.get("snippet") or "")[:300]})
+    return out[:n]
+
+
+def _bing(q, n=8):
+    import base64
+    h, _ = _get("https://www.bing.com/search?q=" + urllib.parse.quote(q))
+    out = []
+    for blk in re.findall(r'(?is)<li class="b_algo"(.*?)</li>', h):
+        m = re.search(r'(?is)<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', blk)
+        if not m:
+            continue
+        url = html.unescape(m.group(1))
+        if "bing.com/ck/a" in url:                     # Bing's click redirect: u=a1<base64url of the real address>
+            u = urllib.parse.parse_qs(urllib.parse.urlparse(url).query).get("u", [""])[0]
+            if u.startswith("a1"):
+                try:
+                    b = u[2:]
+                    url = base64.urlsafe_b64decode(b + "=" * (-len(b) % 4)).decode("utf-8", "replace")
+                except Exception:
+                    pass
+        if not url.startswith("http") or "bing.com" in url:
+            continue
+        sn = re.search(r'(?is)<p[^>]*>(.*?)</p>', blk)
+        out.append({"title": _text(m.group(2))[:160], "url": url, "snippet": _text(sn.group(1) if sn else "")[:300]})
+        if len(out) >= n:
+            break
     return out
 
 
