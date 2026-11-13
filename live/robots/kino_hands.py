@@ -11,7 +11,7 @@ Every command, its output and its time are logged (robots/kino_hands.log, and C:
 run(cmd)            -> {"ok", "code", "out"}   a PowerShell command as kino, cwd = his home, time and output limits
 request(...)        -> a request for something outside his world, waiting for the owner
 """
-import ctypes, ctypes.wintypes as wt, json, os, threading, time, uuid
+import ctypes, ctypes.wintypes as wt, json, os, re, threading, time, uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WORLD = r"C:\KinoWorld"
@@ -130,6 +130,18 @@ def request(what, why, command="", kind="admin", extra=None):
     with _LK:
         R = _rload()
         if any(r["status"] == "waiting" and r["what"] == what for r in R):
+            return None
+        # 2026-11-13 (watch: 23 cards "send email to Trattoria Don Vito" in 2 h, worded a little differently each time): a
+        # request that looks like one already waiting is the same request; and at most 6 new ones reach Matsy in 2 h
+        _w = lambda t: {x for x in re.findall(r"[\w@.]{4,}", str(t).lower())}
+        _me = _w(what)
+        for r0 in R:
+            if r0["status"] == "waiting" and _me:
+                _o = _w(r0["what"])
+                if _o and len(_me & _o) / float(min(len(_me), len(_o))) >= 0.6:
+                    return None
+        if sum(1 for r0 in R if time.time() - float(r0.get("t") or 0) < 7200) >= 6 and kind not in ("buy", "paycheck"):
+            _log("REQUEST HELD (6 in 2 h already): %s" % str(what)[:150])
             return None
         r = {"id": uuid.uuid4().hex[:8], "t": time.time(), "what": str(what)[:300], "why": str(why)[:500],
              "command": str(command)[:2000], "kind": kind, "status": "waiting"}

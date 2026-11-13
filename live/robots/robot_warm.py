@@ -384,8 +384,19 @@ OLLAMA_FILE = r"C:\ProgramData\kino_secret\ollama.json"      # {"key": "...", "m
 OLLAMA_URL = "https://ollama.com/api/chat"
 
 
+def in_fallback():
+    """2026-11-13: Claude's limit was hit a moment ago - the backup brain is answering"""
+    return time.time() < _LIMIT["until"]
+
+
+_OLLAMA_STRICT = ("\n\nSTRICT (backup mode): use ONLY facts written above - never invent what you did, who you talked to, "
+                  "numbers or plans; if you do not know, say it simply. Control lines (#fil, #reaction...) go ALONE on their "
+                  "own line at the very end, never inside a sentence. Short answers.")
+
+
 def _ollama(system, user, timeout=150, log=None, was=""):
     """Ollama Cloud: the backup brain while Claude's plan limit is reached -> text or None"""
+    system = str(system) + _OLLAMA_STRICT   # 13/11 watch: on Ollama he invented "a friend on Leboncoin" and leaked "#reaction"
     try:
         cfg = json.load(open(OLLAMA_FILE, encoding="utf-8"))
         key = str(cfg.get("key") or "").strip()

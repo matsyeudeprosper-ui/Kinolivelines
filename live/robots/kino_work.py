@@ -301,9 +301,21 @@ def _last_main(d):
     return max([float(x["t"]) for x in d.get("sessions") or [] if x.get("care") not in ("lab", "missions")] or [0])
 
 
+def _fallback():
+    """2026-11-13 (watch: 600 Ollama calls in 4 h - 23 identical requests to Matsy, invented facts): while the backup brain
+    answers, his desk rests - chats go on, background work waits for Claude"""
+    try:
+        import robot_warm as RWf
+        return RWf.in_fallback()
+    except Exception:
+        return False
+
+
 def mission_now(now=None):
     """2026-11-12 (owner: "it feels slow, the client feels it is not moving"): the missions lane - a person's job starts
     within a minute or two of being due, side by side with whatever else he is doing"""
+    if _fallback():
+        return False
     now = now or time.time()
     if _BUSY["mis"]:
         return False
@@ -324,6 +336,8 @@ def mission_task():
 
 def lab_now(now=None):
     """the lab lane: a session every 2 hours, day and night, whatever else he is doing"""
+    if _fallback():
+        return False
     now = now or time.time()
     return not _BUSY["lab"] and _lab_due(_load(), now)
 
@@ -391,6 +405,8 @@ def routine_line(now=None):
 
 def due(person, ctx, now=None):
     """does he feel like sitting down at his computer now? (his needs and his body decide; a few times a day at most)"""
+    if _fallback():
+        return False
     now = now or time.time()
     if _BUSY["on"]:
         return False
@@ -1639,6 +1655,9 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
         done_w = []
         _doing_cids = set()
         for i in range(STEPS):
+            if i and _fallback():                  # 13/11: Claude's limit hit mid-session - stop, the backup brain does no desk work
+                _log("%s PAUSED at step %d - backup brain (Claude limit)" % (person, i + 1))
+                break
             _task = task
             if rec.get("care") == "missions" and "MISSIONS DUE NOW:" in task:
                 try:

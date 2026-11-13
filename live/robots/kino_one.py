@@ -370,6 +370,11 @@ def parse(raw, partial=False):
         else:
             acts.append((k, v))
     say = ACT_RE.sub("", raw)
+    # 2026-11-13 (watch, backup brain): "Hey! I'm here. #reaction 😊" / "... #regarde exact reward ratio" - a control tag
+    # written inside a sentence went out to the member. Anywhere in the text, a known tag and what follows it on the line go.
+    say = re.sub(r"[ \t]*#(reaction|react|regarde|look|check|fil|thread|pense|think|cherche|search|web|retiens|remember|"
+                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure)\b[^\n]*", "", say)
+    say = re.sub(r"(?m)[ \t]*…[ \t]*$", "", say)   # a dangling "…" at the end of a line
     # 2026-10-29 (owner screenshot): a stray "</br>" after his #fil line came out as a bubble of its own - HTML line-break
     # tags are formatting debris, never words: a break becomes a line break, a bare tag disappears
     say = re.sub(r"(?i)</?\s*br\s*/?>", "\n", say)
