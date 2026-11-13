@@ -63,6 +63,30 @@ main{flex:1;overflow-y:auto;padding:12px 12px 8px;
 @keyframes lvp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 #jobd{display:none}
+.gc{max-width:88%;padding:14px 14px 12px;border-radius:20px;background:linear-gradient(160deg,color-mix(in srgb,var(--acc) 10%,var(--surface)) 0%,var(--surface) 55%);
+ border:1px solid color-mix(in srgb,var(--acc) 35%,var(--border));box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.gc.off{opacity:.55}
+.gc .gh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.gc .gbadge{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--acc) 18%,transparent);font-size:15px}
+.gc .gtl{flex:1;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--mut);font-weight:600}
+.gc .gpill{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--mut)}
+.gc .gpill.n{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc)}
+.gc .gpill.a{background:rgba(59,130,246,.18);color:#60a5fa}.gc .gpill.w{background:rgba(245,158,11,.16);color:#f59e0b}
+.gc .gpill.p{background:color-mix(in srgb,var(--acc) 25%,transparent);color:var(--acc)}
+.gc .gw{font-size:15px;line-height:1.45;font-weight:600;color:var(--ink);margin-bottom:12px}
+.gc .gg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.gc .gt{background:rgba(127,127,127,.08);border:1px solid var(--border);border-radius:12px;padding:7px 8px;min-width:0}
+.gc .gt .gk{display:block;font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc .gt .gv{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc .gt.money .gv{color:var(--acc);font-size:15px;font-weight:800}
+.gc .gp{font-size:12.5px;color:var(--ink);opacity:.85;background:rgba(127,127,127,.06);border-left:3px solid color-mix(in srgb,var(--acc) 60%,transparent);border-radius:8px;padding:7px 10px;margin-bottom:10px}
+.gc .gp span{display:block;font-size:10.5px;color:var(--mut);margin-bottom:2px}
+.gc .gs{font-size:11.5px;color:var(--mut);margin:-4px 0 10px}
+.gc .gn{font-size:13px;color:var(--ink);opacity:.85;margin:2px 0 10px}.gc .gn.ok{color:var(--acc);opacity:1;font-weight:600}
+.gc .gf{display:flex;gap:8px}
+.gc .gb{flex:1;border:0;border-radius:13px;padding:11px 12px;font-size:14px;font-weight:700;cursor:pointer}
+.gc .gb.pri{background:var(--acc);color:#04130a;box-shadow:0 4px 14px color-mix(in srgb,var(--acc) 35%,transparent)}
+.gc .gb.ghost{flex:.7;background:transparent;border:1px solid var(--border);color:var(--mut)}
 .payc.kreq .gl{font-size:13px;color:var(--mut);margin:4px 0;white-space:pre-wrap}
 .payc.kreq pre.kq{white-space:pre-wrap;font-size:12px;opacity:.85;max-height:200px;overflow:auto;margin:6px 0;padding:8px;border-radius:8px;background:rgba(127,127,127,.12)}
 .payc.kreq .pb button[data-y='1']{background:var(--acc);color:#04130a;font-weight:700}
@@ -763,30 +787,27 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
 // ---- 2026-11-08 (owner: "talk is free, real work is paid - PayPal, I approve each payment"): Kino's price card
 // 2026-11-13 (owner: "existing users can also accept gig offers if they are willing to"): Kino offers a small paid task -
 // accept / decline, then send the proof (text + photo); every tap reaches Kino at once
-function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',pay=g.pay?(String(g.pay).replace('.',EN?'.':',')+' €'):T('Un coup de main','A favour'),
- due=g.due?jobHM(g.due):'';
- var body='<div class="pw">🙋 '+T('Une mission pour Kino','A task for Kino')+'</div><div class="pt">'+esc(g.what)+'</div>'+
-  (g.place?'<div class="gl">📍 '+esc(g.place)+'</div>':'')+(due?'<div class="gl">⏱ '+T('Avant ','By ')+due+'</div>':'')+
-  (g.proof?'<div class="gl">📎 '+T('Preuve attendue : ','Proof expected: ')+esc(g.proof)+'</div>':'')+(g.pay?'<div class="pe">'+T('Tu gagnes ','You earn ')+pay+'</div><div class="gl">'+T('Payé par PayPal dès que Kino a vérifié ta preuve.','Paid by PayPal as soon as Kino has checked your proof.')+'</div>':'<div class="gl" style="margin-top:8px">🤝 '+T('Un service rendu, sans paiement','A favour, unpaid')+'</div>');
- var foot=st==='sent'?'<div class="pb"><button data-ga="'+esc(g.tid)+'">'+T('J’accepte','I accept')+'</button><button class="npb" data-gd="'+esc(g.tid)+'">'+T('Je ne peux pas','I can’t')+'</button></div>':
-  st==='accepted'?'<div class="ps" style="margin-bottom:8px">✓ '+T('C’est pour toi. Envoie la preuve quand c’est fait.','It’s yours. Send the proof when it’s done.')+'</div><div class="pb"><button data-gp="'+esc(g.tid)+'">📷 '+T('Envoyer la preuve','Send the proof')+'</button></div>':
-  st==='proof_sent'?'<div class="ps">⏳ '+T('Preuve envoyée, Kino vérifie.','Proof sent, Kino is checking.')+'</div>':
-  st==='declined'?'<div class="ps">✕ '+T('Pas cette fois. Merci quand même !','Not this time. Thanks anyway!')+'</div>':
-  st==='taken'?'<div class="ps">'+T('Quelqu’un l’a déjà prise. La prochaine sera pour toi !','Someone already took it. Next time!')+'</div>':
-  st==='paid'?'<div class="ps">✓ '+T('Payé. Merci !','Paid. Thank you!')+'</div>':'';
- return '<div class="m gap"><div class="payc gig'+(st==='declined'||st==='taken'?'" style="opacity:.6':'')+'">'+body+foot+'</div></div>'}
-// 2026-11-13 (owner: "I don't see any card"): Kino's requests to the owner (approve / refuse) were drawn only in the
-// OwlNest app - Kino Chat shows them too; the server lets only an admin answer
-function kreqCard(m,i){var r=m.req||{},st=m.status||'waiting',em=r.kind==='email',cmd='';
- if(r.command){try{var e=JSON.parse(r.command);cmd=em?(T('À : ','To: ')+(e.to||'')+'\n'+T('Sujet : ','Subject: ')+(e.subject||'')+'\n\n'+(e.body||'')):
-  (e.url?(T('Lien : ','Link: ')+e.url+'\n'):'')+(e.deliver_to?(T('Livraison : ','Delivery: ')+e.deliver_to):'')||r.command}catch(x){cmd=r.command}}
- var ic=r.kind==='proposal'?'💡':r.kind==='buy'?'🛒':r.kind==='site'?'🌐':em?'✉️':'🔐';
- return '<div class="m gap"><div class="payc kreq"><div class="pw">'+ic+' '+T('Kino te demande','Kino asks you')+'</div><div class="pt">'+esc(r.what||'')+'</div>'+
-  (r.why?'<div class="gl">'+esc(r.why)+'</div>':'')+(cmd?'<pre class="kq">'+esc(cmd)+'</pre>':'')+
-  (st!=='waiting'?'<div class="ps">'+(st==='approved'?'✅ '+T('Accepté','Approved'):'❌ '+T('Refusé','Refused'))+'</div>':
-   '<div class="pb"><button data-kq="'+esc(r.id||'')+'" data-y="1">✅ '+T('Accepter','Approve')+'</button><button class="npb" data-kq="'+esc(r.id||'')+'" data-y="0">❌ '+T('Refuser','Refuse')+'</button></div>')+'</div></div>'}
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-kq]');if(!b)return;b.disabled=true;
- post('kino_req',{id:b.dataset.kq,yes:+b.dataset.y}).then(function(j){toast(j&&j.ok?T('C’est noté.','Noted.'):T('Pas possible.','Not possible.'));load(true)}).catch(function(){toast(T('Hors ligne.','Offline.'))})});
+// 2026-11-13 (owner: "more professional, premium and modern"): own design - status pill, title, three tiles (where / when /
+// pay), the proof expected in a quiet box, one full-width action
+function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',due=g.due?jobHM(g.due):'—',
+ pay=g.pay?(String(g.pay).replace('.',EN?'.':',')+' €'):T('Service','Favour');
+ var pill={sent:[T('Nouvelle','New'),'n'],accepted:[T('Acceptée','Accepted'),'a'],proof_sent:[T('Preuve envoyée','Proof sent'),'w'],
+  paid:[T('Payée','Paid'),'p'],declined:[T('Refusée','Declined'),'x'],taken:[T('Déjà prise','Taken'),'x']}[st]||[st,'n'];
+ var tile=function(ic,k,v,cls){return '<div class="gt'+(cls?' '+cls:'')+'"><span class="gk">'+ic+' '+k+'</span><span class="gv">'+v+'</span></div>'};
+ var foot=st==='sent'?'<div class="gf"><button class="gb pri" data-ga="'+esc(g.tid)+'">'+T('J’accepte','I accept')+'</button><button class="gb ghost" data-gd="'+esc(g.tid)+'">'+T('Je ne peux pas','I can’t')+'</button></div>':
+  st==='accepted'?'<div class="gn">'+T('C’est pour toi. Envoie la preuve quand c’est fait.','It’s yours. Send the proof when it’s done.')+'</div><div class="gf"><button class="gb pri" data-gp="'+esc(g.tid)+'">📷 '+T('Envoyer la preuve','Send the proof')+'</button></div>':
+  st==='proof_sent'?'<div class="gn">⏳ '+T('Kino vérifie ta preuve.','Kino is checking your proof.')+'</div>':
+  st==='paid'?'<div class="gn ok">✓ '+T('Payée. Merci pour ton aide !','Paid. Thanks for your help!')+'</div>':
+  st==='taken'?'<div class="gn">'+T('Quelqu’un l’a prise avant toi. La prochaine sera pour toi.','Someone took it first. Next time!')+'</div>':
+  st==='declined'?'<div class="gn">'+T('Pas cette fois, merci quand même.','Not this time, thanks anyway.')+'</div>':'';
+ return '<div class="m gap"><div class="gc'+(st==='declined'||st==='taken'?' off':'')+'">'+
+  '<div class="gh"><span class="gbadge">🙋</span><span class="gtl">'+T('Mission Kino','Kino task')+'</span><span class="gpill '+pill[1]+'">'+pill[0]+'</span></div>'+
+  '<div class="gw">'+esc(g.what)+'</div>'+
+  '<div class="gg">'+tile('📍',T('Où','Where'),esc(g.place||T('À distance','Remote')))+tile('⏱',T('Avant','By'),esc(due))+
+   tile(g.pay?'💶':'🤝',g.pay?T('Tu gagnes','You earn'):T('Type','Kind'),esc(pay),g.pay?'money':'')+'</div>'+
+  (g.proof?'<div class="gp"><span>📎 '+T('Preuve attendue','Proof expected')+'</span>'+esc(g.proof)+'</div>':'')+
+  (g.pay&&(st==='sent'||st==='accepted')?'<div class="gs">'+T('Payé par PayPal dès que Kino a vérifié ta preuve.','Paid by PayPal once Kino has checked your proof.')+'</div>':'')+
+  foot+'</div></div>'}
 function gigAct(tid,act,text,photo){return post('chat_gig',{tid:tid,act:act,text:text||'',photo:photo||''}).then(function(j){
  if(j&&j.ok){toast(act==='accept'?(j.status==='taken'?T('Déjà prise, désolé !','Already taken, sorry!'):T('C’est noté, merci !','Noted, thank you!')):act==='decline'?T('Pas de souci.','No problem.'):T('Preuve envoyée !','Proof sent!'));load(true)}
  else toast(j&&j.err==='accept first'?T('Accepte d’abord la mission.','Accept the task first.'):j&&j.err==='gone'?T('Cette mission n’existe plus.','This task is gone.'):T('Ça n’a pas marché','That didn’t work')+(j&&j.err?' ('+j.err+')':'')+'.')}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
