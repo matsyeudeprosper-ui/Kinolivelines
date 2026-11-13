@@ -29102,11 +29102,44 @@ def _gig_post(uid, gig):
     if not cid:
         raise RuntimeError("no Kino Chat conversation for %s" % uid)
     _chat_mut(cid, lambda cc: _chat_msg(cc, "gig", gig=dict(gig)))
+    head = ("Une petite mission payée pour toi : %.0f €" % gig.get("pay", 0)) if gig.get("pay") else "Kino a besoin d'un coup de main"
     try:
-        queue_push(uid, "Kino", ("Une petite mission payée pour toi : %.0f €" % gig.get("pay", 0)) if gig.get("pay") else
-                   "Kino a besoin d'un coup de main", urgent=True, tag="kino-gig")
+        queue_push(uid, "Kino", head, urgent=True, tag="kino-gig")
     except Exception:
         pass
+    # 2026-11-13 (owner: "they also receive a push notification and an email, so they don't miss it"): every channel
+    # the person has - email (given at opt-in, their sign-in if it is one, Matsy's own) and Telegram
+    u = _user_by_id(uid)
+    try:
+        import kino_helpers as _KHm
+        w = (_KHm._j().get("workers") or {}).get(uid) or {}
+    except Exception:
+        w = {}
+    link = "https://chat.kinoverseai.com/%s/kinochat" % u["token"] if u.get("token") else "https://chat.kinoverseai.com/kinochat"
+    body = ("%s\n\n%s\n%s%s%s\n\nOuvre ta conversation avec Kino pour accepter ou refuser : %s\n\n- Kino" % (
+        head, gig.get("what") or "", ("Où : %s\n" % gig["place"]) if gig.get("place") else "",
+        ("Avant : %s\n" % time.strftime("%d/%m %H:%M", time.localtime(gig["due"]))) if gig.get("due") else "",
+        ("Preuve attendue : %s\n" % gig["proof"]) if gig.get("proof") else "", link))
+    em = str(w.get("email") or "")
+    if not em and "@" in str(u.get("login") or ""):
+        em = u["login"]
+    if not em and (is_admin(u) or uid in ("std", "kino")):
+        try:
+            em = __import__("kino_mail").OWNER_EMAIL
+        except Exception:
+            em = ""
+    if "@" in em:
+        try:
+            _KMg = __import__("kino_mail")
+            _KMg.allow(em)
+            _KMg.send_now(em, "Kino : " + head, body)
+        except Exception:
+            pass
+    if u.get("telegram_chat"):
+        try:
+            __import__("kino_clients").send(str(u["telegram_chat"]), body)
+        except Exception:
+            pass
 
 
 def _gig_update(uid, tid, status):
@@ -29135,8 +29168,10 @@ def gig_optin(user, body):
     import kino_helpers as _KHg
     if body.get("get"):
         w = _KHg._j().get("workers", {}).get(user.get("id")) or {}
-        return {"ok": True, "on": bool(w.get("on")), "city": w.get("city") or "", "skills": w.get("skills") or ""}
-    w = _KHg.gig_optin(user.get("id"), bool(body.get("on")), user.get("name") or "", str(body.get("skills") or ""), str(body.get("city") or ""))
+        return {"ok": True, "on": bool(w.get("on")), "city": w.get("city") or "", "skills": w.get("skills") or "",
+                "email": w.get("email") or ""}
+    w = _KHg.gig_optin(user.get("id"), bool(body.get("on")), user.get("name") or "", str(body.get("skills") or ""),
+                       str(body.get("city") or ""), str(body.get("email") or ""))
     return {"ok": True, "on": bool(w.get("on"))}
 
 

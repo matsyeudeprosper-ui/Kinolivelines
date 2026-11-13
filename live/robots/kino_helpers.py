@@ -315,7 +315,7 @@ ON_GIG_UPDATE = None                # set by the app: (uid, tid, status) -> upda
 PROOFS = os.path.join(HERE, "helper_proofs")
 
 
-def gig_optin(uid, on=True, name="", skills="", city=""):
+def gig_optin(uid, on=True, name="", skills="", city="", email=""):
     def f(d):
         W = d.setdefault("workers", {})
         w = W.setdefault(uid, {"since": time.time()})
@@ -324,6 +324,8 @@ def gig_optin(uid, on=True, name="", skills="", city=""):
             w["skills"] = str(skills)[:160]
         if city:
             w["city"] = str(city)[:60]
+        if "@" in str(email or ""):
+            w["email"] = str(email).strip()[:120]      # 13/11: gig offers also go by email
         return w
     w = _mut(f)
     _log("OPTIN %s %s" % (uid, "on" if on else "off"))
