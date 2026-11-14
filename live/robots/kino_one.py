@@ -220,6 +220,11 @@ def _hm(t):
         return ""
 
 
+_HANDBACK = re.compile(r"je ne (peux|pourrai) pas (r[ée]server|payer|commander|acheter|appeler|le faire)|je ne r[ée]serve pas|"
+                       r"(tu l'?ouvres|ouvre le lien|tu mets le|clique sur|tu n'as plus qu'[àa])|"
+                       r"i can'?t (book|pay|order|buy|call)|you (just )?(open|click)", re.I)
+
+
 def transcript(msgs, n=40, lang="fr"):
     """the conversation as a person sees it: who, when (UTC), what - cards and system notes in brackets"""
     me, them = ("you", "them") if lang == "en" else ("toi", "lui")
@@ -234,6 +239,14 @@ def transcript(msgs, n=40, lang="fr"):
             L.append("[%s] %s : %s" % (_hm(m.get("t")), them, tx or ("(message vocal)" if m.get("audio") else "")))
         elif r == "ai" and tx:
             L.append("[%s] %s : %s" % (_hm(m.get("t")), me, tx))
+            # 2026-11-14 (owner's Airbnb, tired): his own earlier "I can't book / pay, open it yourself" kept every next reply
+            # on 'no' (a mind stays consistent with what it said). Looking back he knows better - the way a person winces
+            # at a line they wish they had not sent
+            if _HANDBACK.search(tx):
+                L.append("   (%s)" % ("looking back: that was wrong - you CAN do this for them (they pay your link, you do "
+                                      "the rest); offer it now, simply" if lang == "en" else
+                                      "avec le recul : c'était faux - tu PEUX le faire pour lui (il paie ton lien, tu fais "
+                                      "le reste) ; propose-le maintenant, simplement"))
             if m.get("mreact"):                       # 2026-10-27 (owner: "does he see an emoji given to his message?")
                 L.append("   (%s : %s)" % ("they reacted to it" if lang == "en" else "il a réagi à ce message", m["mreact"]))
         elif r == "image":                        # 2026-10-31: the close reading of the screenshot (m["read"]) is remembered
