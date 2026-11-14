@@ -19530,12 +19530,23 @@ def _kino_domain(q, who=""):
 def _kino_websearch(q):
     """2026-11-01: his '#cherche <question>' in chat - the same reading-only web his work sessions use (kino_web: a search,
     then the first pages read). The owner asked him to check his daughter's school site; he answered he had no web search."""
+    _in = None
+    try:                                     # 2026-11-14 (owner: Airbnb Viry - 'mets Viry sur Airbnb et trie' was handed back):
+        _rdc = os.path.join(DIR, "robots")   # inside the right site first when that is where the answer lives (SocialCrawl)
+        if _rdc not in sys.path:
+            sys.path.insert(0, _rdc)
+        import kino_crawl as _KCr
+        _in = _KCr.smart(q)
+    except Exception:
+        _in = None
+    if _in:
+        return _in[:7000]
     try:
         import kino_web as KW
         hits = KW.search(q, n=6) or []
     except Exception as e:
         return "search failed: %s" % str(e)[:150]
-    out = ["RESULTS: " + " | ".join("%s <%s> %s" % (h.get("title", ""), h.get("url", ""), h.get("snippet", "")) for h in hits)[:2500]]
+    out = ["RESULTS: " +" | ".join("%s <%s> %s" % (h.get("title", ""), h.get("url", ""), h.get("snippet", "")) for h in hits)[:2500]]
     for h in hits[:2]:
         try:
             out.append("PAGE %s:\n%s" % (h.get("url", ""), KW.fetch(h.get("url", ""), max_chars=2500)))

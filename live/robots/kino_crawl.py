@@ -22,7 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_crawl.json")
 LOG = os.path.join(HERE, "kino_crawl.log")
 SECRET = r"C:\ProgramData\kino_secret\socialcrawl.json"
-DAY_CAP = 40                          # credits a day (free test pack: 100 in all; raise once the owner buys a pack)
+DAY_CAP = 60                          # credits a day (free test pack: 100 in all; raise once the owner buys a pack)
 _LK = threading.Lock()
 
 
@@ -234,6 +234,83 @@ def stay_price(listing, check_in, check_out, adults=2, site="airbnb"):
 
 def look_slim(d):
     return json.dumps(_slim(d.get("data", d) if isinstance(d, dict) else d), ensure_ascii=False)
+
+
+_ROUTE = ("You choose where to look for a question, like a person choosing the right site. TODAY is %s. Reply ONLY JSON:\n"
+          "{\"use\": \"stays\", \"location\": \"town + its postcode when you know it (Viry-Chatillon 91170), never 'town, country' for a small town\", \"check_in\": \"YYYY-MM-DD\", \"check_out\": "
+          "\"YYYY-MM-DD\", \"adults\": n, \"site\": \"airbnb|booking\", \"cheapest\": true|false} - a place to stay with dates "
+          "(tomorrow = one night unless said; no dates -> use 'web');\n"
+          "{\"use\": \"look\", \"path\": \"/site/endpoint\", \"params\": {...}} - something inside a site: posts or people on "
+          "Reddit (/reddit/search {query}), TikTok (/tiktok/search {query}), Instagram (/instagram/search/reels {query}), X "
+          "(/twitter/ai-search {query}), YouTube (/youtube/search {query}), product prices (/google_shopping/product-search "
+          "{query, country}, /amazon/product-search {query}, /ebay/search {query}, /aliexpress/search {query}), reviews "
+          "(/yelp/search, /tripadvisor/search {query, location});\n"
+          "{\"use\": \"web\"} - anything else (facts, news, how-to, opening hours, a company, a law).")
+
+
+def _near(P, location):
+    """keep the places around the asked town: its centre = the places whose name says the town; others within 15 km"""
+    import math
+    town = re.sub(r"[^a-z ]", " ", __import__("unicodedata").normalize("NFKD", str(location).split(",")[0]).encode("ascii", "ignore").decode().lower())
+    town = " ".join(w for w in town.split() if len(w) > 2)
+
+    def nm(p):
+        return re.sub(r"[^a-z ]", " ", __import__("unicodedata").normalize("NFKD", str(p.get("name") or "")).encode("ascii", "ignore").decode().lower())
+    core = [p for p in P if town and town.split()[0] in nm(p) and p.get("latitude")]
+    if not core:
+        return []                                  # nothing says the town: do not present far places as that town
+    la = sorted(float(p["latitude"]) for p in core)[len(core) // 2]
+    lo = sorted(float(p["longitude"]) for p in core)[len(core) // 2]
+
+    def km(p):
+        try:
+            return 111 * math.hypot(float(p["latitude"]) - la, (float(p["longitude"]) - lo) * math.cos(math.radians(la)))
+        except Exception:
+            return 999
+    return [p for p in P if km(p) <= 15]
+
+
+def smart(q):
+    """2026-11-14 (owner: 'je n'ai pas trouvé de vrai prix pour demain à Viry' then 'mets Viry sur Airbnb et trie'):
+    his quick #cherche goes INSIDE the right site when that is where the answer lives -> text, or None (plain web)"""
+    if time.time() - _OUT["t"] < 3600 and used_today() >= DAY_CAP:
+        return None
+    try:
+        import robot_warm as RW
+        raw = RW.ask_text(_ROUTE % time.strftime("%A %Y-%m-%d"), str(q)[:400], model="haiku", timeout=40)
+        i = str(raw or "").find("{")
+        R = json.JSONDecoder().raw_decode(raw[i:])[0] if i >= 0 else {}
+    except Exception as e:
+        _log("route: %s" % str(e)[:100])
+        return None
+    use = R.get("use")
+    if use == "stays" and R.get("location") and R.get("check_in"):
+        ci, co = R["check_in"], R.get("check_out") or R["check_in"]
+        if co <= ci:
+            co = time.strftime("%Y-%m-%d", time.gmtime(time.mktime(time.strptime(ci, "%Y-%m-%d")) + 86400 + 7200))
+        site = "booking" if R.get("site") == "booking" else "airbnb"
+        d, why = get("/%s/search" % site, location=R["location"], check_in=ci, check_out=co, adults=R.get("adults") or 1)
+        if why:
+            _down(why)
+            return None
+        P = [(it.get("place") or it) for it in ((d.get("data") or {}).get("items") or [])]
+        P = _near(P, R["location"])[:6]          # 14/11: 'Viry-Chatillon, France' came back with Thionville, Carcassonne...
+        if not P:
+            return None
+        rows = []
+        for p in P:                                  # the real price for the dates: one look per place (1 credit each)
+            pr = stay_price(p.get("url") or p.get("id"), ci, co, R.get("adults") or 1, site)
+            m = re.search(r"total[^:]*:\s*about (\d+) EUR", pr) or re.search(r"about (\d+) EUR", pr)
+            rows.append((int(m.group(1)) if m else 10 ** 6, "%s | %s | rating %s | %s" % (
+                p.get("name"), p.get("url"), (p.get("rating") or {}).get("value"), pr[:160])))
+        rows.sort()
+        return ("INSIDE %s, %s, %s -> %s, %s adult(s) - real places, real prices for these dates%s:\n" % (
+            site.upper(), R["location"], ci, co, R.get("adults") or 1, ", cheapest first" if R.get("cheapest") else "") +
+            "\n".join("- " + r for _, r in rows)) if rows else None
+    if use == "look" and R.get("path"):
+        s = look(R["path"], R.get("params") if isinstance(R.get("params"), dict) else {}, 4000)
+        return None if s.startswith("NOT READ") else "INSIDE %s:\n%s" % (R["path"], s)
+    return None
 
 
 def block():
