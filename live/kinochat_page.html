@@ -913,6 +913,19 @@ var MENU=[['🔍',T('Chercher','Search'),function(){$('srch').classList.add('on'
  ['🧹',T('Vider la discussion','Clear chat'),clearChat],
  ['✨',T('Ce que Kino sait faire','What Kino can do'),function(){tourGo()}],
  ['🚪',T('Me déconnecter','Sign out'),function(){try{localStorage.removeItem('kcLink')}catch(e){}location.href='/kinochat?out=1'}]];
+// 2026-11-14 (owner plan step 5): the coverage map - admin only (the server says who)
+function reachSh(){post('reach_map',{}).then(function(j){if(!j||!j.ok)return;
+ var C=j.coverage||{},ks=Object.keys(C),h='<h3>🌍 '+T('Couverture','Coverage')+'</h3>';
+ h+='<p style="opacity:.8">'+T('Où Kino a des aides, où des gens attendent, et sa chasse.','Where Kino has helpers, where people wait, and his hunt.')+'</p>';
+ h+='<h4>'+T('Aides','Helpers')+' ('+(j.helpers||[]).length+')</h4>';
+ h+=(j.helpers||[]).map(function(p){return '<div class="gn">'+esc(p.name)+(p.owner?' ★':'')+' · '+esc(p.kind==='remote'?T('à distance','remote'):p.kind==='local'?T('sur place','on the spot'):T('sur place + à distance','both'))+' · '+esc(p.city||p.country||'?')+' · '+esc((p.langs||[]).join('/'))+' · '+T('fait','done')+' '+p.done+(p.payout?'':' · <span style="color:#e8a33d">'+T('paiement ?','payout?')+'</span>')+'</div>'}).join('');
+ h+='<h4>'+T('Par pays','By country')+'</h4>'+(ks.length?ks.map(function(k){var e=C[k];return '<div class="gn"><b>'+esc(k)+'</b> · '+e.local+' '+T('sur place','on the spot')+' · '+e.remote+' '+T('à distance','remote')+(e.waiting?' · <span style="color:#e8a33d">'+e.waiting+' '+T('en attente','waiting')+'</span>':'')+'</div>'}).join(''):'<div class="gn">'+T('Personne encore, à part toi.','Nobody yet besides you.')+'</div>');
+ h+='<h4>'+T('Où recruter d’abord','Recruit here first')+'</h4>'+((j.waiting||[]).length?(j.waiting||[]).map(function(w){return '<div class="gn">'+esc((w.city?w.city+', ':'')+w.country)+' · '+w.n+' '+T('demande(s)','request(s)')+' · '+esc((w.what||[]).join(' / '))+'</div>'}).join(''):'<div class="gn">'+T('Aucune demande sans aide pour l’instant.','No unserved request yet.')+'</div>');
+ var H=j.hunt||{},hs=Object.keys(H).map(function(k){return k+' '+H[k]}).join(' · ');
+ h+='<h4>'+T('Chasse aux aides','Helper hunt')+'</h4><div class="gn">'+(hs||T('rien encore','nothing yet'))+(j.last_scan?' · '+T('dernière recherche','last search')+' '+new Date(j.last_scan*1000).toLocaleString():'')+'</div>';
+ h+=(j.seekers||[]).map(function(c){return '<div class="gn"><a href="'+esc(c.url)+'" target="_blank" rel="noopener">'+esc(c.who)+'</a> · '+esc(c.skills)+(c.place?' · '+esc(c.place):'')+' · '+esc(c.langs)+' · <b>'+esc(c.status)+'</b></div>'}).join('');
+ shOpen(h)}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
+post('reach_map',{probe:1}).then(function(j){if(j&&j.ok)MENU.splice(MENU.length-1,0,['🌍',T('Couverture (admin)','Coverage (admin)'),reachSh])}).catch(function(){});
 $('menu').innerHTML=MENU.map(function(x,i){return '<button data-k="'+i+'">'+x[0]+'&nbsp; '+x[1]+'</button>'}).join('');
 $('menub').onclick=function(e){e.stopPropagation();var MM=GID?GMENU:MENU;$('menu').innerHTML=MM.map(function(x,i){return '<button data-k="'+i+'">'+x[0]+'&nbsp; '+x[1]+'</button>'}).join('');$('menu').classList.toggle('on')};
 $('menu').onclick=function(e){var b=e.target.closest('[data-k]');if(!b)return;$('menu').classList.remove('on');(GID?GMENU:MENU)[+b.dataset.k][2]()};

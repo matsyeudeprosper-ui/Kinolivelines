@@ -29205,6 +29205,35 @@ def gig_optin(user, body):
     return {"ok": True, "on": bool(w.get("on"))}
 
 
+def reach_map(user, body):
+    """2026-11-14 (owner plan step 5): the coverage map - where helpers are, where people wait, the hunt (admin only)"""
+    if not is_admin(user):
+        return {"ok": False}
+    if body.get("probe"):
+        return {"ok": True}
+    _rd = os.path.join(DIR, "robots")
+    if _rd not in sys.path:
+        sys.path.insert(0, _rd)
+    import kino_reach as _KR
+    import kino_gigseek as _KG
+    cov = _KR.coverage()
+    H = _KR.helpers()
+    hl = [{"name": p.get("name") or u, "kind": p.get("kind"), "country": p.get("country") or "", "city": p.get("city") or "",
+           "langs": p.get("langs") or [], "done": int(p.get("done") or 0), "owner": bool(p.get("owner")),
+           "payout": bool(p.get("payout"))} for u, p in H.items()]
+    pr = [{"n": n, "country": c, "city": ci, "what": w[-2:]} for n, _, c, ci, w in _KR.priorities(10)]
+    g = _KG._j()
+    st = {}
+    for c in g.get("cands") or []:
+        st[c.get("status") or "found"] = st.get(c.get("status") or "found", 0) + 1
+    last = (g.get("scans") or [0])[-1]
+    seek = [{"who": c["who"], "where": c["where"], "skills": c.get("skills") or "", "place": c.get("city") or c.get("country") or "",
+             "langs": c.get("langs") or "", "status": c.get("status") or "found", "url": c.get("url")}
+            for c in sorted(g.get("cands") or [], key=lambda c: c.get("found_t") or 0, reverse=True)[:12]]
+    return {"ok": True, "coverage": cov, "helpers": hl, "waiting": pr, "hunt": st, "last_scan": last, "seekers": seek,
+            "waitlist": len(_KR._j().get("waitlist") or [])}
+
+
 def kino_req(user, body):
     """the owner's answer to one of Kino's requests"""
     if not is_admin(user):
@@ -37273,7 +37302,7 @@ class H(BaseHTTPRequestHandler):
                                               "chat_start", "chat_send", "chat_edit", "chat_test", "chat_check", "chat_fires", "chat_fires_vote",
                                               "chat_chart", "chat_show", "chat_demo", "chat_open", "chat_image", "ai_nudge_seen",
                                               "kino_forget", "chat_react", "kino_directive", "chat_explain", "chat_apply", "chart_seen", "chart_chat", "chat_order", "chat_auto", "page_seen",
-                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "chat_gig", "gig_optin", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "kino_ways", "chat_why", "chat_luck_cancel", "kino_wish",
+                                              "chat_ghost", "kino_preflight", "kino_correct", "kino_portrait", "chat_typing", "chat_gig", "gig_optin", "reach_map", "kino_adopt", "kino_mem", "chat_undo", "chat_doc", "chat_manage", "kino_ways", "chat_why", "chat_luck_cancel", "kino_wish",
                                               "replay_get", "replay_bars", "replay_save", "replay_list", "replay_robot", "school", "robot_rules_vis", "live_session", "live_end", "kino_pref", "chat_search", "live_costs", "voice_wallet", "voice_buy", "msg_pack_buy", "chat_msg_edit", "chat_pin", "chat_like", "chat_ghosts", "share_make", "live_facts", "live_act", "chat_audio", "chat_msg_del", "agenda", "robots_tidy", "live_spec", "live_pos", "live_side", "live_spark", "live_ahead", "research_board", "robot_risk", "test_guess"):
             _ru = user_by_token(_parts[0])
             # 2026-10-27: Kino's routes for every member; building / testing robots by hand, markets, research = Pro and up
@@ -37300,7 +37329,7 @@ class H(BaseHTTPRequestHandler):
                        "chat_react": chat_react, "kino_directive": kino_directive,
                        "chat_explain": chat_explain, "chat_apply": chat_apply, "chart_seen": chart_seen, "chart_chat": chart_chat, "chat_order": chat_order, "chat_auto": chat_auto, "page_seen": page_seen, "chat_ghost": chat_ghost,
                        "kino_preflight": kino_preflight, "kino_correct": kino_correct, "kino_portrait": kino_portrait,
-                       "chat_typing": chat_typing, "chat_gig": chat_gig, "gig_optin": gig_optin, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "kino_ways": kino_ways_api, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
+                       "chat_typing": chat_typing, "chat_gig": chat_gig, "gig_optin": gig_optin, "reach_map": reach_map, "kino_adopt": kino_adopt, "kino_mem": kino_mem, "chat_undo": chat_undo, "chat_doc": chat_doc, "chat_manage": chat_manage, "kino_ways": kino_ways_api, "chat_why": chat_why, "chat_luck_cancel": chat_luck_cancel, "kino_wish": kino_wish, "kino_req": kino_req, "kino_post_switch": kino_post_switch,
                        "replay_get": replay_get, "replay_bars": replay_bars, "school": school, "robot_rules_vis": robot_rules_vis, "replay_save": replay_save, "replay_list": replay_list, "replay_robot": replay_robot, "live_session": live_session, "live_end": live_end, "kino_pref": kino_pref, "chat_search": chat_search, "live_costs": live_costs, "voice_wallet": voice_wallet, "voice_buy": voice_buy, "msg_pack_buy": msg_pack_buy,
                        "chat_msg_edit": chat_msg_edit, "chat_pin": chat_pin, "chat_like": chat_like, "chat_ghosts": chat_ghosts,
                        "share_make": share_make, "live_facts": live_facts, "live_act": live_act, "chat_audio": chat_audio, "chat_msg_del": chat_msg_del, "agenda": agenda, "robots_tidy": robots_tidy, "live_spec": live_spec, "live_pos": live_pos, "live_side": live_side, "live_spark": live_spark, "live_ahead": live_ahead, "research_board": research_board, "robot_risk": robot_risk, "test_guess": test_guess}[_parts[1]]
