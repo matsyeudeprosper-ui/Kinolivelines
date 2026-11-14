@@ -252,7 +252,15 @@ def transcript(msgs, n=40, lang="fr"):
                 if m.get("seen") else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
                                        "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
         elif r == "gig" and m.get("gig"):         # 2026-11-13: a paid task he offered them as a card (accept / decline / proof)
-            g = m["gig"]
+            g = dict(m["gig"])
+            try:                                  # 2026-11-14 (watch): H2 was cancelled in the task list but its card still said
+                import kino_helpers as _KHt       # "waiting" - he told the owner the offer still waited for his yes. Real state wins
+                _rt = next((t for t in _KHt._j().get("tasks") or [] if t.get("id") == g.get("tid")), None)
+                g["status"] = (_rt or {}).get("status") or "cancelled (no longer exists)"
+                if g["status"] == "cancelled":
+                    g["status"] = "CANCELLED - nothing to do, never present it as waiting"
+            except Exception:
+                pass
             L.append("[%s] (%s %s: \"%s\", %s EUR - %s)" % (_hm(m.get("t")), "you offered them task" if lang == "en" else
                                                           "tu lui as proposé la mission", g.get("tid"), str(g.get("what") or "")[:160],
                                                           g.get("pay") or 0, g.get("status")))

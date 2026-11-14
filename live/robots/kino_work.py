@@ -658,7 +658,7 @@ You can make things public on your own, under your own name, with nobody approvi
   you come back to it, "note" a private line for yourself): your work FOR a person (see CLIENT MISSIONS when they are due).
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
-  "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it;
+  "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it; help_cancel ("task", "why") for a task no longer needed (the helper sees it cancelled);
   help_pay ("task", "paypal" their PayPal email) sends Matsy the payment request; help_paid ("task") when he says it is paid.
   Write a task's "what" and "proof" in the HELPER's language (Matsy: French) - it is what their card shows. Ask for their
   PayPal address (help_accept "contact") when they accept a paid task, so they can be paid after the proof.
@@ -1298,7 +1298,7 @@ def _act0(j, person, W=None):
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
-    if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid", "help_offer"):   # 2026-11-07 (owner): his human helpers
+    if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid", "help_offer", "help_cancel"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")
         if a == "help_offer":              # 2026-11-13: a gig card in the Kino Chat of someone who opted in
@@ -1313,6 +1313,8 @@ def _act0(j, person, W=None):
             return KHP.ask(tid, j.get("who") or j.get("to"), j.get("text") or j.get("body"), W=W)
         if a == "help_accept":
             return KHP.accept(tid, j.get("helper") or j.get("who"), j.get("price") or 0, j.get("contact") or "")
+        if a == "help_cancel":                # 14/11: one task per job - a wrong/duplicate one is cancelled, cards updated
+            return KHP.cancel(tid, j.get("why") or j.get("note") or "")
         if a == "help_done":
             return KHP.done(tid, j.get("proof") or j.get("text"), str(j.get("ok", True)).lower() not in ("false", "0", "no"),
                             j.get("note") or "")

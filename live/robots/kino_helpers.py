@@ -548,3 +548,26 @@ def _check_later(tid, uid, name, text, path):
             KMv.update(_mid, next_h=0.25, note="PROOF CHECK task %s: %s - %s" % (tid, "looks genuine" if v["ok"] else "DOUBTFUL", v["why"][:300]))
         except Exception:
             pass
+
+
+def cancel(tid, why=""):
+    """2026-11-14: a task cancelled through here also updates the cards in the helpers' chats"""
+    hit = []
+
+    def f(d):
+        t = _t(d, tid)
+        if t and t["status"] not in ("paid", "done", "cancelled"):
+            t["status"] = "cancelled"
+            t["note"] = why
+            hit.append([o.get("uid") for o in t.get("offers") or []])
+    _mut(f)
+    if not hit:
+        return "task %s: nothing to cancel" % tid
+    for uid in hit[0]:
+        try:
+            if ON_GIG_UPDATE and uid:
+                ON_GIG_UPDATE(uid, tid, "cancelled")
+        except Exception:
+            pass
+    _log("CANCEL %s %s" % (tid, why))
+    return "task %s cancelled" % tid
