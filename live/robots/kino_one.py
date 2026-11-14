@@ -165,7 +165,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission|tresorier|treasurer)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission|tresorier|treasurer|cartes|cards)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -264,6 +264,11 @@ def transcript(msgs, n=40, lang="fr"):
                 if body else ("\n   " + ("WHAT IT SAYS (your summary): " if lang == "en" else "CE QU'IL DIT (ton résumé) : ") + str(m["seen"]))
                 if m.get("seen") else ("\n   (PDF: you see it attached on the turn that answers it)" if lang == "en" else
                                        "\n   (PDF : tu le vois en pièce jointe au moment d'y répondre)") if m.get("kind") == "pdf" else ""))
+        elif r == "opts" and m.get("items"):      # 2026-11-14: the option cards he showed them (photos, prices)
+            L.append("[%s] (%s %s)" % (_hm(m.get("t")), "you showed them cards:" if lang == "en" else "tu lui as montré des cartes :",
+                                       " ; ".join("%d) %s, %s%s" % (n + 1, o.get("title"), o.get("price") or "?",
+                                                                     (", ★%s" % o["rating"]) if o.get("rating") else "")
+                                                  for n, o in enumerate(m["items"][:6]))))
         elif r == "gig" and m.get("gig"):         # 2026-11-13: a paid task he offered them as a card (accept / decline / proof)
             g = dict(m["gig"])
             try:                                  # 2026-11-14 (watch): H2 was cancelled in the task list but its card still said
@@ -404,7 +409,7 @@ def parse(raw, partial=False):
     # 2026-11-13 (watch, backup brain): "Hey! I'm here. #reaction 😊" / "... #regarde exact reward ratio" - a control tag
     # written inside a sentence went out to the member. Anywhere in the text, a known tag and what follows it on the line go.
     say = re.sub(r"[ \t]*#(reaction|react|regarde|look|check|fil|thread|pense|think|cherche|search|web|retiens|remember|"
-                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure|tresorier|treasurer)\b[^\n]*", "", say)
+                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure|tresorier|treasurer|cartes|cards)\b[^\n]*", "", say)
     say = re.sub(r"(?m)[ \t]*…[ \t]*$", "", say)   # a dangling "…" at the end of a line
     # 2026-10-29 (owner screenshot): a stray "</br>" after his #fil line came out as a bubble of its own - HTML line-break
     # tags are formatting debris, never words: a break becomes a line break, a bare tag disappears
@@ -555,7 +560,14 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "cases where a choice is not necessary, think like a human'): think as a friend doing it for them would. "
                  "When it is their taste or their trade-off (a room or a whole flat, cheap or nicer), they want to choose - "
                  "show what you found, say what you would take and why, and let them pick before anything is paid. When they "
-                 "already told you what they want, or there is nothing really to choose, just go. Your link IS the #prix "
+                 "already told you what they want, or there is nothing really to choose, just go. SHOW, AND THINK ONE STEP "
+                 "AHEAD (owner 14/11: 'make him impressive, so they trust and like how he handles things - as if answering "
+                 "the next question they would ask'): when your look found real places or things with photos, you can show "
+                 "them the way a friend sends screenshots - #cartes on its own line puts them under your words as cards "
+                 "(photos, price for their dates, a button to pick one); then your words stay short, the cards speak. And "
+                 "like a good concierge you answer what they will ask next before they ask: for a stay how far from the "
+                 "station or what they came for, check-in, whether it is a room or the whole place; for an item delivery "
+                 "time and returns - only what you really know, never invented. Your link IS the #prix "
                  "line - never 'I'll send you the link' without it. "
                  "A FRIEND, NOT "
                  "A SERVICE (owner 14/11, standing): the rules here say WHAT you can do, never the words - you say it the way "

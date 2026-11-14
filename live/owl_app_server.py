@@ -22312,6 +22312,17 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _dmc = next((x for x in reversed(cc.get("msgs") or []) if x.get("role") == "demo" and x.get("check")), None)
             if _dmc is not None:
                 cc.setdefault("msgs", []).append(dict(_dmc, t=int(time.time()), again=True))
+        if any(k in ("cartes", "cards") for k, _ in acts) and say:
+            # 2026-11-14 (owner: 'show off what the room looks like, photo cards - make him impressive'): what his look found,
+            # shown the way a friend sends screenshots - photos, price for the dates, a button to pick it
+            try:
+                import kino_crawl as _KCc
+                _of = _KCc.found_for(list(_asked))
+                if _of:
+                    cc.setdefault("msgs", []).append({"role": "opts", "t": int(time.time()), "kind": _of.get("kind"),
+                                                      "dates": _of.get("dates"), "items": _of["items"][:6]})
+            except Exception:
+                pass
     if build:
         _CHAT_B.add(cid)
     try:

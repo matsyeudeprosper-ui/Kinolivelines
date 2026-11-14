@@ -270,6 +270,46 @@ def _near(P, location):
     return [p for p in P if km(p) <= 15]
 
 
+LAST = {}                              # 2026-11-14 (owner: 'show off what the room looks like'): what his last looks found
+
+
+def _qkey(q):
+    return re.sub(r"\W+", " ", str(q or "").lower()).strip()[:200]
+
+
+def found_for(queries, max_age=1800):
+    """the options his looks of this turn found (for the chat's cards) -> {kind, dates, items} or None"""
+    for q in queries or []:
+        e = LAST.get(_qkey(q))
+        if e and time.time() - e["t"] < max_age and e.get("items"):
+            return e
+    return None
+
+
+def _stay_opt(p, ci, co, adults, site):
+    """one place as a card: name, photos, rating, the real price for the dates, a line of description, what it has"""
+    o = {"title": str(p.get("name") or "")[:80], "url": p.get("url") or "", "rating": (p.get("rating") or {}).get("value"),
+         "reviews": p.get("reviews_count"), "sub": str((p.get("ext") or {}).get("subtitle") or "")[:120],
+         "img": [u for u in (p.get("image_urls") or []) if isinstance(u, str) and u.startswith("https://")][:6]}
+    k = {"url": o["url"]} if o["url"] else {"id": p.get("id")}
+    d, why = get("/%s/%s" % ("booking" if site == "booking" else "airbnb", "hotel" if site == "booking" else "listing"),
+                 check_in=ci, check_out=co, adults=adults, **k)
+    if not why:
+        pl = (d.get("data") or {}).get("place") or {}
+        o["img"] = [u for u in (pl.get("image_urls") or []) if isinstance(u, str) and u.startswith("https://")][:6] or o["img"]
+        o["desc"] = " ".join(str(pl.get("description") or "").split())[:260]
+        o["amen"] = [a.get("name") for a in pl.get("amenities") or [] if isinstance(a, dict) and a.get("available")][:8]
+        s = json.dumps(d, ensure_ascii=False)
+        P = re.findall(r'\{"title": "([^"]+)", "price": ([0-9.]+), "currency": "([A-Z]{3})"', s)
+        tot = next(((p_, c_) for t_, p_, c_ in P if "total" in t_.lower()), None) or (P[0][1:] if P else None)
+        if tot:
+            r_ = fx(tot[1], "EUR") if tot[1] != "EUR" else 1.0
+            if r_:
+                o["eur"] = int(round(float(tot[0]) * r_))
+                o["price"] = "≈ %d € (%s/%s → %s/%s)" % (o["eur"], ci[8:10], ci[5:7], co[8:10], co[5:7])
+    return o
+
+
 def smart(q):
     """2026-11-14 (owner: 'je n'ai pas trouvé de vrai prix pour demain à Viry' then 'mets Viry sur Airbnb et trie'):
     his quick #cherche goes INSIDE the right site when that is where the answer lives -> text, or None (plain web)"""
@@ -297,16 +337,20 @@ def smart(q):
         P = _near(P, R["location"])[:6]          # 14/11: 'Viry-Chatillon, France' came back with Thionville, Carcassonne...
         if not P:
             return None
-        rows = []
-        for p in P:                                  # the real price for the dates: one look per place (1 credit each)
-            pr = stay_price(p.get("url") or p.get("id"), ci, co, R.get("adults") or 1, site)
-            m = re.search(r"total[^:]*:\s*about (\d+) EUR", pr) or re.search(r"about (\d+) EUR", pr)
-            rows.append((int(m.group(1)) if m else 10 ** 6, "%s | %s | rating %s | %s" % (
-                p.get("name"), p.get("url"), (p.get("rating") or {}).get("value"), pr[:160])))
-        rows.sort()
-        return ("INSIDE %s, %s, %s -> %s, %s adult(s) - real places, real prices for these dates%s:\n" % (
-            site.upper(), R["location"], ci, co, R.get("adults") or 1, ", cheapest first" if R.get("cheapest") else "") +
-            "\n".join("- " + r for _, r in rows)) if rows else None
+        rows, opts = [], []
+        for p in P:                                  # the real price for the dates + what it looks like: one look per place
+            o = _stay_opt(p, ci, co, R.get("adults") or 1, site)
+            opts.append(o)
+            rows.append((o.get("eur") or 10 ** 6, "%s | %s | rating %s (%s reviews) | %s%s%s" % (
+                o["title"], o["url"], o.get("rating"), o.get("reviews"), o.get("price") or "price not shown",
+                (" | " + o["desc"][:140]) if o.get("desc") else "", (" | " + ", ".join(o.get("amen") or [])[:120]) if o.get("amen") else "")))
+        rows.sort(key=lambda r: r[0])
+        opts.sort(key=lambda o: o.get("eur") or 10 ** 6)
+        LAST[_qkey(q)] = {"t": time.time(), "kind": "stay", "dates": "%s → %s" % (ci, co), "items": opts}
+        return ("INSIDE %s, %s, %s -> %s, %s adult(s) - real places, real prices for these dates%s (photos available: "
+                "#cartes shows them as cards):\n" % (
+                    site.upper(), R["location"], ci, co, R.get("adults") or 1, ", cheapest first" if R.get("cheapest") else "") +
+                "\n".join("- " + r for _, r in rows)) if rows else None
     if use == "look" and R.get("path"):
         s = look(R["path"], R.get("params") if isinstance(R.get("params"), dict) else {}, 4000)
         return None if s.startswith("NOT READ") else "INSIDE %s:\n%s" % (R["path"], s)
