@@ -259,6 +259,13 @@ def transcript(msgs, n=40, lang="fr"):
                 g["status"] = (_rt or {}).get("status") or "cancelled (no longer exists)"
                 if g["status"] == "cancelled":
                     g["status"] = "CANCELLED - nothing to do, never present it as waiting"
+                    # 14/11 (watch): told cancelled H2 was "the" mission and that it was over - H1, same job, was still his
+                    _mj = (_rt or {}).get("mission") or (_rt or {}).get("for_mission")
+                    _live = [t for t in _KHt._j().get("tasks") or [] if _mj and t.get("id") != g.get("tid") and
+                             _mj in (t.get("mission"), t.get("for_mission")) and t.get("status") in ("open", "asking", "accepted", "proof_sent")]
+                    if _live:
+                        g["status"] += ("; only this duplicate card is cancelled - the SAME job is still live as task %s (%s%s)"
+                                        % (_live[0]["id"], _live[0]["status"], ", taken by " + _live[0]["helper"] if _live[0].get("helper") else ""))
             except Exception:
                 pass
             L.append("[%s] (%s %s: \"%s\", %s EUR - %s)" % (_hm(m.get("t")), "you offered them task" if lang == "en" else
