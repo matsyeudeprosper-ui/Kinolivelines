@@ -22467,12 +22467,29 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     import kino_missions as _KMs
                     _mw, _, _mr = str(v).partition("|")
                     _rh = re.search(r"(\d+)\s*h", _mr)
-                    _free = [m for m in _KMs.for_uid(uid) if m["status"] in _KMs.OPEN and not m.get("paid") and not m.get("ref")]
-                    if len(_free) < 2 or is_admin(user):
-                        _KMs.create(uid, cid, _mw.strip(), name=user.get("name") or "", lang=_rc().member_lang(c, "fr"),
-                                    repeat_h=max(24, int(_rh.group(1))) if _rh else None)
-                except Exception:
-                    pass
+                    # 2026-11-14 (owner: 'is he searching for the restaurant? nothing happening'): Pekos had the toys job
+                    # waiting on a helper's proof and the Airbnb waiting on his payment - both counted as 'free work' and
+                    # the restaurant job was dropped in silence while Kino promised options by 23:00. Only work Kino is
+                    # actually doing counts; a job waiting on someone else, or with its pay card out, does not
+                    _payrefs = {(x.get("pay") or {}).get("what") for x in (c.get("msgs") or []) if x.get("role") == "pay"
+                                and (x.get("pay") or {}).get("status") in ("waiting", "claimed")}
+                    _free = [m for m in _KMs.for_uid(uid) if m["status"] in ("open", "working") and not m.get("paid")
+                             and not m.get("ref") and not any(p and _KMs._alike(p, m["what"], 0.4) for p in _payrefs)]
+                    _new_m = None
+                    if len(_free) < 3 or is_admin(user):
+                        _new_m = _KMs.create(uid, cid, _mw.strip(), name=user.get("name") or "", lang=_rc().member_lang(c, "fr"),
+                                             repeat_h=max(24, int(_rh.group(1))) if _rh else None)
+                    if not _new_m:                      # never in silence: the person knows it waits
+                        _KO._log(cid, "MISSION_BLOCKED", "%d free jobs open: %s" % (len(_free), _mw[:120]))
+                        _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=(
+                            "Kino a déjà plusieurs tâches gratuites en cours pour toi : celle-ci attend qu'une se termine."
+                            if _rc().member_lang(c, "fr") != "en" else
+                            "Kino already has several free tasks running for you: this one waits for one to finish.")))
+                except Exception as _e_m:
+                    try:
+                        _KO._log(cid, "MISSION_ERROR", str(_e_m)[:200])
+                    except Exception:
+                        pass
             elif k == "chance":
                 threading.Timer(1.5, _deed_do, args=(cid, uid, ["luck"])).start()
             elif k == "retiens" and v:
