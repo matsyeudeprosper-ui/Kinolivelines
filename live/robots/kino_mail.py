@@ -145,7 +145,8 @@ def check(first_run_quiet=True):
                 pass
         # 2026-11-07: a service's welcome/billing mail ("accounts@dynadot.com", an HTML newsletter) is not a person waiting for him
         _auto = (re.match(r"(accounts?|billing|support|info|news|newsletter|hello|team|mailer|postmaster|bounce|alerts?|security|"
-                          r"donotreply|do-not-reply|verify|verification|invoice|receipts?|statements?|notify|notifications?)[@.+-]", a)
+                          r"donotreply|do-not-reply|verify|verification|invoice|receipts?|statements?|notify|notifications?|dmarc\w*)[@.+-]", a)
+                 or re.search(r"dmarc|report-id:", a + " " + str(x.get("subject") or ""), re.I)   # 14/11: DMARC reports are robots
                  or re.search(r"@(x\.com|twitter\.com|stripe\.com|paypal\.com|google\.com|merci-facteur[\w.-]*|dynadot\.com|github\.com|"
                               r"cloudflare\.com|amazonses\.com)$", a)
                  or str(x.get("text") or "").lstrip().startswith("<"))
