@@ -1688,6 +1688,9 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                     _log("%s STOP empty answer at step %d" % (person, i + 1))
                     break
             a = str(j["action"]).lower()
+            if _fallback() and a != "done":       # 14/11 (watch): the limit hit DURING a step - Ollama wrote it and an odd
+                _log("%s PAUSED - step %d written by the backup brain, not done: %s" % (person, i + 1, a))   # post went out to elarigent
+                break
             if a == "done":
                 rec["summary"] = str(j.get("text") or "")[:600]
                 break
