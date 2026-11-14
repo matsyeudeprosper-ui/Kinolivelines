@@ -98,10 +98,10 @@ def task(what, why, proof, pay=0, hours=48, place="", mission=""):
     _d0 = _j()
     _wd = lambda s_: set(re.findall(r"\w{4,}", str(s_).lower()))
     for t0 in _d0["tasks"]:
+        # one task at a time per job (words do not compare across languages: H1 English, H2 French)
         if t0["status"] in ("open", "asking", "accepted") and mission and mission in (t0.get("mission"), t0.get("for_mission")):
-            a_, b_ = _wd(what), _wd(t0["what"])
-            if a_ and b_ and len(a_ & b_) / float(min(len(a_), len(b_))) >= 0.4:
-                return "task %s is already %s for this job (%s) - no second one" % (t0["id"], t0["status"], t0.get("helper") or "waiting")
+            return ("task %s is already %s for this job (%s) - one at a time: finish it (help_done) or cancel it first"
+                    % (t0["id"], t0["status"], t0.get("helper") or "waiting"))
 
     def f(d):
         d["n"] = int(d.get("n") or 0) + 1
