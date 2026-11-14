@@ -89,7 +89,35 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
                   "repeat_h": float(repeat_h) if repeat_h else None, "log": [], "budget_eur": float(budget or 0)})
         d["missions"] = M[-500:]
         return mid
-    return _mut(f)
+    mid = _mut(f)
+    if mid:
+        threading.Thread(target=_name_it, args=(mid, what, lang), daemon=True).start()
+    return mid
+
+
+def _name_it(mid, what, lang):
+    """2026-11-14 (owner: 'what's wrong with the Ta demande / En cours panel'): a new job shows what it is at once - a short
+    title and first stage in the person's language - instead of 'Ta demande' until the desk first works on it"""
+    try:
+        m = get(mid)
+        if not m or m.get("title"):
+            return
+        import robot_warm as RW
+        raw = RW.ask_text("You name a task for its card in a chat app. Reply ONLY JSON {\"title\": \"3-7 words\", \"stage\": "
+                          "\"2-5 words, what is happening now\"} in %s, friendly, no ids, no 'for <name>'." % (
+                              "French" if lang != "en" else "English"), str(what)[:500], model="haiku", timeout=40)
+        i = str(raw or "").find("{")
+        j = json.JSONDecoder().raw_decode(raw[i:])[0] if i >= 0 else {}
+        if j.get("title"):
+            def f(d):
+                for mm in d["missions"]:
+                    if mm["id"] == mid and not mm.get("title"):
+                        mm["title"] = str(j["title"])[:60]
+                        if not mm.get("stage"):
+                            mm["stage"] = str(j.get("stage") or "")[:60] or None
+            _mut(f)
+    except Exception:
+        pass
 
 
 def get(mid):

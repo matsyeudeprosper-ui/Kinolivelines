@@ -22031,6 +22031,19 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     pass
         _CHAT_ACT.pop(cid, None)
         _CHAT_QUICK.pop(cid, None)
+        if _found and say and c.get("app") == "kinochat":
+            # 2026-11-14 (owner: the panel still said 'Ta demande - en cours' after the options were in the chat): what his
+            # quick look already gave goes into the open job of this chat, so its card moves on and the desk does not redo it
+            try:
+                import kino_missions as _KMq
+                for _mq in _KMq.for_uid(uid):
+                    if _mq.get("cid") == cid and _mq["status"] in _KMq.OPEN and not _mq.get("paid") and \
+                            time.time() - float(_mq.get("t") or 0) < 6 * 3600:
+                        _KMq.update(_mq["id"], note="ALREADY GIVEN IN THE CHAT (quick look): %s" % say[:500],
+                                    stage="Options envoyées - à toi de choisir" if lang != "en" else "Options sent - your pick",
+                                    next_h=3)
+            except Exception:
+                pass
     except Exception as e:
         try:
             _KO._log(cid, "LOOKUP_ERROR", "%s %s" % (type(e).__name__, e))
