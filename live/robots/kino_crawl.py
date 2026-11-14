@@ -187,7 +187,7 @@ def fx(cur_from="USD", cur_to="EUR"):
 
 def money(amount, cur, to="EUR"):
     if str(cur).upper() == to.upper():
-        return "%.0f %s" % (float(amount), to)
+        return ("%.0f €" % float(amount)) if to.upper() == "EUR" else "%.0f %s" % (float(amount), to)
     r = fx(cur, to)
     return ("about %.0f %s (%s %s)" % (float(amount) * r, to, amount, cur)) if r else "%s %s" % (amount, cur)
 
@@ -286,6 +286,61 @@ def found_for(queries, max_age=1800):
     return None
 
 
+def _first(x, *keys):
+    for k in keys:
+        v = x
+        for part in k.split("."):
+            v = v.get(part) if isinstance(v, dict) else None
+        if v not in (None, "", [], {}):
+            return v
+    return None
+
+
+def _opts_from(d, n=6):
+    """any site's results -> cards: whatever has a name and a photo (products, restaurants, businesses, videos...)"""
+    data = d.get("data", d) if isinstance(d, dict) else {}
+    items = data.get("items") if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        items = next((v for v in (data.values() if isinstance(data, dict) else []) if isinstance(v, list) and v and isinstance(v[0], dict)), [])
+    out = []
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        x = it.get("place") or it.get("product") or it.get("post") or it
+        title = _first(x, "title", "name", "product_title", "content.title")
+        img = _first(x, "image_urls", "images", "image", "image_url", "thumbnail", "thumbnail_url", "photo", "photos", "media.0.url")
+        imgs = [u for u in (img if isinstance(img, list) else [img]) if isinstance(u, str) and u.startswith("https://")]
+        if not imgs and isinstance(img, list):
+            imgs = [u.get("url") for u in img if isinstance(u, dict) and str(u.get("url", "")).startswith("https://")]
+        if not title or not imgs:
+            continue
+        pr = _first(x, "price.current", "price.value", "price.amount", "extracted_price", "price", "sale_price")
+        was = _first(x, "price.original")
+        cur = _first(x, "price.currency", "currency") or "EUR"
+        price = None
+        try:
+            if isinstance(pr, (int, float)) or re.match(r"^\d+([.,]\d+)?$", str(pr)):
+                price = money(float(str(pr).replace(",", ".")), str(cur))
+            elif pr:
+                price = str(pr)[:30]
+        except Exception:
+            price = str(pr)[:30] if pr else None
+        try:
+            if price and was and float(was) > float(pr):
+                price += " (au lieu de %s)" % money(float(was), str(cur))
+        except Exception:
+            pass
+        rat = _first(x, "rating.value", "rating", "stars")
+        out.append({"title": str(title)[:80], "url": _first(x, "url", "link", "product_url", "permalink") or "",
+                    "img": imgs[:6], "rating": rat if isinstance(rat, (int, float, str)) else None,
+                    "reviews": _first(x, "reviews_count", "review_count", "reviews"),
+                    "sub": str(_first(x, "source", "seller", "merchant", "store", "category", "address", "ext.subtitle") or "")[:80],
+                    "price": price})
+        if len(out) >= n:
+            break
+    return out
+
+
 def _stay_opt(p, ci, co, adults, site):
     """one place as a card: name, photos, rating, the real price for the dates, a line of description, what it has"""
     o = {"title": str(p.get("name") or "")[:80], "url": p.get("url") or "", "rating": (p.get("rating") or {}).get("value"),
@@ -352,8 +407,16 @@ def smart(q):
                     site.upper(), R["location"], ci, co, R.get("adults") or 1, ", cheapest first" if R.get("cheapest") else "") +
                 "\n".join("- " + r for _, r in rows)) if rows else None
     if use == "look" and R.get("path"):
-        s = look(R["path"], R.get("params") if isinstance(R.get("params"), dict) else {}, 4000)
-        return None if s.startswith("NOT READ") else "INSIDE %s:\n%s" % (R["path"], s)
+        _pp = R.get("params") if isinstance(R.get("params"), dict) else {}
+        d, why = get(R["path"], **_pp)
+        if why:
+            _down(why)
+            return None
+        opts = _opts_from(d)                     # 14/11 (owner: cards for every kind of request, not only stays)
+        if opts:
+            LAST[_qkey(q)] = {"t": time.time(), "kind": "items", "dates": "", "items": opts}
+        s = json.dumps(_slim(d.get("data", d)), ensure_ascii=False)[:4000]
+        return "INSIDE %s%s:\n%s" % (R["path"], " (photos available: #cartes shows them as cards)" if opts else "", s)
     return None
 
 

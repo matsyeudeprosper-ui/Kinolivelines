@@ -95,6 +95,35 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
     return mid
 
 
+_RESTAGED = {}
+
+
+def restage(mid, convo, lang="fr"):
+    """2026-11-14 (owner: 'why is the card always saying options envoyées - à toi de choisir, never changing?'): after an
+    exchange about the job, its card says where it really stands now - the way a person updates the to-do in their head"""
+    if time.time() - _RESTAGED.get(mid, 0) < 60:
+        return
+    _RESTAGED[mid] = time.time()
+    try:
+        m = get(mid)
+        if not m or m["status"] not in OPEN:
+            return
+        import robot_warm as RW
+        raw = RW.ask_text("A job card in a chat app shows where a job stands. From the job and the latest messages, reply ONLY "
+                          "JSON {\"stage\": \"2-6 words, where it stands NOW, from the client's side\"} in %s - e.g. waiting for "
+                          "their choice, chosen - waiting for payment, paid - booking it, booked - confirmation sent." % (
+                              "French" if lang != "en" else "English"),
+                          "JOB: %s\nCURRENT STAGE: %s\nLATEST MESSAGES:\n%s" % (m["what"][:400], m.get("stage") or "-", str(convo)[-1500:]),
+                          model="haiku", timeout=40)
+        i = str(raw or "").find("{")
+        j = json.JSONDecoder().raw_decode(raw[i:])[0] if i >= 0 else {}
+        st = str(j.get("stage") or "").strip()[:60]
+        if st and st != m.get("stage"):
+            update(mid, stage=st)
+    except Exception:
+        pass
+
+
 def _name_it(mid, what, lang):
     """2026-11-14 (owner: 'what's wrong with the Ta demande / En cours panel'): a new job shows what it is at once - a short
     title and first stage in the person's language - instead of 'Ta demande' until the desk first works on it"""

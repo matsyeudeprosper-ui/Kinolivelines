@@ -283,6 +283,22 @@ header>.av{cursor:pointer}
 .payc .pb{display:flex;gap:8px;flex-wrap:wrap}.payc a,.payc button{border:0;border-radius:12px;padding:10px 14px;font:700 14px Inter,system-ui;cursor:pointer;text-decoration:none}
 .payc a{background:#0070ba;color:#fff}.payc .npb{background:#f7931a;color:#fff;border:0}.payc button{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
 .payc .ps{font-size:13px;color:var(--mut);margin-top:8px}.payc.ok{border-color:var(--acc)}.payc.ok .ps{color:var(--acc);font-weight:700}
+/* 2026-11-14 (owner: 'more professional and modern, clearly stating Kino's fees'): the order card */
+.payc.order{max-width:88%;padding:0;overflow:hidden;background:var(--surface)}
+.payc.order .oh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0}
+.payc.order .ol{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.payc.order .pill{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc)}
+.payc.order .pill.w{background:color-mix(in srgb,#f5a524 18%,transparent);color:#d68a00}
+.payc.order .pill.x{background:rgba(127,127,127,.15);color:var(--mut)}
+.payc.order .pt{padding:6px 16px 0;font-size:16.5px;line-height:1.3}
+.payc.order .br{margin:12px 16px 0;border-top:1px dashed var(--border);padding-top:10px}
+.payc.order .rw{display:flex;justify-content:space-between;font-size:14px;padding:3px 0;color:var(--ink)}
+.payc.order .rw span:first-child{color:var(--mut)}
+.payc.order .rt{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;padding-top:8px;border-top:1px solid var(--border)}
+.payc.order .rt b{font:800 26px Inter,system-ui;color:var(--acc)}.payc.order .rt span{font-weight:700}
+.payc.order .ft{padding:12px 16px 14px;background:color-mix(in srgb,var(--acc) 6%,transparent);margin-top:12px}
+.payc.order .ft .pb a{flex:1 1 100%;text-align:center;padding:12px}.payc.order .ft .pb button{flex:1}
+.payc.order .ft .ps{margin-top:8px;font-size:12px}
 
 .filec{max-width:82%;margin:6px 0 10px;padding:14px;border-radius:18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--acc);box-shadow:0 6px 20px #0006;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .filec .fi{width:46px;height:56px;border-radius:8px;background:linear-gradient(160deg,#ef4444,#b91c1c);color:#fff;display:grid;place-items:center;font:800 12px Inter,system-ui;flex:none;box-shadow:0 4px 10px #0006}
@@ -850,8 +866,15 @@ function gigSh(){post('gig_optin',{get:1}).then(function(j){var on=j&&j.on;
  if(j&&j.kind)$('gkind').value=j.kind;
  $('gon').onclick=function(){post('gig_optin',{on:1,city:$('gcity').value.trim(),skills:$('gsk').value.trim(),email:$('gem').value.trim(),kind:$('gkind').value,country:$('gcountry').value.trim(),langs:$('glang').value.trim(),payout:$('gpay').value.trim()}).then(function(){shClose();toast(T('C’est noté ! Kino te proposera des missions ici.','Noted! Kino will offer you tasks here.'))})};
  if($('goff'))$('goff').onclick=function(){post('gig_optin',{on:0}).then(function(){shClose();toast(T('C’est noté.','Noted.'))})}})}
+function eu(x){var n=Math.round(Number(x||0)*100)/100;return (n%1?n.toFixed(2):String(n)).replace('.',EN?'.':',')+' €'}
 function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).replace('.',EN?'.':',');
- return '<div class="m gap"><div class="payc'+(st==='cancelled'?'" style="opacity:.55':'')+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'"><div class="pw">💼 '+T('Travail proposé par Kino','Job offered by Kino')+'</div><div class="pt">'+esc(p.what)+'</div><div class="pe">'+eur+' €</div>'+
+ // 2026-11-14 (owner: modern, professional, Kino's fee clearly stated): label + status, what, breakdown, total, then paying
+ var third=Number(p.third||0),fee=p.fee!=null?Number(p.fee):(Number(p.eur||0)-third);
+ var pill=st==='paid'||st==='delivered'?['✓ '+T('Payé','Paid'),'']:st==='cancelled'?[T('Annulé','Cancelled'),'x']:st==='claimed'||st==='claimed_after'?['⏳ '+T('Vérification','Checking'),'w']:st==='trust'?[T('Payé après','Pay after'),'']:st==='owed'?[T('À régler','To settle'),'w']:[T('En attente de paiement','Awaiting payment'),'w'];
+ var rows=third>0?'<div class="rw"><span>'+T('Réservation / achat (payé pour toi)','Booking / purchase (paid for you)')+'</span><span>'+eu(third)+'</span></div><div class="rw"><span>'+T('Frais de service Kino','Kino service fee')+'</span><span>'+eu(fee)+'</span></div>'
+   :'<div class="rw"><span>'+T('Service Kino','Kino service')+'</span><span>'+eu(p.eur)+'</span></div>';
+ return '<div class="m gap"><div class="payc order'+(st==='cancelled'?'" style="opacity:.55':'')+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'"><div class="oh"><span class="ol">💼 '+T('Ta commande','Your order')+'</span><span class="pill '+pill[1]+'">'+pill[0]+'</span></div><div class="pt">'+esc(p.what)+'</div>'+
+  '<div class="br">'+rows+'<div class="rt"><span>'+T('Total','Total')+'</span><b>'+eu(p.eur)+'</b></div></div><div class="ft">'+
   (st==='paid'?'<div class="ps">✓ '+T('Payé, merci ! Kino s’y met.','Paid, thank you! Kino is on it.')+'</div>':
    st==='cancelled'?'<div class="ps">✕ '+T('Devis annulé. Rien à payer.','Quote cancelled. Nothing to pay.')+'</div>':
    st==='trust'?'<div class="ps" style="margin-bottom:8px">🤝 '+T('Kino le fait d’abord. Tu paies après, seulement si ça te plaît.','Kino does it first. You pay after, only if you like it.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div>':
@@ -859,7 +882,7 @@ function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).r
    st==='owed'?'<div class="ps" style="margin-bottom:8px">✓ '+T('Livré. Ça te plaît ? Tu peux payer maintenant.','Delivered. Happy with it? You can pay now.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div>':
    st==='delivered'?'<div class="ps">✓ '+T('Livré : ton document est juste en dessous.','Delivered: your document is right below.')+'</div>':
    st==='claimed'?'<div class="ps">⏳ '+T('Paiement en cours de vérification (quelques heures en général).','Payment being checked (usually a few hours).')+'</div>':
-   '<div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div><div class="ps">'+T('Discuter reste gratuit. Kino commence dès que le paiement est confirmé.','Chatting stays free. Kino starts as soon as the payment is confirmed.')+'</div>')+'</div></div>'}
+   '<div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div><div class="ps">'+T('Discuter reste gratuit. Kino commence dès que le paiement est confirmé.','Chatting stays free. Kino starts as soon as the payment is confirmed.')+'</div>')+'</div></div></div>'}
 document.addEventListener('click',function(e){var b=e.target.closest('[data-paid]');if(!b)return;
  var who=prompt(T('Merci ! Quel nom ou quelle adresse e-mail apparaît sur ton compte PayPal ? (pour retrouver ton paiement)','Thanks! Which name or email shows on your PayPal account? (to find your payment)'),'');if(who===null)return;b.disabled=true;
  post('chat_paid',{id:CID,ref:b.dataset.paid,who:who}).then(function(j){if(j&&j.ok){toast(T('Merci ! On vérifie et Kino te dit dès que c’est bon.','Thanks! It’s being checked, Kino tells you when it’s confirmed.'));load(true)}else b.disabled=false}).catch(function(){b.disabled=false})});

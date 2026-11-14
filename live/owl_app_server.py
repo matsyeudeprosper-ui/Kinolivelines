@@ -17248,7 +17248,9 @@ def _chat_job_quote(cid, user, c, v):
         _KPj._save(_dd)
     _last = next((m for m in reversed((_chat_load(user, cid) or c).get("msgs") or []) if m.get("role") == "ai"), {})
     _done = after and len(str(_last.get("text") or "")) > 350      # he delivered it in the same message
+    # 2026-11-14 (owner: 'clearly stating Kino's fees so the user knows'): the card shows what goes to others and his fee
     _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
+                                                        "third": round(third, 2), "fee": round(eur - third, 2),
                                                         "status": ("owed" if _done else "trust") if after else "waiting", "after": after}))
     if after and not _done:
         try:
@@ -22329,6 +22331,16 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _chat_mut(cid, put)
     finally:
         _release()                                     # the draft becomes the message in the same moment
+    try:                                               # 2026-11-14 (owner): the job card follows the conversation
+        if say and c.get("app") == "kinochat":
+            import kino_missions as _KMr
+            _ow = [m_ for m_ in _KMr.for_uid(uid) if m_.get("cid") == cid and m_["status"] in _KMr.OPEN]
+            if _ow:
+                _tail = _KO.transcript((c.get("msgs") or [])[-6:], n=6, lang=lang) + "\n[now] Kino: " + say[:500]
+                for _m_ in _ow[-2:]:
+                    threading.Thread(target=_KMr.restage, args=(_m_["id"], _tail, lang), daemon=True).start()
+    except Exception:
+        pass
     try:                                               # 2026-10-31 (kino_affect): what he did on this turn, for noticing himself
         if not event and say:
             __import__("kino_affect").note_turn(_person(uid), _mdl, _careful, bool(locals().get("_rewrote")))
