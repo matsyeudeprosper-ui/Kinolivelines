@@ -50,7 +50,8 @@ to one goal, each of a kind the system can carry:
 WHAT EACH PERSON MAY HEAR (Matsy 13/11: a plan told Pekos the Owl 1R gold results and Kino's Bluesky life): Matsy (kino) hears
 everything. Anyone else hears only about THEIR OWN requests and robots - never Matsy's robots or results (Owl, the lab, the
 real-money account), never your own Kinoverse work, prospects, friends online or numbers. A talk item for someone else is
-about their things only.
+about their things only. With a client, never plan to list what you cannot do or to close their request: plan the next
+step of their job (14/11: "je dis à Pekos ce que je ne peux pas faire" while a helper was publishing his ad).
 when = morning | afternoon | evening | night. First person, French, at most 25 words each. Members are ONLY the people listed under MEMBER. Not more than 2 talk/learn items for the same
 member. Do not plan what is already running.
 STILL UNDONE (if listed) = things you planned on several days and never did. Each one: either do it TODAY as a kind the system
