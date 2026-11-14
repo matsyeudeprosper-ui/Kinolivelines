@@ -120,11 +120,18 @@ def _claude_search(q, n=8):
     r = _sp.run([exe, "-p", prompt, "--allowedTools", "WebSearch", "--model", "haiku", "--output-format", "text",
                  "--no-session-persistence"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
                 creationflags=0x08000000)
-    m = re.search(r"\[.*\]", r.stdout or "", re.S)
-    if not m:
+    txt = r.stdout or ""
+    i = txt.find("[")
+    if i < 0:
+        return []
+    try:                                        # 14/11: a greedy [.*] swallowed text after the list -> "Extra data" -> 0 results
+        arr, _end = _j.JSONDecoder().raw_decode(txt[i:])
+    except Exception:
         return []
     out = []
-    for x in _j.loads(m.group(0)):
+    for x in (arr if isinstance(arr, list) else []):
+        if not isinstance(x, dict):
+            continue
         u = str(x.get("url") or "")
         if u.startswith("http"):
             out.append({"title": str(x.get("title") or "")[:160], "url": u, "snippet": str(x.get("snippet") or "")[:300]})
