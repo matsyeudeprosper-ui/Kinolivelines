@@ -221,15 +221,15 @@ def stay_price(listing, check_in, check_out, adults=2, site="airbnb"):
             t = KWB.fetch(listing if str(listing).startswith("http") else "https://www.airbnb.fr/rooms/%s" % listing, 4000)
             pr = re.findall(r"[^\n]{0,40}\d[\d  ]*\s?(?:€|EUR|\$)[^\n]{0,40}", str(t))
             return ("(price reader unavailable: %s) %s" % (why, ("; ".join(pr[:4]) if pr else
-                    "the page does not show the price to a robot - give the listing link, the person who books reads it at checkout")))
+                    "the page does not show the price to a robot - give the listing link, the price is confirmed when the booking is placed (you book it for them through the job)")))
         except Exception:
-            return "NOT READ - %s; the person who books reads the price at checkout" % why
+            return "NOT READ - %s; the price is confirmed when the booking is placed (you book it for them through the job)" % why
     s = json.dumps(d, ensure_ascii=False)
     P = re.findall(r'\{"title": "([^"]+)", "price": ([0-9.]+), "currency": "([A-Z]{3})"', s)
     if not P:
         return "no price for these dates (maybe not available): " + look_slim(d)[:600]
     return "; ".join("%s: %s" % (t, money(p, c)) for t, p, c in P) + \
-        " - a shown price; the person who books re-reads it at checkout"
+        " - a shown price, confirmed when you place the booking for them"
 
 
 def look_slim(d):
