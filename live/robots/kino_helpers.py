@@ -230,28 +230,47 @@ def pay(tid, paypal):
     if not t.get("price"):
         return "this task was free"
     pp = str(paypal or "").strip()
-    if not re.match(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$", pp, re.I):
-        return "their PayPal email address, please"
-    body = ("Hi Matsy - a helper finished a task for me and I checked the proof. Please pay them by PayPal:\n\n"
-            "  To (PayPal): %s\n  Amount: %.2f EUR\n  Name: %s\n  Task %s: %s\n  Why: %s\n  Proof I got: %s\n  My check: %s\n\n"
-            "PayPal: choose 'paying for goods or services' (it protects both). In the note write: 'Kinoverse - task %s'.\n"
+    # 2026-11-14 (owner plan step 6, worldwide): PayPal OR mobile money; the helper's saved payout when none is given
+    _w = {}
+    if str(t.get("contact") or "").startswith("chat:"):
+        _w = (d.get("workers") or {}).get(t["contact"][5:]) or {}
+    if not pp:
+        pp = str(_w.get("payout") or "").strip()
+    _country = _w.get("country") or ""
+    try:
+        import kino_ledger as _KL
+        _amt = _KL.local(t["price"], _country)
+    except Exception:
+        _amt = "%.2f EUR" % t["price"]
+    if re.match(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$", pp, re.I):
+        _how, _howtxt = "paypal", ("by PayPal:\n\n  To (PayPal): %s\n" % pp)
+        _tip = "PayPal: choose 'paying for goods or services' (it protects both). In the note write: 'Kinoverse - task %s'.\n" % tid
+    elif len(re.sub(r"\D", "", pp)) >= 8:
+        _how, _howtxt = "mobile money", ("by MOBILE MONEY:\n\n  To (number + network): %s%s\n" % (pp, (" - " + _country) if _country else ""))
+        _tip = ("From France: Sendwave, TapTap Send, WorldRemit or Remitly send straight to an MTN / Airtel / Orange Money "
+                "number in minutes. Reference: 'Kinoverse %s'.\n" % tid)
+    else:
+        return ("I need how to pay them: a PayPal email, or a mobile money number with its network (MTN, Airtel, Orange...) - "
+                "ask them, or they add it in 'Petites missions payées'")
+    body = ("Hi Matsy - a helper finished a task for me and I checked the proof. Please pay them %s"
+            "  Amount: %s\n  Name: %s\n  Task %s: %s\n  Why: %s\n  Proof I got: %s\n  My check: %s\n\n%s"
             "When it is done, just reply 'payé %s' to this email (or tell me in our chat)." % (
-                pp, t["price"], t.get("helper"), tid, t["what"], t["why"], (t.get("proof_got") or "")[:400],
-                t.get("review") or "approved", tid, tid))
+                _howtxt, _amt, t.get("helper"), tid, t["what"], t["why"], (t.get("proof_got") or "")[:400],
+                t.get("review") or "approved", _tip, tid))
 
     def f(dd):
         tt = _t(dd, tid)
-        tt.update(status="awaiting_payment", paypal=pp, t_payreq=time.time())
+        tt.update(status="awaiting_payment", paypal=pp, pay_how=_how, pay_country=_country, t_payreq=time.time())
     _mut(f)
     try:
         import kino_mail as KM
-        KM.send_now(KM.OWNER_EMAIL, "Kino: please pay %.2f EUR to %s (task %s)" % (t["price"], t.get("helper"), tid), body)
+        KM.send_now(KM.OWNER_EMAIL, "Kino: please pay %s to %s by %s (task %s)" % (_amt, t.get("helper"), _how, tid), body)
     except Exception as e:
         return "could not email Matsy (%s)" % str(e)[:120]
     try:
         import kino_work as KW
         if KW.NOTIFY:
-            KW.NOTIFY("Kino asks you to pay %.2f EUR by PayPal to %s (task %s) - details in your email" % (t["price"], t.get("helper"), tid))
+            KW.NOTIFY("Kino asks you to pay %s by %s to %s (task %s) - details in your email" % (_amt, _how, t.get("helper"), tid))
     except Exception:
         pass
     _log("PAYREQ %s %.2f %s" % (tid, t["price"], pp))
@@ -275,6 +294,12 @@ def paid(tid):
         import kino_spend as KSP
         KSP.record(tt["price"], "client_job" if tt.get("mission") else "field_task",
                    "helper %s - task %s: %s" % (tt.get("helper"), tid, tt["what"][:80]), ref=tid, mission=tt.get("mission") or "")
+    except Exception:
+        pass
+    try:                                       # 2026-11-14 (step 6): every movement in the worldwide ledger
+        import kino_ledger as KLG
+        KLG.add("helper_out", tt.get("pay_country") or "france", tt["price"], tt.get("helper") or "", tid,
+                "owner " + str(tt.get("pay_how") or "paypal"), (tt.get("proof_got") or "")[:200])
     except Exception:
         pass
     _log("PAID %s" % tid)

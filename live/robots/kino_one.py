@@ -165,7 +165,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission|tresorier|treasurer)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -391,7 +391,7 @@ def parse(raw, partial=False):
     # 2026-11-13 (watch, backup brain): "Hey! I'm here. #reaction 😊" / "... #regarde exact reward ratio" - a control tag
     # written inside a sentence went out to the member. Anywhere in the text, a known tag and what follows it on the line go.
     say = re.sub(r"[ \t]*#(reaction|react|regarde|look|check|fil|thread|pense|think|cherche|search|web|retiens|remember|"
-                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure)\b[^\n]*", "", say)
+                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure|tresorier|treasurer)\b[^\n]*", "", say)
     say = re.sub(r"(?m)[ \t]*…[ \t]*$", "", say)   # a dangling "…" at the end of a line
     # 2026-10-29 (owner screenshot): a stray "</br>" after his #fil line came out as a bubble of its own - HTML line-break
     # tags are formatting debris, never words: a break becomes a line break, a bare tag disappears
@@ -516,7 +516,9 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "then say you are checking what is possible there, and do the rest. If the job finds nobody there yet, say "
                  "it simply ('pour la partie sur place, je n'ai pas encore quelqu'un de confiance dans ta ville - je te "
                  "préviens dès que c'est possible'), never why, never strategy or numbers, and you may ask whether they would "
-                 "like small paid missions in their own city (menu 'Petites missions payées'). BUYING IS PART OF IT "
+                 "like small paid missions in their own city (menu 'Petites missions payées'). TREASURER (owner only): when "
+                 "Matsy himself asks you to make someone a country's treasurer, write on its own line: #tresorier <country> "
+                 "<their uid> [cap EUR] [commission %] - never on your own idea, never for anyone else. BUYING IS PART OF IT "
                  "(owner 13/11, after 'je n'achète rien à ta place'): when they want the thing you found, OFFER to order it - "
                  "'je te la commande ?' - one price = the item + your fee (THE OFFER), quoted with #prix <total> | <item> | tiers "
                  "<item price>; once paid, the job orders it and you follow it to their door (ask their delivery name, "

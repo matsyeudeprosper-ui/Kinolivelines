@@ -22338,6 +22338,28 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                                                                             "Kino already has 3 free tasks running for you: this one waits for one to finish.")))
                 except Exception:
                     pass
+            elif k in ("tresorier", "treasurer") and v and is_admin(user):
+                # 2026-11-14 (owner plan step 6): only the owner appoints a country's treasurer -
+                # #tresorier <country> <uid> [cap EUR] [commission %]   e.g. #tresorier Congo u1234 100 4
+                try:
+                    _rdl = os.path.join(DIR, "robots")
+                    if _rdl not in sys.path:
+                        sys.path.insert(0, _rdl)
+                    import kino_ledger as _KLt
+                    import kino_helpers as _KHt
+                    _tp = str(v).split()
+                    _nums = [x for x in _tp if re.match(r"^\d+(\.\d+)?$", x)]
+                    _words = [x for x in _tp if x not in _nums]
+                    if len(_words) >= 2:
+                        _tu = _words[-1]
+                        _tw = (_KHt._j().get("workers") or {}).get(_tu) or {}
+                        _msg = _KLt.set_treasurer(" ".join(_words[:-1]), _tu, _tw.get("name") or _tu,
+                                                  float(_nums[0]) if _nums else 100.0, float(_nums[1]) if len(_nums) > 1 else 4.0)
+                    else:
+                        _msg = "Format : #tresorier <pays> <uid> [plafond EUR] [commission %]"
+                    _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text=_msg))
+                except Exception as _e:
+                    _chat_mut(cid, lambda cc: _chat_msg(cc, "sys", text="trésorier : erreur %s" % str(_e)[:120]))
             elif k == "mission" and v and re.match(r"\s*(stop|fin|done|annule|cancel)\s+m[0-9a-f]{8}\b", str(v), re.I):
                 # 2026-11-12 (Pekos: "no need" -> Kino "I'm dropping the hunt" while the job stayed open and its card kept
                 # asking for his number): the chat can close a job - #mission stop <id> (dropped) / #mission done <id>

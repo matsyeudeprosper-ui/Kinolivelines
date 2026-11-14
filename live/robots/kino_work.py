@@ -874,6 +874,11 @@ def _mind(person, uid):
         L.append(KRB.block())
     except Exception:
         pass
+    try:                                       # 2026-11-14 (step 6): the money, per country, treasurers
+        import kino_ledger as KLB
+        L.append(KLB.block())
+    except Exception:
+        pass
     try:                                       # 2026-11-07 (owner): his friends and the people he could meet
         import kino_friends as KFB
         L.append("MY FRIENDS\n" + KFB.block())
@@ -1318,6 +1323,12 @@ def _act0(j, person, W=None):
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
+    if a in ("ledger_add", "ledger"):        # 2026-11-14 (owner plan step 6): every money movement, worldwide
+        import kino_ledger as KLA
+        if a == "ledger":
+            return KLA.block()
+        return KLA.add(j.get("kind") or "", j.get("country") or "", j.get("eur") or j.get("amount") or 0, j.get("who") or "",
+                       j.get("ref") or "", j.get("how") or "", j.get("proof") or "", j.get("local") or "")
     if a in ("gig_scan", "gig_mark"):        # 2026-11-14 (owner plan step 4): the hunt for people who want work
         import kino_gigseek as KGA
         if a == "gig_scan":
