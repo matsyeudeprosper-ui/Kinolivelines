@@ -331,7 +331,8 @@ ON_GIG_UPDATE = None                # set by the app: (uid, tid, status) -> upda
 PROOFS = os.path.join(HERE, "helper_proofs")
 
 
-def gig_optin(uid, on=True, name="", skills="", city="", email=""):
+def gig_optin(uid, on=True, name="", skills="", city="", email="", kind="", country="", langs="", payout=""):
+    """2026-11-14 (worldwide plan): + kind local/remote/both, country, languages, payout (PayPal email or mobile money number)"""
     def f(d):
         W = d.setdefault("workers", {})
         w = W.setdefault(uid, {"since": time.time()})
@@ -342,6 +343,18 @@ def gig_optin(uid, on=True, name="", skills="", city="", email=""):
             w["city"] = str(city)[:60]
         if "@" in str(email or ""):
             w["email"] = str(email).strip()[:120]      # 13/11: gig offers also go by email
+        if kind in ("local", "remote", "both"):
+            w["kind"] = kind
+        if country:
+            w["country"] = str(country)[:60]
+        if langs:
+            try:
+                import kino_reach as _R
+                w["langs"] = _R.langs_of(langs) or w.get("langs") or ["fr"]
+            except Exception:
+                pass
+        if payout:
+            w["payout"] = str(payout)[:120]
         return w
     w = _mut(f)
     _log("OPTIN %s %s" % (uid, "on" if on else "off"))

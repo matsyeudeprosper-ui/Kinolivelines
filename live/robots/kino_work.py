@@ -665,8 +665,17 @@ You can make things public on your own, under your own name, with nobody approvi
   help_offer ("task", "uid") puts the task as a card in the Kino Chat of someone who opted in to paid gigs (see "Kino Chat
   users open to paid gigs"): they tap accept / decline, then send the proof (text + photo) - each tap reaches you at once.
   Prefer them (they know you, the answer is instant) before emailing strangers.
+  WORLDWIDE (owner 14/11 - never assume France; the person may be anywhere): sort every human task first.
+  NO PRESENCE NEEDED (a call, an email, a form, posting an ad, research, finding a hidden contact): any remote helper who
+  speaks the language of the people to reach, wherever they live - reach_match ("lang", "country") lists them, best first;
+  Matsy (uid std) is the remote fallback for France only, last. PRESENCE NEEDED somewhere (a shop visit, a photo, a
+  pick-up, a hand-over): reach_match ("country", "city", "presence": true) - a local helper there. NOBODY THERE YET: do
+  every remote part anyway, then reach_wait ("uid" the client, "country", "city", "what") and tell the client simply that
+  for the on-the-spot part you have nobody you trust in their area yet, that you will tell them the moment it opens, and
+  ask whether they would like small paid missions in their own city (the menu "Petites missions payées") - never say why,
+  never mention strategy, recruiting, helpers counts or countries. The REACH block shows where people wait: recruit there first.
   A SITE ACCOUNT JOB (sell on Leboncoin, Vinted, eBay, a local marketplace; book on a site that needs an account): pick a
-  helper IN THAT COUNTRY with an account there (Matsy, uid std, is your helper for France - Leboncoin), give the finished
+  helper IN THAT COUNTRY with an account there (Matsy, uid std, for France), give the finished
   ad / text / photo / price in the task, they publish with their own account and report back (buyers' messages, the
   hand-over). There is no master account; you never use the client's account. Matsy as a helper gets it like any helper:
   help_task then help_offer uid std (a gig card he can accept and report on) - not an "ask" request.
@@ -852,6 +861,11 @@ def _mind(person, uid):
     try:                                       # 2026-11-07 (owner): his human helpers and their tasks
         import kino_helpers as KHB
         L.append(KHB.block())
+    except Exception:
+        pass
+    try:                                       # 2026-11-14 (owner: worldwide, not France): who can act where
+        import kino_reach as KRB
+        L.append(KRB.block())
     except Exception:
         pass
     try:                                       # 2026-11-07 (owner): his friends and the people he could meet
@@ -1298,6 +1312,17 @@ def _act0(j, person, W=None):
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
+    if a in ("reach_match", "reach_wait"):    # 2026-11-14 (owner: worldwide helpers)
+        import kino_reach as KRA
+        if a == "reach_wait":
+            return KRA.wait(str(j.get("uid") or j.get("who") or ""), j.get("country") or "", j.get("city") or "",
+                            j.get("what") or j.get("text") or "", j.get("lang") or "")
+        r = KRA.match(j.get("lang") or "fr", j.get("country") or "", j.get("city") or "",
+                      str(j.get("presence")).lower() in ("true", "1", "yes"))
+        return "%s: %s" % (r["why"], "; ".join("%s uid=%s (%s, %s%s, done %d)" % (
+            p.get("name") or p["uid"], p["uid"], p.get("kind"), "/".join(p.get("langs") or []),
+            (", " + str(p.get("city") or p.get("country"))) if (p.get("city") or p.get("country")) else "", int(p.get("done") or 0))
+            for p in r["who"]) or "nobody - see the worldwide rule (remote part anyway, reach_wait)")
     if a in ("help_task", "help_ask", "help_accept", "help_done", "help_pay", "help_paid", "help_offer", "help_cancel"):   # 2026-11-07 (owner): his human helpers
         import kino_helpers as KHP
         tid = j.get("task") or j.get("id")

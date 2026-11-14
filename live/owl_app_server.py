@@ -29197,9 +29197,11 @@ def gig_optin(user, body):
     if body.get("get"):
         w = _KHg._j().get("workers", {}).get(user.get("id")) or {}
         return {"ok": True, "on": bool(w.get("on")), "city": w.get("city") or "", "skills": w.get("skills") or "",
-                "email": w.get("email") or ""}
+                "email": w.get("email") or "", "kind": w.get("kind") or "", "country": w.get("country") or "",
+                "langs": ", ".join(w.get("langs") or []), "payout": w.get("payout") or ""}
     w = _KHg.gig_optin(user.get("id"), bool(body.get("on")), user.get("name") or "", str(body.get("skills") or ""),
-                       str(body.get("city") or ""), str(body.get("email") or ""))
+                       str(body.get("city") or ""), str(body.get("email") or ""), str(body.get("kind") or ""),
+                       str(body.get("country") or ""), str(body.get("langs") or ""), str(body.get("payout") or ""))
     return {"ok": True, "on": bool(w.get("on"))}
 
 
