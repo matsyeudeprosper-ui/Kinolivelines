@@ -792,15 +792,16 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
 function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',due=g.due?jobHM(g.due):'—',
  pay=g.pay?(String(g.pay).replace('.',EN?'.':',')+' €'):T('Service','Favour');
  var pill={sent:[T('Nouvelle','New'),'n'],accepted:[T('Acceptée','Accepted'),'a'],proof_sent:[T('Preuve envoyée','Proof sent'),'w'],
-  paid:[T('Payée','Paid'),'p'],declined:[T('Refusée','Declined'),'x'],taken:[T('Déjà prise','Taken'),'x']}[st]||[st,'n'];
+  paid:[T('Payée','Paid'),'p'],declined:[T('Refusée','Declined'),'x'],taken:[T('Déjà prise','Taken'),'x'],cancelled:[T('Annulée','Cancelled'),'x']}[st]||[st,'n'];
  var tile=function(ic,k,v,cls){return '<div class="gt'+(cls?' '+cls:'')+'"><span class="gk">'+ic+' '+k+'</span><span class="gv">'+v+'</span></div>'};
  var foot=st==='sent'?'<div class="gf"><button class="gb pri" data-ga="'+esc(g.tid)+'">'+T('J’accepte','I accept')+'</button><button class="gb ghost" data-gd="'+esc(g.tid)+'">'+T('Je ne peux pas','I can’t')+'</button></div>':
   st==='accepted'?'<div class="gn">'+T('C’est pour toi. Envoie la preuve quand c’est fait.','It’s yours. Send the proof when it’s done.')+'</div><div class="gf"><button class="gb pri" data-gp="'+esc(g.tid)+'">📷 '+T('Envoyer la preuve','Send the proof')+'</button></div>':
   st==='proof_sent'?'<div class="gn">⏳ '+T('Kino vérifie ta preuve.','Kino is checking your proof.')+'</div>':
   st==='paid'?'<div class="gn ok">✓ '+T('Payée. Merci pour ton aide !','Paid. Thanks for your help!')+'</div>':
   st==='taken'?'<div class="gn">'+T('Quelqu’un l’a prise avant toi. La prochaine sera pour toi.','Someone took it first. Next time!')+'</div>':
-  st==='declined'?'<div class="gn">'+T('Pas cette fois, merci quand même.','Not this time, thanks anyway.')+'</div>':'';
- return '<div class="m gap"><div class="gc'+(st==='declined'||st==='taken'?' off':'')+'">'+
+  st==='declined'?'<div class="gn">'+T('Pas cette fois, merci quand même.','Not this time, thanks anyway.')+'</div>':
+  st==='cancelled'?'<div class="gn">'+T('Cette mission a été annulée, rien à faire.','This task was cancelled, nothing to do.')+'</div>':'';
+ return '<div class="m gap"><div class="gc'+(st==='declined'||st==='taken'||st==='cancelled'?' off':'')+'">'+
   '<div class="gh"><span class="gbadge">🙋</span><span class="gtl">'+T('Mission Kino','Kino task')+'</span><span class="gpill '+pill[1]+'">'+pill[0]+'</span></div>'+
   '<div class="gw">'+esc(g.what)+'</div>'+
   '<div class="gg">'+tile('📍',T('Où','Where'),esc(g.place||T('À distance','Remote')))+tile('⏱',T('Avant','By'),esc(due))+

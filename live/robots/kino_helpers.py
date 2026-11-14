@@ -431,6 +431,7 @@ def gig_answer(uid, tid, act, text="", photo=""):
             tt = _t(dd, tid)
             tt.setdefault("proofs_in", []).append({"t": time.time(), "uid": uid, "text": str(text or "")[:1000], "photo": path})
         _mut(fp)
+        threading.Thread(target=_check_later, args=(tid, uid, name, text, path), daemon=True).start()   # 14/11: proof checked
     else:
         return {"ok": False, "err": "act"}
 
@@ -471,3 +472,79 @@ def gig_answer(uid, tid, act, text="", photo=""):
     except Exception:
         pass
     return {"ok": True, "status": st}
+
+
+# ---------------------------------------------------------------- proof check (2026-11-14)
+# Owner: "does Kino verify the results?" - he read the text only: no eyes on the photo, and Leboncoin blocks his browser,
+# so a fake photo and URL passed. Now every proof is checked before he decides: the photo is looked at by a vision call
+# (claude.exe with the Read tool on the image file), the link must be on the right site. The verdict joins the proof.
+_SITES = {"leboncoin": r"leboncoin\.fr/(ad|vi|annonces?|offre)/", "vinted": r"vinted\.[a-z.]+/items/", "ebay": r"ebay\.[a-z.]+/itm/",
+          "facebook": r"facebook\.com/marketplace/item/"}
+
+
+def check_proof(tid, text, path):
+    """-> {"ok": bool, "why": str} - the photo looked at, the link matched to the site the task names"""
+    d = _j()
+    t = _t(d, tid) or {}
+    task, want = str(t.get("what") or ""), str(t.get("proof") or "")
+    notes, ok = [], True
+    urls = re.findall(r"https?://\S+", str(text or ""))
+    for site, rx in _SITES.items():
+        if site in task.lower():
+            if not urls:
+                ok = False
+                notes.append("no %s link given" % site)
+            elif not any(re.search(rx, u, re.I) for u in urls):
+                ok = False
+                notes.append("the link is not a %s ad (%s)" % (site, urls[0][:80]))
+            else:
+                notes.append("link looks like a real %s ad" % site)
+    if path and os.path.exists(path):
+        try:
+            import subprocess
+            exe = os.path.join(os.environ.get("USERPROFILE", r"C:\Users\Administrator"), ".local", "bin", "claude.exe")
+            prompt = ("Read the image file %s. A helper was asked: \"%s\". Proof expected: \"%s\". They wrote: \"%s\". Does the "
+                      "image genuinely show that proof (not a random, unrelated or stock picture)? Reply ONLY JSON "
+                      "{\"ok\": true|false, \"why\": \"one short sentence\"}." % (path, task[:400], want[:200], str(text or "")[:300]))
+            r = subprocess.run([exe, "-p", prompt, "--allowedTools", "Read", "--model", "sonnet", "--output-format", "text",
+                                "--no-session-persistence"], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                               timeout=150, creationflags=0x08000000)
+            i = (r.stdout or "").find("{")
+            v = json.JSONDecoder().raw_decode(r.stdout[i:])[0] if i >= 0 else {}
+            if v:
+                ok = ok and bool(v.get("ok"))
+                notes.append("photo: " + str(v.get("why") or ("matches" if v.get("ok") else "does not match"))[:200])
+            else:
+                notes.append("photo: could not be checked")
+        except Exception as e:
+            notes.append("photo: check failed (%s)" % str(e)[:60])
+    elif want and re.search(r"photo|capture|screenshot|image", want, re.I):
+        ok = False
+        notes.append("a photo/screenshot was expected and none was sent")
+    return {"ok": ok, "why": "; ".join(notes) or "nothing to check"}
+
+
+def _check_later(tid, uid, name, text, path):
+    v = check_proof(tid, text, path)
+
+    def f(dd):
+        tt = _t(dd, tid)
+        if tt and tt.get("proofs_in"):
+            tt["proofs_in"][-1]["check"] = v
+    _mut(f)
+    _log("PROOF CHECK %s %s %s" % (tid, "OK" if v["ok"] else "DOUBT", v["why"][:200]))
+    try:
+        import kino_urge as KU
+        KU.add("kino", "A HELPER ANSWERED - proof check for task %s from %s: %s - %s. %s" % (
+            tid, name, "LOOKS GENUINE" if v["ok"] else "DOUBTFUL", v["why"],
+            "If it holds, help_done ok true." if v["ok"] else "Do NOT accept it: help_done ok false with the reason, ask them for a real proof."))
+    except Exception:
+        pass
+    t = _t(_j(), tid) or {}
+    _mid = t.get("mission") or t.get("for_mission")
+    if _mid:
+        try:
+            import kino_missions as KMv
+            KMv.update(_mid, next_h=0.25, note="PROOF CHECK task %s: %s - %s" % (tid, "looks genuine" if v["ok"] else "DOUBTFUL", v["why"][:300]))
+        except Exception:
+            pass

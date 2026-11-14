@@ -26996,6 +26996,16 @@ def chat_get(user, cid, ui=""):
     try:                                             # 2026-11-12 (owner: a live line of what Kino is doing on their job)
         _dg = json.load(open(os.path.join(DIR, "robots", "kino_doing.json"), encoding="utf-8")).get(c["id"])
         c["doing"] = _dg if _dg and time.time() - float(_dg.get("t") or 0) < 240 else None
+        try:                                         # 2026-11-14 (owner tapped a cancelled gig): a card shows its task's real state
+            _gm = [m for m in c.get("msgs") or [] if m.get("role") == "gig" and m.get("gig")]
+            if _gm:
+                import kino_helpers as _KHs
+                _ts = {t["id"]: t.get("status") for t in _KHs._j().get("tasks") or []}
+                for m in _gm:
+                    if _ts.get(m["gig"].get("tid")) == "cancelled" or m["gig"].get("tid") not in _ts:
+                        m["gig"] = dict(m["gig"], status="cancelled")
+        except Exception:
+            pass
         _qk = _CHAT_QUICK.get(c["id"])
         c["quick"] = _qk if _qk and time.time() - float(_qk.get("t") or 0) < 180 else None
         import kino_missions as _KMq                 # 2026-11-12 (owner: "no estimate, it leaves him with questions"): job cards
