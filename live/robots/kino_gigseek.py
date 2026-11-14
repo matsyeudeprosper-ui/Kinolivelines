@@ -124,6 +124,38 @@ _SYS = ("You sort social posts. For each numbered post decide if its AUTHOR is a
         "(an AI offering them tasks would hurt). Never invent a place.")
 
 
+REDDIT_SUBS = [("forhire", "for hire"), ("VirtualAssistant", "for hire"), ("freelance_forhire", "for hire")]
+
+
+def _reddit_posts():
+    """2026-11-14 (SocialCrawl): Reddit '[For Hire]' posts - people offering themselves; once a day (credits)"""
+    d = _j()
+    if time.time() - float(d.get("reddit_t") or 0) < 20 * 3600:
+        return []
+    try:
+        import kino_crawl as KC
+    except Exception:
+        return []
+    out = []
+    for sub, q in REDDIT_SUBS:
+        r, why = KC.get("/reddit/subreddit/search", subreddit=sub, query=q, sort="new")
+        if why:
+            _log("reddit %s: %s" % (sub, why))
+            continue
+        for it in (r.get("data") or {}).get("items") or []:
+            p = it.get("post") or it
+            c = p.get("content") or {}
+            a = p.get("author") or {}
+            who = a.get("username") or a.get("handle") or a.get("name") or ""
+            if not who or not p.get("url"):
+                continue
+            out.append({"where": "reddit", "who": "u/" + who, "name": who, "url": p["url"],
+                        "text": ((c.get("title") or "") + " - " + (c.get("text") or ""))[:700],
+                        "t": _iso_t(p.get("published_at")), "q": "r/" + sub})
+    _mut(lambda dd: dd.__setitem__("reddit_t", time.time()))
+    return out
+
+
 def _qualify(posts):
     import robot_warm as RW
     keep = []
@@ -162,7 +194,7 @@ def scan(force=False):
             qs = ['"%s" "cherche du travail"' % place, '"%s" "looking for work"' % place] + qs
     except Exception:
         pass
-    posts = _bsky_posts(qs) + _masto_posts(MASTO_TAGS)
+    posts = _bsky_posts(qs) + _masto_posts(MASTO_TAGS) + _reddit_posts()
     now = time.time()
     seen = d.get("seen") or {}
     known = {c["who"] for c in d.get("cands") or []}
@@ -227,7 +259,9 @@ def block(limit=6):
     if todo:
         lines.append("Reach them as a person: reply to THEIR post (skeet/toot url=...) in THEIR language, about what they "
                      "said, then that you sometimes have small paid tasks (calls, online research, errands), paid per task, "
-                     "and ask if they would like you to send them some. No link in that first word; once they say yes, "
+                     "and ask if they would like you to send them some. Reddit people (u/...): you have no Reddit account - "
+                     "read their post (look /reddit/post {url}) for an email or site and write there, or leave them. "
+                     "No link in that first word; once they say yes, "
                      "give %s (it opens the sign-up) and gig_mark who invited/answered/joined/no." % LINK)
     return "\n".join(lines)
 

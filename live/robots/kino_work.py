@@ -884,6 +884,11 @@ def _mind(person, uid):
         L.append(KLB.block())
     except Exception:
         pass
+    try:                                       # 2026-11-14 (owner: SocialCrawl): eyes inside ~75 sites, no account
+        import kino_crawl as KCB
+        L.append(KCB.block())
+    except Exception:
+        pass
     try:                                       # 2026-11-07 (owner): his friends and the people he could meet
         import kino_friends as KFB
         L.append("MY FRIENDS\n" + KFB.block())
@@ -1328,6 +1333,16 @@ def _act0(j, person, W=None):
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
+    if a in ("stays", "stay_price", "look"):  # 2026-11-14 (owner: SocialCrawl) - inside sites without an account
+        import kino_crawl as KCR
+        if a == "stays":
+            return KCR.stays(j.get("location") or j.get("place") or "", j.get("check_in") or "", j.get("check_out") or "",
+                             j.get("adults") or 2, j.get("site") or "airbnb", j.get("children") or 0)
+        if a == "stay_price":
+            return KCR.stay_price(j.get("listing") or j.get("url") or j.get("id") or "", j.get("check_in") or "",
+                                  j.get("check_out") or "", j.get("adults") or 2, j.get("site") or "airbnb")
+        _pp = j.get("params") if isinstance(j.get("params"), dict) else {}
+        return KCR.look(j.get("path") or "", _pp)
     if a in ("ledger_add", "ledger"):        # 2026-11-14 (owner plan step 6): every money movement, worldwide
         import kino_ledger as KLA
         if a == "ledger":
