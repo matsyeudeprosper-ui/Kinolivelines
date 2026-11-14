@@ -22139,6 +22139,35 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 if r4 is not None:
                     say, acts, fil = r4["say"], r4["acts"] or acts, r4["fil"] or fil
                     _rewrote = True
+                    # 2026-11-14 (watch, owner's Airbnb): the rewrite came back with a NEW #cherche and "je lance la recherche,
+                    # je te dis" went out with nothing run behind it. A person who decides to look again looks: the search
+                    # runs now and his message is written with what it found; still nothing -> it becomes a job
+                    _lk4 = [(k_, v_) for k_, v_ in acts if k_ in ("regarde", "cherche") and v_][:2]
+                    if _lk4:
+                        _CHAT_ACT[cid] = "🔎 regarde…" if lang != "en" else "🔎 looking it up…"
+                        _f4 = [(q_, _kino_websearch(q_) if k_ == "cherche" else _kino_lookup(user, c, q_)) for k_, q_ in _lk4]
+                        _KO._log(cid, "LOOKUP", "after imagine: " + " | ".join("%s -> %s" % (q_[:80], str(a_)[:160]) for q_, a_ in _f4))
+                        r5 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures,
+                                      log=os.path.join(CHAT_DIR, cid + ".log"), model=_mdl,
+                                      note=(("WHAT YOU FOUND: %s. Your draft was: « %s ». Write your real message with it now - no "
+                                             "more looking in this message." if lang == "en" else
+                                             "CE QUE TU AS TROUVÉ : %s. Ton brouillon était : « %s ». Écris ton vrai message avec ça "
+                                             "maintenant - plus de recherche dans ce message.") % (
+                                          " ; ".join("« %s » : %s" % (q_, a_ or "rien trouvé") for q_, a_ in _f4), say[:400])))
+                        _CHAT_ACT.pop(cid, None)
+                        if r5 and r5.get("say"):
+                            say, fil = r5["say"], r5["fil"] or fil
+                            _more5 = [(k_, v_) for k_, v_ in r5["acts"] if k_ in ("regarde", "cherche") and v_]
+                            acts = [x for x in r5["acts"] if x[0] not in ("regarde", "cherche", "domaine")]
+                            if _more5 and c.get("app") == "kinochat":
+                                try:
+                                    import kino_missions as _KMs5
+                                    _KMs5.create(uid, cid, "Chercher pour %s : %s - puis lui envoyer le résultat (liens vérifiés)" % (
+                                        user.get("name") or uid, _more5[0][1][:300]), name=user.get("name") or "", lang=lang)
+                                except Exception:
+                                    pass
+                        else:
+                            acts = [x for x in acts if x[0] not in ("regarde", "cherche", "domaine")]
         except Exception as e:
             try:
                 _KO._log(cid, "IMAGINE_ERROR", "%s %s" % (type(e).__name__, e))
