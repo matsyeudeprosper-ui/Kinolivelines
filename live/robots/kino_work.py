@@ -395,8 +395,11 @@ def replies_due(now=None):
         if re.search(r"kinoverse26@|@kinoverseai\.com|dmarc|invitations?@|no-?reply|notifications?@|mailer|linkedin\.com|"
                      r"@updates\.|@marketing\.|newsletter", w):
             return False                       # himself, robots and newsletters are not people who answered him
+        if str(x.get("url") or x.get("text"))[:300] in _seen:
+            return False                       # 14/11: he saw it and chose (a like, or letting a 'thanks' rest) - handled
         said = (people.get(x.get("who")) or {}).get("said") or []
         return not any(s.get("dir") == "out" and float(s.get("t") or 0) > float(x.get("t") or 0) for s in said)   # answered since
+    _seen = set(_load().get("rep_seen") or [])
     return [x for x in P if live(x) and now - float(x.get("t") or 0) >= _reply_delay(x, now)]
 
 
@@ -414,6 +417,10 @@ def reply_now(now=None):
 
 def reply_task(now=None):
     D = replies_due(now)[:3]
+    # 14/11 (watch): letting elarigent's closing 'thanks' rest left it pending - the lane woke him every 2 min for it (12
+    # sessions in 25 min, likes repeated). A notification he picked up is handled, whatever he chose to do with it
+    _keys = [str(x.get("url") or x.get("text"))[:300] for x in D]
+    _mut(lambda dd: dd.__setitem__("rep_seen", ((dd.get("rep_seen") or []) + _keys)[-500:]))
     lines = ["- %s on %s, %s ago: \"%s\" (url = %s)" % (
         x.get("who"), x.get("where"), "%d min" % ((time.time() - float(x.get("t") or 0)) / 60), str(x.get("text") or "")[:400],
         x.get("url")) for x in D]
