@@ -1011,7 +1011,8 @@ function grpInvite(){if(!G)return;var link=location.origin+'/kinochat?g='+G.inv,
 $('back').onclick=function(){grpClose()};
 function grpBoot(){var q=new URLSearchParams(location.search),inv=q.get('g'),gr=q.get('gr');
  if(inv){post('grp_join',{inv:inv}).then(function(j){if(j&&j.ok){toast(T('Bienvenue dans « ','Welcome to “')+j.title+T(' » !','”!'));grpOpen(j.id)}else toast(j&&j.err==='full'?T('Ce groupe est complet.','This group is full.'):T('Ce lien d’invitation ne marche plus.','This invite link no longer works.'),4000)})}
- else if(gr)grpOpen(gr)}
+ else if(gr)grpOpen(gr);
+ if(q.get('gigs')||/(^|; )kc_gigs=1/.test(document.cookie)){document.cookie='kc_gigs=; Path=/; Max-Age=0';setTimeout(gigSh,900)}}
 go.innerHTML=MIC_I;
 boot();setTimeout(grpBoot,300);
 })();

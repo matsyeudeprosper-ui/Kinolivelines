@@ -268,7 +268,13 @@ def met_today():
 
 
 def _asked(url):
-    return any(c["url"] == url and c.get("asked") for c in _load()["cands"])
+    if any(c["url"] == url and c.get("asked") for c in _load()["cands"]):
+        return True
+    try:                                   # 2026-11-14: someone who posted that they want work asked too (kino_gigseek)
+        import kino_gigseek as _KG
+        return any(c.get("url") == url for c in _KG._j().get("cands") or [])
+    except Exception:
+        return False
 
 
 def first(who, where, url, text):

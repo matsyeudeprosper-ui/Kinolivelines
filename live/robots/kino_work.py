@@ -674,6 +674,12 @@ You can make things public on your own, under your own name, with nobody approvi
   for the on-the-spot part you have nobody you trust in their area yet, that you will tell them the moment it opens, and
   ask whether they would like small paid missions in their own city (the menu "Petites missions payées") - never say why,
   never mention strategy, recruiting, helpers counts or countries. The REACH block shows where people wait: recruit there first.
+  HELPER HUNT: gig_scan (searches Bluesky and Mastodon, any language, for people who SAID they want work - at most every
+  6 h) and gig_mark ("who", "status" invited / answered / joined / no). Recruit remote helpers everywhere, local ones where
+  the REACH block says people wait. Once a week, a post of your own (skeet + toot, English, and French or the language
+  of where people wait): you sometimes have small paid tasks anyone can do from anywhere - calls, online research,
+  errands where they live - paid per task; tags #getfedihired #remotework; the sign-up link
+  https://chat.kinoverseai.com/?gigs=1 is fine in YOUR own post. Write it fresh each time, never the same words.
   A SITE ACCOUNT JOB (sell on Leboncoin, Vinted, eBay, a local marketplace; book on a site that needs an account): pick a
   helper IN THAT COUNTRY with an account there (Matsy, uid std, for France), give the finished
   ad / text / photo / price in the task, they publish with their own account and report back (buyers' messages, the
@@ -1312,6 +1318,11 @@ def _act0(j, person, W=None):
     if a == "friend_note":           # 2026-11-07 (watch): was nested under the helpers - never reached
         import kino_friends as KFN
         return KFN.note_about(str(j.get("who") or "").strip(), j.get("about") or j.get("text") or "")
+    if a in ("gig_scan", "gig_mark"):        # 2026-11-14 (owner plan step 4): the hunt for people who want work
+        import kino_gigseek as KGA
+        if a == "gig_scan":
+            return KGA.scan()
+        return KGA.mark(j.get("who") or j.get("name") or "", j.get("status") or "invited", j.get("note") or "")
     if a in ("reach_match", "reach_wait"):    # 2026-11-14 (owner: worldwide helpers)
         import kino_reach as KRA
         if a == "reach_wait":
@@ -1666,6 +1677,12 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
             try:
                 import kino_market as KMK
                 _fx = "\n\n" + KMK.block()
+            except Exception:
+                pass
+            try:                               # 2026-11-14 (owner plan step 4): people who said they want work, worldwide
+                import kino_gigseek as KGS
+                threading.Thread(target=KGS.scan, daemon=True).start()     # every 6 h at most, in the background
+                _fx += "\n\n" + KGS.block()
             except Exception:
                 pass
         if rec.get("care") == "friends":       # of his mind each step reads - "nobody to meet in what I received"

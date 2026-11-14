@@ -40021,7 +40021,10 @@ class H(BaseHTTPRequestHandler):
             _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
             if sub in ("atelier", "kinochat"):
                 if not _ok:
-                    self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0]); self.end_headers(); return
+                    self.send_response(302); self.send_header("Location", "/%s/decouvrir-kino" % parts[0])
+                    if _q.get("gigs"):                          # 2026-11-14: a helper invite link survives the sign-up
+                        self.send_header("Set-Cookie", "kc_gigs=1; Path=/; Max-Age=86400; SameSite=Lax")
+                    self.end_headers(); return
                 if sub == "kinochat" and _q.get("k"):           # already signed in, opened their personal link: link the person
                     try:
                         _rc(); __import__("kino_chatapp").claim(_q["k"][0], user.get("id"))
