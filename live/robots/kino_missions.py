@@ -240,16 +240,34 @@ def chat_line(uid):
         return ""
     # 2026-11-12 (Pekos chat): "open" read as "my desk is opening the files now" four times while the job sat untouched
     # for 3.5 h. A mission nobody has worked on yet says so.
+    # 2026-11-14 (watch: Matsy had accepted the Leboncoin gig, the chat side did not know and "corrected" a true message
+    # three times in the night, offering Pekos to paste the ad himself): the helper tasks of each job, as they stand
+    try:
+        import kino_helpers as KHc
+        _T = KHc._j().get("tasks") or []
+    except Exception:
+        _T = []
+
+    def _hp(m):
+        L = []
+        for t in _T:
+            if m["id"] in (t.get("mission"), t.get("for_mission")):
+                who = t.get("helper") or "nobody yet"
+                L.append("HELPER TASK %s %s (%s)%s" % (t["id"], t["status"], who, " - proof received" if t.get("proofs_in") else
+                                                      (" - proof pending, it is being done: do not offer them to do it themselves"
+                                                       if t["status"] == "accepted" else "")))
+        return (" | " + "; ".join(L)) if L else ""
+
     # 2026-11-12: their job card shows the stage and "next update around HH:MM" - what he says matches it
     def _nx(m):
         if m["status"] not in OPEN:
-            return ""
+            return _hp(m)
         mins = (float(m.get("next_t") or 0) - time.time()) / 60
         # 2026-11-12 (watch): "nothing is running" while a 'waiting' job sat on Pekos's card - open = still yours, still on their card
         return (" | STILL OPEN, its card shows in their chat: \"%s\", next update %s" % (m.get("stage") or "in progress",
-                                                               "in about %d min" % mins if mins > 2 else "now"))
+                                                               "in about %d min" % mins if mins > 2 else "now")) + _hp(m)
     return "; ".join("%s \"%s\" - %s%s%s" % (m["id"], m["what"][:120], m["status"],
                                             (", last: " + m["log"][-1]["text"][:140]) if m["log"] else
                                             (" - JUST RECEIVED, starts within minutes (nothing found or sent yet - say what comes "
                                              "next and when, never that it is done)" if m["status"] in OPEN else ""),
-                                            _nx(m)) for m in M[-6:])
+                                            _nx(m)) for m in ([x for x in M if x["status"] in OPEN] + [x for x in M if x["status"] not in OPEN][-3:])[:8])
