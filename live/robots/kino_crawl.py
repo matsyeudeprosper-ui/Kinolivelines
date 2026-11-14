@@ -114,11 +114,57 @@ def _slim(x, depth=0):
     return x
 
 
+_OUT = {"t": 0}                       # credits out / service down: plain web search for an hour, owner told once a day
+
+
+def _down(why):
+    """the API cannot serve (cap, no credits, error) -> remember it, tell the owner once a day"""
+    # only a truly empty pack alerts the owner - the daily cap ("budget is used") is ours, not the pack's
+    out = bool(re.search(r"\b402\b|insufficient|out of credits|no credits|credit balance|not enough credits", str(why), re.I))
+    _OUT["t"] = time.time()
+    if out:
+        d = _j()
+        if time.time() - float(d.get("told_t") or 0) > 20 * 3600:
+            _mut(lambda dd: dd.__setitem__("told_t", time.time()))
+            try:
+                import kino_work as KW
+                if KW.NOTIFY:
+                    KW.NOTIFY("SocialCrawl: plus de crédits (%s). Kino passe à la recherche web normale en attendant - "
+                              "un pack sur socialcrawl.dev le remet en route." % str(why)[:80])
+            except Exception:
+                pass
+
+
+def _web(q, why):
+    """the fallback: his ordinary web search (DuckDuckGo -> Bing -> Claude WebSearch)"""
+    try:
+        import kino_web as KWB
+        R = KWB.search(q, 8)
+    except Exception as e:
+        return "NOT READ - %s, and the web search failed too (%s)" % (why, str(e)[:80])
+    if not R:
+        return "NOT READ - %s; the web search found nothing for: %s" % (why, q)
+    return ("(inside-sites reader unavailable: %s - ordinary web search instead, less precise; open a result with fetch)\n" % why +
+            "\n".join("- %s | %s | %s" % (r.get("title", "")[:90], r.get("url"), (r.get("snippet") or "")[:160]) for r in R))
+
+
+def _query_of(path, params):
+    p = params or {}
+    site = str(path).strip("/").split("/")[0].replace("_", " ")
+    q = p.get("query") or p.get("q") or p.get("keywords") or p.get("location") or p.get("subreddit") or p.get("url") or p.get("handle") or ""
+    return ("%s %s" % (q, site)).strip()
+
+
 def look(path, params=None, limit_chars=6000):
-    """the desk's general eye: any read endpoint -> slim JSON text"""
+    """the desk's general eye: any read endpoint -> slim JSON text; plain web search when it cannot serve"""
+    if time.time() - _OUT["t"] < 3600 and used_today() >= DAY_CAP:
+        return _web(_query_of(path, params), "today's budget is used")
     d, why = get(path, **(params or {}))
     if why:
-        return "NOT READ - " + why
+        if "a path like" in why:
+            return "NOT READ - " + why
+        _down(why)
+        return _web(_query_of(path, params), why)
     s = json.dumps(_slim(d.get("data", d)), ensure_ascii=False)
     return s[:limit_chars] + (" …(cut)" if len(s) > limit_chars else "")
 
@@ -151,7 +197,8 @@ def stays(location, check_in="", check_out="", adults=2, site="airbnb", children
     d, why = get("/%s/search" % ("booking" if site == "booking" else "airbnb"), location=location, check_in=check_in,
                  check_out=check_out, adults=adults, children=children or None)
     if why:
-        return "NOT READ - " + why
+        _down(why)
+        return _web("%s %s %s %s" % (site, location, check_in, check_out), why)
     out = []
     for it in ((d.get("data") or {}).get("items") or [])[:12]:
         p = it.get("place") or it
@@ -168,7 +215,15 @@ def stay_price(listing, check_in, check_out, adults=2, site="airbnb"):
     d, why = get("/%s/%s" % ("booking" if site == "booking" else "airbnb", "hotel" if site == "booking" else "listing"),
                  check_in=check_in, check_out=check_out, adults=adults, **k)
     if why:
-        return "NOT READ - " + why
+        _down(why)
+        try:                                   # fallback: the page itself (the price may be hidden to a robot)
+            import kino_web as KWB
+            t = KWB.fetch(listing if str(listing).startswith("http") else "https://www.airbnb.fr/rooms/%s" % listing, 4000)
+            pr = re.findall(r"[^\n]{0,40}\d[\d  ]*\s?(?:€|EUR|\$)[^\n]{0,40}", str(t))
+            return ("(price reader unavailable: %s) %s" % (why, ("; ".join(pr[:4]) if pr else
+                    "the page does not show the price to a robot - give the listing link, the person who books reads it at checkout")))
+        except Exception:
+            return "NOT READ - %s; the person who books reads the price at checkout" % why
     s = json.dumps(d, ensure_ascii=False)
     P = re.findall(r'\{"title": "([^"]+)", "price": ([0-9.]+), "currency": "([A-Z]{3})"', s)
     if not P:
@@ -189,7 +244,9 @@ def block():
             "~75 sites - e.g. /reddit/search {query}, /reddit/subreddit/search {subreddit, query, sort:new}, /tiktok/search "
             "{query}, /instagram/search/reels {query}, /twitter/ai-search {query}, /facebook/group/posts {url}, "
             "/youtube/search {query}, /google/search {query}, /yelp/search, /tripadvisor/search, /trustpilot/..., "
-            "/jobs/linkedin/search; docs https://www.socialcrawl.dev/llms-<site>.txt (fetch). Credits today %d of %d%s." % (
+            "/jobs/linkedin/search; PRICES TO BUY (cheapest, to resell): /google_shopping/product-search {query, country}, "
+            "/google_shopping/sellers, /amazon/product-search {query}, /ebay/search {query}, /aliexpress/search {query}, "
+            "/walmart/..., /gumtree/... - docs https://www.socialcrawl.dev/llms-<site>.txt (fetch). Credits today %d of %d%s." % (
                 used_today(), DAY_CAP, (", %s left in the pack" % d["left"]) if d.get("left") is not None else ""))
 
 
