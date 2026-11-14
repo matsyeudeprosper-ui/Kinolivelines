@@ -25908,6 +25908,11 @@ def _urge_tick():
                                          kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.LAB_TIME,
                                                  "project": "my trading lab", "lane": "lab", "care": "lab",
                                                  "why": "my trading lab"}, daemon=True).start()
+                    if pm == "kino" and _KWk.reply_now(now):     # 2026-11-14 (owner): a notification, picked up at a human pace
+                        threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
+                                         kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.reply_task(now),
+                                                 "project": "my friends", "lane": "rep", "care": "replies",
+                                                 "why": "someone answered me"}, daemon=True).start()
                     if pm == "kino" and _KWk.mission_now(now):   # 2026-11-12 (owner: "it feels slow"): people's jobs, own lane
                         threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
                                          kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.mission_task(),

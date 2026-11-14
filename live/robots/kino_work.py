@@ -25,7 +25,7 @@ WORLD = r"C:\KinoWorld"
 STORE = os.path.join(HERE, "kino_work.json")
 LOG = os.path.join(HERE, "kino_work.log")
 _LK = threading.Lock()
-_BUSY = {"on": False, "lab": False, "mis": False}          # 2026-11-07 (owner: "multitask - advantage of being an AI"): two lanes
+_BUSY = {"on": False, "lab": False, "mis": False, "rep": False}          # 2026-11-07 (owner: "multitask - advantage of being an AI"): two lanes
 _BR = {}                        # the browser of the current session (opened on first use, closed at the end)
 SESSIONS_DAY = 60                # 2026-11-05 (owner: "no limits but budgets"): his paced work budget is what limits him now (was 10; 12 empty sessions used it up by noon)
 STEPS = 30                       # 2026-11-01: 20 ended his launch mid-way (a real product takes more)
@@ -345,6 +345,82 @@ def mission_now(now=None):
 def mission_task():
     import kino_missions as KMIS
     return MISSION_TIME + "\n\nMISSIONS DUE NOW:\n" + KMIS.block()
+
+
+def _reply_delay(x, now):
+    """how long a person takes to pick up this notification - not a schedule: who it is (a friend he talks with, someone he
+    was waiting for, a stranger), what he is in the middle of, the hour; the same message always gets the same draw"""
+    import hashlib
+    import math
+    try:
+        import kino_online as KO
+        p = KO._load()["people"].get(x.get("who")) or {}
+        said = p.get("said") or []
+    except Exception:
+        said = []
+    talked = any(s.get("dir") == "out" for s in said)
+    last = sorted(said, key=lambda s: float(s.get("t") or 0))[-2:-1]          # the message before theirs
+    waiting = bool(last and last[0].get("dir") == "out" and float(x.get("t") or 0) - float(last[0].get("t") or 0) < 3 * 86400)
+    med = 3.0 if waiting else 6.0 if talked else 20.0                          # minutes, median
+    u = int(hashlib.md5(str(x.get("url") or x.get("text"))[:200].encode()).hexdigest()[:8], 16) / float(0xFFFFFFFF)
+    m = med * math.exp(0.7 * math.sqrt(2) * _erfinv(2 * u - 1))                 # lognormal around the median
+    if _BUSY["on"]:
+        m *= 1.6                                                               # in the middle of something
+    h = time.gmtime(now + 3600).tm_hour
+    if 1 <= h < 7:
+        m *= 2.0                                                               # his night in France: slower, not asleep
+    return max(1.0, min(m, 120.0)) * 60
+
+
+def _erfinv(y):
+    import math
+    y = max(-0.999, min(0.999, y))
+    a = 0.147
+    ln = math.log(1 - y * y)
+    t = 2 / (math.pi * a) + ln / 2
+    return math.copysign(math.sqrt(math.sqrt(t * t - ln / a) - t), y)
+
+
+def replies_due(now=None):
+    now = now or time.time()
+    try:
+        import kino_online as KO
+        P = KO.pending(48)
+        people = KO._load()["people"]
+    except Exception:
+        return []
+
+    def live(x):
+        w = str(x.get("who") or "").lower()
+        if re.search(r"kinoverse26@|@kinoverseai\.com|dmarc|invitations?@|no-?reply|notifications?@|mailer|linkedin\.com|"
+                     r"@updates\.|@marketing\.|newsletter", w):
+            return False                       # himself, robots and newsletters are not people who answered him
+        said = (people.get(x.get("who")) or {}).get("said") or []
+        return not any(s.get("dir") == "out" and float(s.get("t") or 0) > float(x.get("t") or 0) for s in said)   # answered since
+    return [x for x in P if live(x) and now - float(x.get("t") or 0) >= _reply_delay(x, now)]
+
+
+def reply_now(now=None):
+    """2026-11-14 (owner: 'like a human: we see a notification and jump on it, unless busy with something more important'):
+    the replies lane - someone answered him online and it is time he picked it up; side by side with his other work"""
+    if _fallback():
+        return False
+    now = now or time.time()
+    if _BUSY["rep"]:
+        return False
+    last = max([float(x["t"]) for x in _load().get("sessions") or [] if x.get("care") == "replies"] or [0])
+    return now - last >= 120 and bool(replies_due(now))
+
+
+def reply_task(now=None):
+    D = replies_due(now)[:3]
+    lines = ["- %s on %s, %s ago: \"%s\" (url = %s)" % (
+        x.get("who"), x.get("where"), "%d min" % ((time.time() - float(x.get("t") or 0)) / 60), str(x.get("text") or "")[:400],
+        x.get("url")) for x in D]
+    return ("A notification - someone answered you, you just picked up your phone (owner 14/11: like a person, not at a set "
+            "time). Read what they said in the light of what you two talked about (MY FRIENDS), and answer as yourself - "
+            "skeet (Bluesky) / toot (Mastodon) / email, url = their message. A person also lets some messages rest: a 'thanks' "
+            "or a closing line may just get a like or nothing - your choice. Only these, then done:\n" + "\n".join(lines))
 
 
 def lab_now(now=None):
@@ -1724,7 +1800,7 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                 _fx += "\n\n" + KGS.block()
             except Exception:
                 pass
-        if rec.get("care") == "friends":       # of his mind each step reads - "nobody to meet in what I received"
+        if rec.get("care") in ("friends", "replies"):   # of his mind each step reads - "nobody to meet in what I received"
             try:
                 import kino_friends as KFS
                 _fx = "\n\n" + KFS.block()
