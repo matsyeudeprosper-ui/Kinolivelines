@@ -21672,7 +21672,20 @@ def _one_now(user, c):
             _usual = " ; d'habitude il n'est pas là à cette heure-ci (il écrit plutôt %s), il dort ou il est pris" % _KPn.usual_hours(uid)
     except Exception:
         pass
-    return "%s %s UTC%s ; %s%s." % (J[now.weekday()], now.strftime("%d/%m %H:%M"), (" - chez lui il est %s h" % lh) if lh is not None else "",
+    # 2026-11-14 (watch: 'options by 21:30' to Pekos when it was 21:38 for him): his exact local time, and the times he is
+    # told are in it; a zone never sent (Kino Chat before 14/11) -> France for a French speaker, said as a guess
+    _tzk = _tz_of(uid) or {}
+    if not _tzk and _rc().member_lang(c, "fr") != "en":
+        try:
+            from zoneinfo import ZoneInfo as _ZI
+            _loc = " - chez lui (France, probablement) il est %s" % datetime.now(_ZI("Europe/Paris")).strftime("%H:%M")
+        except Exception:
+            _loc = " - chez lui (France, probablement) il est %s" % time.strftime("%H:%M", time.gmtime(time.time() + 3600))
+    else:
+        _lt = time.gmtime(time.time() - int(_tzk.get("off") or 0) * 60)
+        _loc = " - chez lui il est %s" % time.strftime("%H:%M", _lt)
+    _loc += " : toute heure que tu lui dis est à SON heure"
+    return "%s %s UTC%s ; %s%s." % (J[now.weekday()], now.strftime("%d/%m %H:%M"), _loc,
                                     "il a l'appli ouverte" if seen < 120 else ("il n'est pas dans l'appli (vu il y a %d min)" % (seen / 60) if seen < 86400 else "il n'est pas dans l'appli"),
                                     _usual)
 

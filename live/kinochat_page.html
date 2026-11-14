@@ -1028,5 +1028,9 @@ function grpBoot(){var q=new URLSearchParams(location.search),inv=q.get('g'),gr=
  if(q.get('gigs')||/(^|; )kc_gigs=1/.test(document.cookie)){document.cookie='kc_gigs=; Path=/; Max-Age=0';setTimeout(gigSh,900)}}
 go.innerHTML=MIC_I;
 boot();setTimeout(grpBoot,300);
+// 2026-11-14 (watch: Kino told Pekos 'options by 21:30' when it was already 21:38 in France): the phone's time zone, like OwlNest
+try{var _z=String(new Date().getTimezoneOffset())+'|'+((Intl.DateTimeFormat().resolvedOptions()||{}).timeZone||'');
+ if(localStorage.getItem('kcTz')!==_z)fetch(B+'push_pref',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'tzo='+encodeURIComponent(_z.split('|')[0])+'&tzn='+encodeURIComponent(_z.split('|')[1])}).then(function(r){if(r.ok)localStorage.setItem('kcTz',_z)}).catch(function(){})}catch(e){}
 })();
 </script></body></html>
