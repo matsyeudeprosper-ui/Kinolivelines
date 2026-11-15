@@ -500,7 +500,7 @@ function jobOrder(j){var o=j&&j.order;if(!o)return '';var th=Number(o.third||0),
 function payOpen(i){var m=(C.msgs||[])[+i],p=m&&m.pay;if(!p)return;var th=Number(p.third||0),fee=p.fee!=null?Number(p.fee):(Number(p.eur||0)-th);
  var code='KINO-'+String(p.ref||'').toUpperCase(),amt=(Math.round(Number(p.eur||0)*100)/100).toFixed(2).replace(/[.]00$/,'');
  var pp=C.paypal_me?('https://paypal.me/'+encodeURIComponent(C.paypal_me)+'/'+amt+'EUR'):p.url;
- shOpen('<div class="pys"><div class="py-h"><span class="py-l">🔒 '+T('Paiement sécurisé','Secure payment')+'</span><button class="py-x" onclick="shClose()">✕</button></div>'+
+ shOpen('<div class="pys"><div class="py-h"><span class="py-l">🔒 '+T('Paiement sécurisé','Secure payment')+'</span><button class="py-x" data-shx="1" aria-label="Fermer">✕</button></div>'+
   '<div class="py-w">'+esc(p.what||'')+'</div><div class="py-br">'+
   (th>0?'<div class="rw"><span>'+T('Réservation / achat (payé pour toi)','Booking / purchase (paid for you)')+'</span><span>'+eu(th)+'</span></div><div class="rw"><span>'+T('Frais de service Kino','Kino service fee')+'</span><span>'+eu(fee)+'</span></div>':
    '<div class="rw"><span>'+T('Service Kino','Kino service')+'</span><span>'+eu(p.eur)+'</span></div>')+
@@ -510,7 +510,7 @@ function payOpen(i){var m=(C.msgs||[])[+i],p=m&&m.pay;if(!p)return;var th=Number
   '<div class="py-2"><button class="npb" data-np="'+esc(p.ref)+'">₿ '+T('Payer en crypto','Pay with crypto')+'</button><button data-paid="'+esc(p.ref)+'">✓ '+T('J’ai payé','I’ve paid')+'</button></div>'+
   '<div class="py-f">'+T('Vérifié à la main, en général en quelques heures. Kino commence dès que c’est confirmé et te le dit ici.','Checked by hand, usually within a few hours. Kino starts as soon as it’s confirmed and tells you here.')+'</div></div>')}
 function cpy(t){try{navigator.clipboard.writeText(t)}catch(e){}toast(T('Code copié','Code copied'))}
-document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-paysh]');if(b){e.preventDefault();payOpen(b.dataset.paysh);return}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-shx]')){e.preventDefault();shClose();return}var b=e.target.closest&&e.target.closest('[data-paysh]');if(b){e.preventDefault();payOpen(b.dataset.paysh);return}
  var c=e.target.closest&&e.target.closest('[data-copy]');if(c){cpy(c.dataset.copy);return}
  var c2=e.target.closest&&e.target.closest('[data-copy2]');if(c2){try{navigator.clipboard.writeText(c2.dataset.copy2)}catch(x){}}});
 function ordList(){return GID?[]:(C&&C.orders||[])}
