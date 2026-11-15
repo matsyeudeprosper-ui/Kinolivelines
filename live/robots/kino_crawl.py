@@ -452,16 +452,18 @@ def smart(q):
 
 def block():
     d = _j()
+    _r = fx("USD", "EUR")
     return ("EYES INSIDE SITES (no account, any country, read only): stays (\"location\" 'city postcode' or 'city, country', "
             "\"check_in\", \"check_out\" YYYY-MM-DD, \"adults\", \"site\" airbnb|booking) lists places; stay_price (\"listing\" "
             "url or id, dates, adults) gives the real price converted to euros; look (\"path\", \"params\" {}) reads any of "
             "~75 sites - e.g. /reddit/search {query}, /reddit/subreddit/search {subreddit, query, sort:new}, /tiktok/search "
             "{query}, /instagram/search/reels {query}, /twitter/ai-search {query}, /facebook/group/posts {url}, "
             "/youtube/search {query}, /google/search {query}, /yelp/search, /tripadvisor/search, /trustpilot/..., "
-            "/jobs/linkedin/search; PRICES TO BUY (cheapest, to resell): /google_shopping/product-search {query, country}, "
+            "/jobs/linkedin/search. MONEY: these sites often answer in US dollars - always give people the price in THEIR currency "
+            "(euros in France and the euro zone%s), never dollars to someone who pays in euros. PRICES TO BUY (cheapest, to resell): /google_shopping/product-search {query, country}, "
             "/google_shopping/sellers, /amazon/product-search {query}, /ebay/search {query}, /aliexpress/search {query}, "
             "/walmart/..., /gumtree/... - docs https://www.socialcrawl.dev/llms-<site>.txt (fetch). Credits today %d of %d%s." % (
-                used_today(), DAY_CAP, (", %s left in the pack" % d["left"]) if d.get("left") is not None else ""))
+                (": today 1 USD = %.3f EUR" % _r) if _r else "", used_today(), DAY_CAP, (", %s left in the pack" % d["left"]) if d.get("left") is not None else ""))
 
 
 if __name__ == "__main__":

@@ -353,7 +353,9 @@ def block(limit=6):
         L.append("- %s for %s (%s%s, opened %s, status %s%s): %s\n  so far: %s%s" % (
             m["id"], m.get("name") or m["uid"], ("PAID %.0f EUR" % m["eur"]) if m.get("paid") else "free",
             (", repeats every %.0f h" % m["repeat_h"]) if m.get("repeat_h") else "", _ago(m["t"]), m["status"],
-            ", writes in " + m.get("lang", "fr"), m["what"], hist,
+            ", THEY WRITE IN %s - every tell and every choice to them in %s, whatever language this brief is in" % (
+                {"en": "ENGLISH", "fr": "FRENCH"}.get(m.get("lang", "fr"), str(m.get("lang")).upper()),
+                {"en": "ENGLISH", "fr": "FRENCH"}.get(m.get("lang", "fr"), str(m.get("lang")).upper())), m["what"], hist,
             ("\n  THE CONVERSATION NOW (what you - chat or another job - already told them; stay consistent, never "
              "contradict it, never repeat it):\n  " + _conv.replace("\n", "\n  ")[-2500:]) if _conv else ""))
     return "\n".join(L)
