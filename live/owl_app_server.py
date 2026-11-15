@@ -17417,6 +17417,19 @@ def _reminder_tick():
         try:                                            # 2026-11-08: his mission reports -> their chat + a push
             import kino_missions as _KMs
             for q in _KMs.drain():
+                try:                                    # 2026-11-15 (watch: Massy options sent twice in $ to a client in
+                    _tzn = str((_tz_of(q["uid"]) or {}).get("name") or "")   # France): money in their currency, checked last
+                    if not _tzn or _tzn.startswith("Europe/"):
+                        import kino_crawl as _KCd
+                        _rt = _KCd.fx("USD", "EUR")
+                        if _rt:
+                            q["text"] = _usd_to_eur(q.get("text"), _rt)
+                            for _it in q.get("cards") or []:
+                                _it["price"] = _usd_to_eur(_it.get("price"), _rt)
+                                _it["sub"] = _usd_to_eur(_it.get("sub"), _rt)
+                except Exception:
+                    pass
+
                 def _put(cc, q=q):
                     _prev = next((m for m in reversed(cc.get("msgs") or []) if m.get("mission") == q["mid"]), None)
                     if q.get("replace") and _prev is not None and time.time() - float(_prev.get("t") or 0) < 1200:
@@ -18722,6 +18735,25 @@ def _chat_markets(user):
 
 
 _OOPS_RETRIED = {}      # (cid, last member message t) -> True once a silent retry ran (2026-10-24, engine 2)
+
+
+_USD_RX = re.compile(r"(?:US)?\$\s?(\d{1,3}(?:[ ,]\d{3})+|\d+(?:[.,]\d{1,2})?)|"
+                     r"(\d{1,3}(?:[ ,]\d{3})+|\d+(?:[.,]\d{1,2})?)\s?(?:\$|USD\b|dollars?\b)")
+
+
+def _usd_to_eur(t, rate):
+    """'$70' / '70 $' / '1,100 USD' -> '63 €' / '995 €' (2026-11-15: a client in France got prices in dollars twice)"""
+    if not t:
+        return t
+
+    def _one(m):
+        s_ = m.group(1) or m.group(2) or ""
+        if re.match(r"^\d{1,3}([ ,]\d{3})+$", s_):          # 1,100 / 1 100 = thousands
+            v_ = float(re.sub(r"[ ,]", "", s_))
+        else:
+            v_ = float(s_.replace(",", "."))
+        return "%d €" % round(v_ * rate)
+    return _USD_RX.sub(_one, str(t))
 
 
 _MISSED_F = os.path.join(DIR, "robots", "kino_missed.json")
