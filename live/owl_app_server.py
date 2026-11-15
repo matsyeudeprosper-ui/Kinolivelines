@@ -17417,6 +17417,11 @@ def _reminder_tick():
         try:                                            # 2026-11-08: his mission reports -> their chat + a push
             import kino_missions as _KMs
             for q in _KMs.drain():
+                try:                                    # 2026-11-15 (watch: '#prix 65 + mes frais.' reached Pekos as text):
+                    q["text"] = re.sub(r"[ \t]*#(prix|price|choix|choice|cartes|cards|mission|cherche|regarde|suivi|fil|travail)\b[^\n.]*\.?",
+                                       "", str(q.get("text") or "")).strip()   # the desk's control tags never reach a person
+                except Exception:
+                    pass
                 try:                                    # 2026-11-15 (watch: Massy options sent twice in $ to a client in
                     _tzn = str((_tz_of(q["uid"]) or {}).get("name") or "")   # France): money in their currency, checked last
                     if not _tzn or _tzn.startswith("Europe/"):
