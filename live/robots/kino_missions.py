@@ -95,6 +95,16 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
     return mid
 
 
+def wake(mid):
+    """2026-11-15 (watch: 'confirmed times in about 10 minutes' - joining the promise pushed the train job to +15 min): a
+    promise about a job brings it forward, never back"""
+    def f(d):
+        for m in d["missions"]:
+            if m["id"] == mid and m["status"] in OPEN and float(m.get("next_t") or 0) > time.time():
+                m["next_t"] = time.time()
+    _mut(f)
+
+
 def which_job(uid, cid, text):
     """2026-11-15 (owner's panel: the restaurant promise joined the Airbnb job, the Airbnb order paired with the restaurant
     jobs - word matching mixes things that share a town): which open job of this chat a promise or an order is really about

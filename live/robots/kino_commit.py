@@ -263,7 +263,8 @@ def harvest(uid, cid, say, q, pa, W, H, log=None):
                             # taken) - it joins only the job it is really about
                             _jm = KMc.which_job(uid, cid, x["what"])
                             if _jm:
-                                KMc.update(_jm, note="also promised in the chat: %s" % x["what"][:200], next_h=0.25)
+                                KMc.update(_jm, note="also promised in the chat: %s" % x["what"][:200])
+                                KMc.wake(_jm)
                                 resolve(cid, x["id"], "blocked", "joined job %s" % _jm)
                                 continue
                             _mid = KMc.create(uid, cid, x["what"], name=str(c.get("name") or uid), lang=str(c.get("lang") or "fr"))
