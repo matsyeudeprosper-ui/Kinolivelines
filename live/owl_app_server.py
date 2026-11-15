@@ -17254,6 +17254,33 @@ def _chat_job_quote(cid, user, c, v):
                                "(and if the price may have moved, offer to recheck it)" % ("8" if third > 0 else "30", what[:80], eur))
         except Exception:
             pass
+    # 2026-11-15 (owner's screenshot: 'Airbnb room 78' still to pay after he chose the apartment at 86): a new quote for
+    # the same thing replaces the older unpaid one - only the current order stays
+    try:
+        _old = []
+
+        def _sup(cc):
+            for mm in cc.get("msgs") or []:
+                pp_ = mm.get("pay") or {}
+                if mm.get("role") == "pay" and pp_.get("status") == "waiting" and pp_.get("ref") != ref and \
+                        time.time() - float(mm.get("t") or 0) < 3 * 86400:
+                    a_ = set(re.findall(r"\w{4,}", str(pp_.get("what") or "").lower()))
+                    b_ = set(re.findall(r"\w{4,}", what.lower()))
+                    if a_ and b_ and len(a_ & b_) / float(min(len(a_), len(b_))) >= 0.5:
+                        pp_["status"] = "cancelled"
+                        pp_["replaced_by"] = ref
+                        _old.append(pp_.get("ref"))
+            return True
+        _chat_mut(cid, _sup)
+        if _old:
+            with _KPj._LK:
+                _dd = _KPj._load()
+                for _x in _dd["invoices"]:
+                    if _x["ref"] in _old and _x.get("status") == "waiting":
+                        _x["status"] = "cancelled"
+                _KPj._save(_dd)
+    except Exception:
+        pass
     # 2026-11-14 (owner: 'clearly stating Kino's fees so the user knows'): the card shows what goes to others and his fee
     _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
                                                         "third": round(third, 2), "fee": round(eur - third, 2),

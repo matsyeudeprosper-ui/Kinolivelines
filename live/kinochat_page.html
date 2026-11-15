@@ -283,7 +283,11 @@ header>.av{cursor:pointer}
 .payc .pb{display:flex;gap:8px;flex-wrap:wrap}.payc a,.payc button{border:0;border-radius:12px;padding:10px 14px;font:700 14px Inter,system-ui;cursor:pointer;text-decoration:none}
 .payc a{background:#0070ba;color:#fff}.payc .npb{background:#f7931a;color:#fff;border:0}.payc button{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
 .payc .ps{font-size:13px;color:var(--mut);margin-top:8px}.payc.ok{border-color:var(--acc)}.payc.ok .ps{color:var(--acc);font-weight:700}
-/* 2026-11-14: unpaid orders kept in the job panel */
+#ordd{display:none}#ordd.on{display:flex;align-items:center;gap:8px;margin:6px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;
+ background:linear-gradient(155deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%),color-mix(in srgb,var(--surface) 75%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+ border:1px solid color-mix(in srgb,#f5a524 40%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+#ordd b{flex:1;font-weight:700}#ordd .oa{color:#f5a524;font-weight:700}
+/* 2026-11-14: unpaid orders in their own sheet (Mes commandes) */
 .ordh{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:2px 2px 8px}
 .ordc{border:1px solid color-mix(in srgb,var(--acc) 35%,var(--border));border-radius:16px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
 .ordc .hd{display:flex;justify-content:space-between;gap:10px;font-weight:700}.ordc .hd b{color:var(--acc);white-space:nowrap}
@@ -346,7 +350,7 @@ html[data-th="clair"] .tk.rd{color:#3a9ee0}
 .oc-k button,.ordc.ex .ok2 button{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 92%,#fff),var(--acc)) !important;box-shadow:0 6px 16px color-mix(in srgb,var(--acc) 35%,transparent)}
 .payc.order .pb button,.oc-k a,.ordc .ok2 button{background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.12) !important;color:var(--ink)}
 .payc.order a:active,.payc.order button:active,.oc button:active,.oc a:active,.ordc a:active,.ordc button:active{transform:scale(.97)}
-.payc.order .pill,.ordc .hd b{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.payc.order .pill{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .oc-ph{border-bottom:1px solid rgba(255,255,255,.08)}.oc-ph img{transition:transform .4s ease}.oc:hover .oc-ph img{transform:scale(1.03)}
 .oc-p{background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 60%,#7cf));-webkit-background-clip:text;background-clip:text;color:transparent}
 .shc{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 30%),color-mix(in srgb,var(--surface) 86%,transparent) !important;
@@ -371,7 +375,7 @@ html[data-th="clair"] .shc{border-top-color:rgba(15,23,42,.08) !important;box-sh
 <div id="chips"></div>
 <div id="rbar"><span id="rbt"></span><button id="rbx" aria-label="Annuler">✕</button></div>
 <button id="down" aria-label="Bas">⌄<i></i></button>
-<div id="jobq"></div><div id="jobd"></div>
+<div id="jobq"></div><div id="jobd"></div><div id="ordd"></div>
 <footer>
  <div class="box">
   <button class="ib" id="att" aria-label="Joindre"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -448,7 +452,7 @@ function jobHM(t){var d=new Date(t*1000),n=new Date(),hm=('0'+d.getHours()).slic
 // 2026-11-14 (owner: 'old payment cards get buried - a way to get them back'): every unpaid order stays here, with its
 // breakdown and Pay; once its price is too old to trust, it asks Kino for a fresh one instead
 function orderCards(){var O=(C&&C.orders||[]);if(!O.length)return '';
- return '<div class="dg ords"><div class="ordh">💳 '+T('À régler','To pay')+'</div>'+O.slice().reverse().map(function(o){var ex=o.expired,th=Number(o.third||0),fee=o.fee!=null?Number(o.fee):(Number(o.eur||0)-th);
+ return '<div class="ords"><div class="ordh">💳 '+T('À régler','To pay')+'</div>'+O.slice().reverse().map(function(o){var ex=o.expired,th=Number(o.third||0),fee=o.fee!=null?Number(o.fee):(Number(o.eur||0)-th);
   return '<div class="ordc'+(ex?' ex':'')+'"><div class="hd"><span>'+esc(o.what||'')+'</span><b>'+eu(o.eur)+'</b></div>'+
    (th>0?'<div class="ob">'+T('dont','incl.')+' '+eu(th)+' '+T('payés pour toi','paid for you')+' · '+T('frais Kino','Kino fee')+' '+eu(fee)+'</div>':'<div class="ob">'+T('Service Kino','Kino service')+'</div>')+
    (ex?'<div class="ob w">'+T('Prix à revérifier : il a pu changer depuis.','Price to recheck: it may have changed since.')+'</div><div class="ok2"><button data-recheck="'+o.i+'">'+T('Revérifier le prix','Recheck the price')+'</button></div>':
@@ -457,7 +461,13 @@ function orderCards(){var O=(C&&C.orders||[]);if(!O.length)return '';
 document.addEventListener('click',function(e){var g=e.target.closest&&e.target.closest('[data-goto]');if(g){shClose();var all=$('chat').querySelectorAll('.payc.order');
   var M=(C.msgs||[]).filter(shown),k=-1,n=0;M.forEach(function(m){if(m.role==='pay'){if(C.msgs.indexOf(m)===+g.dataset.goto)k=n;n++}});var el=all[k];if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--acc)';setTimeout(function(){el.style.outline=''},1800)}return}
  var r=e.target.closest&&e.target.closest('[data-recheck]');if(r){shClose();var m=(C.msgs||[])[+r.dataset.recheck],w=m&&m.pay?m.pay.what:'';tx.value=T('Tu peux revérifier le prix pour : ','Can you recheck the price for: ')+w+' ?';auto();send()}});
-function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out=orderCards(),now=Date.now()/1000,
+// 2026-11-15 (owner: 'the orders panel is great but from a different panel, its own button'): a chip + its own sheet
+function ordList(){return GID?[]:(C&&C.orders||[])}
+var ORDL='';function ordDock(){var el=$('ordd');if(!el)return;var O=ordList().filter(function(o){return !o.expired&&o.status==='waiting'}),n=O.length;
+ var h=n?'<span>💳</span><b>'+(n>1?n+' '+T('commandes à régler','orders to pay'):T('1 commande à régler','1 order to pay'))+'</b><span class="oa">'+T('Voir','View')+' ›</span>':'';
+ if(h!==ORDL){el.innerHTML=h;ORDL=h}el.className=n?'on':'';if(!el.onclick)el.onclick=ordOpen}
+function ordOpen(){var O=ordList();shOpen('<h3>'+T('Mes commandes','My orders')+'</h3>'+(O.length?orderCards():'<p style="opacity:.7">'+T('Rien à régler pour le moment.','Nothing to pay right now.')+'</p>'))}
+function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.now()/1000,
  J=(C.jobs||[]).slice().sort(function(a,b){var ra=(a.status==='done'?2:0)-(dg&&dg.mid===a.id?1:0),rb=(b.status==='done'?2:0)-(dg&&dg.mid===b.id?1:0);return ra-rb||b.t-a.t});
  if(dg&&!J.some(function(j){return j.id===dg.mid}))J=J.concat([{id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t}]);
  J.forEach(function(j){var live=dg&&dg.mid===j.id,mn=live?Math.max(0,Math.floor((now-(dg.since||dg.t))/60)):0,tr=live?(dg.trail||[]).slice(0,2):[];
@@ -495,9 +505,7 @@ function jobDock(){var el=$('jobd');if(!el)return;var JA=GID?[]:jobList(),dg=C&&
  var J=JA.filter(function(j){return j.status!=='done'}),D=JA.filter(function(j){return j.status==='done'&&now-(j.end||0)<7200});
  if(!J.length&&D.length){var hd='<span class="ic">✔</span><span class="jl"><b>'+esc(D[0].title||T('Ta demande','Your request'))+'</b> · '+T('Terminé','Done')+'</span><span class="jc">⌃</span>';
   if(hd!==JOBDL){el.innerHTML=hd;JOBDL=hd}el.className='on';if(!el.onclick)el.onclick=jobOpen;jobPanel();return}
- var OW=GID?[]:(C&&C.orders||[]).filter(function(o){return !o.expired&&o.status==='waiting'});
- if(!J.length&&OW.length){var ho='<span class="ic">💳</span><span class="jl"><b>'+(OW.length>1?OW.length+' '+T('commandes à régler','orders to pay'):T('Commande à régler','Order to pay'))+'</b> · '+esc(OW[OW.length-1].what||'')+'</span><span class="jc">⌃</span>';
-  if(ho!==JOBDL){el.innerHTML=ho;JOBDL=ho}el.className='on';if(!el.onclick)el.onclick=jobOpen;jobPanel();return}
+
  if(!J.length){if(JOBDL){el.innerHTML='';JOBDL=''}el.className='';if(JOBSH&&$('sh').classList.contains('on'))shClose();JOBSH=false;return}
  var Jb=J.slice().sort(function(a,b){return ((b.stage?2:0)+(b.title?1:0))-((a.stage?2:0)+(a.title?1:0))||b.t-a.t});
  var j0=dg?(J.filter(function(j){return j.id===dg.mid})[0]||Jb[0]):Jb[0],txt,right;
@@ -516,7 +524,7 @@ function jobDots(){var b=$('jobsb'),d=$('jobdots');if(!b||!d)return;var n=b.chil
 function jobPanel(){if(JOBSH&&$('sh').classList.contains('on')){var b=$('jobsb'),nh=jobCards();if(b&&nh!==JOBLAST){var x=b.scrollLeft;b.innerHTML=nh;b.scrollLeft=x;JOBLAST=nh;jobDots()}}else JOBSH=false}
 function jobOpen(){JOBSH=true;JOBLAST=jobCards();shOpen('<h3>'+T('Ce que je fais pour toi','What I am doing for you')+'</h3><div id="jobsb" class="car">'+JOBLAST+'</div><div id="jobdots"></div>');
  var b=$('jobsb');if(b)b.addEventListener('scroll',function(){clearTimeout(b._t);b._t=setTimeout(jobDots,60)},{passive:true});jobDots()}
-function paint(force){try{jobDock();quickDock()}catch(e){}if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
+function paint(force){try{jobDock();quickDock();ordDock()}catch(e){}if(GID)return paintG(force);var ch=$('chat'),M=(C&&C.msgs||[]).filter(shown).filter(function(m){return !(C.kc_clear_t&&m.t<=C.kc_clear_t)}),sig=M.length+'|'+(C&&C.status)+'|'+(C&&C.draft||'').length+'|'+PEND.length+'|'+QRY+'|'+M.map(function(m){return (m.mreact||'')+(m.edited?'e':'')+(m.pay?m.pay.status:'')+(m.file?'f':'')}).join('')+'|'+JSON.stringify(C&&C.pins||[])+'|'+JSON.stringify(C&&C.doing||'')+JSON.stringify(C&&C.jobs||'')+'|'+Math.floor(Date.now()/60000);
  if(!force&&sig===SIG)return;SIG=sig;LASTAI=0;(C&&C.msgs||[]).forEach(function(m){if(m.role==='ai'&&m.t>LASTAI)LASTAI=m.t});var atEnd=ch.scrollHeight-ch.scrollTop-ch.clientHeight<120,h='',lastDay='',prev=null;
  var list=QRY?M.filter(function(m){return ((m.text||'')+' '+(m.name||'')).toLowerCase().indexOf(QRY.toLowerCase())>=0}):M;
  list.forEach(function(m){var d=dayOf(m.t);if(d!==lastDay){h+='<div class="day"><span>'+d+'</span></div>';lastDay=d;prev=null}h+=bubble(m,C.msgs.indexOf(m),prev);prev=m});
@@ -981,6 +989,7 @@ var MENU=[['🔍',T('Chercher','Search'),function(){$('srch').classList.add('on'
  ['🖼️',T('Photos et documents','Photos and documents'),media],
  ['👥',T('Groupes','Groups'),groups],
  ['💼',T('Mes missions','My jobs'),missions],
+ ['💳',T('Mes commandes','My orders'),function(){ordOpen()}],
  ['🙋',T('Petites missions payées','Small paid tasks'),gigSh],
  ['🧠',T('Ce que Kino sait de moi','What Kino knows about me'),knowSh],
  ['⭐',T('Messages importants','Starred messages'),starSh],
