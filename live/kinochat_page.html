@@ -283,6 +283,14 @@ header>.av{cursor:pointer}
 .payc .pb{display:flex;gap:8px;flex-wrap:wrap}.payc a,.payc button{border:0;border-radius:12px;padding:10px 14px;font:700 14px Inter,system-ui;cursor:pointer;text-decoration:none}
 .payc a{background:#0070ba;color:#fff}.payc .npb{background:#f7931a;color:#fff;border:0}.payc button{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
 .payc .ps{font-size:13px;color:var(--mut);margin-top:8px}.payc.ok{border-color:var(--acc)}.payc.ok .ps{color:var(--acc);font-weight:700}
+/* 2026-11-14: unpaid orders kept in the job panel */
+.ordh{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:2px 2px 8px}
+.ordc{border:1px solid color-mix(in srgb,var(--acc) 35%,var(--border));border-radius:16px;padding:12px 14px;margin-bottom:10px;background:var(--surface)}
+.ordc .hd{display:flex;justify-content:space-between;gap:10px;font-weight:700}.ordc .hd b{color:var(--acc);white-space:nowrap}
+.ordc .ob{font-size:12.5px;color:var(--mut);margin-top:4px}.ordc .ob.w{color:#d68a00}
+.ordc .ok2{display:flex;gap:8px;margin-top:10px}.ordc .ok2 a,.ordc .ok2 button{flex:1;text-align:center;padding:9px;border-radius:12px;font-weight:700;font-size:13px;border:0;cursor:pointer;text-decoration:none}
+.ordc .ok2 a{background:#0070ba;color:#fff}.ordc .ok2 button{background:var(--surface2);color:var(--ink)}
+.ordc.ex{opacity:.8;border-style:dashed}.ordc.ex .ok2 button{background:var(--acc);color:#fff}
 /* 2026-11-14 (owner: 'more professional and modern, clearly stating Kino's fees'): the order card */
 .payc.order{max-width:88%;padding:0;overflow:hidden;background:var(--surface)}
 .payc.order .oh{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0}
@@ -411,7 +419,19 @@ function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='opt
 // its name, where it stands, the next update time; while Kino works on it, the live lines play inside it
 function jobHM(t){var d=new Date(t*1000),n=new Date(),hm=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
  return d.toDateString()===n.toDateString()?hm:(T('demain ','tomorrow ')+hm)}
-function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.now()/1000,
+// 2026-11-14 (owner: 'old payment cards get buried - a way to get them back'): every unpaid order stays here, with its
+// breakdown and Pay; once its price is too old to trust, it asks Kino for a fresh one instead
+function orderCards(){var O=(C&&C.orders||[]);if(!O.length)return '';
+ return '<div class="dg ords"><div class="ordh">💳 '+T('À régler','To pay')+'</div>'+O.slice().reverse().map(function(o){var ex=o.expired,th=Number(o.third||0),fee=o.fee!=null?Number(o.fee):(Number(o.eur||0)-th);
+  return '<div class="ordc'+(ex?' ex':'')+'"><div class="hd"><span>'+esc(o.what||'')+'</span><b>'+eu(o.eur)+'</b></div>'+
+   (th>0?'<div class="ob">'+T('dont','incl.')+' '+eu(th)+' '+T('payés pour toi','paid for you')+' · '+T('frais Kino','Kino fee')+' '+eu(fee)+'</div>':'<div class="ob">'+T('Service Kino','Kino service')+'</div>')+
+   (ex?'<div class="ob w">'+T('Prix à revérifier : il a pu changer depuis.','Price to recheck: it may have changed since.')+'</div><div class="ok2"><button data-recheck="'+o.i+'">'+T('Revérifier le prix','Recheck the price')+'</button></div>':
+    o.status==='claimed'||o.status==='claimed_after'?'<div class="ob">⏳ '+T('Paiement en vérification','Payment being checked')+'</div>':
+    '<div class="ob">'+T('Valable jusqu’à ','Valid until ')+jobHM(o.until)+'</div><div class="ok2"><a href="'+esc(o.url||'#')+'" target="_blank" rel="noopener">'+T('Payer','Pay')+'</a><button data-goto="'+o.i+'">'+T('Voir dans la conversation','See in the chat')+'</button></div>')+'</div>'}).join('')+'</div>'}
+document.addEventListener('click',function(e){var g=e.target.closest&&e.target.closest('[data-goto]');if(g){shClose();var all=$('chat').querySelectorAll('.payc.order');
+  var M=(C.msgs||[]).filter(shown),k=-1,n=0;M.forEach(function(m){if(m.role==='pay'){if(C.msgs.indexOf(m)===+g.dataset.goto)k=n;n++}});var el=all[k];if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--acc)';setTimeout(function(){el.style.outline=''},1800)}return}
+ var r=e.target.closest&&e.target.closest('[data-recheck]');if(r){shClose();var m=(C.msgs||[])[+r.dataset.recheck],w=m&&m.pay?m.pay.what:'';tx.value=T('Tu peux revérifier le prix pour : ','Can you recheck the price for: ')+w+' ?';auto();send()}});
+function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out=orderCards(),now=Date.now()/1000,
  J=(C.jobs||[]).slice().sort(function(a,b){var ra=(a.status==='done'?2:0)-(dg&&dg.mid===a.id?1:0),rb=(b.status==='done'?2:0)-(dg&&dg.mid===b.id?1:0);return ra-rb||b.t-a.t});
  if(dg&&!J.some(function(j){return j.id===dg.mid}))J=J.concat([{id:dg.mid,title:'',stage:'',eta:0,t:dg.since||dg.t}]);
  J.forEach(function(j){var live=dg&&dg.mid===j.id,mn=live?Math.max(0,Math.floor((now-(dg.since||dg.t))/60)):0,tr=live?(dg.trail||[]).slice(0,2):[];
@@ -449,6 +469,9 @@ function jobDock(){var el=$('jobd');if(!el)return;var JA=GID?[]:jobList(),dg=C&&
  var J=JA.filter(function(j){return j.status!=='done'}),D=JA.filter(function(j){return j.status==='done'&&now-(j.end||0)<7200});
  if(!J.length&&D.length){var hd='<span class="ic">✔</span><span class="jl"><b>'+esc(D[0].title||T('Ta demande','Your request'))+'</b> · '+T('Terminé','Done')+'</span><span class="jc">⌃</span>';
   if(hd!==JOBDL){el.innerHTML=hd;JOBDL=hd}el.className='on';if(!el.onclick)el.onclick=jobOpen;jobPanel();return}
+ var OW=GID?[]:(C&&C.orders||[]).filter(function(o){return !o.expired&&o.status==='waiting'});
+ if(!J.length&&OW.length){var ho='<span class="ic">💳</span><span class="jl"><b>'+(OW.length>1?OW.length+' '+T('commandes à régler','orders to pay'):T('Commande à régler','Order to pay'))+'</b> · '+esc(OW[OW.length-1].what||'')+'</span><span class="jc">⌃</span>';
+  if(ho!==JOBDL){el.innerHTML=ho;JOBDL=ho}el.className='on';if(!el.onclick)el.onclick=jobOpen;jobPanel();return}
  if(!J.length){if(JOBDL){el.innerHTML='';JOBDL=''}el.className='';if(JOBSH&&$('sh').classList.contains('on'))shClose();JOBSH=false;return}
  var Jb=J.slice().sort(function(a,b){return ((b.stage?2:0)+(b.title?1:0))-((a.stage?2:0)+(a.title?1:0))||b.t-a.t});
  var j0=dg?(J.filter(function(j){return j.id===dg.mid})[0]||Jb[0]):Jb[0],txt,right;
@@ -868,15 +891,17 @@ function gigSh(){post('gig_optin',{get:1}).then(function(j){var on=j&&j.on;
  if($('goff'))$('goff').onclick=function(){post('gig_optin',{on:0}).then(function(){shClose();toast(T('C’est noté.','Noted.'))})}})}
 function eu(x){var n=Math.round(Number(x||0)*100)/100;return (n%1?n.toFixed(2):String(n)).replace('.',EN?'.':',')+' €'}
 function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).replace('.',EN?'.':',');
+ if(st==='waiting'&&m.t&&Date.now()/1000>m.t+(Number(p.third||0)>0?86400:7*86400))st='expired';
  // 2026-11-14 (owner: modern, professional, Kino's fee clearly stated): label + status, what, breakdown, total, then paying
  var third=Number(p.third||0),fee=p.fee!=null?Number(p.fee):(Number(p.eur||0)-third);
- var pill=st==='paid'||st==='delivered'?['✓ '+T('Payé','Paid'),'']:st==='cancelled'?[T('Annulé','Cancelled'),'x']:st==='claimed'||st==='claimed_after'?['⏳ '+T('Vérification','Checking'),'w']:st==='trust'?[T('Payé après','Pay after'),'']:st==='owed'?[T('À régler','To settle'),'w']:[T('En attente de paiement','Awaiting payment'),'w'];
+ var pill=st==='paid'||st==='delivered'?['✓ '+T('Payé','Paid'),'']:st==='cancelled'?[T('Annulé','Cancelled'),'x']:st==='expired'?[T('Prix à revérifier','Price to recheck'),'x']:st==='claimed'||st==='claimed_after'?['⏳ '+T('Vérification','Checking'),'w']:st==='trust'?[T('Payé après','Pay after'),'']:st==='owed'?[T('À régler','To settle'),'w']:[T('En attente de paiement','Awaiting payment'),'w'];
  var rows=third>0?'<div class="rw"><span>'+T('Réservation / achat (payé pour toi)','Booking / purchase (paid for you)')+'</span><span>'+eu(third)+'</span></div><div class="rw"><span>'+T('Frais de service Kino','Kino service fee')+'</span><span>'+eu(fee)+'</span></div>'
    :'<div class="rw"><span>'+T('Service Kino','Kino service')+'</span><span>'+eu(p.eur)+'</span></div>';
  return '<div class="m gap"><div class="payc order'+(st==='cancelled'?'" style="opacity:.55':'')+(st==='paid'||st==='delivered'||st==='trust'?' ok':'')+'"><div class="oh"><span class="ol">💼 '+T('Ta commande','Your order')+'</span><span class="pill '+pill[1]+'">'+pill[0]+'</span></div><div class="pt">'+esc(p.what)+'</div>'+
   '<div class="br">'+rows+'<div class="rt"><span>'+T('Total','Total')+'</span><b>'+eu(p.eur)+'</b></div></div><div class="ft">'+
   (st==='paid'?'<div class="ps">✓ '+T('Payé, merci ! Kino s’y met.','Paid, thank you! Kino is on it.')+'</div>':
    st==='cancelled'?'<div class="ps">✕ '+T('Devis annulé. Rien à payer.','Quote cancelled. Nothing to pay.')+'</div>':
+   st==='expired'?'<div class="ps" style="margin-bottom:8px">'+T('Ce prix date un peu : il a pu changer.','This price is a little old: it may have changed.')+'</div><div class="pb"><button data-recheck="'+i+'">'+T('Revérifier le prix','Recheck the price')+'</button></div>':
    st==='trust'?'<div class="ps" style="margin-bottom:8px">🤝 '+T('Kino le fait d’abord. Tu paies après, seulement si ça te plaît.','Kino does it first. You pay after, only if you like it.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div>':
    st==='claimed_after'?'<div class="ps">⏳ '+T('Merci ! Paiement en cours de vérification.','Thank you! Payment being checked.')+'</div>':
    st==='owed'?'<div class="ps" style="margin-bottom:8px">✓ '+T('Livré. Ça te plaît ? Tu peux payer maintenant.','Delivered. Happy with it? You can pay now.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div>':

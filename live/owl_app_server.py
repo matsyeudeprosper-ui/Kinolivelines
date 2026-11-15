@@ -17248,6 +17248,12 @@ def _chat_job_quote(cid, user, c, v):
         _KPj._save(_dd)
     _last = next((m for m in reversed((_chat_load(user, cid) or c).get("msgs") or []) if m.get("role") == "ai"), {})
     _done = after and len(str(_last.get("text") or "")) > 350      # he delivered it in the same message
+    if not after:                                      # 2026-11-14 (owner: buried orders): he comes back to it once, like a
+        try:                                           # person - before the price is too old - then lets it go
+            _followup_add(uid, "%s if they still want it - the order '%s' (%s EUR) is not paid yet; once, warmly, no pressure "
+                               "(and if the price may have moved, offer to recheck it)" % ("8" if third > 0 else "30", what[:80], eur))
+        except Exception:
+            pass
     # 2026-11-14 (owner: 'clearly stating Kino's fees so the user knows'): the card shows what goes to others and his fee
     _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
                                                         "third": round(third, 2), "fee": round(eur - third, 2),
@@ -27154,6 +27160,20 @@ def chat_get(user, cid, ui=""):
                       "end": int(float(m.get("closed_t") or 0))}
                      for m in _KMq.for_uid(user.get("id")) if m.get("cid") == c["id"] and (m["status"] in _KMq.OPEN or (
                          m["status"] == "done" and time.time() - float(m.get("closed_t") or 0) < 3 * 3600))][-8:]
+        # 2026-11-14 (owner: 'old payment cards get buried by the conversation'): every unpaid order, kept in the panel. A
+        # price paid to others (a stay, a ticket, an item) moves, so it holds 24 h; a service of his holds 7 days - then
+        # it asks for a fresh price instead of being paid stale
+        _ords = []
+        for _ix, _pm in enumerate(c.get("msgs") or []):
+            _p = _pm.get("pay") or {}
+            if _pm.get("role") != "pay" or _p.get("status") not in ("waiting", "claimed", "owed", "claimed_after"):
+                continue
+            _life = 86400 if float(_p.get("third") or 0) > 0 else 7 * 86400
+            _ords.append({"ref": _p.get("ref"), "what": _p.get("what"), "eur": _p.get("eur"), "third": _p.get("third") or 0,
+                          "fee": _p.get("fee"), "url": _p.get("url"), "status": _p.get("status"), "i": _ix,
+                          "t": int(_pm.get("t") or 0), "until": int(float(_pm.get("t") or 0) + _life),
+                          "expired": _p.get("status") == "waiting" and time.time() > float(_pm.get("t") or 0) + _life})
+        c["orders"] = _ords[-6:]
     except Exception:
         c["doing"] = None
     try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood
