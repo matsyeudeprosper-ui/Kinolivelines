@@ -283,10 +283,18 @@ def block(limit=6):
         except Exception:
             pass
         hist ="; ".join("[%s %s] %s" % (_ago(x["t"]), x["kind"], x["text"][:220]) for x in m["log"][-8:]) or "nothing done yet"
-        L.append("- %s for %s (%s%s, opened %s, status %s%s): %s\n  so far: %s" % (
+        _conv = ""
+        try:                                   # 15/11 (watch): two sessions told Pekos opposite things 12 min apart ("I'll
+            import kino_one as K1              # book Hippopotamus" / "confirm when you book") - each knew only its own job.
+            _conv = K1.transcript((_c.get("msgs") or [])[-8:], n=8, lang=m.get("lang") or "fr")   # The conversation as it is
+        except Exception:
+            pass
+        L.append("- %s for %s (%s%s, opened %s, status %s%s): %s\n  so far: %s%s" % (
             m["id"], m.get("name") or m["uid"], ("PAID %.0f EUR" % m["eur"]) if m.get("paid") else "free",
             (", repeats every %.0f h" % m["repeat_h"]) if m.get("repeat_h") else "", _ago(m["t"]), m["status"],
-            ", writes in " + m.get("lang", "fr"), m["what"], hist))
+            ", writes in " + m.get("lang", "fr"), m["what"], hist,
+            ("\n  THE CONVERSATION NOW (what you - chat or another job - already told them; stay consistent, never "
+             "contradict it, never repeat it):\n  " + _conv.replace("\n", "\n  ")[-2500:]) if _conv else ""))
     return "\n".join(L)
 
 
