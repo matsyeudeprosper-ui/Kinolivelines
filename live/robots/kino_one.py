@@ -221,8 +221,9 @@ def _hm(t):
 
 
 _HANDBACK = re.compile(r"je ne (peux|pourrai) pas (r[ée]server|payer|commander|acheter|appeler|le faire)|je ne r[ée]serve pas|"
-                       r"(tu l'?ouvres|ouvre le lien|tu mets le|clique sur|tu n'as plus qu'[àa])|"
-                       r"i can'?t (book|pay|order|buy|call)|you (just )?(open|click)", re.I)
+                       r"i can'?t (book|pay|order|buy|call)|i (do not|don'?t) book", re.I)
+# 2026-11-15 (watch): "tu n'as plus qu'à payer" (a correct offer) matched the old 'you just open / click' patterns and he
+# "corrected" a right message - only an actual refusal counts now
 
 
 def transcript(msgs, n=40, lang="fr"):
