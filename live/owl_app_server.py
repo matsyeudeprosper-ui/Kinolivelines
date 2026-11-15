@@ -17281,8 +17281,14 @@ def _chat_job_quote(cid, user, c, v):
                 _KPj._save(_dd)
     except Exception:
         pass
+    _omid = None
+    try:                                               # 2026-11-15: the job this order belongs to (shown under its card)
+        import kino_missions as _KMo
+        _omid = _KMo.which_job(user.get("id"), cid, what)
+    except Exception:
+        _omid = None
     # 2026-11-14 (owner: 'clearly stating Kino's fees so the user knows'): the card shows what goes to others and his fee
-    _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url,
+    _chat_mut(cid, lambda cc: _chat_msg(cc, "pay", pay={"ref": ref, "eur": eur, "what": what, "url": url, "mid": _omid,
                                                         "third": round(third, 2), "fee": round(eur - third, 2),
                                                         "status": ("owed" if _done else "trust") if after else "waiting", "after": after}))
     if after and not _done:
@@ -27204,6 +27210,20 @@ def chat_get(user, cid, ui=""):
                           "t": int(_pm.get("t") or 0), "until": int(float(_pm.get("t") or 0) + _life),
                           "expired": _p.get("status") == "waiting" and time.time() > float(_pm.get("t") or 0) + _life})
         c["orders"] = _ords[-6:]
+        # 2026-11-15 (owner: 'a Payer card below the task card it relates to'): each job carries its own unpaid order
+        try:                                         # the order filed under its job when it was made (which_job), never guessed
+            _om = {}
+            for _ix2, _pm2 in enumerate(c.get("msgs") or []):
+                _p2 = _pm2.get("pay") or {}
+                if _pm2.get("role") == "pay" and _p2.get("mid"):
+                    _om[_p2["mid"]] = _p2.get("ref")
+            for _j in c["jobs"]:
+                _r = _om.get(_j["id"])
+                _o = next((o for o in c["orders"] if o.get("ref") == _r), None) if _r else None
+                if _o:
+                    _j["order"] = _o
+        except Exception:
+            pass
     except Exception:
         c["doing"] = None
     try:                                             # 2026-10-20 list 6: decisions (notebook), Kino's live status and mood

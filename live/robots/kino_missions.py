@@ -95,6 +95,27 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
     return mid
 
 
+def which_job(uid, cid, text):
+    """2026-11-15 (owner's panel: the restaurant promise joined the Airbnb job, the Airbnb order paired with the restaurant
+    jobs - word matching mixes things that share a town): which open job of this chat a promise or an order is really about
+    -> its id, or None (a new thing). Decided the way a person files a note in the right folder."""
+    J = [m for m in for_uid(uid) if m.get("cid") == cid and m["status"] in OPEN and not m.get("repeat_h")]
+    if not J:
+        return None
+    try:
+        import robot_warm as RW
+        lines = "\n".join("%s: %s - %s" % (m["id"], m.get("title") or "", m["what"][:220]) for m in J)
+        raw = RW.ask_text("Which of these open jobs is the new item about? The same subject or a continuation of it (details may differ: a restaurant list and booking that restaurant are one job) - but a different need is null even in the same town or day. "
+                          "Reply ONLY JSON {\"id\": \"<job id>\" or null}.", "JOBS:\n%s\n\nNEW ITEM: %s" % (lines, str(text)[:400]),
+                          model="sonnet", timeout=40)
+        i = str(raw or "").find("{")
+        j = json.JSONDecoder().raw_decode(raw[i:])[0] if i >= 0 else {}
+        mid = j.get("id")
+        return mid if any(m["id"] == mid for m in J) else None
+    except Exception:
+        return None
+
+
 _RESTAGED = {}
 
 

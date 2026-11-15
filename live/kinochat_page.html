@@ -283,6 +283,10 @@ header>.av{cursor:pointer}
 .payc .pb{display:flex;gap:8px;flex-wrap:wrap}.payc a,.payc button{border:0;border-radius:12px;padding:10px 14px;font:700 14px Inter,system-ui;cursor:pointer;text-decoration:none}
 .payc a{background:#0070ba;color:#fff}.payc .npb{background:#f7931a;color:#fff;border:0}.payc button{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
 .payc .ps{font-size:13px;color:var(--mut);margin-top:8px}.payc.ok{border-color:var(--acc)}.payc.ok .ps{color:var(--acc);font-weight:700}
+.jo{margin-top:12px;padding:10px 12px;border-radius:14px;background:linear-gradient(155deg,rgba(255,255,255,.07),rgba(255,255,255,0) 50%),color-mix(in srgb,#f5a524 8%,transparent);border:1px solid color-mix(in srgb,#f5a524 35%,transparent)}
+.jo .jt{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px}.jo .jt b{color:#f5a524}.jo .jb{font-size:12px;color:var(--mut);margin-top:3px}
+.jo a,.jo button{display:block;width:100%;margin-top:8px;text-align:center;padding:10px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;border:0;cursor:pointer;
+ background:linear-gradient(180deg,#1a86d6,#0063a8);color:#fff;box-shadow:0 6px 16px rgba(0,112,186,.3)}.jo.ex button{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 92%,#fff),var(--acc))}
 #ordd{display:none}#ordd.on{display:flex;align-items:center;gap:8px;margin:6px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;
  background:linear-gradient(155deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%),color-mix(in srgb,var(--surface) 75%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
  border:1px solid color-mix(in srgb,#f5a524 40%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.2)}
@@ -462,6 +466,11 @@ document.addEventListener('click',function(e){var g=e.target.closest&&e.target.c
   var M=(C.msgs||[]).filter(shown),k=-1,n=0;M.forEach(function(m){if(m.role==='pay'){if(C.msgs.indexOf(m)===+g.dataset.goto)k=n;n++}});var el=all[k];if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--acc)';setTimeout(function(){el.style.outline=''},1800)}return}
  var r=e.target.closest&&e.target.closest('[data-recheck]');if(r){shClose();var m=(C.msgs||[])[+r.dataset.recheck],w=m&&m.pay?m.pay.what:'';tx.value=T('Tu peux revérifier le prix pour : ','Can you recheck the price for: ')+w+' ?';auto();send()}});
 // 2026-11-15 (owner: 'the orders panel is great but from a different panel, its own button'): a chip + its own sheet
+// 2026-11-15 (owner: 'a Payer card below the task card it relates to'): the job's own order, inside its card
+function jobOrder(j){var o=j&&j.order;if(!o)return '';var th=Number(o.third||0),fee=o.fee!=null?Number(o.fee):(Number(o.eur||0)-th);
+ return '<div class="jo'+(o.expired?' ex':'')+'"><div class="jt"><span>💳 '+(o.expired?T('Prix à revérifier','Price to recheck'):T('À régler','To pay'))+'</span><b>'+eu(o.eur)+'</b></div>'+
+  (th>0?'<div class="jb">'+T('dont','incl.')+' '+eu(th)+' '+T('payés pour toi','paid for you')+' · '+T('frais Kino','Kino fee')+' '+eu(fee)+'</div>':'')+
+  (o.expired?'<button data-recheck="'+o.i+'">'+T('Revérifier le prix','Recheck the price')+'</button>':'<a href="'+esc(o.url||'#')+'" target="_blank" rel="noopener">'+T('Payer','Pay')+' '+eu(o.eur)+'</a>')+'</div>'}
 function ordList(){return GID?[]:(C&&C.orders||[])}
 var ORDL='';function ordDock(){var el=$('ordd');if(!el)return;var O=ordList().filter(function(o){return !o.expired&&o.status==='waiting'}),n=O.length;
  var h=n?'<span>💳</span><b>'+(n>1?n+' '+T('commandes à régler','orders to pay'):T('1 commande à régler','1 order to pay'))+'</b><span class="oa">'+T('Voir','View')+' ›</span>':'';
@@ -488,7 +497,7 @@ function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.no
    '<div class="st2">'+esc(stage)+'</div>'+cl+
    (live?((tr[1]?'<div class="tr o2">✓ '+esc(tr[1])+'</div>':'')+(tr[0]?'<div class="tr o1">✓ '+esc(tr[0])+'</div>':'')+
     '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div>'):'')+
-   (done?'':(P.length?'<div class="bar pg"><s style="width:'+pct+'%"></s>'+(live?'<i></i>':'')+'</div>':'<div class="bar"><i></i></div>'))+'</div>'});
+   (done?'':(P.length?'<div class="bar pg"><s style="width:'+pct+'%"></s>'+(live?'<i></i>':'')+'</div>':'<div class="bar"><i></i></div>'))+jobOrder(j)+'</div>'});
  return out}
 // 2026-11-12 (owner: "like the Claude Code terminal - sticky near the text box, visible even when we talk about something
 // else; with 2 missions one summary line '2 tâches en cours'; tap it and a panel slides up with the details")
