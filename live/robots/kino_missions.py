@@ -95,6 +95,25 @@ def create(uid, cid, what, name="", lang="fr", ref="", eur=0.0, paid=False, repe
     return mid
 
 
+def choices(lines):
+    """2026-11-15 (owner: 'lists to pick from should look premium'): '<option> | <details> | <price> | ★' -> choice cards"""
+    out = []
+    for ln in lines or []:
+        if isinstance(ln, dict):
+            parts = [ln.get("title"), ln.get("detail") or ln.get("sub"), ln.get("price"), "★" if ln.get("pick") else ""]
+        else:
+            parts = [x.strip() for x in str(ln).split("|")]
+        parts = (parts + ["", "", "", ""])[:4]
+        t = str(parts[0] or "").strip()
+        if not t:
+            continue
+        out.append({"title": t[:80], "sub": str(parts[1] or "").strip()[:120], "price": str(parts[2] or "").strip()[:30],
+                    "pick": "★" in str(parts[3] or "") or "★" in t, "img": []})
+    for o in out:
+        o["title"] = o["title"].replace("★", "").strip()
+    return out[:8]
+
+
 def wake(mid):
     """2026-11-15 (watch: 'confirmed times in about 10 minutes' - joining the promise pushed the train job to +15 min): a
     promise about a job brings it forward, never back"""
@@ -193,7 +212,8 @@ def due(now=None):
     return [m for m in _load()["missions"] if m["status"] in OPEN and float(m.get("next_t") or 0) <= now]
 
 
-def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", plan=None, step=None, cards=False):
+def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", plan=None, step=None, cards=False,
+           choices_=None):
     """his step on a mission -> a sentence for him. tell = words for the person (their chat + a push).
     title / stage (2026-11-12, owner: "the client has no estimate, it leaves him with questions"): the job card they see -
     a short name of the job and where it stands, in their language; next_t is the "next update around" time on it."""
@@ -284,7 +304,8 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                     _cards = None
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
                       "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace")),
-                      "cards": (_cards or {}).get("items")[:6] if _cards else None, "cards_kind": (_cards or {}).get("kind"),
+                      "cards": (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None)),
+                      "cards_kind": "choice" if choices_ else (_cards or {}).get("kind"),
                       "cards_dates": (_cards or {}).get("dates")})
             json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
     return "mission %s: %s%s" % (mid, out["status"], (" - %s has your message in their chat" % (out.get("name") or "they")) if tell else _dupmsg)

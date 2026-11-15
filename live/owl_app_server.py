@@ -22362,6 +22362,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _dmc = next((x for x in reversed(cc.get("msgs") or []) if x.get("role") == "demo" and x.get("check")), None)
             if _dmc is not None:
                 cc.setdefault("msgs", []).append(dict(_dmc, t=int(time.time()), again=True))
+        _chs = [v for k, v in acts if k in ("choix", "choice") and v]
+        if _chs and say:                               # 2026-11-15 (owner: lists to pick from, premium): tappable choices
+            try:
+                import kino_missions as _KMch
+                _ci = _KMch.choices(_chs)
+                if _ci:
+                    cc.setdefault("msgs", []).append({"role": "opts", "t": int(time.time()), "kind": "choice", "items": _ci})
+            except Exception:
+                pass
         if any(k in ("cartes", "cards") for k, _ in acts) and say:
             # 2026-11-14 (owner: 'show off what the room looks like, photo cards - make him impressive'): what his look found,
             # shown the way a friend sends screenshots - photos, price for the dates, a button to pick it

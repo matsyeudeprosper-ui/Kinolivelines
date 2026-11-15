@@ -311,6 +311,26 @@ html[data-th="clair"] .ppb{background:linear-gradient(180deg,#fff,rgba(255,255,2
 .py-f{font-size:12px;color:var(--mut);margin-top:12px;line-height:1.45}
 html[data-th="clair"] .py-x,html[data-th="clair"] .py-2 button{background:rgba(15,23,42,.04);border-color:rgba(15,23,42,.1)}
 html[data-th="clair"] .py-br{background:rgba(15,23,42,.03);border-color:rgba(15,23,42,.08)}
+.chs{display:flex;flex-direction:column;gap:8px;max-width:92%;margin:2px 0 8px}
+.chr{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 10px;border-radius:18px;
+ background:linear-gradient(155deg,var(--glass-hi,rgba(255,255,255,.08)) 0%,rgba(255,255,255,0) 45%),var(--glass,var(--surface));
+ -webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);
+ border:1px solid rgba(255,255,255,.10);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 6px 18px rgba(0,0,0,.18)}
+.chr.pk{border-color:color-mix(in srgb,var(--acc) 55%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 22px rgba(0,0,0,.22),0 0 22px color-mix(in srgb,var(--acc) 16%,transparent)}
+.chn{flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+ background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--mut)}
+.chr.pk .chn{background:color-mix(in srgb,var(--acc) 22%,transparent);border-color:color-mix(in srgb,var(--acc) 55%,transparent);color:var(--acc)}
+.chb{flex:1;min-width:0}.cht{font-weight:800;font-size:16px;letter-spacing:.01em;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chp{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent);border:1px solid color-mix(in srgb,var(--acc) 35%,transparent)}
+.chs2{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.35}
+.chr2{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.chpr{font-weight:800;font-size:15px}
+.chr2 button{border-radius:12px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink);
+ background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.14)}
+.chr.pk .chr2 button{border-color:color-mix(in srgb,var(--acc) 55%,transparent);background:color-mix(in srgb,var(--acc) 14%,transparent)}
+.chr2 button:active{transform:scale(.96)}
+html[data-th="clair"] .chr{border-color:rgba(15,23,42,.08);box-shadow:0 1px 0 #fff inset,0 6px 16px rgba(20,30,60,.08)}
+html[data-th="clair"] .chn,html[data-th="clair"] .chr2 button{background:rgba(15,23,42,.04);border-color:rgba(15,23,42,.1)}
 #ordd{display:none}#ordd.on{display:flex;align-items:center;gap:8px;margin:6px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;
  background:linear-gradient(155deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%),color-mix(in srgb,var(--surface) 75%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
  border:1px solid color-mix(in srgb,#f5a524 40%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.2)}
@@ -918,7 +938,13 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
 // 2026-11-13 (owner: "more professional, premium and modern"): own design - status pill, title, three tiles (where / when /
 // pay), the proof expected in a quiet box, one full-width action
 // 2026-11-14 (owner: 'show off what the room looks like - photo cards'): what Kino found, as cards (photos, price, pick)
-function optsCard(m,i){var it=m.items||[];return '<div class="m gap" style="display:block;max-width:100%"><div class="oc-row">'+it.map(function(o,n){var ph=(o.img||[]).slice(0,6).map(function(u){return '<img loading="lazy" src="'+esc(u)+'" alt="">'}).join('');var am=(o.amen||[]).slice(0,4).map(function(a){return '<span>'+esc(a)+'</span>'}).join('');return '<div class="oc"><div class="oc-n"><div class="oc-ph">'+(ph||'')+'</div>'+((o.img||[]).length>1?'<div class="oc-c">📷 '+(o.img||[]).length+'</div>':'')+'</div><div class="oc-b">'+'<div class="oc-t">'+(n+1)+'. '+esc(o.title||'')+'</div>'+((o.rating||o.sub)?'<div class="oc-s">'+(o.rating?'★ '+esc(o.rating)+(o.reviews?' ('+esc(o.reviews)+')':''):'')+(o.sub?(o.rating?' · ':'')+esc(o.sub):'')+'</div>':'')+(o.price?'<div class="oc-p">'+esc(o.price)+'</div>':'')+(am?'<div class="oc-a">'+am+'</div>':'')+'<div class="oc-k">'+(o.url?'<a href="'+esc(o.url)+'" target="_blank" rel="noopener">'+T('Voir','View')+'</a>':'')+'<button data-pick="'+n+'" data-mi="'+i+'">'+T('Je prends celle-ci','I’ll take this one')+'</button></div></div></div>'}).join('')+'</div></div>'}
+// 2026-11-15 (owner: 'anything about lists and picking from it: premium, that display hurts the eyes'): options with no
+// photos (train times, slots, plans) as a clean stack of glass rows - Kino's pick marked, one tap to choose
+function choiceCard(m,i){var it=m.items||[];return '<div class="m gap" style="display:block;max-width:100%"><div class="chs">'+it.map(function(o,n){
+ return '<div class="chr'+(o.pick?' pk':'')+'"><div class="chn">'+(n+1)+'</div><div class="chb"><div class="cht">'+esc(o.title||'')+(o.pick?'<span class="chp">★ '+T('Mon choix','My pick')+'</span>':'')+'</div>'+
+  (o.sub?'<div class="chs2">'+esc(o.sub)+'</div>':'')+'</div><div class="chr2">'+(o.price?'<div class="chpr">'+esc(o.price)+'</div>':'')+
+  '<button data-pick="'+n+'" data-mi="'+i+'">'+T('Choisir','Choose')+'</button></div></div>'}).join('')+'</div></div>'}
+function optsCard(m,i){if(m.kind==='choice'||!(m.items||[]).some(function(o){return (o.img||[]).length}))return choiceCard(m,i);var it=m.items||[];return '<div class="m gap" style="display:block;max-width:100%"><div class="oc-row">'+it.map(function(o,n){var ph=(o.img||[]).slice(0,6).map(function(u){return '<img loading="lazy" src="'+esc(u)+'" alt="">'}).join('');var am=(o.amen||[]).slice(0,4).map(function(a){return '<span>'+esc(a)+'</span>'}).join('');return '<div class="oc"><div class="oc-n"><div class="oc-ph">'+(ph||'')+'</div>'+((o.img||[]).length>1?'<div class="oc-c">📷 '+(o.img||[]).length+'</div>':'')+'</div><div class="oc-b">'+'<div class="oc-t">'+(n+1)+'. '+esc(o.title||'')+'</div>'+((o.rating||o.sub)?'<div class="oc-s">'+(o.rating?'★ '+esc(o.rating)+(o.reviews?' ('+esc(o.reviews)+')':''):'')+(o.sub?(o.rating?' · ':'')+esc(o.sub):'')+'</div>':'')+(o.price?'<div class="oc-p">'+esc(o.price)+'</div>':'')+(am?'<div class="oc-a">'+am+'</div>':'')+'<div class="oc-k">'+(o.url?'<a href="'+esc(o.url)+'" target="_blank" rel="noopener">'+T('Voir','View')+'</a>':'')+'<button data-pick="'+n+'" data-mi="'+i+'">'+T('Je prends celle-ci','I’ll take this one')+'</button></div></div></div>'}).join('')+'</div></div>'}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-pick]');if(!b)return;var M=((typeof C!=="undefined"&&C&&C.msgs)||[]),m=M[+b.dataset.mi];var o=m&&m.items&&m.items[+b.dataset.pick];var nm=o?o.title+(o.price?' ('+o.price+')':''):('n°'+(+b.dataset.pick+1));tx.value=T('Je prends la ','I’ll take number ')+(+b.dataset.pick+1)+' : '+nm;auto();send()});
 function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',due=g.due?jobHM(g.due):'—',
  pay=g.pay?(String(g.pay).replace('.',EN?'.':',')+' €'):T('Service','Favour');

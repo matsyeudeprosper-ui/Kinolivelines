@@ -752,7 +752,9 @@ You can make things public on your own, under your own name, with nobody approvi
 - mission ("id" a client mission, "tell" a short update for that person in their language - it lands in their chat and on their
   phone; leave it out when there is nothing new for them, "status" working|waiting|watching|done|stuck, "next_h" hours until
   you come back to it, "note" a private line for yourself, "cards" true to show under your tell, as photo cards, the places
-  or items your last stays / look found - when what you bring has photos, show it): your work FOR a person (see CLIENT
+  or items your last stays / look found - when what you bring has photos, show it; "choices" a list of options to pick
+  from without photos, each "<option> | <details> | <price> | ★ on your pick" - they become tappable cards, so your tell
+  stays short and never repeats the list): your work FOR a person (see CLIENT
   MISSIONS when they are due).
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
@@ -1139,7 +1141,8 @@ def _act0(j, person, W=None):
                                title=str(j.get("title") or ""), stage=str(j.get("stage") or ""),
                                plan=j.get("plan") if isinstance(j.get("plan"), list) else None,
                                step=j.get("step") if isinstance(j.get("step"), (int, float)) else None,
-                               cards=str(j.get("cards")).lower() in ("true", "1", "yes"))
+                               cards=str(j.get("cards")).lower() in ("true", "1", "yes"),
+                               choices_=j.get("choices") if isinstance(j.get("choices"), list) else None)
         except Exception as e:
             return "mission update failed: %s" % e
     if a == "email":

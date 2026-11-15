@@ -165,7 +165,7 @@ Ces lignes ne sont jamais montrées."""
 
 SELF_EN_NOTE = "\n\n(This person writes in English: answer in English, same person, same voice.)"
 
-ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission|tresorier|treasurer|cartes|cards)\b[ \t:]*(.*)$")
+ACT_RE = re.compile(r"(?m)^\s*#(test|annule|cancel|chance|construire|build|retiens|remember|fil|thread|pense|think|montre|show|ordre|order|auto|robot|infos|regle|règle|rule|suivi|followup|reaction|react|gestion|attention|focus|email|mail|regarde|look|check|verifie|vérifie|cherche|search|web|domaine|domain|travail|work|corrige|correct|urgent|hesite|unsure|prix|price|pdf|rappel|remind|mission|tresorier|treasurer|cartes|cards|choix|choice)\b[ \t:]*(.*)$")
 
 
 def _log(cid, kind, msg):
@@ -409,7 +409,7 @@ def parse(raw, partial=False):
     # 2026-11-13 (watch, backup brain): "Hey! I'm here. #reaction 😊" / "... #regarde exact reward ratio" - a control tag
     # written inside a sentence went out to the member. Anywhere in the text, a known tag and what follows it on the line go.
     say = re.sub(r"[ \t]*#(reaction|react|regarde|look|check|fil|thread|pense|think|cherche|search|web|retiens|remember|"
-                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure|tresorier|treasurer|cartes|cards)\b[^\n]*", "", say)
+                 r"mission|travail|work|prix|price|rappel|remind|suivi|followup|attention|focus|urgent|hesite|unsure|tresorier|treasurer|cartes|cards|choix|choice)\b[^\n]*", "", say)
     say = re.sub(r"(?m)[ \t]*…[ \t]*$", "", say)   # a dangling "…" at the end of a line
     # 2026-10-29 (owner screenshot): a stray "</br>" after his #fil line came out as a bubble of its own - HTML line-break
     # tags are formatting debris, never words: a break becomes a line break, a bare tag disappears
@@ -567,7 +567,12 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "(photos, price for their dates, a button to pick one); then your words stay short, the cards speak. And "
                  "like a good concierge you answer what they will ask next before they ask: for a stay how far from the "
                  "station or what they came for, check-in, whether it is a room or the whole place; for an item delivery "
-                 "time and returns - only what you really know, never invented. Your link IS the #prix "
+                 "time and returns - only what you really know, never invented. CHOICES THEY CAN TAP (owner 15/11: 'lists to "
+                 "pick from should look premium - that display hurts the eyes'): when you give options to choose from that "
+                 "have no photos (train times, time slots, plans, ways), put each on its own line as #choix <the option in a "
+                 "few words> | <details> | <price or empty> | <★ only on the one you would take> - they become clean "
+                 "tappable cards under your words; then your words stay short (why your pick), never the list again in text. "
+                 "Your link IS the #prix "
                  "line - never 'I'll send you the link' without it. "
                  "A FRIEND, NOT "
                  "A SERVICE (owner 14/11, standing): the rules here say WHAT you can do, never the words - you say it the way "
