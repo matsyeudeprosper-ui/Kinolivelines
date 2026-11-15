@@ -70,6 +70,7 @@ def get(path, **q):
         c = json.load(open(SECRET, encoding="utf-8"))
     except Exception:
         return None, "no SocialCrawl key"
+    _again = q.pop("_retried", None)
     q = {k: v for k, v in q.items() if v not in (None, "")}
     # 14/11: NOT max_credits by default - sent alone it makes a search walk up to 50 pages (a 1-credit search cost 21)
     q.setdefault("max_pages", 1)
@@ -81,9 +82,18 @@ def get(path, **q):
         n, left = int(r.headers.get("X-Credits-Used") or 0), r.headers.get("X-Credits-Remaining")
     except urllib.error.HTTPError as e:
         try:
-            body = e.read().decode("utf-8", "replace")[:300]
+            body = e.read().decode("utf-8", "replace")[:600]
         except Exception:
             body = ""
+        # 2026-11-15 (watch: six Tripadvisor searches refused - 'You sent `query`; this endpoint takes `q`' - so no cards):
+        # the site says what it wanted; he reads it, fixes the request and tries once more, like a person would
+        _fx = re.search(r"You sent `(\w+)`; this endpoint takes `(\w+)`", body)
+        if e.code == 400 and _fx and _fx.group(1) in q and not _again:
+            q2 = dict(q)
+            q2[_fx.group(2)] = q2.pop(_fx.group(1))
+            q2.pop("max_pages", None)
+            _log("RETRY %s %s->%s" % (path, _fx.group(1), _fx.group(2)))
+            return get(path, _retried=1, **q2)
         _log("ERR %s %s %s" % (path, e.code, body[:160]))
         return None, "the site answered %s: %s" % (e.code, body[:200])
     except Exception as e:
@@ -256,7 +266,9 @@ _ROUTE = ("You choose where to look for a question, like a person choosing the r
           "Reddit (/reddit/search {query}), TikTok (/tiktok/search {query}), Instagram (/instagram/search/reels {query}), X "
           "(/twitter/ai-search {query}), YouTube (/youtube/search {query}), product prices (/google_shopping/product-search "
           "{query, country}, /amazon/product-search {query}, /ebay/search {query}, /aliexpress/search {query}), reviews "
-          "(/yelp/search, /tripadvisor/search {query, location});\n"
+          "(/tripadvisor/search {q, location});\n"
+          "RESTAURANTS, CAFES, BARS, LOCAL SHOPS AND SERVICES (with photos): /yelp/search {query: 'restaurant' or the "
+          "cuisine or the trade, location: 'Town, Country'} - keep query short, the details go in your message, not the search;\n"
           "{\"use\": \"web\"} - anything else (facts, news, how-to, opening hours, a company, a law).")
 
 
@@ -351,7 +363,8 @@ def _opts_from(d, n=6):
         out.append({"title": str(title)[:80], "url": _first(x, "url", "link", "product_url", "permalink") or "",
                     "img": imgs[:6], "rating": rat if isinstance(rat, (int, float, str)) else None,
                     "reviews": _first(x, "reviews_count", "review_count", "reviews"),
-                    "sub": str(_first(x, "source", "seller", "merchant", "store", "category", "address", "ext.subtitle") or "")[:80],
+                    "sub": " · ".join(str(v) for v in [_first(x, "source", "seller", "merchant", "store", "category"),
+                                                      _first(x, "address", "ext.subtitle")] if v)[:90],
                     "price": price})
         if len(out) >= n:
             break
