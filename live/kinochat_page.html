@@ -287,6 +287,28 @@ header>.av{cursor:pointer}
 .jo .jt{display:flex;justify-content:space-between;font-weight:700;font-size:13.5px}.jo .jt b{color:#f5a524}.jo .jb{font-size:12px;color:var(--mut);margin-top:3px}
 .jo a,.jo button{display:block;width:100%;margin-top:8px;text-align:center;padding:10px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;border:0;cursor:pointer;
  background:linear-gradient(180deg,#1a86d6,#0063a8);color:#fff;box-shadow:0 6px 16px rgba(0,112,186,.3)}.jo.ex button{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 92%,#fff),var(--acc))}
+.ppb{width:100%;padding:12px;border:0;border-radius:14px;font:700 15px Inter,system-ui;color:#fff;cursor:pointer;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 90%,#fff),var(--acc));box-shadow:0 8px 20px color-mix(in srgb,var(--acc) 35%,transparent)}
+.ppb:active{transform:scale(.98)}
+.payc .pb .ppb,.payc.order .pb .ppb,.jo .ppb,.ordc .ok2 .ppb{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 90%,#fff),var(--acc)) !important;border:0 !important;color:#fff !important;flex:1 1 100%}.jo .ppb{margin-top:8px}
+.pys{padding-bottom:6px}.py-h{display:flex;justify-content:space-between;align-items:center;margin:2px 0 10px}
+.py-l{font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--mut)}
+.py-x{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--ink);font-size:15px;cursor:pointer}
+.py-w{font-size:19px;font-weight:800;line-height:1.25}
+.py-br{margin:14px 0;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.py-br .rw{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}.py-br .rw span:first-child{color:var(--mut)}
+.py-br .rt{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;padding-top:9px;border-top:1px solid rgba(255,255,255,.1)}
+.py-br .rt b{font:800 28px Inter,system-ui;background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 60%,#7cf));-webkit-background-clip:text;background-clip:text;color:transparent}
+.py-c{margin-bottom:12px}.py-cl{font-size:12.5px;color:var(--mut);margin-bottom:6px}
+.py-cd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:14px;border:1px dashed color-mix(in srgb,var(--acc) 45%,transparent);background:rgba(255,255,255,.03)}
+.py-cd span{font:700 17px ui-monospace,Menlo,monospace;letter-spacing:.06em}.py-cd button{border:0;border-radius:10px;padding:7px 12px;font-weight:700;background:var(--acc);color:#fff;cursor:pointer}
+.py-pp{display:block;text-align:center;padding:14px;border-radius:16px;color:#fff;text-decoration:none;font-size:16px;
+ background:linear-gradient(180deg,#1a86d6,#0063a8);box-shadow:0 10px 24px rgba(0,112,186,.35)}.py-pp:active{transform:scale(.98)}
+.py-2{display:flex;gap:8px;margin-top:10px}.py-2 button{flex:1;padding:11px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;
+ background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--ink)}
+.py-f{font-size:12px;color:var(--mut);margin-top:12px;line-height:1.45}
+html[data-th="clair"] .py-x,html[data-th="clair"] .py-2 button{background:rgba(15,23,42,.04);border-color:rgba(15,23,42,.1)}
+html[data-th="clair"] .py-br{background:rgba(15,23,42,.03);border-color:rgba(15,23,42,.08)}
 #ordd{display:none}#ordd.on{display:flex;align-items:center;gap:8px;margin:6px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;
  background:linear-gradient(155deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%),color-mix(in srgb,var(--surface) 75%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
  border:1px solid color-mix(in srgb,#f5a524 40%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.2)}
@@ -461,7 +483,7 @@ function orderCards(){var O=(C&&C.orders||[]);if(!O.length)return '';
    (th>0?'<div class="ob">'+T('dont','incl.')+' '+eu(th)+' '+T('payés pour toi','paid for you')+' · '+T('frais Kino','Kino fee')+' '+eu(fee)+'</div>':'<div class="ob">'+T('Service Kino','Kino service')+'</div>')+
    (ex?'<div class="ob w">'+T('Prix à revérifier : il a pu changer depuis.','Price to recheck: it may have changed since.')+'</div><div class="ok2"><button data-recheck="'+o.i+'">'+T('Revérifier le prix','Recheck the price')+'</button></div>':
     o.status==='claimed'||o.status==='claimed_after'?'<div class="ob">⏳ '+T('Paiement en vérification','Payment being checked')+'</div>':
-    '<div class="ob">'+T('Valable jusqu’à ','Valid until ')+jobHM(o.until)+'</div><div class="ok2"><a href="'+esc(o.url||'#')+'" target="_blank" rel="noopener">'+T('Payer','Pay')+'</a><button data-goto="'+o.i+'">'+T('Voir dans la conversation','See in the chat')+'</button></div>')+'</div>'}).join('')+'</div>'}
+    '<div class="ob">'+T('Valable jusqu’à ','Valid until ')+jobHM(o.until)+'</div><div class="ok2"><button class="ppb" data-paysh="'+o.i+'">🔒 '+T('Payer','Pay')+'</button><button data-goto="'+o.i+'">'+T('Voir dans la conversation','See in the chat')+'</button></div>')+'</div>'}).join('')+'</div>'}
 document.addEventListener('click',function(e){var g=e.target.closest&&e.target.closest('[data-goto]');if(g){shClose();var all=$('chat').querySelectorAll('.payc.order');
   var M=(C.msgs||[]).filter(shown),k=-1,n=0;M.forEach(function(m){if(m.role==='pay'){if(C.msgs.indexOf(m)===+g.dataset.goto)k=n;n++}});var el=all[k];if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--acc)';setTimeout(function(){el.style.outline=''},1800)}return}
  var r=e.target.closest&&e.target.closest('[data-recheck]');if(r){shClose();var m=(C.msgs||[])[+r.dataset.recheck],w=m&&m.pay?m.pay.what:'';tx.value=T('Tu peux revérifier le prix pour : ','Can you recheck the price for: ')+w+' ?';auto();send()}});
@@ -470,9 +492,27 @@ document.addEventListener('click',function(e){var g=e.target.closest&&e.target.c
 function jobOrder(j){var o=j&&j.order;if(!o)return '';var th=Number(o.third||0),fee=o.fee!=null?Number(o.fee):(Number(o.eur||0)-th);
  return '<div class="jo'+(o.expired?' ex':'')+'"><div class="jt"><span>💳 '+(o.expired?T('Prix à revérifier','Price to recheck'):T('À régler','To pay'))+'</span><b>'+eu(o.eur)+'</b></div>'+
   (th>0?'<div class="jb">'+T('dont','incl.')+' '+eu(th)+' '+T('payés pour toi','paid for you')+' · '+T('frais Kino','Kino fee')+' '+eu(fee)+'</div>':'')+
-  (o.expired?'<button data-recheck="'+o.i+'">'+T('Revérifier le prix','Recheck the price')+'</button>':'<a href="'+esc(o.url||'#')+'" target="_blank" rel="noopener">'+T('Payer','Pay')+' '+eu(o.eur)+'</a>')+'</div>'}
+  (o.expired?'<button data-recheck="'+o.i+'">'+T('Revérifier le prix','Recheck the price')+'</button>':'<button class="ppb" data-paysh="'+o.i+'">🔒 '+T('Payer','Pay')+' '+eu(o.eur)+'</button>')+'</div>'}
+// 2026-11-15 (owner: 'that payment page is far from premium, no back button - it should just be a nice panel'):
+// paying happens in a sheet inside the chat - summary, PayPal (code copied for you), crypto, 'I've paid'
+function payOpen(i){var m=(C.msgs||[])[+i],p=m&&m.pay;if(!p)return;var th=Number(p.third||0),fee=p.fee!=null?Number(p.fee):(Number(p.eur||0)-th);
+ var code='KINO-'+String(p.ref||'').toUpperCase(),amt=(Math.round(Number(p.eur||0)*100)/100).toFixed(2).replace(/[.]00$/,'');
+ var pp=C.paypal_me?('https://paypal.me/'+encodeURIComponent(C.paypal_me)+'/'+amt+'EUR'):p.url;
+ shOpen('<div class="pys"><div class="py-h"><span class="py-l">🔒 '+T('Paiement sécurisé','Secure payment')+'</span><button class="py-x" onclick="shClose()">✕</button></div>'+
+  '<div class="py-w">'+esc(p.what||'')+'</div><div class="py-br">'+
+  (th>0?'<div class="rw"><span>'+T('Réservation / achat (payé pour toi)','Booking / purchase (paid for you)')+'</span><span>'+eu(th)+'</span></div><div class="rw"><span>'+T('Frais de service Kino','Kino service fee')+'</span><span>'+eu(fee)+'</span></div>':
+   '<div class="rw"><span>'+T('Service Kino','Kino service')+'</span><span>'+eu(p.eur)+'</span></div>')+
+  '<div class="rt"><span>'+T('Total','Total')+'</span><b>'+eu(p.eur)+'</b></div></div>'+
+  '<div class="py-c"><div class="py-cl">'+T('Ton code de paiement, à mettre en note PayPal','Your payment code, to put in the PayPal note')+'</div><div class="py-cd"><span>'+code+'</span><button data-copy="'+code+'">'+T('Copier','Copy')+'</button></div></div>'+
+  '<a class="py-pp" href="'+esc(pp)+'" target="_blank" rel="noopener" data-copy2="'+code+'">'+T('Payer avec','Pay with')+' <b>PayPal</b></a>'+
+  '<div class="py-2"><button class="npb" data-np="'+esc(p.ref)+'">₿ '+T('Payer en crypto','Pay with crypto')+'</button><button data-paid="'+esc(p.ref)+'">✓ '+T('J’ai payé','I’ve paid')+'</button></div>'+
+  '<div class="py-f">'+T('Vérifié à la main, en général en quelques heures. Kino commence dès que c’est confirmé et te le dit ici.','Checked by hand, usually within a few hours. Kino starts as soon as it’s confirmed and tells you here.')+'</div></div>')}
+function cpy(t){try{navigator.clipboard.writeText(t)}catch(e){}toast(T('Code copié','Code copied'))}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-paysh]');if(b){e.preventDefault();payOpen(b.dataset.paysh);return}
+ var c=e.target.closest&&e.target.closest('[data-copy]');if(c){cpy(c.dataset.copy);return}
+ var c2=e.target.closest&&e.target.closest('[data-copy2]');if(c2){try{navigator.clipboard.writeText(c2.dataset.copy2)}catch(x){}}});
 function ordList(){return GID?[]:(C&&C.orders||[])}
-var ORDL='';function ordDock(){var el=$('ordd');if(!el)return;var O=ordList().filter(function(o){return !o.expired&&o.status==='waiting'}),n=O.length;
+var ORDL='';function ordDock(){var el=$('ordd');if(!el)return;el.className='';return;var O=ordList().filter(function(o){return !o.expired&&o.status==='waiting'}),n=O.length;
  var h=n?'<span>💳</span><b>'+(n>1?n+' '+T('commandes à régler','orders to pay'):T('1 commande à régler','1 order to pay'))+'</b><span class="oa">'+T('Voir','View')+' ›</span>':'';
  if(h!==ORDL){el.innerHTML=h;ORDL=h}el.className=n?'on':'';if(!el.onclick)el.onclick=ordOpen}
 function ordOpen(){var O=ordList();shOpen('<h3>'+T('Mes commandes','My orders')+'</h3>'+(O.length?orderCards():'<p style="opacity:.7">'+T('Rien à régler pour le moment.','Nothing to pay right now.')+'</p>'))}
@@ -498,6 +538,9 @@ function jobCards(){var dg=C.doing&&C.doing.text?C.doing:null,out='',now=Date.no
    (live?((tr[1]?'<div class="tr o2">✓ '+esc(tr[1])+'</div>':'')+(tr[0]?'<div class="tr o1">✓ '+esc(tr[0])+'</div>':'')+
     '<div class="now"><span class="ic">'+esc(dg.icon||'✨')+'</span><span><span class="tx">'+esc(dg.text)+'</span><span class="cur"></span></span></div>'):'')+
    (done?'':(P.length?'<div class="bar pg"><s style="width:'+pct+'%"></s>'+(live?'<i></i>':'')+'</div>':'<div class="bar"><i></i></div>'))+jobOrder(j)+'</div>'});
+ var _on={};J.forEach(function(j){if(j.order)_on[j.order.ref]=1});
+ (C.orders||[]).forEach(function(o){if(o.status!=='waiting'||_on[o.ref])return;
+  out+='<div class="dg"><div class="hd"><span>'+esc(o.what||'')+'</span></div>'+jobOrder({order:o})+'</div>'});
  return out}
 // 2026-11-12 (owner: "like the Claude Code terminal - sticky near the text box, visible even when we talk about something
 // else; with 2 missions one summary line '2 tâches en cours'; tap it and a panel slides up with the details")
@@ -945,12 +988,12 @@ function payCard(m,i){var p=m.pay||{},st=p.status||'waiting',eur=String(p.eur).r
   (st==='paid'?'<div class="ps">✓ '+T('Payé, merci ! Kino s’y met.','Paid, thank you! Kino is on it.')+'</div>':
    st==='cancelled'?'<div class="ps">✕ '+T('Devis annulé. Rien à payer.','Quote cancelled. Nothing to pay.')+'</div>':
    st==='expired'?'<div class="ps" style="margin-bottom:8px">'+T('Ce prix date un peu : il a pu changer.','This price is a little old: it may have changed.')+'</div><div class="pb"><button data-recheck="'+i+'">'+T('Revérifier le prix','Recheck the price')+'</button></div>':
-   st==='trust'?'<div class="ps" style="margin-bottom:8px">🤝 '+T('Kino le fait d’abord. Tu paies après, seulement si ça te plaît.','Kino does it first. You pay after, only if you like it.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div>':
+   st==='trust'?'<div class="ps" style="margin-bottom:8px">🤝 '+T('Kino le fait d’abord. Tu paies après, seulement si ça te plaît.','Kino does it first. You pay after, only if you like it.')+'</div><div class="pb"><button class="ppb" data-paysh="'+i+'">🔒 '+T('Payer','Pay')+' '+eu(p.eur)+'</button></div>':
    st==='claimed_after'?'<div class="ps">⏳ '+T('Merci ! Paiement en cours de vérification.','Thank you! Payment being checked.')+'</div>':
-   st==='owed'?'<div class="ps" style="margin-bottom:8px">✓ '+T('Livré. Ça te plaît ? Tu peux payer maintenant.','Delivered. Happy with it? You can pay now.')+'</div><div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div>':
+   st==='owed'?'<div class="ps" style="margin-bottom:8px">✓ '+T('Livré. Ça te plaît ? Tu peux payer maintenant.','Delivered. Happy with it? You can pay now.')+'</div><div class="pb"><button class="ppb" data-paysh="'+i+'">🔒 '+T('Payer','Pay')+' '+eu(p.eur)+'</button></div>':
    st==='delivered'?'<div class="ps">✓ '+T('Livré : ton document est juste en dessous.','Delivered: your document is right below.')+'</div>':
    st==='claimed'?'<div class="ps">⏳ '+T('Paiement en cours de vérification (quelques heures en général).','Payment being checked (usually a few hours).')+'</div>':
-   '<div class="pb"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">PayPal</a><button class="npb" data-np="'+esc(p.ref)+'">'+T('Crypto','Crypto')+'</button><button data-paid="'+esc(p.ref)+'">'+T('J’ai payé (PayPal)','I’ve paid (PayPal)')+'</button></div><div class="ps">'+T('Discuter reste gratuit. Kino commence dès que le paiement est confirmé.','Chatting stays free. Kino starts as soon as the payment is confirmed.')+'</div>')+'</div></div></div>'}
+   '<div class="pb"><button class="ppb" data-paysh="'+i+'">🔒 '+T('Payer','Pay')+' '+eu(p.eur)+'</button></div><div class="ps">'+T('Discuter reste gratuit. Kino commence dès que le paiement est confirmé.','Chatting stays free. Kino starts as soon as the payment is confirmed.')+'</div>')+'</div></div></div>'}
 document.addEventListener('click',function(e){var b=e.target.closest('[data-paid]');if(!b)return;
  var who=prompt(T('Merci ! Quel nom ou quelle adresse e-mail apparaît sur ton compte PayPal ? (pour retrouver ton paiement)','Thanks! Which name or email shows on your PayPal account? (to find your payment)'),'');if(who===null)return;b.disabled=true;
  post('chat_paid',{id:CID,ref:b.dataset.paid,who:who}).then(function(j){if(j&&j.ok){toast(T('Merci ! On vérifie et Kino te dit dès que c’est bon.','Thanks! It’s being checked, Kino tells you when it’s confirmed.'));load(true)}else b.disabled=false}).catch(function(){b.disabled=false})});

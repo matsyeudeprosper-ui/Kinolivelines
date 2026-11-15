@@ -27210,6 +27210,11 @@ def chat_get(user, cid, ui=""):
                           "t": int(_pm.get("t") or 0), "until": int(float(_pm.get("t") or 0) + _life),
                           "expired": _p.get("status") == "waiting" and time.time() > float(_pm.get("t") or 0) + _life})
         c["orders"] = _ords[-6:]
+        try:                                         # 2026-11-15: the in-chat payment sheet pays PayPal directly
+            import kino_site as _KSIp
+            c["paypal_me"] = _KSIp.cfg().get("paypal_me") or ""
+        except Exception:
+            c["paypal_me"] = ""
         # 2026-11-15 (owner: 'a Payer card below the task card it relates to'): each job carries its own unpaid order
         try:                                         # the order filed under its job when it was made (which_job), never guessed
             _om = {}
