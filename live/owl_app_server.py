@@ -22139,8 +22139,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _futs = [(q_, _ex.submit(lambda k_=k_, q_=q_: _kino_websearch(q_) if k_ == "cherche" else
                                      _kino_domain(q_, str(user.get("id") or "")) if k_ == "domaine" else _kino_lookup(user, c, q_)))
                      for k_, q_ in _lk if q_ not in _asked]
-            _cf.wait([f_ for _, f_ in _futs], timeout=15)
-            if any(not f_.done() for _, f_ in _futs) and c.get("app") == "kinochat" and say:
+            # 15/11 (watch: 4 flip-flopping messages in 2 min - each follow-up launched another background look): a turn that
+            # IS a look coming back waits for its looks here, it never starts another one in the background
+            _back_turn = str(event or "").startswith(("YOUR LOOK CAME BACK", "YOU COULD NOT ANSWER"))
+            _cf.wait([f_ for _, f_ in _futs], timeout=60 if _back_turn else 15)
+            if any(not f_.done() for _, f_ in _futs) and c.get("app") == "kinochat" and say and not _back_turn:
                 _KO._log(cid, "LOOKUP_LATER", " | ".join(q_[:80] for q_, _ in _futs))
                 _asked.update(q_ for q_, _ in _futs)
 

@@ -574,7 +574,11 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "few words> | <details> | <price or empty> | <★ only on the one you would take> | <its link if it has one - the "
                  "card then shows its photos or lets them try it> - they become clean "
                  "tappable cards under your words; then your words stay short (why your pick), never the list again in text. "
-                 "A LOOK THAT TAKES A MOMENT (owner 15/11: 'like someone who keeps talking while he checks, and comes back "
+                 "SHOW WHERE IT COMES FROM (owner 15/11: 'at least a link to view the product, especially without images - "
+                 "the findings feel invented'): every product, place or offer you name carries its link - the page you read "
+                 "it on (in #choix the 5th part, in text the link itself); a price without a source is not given. And once "
+                 "they pick something to buy, book or hire, it is a job (#mission) with its card, until it is delivered - "
+                 "not a quick look. A LOOK THAT TAKES A MOMENT (owner 15/11: 'like someone who keeps talking while he checks, and comes back "
                  "when he has it'): your words go out while you look; when a look may take a while, say it the way a person "
                  "would and let them carry on ('je regarde ça, continue pendant ce temps'), never as a formula - and answer "
                  "whatever else they say meanwhile. When the answer arrives it comes to you as YOUR LOOK CAME BACK: come back "
@@ -648,7 +652,14 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     # 2026-11-04 (cost): a watch over a candle needs what was said lately, not the whole evening - 16 messages, not 40
     _n = 16 if str(event or "").startswith("AUTO-TRADE WATCH") else 40
     P.append(("THE CONVERSATION (UTC times):\n" if en else "LA CONVERSATION (heures UTC) :\n") + (transcript(chat.get("msgs"), n=_n, lang=lang) or "(nothing yet)"))
-    if event:
+    if event and str(event).startswith(("YOUR LOOK CAME BACK", "YOU COULD NOT ANSWER")):
+        # 15/11 (watch: 'je te reviens avec le total' - the look came back with the Amazon page and he stayed silent, the
+        # framing said 'write only if you really want'): they are WAITING for this - he always answers, once, with it
+        P.append(("THEY ARE WAITING FOR THIS: %s\nWrite to them now with what you found - one message, the useful part, with "
+                  "the links. If it is not enough, say what you have and what comes next; never stay silent." if en else
+                  "IL ATTEND ÇA : %s\nÉcris-lui maintenant avec ce que tu as trouvé - un seul message, l'utile, avec les liens. Si ce "
+                  "n'est pas assez, dis ce que tu as et la suite ; ne te tais jamais.") % event)
+    elif event:
         P.append(("Nobody wrote to you. What is happening: %s\nWrite only if you really want to tell them something; otherwise answer: …" if en else
                   "Personne ne t'a écrit. Ce qui se passe : %s\nÉcris seulement si tu as vraiment envie de lui dire quelque chose ; sinon réponds : …") % event)
         if en:                                # 2026-10-28 03:13 (watch): an inner-voice event written in French pulled his own message into French
