@@ -165,6 +165,12 @@ def look(path, params=None, limit_chars=6000):
             return "NOT READ - " + why
         _down(why)
         return _web(_query_of(path, params), why)
+    try:                                       # 15/11 (owner: the desk shows cards too): its latest finds, for a job's message
+        _o = _opts_from(d)
+        if _o:
+            LAST["_latest"] = {"t": time.time(), "kind": "items", "dates": "", "items": _o}
+    except Exception:
+        pass
     s = json.dumps(_slim(d.get("data", d)), ensure_ascii=False)
     return s[:limit_chars] + (" …(cut)" if len(s) > limit_chars else "")
 
@@ -199,6 +205,12 @@ def stays(location, check_in="", check_out="", adults=2, site="airbnb", children
     if why:
         _down(why)
         return _web("%s %s %s %s" % (site, location, check_in, check_out), why)
+    try:
+        _o = _opts_from(d)
+        if _o:
+            LAST["_latest"] = {"t": time.time(), "kind": "stay", "dates": "%s → %s" % (check_in, check_out), "items": _o}
+    except Exception:
+        pass
     out = []
     for it in ((d.get("data") or {}).get("items") or [])[:12]:
         p = it.get("place") or it
@@ -275,6 +287,11 @@ LAST = {}                              # 2026-11-14 (owner: 'show off what the r
 
 def _qkey(q):
     return re.sub(r"\W+", " ", str(q or "").lower()).strip()[:200]
+
+
+def latest(max_age=1800):
+    e = LAST.get("_latest")
+    return e if e and time.time() - e["t"] < max_age and e.get("items") else None
 
 
 def found_for(queries, max_age=1800):
@@ -401,7 +418,7 @@ def smart(q):
                 (" | " + o["desc"][:140]) if o.get("desc") else "", (" | " + ", ".join(o.get("amen") or [])[:120]) if o.get("amen") else "")))
         rows.sort(key=lambda r: r[0])
         opts.sort(key=lambda o: o.get("eur") or 10 ** 6)
-        LAST[_qkey(q)] = {"t": time.time(), "kind": "stay", "dates": "%s → %s" % (ci, co), "items": opts}
+        LAST[_qkey(q)] = LAST["_latest"] = {"t": time.time(), "kind": "stay", "dates": "%s → %s" % (ci, co), "items": opts}
         return ("INSIDE %s, %s, %s -> %s, %s adult(s) - real places, real prices for these dates%s (photos available: "
                 "#cartes shows them as cards):\n" % (
                     site.upper(), R["location"], ci, co, R.get("adults") or 1, ", cheapest first" if R.get("cheapest") else "") +
@@ -414,7 +431,7 @@ def smart(q):
             return None
         opts = _opts_from(d)                     # 14/11 (owner: cards for every kind of request, not only stays)
         if opts:
-            LAST[_qkey(q)] = {"t": time.time(), "kind": "items", "dates": "", "items": opts}
+            LAST[_qkey(q)] = LAST["_latest"] = {"t": time.time(), "kind": "items", "dates": "", "items": opts}
         s = json.dumps(_slim(d.get("data", d)), ensure_ascii=False)[:4000]
         return "INSIDE %s%s:\n%s" % (R["path"], " (photos available: #cartes shows them as cards)" if opts else "", s)
     return None

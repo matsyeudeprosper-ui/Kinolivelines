@@ -162,7 +162,7 @@ def due(now=None):
     return [m for m in _load()["missions"] if m["status"] in OPEN and float(m.get("next_t") or 0) <= now]
 
 
-def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", plan=None, step=None):
+def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", plan=None, step=None, cards=False):
     """his step on a mission -> a sentence for him. tell = words for the person (their chat + a push).
     title / stage (2026-11-12, owner: "the client has no estimate, it leaves him with questions"): the job card they see -
     a short name of the job and where it stands, in their language; next_t is the "next update around" time on it."""
@@ -244,8 +244,17 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
             except Exception:
                 Q = []
             Q = [q for q in Q if not (q.get("mid") == mid and out.get("_replace"))]      # not delivered yet: the newer one wins
+            _cards = None
+            if cards:                          # 15/11 (owner): what the desk found, shown as cards under its message
+                try:
+                    import kino_crawl as KCm
+                    _cards = KCm.latest()
+                except Exception:
+                    _cards = None
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
-                      "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace"))})
+                      "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace")),
+                      "cards": (_cards or {}).get("items")[:6] if _cards else None, "cards_kind": (_cards or {}).get("kind"),
+                      "cards_dates": (_cards or {}).get("dates")})
             json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
     return "mission %s: %s%s" % (mid, out["status"], (" - %s has your message in their chat" % (out.get("name") or "they")) if tell else _dupmsg)
 

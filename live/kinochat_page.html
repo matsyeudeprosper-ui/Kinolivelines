@@ -331,6 +331,32 @@ html[data-th="clair"]{--out1:#d9fdd3;--out2:#cdf5c6;--outtx:#111b21;--outmeta:#6
 .me .b .t{color:var(--outmeta)}.me .b a{color:var(--outtx)}
 html[data-th="clair"] .me .qt{background:#0000000d;border-left-color:#00a884}html[data-th="clair"] .me .qt b{color:#00a884}
 html[data-th="clair"] .tk.rd{color:#3a9ee0}
+/* 2026-11-15 (owner: 'anything important: a premium, professional, modern look - glassy - clean visuals earn respect,
+   users will be paying in this chat'): one glass language for every card that matters */
+:root{--glass:color-mix(in srgb,var(--surface) 72%,transparent);--glass-hi:rgba(255,255,255,.10);--glass-br:color-mix(in srgb,var(--acc) 28%,rgba(255,255,255,.14));
+ --glass-sh:0 1px 0 rgba(255,255,255,.06) inset,0 12px 32px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.18)}
+.payc.order,.oc,.ordc,.gc,#jobsb .dg{background:linear-gradient(155deg,var(--glass-hi) 0%,rgba(255,255,255,0) 38%),var(--glass) !important;
+ -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);border:1px solid var(--glass-br) !important;
+ box-shadow:var(--glass-sh) !important;transition:transform .18s ease,box-shadow .18s ease}
+.payc.order{border-radius:22px}.oc{border-radius:20px}.ordc{border-radius:18px}
+.payc.order:hover,.oc:hover,.ordc:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 16px 40px rgba(0,0,0,.32),0 3px 8px rgba(0,0,0,.2) !important}
+.payc.order .ft{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.07)) !important;border-top:1px solid rgba(255,255,255,.08)}
+.payc.order .rt b{background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 60%,#7cf)) ;-webkit-background-clip:text;background-clip:text;color:transparent}
+.payc.order .pb a,.ordc .ok2 a{background:linear-gradient(180deg,#1a86d6,#0063a8) !important;box-shadow:0 6px 16px rgba(0,112,186,.35);letter-spacing:.01em}
+.oc-k button,.ordc.ex .ok2 button{background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 92%,#fff),var(--acc)) !important;box-shadow:0 6px 16px color-mix(in srgb,var(--acc) 35%,transparent)}
+.payc.order .pb button,.oc-k a,.ordc .ok2 button{background:rgba(255,255,255,.06) !important;border:1px solid rgba(255,255,255,.12) !important;color:var(--ink)}
+.payc.order a:active,.payc.order button:active,.oc button:active,.oc a:active,.ordc a:active,.ordc button:active{transform:scale(.97)}
+.payc.order .pill,.ordc .hd b{-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.oc-ph{border-bottom:1px solid rgba(255,255,255,.08)}.oc-ph img{transition:transform .4s ease}.oc:hover .oc-ph img{transform:scale(1.03)}
+.oc-p{background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 60%,#7cf));-webkit-background-clip:text;background-clip:text;color:transparent}
+.shc{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 30%),color-mix(in srgb,var(--surface) 86%,transparent) !important;
+ -webkit-backdrop-filter:blur(22px) saturate(150%);backdrop-filter:blur(22px) saturate(150%);border-top:1px solid rgba(255,255,255,.12) !important;box-shadow:0 -12px 40px rgba(0,0,0,.35)}
+.sh{background:rgba(0,0,0,.45) !important;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+html[data-th="clair"]{--glass-hi:rgba(255,255,255,.8);--glass-br:color-mix(in srgb,var(--acc) 22%,rgba(15,23,42,.08));--glass-sh:0 1px 0 rgba(255,255,255,.9) inset,0 10px 28px rgba(20,30,60,.12),0 2px 6px rgba(20,30,60,.08)}
+html[data-th="clair"] .payc.order .pb button,html[data-th="clair"] .oc-k a,html[data-th="clair"] .ordc .ok2 button{background:rgba(15,23,42,.04) !important;border-color:rgba(15,23,42,.1) !important}
+html[data-th="clair"] .payc.order .ft{background:linear-gradient(180deg,rgba(15,23,42,.02),rgba(15,23,42,.04)) !important;border-top-color:rgba(15,23,42,.06)}
+html[data-th="clair"] .shc{border-top-color:rgba(15,23,42,.08) !important;box-shadow:0 -10px 30px rgba(20,30,60,.15)}
+@media (prefers-reduced-motion:reduce){.payc.order,.oc,.ordc,.oc-ph img{transition:none}.payc.order:hover,.oc:hover,.ordc:hover{transform:none}}
 </style></head><body>
 <header>
  <button class="ib" id="back" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>

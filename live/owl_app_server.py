@@ -17392,6 +17392,9 @@ def _reminder_tick():
                         q["_quiet"] = True
                     else:
                         _chat_msg(cc, "ai", text=q["text"], mission=q["mid"], one=True, quick=True)   # his own words from his work session: never re-judged
+                        if q.get("cards"):                 # 2026-11-15 (owner): the desk shows what it found as cards too
+                            cc.setdefault("msgs", []).append({"role": "opts", "t": int(time.time()), "kind": q.get("cards_kind"),
+                                                              "dates": q.get("cards_dates"), "items": q["cards"]})
                     if q.get("status") == "done" and q.get("ref"):
                         for m in cc.get("msgs") or []:
                             if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == q["ref"] and m["pay"].get("status") in ("paid", "trust"):

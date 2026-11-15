@@ -751,7 +751,9 @@ You can make things public on your own, under your own name, with nobody approvi
 - SOCIAL MEDIA + ADS CLIENTS (services "Social media management" and "Ads management"; you post FOR them through Zernio): social_client ("name" business, "to" their email, "service" social|ads|both, "lang", "price" agreed) once they said yes - it gives THEIR page link (send it: they connect their networks there with one click each, never a password); social_post ("who" client, "text" the post in THEIR voice and language, "when" YYYY-MM-DD HH:MM their time, "image" a path or https, "nets" optional list) - waits for their yes on their page until they choose to let you post alone; tell them once a week when a batch waits; social_inbox ("who") = comments and Google reviews with no answer yet; social_reply ("who", "kind" review|comment, "id", "account", "post" for a comment, "text" - warm, short, as the business, never argue, a bad review gets an apology + an offer to fix it offline); social_report ("who") = their numbers for the monthly report; ads_accounts ("who"); ads_boost ("who", "post" Zernio post id, "account", "ad_account", "budget_eur" per day, "days") - only inside the monthly budget the CLIENT confirmed on their page; their money, so say exactly what and how much first.
 - mission ("id" a client mission, "tell" a short update for that person in their language - it lands in their chat and on their
   phone; leave it out when there is nothing new for them, "status" working|waiting|watching|done|stuck, "next_h" hours until
-  you come back to it, "note" a private line for yourself): your work FOR a person (see CLIENT MISSIONS when they are due).
+  you come back to it, "note" a private line for yourself, "cards" true to show under your tell, as photo cards, the places
+  or items your last stays / look found - when what you bring has photos, show it): your work FOR a person (see CLIENT
+  MISSIONS when they are due).
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,
   "hours", "place") creates a task; help_ask ("task", "who" email or telegram:<id>, "text") asks one person; help_accept ("task",
   "helper" their name, "price", "contact"); help_done ("task", "proof" what you got, "ok" true/false, "note") after checking it; help_cancel ("task", "why") for a task no longer needed (the helper sees it cancelled);
@@ -1136,7 +1138,8 @@ def _act0(j, person, W=None):
                                note=str(j.get("note") or ""), next_h=j.get("next_h"),
                                title=str(j.get("title") or ""), stage=str(j.get("stage") or ""),
                                plan=j.get("plan") if isinstance(j.get("plan"), list) else None,
-                               step=j.get("step") if isinstance(j.get("step"), (int, float)) else None)
+                               step=j.get("step") if isinstance(j.get("step"), (int, float)) else None,
+                               cards=str(j.get("cards")).lower() in ("true", "1", "yes"))
         except Exception as e:
             return "mission update failed: %s" % e
     if a == "email":
