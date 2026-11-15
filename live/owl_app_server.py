@@ -18724,6 +18724,50 @@ def _chat_markets(user):
 _OOPS_RETRIED = {}      # (cid, last member message t) -> True once a silent retry ran (2026-10-24, engine 2)
 
 
+_MISSED_F = os.path.join(DIR, "robots", "kino_missed.json")
+try:                    # cid -> the message he could not answer (brain down), picked up when it is back; survives restarts
+    _MISSED = json.load(open(_MISSED_F, encoding="utf-8"))
+except Exception:
+    _MISSED = {}
+
+
+def _missed_save():
+    try:
+        json.dump(_MISSED, open(_MISSED_F, "w", encoding="utf-8"), ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def _missed_tick():
+    """when his mind is back (Claude answering again), what he missed is answered - once, like someone whose phone died"""
+    if not _MISSED:
+        return
+    try:
+        _rc()
+        import robot_warm as _RWm
+        if _RWm.in_fallback():
+            return
+    except Exception:
+        return
+    for _cid, _m in list(_MISSED.items()):
+        if time.time() - _m["t"] < 120:          # give it two minutes before trying again
+            continue
+        _MISSED.pop(_cid, None)
+        _missed_save()
+        if time.time() - _m["t"] > 24 * 3600:
+            continue
+        try:
+            _u = _user_by_id(_m.get("uid")) or {}
+            if not _u:
+                continue
+            _ev = ("YOU COULD NOT ANSWER - your mind was down when they wrote at %s UTC: «%s». It is back now: answer it, "
+                   "simply, with at most a few words about having been away, then the real answer." % (
+                       time.strftime("%H:%M", time.gmtime(_m["at"])), _m["text"]))
+            threading.Thread(target=_chat_quick, args=(_cid, _u), kwargs={"event": _ev, "notify": True}, daemon=True).start()
+        except Exception:
+            pass
+
+
 def _chat_oops(cid, en, e=None, retry=None):
     """2026-10-24 (Kino v2 engine 2): the member saw "Oups (NameError)" twice. Now: log the traceback, retry the turn ONCE in
     silence 20 s later; only a second failure of the same turn reaches the member, in plain words (kino_deed.plain)."""
@@ -18751,6 +18795,14 @@ def _chat_oops(cid, en, e=None, retry=None):
                 "%s %s %s: %s\n%s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), cid, type(e).__name__, str(e)[:300], _tb.format_exc()))
         except Exception:
             pass
+    try:                                     # 2026-11-15 (watch: Pekos's Massy Airbnb sat 2 h 40 after 'I tripped twice'): what
+        _c2 = json.load(open(_chat_path(cid), encoding="utf-8"))   # he could not answer is picked up when his mind is back
+        _lm2 = next((mm for mm in reversed(_c2.get("msgs") or []) if mm.get("role") in ("user", "show", "image", "doc")), None)
+        if _lm2 and retry is not None:
+            _MISSED[cid] = {"t": time.time(), "at": int(_lm2.get("t") or 0), "text": str(_lm2.get("text") or "")[:600], "uid": _c2.get("uid")}
+            _missed_save()
+    except Exception:
+        pass
     try:
         _rc(); _plain = __import__("kino_deed").plain(e, "en" if en else "fr", twice=(retry is not None))
     except Exception:
@@ -22753,7 +22805,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         if _mq.get("role") == "ai" and str(_mq.get("text") or "").strip() and _mq.get("event"):
                             _own += 1
                     _urg = str(event).startswith(("LIVE TRADE", "TEST RESULT", "MONEY ARRIVED", "KILL", "SOMEONE ANSWERED", "AN EMAIL ARRIVED",
-                                                    "YOUR LOOK CAME BACK"))   # 15/11: they are waiting for that answer
+                                                    "YOUR LOOK CAME BACK", "YOU COULD NOT ANSWER"))   # 15/11: they are waiting for that answer
                     if _own >= 3 and not _urg:
                         io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD one-mind %s | %d of his own unanswered\n" % (
                             time.strftime("%m-%d %H:%M:%S"), user.get("id"), cid, str(event)[:30].replace(" ", "_"), _own))
@@ -26062,6 +26114,8 @@ def _urge_tick():
                                          kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.LAB_TIME,
                                                  "project": "my trading lab", "lane": "lab", "care": "lab",
                                                  "why": "my trading lab"}, daemon=True).start()
+                    if pm == "kino":                             # 2026-11-15: what he missed while his mind was down
+                        _missed_tick()
                     if pm == "kino" and _KWk.reply_now(now):     # 2026-11-14 (owner): a notification, picked up at a human pace
                         threading.Thread(target=_KWk.session, args=(_rc().W, pm, uid),
                                          kwargs={"log": os.path.join(DIR, "robots", "kino_work.log"), "task": _KWk.reply_task(now),
