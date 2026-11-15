@@ -22042,8 +22042,34 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             # 2026-11-13 (owner: "a work in progress indicator for background tasks that are not paid missions"): the dock
             # shows the quick search while it runs
             _CHAT_QUICK[cid] = {"t": time.time(), "text": " · ".join(q_[:60] for _, q_ in _lk)[:110], "round": _rounds}
-            _new = [(q_, _kino_websearch(q_) if k_ == "cherche" else _kino_domain(q_, str(user.get("id") or "")) if k_ == "domaine"
-                     else _kino_lookup(user, c, q_)) for k_, q_ in _lk if q_ not in _asked]
+            # 2026-11-15 (owner: 'while he searches he can carry on the conversation, like someone who keeps talking and comes
+            # back when he has the answer'): a look gets ~15 s; longer, his words go now, the look goes on beside the
+            # conversation, and its answer comes back to him as YOUR LOOK CAME BACK
+            import concurrent.futures as _cf
+            _ex = _cf.ThreadPoolExecutor(max_workers=2)
+            _futs = [(q_, _ex.submit(lambda k_=k_, q_=q_: _kino_websearch(q_) if k_ == "cherche" else
+                                     _kino_domain(q_, str(user.get("id") or "")) if k_ == "domaine" else _kino_lookup(user, c, q_)))
+                     for k_, q_ in _lk if q_ not in _asked]
+            _cf.wait([f_ for _, f_ in _futs], timeout=15)
+            if any(not f_.done() for _, f_ in _futs) and c.get("app") == "kinochat" and say:
+                _KO._log(cid, "LOOKUP_LATER", " | ".join(q_[:80] for q_, _ in _futs))
+                _asked.update(q_ for q_, _ in _futs)
+
+                def _later(_futs=_futs, _found0=list(_found)):
+                    try:
+                        _cf.wait([f_ for _, f_ in _futs], timeout=240)
+                        _res = [(q_, (f_.result() if f_.done() else "nothing came back")) for q_, f_ in _futs]
+                        _KO._log(cid, "LOOKUP_BACK", " | ".join("%s -> %s" % (q_[:60], str(a_)[:120]) for q_, a_ in _res))
+                        _ev = ("YOUR LOOK CAME BACK - a moment ago you said you were checking: %s. What you found: %s. Come back to "
+                               "them with it now, naturally (they may have talked about other things meanwhile - pick up from there)." % (
+                                   " / ".join(q_ for q_, _ in _res), " ; ".join("« %s » : %s" % (q_, str(a_)[:2500]) for q_, a_ in _found0 + _res)))
+                        _chat_quick(cid, user, event=_ev[:7000], notify=True)
+                    except Exception as _e5:
+                        _KO._log(cid, "LOOKUP_BACK_ERROR", str(_e5)[:200])
+                threading.Thread(target=_later, daemon=True).start()
+                acts = [x for x in acts if x[0] not in ("regarde", "cherche", "domaine")]
+                break
+            _new = [(q_, f_.result()) for q_, f_ in _futs]
             _asked.update(q_ for _, q_ in _lk)
             _found += _new
             _KO._log(cid, "LOOKUP", "round %d: " % _rounds + " | ".join("%s -> %s" % (q_[:80], a_[:160]) for q_, a_ in _new))
@@ -22376,7 +22402,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             # shown the way a friend sends screenshots - photos, price for the dates, a button to pick it
             try:
                 import kino_crawl as _KCc
-                _of = _KCc.found_for(list(_asked))
+                try:
+                    _of = _KCc.found_for(list(_asked))
+                except NameError:
+                    _of = None
+                _of = _of or _KCc.latest()             # 15/11: a look that came back later shows its cards too
                 if _of:
                     cc.setdefault("msgs", []).append({"role": "opts", "t": int(time.time()), "kind": _of.get("kind"),
                                                       "dates": _of.get("dates"), "items": _of["items"][:6]})
@@ -22722,7 +22752,8 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                             break
                         if _mq.get("role") == "ai" and str(_mq.get("text") or "").strip() and _mq.get("event"):
                             _own += 1
-                    _urg = str(event).startswith(("LIVE TRADE", "TEST RESULT", "MONEY ARRIVED", "KILL", "SOMEONE ANSWERED", "AN EMAIL ARRIVED"))
+                    _urg = str(event).startswith(("LIVE TRADE", "TEST RESULT", "MONEY ARRIVED", "KILL", "SOMEONE ANSWERED", "AN EMAIL ARRIVED",
+                                                    "YOUR LOOK CAME BACK"))   # 15/11: they are waiting for that answer
                     if _own >= 3 and not _urg:
                         io.open(os.path.join(DIR, "robots", "pace.log"), "a", encoding="utf-8").write("%s %s %s HELD one-mind %s | %d of his own unanswered\n" % (
                             time.strftime("%m-%d %H:%M:%S"), user.get("id"), cid, str(event)[:30].replace(" ", "_"), _own))
