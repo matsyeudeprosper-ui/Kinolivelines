@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-11-13T13:30:16Z",
+ "updated": "2026-11-15T07:50:00Z",
  "hypotheses": [
   {
    "id": "stake_not_refusal",
@@ -225,7 +225,8 @@
     "2026-11-02 18:40 veille: evening FLIP-BOS SELL pace 1.819 storm, stop 109, 4.6 min, L -2.29 at 0.02 (twin same -2.49). Journal ref account: FLIP nervous 28 tr 15 won -3.42 (flat, fits 'earn nothing'); FLIP calm 76 tr 33 won -51.79 (contradicts 'calm flips carry' on real trades). Recheck pooled at night.",
     "2026-11-05 15:00 veille: day FLIP-BOS SELL pace 1.557 storm, stop 225, 6 min, W +3.61 at 0.02 - against, one trade.",
     "2026-11-06 05:08 veille: FLIP-BOS SELL pace 0.90 after a loss W +3.24 in 68 min; pile flip_after_loss 0.8-1.0 bucket 32 tr 44% -19.06 vs 1.0-1.3 24 tr 29% -58.86. One trade, hint.",
-    "2026-11-08 19:16 veille: Sunday reopening FLIP-BOS SELL lost -0.59 (pace 1.357, first after weekend). Pile flip_hot 86 tr 42% -91.86 PF 0.58, halves 43%/41% - still losing on both halves."
+    "2026-11-08 19:16 veille: Sunday reopening FLIP-BOS SELL lost -0.59 (pace 1.357, first after weekend). Pile flip_hot 86 tr 42% -91.86 PF 0.58, halves 43%/41% - still losing on both halves.",
+    "2026-11-15 veille: real flips by pace: calm <0.8 34 tr -7.79 PF 0.82, 0.8-1.0 54 tr -28.11 (halves disagree), 1.0-1.3 47 tr -64.67 PF 0.50. Nervous part still the worst; the 'calm carries' part is not seen on real trades."
    ],
    "next": "Battery + critic on pb_y_q1316_fh05."
   },
@@ -4079,6 +4080,18 @@
     "tried/proposals for noday and day_loss_size"
    ],
    "saw": "New real close 13:30 Fri: FLIP-BOS SELL lost -6.12, pace 0.71 (CALM), 13 h. 334 real tr 48% -168.69 PF 0.76. 13 h now 12 tr 25% -52.24 PF 0.11; 12 h 16 tr 31% -32.99; 16 h 12 tr 25% -47.65. Pile day_after_loss 111 tr 40% vs 52% -145.22 PF 0.50 (h 38/42); inside 1.0-1.3 nervous 33 tr -72.60, calm <0.8 19 tr +9.92 (peu). Pile europe 108 tr 41% -139.85 PF 0.52 (h 40/42); inside after a loss 60 tr 33% -119.29 vs after a win 47 tr 49% -28.36. Answered both labo asks, no new run: day_loss_size 0.5 already subtracts (10-27, 10-31), noday halves disagree (10-30), twin noday ~-17. No harness run."
+  },
+  {
+   "t": "2026-11-15T07:50:00Z",
+   "looked": [
+    "wake_context (2 closes)",
+    "scrutiny --by hour",
+    "--by kind --by nerv",
+    "--pile flip_hot",
+    "--streaks",
+    "--pile flip --by nerv"
+   ],
+   "saw": "Closes: FLIP-BOS SELL -5.25 (Fri 22:02, pace 0.931) and FLIP-BOS SELL +3.38 (Sun 07:46, pace 0.815). 336 real tr 48% -170.56 PF 0.76. FLIP-BOS 178 tr 44% -127.56 PF 0.65; BOS 156 tr 51% -33.56. Inside pile flip by pace: <0.8 calm 34 tr 44% -7.79 PF 0.82; 0.8-1.0 54 tr 46% -28.11 PF 0.70 (halves 61/35 disagree); 1.0-1.3 47 tr 40% -64.67 PF 0.50; 1.3-1.85 42 tr -22.86. No pace band of reversals is positive on real trades. No harness run."
   }
  ],
  "lessons": [
