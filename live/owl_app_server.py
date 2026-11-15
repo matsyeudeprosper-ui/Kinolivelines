@@ -22510,6 +22510,25 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _tail = _KO.transcript((c.get("msgs") or [])[-6:], n=6, lang=lang) + "\n[now] Kino: " + say[:500]
                 for _m_ in _ow[-2:]:
                     threading.Thread(target=_KMr.restage, args=(_m_["id"], _tail, lang), daemon=True).start()
+
+                def _tidy(_uid=uid, _cid=cid, _tl=_tail):     # 2026-11-15 (owner: 'yes'): close what was replaced / done
+                    try:
+                        _cl = _KMr.tidy(_uid, _cid, _KO.transcript((_chat_load(user, _cid) or {}).get("msgs", [])[-14:], n=14, lang=lang))
+                        if not _cl:
+                            return
+                        _KO._log(_cid, "TIDY", " | ".join("%s %s: %s" % x for x in _cl))
+                        _gone = {x[0] for x in _cl}
+
+                        def _wd(cc):                            # an unpaid order of a closed job is withdrawn with it
+                            for mm in cc.get("msgs") or []:
+                                pp_ = mm.get("pay") or {}
+                                if mm.get("role") == "pay" and pp_.get("status") == "waiting" and pp_.get("mid") in _gone:
+                                    pp_["status"] = "cancelled"
+                            return True
+                        _chat_mut(_cid, _wd)
+                    except Exception:
+                        pass
+                threading.Thread(target=_tidy, daemon=True).start()
     except Exception:
         pass
     try:                                               # 2026-10-31 (kino_affect): what he did on this turn, for noticing himself

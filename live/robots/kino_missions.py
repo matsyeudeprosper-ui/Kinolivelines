@@ -157,6 +157,42 @@ def which_job(uid, cid, text):
         return None
 
 
+_TIDY = {}
+
+
+def tidy(uid, cid, convo):
+    """2026-11-15 (owner: 'yes' - close what was replaced or is finished): after an exchange, he looks over the open jobs of
+    this chat the way a person reviews a to-do list -> [(id, status, why)] closed. Judgment, not rules: replaced by a newer
+    request, done, given up, or its date has passed."""
+    if time.time() - _TIDY.get(cid, 0) < 600:
+        return []
+    _TIDY[cid] = time.time()
+    J = [m for m in for_uid(uid) if m.get("cid") == cid and m["status"] in OPEN and not m.get("paid") and not m.get("repeat_h")]
+    if len(J) < 2:
+        return []
+    try:
+        import robot_warm as RW
+        lines = "\n".join("%s: %s | %s | opened %s | %s" % (m["id"], m.get("title") or "", m.get("stage") or "", _ago(m["t"]),
+                                                          m["what"][:200]) for m in J)
+        raw = RW.ask_text("You keep a client's to-do list honest. Given the open jobs and the latest conversation, which jobs are "
+                          "clearly no longer needed: REPLACED by a newer request for the same need, DONE, GIVEN UP by the "
+                          "client, or their DATE HAS PASSED? Only clear cases; when unsure, keep it. Today is %s. Reply ONLY "
+                          "JSON {\"close\": [{\"id\": \"...\", \"status\": \"done\"|\"cancelled\", \"why\": \"a few words\"}]}." %
+                          time.strftime("%A %d %B %Y %H:%M UTC"), "OPEN JOBS:\n%s\n\nLATEST CONVERSATION:\n%s" % (lines, str(convo)[-2500:]),
+                          model="sonnet", timeout=60)
+        i = str(raw or "").find("{")
+        j = json.JSONDecoder().raw_decode(raw[i:])[0] if i >= 0 else {}
+    except Exception:
+        return []
+    out = []
+    ids = {m["id"] for m in J}
+    for x in j.get("close") or []:
+        if x.get("id") in ids and x.get("status") in ("done", "cancelled"):
+            update(x["id"], status=x["status"], note="closed on review: %s" % str(x.get("why") or "")[:160])
+            out.append((x["id"], x["status"], str(x.get("why") or "")[:160]))
+    return out
+
+
 _RESTAGED = {}
 
 
