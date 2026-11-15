@@ -126,6 +126,19 @@ def choices(lines):
     return out[:8]
 
 
+def remember_options(mid, items):
+    """the options shown to the client for this job, kept on it (title, url, price, sub)"""
+    keep = [{k: o.get(k) for k in ("title", "url", "price", "sub", "pick")} for o in items or [] if isinstance(o, dict)][:8]
+    if not keep:
+        return
+
+    def f(d):
+        for m in d["missions"]:
+            if m["id"] == mid:
+                m["options"] = keep
+    _mut(f)
+
+
 def wake(mid):
     """2026-11-15 (watch: 'confirmed times in about 10 minutes' - joining the promise pushed the train job to +15 min): a
     promise about a job brings it forward, never back"""
@@ -350,6 +363,9 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                     _cards = KCm.latest()
                 except Exception:
                     _cards = None
+            _shown = (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None))
+            if _shown:                         # 15/11: the options he showed stay with the job (links, prices) - when they pick,
+                remember_options(mid, _shown)  # the job knows WHICH listing; it once searched its diary for 30 min
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
                       "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace")),
                       "cards": (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None)),
@@ -392,6 +408,10 @@ def block(limit=6):
         except Exception:
             pass
         hist ="; ".join("[%s %s] %s" % (_ago(x["t"]), x["kind"], x["text"][:220]) for x in m["log"][-8:]) or "nothing done yet"
+        if m.get("options"):                   # 15/11: what they were shown, with the links - their pick is one of these
+            hist += "\n  OPTIONS YOU SHOWED THEM: " + " ; ".join("%s%s (%s)%s" % (
+                "★ " if o.get("pick") else "", o.get("title"), o.get("price") or "?", (" " + o["url"]) if o.get("url") else "")
+                for o in m["options"])
         _conv = ""
         try:                                   # 15/11 (watch): two sessions told Pekos opposite things 12 min apart ("I'll
             import kino_one as K1              # book Hippopotamus" / "confirm when you book") - each knew only its own job.

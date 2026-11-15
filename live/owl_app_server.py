@@ -22479,6 +22479,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _ci = _KMch.choices(_chs)
                 if _ci:
                     cc.setdefault("msgs", []).append({"role": "opts", "t": int(time.time()), "kind": "choice", "items": _ci})
+
+                    def _keep(_ci=_ci):                # the job they belong to keeps them (links) - their pick is one of these
+                        try:
+                            _jk = _KMch.which_job(uid, cid, " / ".join(o["title"] for o in _ci) + " - " + say[:200])
+                            if _jk:
+                                _KMch.remember_options(_jk, _ci)
+                        except Exception:
+                            pass
+                    threading.Thread(target=_keep, daemon=True).start()
             except Exception:
                 pass
         if any(k in ("cartes", "cards") for k, _ in acts) and say:
