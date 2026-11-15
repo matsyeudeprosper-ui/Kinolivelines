@@ -379,14 +379,19 @@ def _wait_focus(log=None):
         time.sleep(0.5)
 
 
-_LIMIT = {"until": 0.0}
+_LIMIT = {"until": 0.0, "by": {}, "dead": 0.0}   # 15/11: per model; "dead" = the backup itself cannot answer (402)
 OLLAMA_FILE = r"C:\ProgramData\kino_secret\ollama.json"      # {"key": "...", "model": "gpt-oss:120b"} - written by the owner
 OLLAMA_URL = "https://ollama.com/api/chat"
 
 
 def in_fallback():
     """2026-11-13: Claude's limit was hit a moment ago - the backup brain is answering"""
-    return time.time() < _LIMIT["until"]
+    # 2026-11-15 (watch: Haiku's limit errors every few minutes kept the whole desk paused 3 h while Sonnet - the desk's
+    # brain - answered fine, and the backup it was "waiting for" had no credit): Sonnet's own limit, and only while the
+    # backup can actually answer
+    if time.time() < _LIMIT.get("dead", 0):
+        return False
+    return time.time() < float((_LIMIT.get("by") or {}).get("sonnet", 0))
 
 
 _OLLAMA_STRICT = ("\n\nSTRICT (backup mode): use ONLY facts written above - never invent what you did, who you talked to, "
@@ -424,6 +429,8 @@ def _ollama(system, user, timeout=150, log=None, was=""):
                 pass
         return txt
     except Exception as e:
+        if "402" in str(e) or "Payment Required" in str(e):   # 15/11: no credit - nobody waits on this backup for an hour
+            _LIMIT["dead"] = time.time() + 3600
         try:
             io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
                 {"t": int(time.time()), "m": "ollama", "usd": 0, "err": "ollama: %s" % str(e)[:150], "src": "fallback for " + str(was)}) + "\n")
@@ -433,7 +440,7 @@ def _ollama(system, user, timeout=150, log=None, was=""):
 
 
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
-    if time.time() < _LIMIT["until"] and os.path.exists(OLLAMA_FILE):   # 2026-11-13: Claude's limit reached a moment ago
+    if time.time() < float((_LIMIT.get("by") or {}).get(str(model or "sonnet"), 0)) and time.time() >= _LIMIT.get("dead", 0)             and os.path.exists(OLLAMA_FILE):   # 2026-11-13: THIS model's limit reached a moment ago (15/11: per model)
         _ot = _ollama(system, user, timeout, log, model)
         if _ot is not None:
             return _ot
@@ -576,6 +583,7 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         # 2026-11-13 (owner: "until I upgrade to Max, callbacks to the Ollama cloud API - I have keys"): the plan's limit
         # silenced Kino 3 times in 2 days - the same call goes to Ollama Cloud, and the next 15 min go there directly
         _LIMIT["until"] = time.time() + 900
+        _LIMIT.setdefault("by", {})[str(model or "sonnet")] = time.time() + 900
         _ot = _ollama(system, user, timeout, log, model)
         if _ot is not None:
             return _ot
