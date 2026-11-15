@@ -22033,7 +22033,13 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     pass
         _CHAT_ACT.pop(cid, None)
         _CHAT_QUICK.pop(cid, None)
-        if _found and say and c.get("app") == "kinochat":
+        _real = None
+        try:                                           # 15/11 (watch): 'still on the hunt' counted as given and pushed the
+            import kino_crawl as _KCg                  # restaurant job 24 h away - only real results (options found) count
+            _real = _KCg.found_for(list(_asked))
+        except Exception:
+            _real = None
+        if _found and _real and say and c.get("app") == "kinochat":
             # 2026-11-14 (owner: the panel still said 'Ta demande - en cours' after the options were in the chat): what his
             # quick look already gave goes into the open job of this chat, so its card moves on and the desk does not redo it
             try:
