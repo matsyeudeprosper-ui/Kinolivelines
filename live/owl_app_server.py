@@ -22647,7 +22647,18 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                     _free = [m for m in _KMs.for_uid(uid) if m["status"] in ("open", "working") and not m.get("paid")
                              and not m.get("ref") and not any(p and _KMs._alike(p, m["what"], 0.4) for p in _payrefs)]
                     _new_m = None
-                    if len(_free) < 3 or is_admin(user):
+                    # 2026-11-15 (watch: Pekos sent his details for the Massy flat, Kino said 'total + link in 10 min' and
+                    # opened a NEW job - refused at 3 free jobs - while the Massy job slept 24 h): work on an existing job
+                    # wakes that job, it never opens another
+                    try:
+                        _same_j = _KMs.which_job(uid, cid, _mw)
+                    except Exception:
+                        _same_j = None
+                    if _same_j:
+                        _KMs.update(_same_j, note="asked in the chat: %s" % _mw[:300])
+                        _KMs.wake(_same_j)
+                        _new_m = _same_j
+                    elif len(_free) < 3 or is_admin(user):
                         _new_m = _KMs.create(uid, cid, _mw.strip(), name=user.get("name") or "", lang=_rc().member_lang(c, "fr"),
                                              repeat_h=max(24, int(_rh.group(1))) if _rh else None)
                     if not _new_m:                      # never in silence: the person knows it waits
