@@ -331,6 +331,20 @@ html[data-th="clair"] .py-br{background:rgba(15,23,42,.03);border-color:rgba(15,
 .chr2 button:active{transform:scale(.96)}
 html[data-th="clair"] .chr{border-color:rgba(15,23,42,.08);box-shadow:0 1px 0 #fff inset,0 6px 16px rgba(20,30,60,.08)}
 html[data-th="clair"] .chn,html[data-th="clair"] .chr2 button{background:rgba(15,23,42,.04);border-color:rgba(15,23,42,.1)}
+.chg{border-radius:12px;padding:7px 10px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+.gal-ph{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:18px;margin:4px 0 6px;scrollbar-width:none;background:#0a0d12;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.gal-ph::-webkit-scrollbar{display:none}.gal-ph img{flex:0 0 100%;width:100%;aspect-ratio:4/3;object-fit:cover;scroll-snap-align:center}
+.gal-d{display:flex;justify-content:center;gap:5px;margin:4px 0 10px}.gal-d i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25);transition:all .2s}
+.gal-d i.on{width:18px;border-radius:3px;background:var(--acc)}
+.gal-e{padding:28px;text-align:center;color:var(--mut);border-radius:16px;border:1px dashed rgba(255,255,255,.12);margin:6px 0 12px}
+.gal-t{font-size:19px;font-weight:800;line-height:1.25;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.gal-s{color:var(--mut);font-size:13.5px;margin-top:4px}.gal-p{font:800 24px Inter,system-ui;margin-top:8px;background:linear-gradient(90deg,var(--acc),color-mix(in srgb,var(--acc) 60%,#7cf));-webkit-background-clip:text;background-clip:text;color:transparent}
+.gal-x{font-size:13.5px;line-height:1.5;margin-top:10px;opacity:.9}
+.gal-k{display:flex;gap:10px;margin-top:16px}.gal-k a,.gal-k button{flex:1;text-align:center;padding:12px;border-radius:14px;font-weight:700;font-size:14.5px;cursor:pointer;text-decoration:none;color:var(--ink);
+ background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+.gal-k button{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.03)),color-mix(in srgb,var(--acc) 14%,transparent);border-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+.oc-ph[data-gal]{cursor:zoom-in}
+html[data-th="clair"] .chg,html[data-th="clair"] .gal-k a{background:rgba(15,23,42,.04);border-color:rgba(15,23,42,.1)}
 #ordd{display:none}#ordd.on{display:flex;align-items:center;gap:8px;margin:6px 10px 0;padding:8px 12px;border-radius:14px;cursor:pointer;font-size:13px;
  background:linear-gradient(155deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%),color-mix(in srgb,var(--surface) 75%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
  border:1px solid color-mix(in srgb,#f5a524 40%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.2)}
@@ -943,8 +957,26 @@ function capSh(j){var lab=j.label||'';var month=!!j.month;
 function choiceCard(m,i){var it=m.items||[];return '<div class="m gap" style="display:block;max-width:100%"><div class="chs">'+it.map(function(o,n){
  return '<div class="chr'+(o.pick?' pk':'')+'"><div class="chn">'+(n+1)+'</div><div class="chb"><div class="cht">'+esc(o.title||'')+(o.pick?'<span class="chp">★ '+T('Mon choix','My pick')+'</span>':'')+'</div>'+
   (o.sub?'<div class="chs2">'+esc(o.sub)+'</div>':'')+'</div><div class="chr2">'+(o.price?'<div class="chpr">'+esc(o.price)+'</div>':'')+
+  (o.url||(o.img||[]).length?'<button class="chg" data-gal="'+i+':'+n+'">'+(galKind(o)==='try'?'✨ '+T('Essayer','Try it'):'📷 '+T('Photos','Photos'))+'</button>':'')+
   '<button data-pick="'+n+'" data-mi="'+i+'">'+T('Choisir','Choose')+'</button></div></div>'}).join('')+'</div></div>'}
-function optsCard(m,i){if(m.kind==='choice'||!(m.items||[]).some(function(o){return (o.img||[]).length}))return choiceCard(m,i);var it=m.items||[];return '<div class="m gap" style="display:block;max-width:100%"><div class="oc-row">'+it.map(function(o,n){var ph=(o.img||[]).slice(0,6).map(function(u){return '<img loading="lazy" src="'+esc(u)+'" alt="">'}).join('');var am=(o.amen||[]).slice(0,4).map(function(a){return '<span>'+esc(a)+'</span>'}).join('');return '<div class="oc"><div class="oc-n"><div class="oc-ph">'+(ph||'')+'</div>'+((o.img||[]).length>1?'<div class="oc-c">📷 '+(o.img||[]).length+'</div>':'')+'</div><div class="oc-b">'+'<div class="oc-t">'+(n+1)+'. '+esc(o.title||'')+'</div>'+((o.rating||o.sub)?'<div class="oc-s">'+(o.rating?'★ '+esc(o.rating)+(o.reviews?' ('+esc(o.reviews)+')':''):'')+(o.sub?(o.rating?' · ':'')+esc(o.sub):'')+'</div>':'')+(o.price?'<div class="oc-p">'+esc(o.price)+'</div>':'')+(am?'<div class="oc-a">'+am+'</div>':'')+'<div class="oc-k">'+(o.url?'<a href="'+esc(o.url)+'" target="_blank" rel="noopener">'+T('Voir','View')+'</a>':'')+'<button data-pick="'+n+'" data-mi="'+i+'">'+T('Je prends celle-ci','I’ll take this one')+'</button></div></div></div>'}).join('')+'</div></div>'}
+// 2026-11-15 (owner: 'anyone ordering wants to see it - or test it if it is an app'): one option, its photos big in a
+// panel, the facts, see it / try it, choose it; photos fetched on tap only
+function galKind(o){var u=String(o&&o.url||'');return (!u||/airbnb\.|booking\.com|yelp\.|tripadvisor\.|amazon\.|ebay\.|aliexpress\.|google\./.test(u))?'see':'try'}
+function galOpen(key){var a=String(key).split(':'),m=(C.msgs||[])[+a[0]],o=m&&m.items&&m.items[+a[1]];if(!o)return;
+ var draw=function(im,desc,facts){var ph=(im||[]).map(function(u){return '<img loading="lazy" src="'+esc(u)+'" alt="">'}).join('');
+  shOpen('<div class="gal"><div class="py-h"><span class="py-l">'+(galKind(o)==='try'?'✨ '+T('À essayer','Try it'):'📷 '+T('Photos','Photos'))+'</span><button class="py-x" data-shx="1" aria-label="Fermer">✕</button></div>'+
+   (ph?'<div class="gal-ph" id="galph">'+ph+'</div><div class="gal-d" id="gald"></div>':(galKind(o)==='try'?'':'<div class="gal-e">'+T('Pas de photos pour celle-ci.','No photos for this one.')+'</div>'))+
+   '<div class="gal-t">'+esc(o.title||'')+(o.pick?' <span class="chp">★ '+T('Mon choix','My pick')+'</span>':'')+'</div>'+
+   (o.sub?'<div class="gal-s">'+esc(o.sub)+'</div>':'')+(o.price?'<div class="gal-p">'+esc(o.price)+'</div>':'')+
+   (desc?'<div class="gal-x">'+esc(desc)+'</div>':'')+((facts||[]).length?'<div class="oc-a">'+facts.slice(0,8).map(function(f){return '<span>'+esc(f)+'</span>'}).join('')+'</div>':'')+
+   '<div class="gal-k">'+(o.url?'<a href="'+esc(o.url)+'" target="_blank" rel="noopener">'+(galKind(o)==='try'?'✨ '+T('Essayer','Try it'):T('Voir l’annonce','See the listing'))+'</a>':'')+
+   '<button data-pick="'+a[1]+'" data-mi="'+a[0]+'" data-shx2="1">'+T('Choisir','Choose')+'</button></div></div>');
+  var g=$('galph'),d=$('gald');if(g&&d){var n=g.children.length;d.innerHTML=n>1?Array(n+1).join('<i></i>'):'';var upd=function(){var k=Math.round(g.scrollLeft/Math.max(1,g.clientWidth));[].forEach.call(d.children,function(x,j){x.className=j===k?'on':''})};g.addEventListener('scroll',upd,{passive:true});upd()}};
+ if((o.img||[]).length>1||!o.url){draw(o.img,'',o.amen)}else{draw(o.img,'',o.amen);
+  post('opt_photos',{url:o.url}).then(function(j){if(j&&(j.img||[]).length){o.img=j.img;if($('sh').classList.contains('on'))draw(j.img,j.desc,(j.facts||[]).length?j.facts:o.amen)}}).catch(function(){})}}
+document.addEventListener('click',function(e){var g=e.target.closest&&e.target.closest('[data-gal]');if(g){e.preventDefault();galOpen(g.dataset.gal);return}
+ if(e.target.closest&&e.target.closest('[data-shx2]'))shClose()},true);
+function optsCard(m,i){if(m.kind==='choice'||!(m.items||[]).some(function(o){return (o.img||[]).length}))return choiceCard(m,i);var it=m.items||[];return '<div class="m gap" style="display:block;max-width:100%"><div class="oc-row">'+it.map(function(o,n){var ph=(o.img||[]).slice(0,6).map(function(u){return '<img loading="lazy" src="'+esc(u)+'" alt="">'}).join('');var am=(o.amen||[]).slice(0,4).map(function(a){return '<span>'+esc(a)+'</span>'}).join('');return '<div class="oc"><div class="oc-n"><div class="oc-ph" data-gal="'+i+':'+n+'">'+(ph||'')+'</div>'+((o.img||[]).length>1?'<div class="oc-c">📷 '+(o.img||[]).length+'</div>':'')+'</div><div class="oc-b">'+'<div class="oc-t">'+(n+1)+'. '+esc(o.title||'')+'</div>'+((o.rating||o.sub)?'<div class="oc-s">'+(o.rating?'★ '+esc(o.rating)+(o.reviews?' ('+esc(o.reviews)+')':''):'')+(o.sub?(o.rating?' · ':'')+esc(o.sub):'')+'</div>':'')+(o.price?'<div class="oc-p">'+esc(o.price)+'</div>':'')+(am?'<div class="oc-a">'+am+'</div>':'')+'<div class="oc-k">'+(o.url?'<a href="'+esc(o.url)+'" target="_blank" rel="noopener">'+T('Voir','View')+'</a>':'')+'<button data-pick="'+n+'" data-mi="'+i+'">'+T('Je prends celle-ci','I’ll take this one')+'</button></div></div></div>'}).join('')+'</div></div>'}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-pick]');if(!b)return;var M=((typeof C!=="undefined"&&C&&C.msgs)||[]),m=M[+b.dataset.mi];var o=m&&m.items&&m.items[+b.dataset.pick];var nm=o?o.title+(o.price?' ('+o.price+')':''):('n°'+(+b.dataset.pick+1));tx.value=T('Je prends la ','I’ll take number ')+(+b.dataset.pick+1)+' : '+nm;auto();send()});
 function gigCard(m,i){var g=m.gig||{},st=g.status||'sent',due=g.due?jobHM(g.due):'—',
  pay=g.pay?(String(g.pay).replace('.',EN?'.':',')+' €'):T('Service','Favour');

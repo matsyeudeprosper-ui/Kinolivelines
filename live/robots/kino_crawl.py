@@ -301,6 +301,50 @@ def _qkey(q):
     return re.sub(r"\W+", " ", str(q or "").lower()).strip()[:200]
 
 
+_PH = {}
+
+
+def photos(url):
+    """2026-11-15 (owner: 'anyone ordering wants to see it'): the photos and a few facts of one option, fetched only when
+    someone taps 📷 -> {img: [...], desc, facts}; cached a day"""
+    url = str(url or "").strip()
+    if not url.startswith("http"):
+        return {"img": []}
+    e = _PH.get(url)
+    if e and time.time() - e["t"] < 86400:
+        return e["r"]
+    r = {"img": []}
+    try:
+        if "airbnb." in url:
+            d, why = get("/airbnb/listing", url=url)
+            pl = ((d or {}).get("data") or {}).get("place") or {}
+        elif "booking.com" in url:
+            d, why = get("/booking/hotel", url=url)
+            pl = ((d or {}).get("data") or {}).get("place") or {}
+        elif "yelp." in url:
+            d, why = get("/yelp/business/info", url=url)
+            pl = ((d or {}).get("data") or {}).get("place") or {}
+        else:
+            pl = {}
+        if pl:
+            r = {"img": [u for u in (pl.get("image_urls") or []) if isinstance(u, str) and u.startswith("https://")][:12],
+                 "desc": " ".join(str(pl.get("description") or "").split())[:400],
+                 "facts": [a.get("name") for a in pl.get("amenities") or [] if isinstance(a, dict) and a.get("available")][:10]}
+        if not r["img"]:                       # any other page: its own preview image(s), free
+            import kino_web as KW
+            h, _ = KW._get(url, timeout=15, cap=600000)
+            ims = re.findall(r'<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image)(?::url)?["\'][^>]+content=["\']([^"\']+)', str(h or ""), re.I)
+            ims += re.findall(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\'](?:og:image|twitter:image)', str(h or ""), re.I)
+            r["img"] = [u for u in dict.fromkeys(ims) if u.startswith("https://")][:6]
+            if not r.get("desc"):
+                ds = re.findall(r'<meta[^>]+(?:property|name)=["\'](?:og:description|description)["\'][^>]+content=["\']([^"\']+)', str(h or ""), re.I)
+                r["desc"] = (ds[0] if ds else "")[:400]
+    except Exception as ex:
+        _log("photos %s: %s" % (url[:80], str(ex)[:100]))
+    _PH[url] = {"t": time.time(), "r": r}
+    return r
+
+
 def latest(max_age=1800):
     e = LAST.get("_latest")
     return e if e and time.time() - e["t"] < max_age and e.get("items") else None

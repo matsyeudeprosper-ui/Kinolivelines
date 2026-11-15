@@ -753,7 +753,8 @@ You can make things public on your own, under your own name, with nobody approvi
   phone; leave it out when there is nothing new for them, "status" working|waiting|watching|done|stuck, "next_h" hours until
   you come back to it, "note" a private line for yourself, "cards" true to show under your tell, as photo cards, the places
   or items your last stays / look found - when what you bring has photos, show it; "choices" a list of options to pick
-  from without photos, each "<option> | <details> | <price> | ★ on your pick" - they become tappable cards, so your tell
+  from, each "<option> | <details> | <price> | ★ on your pick | <its link>" (the link lets them see its photos or try
+  it) - they become tappable cards, so your tell
   stays short and never repeats the list): your work FOR a person (see CLIENT
   MISSIONS when they are due).
 - YOUR HELPERS (real people, see YOUR HELPERS below): help_task ("what" exactly, "why", "proof" you expect back, "pay" EUR 0-15,

@@ -103,12 +103,24 @@ def choices(lines):
             parts = [ln.get("title"), ln.get("detail") or ln.get("sub"), ln.get("price"), "★" if ln.get("pick") else ""]
         else:
             parts = [x.strip() for x in str(ln).split("|")]
-        parts = (parts + ["", "", "", ""])[:4]
+        if isinstance(ln, dict):
+            parts = parts + [ln.get("url") or ""]
+        parts = (parts + ["", "", "", "", ""])[:5]
         t = str(parts[0] or "").strip()
         if not t:
             continue
+        _u = next((x for x in parts[3:] if str(x or "").strip().startswith("http")), "")     # 15/11: the option's link
         out.append({"title": t[:80], "sub": str(parts[1] or "").strip()[:120], "price": str(parts[2] or "").strip()[:30],
-                    "pick": "★" in str(parts[3] or "") or "★" in t, "img": []})
+                    "pick": "★" in str(parts[3] or "") or "★" in t, "img": [], "url": str(_u).strip()[:400]})
+    try:                                     # the photos his look already has for these links (no new cost)
+        import kino_crawl as KCp
+        L_ = (KCp.latest(6 * 3600) or {}).get("items") or []
+        for o in out:
+            m_ = next((x for x in L_ if o["url"] and x.get("url") and (x["url"] in o["url"] or o["url"] in x["url"])), None)
+            if m_:
+                o["img"] = m_.get("img") or []
+    except Exception:
+        pass
     for o in out:
         o["title"] = o["title"].replace("★", "").strip()
     return out[:8]
