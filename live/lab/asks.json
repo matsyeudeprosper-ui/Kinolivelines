@@ -371,6 +371,16 @@
    "answered": "2026-11-13T13:30:16Z",
    "answer_fr": "Vrai sur les vrais comptes : cent huit trades entre huit et seize heures, quatre sur dix gagnés contre un sur deux ailleurs, les deux moitiés d'accord. Mais presque toute la perte vient des trades repris juste après une perte (soixante, un sur trois gagné). Couper toute la journée, testé, ne tient pas sur les deux moitiés, et le jumeau « pas de journée » perd aussi.",
    "answer_en": "True on the real accounts: one hundred and eight trades between eight and four, four in ten won against one in two elsewhere, both halves agree. But almost all the loss comes from trades taken right after a loss (sixty, one in three won). Cutting the whole day, tested, does not hold on both halves, and the 'no daytime' twin loses too."
+  },
+  {
+   "id": "ask_1795025094_cont_rested",
+   "seed": "cont_rested",
+   "seed_fr": "Un trade de plus dans le même sens, pris après une pause",
+   "seed_en": "One more trade the same way, taken after a pause",
+   "by": "labo",
+   "date": "2026-11-18",
+   "note": "75 trades, 60 % gagnés contre 44 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
