@@ -32,6 +32,10 @@ def want_markets(markets):
     os.makedirs(CACHE, exist_ok=True)
     json.dump(sorted(set(m.upper() for m in markets)), open(os.path.join(CACHE, "ghost_syms.json"), "w"))
     lock = os.path.join(CACHE, "ghost_feed.lock")
+    # 2026-11-20 (owner: every MT5 terminal closed except Valere's): the feed opens the demo terminal - not started
+    # while live/VALERE_ONLY.flag exists
+    if os.path.exists(os.path.join(os.path.dirname(RD.HERE), "VALERE_ONLY.flag")):
+        return
     if markets and not (os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 180):
         py = sys.executable.replace("python.exe", "pythonw.exe")
         subprocess.Popen([py if os.path.exists(py) else sys.executable, os.path.join(RD.HERE, "ghost_feed.py")],
