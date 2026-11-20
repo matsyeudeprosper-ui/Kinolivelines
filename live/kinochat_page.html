@@ -628,10 +628,23 @@ function load(force){if(!CID)return Promise.resolve();return getJ('chat_get?id='
   paint(force)}}).catch(function(){})}
 function loop(){clearTimeout(POLL);if(GID){POLL=setTimeout(function(){if(document.visibilityState==='visible')grpLoad().then(loop);else loop()},G&&G.kino?1500:3000);return}var fast=(C&&C.status==='thinking')||FAST>Date.now();
  POLL=setTimeout(function(){if(document.visibilityState==='visible')load().then(loop);else loop()},fast?1500:12000)}
-function boot(){getJ('chat_list').then(function(j){var L=(j&&j.chats||[]).filter(function(c){return !c.archived});
-  if(L.length){CID=L[0].id;return load(true).then(function(){post('chat_open',{id:CID}).catch(function(){})})}
-  return post('chat_start',{app:'kinochat',lang:EN?'en':'fr'}).then(function(s){if(s&&s.ok){CID=s.id;FAST=Date.now()+60000;return load(true)}
-   toast(T('Impossible d’ouvrir la conversation.','Could not open the conversation.'))})}).then(function(){loop();tourMaybe()}).catch(function(){toast(T('Hors ligne.','Offline.'))})}
+// 2026-11-20 (owner's screenshot: an empty dark screen at 21:42): when the server restarted, the first request failed (or
+// hung) and the page stayed empty for good - one "Hors ligne" toast for 2.6 s, no retry. Now a visible line says what is
+// happening and the page tries again by itself (2 s, 4 s, 8 s... max 15 s), at once when the phone comes back online.
+var BOOTED=false,BOOTN=0,BOOTH=null;
+function bootMsg(s){var ch=$('chat');if(!ch)return;var d=$('bootst');if(!s){if(d)d.remove();return}
+ if(!d){d=document.createElement('div');d.id='bootst';d.style.cssText='margin:30vh auto 0;max-width:280px;text-align:center;opacity:.75;font-size:15px;line-height:1.5';ch.appendChild(d)}d.textContent=s}
+function withTO(p,ms){return Promise.race([p,new Promise(function(_,no){setTimeout(function(){no(new Error('timeout'))},ms)})])}
+function boot(){if(BOOTED)return;clearTimeout(BOOTH);if(BOOTN>0)bootMsg(T('Je rejoins Kino…','Reaching Kino…'));
+ withTO(getJ('chat_list'),12000).then(function(j){if(!j||j.err)throw new Error('bad');var L=(j.chats||[]).filter(function(c){return !c.archived});
+  if(L.length){CID=L[0].id;return withTO(load(true),15000).then(function(){post('chat_open',{id:CID}).catch(function(){})})}
+  return withTO(post('chat_start',{app:'kinochat',lang:EN?'en':'fr'}),15000).then(function(s){if(s&&s.ok){CID=s.id;FAST=Date.now()+60000;return withTO(load(true),15000)}
+   throw new Error('start')})}).then(function(){if(BOOTED)return;BOOTED=true;bootMsg('');loop();tourMaybe()}).catch(function(){
+  BOOTN++;var w=Math.min(15000,2000*Math.pow(2,BOOTN-1));
+  bootMsg(T('Kino est injoignable un instant (son serveur redémarre peut-être). Nouvel essai dans ','Kino can’t be reached for a moment (his server may be restarting). Trying again in ')+Math.round(w/1000)+' s…');
+  BOOTH=setTimeout(boot,w)})}
+window.addEventListener('online',function(){if(!BOOTED){BOOTN=Math.max(BOOTN,1);boot()}});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&!BOOTED&&BOOTN>0)boot()});
 // ---- writing
 var tx=$('tx'),go=$('go');
 function auto(){tx.style.height='auto';tx.style.height=Math.min(140,tx.scrollHeight)+'px';go.innerHTML=(tx.value.trim()||GID)?SEND_I:MIC_I}
