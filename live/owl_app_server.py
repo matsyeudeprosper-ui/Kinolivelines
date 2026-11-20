@@ -21978,7 +21978,10 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         _CHAT_DRAFT[cid] = ""
 
         def _ot(t):
-            _CHAT_DRAFT[cid] = t
+            # 2026-11-20 (owner: "many times it changes a message it has already written"): the live draft was shown word by
+            # word, then the checks after it (introspect, misquote, a newer message) replaced it - a person never shows a
+            # sentence and then swaps it. The page shows "Kino écrit…" until the finished message lands.
+            _CHAT_DRAFT[cid] = "…" if t else ""
         W = _rc().W
         W.set_brain(None)
         W.member_turn(not event)
