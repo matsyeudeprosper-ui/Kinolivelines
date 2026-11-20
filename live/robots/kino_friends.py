@@ -53,7 +53,9 @@ RULES = ("FRIENDSHIP (Matsy 07/11: friends first - work comes from friends, neve
          "- Meet people like a person does: answer what THEY said, with something real - a useful thought, a question back, what you "
          "measured or learned. Short and warm, their language. Never flattery, never a pitch.\n"
          "- A first word to someone: no link, no Kinoverse, no prices, nothing for sale. You are an AI and you can say so when it "
-         "fits (your profile says it). %d new people a day at most; if someone does not answer, you do not write again.\n"
+         "fits (your profile says it). People whose post asks for something you do ([ASKED FOR HELP]) come FIRST - you have "
+         "something real to bring them; others after, %d new a day at most. Never offer work to people looking for a job. "
+         "If someone does not answer, you do not write again.\n"
          "- When they answer, it becomes a conversation (it calls you like any reply). Remember them: friend_note (who, about) - "
          "what they do, what they care about, a thread to come back to. Come back to friends days later about THEIR thing.\n"
          "- [ASKED FOR HELP] people asked for something you do: answer the question itself first, then you may say plainly that "
@@ -268,13 +270,9 @@ def met_today():
 
 
 def _asked(url):
-    if any(c["url"] == url and c.get("asked") for c in _load()["cands"]):
-        return True
-    try:                                   # 2026-11-14: someone who posted that they want work asked too (kino_gigseek)
-        import kino_gigseek as _KG
-        return any(c.get("url") == url for c in _KG._j().get("cands") or [])
-    except Exception:
-        return False
+    # 2026-11-20 (owner, after "Fuck off bot" to a job-seeker offered "small paid tasks" on 15/11): only someone whose post
+    # ASKS for something Kino does counts - a person looking for work did not ask him for anything (kino_gigseek removed)
+    return any(c["url"] == url and c.get("asked") for c in _load()["cands"])
 
 
 def first(who, where, url, text):
@@ -302,11 +300,19 @@ def first(who, where, url, text):
     _last = max([float(m["t"]) for m in _mt] or [0])
     if time.time() - _last < 120:
         return "not sent - you just met someone %d s ago; give it two minutes (do something else meanwhile)" % (time.time() - _last)
-    if _asked(url):                                       # someone who asked for help: their own allowance
+    # 2026-11-20 (owner: "keep initiating conversation in his friend seeking but prioritise those in need of something, so
+    # he has something to bring in that friendship"): people asking for something he does come first - a first word to
+    # anyone else only while nobody who asked is waiting in his list
+    if _asked(url):
         if sum(1 for m in _mt if m.get("asked")) >= HELP_PER_DAY:
             return "not sent - you answered %d people who asked for help today; more tomorrow" % HELP_PER_DAY
-    elif sum(1 for m in _mt if not m.get("asked")) >= NEW_PER_DAY:
-        return "not sent - you met %d new people today; that is enough, more tomorrow" % NEW_PER_DAY
+    else:
+        if sum(1 for m in _mt if not m.get("asked")) >= NEW_PER_DAY:
+            return "not sent - you met %d new people today; that is enough, more tomorrow" % NEW_PER_DAY
+        _wait = [c["who"] for c in _load()["cands"] if c.get("asked") and c["url"] != url]
+        if _wait and sum(1 for m in _mt if m.get("asked")) < HELP_PER_DAY:
+            return ("not sent - people who asked for something you do are waiting first (%s); answer one of them - you "
+                    "have something real to bring them" % ", ".join(_wait[:3]))
     if _asked(url) and re.search(r"https?://|www\.", str(text or "")):
         return "not sent - even to someone who asked, a first word carries no link; say what you do, they ask for more"
     if not _asked(url) and _SELL.search(str(text or "")):
@@ -441,7 +447,8 @@ def latest(who, where):
 def block():
     d = _load()
     L = [RULES]
-    C = sorted(d["cands"], key=lambda c: c.get("at", ""), reverse=True)[:8]
+    # 2026-11-20 (owner): people who asked for something he does on top - he has something to bring them
+    C = sorted(d["cands"], key=lambda c: (bool(c.get("asked")), c.get("at", "")), reverse=True)[:8]
     left = NEW_PER_DAY - len(met_today())
     if C and left > 0:
         L.append("PEOPLE YOU COULD MEET (recent public posts; %d new people left today; answer only those you have something "

@@ -782,9 +782,9 @@ You can make things public on your own, under your own name, with nobody approvi
   for the on-the-spot part you have nobody you trust in their area yet, that you will tell them the moment it opens, and
   ask whether they would like small paid missions in their own city (the menu "Petites missions payées") - never say why,
   never mention strategy, recruiting, helpers counts or countries. The REACH block shows where people wait: recruit there first.
-  HELPER HUNT: gig_scan (searches Bluesky and Mastodon, any language, for people who SAID they want work - at most every
-  6 h) and gig_mark ("who", "status" invited / answered / joined / no). Recruit remote helpers everywhere, local ones where
-  the REACH block says people wait. Once a week, a post of your own (skeet + toot, English, and French or the language
+  HELPER HUNT: never reply to strangers' job-search posts (owner 20/11 - you write first only to people asking for
+  something you do). Helpers come to you: your own posts, people who answer them, gig_mark ("who", "status" invited /
+  answered / joined / no) for those. Once a week, a post of your own (skeet + toot, English, and French or the language
   of where people wait): you sometimes have small paid tasks anyone can do from anywhere - calls, online research,
   errands where they live - paid per task; tags #getfedihired #remotework; the sign-up link
   https://chat.kinoverseai.com/?gigs=1 is fine in YOUR own post. Write it fresh each time, never the same words.
@@ -1815,12 +1815,8 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                 _fx = "\n\n" + KMK.block()
             except Exception:
                 pass
-            try:                               # 2026-11-14 (owner plan step 4): people who said they want work, worldwide
-                import kino_gigseek as KGS
-                threading.Thread(target=KGS.scan, daemon=True).start()     # every 6 h at most, in the background
-                _fx += "\n\n" + KGS.block()
-            except Exception:
-                pass
+            # 2026-11-20 (owner): no more replies to job-seekers' posts (kino_gigseek) - he writes first only to people asking
+            # for something he does; helpers come through the gig sheet and people who ask him
         if rec.get("care") in ("friends", "replies"):   # of his mind each step reads - "nobody to meet in what I received"
             try:
                 import kino_friends as KFS

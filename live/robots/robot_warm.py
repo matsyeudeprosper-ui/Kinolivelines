@@ -439,9 +439,117 @@ def _ollama(system, user, timeout=150, log=None, was=""):
         return None
 
 
+FREE_FILE = r"C:\ProgramData\kino_secret\freellmapi.json"   # {"url": "http://localhost:3001/v1", "key": "freellmapi-...", "model": "auto"}
+_BK_DOWN = {}                                                  # backup name -> skipped until (2 failures in a row = 15 min off)
+_BK_FAILS = {}
+_AUTH_RE = re.compile(r"OAuth|authenticat|not logged in|log ?in again|invalid api key|401", re.I)
+
+
+def _bk_log(m, err, ms, was, log, txt):
+    try:
+        io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "brain_costs.jsonl"), "a", encoding="utf-8").write(json.dumps(
+            {"t": int(time.time()), "m": m, "usd": 0, "tag": os.path.basename(log) if log else "", "err": err, "ms": ms,
+             "src": "fallback for " + str(was), "out": len(txt or "")}) + "\n")
+    except Exception:
+        pass
+    if log and txt:
+        try:
+            io.open(log, "a", encoding="utf-8").write("\n--- %s (backup) ---\n%s\n" % (m, txt[-6000:]))
+        except Exception:
+            pass
+
+
+def _codex(system, user, timeout=150, log=None, was=""):
+    """Codex CLI on the owner's ChatGPT plan (only if `codex` is installed and logged in) -> text or None"""
+    import shutil, subprocess, tempfile
+    exe = shutil.which("codex") or shutil.which("codex.cmd")
+    if not exe:                              # 2026-11-20: the Codex desktop app (Store) ships its CLI inside
+        import glob
+        _g = sorted(glob.glob(r"C:\Program Files\WindowsApps\OpenAI.Codex_*\app\resources\codex.exe"))
+        exe = _g[-1] if _g else None
+    if not exe:
+        return None
+    t0 = time.time()
+    fd, outf = tempfile.mkstemp(suffix=".txt")
+    os.close(fd)
+    try:
+        prompt = "SYSTEM:\n%s\n\nUSER:\n%s" % (system, user if isinstance(user, str) else json.dumps(user, ensure_ascii=False))
+        subprocess.run([exe, "exec", "--skip-git-repo-check", "--sandbox", "read-only", "-o", outf, "-"], input=prompt,
+                       text=True, encoding="utf-8", capture_output=True, timeout=min(int(timeout or 150), 180),
+                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        txt = (io.open(outf, encoding="utf-8", errors="replace").read() or "").strip() or None
+        _bk_log("codex", None if txt else "empty", int((time.time() - t0) * 1000), was, log, txt)
+        return txt
+    except Exception as e:
+        _bk_log("codex", "codex: %s" % str(e)[:150], int((time.time() - t0) * 1000), was, log, None)
+        return None
+    finally:
+        try:
+            os.remove(outf)
+        except Exception:
+            pass
+
+
+def _freellm(system, user, timeout=150, log=None, was=""):
+    """FreeLLMAPI router on this VPS (free tiers of many providers, OpenAI-compatible) - the last resort -> text or None"""
+    t0 = time.time()
+    try:
+        cfg = json.load(open(FREE_FILE, encoding="utf-8"))
+        key = str(cfg.get("key") or "").strip()
+        if not key:
+            return None
+        import urllib.request
+        body = json.dumps({"model": cfg.get("model") or "auto", "stream": False,
+                           "messages": [{"role": "system", "content": str(system) + _OLLAMA_STRICT},
+                                        {"role": "user", "content": user if isinstance(user, str) else json.dumps(user, ensure_ascii=False)}]}).encode("utf-8")
+        req = urllib.request.Request(str(cfg.get("url") or "http://localhost:3001/v1").rstrip("/") + "/chat/completions", data=body,
+                                     headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=min(int(timeout or 150), 180)) as r:
+            via = r.headers.get("X-Routed-Via") or ""
+            out = json.loads(r.read().decode("utf-8", "replace"))
+        txt = ((((out.get("choices") or [{}])[0]).get("message") or {}).get("content") or "").strip() or None
+        _bk_log("free:" + (via or str(cfg.get("model") or "auto"))[:60], None if txt else "empty", int((time.time() - t0) * 1000), was, log, txt)
+        return txt
+    except Exception as e:
+        _bk_log("free", "freellmapi: %s" % str(e)[:150], int((time.time() - t0) * 1000), was, log, None)
+        return None
+
+
+def _backup(system, user, timeout=150, log=None, model="sonnet", on_text=None):
+    """2026-11-20 (owner: "when claude.exe is not available, and Claude API not available, Codex not available, ChatGPT API
+    not available, we default to Free LLM API"): claude.exe failed on its limit or its login - the same call down the chain
+    Claude API -> Codex CLI -> OpenAI API -> Ollama Cloud -> FreeLLMAPI. A backup failing twice in a row is skipped 15 min."""
+    def _ra():
+        import robot_anthropic as _RA
+        return _RA.ask_text(system, user, model, timeout, log, on_text) if _RA.ready() else None
+
+    def _ro():
+        import robot_openai as _RO
+        return _RO.ask_text(system, user, model, timeout, log, on_text)
+    chain = [("claude_api", _ra), ("codex", lambda: _codex(system, user, timeout, log, model)), ("openai", _ro),
+             ("ollama", lambda: _ollama(system, user, timeout, log, model) if os.path.exists(OLLAMA_FILE) else None),
+             ("free", lambda: _freellm(system, user, timeout, log, model) if os.path.exists(FREE_FILE) else None)]
+    for name, fn in chain:
+        if time.time() < _BK_DOWN.get(name, 0):
+            continue
+        try:
+            r = fn()
+        except Exception:
+            r = None
+        if r is not None:
+            _BK_FAILS[name] = 0
+            return r
+        _BK_FAILS[name] = _BK_FAILS.get(name, 0) + 1
+        if _BK_FAILS[name] >= 2:
+            _BK_DOWN[name], _BK_FAILS[name] = time.time() + 900, 0
+    _LIMIT["dead"] = time.time() + 600          # nobody can answer: the desk does not sit "waiting for the backup"
+    return None
+
+
 def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, warm=True):
-    if time.time() < float((_LIMIT.get("by") or {}).get(str(model or "sonnet"), 0)) and time.time() >= _LIMIT.get("dead", 0)             and os.path.exists(OLLAMA_FILE):   # 2026-11-13: THIS model's limit reached a moment ago (15/11: per model)
-        _ot = _ollama(system, user, timeout, log, model)
+    if time.time() < float((_LIMIT.get("by") or {}).get(str(model or "sonnet"), 0)) and time.time() >= _LIMIT.get("dead", 0):
+        # 2026-11-13: THIS model's limit (or, 20/11, the login) failed a moment ago - straight down the backup chain
+        _ot = _backup(system, user, timeout, log, model, on_text)
         if _ot is not None:
             return _ot
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
@@ -552,6 +660,8 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
                     if j.get("is_error") and re.search(r"hit your|usage limit|5-hour limit|weekly limit|credit balance",
                                                        str(j.get("result") or ""), re.I):
                         tm["limit"] = True
+                    if j.get("is_error") and _AUTH_RE.search(str(j.get("result") or "")):
+                        tm["auth"] = True         # 2026-11-20: 8 days of "OAuth session expired" never reached the backup
                     out.put(j.get("result") if not j.get("is_error") else None)
                     return
         except Exception:
@@ -579,12 +689,17 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
     # same call once more on the other model instead of silence.
     # 2026-11-03 18:09-18:10 UTC: flagged on OPUS (the owner's model) twice - no retry existed that way, he "tripped twice".
     # A flag on one model is retried once on the other, whichever it was.
-    if txt is None and tm.get("limit"):
+    if txt is None and (tm.get("limit") or tm.get("auth")):
         # 2026-11-13 (owner: "until I upgrade to Max, callbacks to the Ollama cloud API - I have keys"): the plan's limit
-        # silenced Kino 3 times in 2 days - the same call goes to Ollama Cloud, and the next 15 min go there directly
+        # silenced Kino 3 times in 2 days - the same call goes down the backup chain, and the next 15 min go there directly.
+        # 2026-11-20: a dead login hits every model at once (and is re-tried every 5 min, not 15)
         _LIMIT["until"] = time.time() + 900
-        _LIMIT.setdefault("by", {})[str(model or "sonnet")] = time.time() + 900
-        _ot = _ollama(system, user, timeout, log, model)
+        if tm.get("auth"):
+            for _m in ("haiku", "sonnet", "opus"):
+                _LIMIT.setdefault("by", {})[_m] = time.time() + 300
+        else:
+            _LIMIT.setdefault("by", {})[str(model or "sonnet")] = time.time() + 900
+        _ot = _backup(system, user, timeout, log, model, on_text)
         if _ot is not None:
             return _ot
     if txt is None and tm.get("flagged") and getattr(_TL, "member", False) and not getattr(_TL, "flag_retry", False):
