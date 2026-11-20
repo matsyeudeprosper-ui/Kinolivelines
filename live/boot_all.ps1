@@ -382,6 +382,13 @@ if (-not (ProcRunning "owl_scanner.py")) {
 }
 }   # end of "not VALERE_ONLY" (services that open terminals)
 
+# 3c0) FreeLLMAPI router (owner 2026-11-20): Kino's last backup brain, localhost:3001 only (robot_warm._freellm)
+if ((Test-Path "C:\freellmapi_src\repo\server\dist\index.js") -and -not (ProcRunning "server\dist\index.js")) {
+    Say "starting FreeLLMAPI"
+    Start-Process node -ArgumentList "server\dist\index.js" -WorkingDirectory "C:\freellmapi_src\repo" -WindowStyle Hidden `
+        -RedirectStandardOutput "C:\freellmapi_src\server.log" -RedirectStandardError "C:\freellmapi_src\server.err.log"
+}
+
 # 3c) Telegram alert daemon
 if (-not (ProcRunning "owl_telegram.py")) {
     Say "starting Telegram daemon"
