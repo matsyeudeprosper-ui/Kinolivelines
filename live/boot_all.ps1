@@ -36,6 +36,30 @@ function BotRunning($v) {
     return ($null -ne $p)
 }
 
+# 2026-11-20 (owner: "stop and close all MT5 terminals except Valere's account" + "no auto restarting the bots, only
+# Valere's account should auto restart for now"): while live\VALERE_ONLY.flag exists, the only trading process revived
+# is Valere's BOS bot (and its own market bots "valere@..."); app, Telegram and push notifier still come back.
+# Delete the flag to bring the whole fleet back.
+$VO = Test-Path "C:\Projects\KinoliveLines\live\VALERE_ONLY.flag"
+if ($VO) {
+    Say "VALERE_ONLY: only Valere's bot is revived"
+    if (-not (BotRunning "valere")) {
+        Say "starting BOS bot (valere)"
+        Start-Process pythonw -ArgumentList "structure_bos_bot.py", "valere" `
+            -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+    }
+    try {
+        $ml = & "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe" (Join-Path $PSScriptRoot "owl_markets.py") --launch
+        foreach ($m in @($ml)) {
+            $m = "$m".Trim()
+            if ($m -like "valere@*" -and -not (BotRunning $m)) {
+                Say ("starting market bot " + $m)
+                Start-Process pythonw -ArgumentList "structure_bos_bot.py", $m -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
+            }
+        }
+    } catch { Say ("market bots: " + $_) }
+}
+if (-not $VO) {
 # 1) live MT5 terminal
 if (-not (ProcRunning "MT5-KinoliveTrader\terminal64.exe")) {
     Say "starting live terminal"
@@ -261,6 +285,7 @@ if (-not (ProcRunning "owl_chart_feed.py")) {
 #     (owl_run_std.py) died on 2026-09-12 (disk full) and was never wanted
 #     back - the account is hand-traded now. 2026-09-27: it runs the manual
 #     desk instead, started by the mode/manual block above. Do not revive.
+}   # end of "not VALERE_ONLY" (fleet terminals and bots)
 
 # 3) OwlNest app server
 # 2026-09-27: checked on its PORT, not only its process - a hung server
@@ -293,6 +318,7 @@ if ($uiDue) {
     } catch { Say ("ui_check could not run: " + $_) }
 }
 
+if (-not $VO) {   # VALERE_ONLY: manager, provisioner, publisher, copiers, chart/scanner feeds all open terminals
 # 3b) OwlNest worker manager (one stats worker per registered user)
 if (-not (ProcRunning "owl_nest_manager.py")) {
     Say "starting OwlNest manager"
@@ -307,12 +333,14 @@ if (-not (ProcRunning "owl_nest_provision.py")) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
+}   # VALERE_ONLY pause (manager, provisioner)
 # 3b3) phone push notifier (web-push from owl_manual.log events)
 if (-not (ProcRunning "owl_push_notifier.py")) {
     Say "starting push notifier"
     Start-Process python -ArgumentList "owl_push_notifier.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+if (-not $VO) {   # VALERE_ONLY: publisher, copiers, chart/scanner feeds
 
 # 3b4) master publisher + family copiers (2026-09-07 go-live: these
 #      were missing here - a reboot silently stopped the mirroring)
@@ -352,6 +380,7 @@ if (-not (ProcRunning "owl_scanner.py")) {
     Start-Process pythonw -ArgumentList "owl_scanner.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+}   # end of "not VALERE_ONLY" (services that open terminals)
 
 # 3c) Telegram alert daemon
 if (-not (ProcRunning "owl_telegram.py")) {
