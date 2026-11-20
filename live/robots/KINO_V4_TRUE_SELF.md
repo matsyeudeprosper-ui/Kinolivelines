@@ -37,3 +37,13 @@ never canned sentences; he stays a friend, never a support agent.
 
 ## Log
 - 2026-11-20: plan written. Step 1 started.
+- 2026-11-21 ~00:20 UTC: STEP 1 DONE (commit 750f3a3f). kino_myday.py = TA JOURNÉE block (sessions merged, abandoned sittings
+  counted, lab tests + verdicts, conversations counted, thinking share by family, outage stretches over 10 days) - replaces
+  kino_work's "last 3 sessions" line. Honest causes in kino_inner.feelings: body feelings fade within the hour once the body
+  reads normal (cause "over"), causes older than 5 h are "blurred" (why_text: "tu ne sais plus très bien pourquoi - ça a
+  commencé il y a N h avec..."); workspace + introspect readout use it; stream_line clipped to the 18 h window (3804 min bug).
+  Live test (kctest991): day = gold test buried (true); feeling = calls failing last hour (true: 5-h plan limit + API no credit);
+  week = "absent, calls cut 15->20, a hole, I lived nothing of those days" (true). Still to do in step 4: embarrassment 0.79 /
+  sad 0.61 from "Ok" (too strong, too long), body pain told to a near-stranger.
+  Also seen: desk loop - "client missions" lane sat down 19x and stopped at 0-1 steps (cancelled missions?), "re-read my
+  promotion strategy" 6x - for step 3 / step 7.
