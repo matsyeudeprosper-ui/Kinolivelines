@@ -22448,6 +22448,21 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             __import__("kino_affect").note_said(_person(uid), uid, say)
     except Exception:
         pass
+    # 2026-11-20 19:45 UTC (watch, Pekos): the reply to "How are you" sat 100 s in the checks (introspect re-wrote it), Pekos
+    # wrote "Tu voulu dire quoi en français" meanwhile, and the re-write went out in ENGLISH, deaf to it - and, counted as the
+    # answer, no turn ever read his French line. A reply whose turn did not see their newest message is not sent: the pending
+    # re-run reads everything, in the language they speak now.
+    _stale = False
+    if say and not event and not any(k == "ordre" for k, _ in acts):
+        try:
+            _Mn = json.load(open(_chat_path(cid), encoding="utf-8")).get("msgs") or []
+            if any(x.get("role") in ("user", "show", "image", "doc") and float(x.get("t") or 0) > _seen_t for x in _Mn):
+                _KO._log(cid, "STALE_DROPPED", say[:120])
+                say, _stale = "", True
+                acts = [x for x in acts if x[0] not in ("construire",)]
+                _CHAT_PENDING[cid] = True
+        except Exception:
+            pass
     build = any(k == "construire" for k, _ in acts) and bool(say) and cid not in _CHAT_B and cid not in _CHAT_BUILDING
     # 2026-11-03 06:43 UTC (watch, owner autotrading): the same turn sent "Vendre 0.01 ..." to the desk AND said "no entry
     # yet, nothing is open" - the prose contradicted the act. The act is the server's fact: when this turn sends an order
@@ -22467,7 +22482,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _KDl.sent(_person(uid), cid, time.time(), (_sim or {}).get("tags") or (["long"] if len(say) > 400 else []), _sim)
             except Exception:
                 pass
-        elif not event:
+        elif not event and not _stale:                 # a stale reply dropped: their messages still wait for the re-run
             for mm in reversed(cc.get("msgs") or []):
                 if mm.get("role") in ("user", "show", "image", "doc"):
                     mm["answered"] = True
