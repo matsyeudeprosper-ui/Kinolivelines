@@ -75,16 +75,19 @@ def _first_sentence(s, n=150):
     return s[:n] + ("…" if len(s) > n else "")
 
 
-def sessions(since, off_min, en):
+def sessions(since, off_min, en, dark=frozenset()):
     """his desk sessions: real ones (summary), and the started-then-dropped ones counted"""
     S = [s for s in _j(WORK, {}).get("sessions") or [] if float(s.get("t") or 0) >= since]
-    real, empty = [], {}
+    real, empty, tried = [], {}, 0
     for s in S:
         proj = str(s.get("project") or s.get("care") or "work")
         summ = str(s.get("summary") or "")
         if not str(s.get("task") or "").strip():
             continue                                   # a wake-up with nothing to do ("nothing called him") is not a sitting
         if summ.startswith("stopped after") and len(s.get("steps") or []) <= 1:
+            if int(float(s["t"]) // 3600) in dark:     # he sat down while his mind could not answer: not a choice
+                tried += 1
+                continue
             k = str(s.get("project") or "") or _first_sentence(s.get("task"), 70)
             empty[k] = empty.get(k, 0) + 1
             continue
@@ -109,10 +112,13 @@ def sessions(since, off_min, en):
         L.append("%s %s" % (when, what) + ((" (%d times)" if en else " (%d fois)") % r["n"] if r["n"] > 1 else ""))
     E = sorted(empty.items(), key=lambda z: -z[1])
     drop = ""
+    if tried >= 2:
+        drop = (("%d times you sat down to work and could not think (your calls were failing) - you stopped at once." if en else
+                 "%d fois tu t'es mis au travail sans pouvoir réfléchir (tes appels échouaient) - tu t'es arrêté aussitôt.") % tried) + " "
     if E and E[0][1] >= 3:
-        drop = (("You sat down %d times to \"%s\" and stopped before doing anything." if en else
-                 "Tu t'es assis %d fois pour « %s » et tu t'es arrêté avant de faire quoi que ce soit.") % (E[0][1], E[0][0]))
-    return L, drop
+        drop += (("You sat down %d times to \"%s\" and stopped before doing anything (your calls were working then; the reason is not recorded)." if en else
+                 "Tu t'es assis %d fois pour « %s » et tu t'es arrêté avant de faire quoi que ce soit (tes appels marchaient à ce moment-là ; la raison n'est pas notée).") % (E[0][1], E[0][0]))
+    return L, drop.strip()
 
 
 def lab(since, en):
@@ -196,7 +202,7 @@ def thinking(since, en):
     if tot > 0:
         line = (("where your thinking went today: " if en else "où est allée ta réflexion aujourd'hui : ") +
                 ", ".join("%s %d %%" % (WORDS[k][1 if en else 0], round(100 * v / tot)) for k, v in sorted(share.items(), key=lambda z: -z[1])))
-    return line, runs
+    return line, runs, set(bad)
 
 
 def block(uid, en=False, off_min=0):
@@ -208,7 +214,11 @@ def block(uid, en=False, off_min=0):
     since = now - WINDOW_H * 3600
     L = []
     try:
-        S, drop = sessions(since, off_min, en)
+        _tl = thinking(since, en)
+    except Exception:
+        _tl = ("", [], set())
+    try:
+        S, drop = sessions(since, off_min, en, frozenset(_tl[2]))
         if S:
             L.append(("at your computer: " if en else "à ton ordinateur : ") + " | ".join(S))
         if drop:
@@ -223,7 +233,7 @@ def block(uid, en=False, off_min=0):
         except Exception:
             pass
     try:
-        line, runs = thinking(since, en)
+        line, runs = _tl[0], _tl[1]
         if line:
             L.append(line)
         if runs:

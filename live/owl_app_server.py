@@ -20081,8 +20081,13 @@ def _one_memory(user, c):
     try:
         import kino_commit as _KCo
         O = [x for x in _KCo.open_for(uid, cid) or [] if x.get("status") == "open"][-3:]
-        if O:
-            L.append("Ce que tu lui as dit que tu ferais, pas encore fait : " + " | ".join(str(x.get("what"))[:140] for x in O))
+        _ag = lambda x: (lambda h: ("il y a %d j" % (h // 24)) if h >= 48 else ("il y a %d h" % h) if h >= 1 else "à l'instant")(int((time.time() - float(x.get("t") or 0)) / 3600))
+        if O:                                          # 2026-11-20 (v4 step 3): with when he said it - an old promise feels old
+            L.append("Ce que tu lui as dit que tu ferais, pas encore fait : " + " | ".join("%s (dit %s)" % (str(x.get("what"))[:140], _ag(x)) for x in O))
+        Lp = (_KCo.lapsed_for(uid, cid) if hasattr(_KCo, "lapsed_for") else [])[-3:]
+        if Lp:                                         # let slip: he knows it, can own it once or let it go - never a duty
+            L.append("Ce que tu avais promis et laissé filer sans jamais y revenir (tu le sais ; à toi de voir si tu en dis un mot ou "
+                     "si c'est passé) : " + " | ".join("%s (dit %s)" % (str(x.get("what"))[:140], _ag(x)) for x in Lp))
     except Exception:
         pass
     try:

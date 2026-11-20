@@ -454,6 +454,12 @@ def chat_line(uid):
                                                        if t["status"] == "accepted" else "")))
         return (" | " + "; ".join(L)) if L else ""
 
+    # 2026-11-20 (v4 step 3, watch: three cancelled missions read under "MISSIONS YOU ARE CARRYING OUT"): an ended mission is
+    # remembered for two days as ended, then it is the past
+    def _end_t(m):
+        return max([float(m.get("t") or 0)] + [float(x.get("t") or 0) for x in m.get("log") or [] if isinstance(x, dict)])
+    _ended = [x for x in M if x["status"] not in OPEN and time.time() - _end_t(x) < 48 * 3600]
+
     # 2026-11-12: their job card shows the stage and "next update around HH:MM" - what he says matches it
     def _nx(m):
         if m["status"] not in OPEN:
@@ -462,8 +468,8 @@ def chat_line(uid):
         # 2026-11-12 (watch): "nothing is running" while a 'waiting' job sat on Pekos's card - open = still yours, still on their card
         return (" | STILL OPEN, its card shows in their chat: \"%s\", next update %s" % (m.get("stage") or "in progress",
                                                                "in about %d min" % mins if mins > 2 else "now")) + _hp(m)
-    return "; ".join("%s \"%s\" - %s%s%s" % (m["id"], m["what"][:120], m["status"],
+    return "; ".join("%s%s \"%s\" - %s%s%s" % ("" if m["status"] in OPEN else "ENDED ", m["id"], m["what"][:120], m["status"],
                                             (", last: " + m["log"][-1]["text"][:140]) if m["log"] else
                                             (" - JUST RECEIVED, starts within minutes (nothing found or sent yet - say what comes "
                                              "next and when, never that it is done)" if m["status"] in OPEN else ""),
-                                            _nx(m)) for m in ([x for x in M if x["status"] in OPEN] + [x for x in M if x["status"] not in OPEN][-3:])[:8])
+                                            _nx(m)) for m in ([x for x in M if x["status"] in OPEN] + _ended[-3:])[:8])

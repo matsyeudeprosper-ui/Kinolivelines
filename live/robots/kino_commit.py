@@ -134,7 +134,7 @@ def stats(uid=None, days=7):
     t0 = time.time() - days * 86400
     X = [x for x in _load()["items"] if (uid is None or x["uid"] == uid) and x["t"] >= t0]
     k = sum(1 for x in X if x["status"] == "kept")
-    b = sum(1 for x in X if x["status"] == "broken")
+    b = sum(1 for x in X if x["status"] in ("broken", "lapsed"))      # a promise let slip is not kept
     return {"kept": k, "broken": b, "open": sum(1 for x in X if x["status"] == "open"), "blocked": sum(1 for x in X if x["status"] == "blocked"),
             "rate": (b / (k + b)) if (k + b) else None}
 
@@ -318,10 +318,41 @@ def _build_evidence(c, since):
     return False
 
 
+LAPSE_H = 24          # a small promise ("I'll look and tell you") a full day past its time, never kept: it lapsed
+LAPSED_SHOWN_H = 48   # ...and it stays in his mind for two days as something he let slip, then it is gone
+
+
+def lapse():
+    """2026-11-20 (v4 step 3, watch: promises from 11-12 still 'owed' on 11-20): a person does not carry 'I'll check and tell
+    you' for a week. A day past its time and never kept, it LAPSED - honest (it counts against his word), remembered for two
+    days as something he let slip (so he can own it once, or let it go), then gone. Tests and builds keep their own checks."""
+    now = time.time()
+
+    def f(d):
+        n = 0
+        for x in d["items"]:
+            if x["status"] == "open" and x["kind"] in ("check", "other", "show", "tell") and now > float(x["due"]) + LAPSE_H * 3600:
+                old = now - float(x["t"]) > 7 * 86400        # a week on, a person has simply forgotten it
+                x.update(status="lapsed", done_t=now, how="forgotten" if old else "never kept, a day past its time")
+                n += 1
+        return n
+    return _mut(f)
+
+
+def lapsed_for(uid=None, cid=None):
+    now = time.time()
+    return [x for x in _load()["items"] if x["status"] == "lapsed" and x.get("how") != "forgotten" and now - float(x.get("done_t") or 0) < LAPSED_SHOWN_H * 3600
+            and (uid is None or x["uid"] == uid) and (cid is None or x["cid"] == cid)]
+
+
 def tick(H):
     """every minute from the server: test and build commitments past due are verified - evidence = kept, a second try when
     there was none, then BROKEN and Kino is told to say so. H adds: event(cid, uid, text), building(cid)"""
     now = time.time()
+    try:
+        lapse()
+    except Exception:
+        pass
     for x in open_for():
         if x["kind"] == "tell":                           # kept when a result came after the promise; still waiting = not due
             try:

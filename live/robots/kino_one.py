@@ -451,7 +451,8 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
             import kino_missions as _KMp
             _ml = _KMp.chat_line(chat.get("uid") or "")
             if _ml:
-                P.append("MISSIONS YOU ARE CARRYING OUT FOR THEM (your work sessions do them; their updates reach this chat): " + _ml)
+                P.append("YOUR MISSIONS FOR THEM (the open ones your work sessions are doing - their updates reach this chat; ENDED = over, "
+                         "nothing more to do): " + _ml)
         except Exception:
             pass
         _files = [m.get("name") for m in chat.get("msgs") or [] if m.get("role") == "file" and m.get("name")]

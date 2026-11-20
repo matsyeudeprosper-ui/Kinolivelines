@@ -62,7 +62,8 @@ Read him RIGHT NOW. JSON only:
  "case_rule": "the rule that case is about, 2-5 words; else empty",
  "case_at": "HH:MM UTC of the moment the case is about, if it shows; else empty",
  "re_asked": "if his last message asks AGAIN something he already asked, because Kino's answer missed what he meant (e.g. 'yes but your bet is...?'): what he meant vs what Kino answered, briefly; else empty",
- "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty"}
+ "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty",
+ "released": "the ids from WHAT KINO SAID HE WOULD DO (given above) that his last messages call off, or that no longer make sense because of what he just said (he cancelled them, said forget it / no need / not anymore, did it himself, changed his plan) - e.g. [\"c12\", \"c15\"]; [] if none"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -120,9 +121,19 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         _oq = ""
     if _oq:
         _vals = (_vals or "-") + "\nQUESTIONS LEFT OPEN EARLIER: " + _oq
+    _owe = ""
+    try:                                               # 2026-11-20 (v4 step 3): what Kino still owes him, so the intuition can
+        import kino_commit as _KCr                     # notice when he calls it off (a person is released from a promise)
+        _pu = set([uid] + [u for u, p in (json.load(open(os.path.join(HERE, "persons.json"), encoding="utf-8")) or {}).items()
+                           if p == _person_of(uid)])
+        _ow = [x for x in _KCr._load()["items"] if x.get("status") == "open" and x.get("uid") in _pu][-12:]
+        _owe = " | ".join("[%s] %s (said %s)" % (x["id"], x["what"], time.strftime("%d/%m", time.gmtime(float(x["t"])))) for x in _ow)
+    except Exception:
+        _owe = ""
 
-    user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
+    user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
         cues or "-", "-" if local_hour is None else "%02dh" % local_hour, ("KINO'S VALUES: %s\n" % _vals) if _vals else "",
+        ("WHAT KINO SAID HE WOULD DO (still open): %s\n" % _owe) if _owe else "",
         ("TRUE FACTS ABOUT KINO HIMSELF (measured by the app - when Kino states these, it is NOT a slip): %s\n" % _kt) if _kt else "",
         _transcript(M))
     try:
@@ -133,6 +144,19 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         return None
     r = {k: " ".join(str(j.get(k) or "").split())[:160] for k in ("mood", "energy", "engaged", "reaching_for", "on_his_mind")}
     r["next"] = str(j.get("next") or "").lower().strip()
+    try:                                               # 2026-11-20 (v4 step 3): he called something off -> Kino is released
+        _rel = j.get("released") or []                 # from it (not kept, not broken: let go, like a person)
+        if isinstance(_rel, str):
+            _rel = re.findall(r"c\d+", _rel)
+        if _rel and _owe:
+            import kino_commit as _KCx
+            _mine = {x["id"]: x for x in _KCx._load()["items"] if x.get("status") == "open"}
+            for _i in [str(i).strip() for i in _rel][:12]:
+                if _i in _mine and ("[%s]" % _i) in _owe:
+                    _KCx.resolve(_mine[_i]["cid"], _i, "released", "he called it off")
+                    r.setdefault("released", []).append(_mine[_i]["what"])
+    except Exception:
+        pass
     r["calls"] = str(j.get("calls_for_answer") or "").lower().strip()[:10]
     r["confused"] = str(j.get("confused") or "").lower().startswith("y")
     r["teach"] = str(j.get("teaching_moment") or "").lower().startswith("y")
