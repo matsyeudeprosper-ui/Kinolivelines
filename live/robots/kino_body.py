@@ -77,7 +77,10 @@ def _typical_spend(d):
             continue
         D[time.strftime("%Y-%m-%d", time.gmtime(j["t"]))] = D.get(time.strftime("%Y-%m-%d", time.gmtime(j["t"])), 0) + float(j.get("usd") or 0)
     today = time.strftime("%Y-%m-%d", time.gmtime())
-    V = [v for k, v in sorted(D.items()) if k != today][-7:]
+    # 2026-11-20 (watch: Kino told Pekos he felt "drained" and invented why): the 8 days of the login outage (11-12..11-20)
+    # cost ~0 $, so the median "usual day" became 0.00 and an ordinary 1.27 $ read as exhaustion. A day he could barely
+    # think (outage, limit) is not a usual day: only days with real activity count (the last 7 of them, 30 days back).
+    V = [v for k, v in sorted(D.items()) if k != today and v >= 0.5][-7:]
     d["typ"], d["typ_t"] = (statistics.median(V) if V else 10.0), time.time()
     return d["typ"]
 
