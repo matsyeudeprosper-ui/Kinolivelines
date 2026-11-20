@@ -68,7 +68,7 @@ def candidates(person, uid, en=False):
     try:
         import kino_inner as KI
         for f in KI.feelings(uid)[:6]:
-            why = str(f.get("why") or "").strip()
+            why = KI.why_text(f, en) if hasattr(KI, "why_text") else str(f.get("why") or "").strip()
             C.append(("feel:" + f["kind"], float(f["v"]), int(f.get("age_min") or 0),
                       ("you feel %s - %s" % (f["kind"], why)) if why and en else
                       ("tu ressens : %s - %s" % (f["kind"], why)) if why else
@@ -280,9 +280,12 @@ def stream_line(person, en=False):
     if P.get("stage"):
         X = X + [{"t0": P["stage"]["since"], "t1": now, "text": P["stage"]["text"]}]
     tot = {}
+    w0 = now - 18 * 3600
     for x in X:
         k = x["text"][:90]
-        tot[k] = tot.get(k, 0) + (x["t1"] - x["t0"]) / 60.0
+        # 2026-11-20 (v4 step 2): a stage held since the outage 3 days ago counted 3804 min "today" - only the part inside
+        # the window is today
+        tot[k] = tot.get(k, 0) + max(0.0, x["t1"] - max(x["t0"], w0)) / 60.0
     top = sorted(tot.items(), key=lambda z: -z[1])[:3]
     top = [(k, m) for k, m in top if m >= 5]
     if not top:

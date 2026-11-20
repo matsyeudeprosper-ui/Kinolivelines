@@ -1972,11 +1972,11 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
             pass
 
 
-def block(lang="fr"):
-    """what he did at his computer lately, for what he reads"""
+def block(lang="fr", sessions=True):
+    """what he did at his computer lately, for what he reads (sessions=False: kino_myday tells his day instead, 20/11)"""
     d = _load()
     en = lang == "en"
-    S = [s for s in d.get("sessions") or [] if time.time() - s["t"] < 2 * 86400 and s.get("steps")][-3:]
+    S = [s for s in d.get("sessions") or [] if time.time() - s["t"] < 2 * 86400 and s.get("steps")][-3:] if sessions else []
     P = [p for p in d.get("projects") or [] if p.get("status") == "active"][-4:]
     L = []
     if S:

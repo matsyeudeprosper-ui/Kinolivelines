@@ -19968,8 +19968,16 @@ def _one_memory(user, c):
             L.append(_sb)
     except Exception:
         pass
+    _myd = ""
+    try:                                               # 2026-11-20 (v4 step 1, kino_myday): his TRUE day - from what happened
+        _myd = __import__("kino_myday").block(list(_person_uids(uid) or [uid]), c.get("lang") == "en", int((_tz_of(uid) or {}).get("off") or
+                                                                                     (-60 if c.get("lang") != "en" else 0)))
+        if _myd:
+            L.append(_myd)
+    except Exception:
+        pass
     try:                                               # 2026-11-01 (kino_work): what he did at his own computer
-        _wb = __import__("kino_work").block("en" if c.get("lang") == "en" else "fr")
+        _wb = __import__("kino_work").block("en" if c.get("lang") == "en" else "fr", sessions=not _myd)
         if _wb:
             L.append(_wb)
     except Exception:

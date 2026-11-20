@@ -40,7 +40,8 @@ def readout(feelings, body_line=""):
         v = float(f.get("v") or 0)
         if v < 0.15:
             continue
-        L.append("%s %.2f - %s%s" % (f.get("kind"), v, ("cause recorded: " + f["why"]) if f.get("why") else "NO RECORDED CAUSE",
+        _c = {"over": " (THAT CAUSE IS OVER NOW - the feeling is fading)", "blurred": " (an old cause - he would only half-remember it)"}.get(f.get("cause"), "")
+        L.append("%s %.2f - %s%s" % (f.get("kind"), v, ("cause recorded: " + f["why"] + _c) if f.get("why") else "NO RECORDED CAUSE",
                                       (", %d min old" % f["age_min"]) if f.get("age_min") is not None else ""))
     if body_line:
         L.append("body: " + body_line)

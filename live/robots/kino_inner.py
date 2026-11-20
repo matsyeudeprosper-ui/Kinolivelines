@@ -76,18 +76,65 @@ def feel(kind, delta, uid=None, why=""):
 PROBE = threading.local()      # .extra = slipped-in feelings, .sandbox = a night-test turn (no real behaviour to observe)
 
 
+CAUSE_CLEAR_H = 5.0      # a cause stays clear for a few hours, then a person only half-remembers what started a mood
+
+
+def _body_now():
+    """the body's signals as they are NOW (kino_body cache) -> {felt kind: gap 0..1}"""
+    try:
+        import kino_body as _KB
+        d = _KB._load()
+        g = d.get("gap") or {}
+        return {_KB.FELT[k][1]: float(v or 0) for k, v in g.items() if k in _KB.FELT}
+    except Exception:
+        return {}
+
+
 def feelings(uid=None):
-    """the feelings that are alive now (> 0.15), Kino's own + the ones about this member"""
+    """the feelings that are alive now (> 0.15), Kino's own + the ones about this member.
+    2026-11-20 (v4 step 2, watch: 'hurting - many of your calls failed in the last hour' 3 days after the outage, 'drained' from a
+    false cause, then an invented reason): two dynamics of a real memory of feelings -
+      - a body feeling ends when the body is well again: if the signal that caused it reads normal now, it fades fast
+        (relief, not a mood that lingers for days) and its cause is marked as over;
+      - the cause of a mood blurs with time: after CAUSE_CLEAR_H the 'why' is given as half-remembered ('it started with...'),
+        so asked why, he can say he no longer quite knows instead of building a story"""
     d = _load()
     out = [dict(x) for x in (getattr(PROBE, "extra", None) or [])]
+    body = None
     for key, x in (d.get("feel") or {}).items():
         kind, _, who = key.partition(":")
         if who and who != uid:
             continue
         v = _decayed(x["v"], x["t"], kind)
+        age_h = (time.time() - float(x["t"])) / 3600.0
+        why = x.get("why")
+        clear = "clear"
+        if body is None:
+            body = _body_now()
+        if kind in body and body[kind] < 0.15 and age_h > 0.1:
+            v *= math.pow(0.5, age_h / 0.5)            # the body recovered: the feeling fades within the hour
+            clear = "over"
+        elif why and age_h > CAUSE_CLEAR_H:
+            clear = "blurred"
         if v > 0.15:
-            out.append({"kind": kind, "v": round(v, 2), "why": x.get("why"), "about_them": bool(who), "age_min": int((time.time() - float(x["t"])) / 60)})
+            out.append({"kind": kind, "v": round(v, 2), "why": why, "about_them": bool(who), "age_min": int(age_h * 60),
+                        "cause": clear})
     return sorted(out, key=lambda z: -z["v"])
+
+
+def why_text(f, en=False):
+    """how he can honestly say where a feeling comes from, the way a person remembers it"""
+    why = str(f.get("why") or "").strip()
+    if not why:
+        return ""
+    h = int(f.get("age_min") or 0) / 60.0
+    ago = ("%d h ago" % h if h >= 1 else "%d min ago" % f.get("age_min", 0)) if en else ("il y a %d h" % h if h >= 1 else "il y a %d min" % f.get("age_min", 0))
+    if f.get("cause") == "over":
+        return ("it came from: %s (%s) - that is over now" if en else "ça venait de : %s (%s) - c'est fini maintenant") % (why, ago)
+    if f.get("cause") == "blurred":
+        return (("you no longer quite know why - it started %s with: %s" if en else
+                 "tu ne sais plus très bien pourquoi - ça a commencé %s avec : %s") % (ago, why))
+    return why
 
 
 # ---------------------------------------------------------------- affect (2026-10-23, owner: "even more human, real")
