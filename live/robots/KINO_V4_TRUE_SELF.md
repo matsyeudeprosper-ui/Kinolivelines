@@ -58,3 +58,17 @@ never canned sentences; he stays a friend, never a support agent.
   embarrassment, and "oublie pour le Nasdaq" appraised as SAD 0.61 -> next turn he refused a promise "I couldn't keep the
   Nasdaq one" (untrue). Also: the kinochat business rulebook ("WHAT IS FREE AND WHAT IS PAID") = 17.7k chars = 44 % of every
   prompt, even on "how are you" -> recall it only when work is in the air.
+- 2026-11-21 ~01:30 UTC: STEP 4 parts A-C DONE (commit 7ffdba13). A: kino_one.work_in_air(chat, event) (live job/pay/file
+  < 7 days not cancelled, open mission, job events, kino_read "wants_done" < 30 min, request words in many languages) ->
+  full know-how, else _CORE_FREE_PAID (559 chars). Measured: small-talk prompt 38.8k -> 21.8k chars; test kctest996: small
+  talk natural ("Les cartons n'ont pas gagné ?"), "un site pour ma boulangerie" -> prices right (59 / 39). B: kino_psyche
+  .from_read - his own feeling from what happens TO HIM (laugh, flat joke, slip, taught, regard x0.4, their mood x0.15);
+  empathy separate ("worried for them" only when val <= -0.5); kino_read knows WHAT KINO REALLY CAN DO (no false slips).
+  C: half-lives embarrassment/embarrassed 1 h, sad 2 h, surprised 0.5 h; stage line: "you rarely name it, it shows in your
+  words; you say it when asked or to someone close".
+  EMBEDDINGS ready for part D: Ollama reinstalled 0.40.16 (its 11-09 auto-update had emptied lib\ollama -> llama-server
+  missing), runs as service OllamaServe only (tray app + its Startup shortcut removed -> C:\ollama_dl\startup_backup, it
+  is the auto-updater), model bge-m3 (multilingual, 1024 dims): fr->en 0.83, en->sw/fr 0.72/0.68, es->es 0.77; CPU ~0.8 s
+  per text, 9 s cold load. Owner: if Ollama fails -> OpenAI paid embeddings, with a fallback when GPT has no credit.
+  NEXT (part D): working memory - embed memory items once (background, cached per model), at reply time embed the cue
+  (their last messages + stage) and keep the most relevant items; feelings in ONE place (now in 4-5 blocks); already-said.
