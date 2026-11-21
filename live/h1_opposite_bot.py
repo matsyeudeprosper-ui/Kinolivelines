@@ -5,8 +5,8 @@ The owner's rules, exactly:
      closed bullish -> SELL, closed bearish -> BUY (a flat candle: nothing).
   2. Take-profit = +1 $ on the trade. Stop-loss = -3 $ on the trade (owner 11-21; was "no SL").
      Breakeven (owner 11-21): once price has moved 80% of the way to the TP, the SL moves to the entry price.
-  3. Exit against us on an M1 CLOSE beyond the closed H1 candle: a SELL closes when an M1 candle closes above that
-     candle's HIGH; a BUY closes when an M1 candle closes below its LOW.
+  3. Exit against us as soon as price TOUCHES the closed H1 candle's extreme (owner 11-21; was "an M1 close beyond"):
+     a SELL closes when price reaches that candle's HIGH; a BUY closes when price reaches its LOW.
   4. At the next H1 open the trade still open is closed (win or loss) and the next one starts.
 
 Only positions with this bot's MAGIC are ever touched. Log: live/h1_opposite_bot.log, state: live/h1_opposite_state.json
@@ -275,16 +275,16 @@ def main():
             # rule 2: -3 $ SL on every trade, breakeven at 80% to TP
             for p in my_positions():
                 manage_sl(p)
-            # rule 3: an M1 close beyond the closed H1 candle, against the trade
-            m1 = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 1)
-            if m1 is not None and len(m1) and int(m1[0]["time"]) != last_m1:
-                last_m1 = int(m1[0]["time"])
-                mc = float(m1[0]["close"])
+            # rule 3 (owner 11-21: no more waiting for an M1 close): price TOUCHES the closed H1 candle's high (SELL) or
+            # low (BUY) -> close at once. Chart price = bid, same price the H1 high/low are built from. Checked every second.
+            tk = mt5.symbol_info_tick(SYMBOL)
+            if tk is not None:
+                px = float(tk.bid)
                 for p in my_positions():
-                    if p.type == mt5.POSITION_TYPE_SELL and s.get("high") is not None and mc > float(s["high"]):
-                        close(p, "M1 closed %.2f above H1 high %.2f" % (mc, s["high"]))
-                    elif p.type == mt5.POSITION_TYPE_BUY and s.get("low") is not None and mc < float(s["low"]):
-                        close(p, "M1 closed %.2f below H1 low %.2f" % (mc, s["low"]))
+                    if p.type == mt5.POSITION_TYPE_SELL and s.get("high") is not None and px >= float(s["high"]):
+                        close(p, "price %.2f touched H1 high %.2f" % (px, s["high"]))
+                    elif p.type == mt5.POSITION_TYPE_BUY and s.get("low") is not None and px <= float(s["low"]):
+                        close(p, "price %.2f touched H1 low %.2f" % (px, s["low"]))
             time.sleep(1)
         except Exception as e:
             say("ERROR %s - reconnecting in 20 s" % str(e)[:200])
