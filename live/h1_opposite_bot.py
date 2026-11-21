@@ -3,7 +3,8 @@
 The owner's rules, exactly:
   1. At the start of every new hour (the H1 candle just closed), open a trade OPPOSITE to that candle:
      closed bullish -> SELL, closed bearish -> BUY (a flat candle: nothing).
-  2. No stop-loss. Take-profit = +1 $ on the trade.
+  2. Take-profit = +1 $ on the trade. Stop-loss = -3 $ on the trade (owner 11-21; was "no SL").
+     Breakeven (owner 11-21): once price has moved 80% of the way to the TP, the SL moves to the entry price.
   3. Exit against us on an M1 CLOSE beyond the closed H1 candle: a SELL closes when an M1 candle closes above that
      candle's HIGH; a BUY closes when an M1 candle closes below its LOW.
   4. At the next H1 open the trade still open is closed (win or loss) and the next one starts.
@@ -26,6 +27,8 @@ NEST_ID = "kino"
 SYMBOL = "BTCUSD"
 VOLUME = 0.01
 TP_USD = 1.0
+SL_USD = 3.0          # owner 11-21: every trade gets a -3 $ stop-loss (server side)
+BE_AT = 0.80          # owner 11-21: at 80% of the way to TP, move the SL to the entry (breakeven)
 MAGIC = 2026112001
 COMMENT = "H1opp"
 
@@ -169,26 +172,71 @@ def close(p, why):
     return ok
 
 
-def tp_price(side, entry):
-    """the price where this trade makes +TP_USD (the broker's own profit formula)"""
+def usd_dist(side, entry, usd):
+    """the price distance worth `usd` dollars on this trade (the broker's own profit formula)"""
     otype = mt5.ORDER_TYPE_BUY if side == "BUY" else mt5.ORDER_TYPE_SELL
     one = mt5.order_calc_profit(otype, SYMBOL, VOLUME, entry, entry + (1.0 if side == "BUY" else -1.0))
     per_point = abs(one or 0) or (mt5.symbol_info(SYMBOL).trade_contract_size * VOLUME)
-    dist = TP_USD / per_point
-    info = mt5.symbol_info(SYMBOL)
-    return round(entry + dist if side == "BUY" else entry - dist, info.digits)
+    return usd / per_point
+
+
+def tp_price(side, entry):
+    """the price where this trade makes +TP_USD"""
+    dist = usd_dist(side, entry, TP_USD)
+    return round(entry + dist if side == "BUY" else entry - dist, mt5.symbol_info(SYMBOL).digits)
+
+
+def sl_price(side, entry):
+    """the price where this trade loses SL_USD"""
+    dist = usd_dist(side, entry, SL_USD)
+    return round(entry - dist if side == "BUY" else entry + dist, mt5.symbol_info(SYMBOL).digits)
+
+
+_last_try = {}
+
+
+def set_sl(p, sl, why):
+    """move the server-side SL of position p (TP kept); one try per ticket every 10 s so a refusal never spams"""
+    if time.time() - _last_try.get(p.ticket, 0) < 10:
+        return False
+    _last_try[p.ticket] = time.time()
+    r = mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "symbol": SYMBOL, "position": p.ticket,
+                        "sl": sl, "tp": p.tp, "magic": MAGIC})
+    ok = r is not None and r.retcode == mt5.TRADE_RETCODE_DONE
+    say("SL %s #%d -> %.2f (%s) -> %s" % ("BUY" if p.type == mt5.POSITION_TYPE_BUY else "SELL", p.ticket, sl, why,
+                                         "ok" if ok else "FAILED %s" % (r and (r.retcode, r.comment),)))
+    return ok
+
+
+def manage_sl(p):
+    """rule 2: every trade has the -3 $ SL; at 80% of the way to the TP the SL goes to the entry (breakeven)"""
+    buy = p.type == mt5.POSITION_TYPE_BUY
+    side = "BUY" if buy else "SELL"
+    entry = p.price_open
+    tp = p.tp or tp_price(side, entry)
+    moved = (p.price_current - entry) if buy else (entry - p.price_current)
+    at_be = p.sl and ((p.sl >= entry) if buy else (p.sl <= entry))
+    if not at_be and moved >= BE_AT * abs(tp - entry):
+        set_sl(p, entry, "breakeven, price %.2f reached 80%% to TP" % p.price_current)
+    elif not p.sl:
+        set_sl(p, sl_price(side, entry), "-%.0f $ stop" % SL_USD)
 
 
 def open_trade(side, bar_t):
     tick = mt5.symbol_info_tick(SYMBOL)
     entry = tick.ask if side == "BUY" else tick.bid
     tp = tp_price(side, entry)
-    r = send({"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": VOLUME,
-              "type": mt5.ORDER_TYPE_BUY if side == "BUY" else mt5.ORDER_TYPE_SELL, "price": entry, "tp": tp,
-              "deviation": 200, "magic": MAGIC, "comment": COMMENT})
+    sl = sl_price(side, entry)
+    req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": VOLUME,
+           "type": mt5.ORDER_TYPE_BUY if side == "BUY" else mt5.ORDER_TYPE_SELL, "price": entry, "tp": tp, "sl": sl,
+           "deviation": 200, "magic": MAGIC, "comment": COMMENT}
+    r = send(req)
+    if r is not None and r.retcode == 10016:      # invalid stops (price jumped): open without SL, manage_sl adds it next second
+        req.pop("sl")
+        r = send(req)
     ok = r is not None and r.retcode == mt5.TRADE_RETCODE_DONE
-    say("OPEN %s %.2f %s at %.2f tp %.2f (no SL) for bar %s -> %s" % (
-        side, VOLUME, SYMBOL, entry, tp, time.strftime("%H:%M", time.gmtime(bar_t)),
+    say("OPEN %s %.2f %s at %.2f tp %.2f sl %.2f for bar %s -> %s" % (
+        side, VOLUME, SYMBOL, entry, tp, sl, time.strftime("%H:%M", time.gmtime(bar_t)),
         "ok #%s" % r.order if ok else "FAILED %s" % (r and (r.retcode, r.comment),)))
     return ok
 
@@ -224,6 +272,9 @@ def main():
                 if s["side"]:
                     open_trade(s["side"], cur_t)
                 save_state(s)
+            # rule 2: -3 $ SL on every trade, breakeven at 80% to TP
+            for p in my_positions():
+                manage_sl(p)
             # rule 3: an M1 close beyond the closed H1 candle, against the trade
             m1 = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 1)
             if m1 is not None and len(m1) and int(m1[0]["time"]) != last_m1:
