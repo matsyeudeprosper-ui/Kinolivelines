@@ -22376,6 +22376,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             # 2026-10-31 (kino_affect): how good the pictured reaction must be is set by his state (tense: stricter; calm and
             # content: he trusts his first draft more)
             _bar = float((_kn or {}).get("sim_bar", -0.1)) if "_kn" in dir() else -0.1
+            # 2026-11-21 (v4 step 5, measured 11-20: 6 of 52 replies to a person were rewritten after the draft): he now
+            # pictures their reaction WHILE he thinks (SELF), so what he writes is what he sends; this check after the draft
+            # is only a safety net for a reply he clearly expects to land badly (his own messages keep the stricter bar)
+            if not event:
+                _bar = min(_bar, -0.45)
             if _sim and (float(_sim.get("valence") or 0) < (max(0.3, _bar) if event and str(_sim.get("risk") or "").strip() else _bar)):
                 _KO._log(cid, "IMAGINE", "%s | %s" % (_sim.get("they_feel"), _sim.get("risk")))
                 r4 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
@@ -22484,6 +22489,11 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             import kino_introspect as _KIi
             _ro = _inner_readout(uid)
             _gr = _KIi.check(W, _person(uid), say, _ro, log=os.path.join(DIR, "robots", "kino_introspect.log"))
+            # 2026-11-21 (v4 step 5): a feeling he LEFT OUT is not a fault (a person rarely names what he feels - step 4);
+            # only a cause he made up is corrected before it goes out
+            if _gr and not _gr.get("invented"):
+                _KO._log(cid, "INTROSPECT_NOTED", json.dumps(_gr, ensure_ascii=False)[:200])
+                _gr = None
             if _gr:
                 _KO._log(cid, "INTROSPECT", json.dumps(_gr, ensure_ascii=False)[:200])
                 r6 = _KO.turn(W, c, _ff, _mm1, _nn, event, lang, check=_KO.unknown_figures, log=os.path.join(CHAT_DIR, cid + ".log"),
