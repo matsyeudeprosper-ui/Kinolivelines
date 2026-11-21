@@ -26319,6 +26319,8 @@ def _urge_tick():
                                 _pt = ""
                             _KPo.refresh(_rc().W, _md, _wd, _pt)
                         threading.Thread(target=_po, daemon=True).start()
+                    elif pm == "kino" and _KPo.research_due():      # owner 21/11 "Go": he looks into his own questions
+                        threading.Thread(target=lambda: _KPo.research(_rc().W), daemon=True).start()
                 except Exception:
                     pass
                 try:                                   # 2026-11-06 (owner: "build now"): previews for the waiting leads, on the owner's budget
@@ -26505,6 +26507,12 @@ def _urge_tick():
                             _en = c.get("lang") == "en"
                             _md = __import__("kino_myday").block(list(_person_uids(uid) or [uid]), _en, int(
                                 (_tz_of(uid) or {}).get("off") or (0 if _en else -60)))
+                            try:                       # what he looked into himself lately - "he'd want to hear this"
+                                _fdt = __import__("kino_preocc").findings_text(trading_ok=c.get("app") != "kinochat")
+                                if _fdt:
+                                    _md = str(_md or "") + "\n\nTHINGS YOU LOOKED INTO YOURSELF LATELY (true, with sources):\n" + _fdt
+                            except Exception:
+                                pass
                             _ab = ""
                             try:
                                 _ab = "\n".join(ln for ln in str(_one_memory(ow, c) or "").split("\n")

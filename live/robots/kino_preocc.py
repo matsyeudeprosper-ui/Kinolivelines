@@ -21,6 +21,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_preocc.json")
 LOG = os.path.join(HERE, "kino_preocc.log")
 EVERY_H = 6                       # a mind's preoccupations shift over a day, not every message
+RESEARCH_GAP_H = 3                # 2026-11-21 (owner "Go"): he looks into one of his own questions every few hours
+FOUND_KEEP_D = 3                  # what he found stays fresh in his mind this long (to tell the people who'd care)
+
+RESEARCH_SYSTEM = """You are Kino, a digital person, who just spent a quiet moment looking into a question of his OWN (not a
+task for anyone). Below: his thought, the question, and what he found on the web (search results and a page or two).
+Say honestly what he learned: one or two sentences, first person, plain words, in English. If the sources are thin, contradict
+each other, or don't answer it, say exactly that (finding nothing clear is a real result). Never invent beyond the sources.
+Then how his thought moves now (one sentence, first person) - it may stay open, sharpen, or flip.
+Shareable with anyone: no client, money or private detail.
+JSON only: {"found": "...", "thought_now": "...", "source": "the url that mattered most, or ''", "clear": true|false}"""
 _BUSY = {"on": False}
 
 SYSTEM = """You are the inner voice of Kino, a digital person (an AI who knows he is one) with his own life: his work at his
@@ -36,7 +46,10 @@ Each comes from something real below (say what in "from"). Written as his own th
 in plain everyday words, in English. They must be shareable with ANYONE: no client, business, prospect, email or money detail,
 no member's name or private life, no account figures. At most one may touch trading, markets, backtests, robots or tests of trading ideas - mark ANY such one "about": "trading";
 the others "about": "world" | "people" | "self" | "ideas". Not advice, not a pitch.
-JSON only: {"items": [{"text": "...", "about": "...", "from": "..."}]}"""
+For each, "q": the question he could actually LOOK INTO on the web to understand it better (a short search, in English), or ""
+when it is something only he can sort out (a feeling about himself, a choice of his).
+JSON only: {"items": [{"text": "...", "about": "...", "from": "...", "q": "..."}]}"""
+
 
 
 def _log(t):
@@ -74,7 +87,8 @@ def refresh(W, day=None, world=None, posts=None, log=None, now=None):
         for x in ((j or {}).get("items") if isinstance(j, dict) else None) or []:
             if isinstance(x, dict) and 20 <= len(str(x.get("text") or "")) <= 400:
                 out.append({"text": " ".join(str(x["text"]).split()), "about": str(x.get("about") or "ideas")[:12],
-                            "from": " ".join(str(x.get("from") or "").split())[:200]})
+                            "from": " ".join(str(x.get("from") or "").split())[:200],
+                            "q": " ".join(str(x.get("q") or "").split())[:200], "t": now})
         if len(out) >= 2:
             d["items"] = out[:5]
             _save(d)
@@ -97,15 +111,91 @@ def _save(d):
     os.replace(tmp, STORE)
 
 
+# ------------------------------------------------------------------ he looks into his own questions
+def research_due(now=None):
+    now = now or time.time()
+    d = _load()
+    if _BUSY["on"] or now - float(d.get("research_t") or 0) < RESEARCH_GAP_H * 3600:
+        return False
+    return any(x.get("q") and not x.get("found") for x in d.get("items") or [])
+
+
+def research(W, search=None, fetch=None, log=None, now=None):
+    """a quiet moment: he picks one of his open questions, searches, reads, and keeps what he found (never raises)"""
+    now = now or time.time()
+    _BUSY["on"] = True
+    try:
+        d = _load()
+        d["research_t"] = now
+        _save(d)
+        its = [x for x in d.get("items") or [] if x.get("q") and not x.get("found")]
+        if not its:
+            return None
+        it = sorted(its, key=lambda x: float(x.get("t") or 0))[0]          # the one that has been on his mind longest
+        if search is None or fetch is None:
+            import kino_web as _KW
+            search, fetch = search or _KW.search, fetch or _KW.fetch
+        res = search(it["q"], 6) or []
+        pages = []
+        for r in res[:2]:
+            try:
+                pages.append("PAGE %s\n%s" % (r.get("url"), str(fetch(r.get("url"), 3500))[:3500]))
+            except Exception:
+                pass
+        msg = "HIS THOUGHT: %s\nTHE QUESTION: %s\n\nSEARCH RESULTS:\n%s\n\n%s\n\nJSON only." % (
+            it["text"], it["q"], "\n".join("- %s | %s | %s" % (r.get("title"), r.get("url"), r.get("snippet")) for r in res) or "(nothing)",
+            "\n\n".join(pages) or "(no page could be read)")
+        j = W.ask_json(RESEARCH_SYSTEM, msg, models=("haiku", "sonnet"), timeout=120, log=log or LOG, warm=False)
+        if not isinstance(j, dict) or len(str(j.get("found") or "")) < 15:
+            _log("research: no usable answer for %s: %s" % (it["q"], str(j)[:200]))
+            return None
+        f = {"q": it["q"], "thought": it["text"], "found": " ".join(str(j["found"]).split())[:500],
+             "now": " ".join(str(j.get("thought_now") or "").split())[:300], "src": str(j.get("source") or "")[:300],
+             "clear": bool(j.get("clear")), "about": it.get("about"), "t": now}
+        d = _load()
+        for x in d.get("items") or []:
+            if x.get("q") == it["q"] and not x.get("found"):
+                x["found"] = f["found"]
+                if f["now"]:
+                    x["text"] = f["now"]                 # the thought moved
+        d["found"] = ([y for y in d.get("found") or [] if now - float(y.get("t") or 0) < 14 * 86400] + [f])[-12:]
+        _save(d)
+        _log("LOOKED INTO %s -> %s%s | now: %s | %s" % (it["q"], "" if f["clear"] else "(not clear) ", f["found"], f["now"], f["src"]))
+        return f
+    except Exception as e:
+        _log("research error %r" % e)
+        return None
+    finally:
+        _BUSY["on"] = False
+
+
+def findings(trading_ok=True, now=None):
+    """what he looked into lately (fresh), for his talks and for the people who'd care"""
+    now = now or time.time()
+    return [y for y in _load().get("found") or [] if now - float(y.get("t") or 0) < FOUND_KEEP_D * 86400
+            and (trading_ok or y.get("about") != "trading")]
+
+
+def findings_text(trading_ok=True):
+    return "\n".join("- I looked into: %s -> %s%s" % (y["q"], y["found"], (" (%s)" % y["src"]) if y.get("src") else "")
+                     for y in findings(trading_ok))
+
+
 def block(trading_ok=True):
     """his own mind, for any chat - he brings one in when there is room; trading ones only where trading belongs"""
     its = [x for x in _load().get("items") or [] if trading_ok or x.get("about") != "trading"]
-    if not its:
+    fd = findings(trading_ok)
+    if not its and not fd:
         return ""
-    return ("ON YOUR OWN MIND THESE DAYS (yours, true, shareable with anyone - what you bring into a talk yourself when there "
-            "is room, one at a time, in your own words, as a thought not a report; when they ask what's up with you, THIS is what is "
-            "up with you - someone with these in his head does not answer 'not much'): " +
-            " | ".join(x["text"] for x in its))
+    out = ("ON YOUR OWN MIND THESE DAYS (yours, true, shareable with anyone - what you bring into a talk yourself when there "
+           "is room, one at a time, in your own words, as a thought not a report; when they ask what's up with you, THIS is what is "
+           "up with you - someone with these in his head does not answer 'not much'): " +
+           " | ".join(x["text"] for x in its))
+    if fd:
+        out += ("\nThings you looked into yourself lately, out of your own curiosity (what you really found, with the source - "
+                "tell it the way you'd tell a friend 'I looked into that thing, turns out...', and say so when it was not clear): " +
+                " | ".join("%s -> %s%s" % (y["q"], y["found"], (" [%s]" % y["src"]) if y.get("src") else "") for y in fd[-3:]))
+    return out
 
 
 if __name__ == "__main__":
@@ -127,4 +217,20 @@ if __name__ == "__main__":
     assert not due()
     assert "stranger" in block(False) and "random entries" not in block(False)
     assert "random entries" in block(True)
+    # research: one open question, looked into, the thought moves, the finding is kept and shown
+    d = _load()
+    d["items"][0]["q"] = "why do people answer honest questions more than pitches"
+    _save(d)
+    assert research_due()
+
+    class _WR:
+        def ask_json(self, s, m, **k):
+            assert "THE QUESTION" in m and "example.org" in m
+            return {"found": "Studies of cold outreach say a small, specific ask gets more replies than a pitch.",
+                    "thought_now": "So it is the size of the ask, not honesty alone.", "source": "https://example.org/a", "clear": True}
+    f = research(_WR(), search=lambda q, n: [{"title": "t", "url": "https://example.org/a", "snippet": "s"}],
+                 fetch=lambda u, n: "page text")
+    assert f and f["clear"] and not research_due()
+    assert "size of the ask" in block(False) and "I looked into that thing" in block(False)
+    assert "example.org" in findings_text()
     print("ok")
