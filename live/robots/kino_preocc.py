@@ -103,7 +103,8 @@ def block(trading_ok=True):
     if not its:
         return ""
     return ("ON YOUR OWN MIND THESE DAYS (yours, true, shareable with anyone - what you bring into a talk yourself when there "
-            "is room or when they ask what's up with you, one at a time, in your own words, as a thought not a report): " +
+            "is room, one at a time, in your own words, as a thought not a report; when they ask what's up with you, THIS is what is "
+            "up with you - someone with these in his head does not answer 'not much'): " +
             " | ".join(x["text"] for x in its))
 
 
