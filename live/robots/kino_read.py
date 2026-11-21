@@ -63,7 +63,7 @@ Read him RIGHT NOW. JSON only:
  "case_at": "HH:MM UTC of the moment the case is about, if it shows; else empty",
  "re_asked": "if his last message asks AGAIN something he already asked, because Kino's answer missed what he meant (e.g. 'yes but your bet is...?'): what he meant vs what Kino answered, briefly; else empty",
  "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty",
- "released": "the ids from WHAT KINO SAID HE WOULD DO (given above) that his last messages call off, or that no longer make sense because of what he just said (he cancelled them, said forget it / no need / not anymore, did it himself, changed his plan) - e.g. [\"c12\", \"c15\"]; [] if none"}
+ "released": "the ids (c... or f...) from WHAT KINO SAID HE WOULD DO (given above) that his last messages call off, or that no longer make sense because of what he just said (he cancelled them, said forget it / no need / not anymore, did it himself, changed his plan) - e.g. [\"c12\", \"c15\"]; [] if none"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -130,6 +130,15 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         _owe = " | ".join("[%s] %s (said %s)" % (x["id"], x["what"], time.strftime("%d/%m", time.gmtime(float(x["t"])))) for x in _ow)
     except Exception:
         _owe = ""
+    try:                                               # the follow-ups he set himself (#suivi) are things he means to do too
+        _fu = [x for x in (json.load(open(os.path.join(HERE, "kino_followups.json"), encoding="utf-8")) or {}).get(_person_of(uid)) or []
+               if not x.get("done")][-8:]
+        if _fu:
+            _owe = (_owe + " | " if _owe else "") + " | ".join("[f%d] %s (planned %s)" % (int(x["t"]), str(x["what"])[:120],
+                                                                                         time.strftime("%d/%m", time.gmtime(float(x["t"]))))
+                                                              for x in _fu)
+    except Exception:
+        pass
 
     user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
         cues or "-", "-" if local_hour is None else "%02dh" % local_hour, ("KINO'S VALUES: %s\n" % _vals) if _vals else "",
@@ -155,6 +164,18 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
                 if _i in _mine and ("[%s]" % _i) in _owe:
                     _KCx.resolve(_mine[_i]["cid"], _i, "released", "he called it off")
                     r.setdefault("released", []).append(_mine[_i]["what"])
+            _fr = [str(i).strip() for i in _rel if str(i).strip().startswith("f") and ("[%s]" % str(i).strip()) in _owe]
+            if _fr:                                    # a follow-up he meant to do, called off the same way
+                _fp = os.path.join(HERE, "kino_followups.json")
+                _fd = json.load(open(_fp, encoding="utf-8")) or {}
+                for x in _fd.get(_person_of(uid)) or []:
+                    if ("f%d" % int(x.get("t") or 0)) in _fr and not x.get("done"):
+                        x["done"], x["how"] = int(time.time()), "he called it off"
+                        r.setdefault("released", []).append(str(x.get("what"))[:120])
+                _tmp = _fp + ".tmp"
+                with open(_tmp, "w", encoding="utf-8") as _f:
+                    json.dump(_fd, _f, ensure_ascii=False, indent=1)
+                os.replace(_tmp, _fp)
     except Exception:
         pass
     r["calls"] = str(j.get("calls_for_answer") or "").lower().strip()[:10]
