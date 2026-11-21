@@ -381,6 +381,36 @@
    "date": "2026-11-18",
    "note": "75 trades, 60 % gagnés contre 44 % pour les autres ; les deux moitiés sont d’accord.",
    "status": "open"
+  },
+  {
+   "id": "ask_1795250032_flip_after_loss",
+   "seed": "flip_after_loss",
+   "seed_fr": "Changement de sens juste après une perte",
+   "seed_en": "Change of direction right after a loss",
+   "by": "labo",
+   "date": "2026-11-21",
+   "note": "110 trades, 40 % gagnés contre 52 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
+  },
+  {
+   "id": "ask_1795250032_flip_day",
+   "seed": "flip_day",
+   "seed_fr": "Changement de sens pris entre 8 h et minuit UTC",
+   "seed_en": "Change of direction taken between 08:00 and midnight UTC",
+   "by": "labo",
+   "date": "2026-11-21",
+   "note": "116 trades, 40 % gagnés contre 52 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
+  },
+  {
+   "id": "ask_1795250032_loss_quick15",
+   "seed": "loss_quick15",
+   "seed_fr": "Trade repris moins de 15 minutes après une perte",
+   "seed_en": "Trade taken less than 15 minutes after a loss",
+   "by": "labo",
+   "date": "2026-11-21",
+   "note": "54 trades, 28 % gagnés contre 52 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
