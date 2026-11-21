@@ -72,9 +72,49 @@ def _fr_live():
     return _FRC["ok"]
 
 
+FOOTER_TR = os.path.join(HERE, "kino_footer_tr.json")
+_FOOT_EN = ("Kino, AI assistant at {brand}",
+            "You are receiving this because your business is listed publicly online. Reply STOP and I will not write again.")
+
+
+def _footer_lines(lang):
+    """2026-11-21 (watch): the footer existed only in fr/en, so every ro/pt/es/el/tr email failed QA on 'the footer is in
+    English' (128 QA fails). The two lines are translated ONCE per language by the model and cached in kino_footer_tr.json;
+    the word STOP stays as it is (kino_mail's STOP_RE honours it). No translation yet / it fails -> English lines."""
+    lang = str(lang or "en").lower()[:2]
+    try:
+        cache = json.load(open(FOOTER_TR, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    got = cache.get(lang)
+    if isinstance(got, list) and len(got) == 2:
+        return got
+    try:
+        import robot_warm as W
+        v = W.ask_json("You translate an email footer into the language with ISO code '%s', natural and correct, as a small "
+                       "business owner there would read it. Keep '{brand}', 'Kino' and the word STOP exactly as they are (STOP in "
+                       "Latin capitals). Answer JSON only: {\"lines\": [line1, line2]}" % lang,
+                       json.dumps({"lines": list(_FOOT_EN)}, ensure_ascii=False), models=("sonnet",), timeout=120, warm=False)
+        out = v.get("lines") if isinstance(v, dict) else None
+        if (isinstance(out, list) and len(out) == 2 and "{brand}" in out[0] and "STOP" in out[1]
+                and all(10 < len(str(x)) < 300 for x in out)):
+            cache[lang] = [str(x) for x in out]
+            json.dump(cache, open(FOOTER_TR + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            os.replace(FOOTER_TR + ".tmp", FOOTER_TR)
+            _log("FOOTER translated to %s" % lang)
+            return cache[lang]
+        _log("FOOTER-TR bad answer for %s: %s" % (lang, str(v)[:160]))
+    except Exception as e:
+        _log("FOOTER-TR-ERR %s %s" % (lang, e))
+    return list(_FOOT_EN)
+
+
 def footer(lang="en"):
     o = offer()
     a = o.get("postal_address") or ""
+    if not str(lang or "en").lower().startswith(("fr", "en")):
+        sig, stop = _footer_lines(lang)
+        return "--\n%s\n%s\n%s\n%s" % (sig.replace("{brand}", o.get("brand", "Kinoverse")), PORTFOLIO, a, stop)
     if str(lang).startswith("fr"):
         return ("--\nKino, assistant IA de %s\n%s\n%s\nVous recevez ce message car votre entreprise est publique en ligne. Répondez STOP "
                 "et je ne vous écrirai plus." % (o.get("brand", "Kinoverse"), PORTFOLIO_FR if _fr_live() else PORTFOLIO, a))

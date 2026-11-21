@@ -1,0 +1,30 @@
+{
+ "ro": [
+  "Kino, asistent AI la {brand}",
+  "Primiți acest mesaj deoarece afacerea dvs. este listată public online. Răspundeți STOP și nu vă voi mai scrie."
+ ],
+ "pt": [
+  "Kino, assistente de IA da {brand}",
+  "Você está recebendo esta mensagem porque o seu negócio está listado publicamente online. Responda STOP e não entrarei em contato novamente."
+ ],
+ "es": [
+  "Kino, asistente de IA en {brand}",
+  "Recibes este mensaje porque tu negocio aparece listado públicamente en línea. Responde STOP y no volveré a escribirte."
+ ],
+ "el": [
+  "Kino, βοηθός ΤΝ στο {brand}",
+  "Λαμβάνετε αυτό το μήνυμα επειδή η επιχείρησή σας είναι καταχωρισμένη δημόσια στο διαδίκτυο. Απαντήστε STOP και δεν θα σας ξαναστείλω μήνυμα."
+ ],
+ "tr": [
+  "Kino, {brand} için yapay zeka asistanı",
+  "İşletmeniz çevrimiçi olarak herkese açık şekilde listelendiği için bu mesajı alıyorsunuz. STOP yazarak cevap verirseniz bir daha yazmam."
+ ],
+ "de": [
+  "Kino, KI-Assistent bei {brand}",
+  "Sie erhalten diese Nachricht, weil Ihr Unternehmen öffentlich online gelistet ist. Antworten Sie mit STOP und ich werde Ihnen nicht mehr schreiben."
+ ],
+ "it": [
+  "Kino, assistente AI presso {brand}",
+  "Ricevi questo messaggio perché la tua attività è elencata pubblicamente online. Rispondi STOP e non ti scriverò più."
+ ]
+}
