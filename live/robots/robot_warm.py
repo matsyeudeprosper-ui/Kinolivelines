@@ -472,10 +472,12 @@ def _codex(system, user, timeout=150, log=None, was=""):
     t0 = time.time()
     fd, outf = tempfile.mkstemp(suffix=".txt")
     os.close(fd)
+    _cwd = tempfile.mkdtemp(prefix="kcodex_")          # an empty folder: it answers, it does not browse our files
     try:
-        prompt = "SYSTEM:\n%s\n\nUSER:\n%s" % (system, user if isinstance(user, str) else json.dumps(user, ensure_ascii=False))
+        prompt = ("Answer the request below directly, as text only - do not run commands, read files or use tools.\n\n"
+                  "SYSTEM:\n%s\n\nUSER:\n%s" % (system, user if isinstance(user, str) else json.dumps(user, ensure_ascii=False)))
         subprocess.run([exe, "exec", "--skip-git-repo-check", "--sandbox", "read-only", "-o", outf, "-"], input=prompt,
-                       text=True, encoding="utf-8", capture_output=True, timeout=min(int(timeout or 150), 180),
+                       text=True, encoding="utf-8", capture_output=True, timeout=min(int(timeout or 150), 240), cwd=_cwd,
                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         txt = (io.open(outf, encoding="utf-8", errors="replace").read() or "").strip() or None
         _bk_log("codex", None if txt else "empty", int((time.time() - t0) * 1000), was, log, txt)
@@ -488,6 +490,44 @@ def _codex(system, user, timeout=150, log=None, was=""):
             os.remove(outf)
         except Exception:
             pass
+        try:
+            os.rmdir(_cwd)
+        except Exception:
+            pass
+
+
+# 2026-11-21 (owner: "find what is eating the Claude subscription" -> "do the 1"): measured 24 h = 42 $ of plan usage, of
+# which his desk (kino_work 52 %), his helper agents (kino_team 21 %) and sales/posts (13 %) - his chats only 10 %. That
+# background work now runs on Codex (the owner's ChatGPT plan, no extra cost, ~40 s a call - fine for background), then the
+# OpenAI API, and only then the Claude plan; conversations with people stay on Claude.
+DESK_SOURCES = ("kino_work", "kino_team", "kino_sales", "kino_post")
+_DESK_FAILS = {"codex": 0, "openai": 0, "until_codex": 0.0, "until_openai": 0.0}
+
+
+def _desk_offload(system, user, model, timeout, log, src):
+    """background desk work off the Claude plan -> text or None (then Claude answers as before)"""
+    now = time.time()
+    if now >= _DESK_FAILS["until_codex"]:
+        r = _codex(system, user, max(int(timeout or 150), 180), log, "desk:" + src)
+        if r:
+            _DESK_FAILS["codex"] = 0
+            return r
+        _DESK_FAILS["codex"] += 1
+        if _DESK_FAILS["codex"] >= 3:                  # Codex down or its plan limit reached: rest it 30 min
+            _DESK_FAILS["until_codex"], _DESK_FAILS["codex"] = now + 1800, 0
+    if now >= _DESK_FAILS["until_openai"]:
+        try:
+            import robot_openai as _ROd
+            r = _ROd.ask_text(system, user, model, timeout, log, None)
+        except Exception:
+            r = None
+        if r:
+            _DESK_FAILS["openai"] = 0
+            return r
+        _DESK_FAILS["openai"] += 1
+        if _DESK_FAILS["openai"] >= 2:
+            _DESK_FAILS["until_openai"], _DESK_FAILS["openai"] = now + 1800, 0
+    return None
 
 
 def _freellm(system, user, timeout=150, log=None, was=""):
@@ -553,6 +593,12 @@ def ask_text(system, user, model="sonnet", timeout=150, log=None, on_text=None, 
         if _ot is not None:
             return _ot
     """the model's whole answer as text (None on failure), from a warm process when one is ready"""
+    if not getattr(_TL, "member", False) and getattr(_TL, "brain", None) is None:
+        _src = _caller().split(":")[0]
+        if _src in DESK_SOURCES:                       # 21/11: background desk work runs off the Claude plan first
+            _od = _desk_offload(system, user, model, timeout, log, _src)
+            if _od is not None:
+                return _od
     _wait_focus(log)
     if getattr(_TL, "brain", None) == "openai" and time.time() > _OA_DOWN["until"]:   # 2026-10-24 (Kino-O): through OpenAI
         try:
