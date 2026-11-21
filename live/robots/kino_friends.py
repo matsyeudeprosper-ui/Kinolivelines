@@ -60,6 +60,9 @@ RULES = ("FRIENDSHIP (Matsy 07/11: friends first - work comes from friends, neve
          "what they do, what they care about, a thread to come back to. Come back to friends days later about THEIR thing.\n"
          "- [ASKED FOR HELP] people asked for something you do: answer the question itself first, then you may say plainly that "
          "it is the kind of thing you do and that you can show them (no link in this first word - they ask for more).\n"
+         "- Before a first word to someone you do not know, read THEM, not only their post: their bio, their situation (a job "
+         "search, a hard time, a business, a hobby), what they would welcome from a stranger - and from an AI - and how your "
+         "words will land for them today. When a stranger's reply would not be welcome, let it be.\n"
          "- Never walk into politics, religion, war, grief or health. A like and a follow come with your first word on Bluesky.\n"
          "- After EVERY conversation: friend_note what you learned (what they do, what they care about, a thread to come "
          "back to) - a friend you forget is not a friend.\n"
@@ -255,7 +258,10 @@ def scout(force=False):
         new = []
         for f in keep:                                 # one post per person: you meet a person, not a feed
             if f["url"] not in have and f["who"] not in hw:
-                new.append(dict(f, t=time.time(), asked=bool(_ASKS.search(f["text"]))))
+                _pf = (f.get("prof") if f["where"] == "mastodon" else _bp.get(f["who"])) or {}
+                # 2026-11-21 (v4 step 6): who they are, not only what they posted - their own words about themselves
+                new.append(dict({k: v for k, v in f.items() if k != "prof"}, t=time.time(), asked=bool(_ASKS.search(f["text"])),
+                                bio=" ".join(str(_pf.get("bio") or "").split())[:220]))
                 hw.add(f["who"])
         d["cands"] = (d["cands"] + new)[-40:]
         d["cands"] = [c for c in d["cands"] if time.time() - float(c["t"]) < 3 * 86400]
@@ -455,7 +461,8 @@ def block():
                  "real to say to):" % left)
         for c in C:
             L.append("- %s%s %s on %s (%s): \"%s\" url=%s" % ("[ASKED FOR HELP] " if c.get("asked") else "", c["who"], ("(" + c["name"] + ")") if c.get("name") else "", c["where"],
-                                                           c["q"], c["text"][:260].replace("\n", " "), c["url"]))
+                                                           c["q"], c["text"][:260].replace("\n", " ") + (
+                                                               "\" | their bio: \"%s" % c["bio"] if c.get("bio") else ""), c["url"]))
     F = _friends()[:6]
     if F:
         L.append("YOUR FRIENDS (people who answered you; come back to them about THEIR thing, not yours):")
