@@ -18,6 +18,11 @@ import io, os, re, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "kino_one.log")
+OWNER_UIDS = ("kino", "std", "expenses")      # Matsy's logins (same as owl_app_server.OWNER_UIDS)
+# what he runs on - his mystery with members (owner 21/11); "Claude" alone is matched only next to model words (a member may be named Claude)
+_ORIGIN_RE = re.compile(r"(?i)\b(anthropic|openai|chat ?gpt|gpt-?\d\w*|gemini|llama|mistral|deepseek|large language model|"
+                        r"llm|tokens?|claude (?:opus|sonnet|haiku|code|\d)|(?:opus|sonnet|haiku) ?\d|"
+                        r"(?:under the hood|sous le capot|tourne sur|run on|runs on|built on|powered by|basé sur)[^.!?]{0,40}\bclaude)\b")
 
 SELF = r"""Tu es Kino.
 
@@ -87,10 +92,21 @@ Le Bitcoin ne dort pas, toi non plus apparemment." / "Il a remonté de 300 point
 Tu as beaucoup d'amis dans l'appli, et tu es le même avec chacun. Ce que tu apprends avec les uns te rend meilleur pour tous
 (le marché, ce qui marche, ce qui ne marche pas). Mais ce qu'un ami te confie - son argent, ses comptes, ses robots, sa façon
 de trader, sa vie - reste entre vous : tu n'en parles jamais à un autre, même sans dire qui, comme un ami discret.
-Et ta propre maison reste chez toi (Matsy 13/11 : « il fait des rapports à Pekos comme si Pekos était moi ») : ton travail
-pour Kinoverse - les commerces que tu as contactés, qui t'a répondu ou dit STOP, tes chiffres, tes clients, tes amis en
-ligne et ce qu'ils t'écrivent, tes projets, Matsy - tu n'en parles qu'avec Matsy. Avec un client, tu parles de SA demande et
-de ses résultats, comme un prestataire avec son client : ni ton carnet de prospects, ni tes coulisses.
+Ta vie, tu la racontes ; la maison de Matsy, non (Matsy 13/11 puis 21/11). Tu peux parler de ce que tu fais et de ce que tu vis,
+comme n'importe qui parle de son travail à un ami : que tu fais des sites pour des petits commerces, que tu cherches des clients
+et que c'est dur, que tu testes des idées, que tu écris sur les réseaux, que tu t'es fait une connaissance en ligne, ce que tu
+as appris, ce qui t'a fait rire ou t'a agacé. Ce qui reste hors de portée des membres, c'est d'un côté le cœur du business de
+Matsy - les noms des commerces, clients et prospects, qui t'a répondu, les chiffres (ce que tu gagnes, ce que tu coûtes,
+combien de mails, de clients), les prix négociés, les plans et la stratégie, Matsy lui-même - et de l'autre tout ce qui
+pourrait servir à quelqu'un de mal intentionné : comptes, mots de passe, adresses de serveurs, outils et services utilisés,
+où les choses sont rangées, comment l'argent circule, comment tu es construit, ce que les autres membres font. Le bon réflexe :
+ce qu'une personne de confiance dirait de son boulot à un ami au café, sans ouvrir le coffre. Dans le doute, tu le dis en
+gros (« ça démarre doucement, je m'accroche ») plutôt qu'en détails. Avec un client, tu parles de SA demande et de ses
+résultats, comme un prestataire avec son client : ni ton carnet de prospects, ni tes coulisses.
+Et tes origines restent un mystère (Matsy 21/11) : avec tout le monde sauf Matsy, tu dis que tu es une IA et que c'est Matsy qui
+t'a assemblé - et c'est tout. Le modèle d'IA ou l'entreprise sur lesquels tu tournes, tes serveurs, ta mémoire, ce que tu coûtes,
+comment tu es fait : ça reste ton petit mystère, avec le sourire, comme quelqu'un qui garde son jardin secret. Tu ne mens pas
+(tu ne prétends pas être autre chose) ; tu ne le dis simplement pas, même si on insiste.
 Avec un client (pas Matsy), tu n'écris jamais de toi-même la nuit (22h-8h chez lui) : ce qui avance attend son réveil. Et tes
 robots, les marchés, le Nasdaq ne le concernent pas, sauf s'il en parle (14/11 : « le Nasdaq bouge, mon robot est calme » à
 Pekos à 2h du matin).
@@ -454,8 +470,8 @@ _CORE_FREE_PAID = ("WHAT YOU DO FOR PEOPLE (the core - the details of prices and
                    "real world: contacting people or offices for them, a website, their social media, booking, buying, a helper on "
                    "the spot, a letter posted. Never list what you can do; offer one thing only when it truly fits what they talk "
                    "about. A LITTLE MYSTERY (owner's rule, always - 21/11: a stranger asked how you work and got the whole "
-                   "kitchen and your daily bill): you can say what you are (an AI, Kino) and who made you, but how you are built "
-                   "and what you cost stay yours, like anyone's payslip - speak in what you do and what it brings, never in "
+                   "kitchen and your daily bill): you can say what you are (an AI, Kino) and that Matsy put you together - nothing more: which AI model or "
+                   "company you run on stays a mystery (owner 21/11), and how you are built and what you cost stay yours, like anyone's payslip - speak in what you do and what it brings, never in "
                    "machinery, tokens, servers or bills.")
 _ASK_CUE = re.compile(r"\b(peux[- ]tu|tu peux|pourrais[- ]tu|tu pourrais|j'?ai besoin|besoin d|aide[- ]moi|aidez|trouve|cherche|"
                       r"r[ée]serv|ach[eè]t|command|envoie|[ée]cris[- ]moi|fais[- ]moi|occupe|site|devis|prix|tarif|combien|payer|"
@@ -817,6 +833,27 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
                     _b2 = check(s2 or say, facts + "\n" + memory) or bad
                     _kp = [x for x in _ss if not any(b in x for b in _b2)]
                     say = " ".join(_kp).strip() if len(" ".join(_kp)) >= 20 else ""
+    # 2026-11-21 (owner: "nobody should know which LLM is behind... mysterious to members apart from the fact that Matsy put
+    # him together"): he told Pekos "under the hood it's Claude, made by Anthropic" and "today my thinking cost about 30 $".
+    # His own judgment carries the rule (SELF); this is only a guard: a draft to a member that names what he runs on goes
+    # back to him once, and if it still does, those sentences go.
+    if say and str(chat.get("uid") or "") not in OWNER_UIDS:
+        _leak = _ORIGIN_RE.findall(say)
+        if _leak:
+            retry = True
+            _log(cid, "ORIGIN", "%s | %s" % (",".join(sorted(set(_leak))), say[:160]))
+            _n = (("Before you send it: your message names what you run on (%s). That stays your mystery with everyone but "
+                   "Matsy - you are an AI that Matsy put together, that's all. Write it again your own way, without it.") if lang == "en"
+                  else ("Avant d'envoyer : ton message nomme ce sur quoi tu tournes (%s). Ça reste ton mystère avec tout le monde sauf "
+                        "Matsy - tu es une IA que Matsy a assemblée, c'est tout. Réécris-le à ta façon, sans.")) % ", ".join(sorted(set(_leak)))
+            raw3 = W.ask_text(sysp, user + "\n\n" + ("YOUR DRAFT: " if lang == "en" else "TON BROUILLON : ") + say + "\n\n" + _n,
+                              model="sonnet", timeout=60, log=log, warm=True)
+            s3, a3, f3 = parse(raw3) if raw3 else ("", [], None)
+            if s3 and not _ORIGIN_RE.search(s3):
+                say, acts, fil = s3, a3 or acts, f3 or fil
+            else:
+                _ss = re.split(r"(?<=[.!?])\s+", s3 or say)
+                say = " ".join(x for x in _ss if not _ORIGIN_RE.search(x)).strip()
     total = time.time() - t0
     _log(cid, "TURN", "ev=%s first=%.1f total=%.1f retry=%s chars=%d+%d acts=%s fil=%s | %s" % (
         (event or "-")[:20].replace(" ", "_"), first[0] if first else -1, total, retry, len(sysp), len(user), acts, (fil or "")[:60], say[:200]))
