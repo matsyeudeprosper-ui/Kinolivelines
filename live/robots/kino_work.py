@@ -912,6 +912,13 @@ def _mind(person, uid):
             L.append("SOMETHING YOU ARE CHANGING IN YOURSELF: " + P["project"]["change"])
     except Exception:
         pass
+    try:                                       # 2026-11-21 (v4 step 7, watch: "re-read my promotion strategy" started 6 times in
+        import kino_myday as KMD               # 2 h, 19 empty sittings): at his desk he knows his day like in a chat - what he
+        _md = KMD.block(person, en=True, off_min=-60)    # did, what he dropped, the hours he could not think - so he
+        if _md:                                # picks up where he left off instead of starting the same thing again
+            L.append(_md.replace("their local time", "France time"))
+    except Exception:
+        pass
     # 2026-11-01 (owner: "the same Kino I'm talking to is the same others out there will talk with?"): what he writes online
     # came from this thinner picture of him - who he is, needs, projects - without what he feels right now, what fills his
     # mind, his inner life measured, or his voice. One Kino: the same inner state the chat reads is read here too.
