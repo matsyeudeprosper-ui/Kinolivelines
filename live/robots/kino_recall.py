@@ -155,6 +155,13 @@ def _cos(a, b):
     return sum(x * y for x, y in zip(a, b)) / (na * nb) if na and nb else 0.0
 
 
+_PRIO = {"until": 0.0}         # a reply is being prepared: the background learning waits (one model, one queue)
+
+
+def hold(seconds=20):
+    _PRIO["until"] = time.time() + seconds
+
+
 def _fill_bg(texts, model):
     if _BG["busy"]:
         return
@@ -162,13 +169,25 @@ def _fill_bg(texts, model):
 
     def run():
         try:
-            for i in range(0, len(texts), 8):
-                embed(texts[i:i + 8], model=model, timeout=120)
+            # 2026-11-21 (live test: a Spanish question timed out behind 28 blocks being learned -> word fallback -> he
+            # forgot his own film tastes): small batches, and never while a reply is being prepared
+            for i in range(0, len(texts), 2):
+                while time.time() < _PRIO["until"]:
+                    time.sleep(0.5)
+                embed(texts[i:i + 2], model=model, timeout=120)
         except Exception:
             pass
         finally:
             _BG["busy"] = False
     threading.Thread(target=run, daemon=True).start()
+
+
+def prime(cue):
+    """their message just arrived: embed it now (the reply will find it cached) - called from the read pass"""
+    if not str(cue or "").strip():
+        return
+    hold(25)
+    threading.Thread(target=lambda: embed([cue], timeout=30), daemon=True).start()
 
 
 def scores(cue, blocks, wait_s=3.0):
@@ -178,6 +197,7 @@ def scores(cue, blocks, wait_s=3.0):
     if not model or not str(cue or "").strip():
         return None
     t0 = time.time()
+    hold(20)
     m, cv = embed([cue], model=model, timeout=wait_s)
     if not cv:
         _fill_bg(list(blocks), model)              # warm the model and learn the blocks for the next turn

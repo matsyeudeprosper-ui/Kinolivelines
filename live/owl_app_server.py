@@ -18678,6 +18678,12 @@ def _read_them(user, cid):
         _rc()
         import kino_read as _KRd, kino_person as _KPd
         c = json.load(open(_chat_path(cid), encoding="utf-8"))
+        try:                                          # 2026-11-21 (v4 step 4 D): their words, embedded before the reply needs them
+            _lu_p = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
+            if _lu_p:
+                __import__("kino_recall").prime(str(_lu_p.get("text") or "") + " ")
+        except Exception:
+            pass
         ow = c.get("uid") or user.get("id")
         _KRd.read(_rc().W, ow, c, cues=_KPd.signals(ow, cid), local_hour=_local_hour(ow),
                   log=os.path.join(DIR, "robots", "kino_read.log"))
