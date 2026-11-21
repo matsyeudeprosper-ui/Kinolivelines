@@ -72,3 +72,14 @@ never canned sentences; he stays a friend, never a support agent.
   per text, 9 s cold load. Owner: if Ollama fails -> OpenAI paid embeddings, with a fallback when GPT has no credit.
   NEXT (part D): working memory - embed memory items once (background, cached per model), at reply time embed the cue
   (their last messages + stage) and keep the most relevant items; feelings in ONE place (now in 4-5 blocks); already-said.
+- 2026-11-21 ~01:30 UTC: STEP 4 DONE (part D commits ..a7b2641b + recall priority fix). kino_recall.py: embed() bge-m3
+  (keep_alive -1, warm() at app start) -> OpenAI text-embedding-3-small -> None (word overlap); sqlite cache
+  robots/kino_embed.sqlite keyed model+hash(text, digits blanked); scores(cue, blocks) uses cached block vectors, learns the
+  missing ones in background (batches of 2, paused while a reply is prepared: hold()); prime(cue) from _read_them when their
+  message arrives. A timeout = SLOW (not down). kino_social.memfocus: meaning score 20*(sim-0.35) vs words, ALWAYS_D (stage,
+  true day, who you are, let-slip promises, portrait, tastes...), INNER_FOLD (12 inner-state reports -> stage + "you, now" +
+  one feelings line with honest causes), keep 12 + 6 gists, rest out. Memory 13.1k -> 4.5-7.4k chars, +0.7-1 s per reply.
+  _voice_mirror: "What you just said" (last openings, opener said twice, words already said in this talk).
+  Live tests: news cue -> news block; Spanish "films" first FAILED (cue timed out behind background learning -> "heist
+  films", contradicting his tastes) -> fixed (prime + hold + tastes always) -> "ciencia ficción con emoción: Interstellar".
+  NEXT: step 5 think then speak once.
