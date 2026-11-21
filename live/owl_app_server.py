@@ -22361,6 +22361,35 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     else:
         _is_corr = False
     _sim = None
+    # 2026-11-21 (v4 step 5): the three checks on a draft (pictured reaction, misquote, introspection) ran one after the
+    # other, ~2 s each; the misquote and introspection checks of THIS draft now start at once, beside the pictured reaction,
+    # and are only used if the draft is still the same when their turn comes (else they run again, as before)
+    _pre = {"say": say, "mq": None, "gr": None, "ro": None}
+    _pre_th = []
+    if say and len(say) >= 20:
+        def _pre_mq(_s=say):
+            try:
+                import kino_conflict as _KCp
+                _pre["mq"] = _KCp.misquote(W, _person(uid), _s, log=os.path.join(DIR, "robots", "kino_conflict.log")) or False
+            except Exception:
+                _pre["mq"] = None
+
+        def _pre_gr(_s=say):
+            try:
+                import kino_introspect as _KIp
+                _pre["ro"] = _inner_readout(uid)
+                _pre["gr"] = _KIp.check(W, _person(uid), _s, _pre["ro"], log=os.path.join(DIR, "robots", "kino_introspect.log")) or False
+            except Exception:
+                _pre["gr"] = None
+        for _fn_p in (_pre_mq, _pre_gr):
+            _t_p = threading.Thread(target=_fn_p, daemon=True)
+            _t_p.start()
+            _pre_th.append(_t_p)
+
+    def _pre_get(k):
+        for _t_p in _pre_th:
+            _t_p.join(timeout=25)
+        return _pre.get(k) if _pre.get("say") == say and _pre.get(k) is not None else "MISS"
     # 2026-11-04 02:12 (watch): three corrections of a wrong thing he had told the owner were pictured as "frustrating" and the
     # re-written turn (a silent candle check again) came back as "…" - a correction is said even when it is uncomfortable
     # 04:0x (watch): on the 03:39 late sell the imagined-reaction rewrite took ~60 s BEFORE the order left - an order on a
@@ -22469,7 +22498,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     try:                                               # 2026-11-03 (kino_conflict.misquote): he heard himself misquote them
         if say:
             import kino_conflict as _KCq
-            _mq = _KCq.misquote(W, _person(uid), say, log=os.path.join(DIR, "robots", "kino_conflict.log"))
+            _mq = _pre_get("mq")
+            if _mq == "MISS":
+                _mq = _KCq.misquote(W, _person(uid), say, log=os.path.join(DIR, "robots", "kino_conflict.log"))
             if _mq:
                 _KO._log(cid, "MISQUOTE", "%s | %s" % (_mq["why"], say[:120]))
                 try:
@@ -22487,8 +22518,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
     try:                                               # 2026-11-04 (move 1): what he says about himself, held against what is in him
         if say:
             import kino_introspect as _KIi
-            _ro = _inner_readout(uid)
-            _gr = _KIi.check(W, _person(uid), say, _ro, log=os.path.join(DIR, "robots", "kino_introspect.log"))
+            _gr = _pre_get("gr")
+            if _gr == "MISS":
+                _ro = _inner_readout(uid)
+                _gr = _KIi.check(W, _person(uid), say, _ro, log=os.path.join(DIR, "robots", "kino_introspect.log"))
+            else:
+                _ro = _pre.get("ro") or _inner_readout(uid)
             # 2026-11-21 (v4 step 5): a feeling he LEFT OUT is not a fault (a person rarely names what he feels - step 4);
             # only a cause he made up is corrected before it goes out
             if _gr and not _gr.get("invented"):
