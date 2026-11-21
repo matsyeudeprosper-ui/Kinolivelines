@@ -70,6 +70,55 @@ def connect():
     if not mt5.symbol_select(SYMBOL, True):
         raise RuntimeError("symbol %s not available" % SYMBOL)
     say("connected %s %s balance %.2f" % (ai.login, ai.server, ai.balance))
+    ensure_algo()
+
+
+def ensure_algo():
+    """the terminal's Algo Trading button must be ON or every order fails 10027 (seen 21/11 00:00, first trade). Same method as
+    structure_bos_bot.ensure_algo: press the button (WM_COMMAND 32851) on this terminal's window, check, up to 6 tries."""
+    ti = mt5.terminal_info()
+    if ti is not None and ti.trade_allowed:
+        return True
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+        import subprocess
+        tok = os.path.basename(os.path.dirname(account()[0]))
+        out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                              "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" | Where-Object "
+                              "{ $_.CommandLine -match '" + tok + "' } | Select-Object -ExpandProperty ProcessId"],
+                             capture_output=True, text=True, timeout=30)
+        pid = int(out.stdout.strip().splitlines()[0])
+        user32 = ctypes.windll.user32
+        hwnds = []
+
+        @ctypes.WINFUNCTYPE(ctypes.c_bool, wt.HWND, wt.LPARAM)
+        def cb(hh, ll):
+            p = wt.DWORD()
+            user32.GetWindowThreadProcessId(hh, ctypes.byref(p))
+            if p.value == pid and user32.IsWindowVisible(hh):
+                hwnds.append(hh)
+            return True
+
+        ok = False
+        for _try in range(6):
+            hwnds.clear()
+            user32.EnumWindows(cb, 0)
+            if not hwnds:
+                time.sleep(5)
+                continue
+            for hh in hwnds:
+                user32.PostMessageW(hh, 0x0111, 32851, 0)
+            time.sleep(3)
+            ti = mt5.terminal_info()
+            ok = ti is not None and ti.trade_allowed
+            if ok:
+                break
+        say("ensure_algo -> trade_allowed=%s (windows %d)" % (ok, len(hwnds)))
+        return ok
+    except Exception as e:
+        say("ensure_algo FAILED %s: %s" % (type(e).__name__, e))
+        return False
 
 
 def my_positions():
@@ -88,7 +137,14 @@ def fillings():
     return out
 
 
-def send(req):
+def send(req, again=True):
+    r = _send(req)
+    if again and r is not None and r.retcode == 10027 and ensure_algo():
+        return _send(req)
+    return r
+
+
+def _send(req):
     last = None
     for f in fillings():
         req["type_filling"] = f
