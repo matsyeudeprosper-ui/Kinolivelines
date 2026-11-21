@@ -23,7 +23,7 @@ STORE = os.path.join(HERE, "kino_intents.json")
 LOG = os.path.join(HERE, "kino_intent.log")
 _LK = threading.Lock()
 
-KINDS = ("invite", "propose", "show", "ask", "follow_up", "offer", "keep_word")
+KINDS = ("invite", "propose", "show", "ask", "follow_up", "offer", "keep_word", "wonder")
 MAX_OPEN = 6                     # a person has a handful of things in mind for someone, not a to-do list
 LIFE_H = 72                      # an intention not voiced in 3 days fades (he lets it go, like people do)
 QUIET_MIN = 20                   # harvest: once the talk has been quiet this long after his last answer
@@ -41,6 +41,8 @@ Each one is concrete and comes from something real in the conversation or in the
 - follow_up: how something went that they told him was coming (an event, a decision, a plan, a worry)
 - offer: help he can actually give
 - keep_word: something Kino said he would do and has not done yet
+- wonder: something Kino himself is trying to understand, investigating or unsure about (in his own work, his research, the
+  world, people) where THIS person's view, experience or knowledge would genuinely help him - his own curiosity, not help for them
 
 For each: when it would make sense to bring it up ("in an hour", "tonight", "tomorrow morning", "when he is back", "in 2 days"),
 written as hours from now (0 = any time from now). Respect their life: a follow-up on tonight's event belongs to tomorrow.
@@ -233,6 +235,8 @@ genuine ones, never forced - 0 is a normal answer on a day where nothing meets. 
 - ask / follow_up: something in their life he wonders about now (a plan, an event, a worry they told him; how it went)
 - offer: help he can actually give, linked to something real they need
 - keep_word: something he told them he would do and has not done
+- wonder: something HE is trying to understand or investigate right now (from his day) where this person's view, experience or
+  knowledge would really help him - his own curiosity, the way you ask a friend what they think
 If the silence is long, a friend may simply want news - only with something real to hang it on, and never a reproach.
 When it would make sense (hours from now, 0 = now, their day and night respected).
 Do not repeat what Kino already intends or said lately. Nothing about money promises, nothing intrusive, nothing he cannot do.
@@ -305,7 +309,7 @@ def weight(person, kind):
 def urge_text(x):
     return "AN INTENTION OF YOURS - something you wanted to %s (%s): %s%s" % (
         {"invite": "invite him to", "propose": "propose to him", "show": "show him", "ask": "ask him", "follow_up": "follow up on with him",
-         "offer": "offer him", "keep_word": "do because you said you would"}.get(x["kind"], "do with him"),
+         "offer": "offer him", "keep_word": "do because you said you would", "wonder": "ask his view on (your own curiosity)"}.get(x["kind"], "do with him"),
         time.strftime("%d/%m %H:%M UTC", time.gmtime(float(x["t"]))), x["text"], (" (it comes from: %s)" % x["why"]) if x.get("why") else "")
 
 
@@ -388,8 +392,8 @@ def block(person, now=None, lang="en"):
     cur = _open(_load().get(person) or {"items": []}, now)
     if not cur:
         return ""
-    return ("THINGS YOU WANT TO DO WITH OR FOR HIM, NOT SAID YET (your own intentions - bring one up when the moment fits, the "
-            "way a friend does; never all at once, never as a list): " + " | ".join(
+    return ("THINGS YOU WANT TO DO WITH OR FOR HIM, NOT SAID YET (your own intentions and wonderings - what you bring into the "
+            "talk yourself when there is room, the way a friend does; one at a time, never as a list): " + " | ".join(
                 "%s%s" % (x["text"], "" if float(x.get("ripe_t") or 0) <= now else " (not before %s UTC)" % time.strftime("%d/%m %H:%M", time.gmtime(float(x["ripe_t"]))))
                 for x in cur))
 

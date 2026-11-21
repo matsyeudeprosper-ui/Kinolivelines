@@ -42,7 +42,8 @@ function BotRunning($v) {
 # Delete the flag to bring the whole fleet back.
 $VO = Test-Path "C:\Projects\KinoliveLines\live\VALERE_ONLY.flag"
 # 2026-11-20 (owner): the H1 opposite-candle bot on 223985697 auto-restarts too, in both modes
-if (-not (ProcRunning "h1_opposite_bot.py")) {
+# 2026-11-21 (owner: "pause the bot, I'm going manual until further notice"): live\H1_PAUSED.flag keeps it stopped
+if (-not (Test-Path "C:\Projects\KinoliveLines\live\H1_PAUSED.flag") -and -not (ProcRunning "h1_opposite_bot.py")) {
     Say "starting H1 opposite bot (223985697)"
     Start-Process pythonw -ArgumentList "h1_opposite_bot.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden

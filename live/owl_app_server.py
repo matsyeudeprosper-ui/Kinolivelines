@@ -15823,6 +15823,13 @@ def _one_fresh(user, c, slim=False):
                 L.append(_bi)
     except Exception:
         pass
+    try:                                               # 2026-11-21 (kino_preocc): what is on his OWN mind these days - he
+        if not slim:                                   # brings it in himself ("what's up with you?" had "not much")
+            _bp = __import__("kino_preocc").block(trading_ok=c.get("app") != "kinochat")
+            if _bp:
+                L.append(_bp)
+    except Exception:
+        pass
     _mk(3)
     try:                                               # kino_ways: how this person does and wants things, newest word
         import kino_ways as _KWy
@@ -18872,6 +18879,15 @@ def _chat_oops(cid, en, e=None, retry=None):
         if _lm2 and retry is not None:
             _MISSED[cid] = {"t": time.time(), "at": int(_lm2.get("t") or 0), "text": str(_lm2.get("text") or "")[:600], "uid": _c2.get("uid")}
             _missed_save()
+    except Exception:
+        pass
+    try:                                     # 2026-11-21 (watch): a Spanish-set chat whose member wrote English got the FRENCH
+        _cl = json.load(open(_chat_path(cid), encoding="utf-8")) or {}                              # apology: only fr gets French,
+        _lg = str(_cl.get("lang") or "fr")                                                         # and only if they wrote French
+        _lt = " %s " % next((str(m.get("text") or "") for m in reversed(_cl.get("msgs") or []) if m.get("role") == "user"), "").lower()
+        _enw = sum(_lt.count(" %s " % w) for w in ("the", "and", "you", "is", "it", "what", "i", "my", "ok", "cool", "with", "at", "work", "anything", "hey"))
+        _frw = sum(_lt.count(" %s " % w) for w in ("le", "la", "et", "tu", "je", "est", "les", "un", "une", "ça", "pas", "de", "salut"))
+        en = en or not _lg.startswith("fr") or _enw > _frw
     except Exception:
         pass
     try:
@@ -26283,6 +26299,26 @@ def _urge_tick():
                     for _rq in _KHq.requests("waiting"):           # made elsewhere (another process): posted by the app itself,
                         if not _rq.get("carded"):                  # never written into a chat from outside (it was overwritten)
                             _kino_req_card(_rq)
+                except Exception:
+                    pass
+                try:                                   # 2026-11-21 (kino_preocc): his own preoccupations, a few times a day
+                    import kino_preocc as _KPo
+                    if pm == "kino" and _KPo.due():
+                        def _po(uid=uid):
+                            _md = __import__("kino_myday").block(list(_person_uids(uid) or [uid]), True, 0)
+                            try:
+                                import robot_reality as _RWp
+                                _wd = _RWp.world_now(0)
+                            except Exception:
+                                _wd = ""
+                            try:
+                                _pp = [x for x in (_jload(os.path.join(DIR, "robots", "kino_posts.json"), {}) or {}).get("posts") or []
+                                       if str(x.get("ok")) == "True"][-8:]
+                                _pt = "\n".join("- " + str(x.get("text") or x.get("what") or "")[:200] for x in _pp)
+                            except Exception:
+                                _pt = ""
+                            _KPo.refresh(_rc().W, _md, _wd, _pt)
+                        threading.Thread(target=_po, daemon=True).start()
                 except Exception:
                     pass
                 try:                                   # 2026-11-06 (owner: "build now"): previews for the waiting leads, on the owner's budget
