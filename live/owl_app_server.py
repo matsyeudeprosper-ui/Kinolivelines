@@ -15697,8 +15697,36 @@ def _voice_mirror(c):
     now = time.time()
     M = [m for m in (c.get("msgs") or [])[-120:] if m.get("role") == "ai" and str(m.get("text") or "").strip()
          and now - float(m.get("t") or 0) < 86400]
+    # 2026-11-21 (v4 step 4, watch: "Fair, weekend rules..." then "Ha. Fair. I'm still losing..."; "I said goodnight too
+    # fast / the curtain" three times in a row): a person hears what he JUST said - how his last messages here began, and
+    # an idea he already said in the last two hours. Information about himself, not a rule.
+    _jn = ""
+    try:
+        R = [str(m["text"]) for m in M if now - float(m.get("t") or 0) < 7200][-5:]
+        if len(R) >= 2:
+            op = [" ".join(re.findall(r"[A-Za-zÀ-ÿ']+", t)[:2]).lower() for t in R]
+            first = {}
+            for o in op:
+                k = o.split(" ")[0] if o else ""
+                if k:
+                    first[k] = first.get(k, 0) + 1
+            twice = [k for k, n in first.items() if n >= 2]
+            tri = {}
+            for t in R:
+                w = re.findall(r"[a-zà-ÿ']{3,}", t.lower())
+                for g in set(" ".join(w[i:i + 3]) for i in range(len(w) - 2)):
+                    tri[g] = tri.get(g, 0) + 1
+            again = [g for g, n in tri.items() if n >= 2][:3]
+            bits = ["your last %d messages here began: %s" % (len(R), " / ".join('"%s…"' % R_[:28].split("\n")[0] for R_ in R[-3:]))]
+            if twice:
+                bits.append("you opened with \"%s\" more than once" % "\", \"".join(twice))
+            if again:
+                bits.append("words you already said in this talk: " + "; ".join('"%s"' % g for g in again))
+            _jn = "What you just said (heard, like anyone hears himself): " + "; ".join(bits) + "."
+    except Exception:
+        _jn = ""
     if len(M) < 6:
-        return ""
+        return _jn
     # the server's own lines ("-> Order sent ...") are not his voice
     T = [chr(10).join(ln for ln in str(m["text"]).splitlines() if not ln.lstrip().startswith("\u2192")) for m in M]
     grams = {}
@@ -15722,7 +15750,7 @@ def _voice_mirror(c):
     L.append("you asked him something in %d of them" % _qs)
     if rep:
         L.append("phrases you kept coming back to: " + "; ".join('"%s" (%dx)' % (g, grams[g]) for g in rep))
-    return "; ".join(L) + "."
+    return "; ".join(L) + "." + ((" " + _jn) if _jn else "")
 
 
 
