@@ -20265,8 +20265,8 @@ def _one_memory(user, c):
         if Th:
             L.append("Ce qui te trotte dans la tête : " + " | ".join(Th))
         Fe = [f for f in _KIo.feelings(None) if f.get("v", 0) >= 0.3][:2]
-        if Fe:
-            L.append("Ce que tu ressens : " + " | ".join("%s (%s)" % (f.get("kind"), f.get("why")) for f in Fe))
+        if Fe:                                         # 2026-11-21 (v4): the cause as he would honestly remember it
+            L.append("Ce que tu ressens : " + " | ".join("%s (%s)" % (f.get("kind"), (_KIo.why_text(f) if hasattr(_KIo, "why_text") else f.get("why")) or "sans raison claire") for f in Fe))
         Qo = _KIo.open_questions(None, 2)
         if Qo:
             L.append("Tes recherches en cours : " + " | ".join(str(q.get("q") if isinstance(q, dict) else q)[:200] for q in Qo))
@@ -26403,6 +26403,11 @@ def _urge_tick():
 
 
 def _companion_loop():
+    try:                                               # 2026-11-21 (v4 step 4 D): load the memory-by-meaning model at start
+        _rc()
+        __import__("kino_recall").warm()
+    except Exception:
+        pass
     time.sleep(90)
     while True:
         try:

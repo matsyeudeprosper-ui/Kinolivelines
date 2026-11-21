@@ -293,10 +293,27 @@ ALWAYS = ("Ta lecture de lui", "Vous deux", "Toi, maintenant", "Ce que tu ressen
           "Ce que tu lui as dit que tu ferais", "Il ne peut plus t'écrire")
 
 
-def memfocus(mem, cue, keep=12, gist=150):
+# 2026-11-21 (v4 step 4 D): his inner state reached him ~12 times a turn (stage, what filled his mind, attention, body, what
+# stirs, further back, what he feels, what he feels most, how he feels, a point in space, his energy, an attention forecast,
+# his background mood, his nature) - one state reported by many engines, and he kept announcing it. A person has ONE sense
+# of how he is: the stage (what he is aware of), "you, now" and one line of feelings. The engines all still run and still
+# shape the stage; their separate reports are folded away here.
+INNER_FOLD = ("Ce qui a le plus occupé ta tête", "What filled your mind most", "Ton attention, telle que tu la sens",
+              "Your attention, as you can sense it", "CE QUI REMUE EN TOI", "WHAT STIRS IN YOU", "Plus loin dans ta tête",
+              "Further back in your mind", "What you feel most right now", "How you feel right now", "Where you are inside",
+              "How much you have in you", "Your own forecast of your attention", "Ton humeur de fond", "Your background mood",
+              "Ta nature", "Your nature", "Ton envie de jouer", "Your wish to play")
+ALWAYS_D = ALWAYS + ("SUR LA SCÈNE DE TA TÊTE", "ON THE STAGE OF YOUR MIND", "TA JOURNÉE, TELLE QU", "YOUR DAY, AS IT REALLY",
+                     "QUI TU ES, COMME TU TE VOIS", "WHO YOU ARE, AS YOU SEE", "Ce que tu avais promis et laissé filer",
+                     "Ton portrait de lui", "CE DONT TU TE SOUVIENS", "WHAT YOU REMEMBER", "What you feel:")
+
+
+def memfocus(mem, cue, keep=12, gist=150, tier2=6):
     """round 6 (working memory): people recall what fits the moment; the rest is a vague awareness. What touches the
-    moment (his words, the event) and what is always with him (his read of him, the two of them, his state) stay whole;
-    the rest is kept as a short gist - nothing is lost, the exact data stays in what he knows of this minute."""
+    moment (his words, the event) and what is always with him (his read of him, the two of them, his state) stay whole.
+    2026-11-21 (v4 step 4 D): recall by MEANING in any language (kino_recall, multilingual embeddings; word overlap when no
+    embedding answers), the inner state folded into one, and only the next `tier2` blocks as a gist - the rest of what he
+    knows waits for a moment it fits (a person does not hold 60 things in mind at once)."""
     blocks, cur = [], []
     for ln in str(mem or "").split("\n"):
         if cur and ln.startswith(("  ", "- ", "WHO YOU HAVE BECOME")):
@@ -308,19 +325,31 @@ def memfocus(mem, cue, keep=12, gist=150):
     if cur:
         blocks.append("\n".join(cur))
     blocks = [b for b in blocks if b.strip()]
+    if any(b.startswith(("SUR LA SCÈNE DE TA TÊTE", "ON THE STAGE OF YOUR MIND")) for b in blocks):
+        blocks = [b for b in blocks if not b.startswith(INNER_FOLD)]
     cw = _w(cue)
+    sim = None
+    try:
+        import kino_recall as _KR
+        sim = _KR.scores(cue, blocks, wait_s=3.0)
+    except Exception:
+        sim = None
     sc = []
     for i, b in enumerate(blocks):
         s = 2.0 * min(4, len(cw & _w(b)))
-        if b.startswith(ALWAYS):
-            s += 10
+        if sim and i in sim:                           # meaning: 0.35 -> 0, 0.80 -> 9 (comparable to 4 shared words)
+            s = max(s, 20.0 * max(0.0, sim[i] - 0.35))
+        if b.startswith(ALWAYS_D):
+            s += 100
         sc.append((s - 0.01 * i, i))
-    top = set(i for _, i in sorted(sc, reverse=True)[:keep])
+    order = [i for _, i in sorted(sc, reverse=True)]
+    top = set(order[:keep])
+    second = set(order[keep:keep + tier2]) if gist > 0 else set()
     out = []
     for i, b in enumerate(blocks):
-        if i in top or len(b) <= gist:
+        if i in top or (gist > 0 and len(b) <= gist and i in second):
             out.append(b)
-        else:
+        elif i in second:
             out.append(b[:gist].rsplit(" ", 1)[0] + " …")
     return "\n".join(out)
 
