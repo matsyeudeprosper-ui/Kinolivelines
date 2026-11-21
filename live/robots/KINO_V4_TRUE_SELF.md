@@ -83,3 +83,17 @@ never canned sentences; he stays a friend, never a support agent.
   Live tests: news cue -> news block; Spanish "films" first FAILED (cue timed out behind background learning -> "heist
   films", contradicting his tastes) -> fixed (prime + hold + tastes always) -> "ciencia ficción con emoción: Interstellar".
   NEXT: step 5 think then speak once.
+- 2026-11-21 ~10:30 UTC: STEP 5 DONE (commits ..6f171c1e): SELF "tu te figures comment il va le prendre ... ce que tu écris
+  est ce que tu envoies"; IMAGINE rewrite on member turns only < -0.45 (was -0.1: 6/52 rewritten 11-20); introspection
+  rewrites only an INVENTED cause (left-out = INTROSPECT_NOTED); misquote + introspection checks start in threads beside
+  the pictured reaction (used only if the draft is unchanged). Live kctest993: 2 replies, no rewrite, model ~6 s.
+- STEP 6 DONE (7e6037a5): kino_friends keeps the stranger's bio with the post (cands[].bio) and shows it; RULES: read THEM
+  (situation, what they'd welcome from a stranger and an AI, how it lands today), let it be when not welcome.
+  (Chats already have closeness/portrait; owner 20/11: Kino decides himself when to say he is an AI.)
+- STEP 7 DONE (551bc23e): kino_work._mind (the desk choosing what to do) gets kino_myday - his true day incl. abandoned
+  sittings and outages - so he continues instead of restarting (watch: "re-read my promotion strategy" 6x, 19 empty).
+  Already there before v4: restart awareness ("switched off from X to Y"), came-back-after-N-h feelings, myday outages.
+  Seen: 21/11 desk wrote to nobody - previews (monteen, hummus-bar) link manifest.json that is local but NOT published
+  (GitHub Pages 404) -> browser QA refuses the sends; the fix is his own re-publish (preview()).
+- NEXT: watch a day of real chats (rewrite counts in kino_one.log: IMAGINE / INTROSPECT vs INTROSPECT_NOTED; kino_recall.log
+  SCORE/SLOW; prompt sizes) and the owner's verdict.
