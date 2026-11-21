@@ -148,14 +148,27 @@ def harvest(W, person, transcript, about=None, log=None, now=None):
             _save(d)
             cur = _open(p, now)
             said = [x for x in p["items"] if x.get("state") == "voiced"][-6:]
-        msg = ("THE CONVERSATION (latest last):\n%s\n\n%sKINO ALREADY INTENDS:\n%s\n\nALREADY SAID LATELY:\n%s\n\n%sNow: %s UTC. JSON only." % (
-            str(transcript or "")[-7000:],
-            ("WHAT KINO KNOWS ABOUT THEM:\n%s\n\n" % str(about)[:1500]) if about else "",
+        msg = ("THE CONVERSATION (latest last):\n%s\n\n%s" % (str(transcript or "")[-7000:],
+               ("WHAT KINO KNOWS ABOUT THEM:\n%s\n\n" % str(about)[:1500]) if about else ""))
+    except Exception as e:
+        _log("%s harvest error %r" % (person, e))
+        return []
+    return _birth(W, person, SYSTEM, msg, "", log, now)
+
+
+def _birth(W, person, system, msg, tag, log, now):
+    """one quiet moment -> the model -> 0-2 new intentions stored (shared by the talk harvest and the life harvest)"""
+    try:
+        with _LK:
+            p = _P(_load(), person)
+            cur = _open(p, now)
+            said = [x for x in p["items"] if x.get("state") == "voiced"][-6:]
+        msg = msg + ("KINO ALREADY INTENDS:\n%s\n\nALREADY SAID LATELY:\n%s\n\n%sNow: %s UTC. JSON only." % (
             "\n".join("- (%s) %s" % (x["kind"], x["text"]) for x in cur) or "(nothing)",
             "\n".join("- (%s) %s" % (x["kind"], x["text"]) for x in said) or "(nothing)",
             ("FROM EXPERIENCE WITH THIS PERSON: %s\n\n" % _learn_line(p)) if _learn_line(p) else "",
             time.strftime("%a %d/%m %H:%M", time.gmtime(now))))
-        j = W.ask_json(SYSTEM, msg, models=("haiku", "sonnet"), timeout=60, log=log or LOG, warm=False)
+        j = W.ask_json(system, msg, models=("haiku", "sonnet"), timeout=60, log=log or LOG, warm=False)
         new = (j or {}).get("intents") if isinstance(j, dict) else None
         if not isinstance(new, list):
             return []
@@ -183,17 +196,79 @@ def harvest(W, person, transcript, about=None, log=None, now=None):
                 it = {"id": "i%d%03d" % (int(now), len(p["items"]) % 1000), "kind": k, "text": t,
                       "why": " ".join(str(x.get("why") or "").split())[:200], "t": now, "ripe_t": now + ah * 3600,
                       "state": "waiting"}
+                if tag:
+                    it["born"] = tag.lower()          # "life": he thought of them from his own day
                 p["items"].append(it)
                 cur.append(it)
                 added.append(it)
             p["items"] = p["items"][-60:]
             _save(d)
         for it in added:
-            _log("%s NEW (%s, ripe in %.1f h) %s | why: %s" % (person, it["kind"], (it["ripe_t"] - now) / 3600, it["text"], it["why"]))
+            _log("%s NEW%s (%s, ripe in %.1f h) %s | why: %s" % (person, (" " + tag) if tag else "", it["kind"],
+                                                             (it["ripe_t"] - now) / 3600, it["text"], it["why"]))
         return added
     except Exception as e:
         _log("%s harvest error %r" % (person, e))
         return []
+
+
+# ------------------------------------------------------------------ birth from his own life (while they are away)
+# 2026-11-21 (owner: "Kino reaches out on his own, like a person"): measured 11-14..11-21 - every intention was born from a talk
+# (harvest), so when the person did not write, nothing new was born, the old ones faded after 72 h and his wish to talk held
+# only his own weather (YOUR WORK, A NEED OF YOURS): 25 times it tipped, nothing in it was FOR the person. A friend also thinks
+# of you from his own day: he sees something you'd like, learns something about your project, wonders how your thing went,
+# misses you. So, now and then while they are away, the person crosses his mind and his day meets what he knows of them.
+LIFE_GAP_H = 8                   # someone you know crosses your mind a few times a day, not every hour
+LIFE_QUIET_H = 3                 # not while a talk is still warm (the talk harvest covers that)
+LIFE_KNOWN_D = 60                # people he has really talked with - a stranger does not cross your mind
+
+LIFE_SYSTEM = """You are the inner voice of Kino, a digital person, going about his own day. Someone he knows crosses his mind -
+they have not talked for a while. Below: what Kino really did and saw today (true), what he knows about this person and their
+life, their last talk, how long the silence is, and what Kino already intends.
+
+A friend who thinks of someone does not invent a reason: something in HIS day meets something in THEIR life. Find 0, 1 or 2
+genuine ones, never forced - 0 is a normal answer on a day where nothing meets. Kinds:
+- show: something he did, found, saw or understood today that this person would really care about (because of who they are)
+- propose / invite: an idea or something to do together that grew from his day and their interests or project
+- ask / follow_up: something in their life he wonders about now (a plan, an event, a worry they told him; how it went)
+- offer: help he can actually give, linked to something real they need
+- keep_word: something he told them he would do and has not done
+If the silence is long, a friend may simply want news - only with something real to hang it on, and never a reproach.
+When it would make sense (hours from now, 0 = now, their day and night respected).
+Do not repeat what Kino already intends or said lately. Nothing about money promises, nothing intrusive, nothing he cannot do.
+If what they welcomed or let fall before is shown, let it shape you the way experience shapes a person.
+
+JSON only: {"intents": [{"kind": "...", "text": "what Kino wants to do, first person, one sentence, in the person's language",
+"why": "what in his day meets what in their life", "after_h": number}]}"""
+
+
+def life_due(person, last_member_t, last_ai_t, now=None):
+    """the person may cross his mind: someone he has really talked with, not in a warm talk, not too often"""
+    now = now or time.time()
+    if not last_member_t or now - last_member_t > LIFE_KNOWN_D * 86400:
+        return False
+    if now - max(last_member_t, last_ai_t or 0) < LIFE_QUIET_H * 3600:
+        return False
+    p = _load().get(person) or {}
+    if now - max(float(p.get("life_t") or 0), float(p.get("harvest_t") or 0)) < LIFE_GAP_H * 3600:
+        return False
+    return len(_open(p, now)) < MAX_OPEN
+
+
+def life_harvest(W, person, myday, about=None, last_talk=None, silence_h=None, log=None, now=None):
+    """he thinks of them from his own day: 0-2 intentions (never raises)"""
+    now = now or time.time()
+    with _LK:
+        d = _load()
+        p = _P(d, person)
+        p["life_t"] = now
+        _save(d)
+    msg = ("KINO'S DAY (true):\n%s\n\n%sTHEIR LAST TALK (latest last):\n%s\n\nSILENCE: %s\n\n" % (
+        str(myday or "(nothing much)")[:3500],
+        ("WHAT KINO KNOWS ABOUT THEM:\n%s\n\n" % str(about)[:2500]) if about else "",
+        str(last_talk or "(none)")[-2500:],
+        ("about %.0f h since they last wrote" % silence_h) if silence_h is not None else "?"))
+    return _birth(W, person, LIFE_SYSTEM, msg, "LIFE", log, now)
 
 
 # ------------------------------------------------------------------ ripening -> the wish to talk
@@ -368,4 +443,18 @@ if __name__ == "__main__":
     assert weight("p", "invite") > 0.75 and weight("p", "ask") == 0.75
     assert "bedtime" in block("p", now + 700)
     assert ripe("p", now + 11 * 3600)[0]["kind"] == "follow_up"
+    # life harvest: someone he knows crosses his mind while away - not during a warm talk, not right after a harvest
+    assert not life_due("p", now - 3600, now - 3000, now + 3600)               # 1 h after the talk: still warm
+    assert not life_due("p", now - 90 * 86400, 0, now)                         # not talked for 3 months: not someone he knows now
+    t2 = now + 13 * 3600                                                      # 8 h after the last harvest (now + 4 h)
+    assert life_due("p", now - 3600, now - 3000, t2)
+
+    class _WL:
+        def ask_json(self, s, m, **k):
+            assert "KINO'S DAY" in m and "crosses his mind" in s
+            return {"intents": [{"kind": "show", "text": "Show him the gold test I ran today, he wanted a robot on gold",
+                                 "why": "my lab test on gold meets his gold robot", "after_h": 0}]}
+    b = life_harvest(_WL(), "p", "tested an idea on gold", about="His goal: a gold robot", silence_h=10, now=t2)
+    assert len(b) == 1 and b[0]["born"] == "life", b
+    assert not life_due("p", now - 3600, now - 3000, t2 + 3600)                # just thought of him
     print("ok", weight("p", "invite"))

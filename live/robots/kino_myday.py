@@ -158,7 +158,12 @@ def emails(since, en):
             back += 1
     if not sent and not back:
         return ""
-    return (("emails to businesses: %d sent, %d answered" if en else "e-mails aux commerces : %d envoyés, %d réponses") % (sent, back))
+    # 2026-11-21 (watch): next to "the send to Event was blocked" (one session's note) he told Pekos "nothing went out today"
+    # while 8 had left - the total says it is the whole window, a session note only that session
+    return (("emails to businesses in these hours, all sessions together: %d really sent, %d answered (a note about one session "
+             "speaks only of that session)" if en else
+             "e-mails aux commerces sur ces heures, toutes sessions confondues : %d vraiment envoyés, %d réponses (une note sur une "
+             "session ne parle que de cette session)") % (sent, back))
 
 
 def talks(since, uid, en):

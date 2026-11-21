@@ -26181,6 +26181,9 @@ _INTENT_BUSY = {}       # person -> an intention harvest is running (kino_intent
 _INTENT_ABOUT = ("Son but", "His goal", "Tes recherches en cours", "Your research", "Décisions prises ensemble", "Decisions taken together",
                  "Ce que tu lui as dit que tu ferais", "What you told him you would do", "Questions left hanging", "Sa vie", "His life",
                  "Ce qu'il a dit en passant", "Ce que tu attends", "Your projects", "Coming up for him soon", "In his life, something he told you")
+# 2026-11-21 (life harvest): who they are and the true things of his day he has not told them - where "he'd like this" comes from
+_LIFE_ABOUT = ("Ton portrait de lui", "Your portrait of him", "Des choses vraies d'aujourd'hui", "Things that happened today",
+               "Ses goûts", "His tastes", "Ce qu'il aime", "What he likes")
 
 
 def _urge_tick():
@@ -26455,6 +26458,29 @@ def _urge_tick():
                         finally:
                             _INTENT_BUSY.pop(p, None)
                     threading.Thread(target=_hv, daemon=True).start()
+                elif not _INTENT_BUSY.get(pm) and _KIt.life_due(pm, lu, _la, now):
+                    # 2026-11-21 (owner: "Kino reaches out on his own, like a person"): while they are away the person
+                    # crosses his mind - his true day meets what he knows of them (kino_intent.life_harvest)
+                    _INTENT_BUSY[pm] = True
+
+                    def _lv(p=pm, M=M, uid=uid, ow=ow, c=c, lu=lu):
+                        try:
+                            import kino_one as _KOl
+                            _en = c.get("lang") == "en"
+                            _md = __import__("kino_myday").block(list(_person_uids(uid) or [uid]), _en, int(
+                                (_tz_of(uid) or {}).get("off") or (0 if _en else -60)))
+                            _ab = ""
+                            try:
+                                _ab = "\n".join(ln for ln in str(_one_memory(ow, c) or "").split("\n")
+                                                if ln.startswith(_INTENT_ABOUT + _LIFE_ABOUT))[:2500]
+                            except Exception:
+                                pass
+                            _KIt.life_harvest(_rc().W, p, _md, about=_ab or None, last_talk=_KOl.transcript(M, n=12, lang=c.get("lang") or "fr"),
+                                              silence_h=(time.time() - lu) / 3600 if lu else None,
+                                              log=os.path.join(DIR, "robots", "kino_intent.log"))
+                        finally:
+                            _INTENT_BUSY.pop(p, None)
+                    threading.Thread(target=_lv, daemon=True).start()
             except Exception:
                 pass
             if ctx["their_hour"]:
