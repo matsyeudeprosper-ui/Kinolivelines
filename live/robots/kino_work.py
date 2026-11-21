@@ -2013,7 +2013,7 @@ def block(lang="fr", sessions=True):
         pass
     try:                                       # 2026-11-07: his friendships online, in the chat half too
         import kino_friends as KFW
-        L.append(("YOUR FRIENDS ONLINE (Bluesky, Mastodon): " if en else "TES AMIS EN LIGNE (Bluesky, Mastodon) : ") + KFW.week_line())
+        L.append(("YOUR PEOPLE ONLINE (Bluesky, Mastodon): " if en else "TES CONTACTS EN LIGNE (Bluesky, Mastodon) : ") + KFW.week_line())
     except Exception:
         pass
     try:                                       # 2026-11-01: his own money (half of what he earns; his life is paid from it)

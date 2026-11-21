@@ -481,7 +481,10 @@ def week_line(now=None):
         P = {}
     back = [m for m in M if any(s.get("dir") == "in" and s.get("t", 0) > m["t"] for s in (P.get(m["who"]) or {}).get("said") or [])]
     fr = len(_friends())
-    return "new people I wrote to: %d, who answered: %d, friends in all (people who answer me): %d" % (len(M), len(back), fr)
+    # 2026-11-20 (watch: "do you have friends?" -> "a few, you're on the list", then "5", then "friends was too strong"): people
+    # who answered a post are acquaintances, not friends - the number keeps its true name
+    return ("new people I wrote to: %d, who answered: %d, people online I have exchanged with (acquaintances - a friend is "
+            "more than that): %d" % (len(M), len(back), fr))
 
 
 # ------------------------------------------------------------------------- a friend who moves to Telegram or email
