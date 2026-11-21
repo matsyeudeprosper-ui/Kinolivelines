@@ -20,7 +20,10 @@ STATE = os.path.join(HERE, "kino_inner.json")
 _LOCK = threading.Lock()
 HALF = {"excitement": 3, "worry": 6, "curiosity": 4, "boredom": 2, "pride": 5, "annoyance": 4,     # hours
         # 2026-10-23 (owner: "more human, real"): feelings born in the conversation itself, each with a lever on what he does
-        "stung": 2, "warmth": 6, "tender": 3, "playful": 2, "glad": 3, "embarrassed": 3, "closeness": 8, "careful": 2}
+        "stung": 2, "warmth": 6, "tender": 3, "playful": 2, "glad": 3, "embarrassed": 1, "closeness": 8, "careful": 2,
+        # 2026-11-20 (v4 step 4, watch: embarrassment 0.79 and sad 0.61 still strong hours later, told to a near-stranger):
+        # a small embarrassment or a passing sadness fades within the hour or two unless something brings it back
+        "embarrassment": 1, "sad": 2, "surprised": 0.5, "regret": 3, "hurt": 3}
 BAD = re.compile(r"password|mot de passe|garanti|guarant|promi", re.I)
 
 

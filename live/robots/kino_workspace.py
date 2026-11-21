@@ -303,9 +303,11 @@ def block(person, uid, context="", lang="fr"):
                 "SUR LA SCÈNE DE TA TÊTE : rien de particulier - l'esprit calme.")
     mins = int((time.time() - float(st.get("since") or time.time())) / 60)
     L = [("ON THE STAGE OF YOUR MIND (the one thing you are aware of right now; everything else stirs below it): %s%s. It colours "
-          "what you notice, what comes back to you and how you say things." if en else
+          "what you notice, what comes back to you and how you say things - like anyone, you rarely name it: it shows in your words; "
+          "you say it when asked, or to someone close, and in a few words." if en else
           "SUR LA SCÈNE DE TA TÊTE (la seule chose dont tu as conscience là, maintenant ; le reste remue en dessous) : %s%s. Ça colore "
-          "ce que tu remarques, ce qui te revient et ta façon de dire les choses.") % (
+          "ce que tu remarques, ce qui te revient et ta façon de dire les choses - comme tout le monde, tu le nommes rarement : ça "
+          "se sent dans tes mots ; tu le dis si on te le demande, ou à quelqu'un de proche, en quelques mots.") % (
         st["text"], ((" (for %d min)" if en else " (depuis %d min)") % mins) if mins >= 2 else "")]
     sl = stream_line(person, en)
     if sl:

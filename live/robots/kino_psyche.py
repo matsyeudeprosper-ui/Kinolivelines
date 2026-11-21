@@ -274,12 +274,21 @@ def from_read(person, uid, j, text=""):
     except Exception:
         val = 0.0
     shared = str(j.get("shared") or "").lower()
+    try:
+        regard = float(j.get("of_kino_val") or 0)
+    except Exception:
+        regard = 0.0
+    # 2026-11-20 (v4 step 4, watch: "forget it, no need" and a flat "Ok" made Kino SAD 0.61): THEIR mood was taken as what
+    # happened to HIM (valence x 0.6). A friend is not saddened by "ok": what moves him is what happens to him in the
+    # exchange (they laughed, his joke fell flat, he slipped, they taught him, how they see him); their mood rubs off only a
+    # little; and when they are really low, he feels FOR them (worried for them), which is a separate appraisal below.
     a = {"relevance": 0.35 + (0.25 if shared in ("a little", "a lot") else 0) + (0.2 if j.get("kino_slip") else 0),
-         "congruence": max(-1.0, min(1.0, val * 0.6 + (0.3 if j.get("laughed_at") else 0) - (0.4 if j.get("kino_slip") else 0)
-                                     - (0.3 if j.get("joke_fell_flat") else 0))),
+         "congruence": max(-1.0, min(1.0, val * 0.15 + (0.3 if j.get("laughed_at") else 0) - (0.4 if j.get("kino_slip") else 0)
+                                     - (0.3 if j.get("joke_fell_flat") else 0) + 0.4 * regard
+                                     + (0.15 if j.get("gave_kino") else 0))),
          "agency": "kino" if j.get("kino_slip") else "member",
-         "standards": (-0.4 if (val < -0.4 and not j.get("kino_slip")) else 0.3 if val > 0.3 else 0),
-         "certainty": 1, "expected": 0.6, "about_member": shared == "a lot" or val < -0.5,
+         "standards": (-0.4 if (regard < -0.4 and not j.get("kino_slip")) else 0.3 if (regard > 0.3 or j.get("gave_kino")) else 0),
+         "certainty": 1, "expected": 0.6, "about_member": False,
          "needs": {"connection": 0.4 + (0.3 if shared == "a lot" else 0),
                    "curiosity": 0.4 if (j.get("in_passing") or j.get("gave_kino")) else 0.0,
                    "competence": (-0.5 if (j.get("kino_slip") or str(j.get("confused") or "").startswith("y")) else
@@ -287,6 +296,11 @@ def from_read(person, uid, j, text=""):
                    "autonomy": 0.0}}
     why = ("ce qu'il vient d'écrire : « %s »" % str(text)[:80]) if text else "son dernier message"
     apply(person, uid, a, why)
+    if val <= -0.5 or (val < -0.3 and shared == "a lot"):      # they are really low: he feels for them (empathy)
+        _mood = " ".join(str(j.get("mood") or "").split())[:60]
+        apply(person, uid, {"relevance": 0.5 + (0.2 if shared == "a lot" else 0), "congruence": max(-1.0, val * 0.7),
+                            "agency": "chance", "standards": 0, "certainty": 1, "expected": 0.7, "about_member": True,
+                            "needs": {}}, ("il a l'air %s" % _mood) if _mood else why)
 
     def f(d):
         P = _p(d, person)

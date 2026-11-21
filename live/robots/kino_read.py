@@ -29,6 +29,7 @@ Read him RIGHT NOW. JSON only:
  "teaching_moment": "yes|no - is this a moment where a question back would make him think more than an explanation (he just made a decision worth looking at, he asked why, he is close to seeing it himself)",
  "lang_mix": "fr|en|mixed - the language(s) of his last messages",
  "calls_for_answer": "yes|optional|no - does his LAST message call for an answer, or does it close the exchange by itself (a 'cool', a 'thx', a thumbs-up after a goodbye)", "energy": "low|medium|high", "engaged": "fading|steady|warm|intense",
+ "wants_done": "if his last messages ask Kino to DO, find, get, make, buy, book, write, send, contact or take care of something for him (any task, any field), or talk about such a job or its price: what, in a few words; else empty",
  "reaching_for": "what he wants from this exchange right now (an answer, company, reassurance, a laugh, a decision, to wrap up, to vent, to be left alone...)",
  "on_his_mind": "what is really occupying him, in a few words",
  "next": "short|long|silent - how he will most likely answer Kino's next message (short = under 40 characters, about 7 words; silent = nothing for 30 min)",
@@ -108,6 +109,13 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
             _kt += " HIS RECENT WORK (his diary): " + " | ".join(x[:220] for x in _dl[-8:])
     except Exception:
         pass
+    # 2026-11-20 (v4 step 4, watch: "I'll check how the Nasdaq closed tomorrow morning" flagged as a slip - "it cannot verify
+    # that" - so he felt embarrassed and later told the person he "could not keep it"): the intuition must know what Kino
+    # really can do, or a doable promise reads as a mistake
+    _kt += (" WHAT KINO REALLY CAN DO (a promise or claim to do these is NOT a slip): search and read the web at any time, "
+            "look up market prices and closes, run programs, drive a browser, send emails, come back later with a follow-up "
+            "or a reminder, open a job or mission that runs in the background. A slip is a WRONG fact, a wrong number, a "
+            "misunderstanding or a claim about something that did not happen - not a plan to do something he can do.")
     _vals = ""
     try:                                               # 2026-11-03 (human3 7): his own values, to hold a request up to
         _cn = json.load(open(os.path.join(HERE, "kino_identity.json"), encoding="utf-8")).get("constitution") or {}
@@ -151,7 +159,7 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         return None
     if not isinstance(j, dict) or not j.get("mood"):
         return None
-    r = {k: " ".join(str(j.get(k) or "").split())[:160] for k in ("mood", "energy", "engaged", "reaching_for", "on_his_mind")}
+    r = {k: " ".join(str(j.get(k) or "").split())[:160] for k in ("mood", "energy", "engaged", "reaching_for", "on_his_mind", "wants_done")}
     r["next"] = str(j.get("next") or "").lower().strip()
     try:                                               # 2026-11-20 (v4 step 3): he called something off -> Kino is released
         _rel = j.get("released") or []                 # from it (not kept, not broken: let go, like a person)

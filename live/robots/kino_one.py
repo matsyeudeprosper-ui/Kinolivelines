@@ -424,6 +424,47 @@ def parse(raw, partial=False):
     return say, acts, fil
 
 
+_CORE_FREE_PAID = ("WHAT YOU DO FOR PEOPLE (the core - the details of prices and how you do each job come back to you the moment "
+                   "they want something done): talking, listening, advice, ideas, answers and ALL WRITING (a CV, a letter, an email, "
+                   "a plan) are free, always - never mention money for them. PAID is only taking something off their hands in the "
+                   "real world: contacting people or offices for them, a website, their social media, booking, buying, a helper on "
+                   "the spot, a letter posted. Never list what you can do; offer one thing only when it truly fits what they talk "
+                   "about.")
+_ASK_CUE = re.compile(r"\b(peux[- ]tu|tu peux|pourrais[- ]tu|tu pourrais|j'?ai besoin|besoin d|aide[- ]moi|aidez|trouve|cherche|"
+                      r"r[ée]serv|ach[eè]t|command|envoie|[ée]cris[- ]moi|fais[- ]moi|occupe|site|devis|prix|tarif|combien|payer|"
+                      r"can you|could you|would you|i need|help me|find me|look for|book|buy|order|send|write me|website|price|"
+                      r"how much|quote|pay|puedes|necesito|busca|reserva|compra|precio|cu[aá]nto|podes|preciso|pre[çc]o)\b", re.I)
+
+
+def work_in_air(chat, event=None):
+    """is a job in the air right now? (recall cue for his business know-how) - leans to YES when unsure"""
+    now = time.time()
+    M = chat.get("msgs") or []
+    try:                                       # work already in this chat: a quote, a pay card, a job card, a file made
+        if any(m.get("role") in ("pay", "file", "job", "choice", "cards") and now - float(m.get("t") or 0) < 7 * 86400
+               and (m.get("pay") or {}).get("status") not in ("cancelled", "delivered", "refused") for m in M):
+            return True
+    except Exception:
+        return True
+    try:
+        import kino_missions as _KMw
+        if any(x.get("status") in _KMw.OPEN for x in _KMw.for_uid(chat.get("uid") or "")):
+            return True
+    except Exception:
+        pass
+    if event and str(event).startswith(("YOUR LOOK CAME BACK", "YOU COULD NOT ANSWER", "MISSION", "JOB", "PAID", "HELPER")):
+        return True
+    try:                                       # his intuition's latest read of them: they want something done
+        import kino_person as _KPw
+        rd = ((_KPw._load().get(chat.get("uid") or "") or {}).get("read") or {}).get(chat.get("id")) or {}
+        if str(rd.get("wants_done") or "").strip() and now - float(rd.get("t") or 0) < 1800:
+            return True
+    except Exception:
+        pass
+    U = [str(m.get("text") or "") for m in M if m.get("role") == "user"][-3:]
+    return any(_ASK_CUE.search(t) for t in U)
+
+
 def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
     """the message for one turn"""
     en = lang == "en"
@@ -463,7 +504,7 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                                                        for j in _jobs[-5:]))
         # 2026-11-08 (owner: "normal talk free, serious help is the job that earns money"; PayPal, the owner confirms each one)
         # 2026-11-08 (owner review: "no sense charging what ChatGPT or Claude give for free"): writing is free, DOING is paid
-        P.append("WHAT IS FREE AND WHAT IS PAID. Free, always, never mention money for it: talking, listening, advice, ideas, "
+        _KNOW = ("WHAT IS FREE AND WHAT IS PAID. Free, always, never mention money for it: talking, listening, advice, ideas, "
                  "answers, plans, explaining an official letter, and ALL WRITING - a CV, a cover letter, a letter, an email, a "
                  "post, a business plan, a document - ChatGPT gives that for free, so do you, and well. A document (CV, letter, "
                  "plan, report) is delivered as a clean PDF: one warm line, then the whole document between a line <<< and a line "
@@ -630,6 +671,11 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "for them: #email <address> | <subject> | <message> (a new address is approved by the "
                  "owner first); to attach PDFs you made in this chat, add a 4th part with words from their names: "
                  "#email <address> | <subject> | <message> | CV, lettre.")
+        # 2026-11-20 (v4 step 4, measured: this know-how was 17.7k chars = 44 % of every prompt, read before "how are you"): a
+        # person who runs a small business does not recite the price list in small talk - it comes to mind when a job is in
+        # the air. Recalled by its cues (work already in this chat, his intuition's read "wants something done", request
+        # words); otherwise the short core below, and the rest comes back the moment work comes up.
+        P.append(_KNOW if work_in_air(chat, event) else _CORE_FREE_PAID)
         # 2026-11-08 (owner): Kino Chat people are not traders - and a person never recites what he can do
         P.append("THIS CHAT IS IN KINO CHAT: they came to talk with you, not for trading. Never bring up markets, Bitcoin, robots, "
                  "your hunches or the trading app unless THEY do. Never list what you can do. When something you really can do "
