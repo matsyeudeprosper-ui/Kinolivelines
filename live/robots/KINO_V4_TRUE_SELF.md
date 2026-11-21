@@ -47,3 +47,14 @@ never canned sentences; he stays a friend, never a support agent.
   sad 0.61 from "Ok" (too strong, too long), body pain told to a near-stranger.
   Also seen: desk loop - "client missions" lane sat down 19x and stopped at 0-1 steps (cancelled missions?), "re-read my
   promotion strategy" 6x - for step 3 / step 7.
+- 2026-11-21 ~00:50 UTC: STEP 3 DONE (commits 50270e4f, ac436a35, + follow-ups release). kino_read gets WHAT KINO SAID HE
+  WOULD DO (open promises c.. + his follow-ups f..) and returns "released" ids -> status "released" (not kept/broken) /
+  follow-up done. kino_commit.lapse(): small promises a day past due -> "lapsed" (counts as not kept), shown 48 h as "let slip"
+  ("Ce que tu avais promis et laissé filer...") then gone; promises a week old -> "forgotten" (silent). Open promises shown with
+  their age. kino_missions: ENDED missions labelled, gone after 48 h. myday: sittings during outage hours = "could not think",
+  not choices. Facts: people who answered online = acquaintances, not "friends" (watch: oversold friends to Pekos).
+  Live test kctest991: "tell me tomorrow how the Nasdaq closed" -> c168 open -> "forget it, no need" -> c168 RELEASED.
+  FOUND for step 4: the same exchange raised FALSE feelings - kino_read flagged his promise as a slip ("cannot verify") ->
+  embarrassment, and "oublie pour le Nasdaq" appraised as SAD 0.61 -> next turn he refused a promise "I couldn't keep the
+  Nasdaq one" (untrue). Also: the kinochat business rulebook ("WHAT IS FREE AND WHAT IS PAID") = 17.7k chars = 44 % of every
+  prompt, even on "how are you" -> recall it only when work is in the air.
