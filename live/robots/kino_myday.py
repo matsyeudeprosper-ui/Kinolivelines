@@ -137,6 +137,30 @@ def lab(since, en):
     return head + " | ".join(parts)
 
 
+SALES_LOG = os.path.join(HERE, "kino_sales.log")
+
+
+def emails(since, en):
+    """the emails he really sent to businesses in the window, and the answers that came back - counted from the send log
+    (2026-11-21 watch: he told Pekos 'one email today' after six went out; merged session lines had lost the count)"""
+    year = time.localtime().tm_year
+    sent, back, names = 0, 0, []
+    for l in _tail(SALES_LOG, 400_000):
+        try:
+            t = time.mktime(time.strptime("%d-%s" % (year, l[:14]), "%Y-%m-%d %H:%M:%S"))   # the log is in the server's clock
+        except Exception:
+            continue
+        if t < since:
+            continue
+        if " SENT " in l:
+            sent += 1
+        elif "replied" in l or " REPLY" in l:
+            back += 1
+    if not sent and not back:
+        return ""
+    return (("emails to businesses: %d sent, %d answered" if en else "e-mails aux commerces : %d envoyés, %d réponses") % (sent, back))
+
+
 def talks(since, uid, en):
     """who he talked with: this person by 'you' (uid = one id or all the ids of one person), the others only counted"""
     mine = {str(u) for u in (uid if isinstance(uid, (list, tuple, set)) else [uid])}
@@ -225,7 +249,7 @@ def block(uid, en=False, off_min=0):
             L.append(drop)
     except Exception:
         pass
-    for fn in (lambda: lab(since, en), lambda: talks(since, uid, en)):
+    for fn in (lambda: lab(since, en), lambda: emails(since, en), lambda: talks(since, uid, en)):
         try:
             x = fn()
             if x:
