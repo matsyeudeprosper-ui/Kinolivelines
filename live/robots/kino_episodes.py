@@ -186,6 +186,8 @@ def recall(uid, query, n=4, exclude_day=None):
     for x in u.get("episodes") or []:
         if exclude_day and x.get("day") == exclude_day:
             continue
+        if x.get("let_go"):                         # 2026-11-22 (v5 kino_dream): a moment he let go of at night is not recalled
+            continue
         T = set(x.get("tags") or []) | _words(x.get("what")) | _words(x.get("outcome"))
         ov = len(q & T)
         if ov < 2 and not (ov >= 1 and int(x.get("imp", 3)) >= 5):     # 2026-10-28 (round 6): vivid moments intrude

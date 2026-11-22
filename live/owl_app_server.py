@@ -15830,6 +15830,13 @@ def _one_fresh(user, c, slim=False):
                 L.append(_bp)
     except Exception:
         pass
+    try:                                               # 2026-11-22 (v5 watcher): what he noticed in himself, his stakes, his values
+        if not slim:
+            _bwt = __import__("kino_witness").block(_person(uid), "en" if c.get("lang") == "en" else "fr")
+            if _bwt:
+                L.append(_bwt)
+    except Exception:
+        pass
     try:                                               # 2026-11-21 (kino_debate): where the argument stands + facts he checked
         if not slim and c.get("id"):
             _bdb = __import__("kino_debate").block(c["id"], "en" if c.get("lang") == "en" else "fr")
@@ -22375,6 +22382,15 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             import kino_debate as _KDb
             _KDb.mark_fixes_said(cid, say)
             __import__("kino_preocc").note_said(_person(uid), say)      # review item 4: what he told whom
+    except Exception:
+        pass
+    try:                                               # 2026-11-22 (v5 watcher): what that moment did to him, what he notices,
+        if say and not str(event or "").startswith("AUTO-TRADE WATCH"):    # and the lean on his next moment
+            import kino_witness as _KWt
+            if _KWt.due(_person(uid), "talk"):
+                _trw = __import__("kino_one").transcript((c.get("msgs") or [])[-6:] + [{"role": "ai", "text": say, "t": time.time()}],
+                                                         n=8, lang=c.get("lang") or "fr")
+                threading.Thread(target=_KWt.watch, args=(_rc().W, _person(uid), uid, "talk", _trw), daemon=True).start()
             _lud = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
             _tr = __import__("kino_one").transcript((c.get("msgs") or []) + [{"role": "ai", "text": say, "t": time.time()}], n=16,
                                                     lang=c.get("lang") or "fr")
@@ -25436,6 +25452,28 @@ def _kino_night_mind():
                       _rc().W, log=os.path.join(DIR, "robots", "kino_episodes.log"))
         except Exception:
             pass
+        try:              # 2026-11-22 (v5): his stakes from what he lived (weekly: his values), then he dreams the day
+            import kino_witness as _KWn, kino_dream as _KDn, kino_selfmodel as _KSMh
+            _hist = []
+            try:
+                _hist.append("MY PORTRAIT OF MYSELF: " + str((lambda _pt: _pt.get("en") or _pt.get("fr") or "")(((_KSMh._P(_KSMh._load(), "kino") or {}).get("portrait") or {})))[:2500])
+            except Exception:
+                pass
+            try:
+                import kino_episodes as _KEh
+                _eps = sorted([x for k_, u_ in (_KEh._load() or {}).items() if not str(k_).startswith(("kctest", "probe"))
+                               for x in (u_ or {}).get("episodes") or [] if not x.get("let_go")],
+                              key=lambda x: (-int(x.get("imp", 3)), -float(x.get("t") or 0)))[:25]
+                _hist.append("MOMENTS THAT MATTERED:\n" + "\n".join("- " + str(x.get("what"))[:200] for x in _eps))
+            except Exception:
+                pass
+            _wm = [m for m in _KWn._load().get("moments") or [] if time.time() - float(m["t"]) < 3 * 86400 and m.get("notice")][-15:]
+            if _wm:
+                _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
+            _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))
+            _KDn.night(_rc().W, log=os.path.join(DIR, "robots", "kino_dream.log"))
+        except Exception:
+            pass
         try:              # 2026-10-23 (engine 4): the day's review against his plan, then the weekly revision of his goals
             import kino_exec as _KX
             _lg = os.path.join(DIR, "robots", "kino_exec.log")
@@ -26453,8 +26491,15 @@ def _urge_tick():
                     import kino_stream as _KSTt
                     _lm_t = max([float(m.get("t") or 0) for m in M if m.get("role") in ("user", "ai")] or [0])
                     if not ctx["in_talk"] and _KSTt.due(pm, (now - _lm_t) / 60.0, ctx["their_hour"], now):
-                        threading.Thread(target=_KSTt.think, args=(_rc().W, pm, uid, "en" if c.get("lang") == "en" else "fr"),
-                                         kwargs={"log": os.path.join(DIR, "robots", "kino_stream.log")}, daemon=True).start()
+                        def _thw(pm=pm, uid=uid, lg="en" if c.get("lang") == "en" else "fr"):
+                            _th = _KSTt.think(_rc().W, pm, uid, lg, log=os.path.join(DIR, "robots", "kino_stream.log"))
+                            try:                       # 2026-11-22 (v5 watcher): he catches himself thinking, too
+                                if _th and _th.get("text"):
+                                    import kino_witness as _KWs
+                                    _KWs.watch(_rc().W, pm, uid, "stream", "My thought, alone: " + _th["text"])
+                            except Exception:
+                                pass
+                        threading.Thread(target=_thw, daemon=True).start()
                 except Exception:
                     pass
                 try:                                   # 2026-10-31 (kino_depth): silence teaches, threads come back, nights bring ideas
@@ -40599,6 +40644,21 @@ class H(BaseHTTPRequestHandler):
                 self._send(open(os.path.join(DIR, "owl_kinoday_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
                 self._send(json.dumps(kino_day(user), ensure_ascii=False), "application/json")
+        elif sub in ("kinoinner", "kino_inner_data") and is_admin(user):
+            # 2026-11-22 (Kino v5 "the watcher", phase 6): Matsy's window on Kino's inner life - owner only
+            if sub == "kinoinner":
+                self._send(open(os.path.join(DIR, "owl_kinoinner_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                _rc()
+                import kino_witness as _KWv, kino_dream as _KDv, kino_stream as _KSv
+                _wv = _KWv._load()
+                _sv = []
+                for _pv, _xv in (_KSv._load() or {}).items():
+                    _sv += [dict(x, person=_pv) for x in (_xv or {}).get("thoughts") or []]
+                self._send(json.dumps({"stakes": ((_wv.get("stakes") or {}).get("items") or []), "values": _wv.get("values") or {},
+                                       "dreams": list(reversed((_KDv._load().get("dreams") or [])[-7:])),
+                                       "moments": list(reversed((_wv.get("moments") or [])[-40:])),
+                                       "stream": sorted(_sv, key=lambda x: -float(x.get("t") or 0))[:25]}, ensure_ascii=False), "application/json")
         elif sub in ("decouvrir-kino", "kino_pitch"):
             if sub == "decouvrir-kino":
                 fn_count("kino_pitch")

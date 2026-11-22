@@ -111,6 +111,24 @@ def candidates(person, uid, en=False):
                       ("a thought of yours: " if en else "une pensée à toi : ") + th["text"], "thought", bool(th.get("about_him"))))
     except Exception:
         pass
+    try:                                                            # 2026-11-22 (v5): the watcher's lean - he caught himself, and
+        import kino_witness as KWt                                  # that bends what comes next (the observer is part of it)
+        ln = KWt.lean_now(person)
+        if ln:
+            C.append(("lean:%d" % int(ln["t"]), 0.4 + 0.4 * float(ln.get("w") or 0), int((time.time() - ln["t"]) / 60),
+                      ("you caught yourself: %s - %s" if en else "tu t'es vu toi-même : %s - %s") % (ln.get("notice") or ln.get("did"), ln["lean"]),
+                      "self", False))
+    except Exception:
+        pass
+    try:                                                            # 2026-11-22 (v5): what he woke up with after his dream
+        import kino_dream as KDr
+        dw = KDr.woke_now()
+        if dw:
+            C.append(("woke:%d" % int(dw["t"]), 0.6, int((time.time() - dw["t"]) / 60),
+                      ("you woke up with this, after a dream: " if en else "tu t'es réveillé avec ça, après un rêve : ") + dw["woke_with"],
+                      "thought", False))
+    except Exception:
+        pass
     try:
         import kino_urge as KU
         for k, w in (KU.state(person).get("items") or [])[:4]:

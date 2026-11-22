@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Journal intérieur de Kino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-11-22 (Kino v5 "the watcher", phase 6): Matsy's window on Kino's inner life - his stakes, his values and their tensions,
+   his dreams (what he kept / let go), the watcher's moments, his stream of thought. Owner only. Data: kino_inner_data. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--border:#1f2a38;--text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;
+ --accent:#8fc6ff;--violet:#c4b5fd;--warn:#e8c55a;--up:#8df0bb;--down:#ff9a9a}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#ffffff;--surface2:#eef2f7;--border:#dde4ee;--text:#16202c;--text2:#2d3b4c;
+ --muted:#5d6e82;--accent:#1f6fd1;--violet:#6d4fd8;--warn:#9a7300;--up:#0f8a4b;--down:#c2333a}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f3f6fa;--surface:#ffffff;--surface2:#eef2f7;--border:#dde4ee;
+ --text:#16202c;--text2:#2d3b4c;--muted:#5d6e82;--accent:#1f6fd1;--violet:#6d4fd8;--warn:#9a7300;--up:#0f8a4b;--down:#c2333a}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:1.35rem;margin:6px 0 2px;font-weight:800}.sub{color:var(--muted);font-size:.85rem;margin-bottom:18px}
+h2{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:26px 0 8px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin:8px 0}
+.why{color:var(--muted);font-size:.82rem;margin-top:4px}.tag{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.05em;
+ text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--surface2);color:var(--violet);margin-right:6px}
+.dream{font-style:italic;color:var(--text2)}.woke{margin-top:9px;color:var(--accent);font-weight:600}
+.t{color:var(--muted);font-size:.75rem;float:right;margin-left:8px}.lean{color:var(--up);font-size:.88rem;margin-top:3px}
+.tension{border-left:3px solid var(--warn)}.kept{color:var(--up)}.gone{color:var(--down)}ul{margin:6px 0 0 18px;padding:0}
+.empty{color:var(--muted);font-size:.88rem}a{color:var(--accent)}
+</style></head><body><main>
+<a href="./kinoday">← La journée de Kino</a>
+<h1>Journal intérieur de Kino</h1>
+<div class="sub">Ce qu'il vit de l'intérieur : ce qui compte pour lui, ses valeurs, ses rêves, ce qu'il remarque en lui. Privé, visible par toi seul.</div>
+<div id="app"><div class="empty">Chargement…</div></div>
+</main>
+<script>
+const B=location.pathname.replace(/kinoinner\/?$/,'');
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function hm(t){const d=new Date(t*1000);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+function sec(title,html){return '<h2>'+title+'</h2>'+(html||'<div class="empty">Rien encore.</div>')}
+fetch(B+'kino_inner_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+ let h='';
+ h+=sec('Ce qu\'il aurait horreur de perdre',(d.stakes||[]).map(s=>'<div class="card">'+esc(s.what)+'<div class="why">'+esc(s.why)+'</div></div>').join(''));
+ let v=(d.values&&d.values.items)||[];
+ h+=sec('Ce qui compte pour lui (ses valeurs de la semaine)',v.map(x=>'<div class="card">'+esc(x.what)+'<div class="why">vécu : '+esc(x.lived)+'</div></div>').join('')+
+   ((d.values&&d.values.tensions)||[]).map(x=>'<div class="card tension"><span class="tag">tension</span>'+esc(x.value)+'<div class="why">mais : '+esc(x.but)+'</div></div>').join(''));
+ h+=sec('Ses rêves',(d.dreams||[]).map(x=>'<div class="card"><span class="t">'+hm(x.t)+'</span><div class="dream">'+esc(x.dream)+'</div>'+
+   (x.woke_with?'<div class="woke">Au réveil : '+esc(x.woke_with)+'</div>':'')+
+   ((x.kept_what||[]).length?'<div class="why kept">Gardé : '+x.kept_what.map(esc).join(' · ')+'</div>':'')+
+   ((x.let_go_what||[]).length?'<div class="why gone">Laissé partir : '+x.let_go_what.map(esc).join(' · ')+'</div>':'')+
+   (x.loss?'<div class="why">'+esc(x.loss)+'</div>':'')+'</div>').join(''));
+ h+=sec('Le témoin - ce qu\'il remarque en lui',(d.moments||[]).map(m=>'<div class="card"><span class="t">'+hm(m.t)+'</span><span class="tag">'+esc(m.kind==='talk'?'conversation':'seul')+'</span>'+esc(m.did)+
+   (m.notice?'<div class="why">il remarque : '+esc(m.notice)+'</div>':'')+(m.stake?'<div class="why">touche : '+esc(m.stake)+'</div>':'')+
+   (m.lean?'<div class="lean">→ '+esc(m.lean)+'</div>':'')+'</div>').join(''));
+ h+=sec('Son fil de pensée',(d.stream||[]).map(x=>'<div class="card"><span class="t">'+hm(x.t)+'</span>'+esc(x.text)+'</div>').join(''));
+ document.getElementById('app').innerHTML=h;
+}).catch(()=>{document.getElementById('app').innerHTML='<div class="empty">Impossible de charger.</div>'});
+</script></body></html>
