@@ -15830,6 +15830,13 @@ def _one_fresh(user, c, slim=False):
                 L.append(_bp)
     except Exception:
         pass
+    try:                                               # 2026-11-21 (kino_debate): where the argument stands + facts he checked
+        if not slim and c.get("id"):
+            _bdb = __import__("kino_debate").block(c["id"], "en" if c.get("lang") == "en" else "fr")
+            if _bdb:
+                L.append(_bdb)
+    except Exception:
+        pass
     _mk(3)
     try:                                               # kino_ways: how this person does and wants things, newest word
         import kino_ways as _KWy
@@ -18841,7 +18848,24 @@ def _missed_tick():
             _ev = ("YOU COULD NOT ANSWER - your mind was down when they wrote at %s UTC: «%s». It is back now: answer it, "
                    "simply, with at most a few words about having been away, then the real answer." % (
                        time.strftime("%H:%M", time.gmtime(_m["at"])), _m["text"]))
-            threading.Thread(target=_chat_quick, args=(_cid, _u), kwargs={"event": _ev, "notify": True}, daemon=True).start()
+            # 2026-11-21 (watch: Pekos's address for his washing machine, 00:05, never answered): the entry was popped BEFORE the
+            # pickup turn ran; that turn hit the plan limit too and the message was lost. It comes back until a real answer exists.
+            def _pick(cid=_cid, u=_u, ev=_ev, m=dict(_m)):
+                try:
+                    _chat_quick(cid, u, event=ev, notify=True)
+                except Exception:
+                    pass
+                try:
+                    _cc = json.load(open(_chat_path(cid), encoding="utf-8"))
+                    _ok = any(x.get("role") == "ai" and x.get("text") and not x.get("err") and float(x.get("t") or 0) > m["at"]
+                              for x in _cc.get("msgs") or [])
+                    _later = any(x.get("role") == "user" and float(x.get("t") or 0) > m["at"] for x in _cc.get("msgs") or [])
+                    if not _ok and not _later and cid not in _MISSED:
+                        _MISSED[cid] = dict(m, t=time.time())
+                        _missed_save()
+                except Exception:
+                    pass
+            threading.Thread(target=_pick, daemon=True).start()
         except Exception:
             pass
 
@@ -22139,6 +22163,12 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
                 _mdl, _careful = "opus", True
         except Exception:
             pass
+        try:                                                    # 2026-11-21 (owner: "like a real human arguing on radio or TV"):
+            if not event and _mdl == "sonnet" and _plan_now in ("premium", "owner") and \
+                    __import__("kino_debate").active(cid) and not getattr(__import__("kino_inner").PROBE, "sandbox", False):
+                _mdl = "opus"                                   # a real discussion is thought with the strongest model
+        except Exception:
+            pass
         _ff, _mm1 = _ground(_ff, c), _ground(_mm1, c)          # 2026-10-28: what he already said is marked as such
         try:                                                    # 2026-10-29: his own note too (it re-announced "only watching" x3)
             _md0 = dict(c.get("mind") or {})
@@ -22304,6 +22334,16 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         # its moment) - whatever turn he says one in, it is said, so it never comes back as a repeat
         if say and not str(event or "").startswith("AUTO-TRADE WATCH"):
             _KIe.note_said_in_talk(_person(uid), say)
+    except Exception:
+        pass
+    try:                                               # 2026-11-21 (kino_debate): between turns, where the argument stands,
+        if not event and say:                          # facts looked up, his own claims checked - ready for his next turn
+            import kino_debate as _KDb
+            _KDb.mark_fixes_said(cid, say)
+            _lud = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
+            _tr = __import__("kino_one").transcript((c.get("msgs") or []) + [{"role": "ai", "text": say, "t": time.time()}], n=16,
+                                                    lang=c.get("lang") or "fr")
+            threading.Thread(target=_KDb.after_exchange, args=(_rc().W, cid, _tr, str(_lud.get("text") or "")), daemon=True).start()
     except Exception:
         pass
     if str(event or "").startswith("WISH TO TALK") and not say:

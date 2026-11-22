@@ -102,7 +102,7 @@ def focus(facts, last_member, keep=6):
             s += 2.0
         if "SES RÈGLES DE TRADING" in b or "SES TRADES À LA MAIN" in b:
             s += 3.0                                            # what you act on stays in mind
-        if b.startswith(("THINGS YOU WANT TO DO WITH OR FOR HIM", "ON YOUR OWN MIND THESE DAYS")):
+        if b.startswith(("THINGS YOU WANT TO DO WITH OR FOR HIM", "ON YOUR OWN MIND THESE DAYS", "THE DISCUSSION YOU ARE HAVING")):
             s += 3.0                                            # 2026-11-21: his own agenda is in mind, not only what they said
         if "[déjà dit" in b:
             s -= 2.5

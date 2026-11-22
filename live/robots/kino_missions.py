@@ -343,7 +343,10 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
             except Exception:
                 pass
         elif m["status"] in OPEN:                  # no time given: a watcher keeps its rhythm, the rest comes back tomorrow
-            m["next_t"] = now + (float(m["repeat_h"]) if m.get("repeat_h") else 24) * 3600
+            # 2026-11-21 (watch: Pekos's washing machine, step during the plan limit, no time -> +24 h while the chat promised
+            # "around 02:05"): a job that has not given its first news yet comes back within the hour
+            _told = any(x.get("kind") == "tell" for x in m["log"])
+            m["next_t"] = now + (float(m["repeat_h"]) if m.get("repeat_h") else (24 if _told else 1)) * 3600
         m["log"] = m["log"][-60:]
         out.update(m)
     _mut(f)
