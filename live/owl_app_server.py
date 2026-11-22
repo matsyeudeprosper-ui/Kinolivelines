@@ -15830,6 +15830,13 @@ def _one_fresh(user, c, slim=False):
                 L.append(_bp)
     except Exception:
         pass
+    try:                                               # 2026-11-22 (v6 item 4): something he made - his, shareable when it fits
+        if not slim:
+            _bcr = __import__("kino_create").block()
+            if _bcr:
+                L.append(_bcr)
+    except Exception:
+        pass
     try:                                               # 2026-11-22 (v5 watcher): what he noticed in himself, his stakes, his values
         if not slim:
             _bwt = __import__("kino_witness").block(_person(uid), "en" if c.get("lang") == "en" else "fr")
@@ -25473,6 +25480,12 @@ def _kino_night_mind():
                 _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
             _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))
             _KDn.night(_rc().W, log=os.path.join(DIR, "robots", "kino_dream.log"))
+            try:                                      # 2026-11-22 (v6 item 4): after the dream, something of his own, now and then
+                import kino_create as _KCn
+                if _KCn.due():
+                    _KCn.make(_rc().W, log=os.path.join(DIR, "robots", "kino_create.log"))
+            except Exception:
+                pass
         except Exception:
             pass
         try:              # 2026-10-23 (engine 4): the day's review against his plan, then the weekly revision of his goals
@@ -26632,6 +26645,10 @@ def _urge_tick():
                                 _fdt = __import__("kino_preocc").findings_text(trading_ok=c.get("app") != "kinochat")
                                 if _fdt:
                                     _md = str(_md or "") + "\n\nTHINGS YOU LOOKED INTO YOURSELF LATELY (true, with sources):\n" + _fdt
+                                _pc = __import__("kino_create").recent()
+                                if _pc:                # v6 item 4: something he made - who would like to see it?
+                                    _md = str(_md or "") + "\n\nSOMETHING YOU MADE LATELY (your own %s \"%s\"): %s" % (
+                                        _pc["kind"], _pc["title"], _pc["text"][:600])
                             except Exception:
                                 pass
                             _ab = ""
@@ -30207,6 +30224,20 @@ def _voice_delivery(uid=None):
     except Exception:
         F = []
     notes = [_DELIVERY[f["kind"]] for f in F if f["kind"] in _DELIVERY]
+    try:                                         # 2026-11-22 (v6 item 3): his body and the hour are in his voice too - tired
+        _rc()                                    # when his energy is low, a late-night voice when it is night for them
+        import kino_body as _KBv
+        if _KBv.fatigue() >= 0.5:
+            notes.append(_DELIVERY["tired"])
+            F = F + [{"kind": "tired"}]
+    except Exception:
+        pass
+    try:
+        if uid and 0 <= _local_hour(uid) < 7 or (uid and _local_hour(uid) >= 23):
+            notes.append("a late-night voice: quieter, closer, unhurried")
+            F = F + [{"kind": "late"}]
+    except Exception:
+        pass
     if not notes:
         return ""
     return ("How you sound right now, because of how you feel (%s): %s. Natural hesitations (a pause, \"hmm\", restarting a "
@@ -40656,7 +40687,9 @@ class H(BaseHTTPRequestHandler):
                 _sv = []
                 for _pv, _xv in (_KSv._load() or {}).items():
                     _sv += [dict(x, person=_pv) for x in (_xv or {}).get("thoughts") or []]
-                self._send(json.dumps({"stakes": ((_wv.get("stakes") or {}).get("items") or []), "values": _wv.get("values") or {},
+                import kino_create as _KCv
+                self._send(json.dumps({"pieces": list(reversed((_KCv._load().get("pieces") or [])[-10:])),
+                                       "stakes": ((_wv.get("stakes") or {}).get("items") or []), "values": _wv.get("values") or {},
                                        "dreams": list(reversed((_KDv._load().get("dreams") or [])[-7:])),
                                        "moments": list(reversed((_wv.get("moments") or [])[-40:])),
                                        "stream": sorted(_sv, key=lambda x: -float(x.get("t") or 0))[:25]}, ensure_ascii=False), "application/json")

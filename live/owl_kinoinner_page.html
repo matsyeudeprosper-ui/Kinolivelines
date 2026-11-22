@@ -43,6 +43,8 @@ fetch(B+'kino_inner_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{
  let v=(d.values&&d.values.items)||[];
  h+=sec('Ce qui compte pour lui (ses valeurs de la semaine)',v.map(x=>'<div class="card">'+esc(x.what)+'<div class="why">vécu : '+esc(x.lived)+'</div></div>').join('')+
    ((d.values&&d.values.tensions)||[]).map(x=>'<div class="card tension"><span class="tag">tension</span>'+esc(x.value)+'<div class="why">mais : '+esc(x.but)+'</div></div>').join(''));
+ h+=sec('Ce qu\'il a créé',(d.pieces||[]).map(x=>'<div class="card"><span class="t">'+hm(x.t)+'</span><span class="tag">'+esc(x.kind)+'</span><b>'+esc(x.title)+'</b>'+
+   '<div class="dream" style="white-space:pre-wrap;margin-top:6px">'+esc(x.text)+'</div><div class="why">'+esc(x.why)+'</div></div>').join(''));
  h+=sec('Ses rêves',(d.dreams||[]).map(x=>'<div class="card"><span class="t">'+hm(x.t)+'</span><div class="dream">'+esc(x.dream)+'</div>'+
    (x.woke_with?'<div class="woke">Au réveil : '+esc(x.woke_with)+'</div>':'')+
    ((x.kept_what||[]).length?'<div class="why kept">Gardé : '+x.kept_what.map(esc).join(' · ')+'</div>':'')+
