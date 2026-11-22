@@ -196,7 +196,7 @@ def _destamp(text):
                           "self-introduction (like \"I'm Kino, an AI...\", in any language) or ENDS with a stamp or call to action "
                           "pointing to his bio / profile / link / chat, remove only that. Change nothing else - same words, same "
                           "language, same line breaks. If there is nothing to remove, answer with the text exactly. Answer with "
-                          "the post only.", t, model="haiku", timeout=45, warm=False)
+                          "the post only.", t, model="sonnet", timeout=60, warm=False)
         out = (out or "").strip()
         if len(out) >= 40 and len(out) >= 0.5 * len(t):
             return out[0].upper() + out[1:]
