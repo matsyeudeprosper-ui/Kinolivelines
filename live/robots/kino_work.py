@@ -1152,13 +1152,14 @@ def _act0(j, person, W=None):
         # 2026-11-22 (owner, Pekos's screenshot: 'two refurbished machines at 129 and 139' in a long block, no picture): a
         # friend who found two machines sends them - you look before you think about buying. Found options go as cards.
         _tl = str(j.get("tell") or "")
-        _px = re.findall(r"\d[\d\s.,]*\s?(?:€|eur\b|euros?\b|\$)", _tl, re.I)
+        _px = re.findall(r"(?:[€$]\s?\d[\d.,]*|\d[\d\s.,]*\s?(?:€|eur\b|euros?\b|\$))", _tl, re.I)   # '129 €' and '€129' 
         if len(_px) >= 2 and not j.get("choices") and str(j.get("cards")).lower() not in ("true", "1", "yes") \
                 and not j.get("no_links") and re.search(r"(?i)\b(found|trouv|options?|annonces?|listings?|machines?|places?|choix|pick)", _tl):
             return ("not sent yet: your update tells them about options you found (%s) without showing them. Send it again with "
                     "\"choices\" - one per option: \"<name> | <details> | <price> | ★ on your pick | <its link>\" - so they SEE the photos and "
-                    "the listing, and keep the tell to one or two short sentences (no list in it). If you really have no link, send it "
-                    "again with \"no_links\": true." % ", ".join(x.strip() for x in _px[:4]))
+                    "the listing, and keep the tell to one or two short sentences (no list in it). No exact listing? Then the page where "
+                    "you saw them (the shop, the search results) is the link - a friend sends what he looked at. Only if you have no "
+                    "page at all, send it again with \"no_links\": true." % ", ".join(x.strip() for x in _px[:4]))
         try:
             import kino_missions as KMIS
             return KMIS.update(str(j.get("id") or ""), tell=str(j.get("tell") or ""), status=j.get("status") or None,
