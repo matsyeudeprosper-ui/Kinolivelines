@@ -77,23 +77,27 @@ def _known_text(d):
     return "\n".join("[%s] %s (%s)" % (x["id"], x["what"], x.get("kind")) for x in d["items"][-60:]) or "(nothing yet)"
 
 
+_LAST = {}
+
+
 def harvest(uid, cid, say, W, log=None):
     """one sent bubble -> the ledger of what he said about himself (never raises; one small-model call, only when the text
     speaks in the first person about something that is not trading)"""
     try:
         say = str(say or "").strip()
-        if len(say) < 15 or not FIRST_PERSON.search(say):
+        # 2026-11-22 (owner: "no word matching or regex - multi-language users"): the French first-person gate kept English,
+        # Spanish... statements out. Any reply with some length goes to the reader (it knows "about himself, not trading"),
+        # at most once a minute per chat (cost)
+        if len(say) < 40 or time.time() - _LAST.get(cid, 0) < 60:
             return []
-        # at least one first-person sentence outside trading talk
-        if not any(FIRST_PERSON.search(s) and not TRADING.search(s) for s in re.split(r"(?<=[.!?])\s+|\n+", say)):
-            return []
+        _LAST[cid] = time.time()
         d0 = _load()
         j = W.ask_json(EXTRACT_SYSTEM, "KNOWN STATEMENTS:\n%s\n\nKINO'S MESSAGE:\n<<<\n%s\n>>>\nJSON only." % (_known_text(d0), say[:1500]),
                        models=("haiku", "sonnet"), timeout=60, log=log, warm=False)
         items = (j or {}).get("items") if isinstance(j, dict) else None
         found = []
         for it in items or []:
-            if isinstance(it, dict) and str(it.get("what") or "").strip() and not TRADING.search(str(it.get("what"))):
+            if isinstance(it, dict) and str(it.get("what") or "").strip():
                 found.append({"what": str(it["what"]).strip()[:160], "kind": it.get("kind") if it.get("kind") in KINDS else "opinion",
                               "same": str(it.get("same") or "") or None, "contradicts": str(it.get("contradicts") or "") or None})
         if not found:
@@ -169,8 +173,8 @@ def balance(msgs, n=12):
         ai = [m for m in (msgs or []) if m.get("role") == "ai" and m.get("text")][-n:]
         if len(ai) < 4:
             return {"asked": 0, "shared": 0, "text": ""}
-        asked = sum(1 for m in ai if ASK.search(str(m["text"])))
-        shared = sum(1 for m in ai if SHARE.search(str(m["text"])))
+        return {"asked": 0, "shared": 0, "text": ""}    # 2026-11-22 (owner: no word lists) - his instincts carry this now
+        asked = shared = 0
         txt = ""
         if asked >= shared + 2:
             txt = ("BALANCE OF THIS CONVERSATION (measured on your last %d messages): you asked them %d times and gave something of "

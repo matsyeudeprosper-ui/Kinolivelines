@@ -23,7 +23,27 @@ OPTOUT = os.path.join(HERE, "kino_optout.json")
 LOG = os.path.join(HERE, "kino_sales.log")
 _LK = threading.Lock()
 STAGES = ("found", "checked", "preview", "contacted", "opened", "followed_up", "replied", "quoted", "won", "delivered", "lost")
-STOP_RE = re.compile(r"\b(stop|unsubscribe|remove me|d[ée]sinscri|ne plus (me )?(contacter|[ée]crire)|pas int[ée]ress)", re.I)
+_STOP_MEMO = {}
+
+
+def wants_stop(subject, text):
+    """2026-11-22 (owner: "no word matching or regex - multi-language users"; the list knew only English and French while his
+    emails go to Romania, Greece, Turkey, Portugal...): does this message ask not to be contacted again? Read by a model, in
+    any language. The law is on the side of stopping: if the model cannot be asked, the answer is YES."""
+    key = (str(subject or "")[:200], str(text or "")[:600])
+    if key in _STOP_MEMO:
+        return _STOP_MEMO[key]
+    try:
+        import robot_warm as _W
+        j = _W.ask_json("You read a message a business or a person sent back to an outreach email. Does it ask NOT to be "
+                        "contacted again (unsubscribe, stop, remove me, not interested, do not write again - in ANY language)? "
+                        "A question, a price request, an 'interested', a 'later' is NOT a stop. JSON only: {\"stop\": true|false}",
+                        "SUBJECT: %s\n\nMESSAGE:\n%s\n\nJSON only." % key, models=("haiku", "sonnet"), timeout=45, warm=False)
+        v = bool((j or {}).get("stop")) if isinstance(j, dict) and "stop" in j else True
+    except Exception:
+        v = True
+    _STOP_MEMO[key] = v
+    return v
 
 
 def _log(t):
@@ -80,7 +100,7 @@ _FOOT_EN = ("Kino, AI assistant at {brand}",
 def _footer_lines(lang):
     """2026-11-21 (watch): the footer existed only in fr/en, so every ro/pt/es/el/tr email failed QA on 'the footer is in
     English' (128 QA fails). The two lines are translated ONCE per language by the model and cached in kino_footer_tr.json;
-    the word STOP stays as it is (kino_mail's STOP_RE honours it). No translation yet / it fails -> English lines."""
+    the word STOP stays as it is (wants_stop reads any reply). No translation yet / it fails -> English lines."""
     lang = str(lang or "en").lower()[:2]
     try:
         cache = json.load(open(FOOTER_TR, encoding="utf-8"))
@@ -257,7 +277,7 @@ def on_mail(addr, subject, text):
     p = find(a)
     if not p:
         return
-    if STOP_RE.search((subject or "") + " " + (text or "")[:400]):
+    if wants_stop(subject, text):
         opt_out(a, "replied: " + (subject or "")[:60])
         return
     if p["stage"] in ("contacted", "opened", "followed_up"):

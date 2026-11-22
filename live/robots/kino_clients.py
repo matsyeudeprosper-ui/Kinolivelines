@@ -104,7 +104,7 @@ def reply(W, tg, name, username, lang, text):
     KS.prospect((p or {}).get("name") or name or username or key, key=key, lang=lang,
                 notes=None if p else ("WhatsApp +%s" % key.split(":")[1] if wa else "Telegram @%s (id %s)" % (username or "-", tg)),
                 stage="replied" if (not p or p["stage"] in ("found", "checked", "preview", "contacted", "followed_up")) else None)
-    if KS.STOP_RE.search(str(text)[:300]):
+    if KS.wants_stop("", text):
         KS.opt_out(("wa%s@whatsapp" % key.split(":")[1]) if wa else ("tg%s@telegram" % tg), "chat stop")
     try:
         import kino_post as _KPw                      # 2026-11-06 (owner: "the same Kino everywhere"): the whole Kino

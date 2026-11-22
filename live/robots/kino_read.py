@@ -48,6 +48,8 @@ Read him RIGHT NOW. JSON only:
  "of_kino": "what his last message shows he THINKS or FEELS ABOUT KINO himself (trusts his calls, doubts him, finds him reliable, likes him, is annoyed by him...), plain words; empty if it shows nothing about Kino",
  "of_kino_aspect": "competence|reliability|warmth - which side of Kino that is about; empty if nothing",
  "of_kino_val": -1.0 to 1.0 (how badly or well he sees Kino on that side; 0 if nothing),
+ "told_kino": "if his LAST message is a remark about HOW KINO TALKS OR BEHAVES, its kind: repeat (Kino repeats himself) | forgot (Kino forgot what he was told) | topic (Kino brings everything back to one subject) | robotic | tone (too heavy, relax) | long (too long) | wrong (Kino is wrong) | language (write in another language) | slow | praise - in ANY language; else empty",
+ "told_quote": "his exact words of that remark, or empty",
  "upcoming": "something coming up in HIS life he mentioned (an exam, a trip, a doctor visit, a meeting, a delivery, a match) that a friend would ask about afterwards; else empty",
  "upcoming_when": "when it is, as he said it, in English: 'today', 'tonight', 'tomorrow', 'in 3 days', 'this week', or a date YYYY-MM-DD; else empty",
  "shared_term": "a word, nickname or expression that has become THEIRS (he reused one of Kino's words, or they both use a coined name for a thing); else empty",
@@ -194,6 +196,26 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     r["domain"] = " ".join(str(j.get("domain") or "").lower().split())[:40]
     try:
         r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
+    except Exception:
+        pass
+    try:                                               # 2026-11-22: his heart reads their meaning, not their words
+        import kino_inner as _KIr
+        _KIr.affect_from_read(uid, r)
+    except Exception:
+        pass
+    try:                                               # 2026-11-22 (owner: no word lists): a remark about how he talks,
+        _tk = str(j.get("told_kino") or "").strip().lower()    # read in any language, is remembered and felt
+        import kino_feedback as _KFr
+        if _tk in _KFr.KINDS:
+            _his = next((str(m.get("text") or "") for m in reversed((chat or {}).get("msgs") or []) if m.get("role") == "ai"), "")
+            _KFr.add(uid, (chat or {}).get("id"), _tk, str(j.get("told_quote") or "")[:200], _his[:300], "read")
+            r["told"] = _tk
+            import kino_inner as _KIt
+            if _tk == "praise":
+                _KIt.feel("warmth", 0.3, uid=uid, why="they liked how you talk")
+            elif _tk != "slow":
+                _KIt.feel("stung", 0.35, uid=uid, why="they told you: %s (%s)" % (str(j.get("told_quote") or "")[:60], _tk))
+                _KIt.feel("careful", 0.25, uid=uid, why="they corrected you")
     except Exception:
         pass
     try:

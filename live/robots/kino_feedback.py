@@ -27,7 +27,8 @@ KINDS = {
     "slow":     r"(tu|t'es) (trop )?lent|[çc]a prend une [ée]ternit[ée]|tu me lis|t'es l[àa] ?\?|you there|so slow",
     "praise":   r"bien jou[ée]|j'aime (bien )?(ta|ton|[çc]a)|c'est (cool|dr[ôo]le|bien vu|fort)|t'es dr[ôo]le|lol c'est vrai|good one|nice one|well said",
 }
-_RX = {k: re.compile(v, re.I) for k, v in KINDS.items()}
+# 2026-11-22 (owner: "no word matching or regex - multi-language users"): the patterns above (French + English) are no longer
+# matched - kino_read reads each member message with a model and names the kind of remark in any language (told_kino)
 
 
 def _load():
@@ -47,13 +48,8 @@ def _mut(fn):
 
 
 def detect(text):
-    t = str(text or "")
-    if len(t) > 400:
-        return []
-    ks = [k for k, rx in _RX.items() if rx.search(t)]
-    if "forgot" in ks and "repeat" in ks:          # "je t'ai déjà dit" is a forgot, not a repeat
-        ks.remove("repeat")
-    return ks
+    """no word matching (owner 22/11) - remarks come from kino_read's model reading"""
+    return []
 
 
 def add(uid, cid, kind, quote, his_last="", src="words"):

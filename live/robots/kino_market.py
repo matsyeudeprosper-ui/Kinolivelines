@@ -209,7 +209,7 @@ def on_mail(addr, subject, text):
     if b is None:
         return
     import kino_sales as KS
-    stop = bool(KS.STOP_RE.search(str(subject or "") + " " + str(text or "")[:400]))
+    stop = KS.wants_stop(subject, text)
     if stop:
         KS.opt_out(a, "operator said stop")
 

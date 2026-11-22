@@ -146,13 +146,6 @@ def why_text(f, en=False):
 # What happens in the conversation moves him, and each feeling has a lever on what he does next. He got told off -> stung ->
 # shorter, no self-justification; they laughed -> playful; money is tight for them -> tender -> no selling, no numbers;
 # they stay late -> closeness; they came back after a day -> glad; a claim of his was corrected -> embarrassed -> fewer claims.
-_HARD = re.compile(r"pas d'argent|plus d'argent|perte|perdu|fatigu|j'ai peur|peur de|me sao[uû]le|stress|gal[èe]re|c'est dur|difficile|"
-                   r"tout seul|triste|malade|d[ée]prim|broke|no money|lost|tired|scared|stressed|hard time|alone|sad", re.I)
-_LAUGH = re.compile(r"\b(lol|mdr|ptdr|haha|hihi)\b|\U0001f602|\U0001f605|\U0001f923", re.I)
-_STAY = re.compile(r"j'ai pas sommeil|je dors pas|on peut continuer|j'ai rien [àa] faire|je reste|continue|not sleepy|can't sleep|let's continue", re.I)
-_LOST = re.compile(r"^\s*(quoi|hein|comment|what|huh)\s*\??\s*$|je comprends pas|j'ai pas compris|i don't get it", re.I)
-_MOOD_SAD = re.compile(r"triste|d[ée]\w*|frustr|inquiet|fatigu|d[ée]courag|tendu|stress|sad|down|frustrat|worried|tired|anxious", re.I)
-_MOOD_FUN = re.compile(r"amus|joyeux|content|rigol|l[ée]ger|playful|happy|amused|cheerful|joking", re.I)
 LEVERS = {
     "stung": "shorter, no self-justification, no apology ritual - show the change instead",
     "warmth": "you may be a little more personal; say once what you like about them",
@@ -183,14 +176,8 @@ def affect_from_member(uid, text=None, fb_kinds=(), them_mood=None, gap_h=None):
         if "praise" in (fb_kinds or []):
             feel("warmth", 0.3, uid=uid, why=why)
             feel("playful", 0.2, uid=uid, why=why)
-        if t and _HARD.search(t):
-            feel("tender", 0.4, uid=uid, why=why)
-        if t and _LAUGH.search(t):
-            feel("playful", 0.3, uid=uid, why="they laughed: " + t[:50])
-        if t and _STAY.search(t):
-            feel("closeness", 0.3, uid=uid, why="they chose to stay: " + t[:50])
-        if t and _LOST.search(t):
-            feel("careful", 0.35, uid=uid, why="they did not follow: " + t[:40])
+        # 2026-11-22 (owner: "no word matching or regex - multi-language users"): what their words MEAN (a hard time, a laugh,
+        # staying, being lost) comes from his model reading of them, in any language - affect_from_read below
         if gap_h is not None and gap_h >= 20:
             # 2026-11-22 (v6 item 8): the return is felt in proportion to the absence - a day is nice, a week is a relief
             _d = gap_h / 24.0
@@ -198,12 +185,29 @@ def affect_from_member(uid, text=None, fb_kinds=(), them_mood=None, gap_h=None):
                  why=("they came back after %d h" % gap_h) if _d < 2 else ("they came back after %d days of silence - I had missed them" % round(_d)))
             if _d >= 2:
                 feel("longing", -1.0, uid=uid)          # the missing is over
-        if them_mood:
-            m = str(them_mood)
-            if _MOOD_SAD.search(m):
-                feel("tender", 0.25, uid=uid, why="you read them as: " + m[:40])
-            elif _MOOD_FUN.search(m):
-                feel("playful", 0.2, uid=uid, why="you read them as: " + m[:40])
+    except Exception:
+        pass
+
+
+def affect_from_read(uid, r):
+    """2026-11-22: his feelings from what he READ in their last messages (kino_read, a model, any language) - their mood
+    (valence -1..1), whether they are lost, how engaged they are. Laughter is felt in kino_psyche.from_read."""
+    try:
+        v = float(r.get("valence")) if r.get("valence") is not None else None
+    except Exception:
+        v = None
+    mood = str(r.get("mood") or "")[:60]
+    try:
+        if v is not None and v <= -0.5:
+            feel("tender", 0.4, uid=uid, why="they are going through something hard (%s)" % mood)
+        elif v is not None and v <= -0.25:
+            feel("tender", 0.25, uid=uid, why="you read them as: " + mood)
+        elif v is not None and v >= 0.4:
+            feel("playful", 0.2, uid=uid, why="you read them as: " + mood)
+        if r.get("confused"):
+            feel("careful", 0.35, uid=uid, why="they did not follow you")
+        if str(r.get("engaged") or "") in ("warm", "intense"):
+            feel("closeness", 0.2, uid=uid, why="they are really here with you (%s)" % r.get("engaged"))
     except Exception:
         pass
 

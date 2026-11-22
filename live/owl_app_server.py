@@ -22193,7 +22193,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
             _M1 = c.get("msgs") or []
             _lu2 = next((x for x in reversed(_M1) if x.get("role") == "user"), None)
             _la2 = next((x for x in reversed(_M1) if x.get("role") == "ai" and x.get("text")), None)
-            if not event and _lu2 and _small_talk(str(_lu2.get("text") or "")) and not (_la2 and "?" in str(_la2.get("text") or "")[-120:]):
+            if False:      # 2026-11-22 (owner: no word lists - multi-language; and haiku refuses his self): no small-talk route
                 _mdl = "haiku"
                 _ff = _light_facts(_ff)
         except Exception:

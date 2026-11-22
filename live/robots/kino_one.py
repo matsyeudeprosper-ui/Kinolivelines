@@ -552,8 +552,7 @@ def work_in_air(chat, event=None):
             return True
     except Exception:
         pass
-    U = [str(m.get("text") or "") for m in M if m.get("role") == "user"][-3:]
-    return any(_ASK_CUE.search(t) for t in U)
+    return False                               # 2026-11-22 (owner): no request-word list - the reading above decides, any language
 
 
 def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
