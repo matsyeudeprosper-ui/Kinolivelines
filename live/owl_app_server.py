@@ -17433,7 +17433,14 @@ def _reminder_tick():
         time.sleep(30)
         if time.time() - _sw > 3600:
             _sw = time.time()
-            _payafter_sweep()
+            try:                                # 2026-11-22 (owner: "I still don't see the images"): this ran outside any
+                _payafter_sweep()               # try - one failure killed the thread, and every mission report, card and
+            except Exception as _e:             # reminder stopped landing until the next restart
+                try:
+                    open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
+                        "%s reminder_tick payafter_sweep %r\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), _e))
+                except Exception:
+                    pass
         try:
             with _REMIND_LK:
                 try:
