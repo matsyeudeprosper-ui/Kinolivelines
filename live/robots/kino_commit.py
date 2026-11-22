@@ -185,18 +185,28 @@ def from_fields(q, pa):
     return out
 
 
+_LASTX = {}
+
+
 def extract_text(say, W, log=None):
     """the small model lists the commitments of the text -> [{what, kind, minutes}] (never raises)"""
     try:
         say = str(say or "").strip()
-        if len(say) < 12 or not GATE.search(say):
+        # 2026-11-22 (owner: "no word matching or regex - multi-language users"): the reader decides, in any language; a gate of
+        # French/English verbs kept every Spanish or Romanian promise out. Rate: once per 45 s per text start (cost)
+        if len(say) < 20 or time.time() - _LASTX.get(say[:60], 0) < 45:
             return []
+        _LASTX[say[:60]] = time.time()
         j = W.ask_json(EXTRACT_SYSTEM, "KINO'S MESSAGE:\n<<<\n%s\n>>>\nJSON only." % say[:1500], models=("haiku", "sonnet"), timeout=60, log=log, warm=False)
         items = (j or {}).get("items") if isinstance(j, dict) else None
         out = []
         for it in items or []:
             if isinstance(it, dict) and str(it.get("what") or "").strip():
-                if NOT_NOW.search(str(it.get("what"))) and it.get("kind") in ("test", "build", "show"):
+                try:
+                    _mn = float(it.get("minutes"))
+                except Exception:
+                    _mn = 0
+                if _mn >= 120 and it.get("kind") in ("test", "build", "show"):
                     continue                              # "demain je lance" is not for the next 3 minutes
                 out.append({"what": str(it["what"]).strip()[:120], "kind": it.get("kind") if it.get("kind") in KINDS else "other",
                             "minutes": it.get("minutes")})

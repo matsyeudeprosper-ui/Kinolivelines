@@ -23067,7 +23067,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
         # 2026-10-28 (owner: "nothing rule based"): on the one mind the counters below (gap, 3-unanswered backoff, 8/hour, held
         # news) are not used - his wish to talk (kino_urge) carries timing as a state: unanswered messages raise its bar, each
         # decision leaves a bar that melts. The counters also stopped reasons from ever reaching that wish.
-        _one_mind = c.get("brain") == "one" or bool(_person_uids(c.get("uid") or user.get("id"))[1:])
+        _one_mind = True     # 2026-11-22 (owner: no word lists; 11/11 active chats were already on the one mind)
         if event:                                        # 2026-10-23 (owner: "Ok. And?" after two initiatives in 16 min): the tact of when
             try:                                         # to speak on his own - member first, a gap, backoff when unanswered, flat member
                 _rc()
@@ -23149,7 +23149,7 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                 _CHAT_ACT.pop(cid, None)
         except Exception:
             pass
-        if c.get("brain") == "one" or (_person(c.get("uid")) != c.get("uid") or _person_uids(c.get("uid"))[1:]) and _person_main(c.get("uid")):
+        if True:             # 2026-11-22: every chat on the one mind (the old engine's regex rewrites are out of reach)
             # 2026-11-05 (102 s before a buy): a trading turn - the candle watch, a live trade event, or the member talking while
             # Kino trades for them - goes first; background mood / belief / memory calls wait for it (robot_warm.focus)
             _foc = str(event or "").startswith((AUTO_EV, "LIVE TRADE")) or (not event and _auto_on(c))

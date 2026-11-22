@@ -233,29 +233,33 @@ RECALL_RE = _re.compile(r"\b(remember|recall|forgot|forget|you know how|souviens
 
 
 def recall(person, text, rules=()):
-    if not text or not RECALL_RE.search(text):
+    # 2026-11-22 (owner: "no word matching or regex - multi-language users"): a mind does not wait for the word "remember" -
+    # what they say brings back what matches it, by MEANING (multilingual embedding), from everything he holds about them
+    if not text or len(str(text).strip()) < 12:
         return ""
-    q = _stems(text) - {"remem", "recall", "forgo", "forge", "souvi", "rappe", "oubli", "still", "encor"}
-    hits = []
+    C = []
     try:
         import kino_ways as KW
         for x in KW.entries(person):
-            sc = len(q & _stems(x["topic"] + " " + x["said"]))
-            if sc:
-                hits.append((sc, "his notebook (%s UTC): %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["topic"], x["said"])))
+            C.append((x["topic"] + ": " + x["said"], "his notebook (%s UTC): %s: %s" % (time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["topic"], x["said"])))
     except Exception:
         pass
     for r in rules or []:
-        sc = len(q & _stems(r.get("text")))
-        if sc:
-            hits.append((sc, "his rules list: %s" % r.get("text")))
+        C.append((str(r.get("text")), "his rules list: %s" % r.get("text")))
     for c in (_load().get(person) or {}).get("cases") or []:
-        sc = len(q & _stems(c["rule"] + " " + c["verdict"]))
-        if sc:
-            hits.append((sc - 0.5, "a case (%s): %s" % (c["source"], c["verdict"])))
+        C.append((c["rule"] + " " + c["verdict"], "a case (%s): %s" % (c["source"], c["verdict"])))
+    if not C:
+        return ""
+    try:
+        import kino_recall as _KR
+        S = _KR.similar(text, [x[0] for x in C])
+    except Exception:
+        S = None
+    if not S:
+        return ""
+    hits = [(sc, C[k][1]) for k, sc in enumerate(S) if sc >= 0.6]
     hits.sort(key=lambda x: -x[0])
     if not hits:
-        return ("He asks you to remember something. You searched everything you hold about him (notebook, rules, cases) and found "
-                "nothing that matches - say so plainly, do not rebuild it from guesswork.")
-    return ("He asks you to remember. You searched everything you hold about him - here is what you FIND (use it; this is your "
-            "memory, not a guess):\n- " + "\n- ".join(h[1][:400] for h in hits[:4]))
+        return ""
+    return ("WHAT HIS MESSAGE BRINGS BACK (from everything you hold about him - his notebook, his rules, your cases; this is your "
+            "memory, not a guess - if he asks you to remember, this is what you find):\n- " + "\n- ".join(h[1][:400] for h in hits[:4]))

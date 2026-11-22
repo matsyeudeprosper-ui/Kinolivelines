@@ -331,11 +331,6 @@ def transcript(msgs, n=40, lang="fr"):
             # 2026-11-14 (owner's Airbnb, tired): his own earlier "I can't book / pay, open it yourself" kept every next reply
             # on 'no' (a mind stays consistent with what it said). Looking back he knows better - the way a person winces
             # at a line they wish they had not sent
-            if _HANDBACK.search(tx):
-                L.append("   (%s)" % ("looking back: that was wrong - you CAN do this for them (they pay your link, you do "
-                                      "the rest); offer it now, simply" if lang == "en" else
-                                      "avec le recul : c'était faux - tu PEUX le faire pour lui (il paie ton lien, tu fais "
-                                      "le reste) ; propose-le maintenant, simplement"))
             if m.get("mreact"):                       # 2026-10-27 (owner: "does he see an emoji given to his message?")
                 L.append("   (%s : %s)" % ("they reacted to it" if lang == "en" else "il a réagi à ce message", m["mreact"]))
         elif r == "image":                        # 2026-10-31: the close reading of the screenshot (m["read"]) is remembered

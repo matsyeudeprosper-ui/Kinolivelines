@@ -242,9 +242,7 @@ def on_mail(addr, subject, text):
     a = email.utils.parseaddr(str(addr or ""))[1].lower()
     # 2026-11-06 (owner: "has he seen the failed send?" - À la bonne Franquette's address bounced and nothing noticed): a
     # delivery failure names the address that failed; that lead goes back to the desk without its email
-    if re.search(r"mailer-daemon|postmaster|mail delivery", a + " " + str(addr), re.I) or \
-            re.search(r"delivery status notification|undeliver|non remis|échec de (la )?distribution|address not found|adresse introuvable|returned mail|fatal error",
-                      str(subject or "") + " " + str(text or "")[:300], re.I):
+    if re.search(r"mailer-daemon|postmaster", a + " " + str(addr), re.I):   # the bounce sender (technical, not language)
         _txt = str(text or "")[:3000]
         _cands = list(dict.fromkeys(_EMAIL_RE.findall(_txt)))
         # 07/11 (Plumeria): their address forwarded to a Yahoo box that refused the mail as spam - the bounce names the Yahoo

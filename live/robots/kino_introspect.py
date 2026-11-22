@@ -63,7 +63,7 @@ def _count(person, key):
 
 def check(W, person, say, ro, log=None):
     """-> None (nothing about his state, or it matches) or {"missing", "invented", "unmeasured"}"""
-    if not say or not FEEL_RE.search(say):
+    if not say or len(str(say)) < 20:            # 2026-11-22: no feeling-word list - the check itself reads any language
         return None
     _count(person, "checked")
     j = W.ask_json(SYSTEM, "READOUT (measured now):\n%s\n\nWHAT HE WROTE:\n%s\n\nJSON only." % (ro, say[:1500]),

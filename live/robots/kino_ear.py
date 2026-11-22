@@ -168,8 +168,7 @@ def answer_check(ear, say, nd, lang="fr"):
 
 def cutoff_once(say, msgs, now=None):
     """'ta phrase s'est coupée' at most once an hour per chat: otherwise the sentence goes"""
-    if not say or not CUTOFF.search(say):
-        return say
+    return say                                  # 2026-11-22 (owner: no word lists) - retired
     now = now or time.time()
     for m in reversed(msgs or []):
         if now - float(m.get("t") or 0) > 3600:
