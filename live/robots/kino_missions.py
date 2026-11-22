@@ -374,6 +374,10 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                 m["next_t"] = now + max(0.25, min(24 * 30, float(next_h))) * 3600
             except Exception:
                 pass
+        elif m["status"] in OPEN and not (tell or note or status):
+            # 2026-11-22 (watch: Pekos's washing machine slid to +24 h at 01:41 while Kino promised 'around 02:05'): a bare
+            # card/stage touch ('what I'm doing now') is not a step - it leaves the schedule where it is
+            pass
         elif m["status"] in OPEN:                  # no time given: a watcher keeps its rhythm, the rest comes back tomorrow
             # 2026-11-21 (watch: Pekos's washing machine, step during the plan limit, no time -> +24 h while the chat promised
             # "around 02:05"): a job that has not given its first news yet comes back within the hour
