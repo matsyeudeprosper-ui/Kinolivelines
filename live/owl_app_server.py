@@ -18944,10 +18944,7 @@ def _chat_oops(cid, en, e=None, retry=None):
     try:                                     # 2026-11-21 (watch): a Spanish-set chat whose member wrote English got the FRENCH
         _cl = json.load(open(_chat_path(cid), encoding="utf-8")) or {}                              # apology: only fr gets French,
         _lg = str(_cl.get("lang") or "fr")                                                         # and only if they wrote French
-        _lt = " %s " % next((str(m.get("text") or "") for m in reversed(_cl.get("msgs") or []) if m.get("role") == "user"), "").lower()
-        _enw = sum(_lt.count(" %s " % w) for w in ("the", "and", "you", "is", "it", "what", "i", "my", "ok", "cool", "with", "at", "work", "anything", "hey"))
-        _frw = sum(_lt.count(" %s " % w) for w in ("le", "la", "et", "tu", "je", "est", "les", "un", "une", "ça", "pas", "de", "salut"))
-        en = en or not _lg.startswith("fr") or _enw > _frw
+        en = en or not _lg.startswith("fr")          # owner 22/11: no word counting (members never see this line now)
     except Exception:
         pass
     try:

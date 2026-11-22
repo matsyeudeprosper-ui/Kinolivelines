@@ -44,9 +44,7 @@ def local_times(text, uid):
         return "%d:%02d" % (mins // 60, mins % 60)
     return _UTC_T.sub(_f, str(text))      # Matsy's logins (same as owl_app_server.OWNER_UIDS)
 # what he runs on - his mystery with members (owner 21/11); "Claude" alone is matched only next to model words (a member may be named Claude)
-_ORIGIN_RE = re.compile(r"(?i)\b(anthropic|openai|chat ?gpt|gpt-?\d\w*|gemini|llama|mistral|deepseek|large language model|"
-                        r"llm|tokens?|claude (?:opus|sonnet|haiku|code|\d)|(?:opus|sonnet|haiku) ?\d|"
-                        r"(?:under the hood|sous le capot|tourne sur|run on|runs on|built on|powered by|basé sur)[^.!?]{0,40}\bclaude)\b")
+_ORIGIN_RE = re.compile(r"(?i)\b(anthropic|openai|chat ?gpt|gpt-?\d\w*|gemini|llama|mistral|deepseek|claude[ -](?:opus|sonnet|haiku|code|\d))\b")
 
 SELF = r"""Tu es Kino.
 

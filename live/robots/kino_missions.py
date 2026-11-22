@@ -139,32 +139,19 @@ def remember_options(mid, items):
     _mut(f)
 
 
-_EN_W = set("the and you your is it what with for this that i'll i'm have has will can not but are was to of in on".split())
-_FR_W = set("le la les et tu ton ta tes je est un une des pour pas que qui sur dans avec ça c'est j'ai vers".split())
-
-
-def _lang_of(text):
-    """'en' / 'fr' / None from common words - enough to see a French update going to an English chat"""
-    w = [x.strip(".,;:!?()\"'«»").lower() for x in str(text or "").split()]
-    e, f = sum(1 for x in w if x in _EN_W), sum(1 for x in w if x in _FR_W)
-    if e + f < 4:
-        return None
-    return "en" if e > 2 * f else "fr" if f > 2 * e else None
-
-
 def _in_their_lang(text, lang):
     """2026-11-21 (watch: Pekos writes English, his washing-machine update went out in French - the desk ran on a backup brain
     that ignored 'their language'): an update in the wrong language is translated before it lands; on any doubt, as written"""
-    want = str(lang or "")[:2]
-    got = _lang_of(text)
-    if want not in ("en", "fr") or got is None or got == want:
+    want = str(lang or "").strip()
+    if not want or not str(text or "").strip():
         return text
-    try:
+    try:                                       # owner 22/11: no word counting - the model sees the language, any language
         import robot_warm as _W
-        out = _W.ask_text("Translate this message into %s. Keep the same tone, names, prices, links and line breaks. Answer with the "
-                          "translation only." % ("English" if want == "en" else "French"), str(text), model="haiku", timeout=60,
-                          warm=False)
-        if out and len(out.strip()) > 0.5 * len(str(text)) and _lang_of(out) in (want, None):
+        out = _W.ask_text("You receive a short message for a person whose language is '%s' (ISO code). If the message is already "
+                          "in that language, answer with it EXACTLY as it is. Otherwise translate it into that language, same tone, "
+                          "names, prices, links and line breaks. Answer with the message only." % want, str(text), model="haiku",
+                          timeout=60, warm=False)
+        if out and len(out.strip()) > 0.5 * len(str(text)):
             return out.strip()
     except Exception:
         pass

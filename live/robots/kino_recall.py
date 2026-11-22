@@ -190,6 +190,19 @@ def prime(cue):
     threading.Thread(target=lambda: embed([cue], timeout=30), daemon=True).start()
 
 
+def similar(a, B, timeout=8.0):
+    """2026-11-22 (owner: "no word matching search or regular expression - not trustworthy in a multi-language app"): how
+    close in MEANING text a is to each text of B (0..1), any language - the multilingual embedding, cached. None when no
+    embedding backend answers: the caller then decides nothing (it never falls back to matching words)."""
+    B = [str(b or "") for b in B]
+    if not str(a or "").strip() or not B:
+        return None
+    m, V = embed([a] + B, timeout=timeout)
+    if not V or len(V) != len(B) + 1:
+        return None
+    return [_cos(V[0], v) for v in V[1:]]
+
+
 def scores(cue, blocks, wait_s=3.0):
     """similarity of each memory block to the cue -> {index: 0..1} (only blocks with a known vector), or None when no
     embedding backend answers in time (the caller then uses word overlap)"""

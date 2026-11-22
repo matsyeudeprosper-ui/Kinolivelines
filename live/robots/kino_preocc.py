@@ -182,8 +182,7 @@ def findings_text(trading_ok=True):
 
 
 # ------------------------------------------------------------------ who he already told (item 4 of the 22/11 review)
-def _cw(t):
-    return {w for w in "".join(c.lower() if c.isalnum() else " " for c in str(t or "")).split() if len(w) >= 5}
+SAID_SIM = 0.62                  # a sentence of his that MEANS one of his thoughts (multilingual embedding)
 
 
 def _key(x):
@@ -196,18 +195,26 @@ def note_said(person, say, now=None):
     if not person or not say:
         return
     now = now or time.time()
-    w = _cw(say)
-    if len(w) < 4:
+    if len(str(say).strip()) < 25:
         return
     d = _load()
     told = d.setdefault("told", {}).setdefault(person, {})
+    X = [x for x in (d.get("items") or []) + (d.get("found") or []) if _key(x) not in told]
+    if not X:
+        return
+    try:                                            # by MEANING, any language (owner 22/11: no word matching)
+        import kino_recall as _KR
+        sims = _KR.similar(say, [x.get("found") or x.get("text") for x in X])
+    except Exception:
+        sims = None
+    if not sims:
+        return
     ch = False
-    for x in (d.get("items") or []) + (d.get("found") or []):
-        iw = _cw(x.get("found") or x.get("text"))
-        if iw and len(iw & w) >= max(3, int(0.35 * len(iw))) and _key(x) not in told:
+    for x, sc in zip(X, sims):
+        if sc >= SAID_SIM:
             told[_key(x)] = now
             ch = True
-            _log("TOLD %s: %s" % (person, _key(x)))
+            _log("TOLD %s (%.2f): %s" % (person, sc, _key(x)))
     if ch:
         _save(d)
 
@@ -270,6 +277,8 @@ if __name__ == "__main__":
     assert "size of the ask" in block(False) and "I looked into that thing" in block(False)
     assert "example.org" in findings_text()
     # told per person: voiced to p1 -> hidden for p1, still there for p2
+    import kino_recall as _KRt                     # meaning is measured by the embedding; here a stand-in
+    _KRt.similar = lambda a, B, timeout=8.0: [0.9 if "ask" in b else 0.1 for b in B]
     note_said("p1", "I keep wondering: studies of cold outreach say a small specific ask gets more replies than a pitch, so it is the size of the ask, not honesty alone")
     assert "size of the ask" not in block(True, "p1").split("(Already told")[0] and "size of the ask" in block(True, "p2")
     print("ok")

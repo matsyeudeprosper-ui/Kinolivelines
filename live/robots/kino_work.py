@@ -1154,7 +1154,7 @@ def _act0(j, person, W=None):
         _tl = str(j.get("tell") or "")
         _px = re.findall(r"(?:[€$]\s?\d[\d.,]*|\d[\d\s.,]*\s?(?:€|eur\b|euros?\b|\$))", _tl, re.I)   # '129 €' and '€129' 
         if len(_px) >= 2 and not j.get("choices") and str(j.get("cards")).lower() not in ("true", "1", "yes") \
-                and not j.get("no_links") and re.search(r"(?i)\b(found|trouv|options?|annonces?|listings?|machines?|places?|choix|pick)", _tl):
+                and not j.get("no_links"):
             return ("not sent yet: your update tells them about options you found (%s) without showing them. Send it again with "
                     "\"choices\" - one per option: \"<name> | <details> | <price> | ★ on your pick | <its link>\" - so they SEE the photos and "
                     "the listing, and keep the tell to one or two short sentences (no list in it). No exact listing? Then the page where "
