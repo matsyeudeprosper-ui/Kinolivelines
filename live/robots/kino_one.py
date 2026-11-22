@@ -18,7 +18,31 @@ import io, os, re, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LOG = os.path.join(HERE, "kino_one.log")
-OWNER_UIDS = ("kino", "std", "expenses")      # Matsy's logins (same as owl_app_server.OWNER_UIDS)
+OWNER_UIDS = ("kino", "std", "expenses")
+
+_UTC_T = re.compile(r"\b([01]?\d|2[0-3])[:h]([0-5]\d)\s*UTC\b", re.I)
+
+
+def local_times(text, uid):
+    """2026-11-22 (owner, Pekos's screenshot: 'around 02:05 UTC', then 'sorry, a bit past 02:05' at 03:23 his time): people
+    say times in the other person's clock. Any 'HH:MM UTC' in what he sends becomes their local time (phone zone, or
+    Paris for a French speaker whose zone is unknown); unknown zone -> unchanged."""
+    if not text or not _UTC_T.search(str(text)):
+        return text
+    try:
+        import json as _j
+        T = (_j.load(open(os.path.join(os.path.dirname(HERE), "owl_push_prefs.json"), encoding="utf-8")).get("_tz") or {})
+        z = T.get(str(uid or "")) or {}
+        if not z:
+            return text
+        off = -int(z.get("off") or 0)            # minutes east of UTC (the phone gives minutes WEST)
+    except Exception:
+        return text
+
+    def _f(m):
+        mins = (int(m.group(1)) * 60 + int(m.group(2)) + off) % 1440
+        return "%d:%02d" % (mins // 60, mins % 60)
+    return _UTC_T.sub(_f, str(text))      # Matsy's logins (same as owl_app_server.OWNER_UIDS)
 # what he runs on - his mystery with members (owner 21/11); "Claude" alone is matched only next to model words (a member may be named Claude)
 _ORIGIN_RE = re.compile(r"(?i)\b(anthropic|openai|chat ?gpt|gpt-?\d\w*|gemini|llama|mistral|deepseek|large language model|"
                         r"llm|tokens?|claude (?:opus|sonnet|haiku|code|\d)|(?:opus|sonnet|haiku) ?\d|"
@@ -891,6 +915,8 @@ def turn(W, chat, facts, memory, now_line, event=None, lang="fr", on_text=None, 
             else:
                 _ss = re.split(r"(?<=[.!?])\s+", s3 or say)
                 say = " ".join(x for x in _ss if not _ORIGIN_RE.search(x)).strip()
+    if say:
+        say = local_times(say, chat.get("uid"))
     total = time.time() - t0
     _log(cid, "TURN", "ev=%s first=%.1f total=%.1f retry=%s chars=%d+%d acts=%s fil=%s | %s" % (
         (event or "-")[:20].replace(" ", "_"), first[0] if first else -1, total, retry, len(sysp), len(user), acts, (fil or "")[:60], say[:200]))

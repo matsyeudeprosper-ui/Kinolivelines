@@ -406,6 +406,11 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
             if _shown:                         # 15/11: the options he showed stay with the job (links, prices) - when they pick,
                 remember_options(mid, _shown)  # the job knows WHICH listing; it once searched its diary for 30 min
             tell = _in_their_lang(tell, out.get("lang"))
+            try:
+                import kino_one as _KOt
+                tell = _KOt.local_times(tell, out.get("uid"))
+            except Exception:
+                pass
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
                       "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace")),
                       "cards": (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None)),
