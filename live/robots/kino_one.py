@@ -802,6 +802,9 @@ def prompt(chat, facts, memory, now_line, event=None, lang="fr"):
                  "leave him the last word - write only … or just a #reaction.)" if en else
                  "À toi. (Comme entre amis : si son message clôt l'échange et que tu n'as rien de vrai à ajouter, tu peux lui laisser le "
                  "dernier mot - écris seulement …, ou juste un #reaction.)")
+        _lc = str(chat.get("lang_code") or "").lower()
+        if _lc and _lc not in ("fr", "en"):              # 2026-11-22: read by the model, any language (no word counting)
+            P.append("(Their last message is in the language with ISO code '%s': answer in that language.)" % _lc)
         # 2026-11-04 21:05 (watch): after "Lol" (no words to read a language from) he answered in French in an English chat -
         # the English line sits at the top of a long prompt under a French system; it is said again where the reply starts
         if en:

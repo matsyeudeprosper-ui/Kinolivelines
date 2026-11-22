@@ -1281,6 +1281,17 @@ def member_lang(chat, default="fr", dominant=False):
     the language of the member's last real sentences (3+ words), measured, not guessed.
     dominant=True (2026-10-21, humanity watch: ONE English line -> all his own messages after it in English): the language
     most of their last 8 real sentences are in - for what Kino says on his own"""
+    # 2026-11-22 (owner: "no word matching or regex - multi-language users"): the model's reading of their last message
+    # (kino_read 'lang', any language). The app's templates are French or English: English for "en", French otherwise -
+    # and the model is told their real language (kino_one prompt). No reading yet -> the chat's own language.
+    try:
+        import kino_ear as _KEl
+        _cd = _KEl.member_code(chat.get("uid"), chat.get("id"))
+        if _cd:
+            return "en" if _cd == "en" else "fr"
+    except Exception:
+        pass
+    return chat.get("lang") or default
     if dominant:
         V = []
         for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-20:]):

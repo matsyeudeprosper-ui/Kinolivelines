@@ -72,7 +72,36 @@ def _mut(fn):
                 time.sleep(0.05)
 
 
+def member_code(uid, cid):
+    """2026-11-22 (owner: "no word matching or regex - multi-language users"): the language of their last message, as read by
+    the model (kino_read 'lang', ISO code) - None when not read yet"""
+    try:
+        import kino_person as _KP
+        r = (((_KP._load().get(str(uid)) or {}).get("read") or {}).get(cid)) or {}
+        c = str(r.get("lang") or "").strip().lower()
+        return c or None
+    except Exception:
+        return None
+
+
+def add_constraint(uid, key, said=""):
+    """a lasting constraint they stated (from kino_read, any language)"""
+    if key not in CONSTRAINTS:
+        return False
+    now = time.time()
+
+    def f(d):
+        d.setdefault(str(uid), {})[key] = {"t": now, "said": str(said)[:120]}
+    _mut(f)
+    return True
+
+
 def reply_lang(text, default="fr"):
+    """no word counting any more (owner 22/11) - the caller's language stands; member_code() gives the model's reading"""
+    return default
+
+
+def _reply_lang_old(text, default="fr"):
     t = str(text or "")
     if len(t.split()) < 4:
         return default
@@ -83,6 +112,13 @@ def reply_lang(text, default="fr"):
 
 
 def read(text, prev_ai=""):
+    """no word lists any more (owner 22/11): only what is not language - its length, a question mark. What they ASKED, their
+    language and their constraints come from kino_read (a model, any language)"""
+    t = str(text or "").strip()
+    return {"asked": None, "question": t.endswith("?"), "lang": None, "short": len(t) <= 12, "refers": None, "words": len(t.split())}
+
+
+def _read_old(text, prev_ai=""):
     t = str(text or "").strip()
     low = t.lower()
     asked = next((k for k, rx in ASKED.items() if re.search(rx, low)), None)
@@ -93,6 +129,10 @@ def read(text, prev_ai=""):
 
 
 def learn_constraints(uid, text):
+    return []                                   # 2026-11-22: constraints come from kino_read (add_constraint), any language
+
+
+def _learn_constraints_old(uid, text):
     low = str(text or "").lower()
     hit = [k for k, (rx, _, _) in CONSTRAINTS.items() if re.search(rx, low)]
     if not hit:

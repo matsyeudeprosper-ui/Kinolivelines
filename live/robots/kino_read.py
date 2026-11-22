@@ -48,6 +48,9 @@ Read him RIGHT NOW. JSON only:
  "of_kino": "what his last message shows he THINKS or FEELS ABOUT KINO himself (trusts his calls, doubts him, finds him reliable, likes him, is annoyed by him...), plain words; empty if it shows nothing about Kino",
  "of_kino_aspect": "competence|reliability|warmth - which side of Kino that is about; empty if nothing",
  "of_kino_val": -1.0 to 1.0 (how badly or well he sees Kino on that side; 0 if nothing),
+ "lang": "ISO 639-1 code of the language of his LAST message (fr, en, es, ro, el, tr, pt, ln, ar...); if too short to tell, the language of his recent messages",
+ "asked": "if his LAST message asks for one of these figures or states: open_trade_pnl (the open trade's result) | today (today's result) | week (the week's result) | balance | robot_state (which robot runs, where the test is) | why_loss (why trades lost) - else empty",
+ "constraint": "if his last messages state a LASTING constraint about himself: no_money | mobile (he is on a phone) | no_time | beginner - else empty",
  "told_kino": "if his LAST message is a remark about HOW KINO TALKS OR BEHAVES, its kind: repeat (Kino repeats himself) | forgot (Kino forgot what he was told) | topic (Kino brings everything back to one subject) | robotic | tone (too heavy, relax) | long (too long) | wrong (Kino is wrong) | language (write in another language) | slow | praise - in ANY language; else empty",
  "told_quote": "his exact words of that remark, or empty",
  "upcoming": "something coming up in HIS life he mentioned (an exam, a trip, a doctor visit, a meeting, a delivery, a match) that a friend would ask about afterwards; else empty",
@@ -196,6 +199,16 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     r["domain"] = " ".join(str(j.get("domain") or "").lower().split())[:40]
     try:
         r["valence"] = max(-1.0, min(1.0, float(j.get("valence"))))
+    except Exception:
+        pass
+    r["lang"] = str(j.get("lang") or "").strip().lower()[:3]
+    r["asked"] = str(j.get("asked") or "").strip().lower()[:20]
+    try:                                               # 2026-11-22 (owner: no word lists): a lasting constraint, read in any language
+        _cs = str(j.get("constraint") or "").strip().lower()
+        if _cs:
+            import kino_ear as _KEc
+            _KEc.add_constraint(uid, _cs, next((str(m.get("text") or "") for m in reversed((chat or {}).get("msgs") or [])
+                                                if m.get("role") == "user"), "")[:120])
     except Exception:
         pass
     try:                                               # 2026-11-22: his heart reads their meaning, not their words

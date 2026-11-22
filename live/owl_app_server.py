@@ -16416,7 +16416,13 @@ def _chat_member_fresh(uid, c):
         _rc()
         import kino_ear as _KEa
         _lu = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), None)
-        _ab = _KEa.ask_block(((_lu or {}).get("ear") or _KEa.read((_lu or {}).get("text"))) if _lu else None, c.get("lang") or "fr")
+        try:                                   # 2026-11-22: what they asked comes from the model's reading (any language)
+            import kino_person as _KPa
+            _rda = (((_KPa._load().get(str(uid)) or {}).get("read") or {}).get(c.get("id"))) or {}
+            _ab = _KEa.ask_block({"asked": _rda.get("asked")} if _rda.get("asked") and float(_rda.get("t") or 0) >= float((_lu or {}).get("t") or 0) - 5 else None,
+                                 c.get("lang") or "fr")
+        except Exception:
+            _ab = ""
         if _ab:
             L.append(_ab)
         _cb = _KEa.constraints_block(uid, c.get("lang") or "fr")
@@ -22112,8 +22118,9 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         try:
             import kino_ear as _KEo1
             _lu1 = next((x for x in reversed(c.get("msgs") or []) if x.get("role") == "user"), None)
-            if _lu1 and not event:
-                lang = _KEo1.reply_lang(_lu1.get("text"), lang)
+            _cd1 = _KEo1.member_code(c.get("uid"), cid)
+            if _cd1:
+                c = dict(c, lang_code=_cd1)            # 2026-11-22: their real language, read by the model, for the prompt
         except Exception:
             pass
         _seen_t = max([float(x.get("t") or 0) for x in c.get("msgs") or [] if x.get("role") in ("user", "show", "image", "doc")] or [0])
