@@ -1334,6 +1334,7 @@ def member_lang(chat, default="fr", dominant=False):
 
 def member_lang2(chat):
     """the screen's language follows the member only when their last TWO real sentences agree (no flapping)"""
+    return member_lang(chat, chat.get("lang") or "fr")     # 2026-11-22 (owner: no word lists): the model's reading of their language
     L = []
     for m in reversed([m for m in chat.get("msgs") or [] if m.get("role") == "user"][-8:]):
         t = str(m.get("text") or "")

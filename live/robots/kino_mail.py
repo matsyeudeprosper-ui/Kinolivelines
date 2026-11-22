@@ -267,9 +267,17 @@ def send(to, subject, body, why="", files=None):
         if a != OWNER_EMAIL and "/kinochat" not in str(body):
             try:                                   # 2026-11-08 (owner): their own Kino Chat link - the same conversation goes on there
                 import kino_chatapp as KCA
-                fr = bool(re.search(r"[éèàçù]|\b(bonjour|merci|vous|je|tu)\b", str(body), re.I))
-                body = str(body).rstrip() + ("\n\n--\nKino · Discutons dans l'appli gratuite Kino Chat (téléphone ou ordinateur) : %s" if fr else
-                                             "\n\n--\nKino · Let's talk in the free Kino Chat app (phone or computer): %s") % KCA.invite_link("mailto:" + a)
+                _inv = "Kino · Let's talk in the free Kino Chat app (phone or computer): %s"
+                try:                               # 2026-11-22 (owner: no word lists): in the email's own language, by the model
+                    import robot_warm as _Wm
+                    _o = (_Wm.ask_text("Write this one line in the same language as the EMAIL below (keep the %%s placeholder "
+                                       "exactly, and 'Kino Chat'). Answer with the line only.\n\nLINE: " + _inv,
+                                       "EMAIL:\n" + str(body)[:1200], model="haiku", timeout=40, warm=False) or "").strip()
+                    if "%s" in _o and len(_o) < 200:
+                        _inv = _o
+                except Exception:
+                    pass
+                body = str(body).rstrip() + "\n\n--\n" + (_inv % KCA.invite_link("mailto:" + a))
             except Exception:
                 pass
         send_now(a, subject, body, files=files)

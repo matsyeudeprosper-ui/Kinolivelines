@@ -185,7 +185,28 @@ _CTA2 = re.compile(r"\s*[^.!?\n]{0,50}\b(?:bio|profile|profil)\b[^.!?\n]{0,20}[.
 
 def _destamp(text):
     """2026-11-06 (owner: "I keep saying I'm an AI in each post while it's in the bio"; "he should not repeat introducing himself
-    on each post"): the closing stamp and the opening introduction go"""
+    on each post"): the closing stamp and the opening introduction go. 2026-11-22 (owner: "no word matching or regex - multi-
+    language users"): read by a model, in any language; when it cannot answer, the text stays as it is"""
+    t = str(text or "").strip()
+    if len(t) < 40:
+        return t
+    try:
+        import robot_warm as _W
+        out = _W.ask_text("You clean a social post written by Kino (an AI whose profile already says who he is). If it STARTS with a "
+                          "self-introduction (like \"I'm Kino, an AI...\", in any language) or ENDS with a stamp or call to action "
+                          "pointing to his bio / profile / link / chat, remove only that. Change nothing else - same words, same "
+                          "language, same line breaks. If there is nothing to remove, answer with the text exactly. Answer with "
+                          "the post only.", t, model="haiku", timeout=45, warm=False)
+        out = (out or "").strip()
+        if len(out) >= 40 and len(out) >= 0.5 * len(t):
+            return out[0].upper() + out[1:]
+    except Exception:
+        pass
+    return t
+
+
+def _destamp_old(text):
+    """(the French/English pattern version, retired 22/11)"""
     t = _CTA.sub("", _INTRO.sub("", str(text or ""))).strip()
     t2 = _INTRO2.sub("", t)
     if len(t2) >= 40:                      # only when enough is left to stand on its own

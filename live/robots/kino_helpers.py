@@ -126,9 +126,19 @@ def ask(tid, who, text, W=None):
     text = str(text or "").strip()
     if len(text) < 40:
         return "write them a real message: what you need, why, the pay, that you are an AI of Kinoverse"
-    if not re.search(r"\b(IA|AI|intelligence artificielle|artificial intelligence)\b", text, re.I):
-        text = text.rstrip() + ("\n\n(Je suis Kino, une IA de Kinoverse.)" if re.search(r"[éèàçù]|bonjour|merci", text, re.I)
-                                else "\n\n(I am Kino, an AI working for Kinoverse.)")
+    _subj = "A small hand? (Kino, Kinoverse)"
+    try:                                       # 2026-11-22 (owner: no word lists): the AI line + subject in the message's language
+        import robot_warm as _Wh
+        _jh = _Wh.ask_json("A message to a person, asking them for help with a small paid task. 1) If it does not already say, in "
+                           "its own language, that the sender is Kino, an AI working for Kinoverse, add one short line saying so at "
+                           "the end, in the message's language. Change nothing else. 2) A subject line in the message's language "
+                           "meaning 'A small hand? (Kino, Kinoverse)'. JSON only: {\"text\": \"...\", \"subject\": \"...\"}",
+                           text, models=("haiku", "sonnet"), timeout=60, warm=False)
+        if isinstance(_jh, dict) and len(str(_jh.get("text") or "")) >= 0.8 * len(text):
+            text = str(_jh["text"]).strip()
+            _subj = str(_jh.get("subject") or _subj)[:120]
+    except Exception:
+        pass
     if W is not None:
         try:
             import kino_post as KP
@@ -140,8 +150,7 @@ def ask(tid, who, text, W=None):
         try:
             import kino_mail as KM
             KM.allow(who)
-            KM.send_now(who, "Un petit coup de main ? (Kino, Kinoverse)" if re.search(r"bonjour|merci|é", text, re.I)
-                        else "A small hand? (Kino, Kinoverse)", text + "\n\n--\nKino, AI assistant at Kinoverse - " + PAGE_FR)
+            KM.send_now(who, _subj, text + "\n\n--\nKino, AI assistant at Kinoverse - " + PAGE_FR)
             sent = True
         except Exception as e:
             return "the email failed: %s" % str(e)[:120]
