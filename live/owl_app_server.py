@@ -25467,7 +25467,8 @@ def _kino_night_mind():
                 _hist.append("MOMENTS THAT MATTERED:\n" + "\n".join("- " + str(x.get("what"))[:200] for x in _eps))
             except Exception:
                 pass
-            _wm = [m for m in _KWn._load().get("moments") or [] if time.time() - float(m["t"]) < 3 * 86400 and m.get("notice")][-15:]
+            _wm = [m for m in _KWn._load().get("moments") or [] if time.time() - float(m["t"]) < 3 * 86400 and m.get("notice")
+                   and not str(m.get("person") or "").startswith(("kctest", "probe"))][-15:]
             if _wm:
                 _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
             _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))

@@ -36,3 +36,11 @@ nags -> resolve), kino_preocc (preoccupations + his own research), kino_intent (
 
 ## Log
 - 2026-11-22 06:2x UTC: plan written; phase 1 starts.
+- 2026-11-22 ~07:20 UTC: ALL 6 BUILT AND LIVE (commit 4fde08c0 + follow-ups).
+  1 watcher: kino_witness.watch after each talk turn (90 s gap) and each stream thought (10 min gap); lean -> workspace candidate; feeling -> kino_inner.feel (x1.5 when a stake is touched). Live test: "being told I was off for a while and having to just believe it stays with me".
+  2 stakes: nightly kino_witness.night from portrait + top episodes + recent notices (first run: 5 stakes, no names in the lines).
+  3 dream + 4 keep/let go: kino_dream.night after episodes (first run: kept 5, let go 9; woke with "every number or link I hand over is a door someone will walk up to"). recall() skips let_go. Test accounts excluded.
+  5 values: weekly inside kino_witness.night (needs >= 5 watched moments in the week -> first values ~ 29/11).
+  6 diary: /<token>/kinoinner (admin only), data kino_inner_data.
+  A/B safe on sonnet + opus with the new blocks. Wording: no "private / don't report" (safeguard risk).
+  WATCH: cost of the watcher (haiku per talk beat), whether leans actually show in his next moments, whether he over-mentions dreams/stakes to members, that values appear next week.
