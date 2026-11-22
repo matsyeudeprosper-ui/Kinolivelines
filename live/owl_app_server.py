@@ -26144,6 +26144,14 @@ def _chat_watch_once():
                 threading.Thread(target=_chat_listen, args=(cid, u), daemon=True).start()
             elif st[1] == 2:
                 st[1] = 3
+                if str(c.get("uid") or "") not in OWNER_UIDS:
+                    # 2026-11-22 (watch: Pekos got "Sorry, I lost my thread" during the plan limit - the same canned line
+                    # the owner had removed that morning): a member gets silence, and a real answer when his mind is back
+                    alarm("still no answer after 2 tries - queued for when his mind is back")
+                    if cid not in _MISSED:
+                        _MISSED[cid] = {"t": now, "at": int(lm.get("t") or 0), "text": str(lm.get("text") or "")[:600], "uid": c.get("uid")}
+                        _missed_save()
+                    continue
                 alarm("still no answer after 2 tries - honest line posted")
                 en_ = c.get("lang") == "en"
                 _chat_mut(cid, lambda cc: _chat_msg(cc, "ai", text=("Sorry, I lost my thread for a moment - can you tell me again?" if en_ else
