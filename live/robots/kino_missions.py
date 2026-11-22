@@ -19,7 +19,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 STORE = os.path.join(HERE, "kino_missions.json")
 OUTBOX = os.path.join(HERE, "kino_missions_out.json")
-_LK = threading.Lock()
+_LK = threading.RLock()   # 2026-11-22: re-entrant - remember_options() inside the outbox lock deadlocked every report with cards (since 15/11)
 OPEN = ("open", "working", "waiting", "watching")
 MAX_OPEN_PER_PERSON = 6
 
@@ -395,8 +395,6 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                 except Exception:
                     _cards = None
             _shown = (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None))
-            if _shown:                         # 15/11: the options he showed stay with the job (links, prices) - when they pick,
-                remember_options(mid, _shown)  # the job knows WHICH listing; it once searched its diary for 30 min
             tell = _in_their_lang(tell, out.get("lang"))
             try:
                 import kino_one as _KOt
@@ -409,6 +407,8 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                       "cards_kind": "choice" if choices_ else (_cards or {}).get("kind"),
                       "cards_dates": (_cards or {}).get("dates")})
             json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
+        if _shown:                             # 15/11: the options he showed stay with the job (links, prices) - when they pick,
+            remember_options(mid, _shown)      # the job knows WHICH listing (outside the outbox lock: 22/11 deadlock)
     return "mission %s: %s%s" % (mid, out["status"], (" - %s has your message in their chat" % (out.get("name") or "they")) if tell else _dupmsg)
 
 
