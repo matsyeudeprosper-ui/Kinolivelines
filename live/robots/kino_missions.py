@@ -328,8 +328,12 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                 if m["cid"] == _m0["cid"]:
                     T = [x for x in m["log"] if x["kind"] == "tell"]
                     if T:
-                        _lasts.append(T[-1])
-            _dup = next((x for x in _lasts if time.time() - x["t"] < 6 * 3600 and _alike(tell, x["text"], 0.7)), None)
+                        _lasts.append(dict(T[-1], _mid=m["id"]))
+            # 2026-11-22 (watch: Pekos's 13:54 "still waiting, update around 17:00" was blocked as a repeat of 11:51 and he
+            # missed the promised 14:30 news): the guard is for TWO jobs pasting the same text; the same job saying "still
+            # waiting" again later, with a new time, is news - only a near-copy within 30 min of its own last report is held
+            _dup = next((x for x in _lasts if _alike(tell, x["text"], 0.7) and (
+                (x["_mid"] != mid and time.time() - x["t"] < 6 * 3600) or (x["_mid"] == mid and time.time() - x["t"] < 1800))), None)
             if _dup is not None:
                 _dupmsg = " - NOT sent: this chat already has the same report (%s), no need to say it twice" % _ago(_dup["t"])
                 note = ((note + " | ") if note else "") + "unsent repeat: " + str(tell)[:300]
