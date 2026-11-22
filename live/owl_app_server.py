@@ -17457,14 +17457,16 @@ def _reminder_tick():
         time.sleep(30)
         if time.time() - _sw > 3600:
             _sw = time.time()
-            try:                                # 2026-11-22 (owner: "I still don't see the images"): this ran outside any
-                _payafter_sweep()               # try - one failure killed the thread, and every mission report, card and
-            except Exception as _e:             # reminder stopped landing until the next restart
-                try:
-                    open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
-                        "%s reminder_tick payafter_sweep %r\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), _e))
-                except Exception:
-                    pass
+            def _sweep():                       # 2026-11-22 (owner: "I still don't see the images"): it ran outside any try
+                try:                            # (one failure killed the thread), then inline (one hang blocked every mission
+                    _payafter_sweep()           # report, card and reminder) - now on its own thread, it can block nothing
+                except Exception as _e:
+                    try:
+                        open(os.path.join(DIR, "robots", "chat_errors.log"), "a", encoding="utf-8").write(
+                            "%s reminder_tick payafter_sweep %r\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), _e))
+                    except Exception:
+                        pass
+            threading.Thread(target=_sweep, daemon=True).start()
         try:
             with _REMIND_LK:
                 try:
@@ -17557,6 +17559,7 @@ def _reminder_tick():
                 _cq = _chat_load(_user_by_id(q["uid"]) or {}, q["cid"]) or {}
                 queue_push(q["uid"], "Kino", q["text"][:170], path=("kinochat" if _cq.get("app") == "kinochat" else "atelier?c=" + q["cid"]),
                            tag="mission-" + q["mid"])
+            _KMs.done()                                 # 2026-11-22: all taken reports landed or were requeued
         except Exception:
             pass
 

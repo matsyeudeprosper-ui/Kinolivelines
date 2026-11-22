@@ -423,18 +423,40 @@ def requeue(q):
         json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
 
 
+INFLIGHT = OUTBOX + ".inflight"
+
+
 def drain():
-    """the app takes the reports to deliver"""
+    """the app takes the reports to deliver. 2026-11-22 (watch: Pekos's 17:12 report vanished - the app was restarted between
+    taking it and putting it in the chat): what is taken waits in an in-flight file until done() - a report taken by a
+    process that died is delivered by the next one"""
     with _LK:
-        try:
-            Q = json.load(open(OUTBOX, encoding="utf-8"))
+        Q = []
+        try:                                   # a previous process died mid-delivery: its reports come first
+            Q = json.load(open(INFLIGHT, encoding="utf-8")) or []
         except Exception:
+            Q = []
+        try:
+            Q += json.load(open(OUTBOX, encoding="utf-8")) or []
+        except Exception:
+            pass
+        if not Q:
             return []
+        json.dump(Q, open(INFLIGHT, "w", encoding="utf-8"), ensure_ascii=False)
         try:
             os.remove(OUTBOX)
         except Exception:
             pass
         return Q
+
+
+def done():
+    """every report of the last drain has landed or been requeued"""
+    with _LK:
+        try:
+            os.remove(INFLIGHT)
+        except Exception:
+            pass
 
 
 def _ago(t):
