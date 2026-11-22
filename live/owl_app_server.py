@@ -15825,7 +15825,7 @@ def _one_fresh(user, c, slim=False):
         pass
     try:                                               # 2026-11-21 (kino_preocc): what is on his OWN mind these days - he
         if not slim:                                   # brings it in himself ("what's up with you?" had "not much")
-            _bp = __import__("kino_preocc").block(trading_ok=c.get("app") != "kinochat")
+            _bp = __import__("kino_preocc").block(trading_ok=c.get("app") != "kinochat", person=_person(uid))
             if _bp:
                 L.append(_bp)
     except Exception:
@@ -22356,6 +22356,7 @@ def _one_turn(cid, user, c, event=None, notify=False, important=False):
         if not event and say:                          # facts looked up, his own claims checked - ready for his next turn
             import kino_debate as _KDb
             _KDb.mark_fixes_said(cid, say)
+            __import__("kino_preocc").note_said(_person(uid), say)      # review item 4: what he told whom
             _lud = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
             _tr = __import__("kino_one").transcript((c.get("msgs") or []) + [{"role": "ai", "text": say, "t": time.time()}], n=16,
                                                     lang=c.get("lang") or "fr")

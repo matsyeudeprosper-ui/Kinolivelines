@@ -506,6 +506,13 @@ function bubble(m,i,prev){if(m.role==='pay')return payCard(m,i);if(m.role==='opt
  var emo=m.role!=='image'&&m.role!=='doc'&&!m.audio&&isEmo(m.text);
  if(m.role==='ai'&&(m.text||'').length>650)inner+='<br><button class="rdb" data-rd="'+i+'">⤢ '+T('Lire en plein écran','Read full screen')+'</button>';
  var rx=m.mreact||'';
+ // 2026-11-22 (owner review item 5: one 34-word block where a person texts 2-3 short messages): his paragraphs show as
+ // separate bubbles of the same message (same data-i: long-press, reply, star still act on the whole message)
+ var pp=(m.role==='ai'&&!m.audio&&!q&&(m.text||'').length<=650)?String(m.text||'').split(/\n\s*\n/).filter(function(x){return x.trim()}):[];
+ if(pp.length>1&&pp.length<=4){var nw=(ANIM_T>=0&&m.t>ANIM_T?' nw':''),o='';
+  pp.forEach(function(p,k){var last=k===pp.length-1;
+   o+='<div class="m'+(k===0&&gap?' gap':'')+(last&&rx?' rx':'')+nw+'" data-i="'+i+'"><div class="b" data-i="'+i+'">'+md(p)+(last?'<span class="t">'+(starred(m.t)?'<span class="star">⭐</span>':'')+(m.edited?'<span class="ed">'+T('modifié','edited')+'</span> ':'')+hm(m.t)+'</span>'+(rx?'<span class="rxb">'+rx+'</span>':''):'')+'</div></div>'});
+  return o}
  return '<div class="m'+(me?' me':'')+(gap?' gap':'')+(rx?' rx':'')+(ANIM_T>=0&&m.t>ANIM_T?' nw':'')+'" data-i="'+i+'"><div class="b'+(emo?' emo':'')+'" data-i="'+i+'">'+q+inner+'<span class="t">'+(starred(m.t)?'<span class="star">⭐</span>':'')+(m.edited?'<span class="ed">'+T('modifié','edited')+'</span> ':'')+hm(m.t)+(me?'<span class="tk'+(m.t<=LASTAI?' rd':'')+'">✓✓</span>':'')+'</span>'+(rx?'<span class="rxb">'+rx+'</span>':'')+'</div></div>'}
 // 2026-11-12 (owner: "it feels slow, no estimate, it leaves the client with questions"): one card per job in progress -
 // its name, where it stands, the next update time; while Kino works on it, the live lines play inside it

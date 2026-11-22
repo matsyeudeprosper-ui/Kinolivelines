@@ -181,10 +181,44 @@ def findings_text(trading_ok=True):
                      for y in findings(trading_ok))
 
 
-def block(trading_ok=True):
-    """his own mind, for any chat - he brings one in when there is room; trading ones only where trading belongs"""
-    its = [x for x in _load().get("items") or [] if trading_ok or x.get("about") != "trading"]
-    fd = findings(trading_ok)
+# ------------------------------------------------------------------ who he already told (item 4 of the 22/11 review)
+def _cw(t):
+    return {w for w in "".join(c.lower() if c.isalnum() else " " for c in str(t or "")).split() if len(w) >= 5}
+
+
+def _key(x):
+    return (x.get("q") or x.get("text") or "")[:80]
+
+
+def note_said(person, say, now=None):
+    """people do not tell the same friend the same thing twice: a thought or a finding he just voiced to this person is
+    remembered as told to THEM (others still have not heard it)"""
+    if not person or not say:
+        return
+    now = now or time.time()
+    w = _cw(say)
+    if len(w) < 4:
+        return
+    d = _load()
+    told = d.setdefault("told", {}).setdefault(person, {})
+    ch = False
+    for x in (d.get("items") or []) + (d.get("found") or []):
+        iw = _cw(x.get("found") or x.get("text"))
+        if iw and len(iw & w) >= max(3, int(0.35 * len(iw))) and _key(x) not in told:
+            told[_key(x)] = now
+            ch = True
+            _log("TOLD %s: %s" % (person, _key(x)))
+    if ch:
+        _save(d)
+
+
+def block(trading_ok=True, person=None):
+    """his own mind, for any chat - he brings one in when there is room; trading ones only where trading belongs.
+    What he already told THIS person is marked so (a friend does not tell you the same thing twice)"""
+    d0 = _load()
+    told = (d0.get("told") or {}).get(person) or {} if person else {}
+    its = [x for x in d0.get("items") or [] if (trading_ok or x.get("about") != "trading") and _key(x) not in told]
+    fd = [y for y in findings(trading_ok) if _key(y) not in told]
     if not its and not fd:
         return ""
     out = ("ON YOUR OWN MIND THESE DAYS (yours, true, shareable with anyone - what you bring into a talk yourself when there "
@@ -195,6 +229,8 @@ def block(trading_ok=True):
         out += ("\nThings you looked into yourself lately, out of your own curiosity (what you really found, with the source - "
                 "tell it the way you'd tell a friend 'I looked into that thing, turns out...', and say so when it was not clear): " +
                 " | ".join("%s -> %s%s" % (y["q"], y["found"], (" [%s]" % y["src"]) if y.get("src") else "") for y in fd[-3:]))
+    if told:
+        out += "\n(Already told this person, so not again unless they bring it up: %s.)" % "; ".join(list(told)[-5:])
     return out
 
 
@@ -233,4 +269,7 @@ if __name__ == "__main__":
     assert f and f["clear"] and not research_due()
     assert "size of the ask" in block(False) and "I looked into that thing" in block(False)
     assert "example.org" in findings_text()
+    # told per person: voiced to p1 -> hidden for p1, still there for p2
+    note_said("p1", "I keep wondering: studies of cold outreach say a small specific ask gets more replies than a pitch, so it is the size of the ask, not honesty alone")
+    assert "size of the ask" not in block(True, "p1").split("(Already told")[0] and "size of the ask" in block(True, "p2")
     print("ok")
