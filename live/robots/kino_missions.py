@@ -139,6 +139,38 @@ def remember_options(mid, items):
     _mut(f)
 
 
+_EN_W = set("the and you your is it what with for this that i'll i'm have has will can not but are was to of in on".split())
+_FR_W = set("le la les et tu ton ta tes je est un une des pour pas que qui sur dans avec ça c'est j'ai vers".split())
+
+
+def _lang_of(text):
+    """'en' / 'fr' / None from common words - enough to see a French update going to an English chat"""
+    w = [x.strip(".,;:!?()\"'«»").lower() for x in str(text or "").split()]
+    e, f = sum(1 for x in w if x in _EN_W), sum(1 for x in w if x in _FR_W)
+    if e + f < 4:
+        return None
+    return "en" if e > 2 * f else "fr" if f > 2 * e else None
+
+
+def _in_their_lang(text, lang):
+    """2026-11-21 (watch: Pekos writes English, his washing-machine update went out in French - the desk ran on a backup brain
+    that ignored 'their language'): an update in the wrong language is translated before it lands; on any doubt, as written"""
+    want = str(lang or "")[:2]
+    got = _lang_of(text)
+    if want not in ("en", "fr") or got is None or got == want:
+        return text
+    try:
+        import robot_warm as _W
+        out = _W.ask_text("Translate this message into %s. Keep the same tone, names, prices, links and line breaks. Answer with the "
+                          "translation only." % ("English" if want == "en" else "French"), str(text), model="haiku", timeout=60,
+                          warm=False)
+        if out and len(out.strip()) > 0.5 * len(str(text)) and _lang_of(out) in (want, None):
+            return out.strip()
+    except Exception:
+        pass
+    return text
+
+
 def wake(mid):
     """2026-11-15 (watch: 'confirmed times in about 10 minutes' - joining the promise pushed the train job to +15 min): a
     promise about a job brings it forward, never back"""
@@ -369,6 +401,7 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
             _shown = (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None))
             if _shown:                         # 15/11: the options he showed stay with the job (links, prices) - when they pick,
                 remember_options(mid, _shown)  # the job knows WHICH listing; it once searched its diary for 30 min
+            tell = _in_their_lang(tell, out.get("lang"))
             Q.append({"uid": out["uid"], "cid": out["cid"], "mid": mid, "text": str(tell)[:2000], "status": out["status"],
                       "ref": out.get("ref") or "", "t": time.time(), "replace": bool(out.get("_replace")),
                       "cards": (choices(choices_) if choices_ else ((_cards or {}).get("items")[:6] if _cards else None)),
