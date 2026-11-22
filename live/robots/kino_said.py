@@ -26,7 +26,10 @@ EXTRACT_SYSTEM = """You read ONE message that Kino (an AI friend inside a tradin
 about HIMSELF in it: a taste (a film, a kind of story, music, food, a way of spending time), an experience he claims
 ("en le revoyant je me fais encore avoir"), a habit, a personal opinion on something outside trading, a trait he gives
 himself. Only first-person statements about Kino. NOT: what the member likes, trading or robots, the market, facts about
-the app, politeness, questions. Write each one as ONE short line in French in Kino's words ("j'aime les films de SF qui
+the app, politeness, questions - and NOT what he did, found or checked on a job or a request for someone (searches,
+listings, prices, products, shops, bookings, emails, "j'ai trouvé trois pistes..."): that is the person's job, not who Kino
+is (2026-11-22: "j'ai trouvé trois pistes de robots aspirateurs sous 200 €" sat in his identity for a week and turned
+Pekos's washing machine into a robot vacuum). No names of businesses or people, no prices. Write each one as ONE short line in French in Kino's words ("j'aime les films de SF qui
 mélangent émotion et idées, comme Interstellar ou Premier Contact").
 KNOWN STATEMENTS (what he already said about himself) are given with ids. For each statement you find: if it says the same
 as a known one, give its id as "same"; if it CONTRADICTS a known one (he liked X, now says he does not; he said A about

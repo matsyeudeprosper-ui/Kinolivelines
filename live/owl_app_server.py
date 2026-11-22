@@ -18921,6 +18921,22 @@ def _chat_oops(cid, en, e=None, retry=None):
     _txt = ("Oops, I lost my train of thought. Can you send that again?" if en else "Oups, j'ai perdu le fil. Tu peux renvoyer ton message ?") \
         if e is None else _plain
 
+    # 2026-11-22 (owner review, item 1: 5 of his 12 apologies in a week came from his brain being down; "I tripped twice... say
+    # it again" was the most robotic thing he said): a member never reads a canned failure. Like a friend whose phone died he
+    # is just quiet; what they wrote waits in _MISSED and is answered, naturally, the moment his mind is back. The owner
+    # still sees the line (he needs to know).
+    try:
+        _cm = json.load(open(_chat_path(cid), encoding="utf-8")) or {}
+        if str(_cm.get("uid") or "") not in OWNER_UIDS:
+            _lmm = next((mm for mm in reversed(_cm.get("msgs") or []) if mm.get("role") in ("user", "show", "image", "doc")), None)
+            if _lmm and cid not in _MISSED:
+                _MISSED[cid] = {"t": time.time(), "at": int(_lmm.get("t") or 0), "text": str(_lmm.get("text") or "")[:600],
+                                "uid": _cm.get("uid")}
+                _missed_save()
+            return
+    except Exception:
+        pass
+
     # 2026-11-03 18:10 UTC (owner: "is he okay?"): two turns failed in the same second and both posted the same "I tripped
     # twice" bubble. One apology per failure: the same error line within 2 minutes is not posted again.
     def _put(cc):
