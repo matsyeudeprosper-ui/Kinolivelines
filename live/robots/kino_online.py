@@ -98,10 +98,20 @@ def _answered_since(d, x):
                for s in p.get("said") or [])
 
 
+def mark_seen(now=None):
+    """2026-11-22 (watch: elarigent / Lorelai / keihanian sat in pending - he read them each round, judged the threads closed,
+    and 'someone answered me' called him back every 10 min): what he has read in a round with people is handled"""
+    with _LK:
+        d = _load()
+        d["seen_t"] = now or time.time()
+        _save(d)
+
+
 def pending(max_age_h=72):
     d = _load()
+    st = float(d.get("seen_t") or 0)
     return [x for x in d["pending"] if time.time() - float(x.get("t") or 0) < max_age_h * 3600 and not _not_a_person(x)
-            and not _answered_since(d, x)]
+            and not _answered_since(d, x) and float(x.get("t") or 0) > st]
 
 
 def block(en=True):

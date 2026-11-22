@@ -17528,13 +17528,29 @@ def _reminder_tick():
                             if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == q["ref"] and m["pay"].get("status") in ("paid", "trust"):
                                 m["pay"]["status"] = "delivered" if m["pay"]["status"] == "paid" else "owed"
                     return True
+                _landed = False
                 try:
                     _chat_mut(q["cid"], _put)
-                except Exception:                       # 2026-11-22: a report that failed to land goes back, never lost
-                    try:
-                        _KMs.requeue(q)
-                    except Exception:
-                        pass
+                    # 2026-11-22 (watch: Pekos's 11:51 report was drained and never appeared, no error anywhere): it is
+                    # checked in the saved chat itself, and a report that is not there goes back to the outbox
+                    _ck = json.load(open(_chat_path(q["cid"]), encoding="utf-8"))
+                    _landed = any(m.get("mission") == q["mid"] and str(m.get("text") or "")[:60] == str(q["text"])[:60]
+                                  for m in (_ck.get("msgs") or [])[-30:])
+                except Exception as _ed:
+                    _landed = False
+                try:
+                    open(os.path.join(DIR, "robots", "kino_missions_delivery.log"), "a", encoding="utf-8").write(
+                        "%s %s %s %s | %s\n" % (time.strftime("%m-%d %H:%M:%S"), q.get("cid"), q.get("mid"),
+                                               "LANDED" if _landed else "NOT LANDED - requeued", str(q.get("text"))[:100]))
+                except Exception:
+                    pass
+                if not _landed:
+                    q["tries"] = int(q.get("tries") or 0) + 1
+                    if q["tries"] <= 5:
+                        try:
+                            _KMs.requeue(q)
+                        except Exception:
+                            pass
                     continue
                 if q.get("_quiet"):
                     continue

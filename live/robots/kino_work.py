@@ -1961,6 +1961,12 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
                 p.update(status="active", last=time.time(), next=rec["summary"][:300])
         _mut(f)
         _log("%s DONE %d steps %ds | %s" % (person, len(rec["steps"]), rec["s"], rec["summary"][:200]))
+        try:                                       # 2026-11-22: a round with people = what was waiting has been read
+            if str(rec.get("care") or "") == "friends" or "people" in str(rec.get("do") or rec.get("task") or "")[:60].lower():
+                import kino_online as KONs
+                KONs.mark_seen(time.time() - float(rec.get("s") or 0))
+        except Exception:
+            pass
         try:                                       # doing something of his own meets his needs
             import kino_psyche as KPS
 
