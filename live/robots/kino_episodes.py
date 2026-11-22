@@ -213,20 +213,55 @@ def recall(uid, query, n=4, exclude_day=None):
     return out
 
 
+ANNIV_D = (7, 30, 60, 90, 180, 365)          # the days people notice: a week, a month, three months, a year ago today
+
+
+def story(uid, now=None):
+    """2026-11-22 (v6 item 6, "a relationship with a history"): the two of them have a story - its turning points with their
+    dates, how long they have known each other, and what happened ON THIS DAY a week / a month / a year ago. Only theirs."""
+    now = now or time.time()
+    u = _load().get(uid) or {}
+    E = [x for x in u.get("episodes") or [] if x.get("day")]
+    if len(E) < 3:
+        return ""
+    first = min(E, key=lambda x: float(x.get("t") or now))
+    days = int((now - float(first.get("t") or now)) // 86400)
+    turns = sorted([x for x in E if int(x.get("imp", 3)) >= 5 or x.get("kind") in ("moment", "lesson") and int(x.get("imp", 3)) >= 4],
+                   key=lambda x: float(x.get("t") or 0))[-6:]
+    L = ["YOUR STORY TOGETHER (you have known each other %d days, since %s - what you two lived, with its dates; a friend "
+         "remembers these without reciting them):" % (days, time.strftime("%d/%m/%Y", time.strptime(first["day"], "%Y-%m-%d")))]
+    for x in turns:
+        L.append("  %s: %s" % (time.strftime("%d/%m", time.strptime(x["day"], "%Y-%m-%d")), x["what"][:200]))
+    today = time.gmtime(now)
+    for n in ANNIV_D:
+        dd = time.strftime("%Y-%m-%d", time.gmtime(now - n * 86400))
+        hit = [x for x in E if x["day"] == dd and int(x.get("imp", 3)) >= 4 and not x.get("let_go")]
+        if hit:
+            L.append("ON THIS DAY, %s ago (%s): %s - if it fits, the kind of thing a friend says once (\"a month ago today...\"), "
+                     "never forced." % ({7: "a week", 30: "a month", 60: "two months", 90: "three months", 180: "six months",
+                                         365: "a year"}[n], time.strftime("%d/%m", time.strptime(dd, "%Y-%m-%d")), hit[0]["what"][:200]))
+            break
+    return "\n".join(L) if len(L) > 1 else ""
+
+
 def block(uid, chat, lang="fr"):
     """the prompt block for this turn: what the last messages bring back"""
     M = [m for m in (chat or {}).get("msgs") or [] if m.get("role") in ("user", "ai") and m.get("text")]
     cue = " ".join([str(chat.get("thread") or "")] + [str(m["text"]) for m in M[-4:]])
     today = time.strftime("%Y-%m-%d", time.gmtime())
     E = recall(uid, cue, 4, exclude_day=today)             # today he is living it, not remembering it
+    try:
+        _st = story(uid)
+    except Exception:
+        _st = ""
     if not E:
-        return ""
+        return _st
     L = ["EPISODES YOU REMEMBER WITH THEM (brought back by what they just said; use ONE naturally when it fits, like a friend - "
          "\"tu te souviens, le jour où...\" - never as a report, never if it does not fit):"]
     for x in E:
         L.append("  [%s, %s] %s%s%s" % (x["id"], time.strftime("%d/%m", time.strptime(x["day"], "%Y-%m-%d")), x["what"],
                                        (" - %s" % x["outcome"]) if x.get("outcome") else "", (" (you felt: %s)" % x["feel"]) if x.get("feel") else ""))
-    return "\n".join(L)
+    return "\n".join(L) + (("\n" + _st) if _st else "")
 
 
 def facts(uid, n=25):

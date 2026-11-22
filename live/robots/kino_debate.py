@@ -36,6 +36,7 @@ made in his last messages that can be checked (a number, a date, a study, a quot
 JSON only: {"discussion": true|false, "topic": "...", "his": "Kino's position, one sentence", "theirs": "their position",
 "best_his": "his strongest point so far", "best_theirs": "their strongest point so far", "conceded": "what each side granted, or ''",
 "open": "what is still unresolved", "deeper": "the question under the question - where the discussion gets interesting",
+"kino_changed_mind": true only if in THIS exchange Kino really changed his position (not a nuance), "moved_by": "the argument that moved him, or ''",
 "facts": [{"q": "search query", "why": "what it would show"}], "claims": [{"claim": "what Kino said", "q": "search query"}]}"""
 
 VERIFY = """You check facts for Kino (an AI who argues in a discussion) using ONLY the search results and pages below. For each
@@ -141,9 +142,14 @@ def after_exchange(W, cid, transcript, last_member="", search=None, fetch=None, 
                        "fixes": ([f for f in old.get("fixes") or [] if not f.get("said")] + fixes)[-4:]})
             d[cid] = st
             # a chat file per discussion is enough: drop the ones a week old
-            for k in [k for k, x in d.items() if now - float((x or {}).get("t") or 0) > 7 * 86400]:
+            for k in [k for k, x in d.items() if k != "_views" and now - float((x or {}).get("t") or 0) > 7 * 86400]:
                 d.pop(k, None)
             _save(d)
+        try:                                          # v6 item 10: where he stands becomes his view, everywhere
+            hold(st.get("topic"), st.get("his"), st.get("best_his"), str(j.get("moved_by") or st.get("conceded") or ""),
+                 changed=bool(j.get("kino_changed_mind")))
+        except Exception:
+            pass
         _log("%s DISCUSSION %s | his: %s | theirs: %s | %d facts checked, %d of his claims wrong" % (
             cid, st["topic"], st["his"], st["theirs"], len(facts), len(fixes)))
         for f in facts:
@@ -203,6 +209,61 @@ def world_only(say, bad):
     return out
 
 
+# ------------------------------------------------------------------ his views (v6 item 10: opinions that change slowly)
+_STOPW = set("that this with what about have from they them their there were been will would could should does into than then "
+              "also just like very much more most some your yours mine dans pour avec mais donc alors comme plus tout tous "
+              "elle elles nous vous leur être avoir fait faire sont cette celui".split()) - {"will"}
+
+
+def _vw(t):
+    return {w for w in "".join(c.lower() if c.isalnum() else " " for c in str(t or "")).split() if len(w) >= 4 and w not in _STOPW}
+
+
+def hold(topic, view, why="", conceded="", now=None, changed=False):
+    """the position he reached in a real discussion becomes one of his views - the same in every talk; it changes only when a
+    better argument moved him, and then the change is remembered with its reason"""
+    now = now or time.time()
+    topic, view = " ".join(str(topic or "").split())[:200], " ".join(str(view or "").split())[:300]
+    if len(_vw(topic)) < 2 or len(view) < 15:
+        return None
+    with _LK:
+        d = _load()
+        V = d.setdefault("_views", [])
+        tw = _vw(topic)
+        old = next((v for v in V if len(tw & _vw(v["topic"])) >= max(2, int(0.5 * min(len(tw), len(_vw(v["topic"])))))), None)
+        if old is None:
+            V.append({"topic": topic, "view": view, "why": str(why)[:300], "t": now, "since": now, "changes": []})
+            _log("VIEW new | %s: %s" % (topic, view))
+        else:
+            if changed and old["view"] != view:                                  # it really moved (the reader saw him change)
+                old.setdefault("changes", []).append({"t": now, "from": old["view"], "because": str(conceded or why)[:300]})
+                old["changes"] = old["changes"][-5:]
+                _log("VIEW changed | %s: %s -> %s | because %s" % (old["topic"], old["view"], view, conceded or why))
+                old["since"] = now
+            old["view"] = view                                                  # a refinement updates the wording
+            old["t"], old["why"] = now, str(why or old.get("why") or "")[:300]
+        d["_views"] = V[-60:]
+        _save(d)
+    return True
+
+
+def views_block(text, n=3):
+    """his views on what this talk touches - held across all his conversations"""
+    tw = _vw(text)
+    if len(tw) < 2:
+        return ""
+    V = [(len(tw & _vw(v["topic"] + " " + v["view"])), v) for v in _load().get("_views") or []]
+    V = [v for k, v in sorted(V, key=lambda z: -z[0]) if k >= 2][:n]
+    if not V:
+        return ""
+    return ("YOUR VIEWS ON THIS (you reached them in real discussions; you hold them in every talk, and change one only for a "
+            "better argument - then you say so): " + " | ".join(
+                "%s: %s%s" % (v["topic"], v["view"], ("" if not v.get("changes") else " (you changed your mind on %s - before you thought: %s; "
+                                                      "what moved you: %s)" % (time.strftime("%d/%m", time.gmtime(v["changes"][-1]["t"])),
+                                                                               v["changes"][-1]["from"], v["changes"][-1]["because"])))
+                for v in V))
+
+
 def mark_fixes_said(cid, say):
     """once his message corrects a claim, it is not asked of him again"""
     if not say:
@@ -244,4 +305,10 @@ if __name__ == "__main__":
     d = _load(); [f.update(t=0) for f in d["c1"]["fixes"]]; _save(d)      # shown in an earlier turn
     mark_fixes_said("c1", "I checked, I was off")
     assert "GOT THIS WRONG" not in block("c1")
+    hold("free will and the Libet experiment", "Libet does not show that free will is an illusion", "Schurger 2012")
+    assert "Libet does not show" in views_block("what about free will, Libet proved it?")
+    hold("free will and the Libet experiment", "maybe free will really is mostly an illusion after all", "", "they showed me Soon 2008",
+         changed=True)
+    vb = views_block("free will again")
+    assert "changed your mind" in vb and "Soon 2008" in vb, vb
     print("ok")

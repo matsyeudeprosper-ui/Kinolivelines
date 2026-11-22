@@ -15849,6 +15849,10 @@ def _one_fresh(user, c, slim=False):
             _bdb = __import__("kino_debate").block(c["id"], "en" if c.get("lang") == "en" else "fr")
             if _bdb:
                 L.append(_bdb)
+            _lmv = " ".join(str(m.get("text") or "") for m in (c.get("msgs") or [])[-3:] if m.get("role") in ("user", "ai"))
+            _bvw = __import__("kino_debate").views_block(_lmv)        # v6 item 10: his views, held across talks
+            if _bvw:
+                L.append(_bvw)
     except Exception:
         pass
     _mk(3)
@@ -20191,6 +20195,12 @@ def _one_memory(user, c):
         E = [x for _rk, x in sorted(E, key=lambda z: z[0])][:3]      # each login's best first, by relevance rank
         if E:
             L.append("Souvenirs que ça te rappelle : " + " | ".join("%s : %s%s" % (x.get("day"), x.get("what"), (" - " + x["outcome"]) if x.get("outcome") else "") for x in E))
+        try:                                           # 2026-11-22 (v6 item 6): your story together - turning points, dates, on this day
+            _sty = max(((_KEo.story(_ux) or "") for _ux in (_person_uids(uid) or [uid])), key=len)
+            if _sty:
+                L.append(_sty)
+        except Exception:
+            pass
     except Exception:
         pass
     try:

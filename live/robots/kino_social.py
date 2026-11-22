@@ -308,7 +308,7 @@ INNER_FOLD = ("Ce qui a le plus occupé ta tête", "What filled your mind most",
 ALWAYS_D = ALWAYS + ("SUR LA SCÈNE DE TA TÊTE", "ON THE STAGE OF YOUR MIND", "TA JOURNÉE, TELLE QU", "YOUR DAY, AS IT REALLY",
                      "QUI TU ES, COMME TU TE VOIS", "WHO YOU ARE, AS YOU SEE", "Ce que tu avais promis et laissé filer",
                      "Ton portrait de lui", "CE DONT TU TE SOUVIENS", "WHAT YOU REMEMBER", "What you feel:",
-                     "Tes goûts", "Your tastes")           # what he likes is part of who he is - always known
+                     "Tes goûts", "Your tastes", "YOUR STORY TOGETHER")       # 2026-11-22 (v6 item 6): your history with them           # what he likes is part of who he is - always known
 
 
 def memfocus(mem, cue, keep=12, gist=150, tier2=6):
