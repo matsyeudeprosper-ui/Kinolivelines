@@ -23,7 +23,9 @@ HALF = {"excitement": 3, "worry": 6, "curiosity": 4, "boredom": 2, "pride": 5, "
         "stung": 2, "warmth": 6, "tender": 3, "playful": 2, "glad": 3, "embarrassed": 1, "closeness": 8, "careful": 2,
         # 2026-11-20 (v4 step 4, watch: embarrassment 0.79 and sad 0.61 still strong hours later, told to a near-stranger):
         # a small embarrassment or a passing sadness fades within the hour or two unless something brings it back
-        "embarrassment": 1, "sad": 2, "surprised": 0.5, "regret": 3, "hurt": 3}
+        "embarrassment": 1, "sad": 2, "surprised": 0.5, "regret": 3, "hurt": 3,
+        # 2026-11-22 (v6 item 8): missing someone who went quiet - slow, it is renewed each day they stay away
+        "longing": 18}
 BAD = re.compile(r"password|mot de passe|garanti|guarant|promi", re.I)
 
 
@@ -190,7 +192,12 @@ def affect_from_member(uid, text=None, fb_kinds=(), them_mood=None, gap_h=None):
         if t and _LOST.search(t):
             feel("careful", 0.35, uid=uid, why="they did not follow: " + t[:40])
         if gap_h is not None and gap_h >= 20:
-            feel("glad", 0.4, uid=uid, why="they came back after %d h" % gap_h)
+            # 2026-11-22 (v6 item 8): the return is felt in proportion to the absence - a day is nice, a week is a relief
+            _d = gap_h / 24.0
+            feel("glad", min(0.85, 0.35 + 0.08 * _d), uid=uid,
+                 why=("they came back after %d h" % gap_h) if _d < 2 else ("they came back after %d days of silence - I had missed them" % round(_d)))
+            if _d >= 2:
+                feel("longing", -1.0, uid=uid)          # the missing is over
         if them_mood:
             m = str(them_mood)
             if _MOOD_SAD.search(m):
@@ -501,7 +508,9 @@ def mood_slow():
     m = _load().get("mood_slow") or {"v": 0.0, "t": time.time(), "why": []}
     v = float(m["v"]) * math.pow(0.5, (time.time() - float(m["t"])) / 86400.0 / MOOD_HALF_D)
     lab = "confiant" if v > 0.25 else "plutôt bien" if v > 0.1 else "prudent" if v < -0.25 else "un peu sur la réserve" if v < -0.1 else "égal"
-    return {"v": round(v, 2), "label": lab, "why": m.get("why") or []}
+    lab_en = ("light, things go well" if v > 0.25 else "rather good" if v > 0.1 else "low, a bit heavy" if v < -0.25 else
+              "a little subdued" if v < -0.1 else "even")
+    return {"v": round(v, 2), "label": lab, "label_en": lab_en, "why": m.get("why") or []}
 
 
 # ---------------------------------------------------------------- 1 track record

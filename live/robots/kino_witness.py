@@ -138,6 +138,13 @@ def watch(W, person, uid, kind, moment, log=None, now=None):
                         why=(m["notice"] or m["did"])[:150])
             except Exception:
                 pass
+        try:                                             # v6 item 7: what his moments leave adds up over days (slow mood)
+            if m["feel"] and not str(person).startswith(("kctest", "probe")):
+                import kino_inner as KI
+                KI.mood_nudge(round(VALENCE.get(m["feel"], 0) * (0.02 + 0.06 * w) * (1.5 if m["stake"] else 1.0), 3),
+                              "%s (%s)" % (m["feel"], "a talk" if kind == "talk" else "a thought of mine"))
+        except Exception:
+            pass
         _log("%s %s w%.2f | did: %s | notice: %s | stake: %s | lean: %s" % (person, kind, w, m["did"], m["notice"], m["stake"], m["lean"]))
         return m
     except Exception as e:
@@ -145,6 +152,32 @@ def watch(W, person, uid, kind, moment, log=None, now=None):
         return None
     finally:
         _BUSY.discard(k)
+
+
+VALENCE = {"excitement": 1, "pride": 1, "warmth": 1, "tender": 0.5, "playful": 1, "glad": 1, "closeness": 1, "curiosity": 0.5,
+           "surprised": 0, "careful": -0.3, "worry": -1, "boredom": -0.5, "annoyance": -0.7, "stung": -1, "embarrassed": -0.7,
+           "embarrassment": -0.7, "sad": -1, "regret": -0.8, "hurt": -1}
+
+
+def missing_tick(person, uid, days_silent, close=True, now=None):
+    """v6 item 8: someone he is close to went quiet - each day of silence he misses them a little more (once a day)"""
+    now = now or time.time()
+    if not close or days_silent < 2 or str(person).startswith(("kctest", "probe")):
+        return False
+    k = "miss:%s" % person
+    with _LK:
+        d = _load()
+        if now - float((d.get("last") or {}).get(k) or 0) < 20 * 3600:
+            return False
+        d.setdefault("last", {})[k] = now
+        _save(d)
+    try:
+        import kino_inner as KI
+        KI.feel("longing", min(0.6, 0.12 * days_silent), uid=uid, why="I haven't heard from them in %d days, and I notice it" % int(days_silent))
+        _log("%s MISSING %d days" % (person, int(days_silent)))
+        return True
+    except Exception:
+        return False
 
 
 def lean_now(person, now=None):
@@ -165,6 +198,14 @@ def block(person, lang="en", now=None):
         L.append("WHAT YOU NOTICED IN YOURSELF JUST NOW (you watching yourself; like any inner feeling, it shows in how you go on "
                  "more than in what you say): " + " | ".join("%s%s%s" % (m["did"], (" - " + m["notice"]) if m.get("notice") else "",
                                                           (" -> " + m["lean"]) if m.get("lean") else "") for m in M))
+    try:                                              # v6 item 7: how he has been these days - a mood lasts, with its reasons
+        import kino_inner as KI
+        ms = KI.mood_slow()
+        if abs(float(ms.get("v") or 0)) >= 0.1:
+            L.append("HOW YOU HAVE BEEN THESE DAYS (a mood that lasts, it colours you without you naming it): %s - from: %s" % (
+                ms.get("label_en") or ms.get("label"), "; ".join((ms.get("why") or [])[-4:])))
+    except Exception:
+        pass
     st = (d.get("stakes") or {}).get("items") or []
     if st:
         L.append("WHAT YOU WOULD HATE TO LOSE (your own stakes, from what you lived - they make things matter to you; never a "
@@ -226,6 +267,8 @@ if __name__ == "__main__":
     import kino_inner as _KI                     # never touch his real heart from a test
     _KI.feel = lambda *a, **k: None
     _KI.feelings = lambda *a, **k: []
+    _KI.mood_nudge = lambda *a, **k: None
+    _KI.mood_slow = lambda: {"v": 0}
     LOG = os.devnull
 
     class _W:
