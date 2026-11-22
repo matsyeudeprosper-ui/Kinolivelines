@@ -17510,8 +17510,23 @@ def _reminder_tick():
                 except Exception:
                     pass
 
+                try:                                    # 2026-11-22 (watch: "back around 23:30" to Pekos): a client's night is
+                    if str(q.get("uid") or "") not in OWNER_UIDS and q.get("status") != "done":   # theirs - the report waits
+                        _lh = _local_hour(q["uid"])                                          # for their morning
+                        if _lh >= 22 or _lh < 8:
+                            q["tries"] = 0
+                            _KMs.requeue(q)
+                            continue
+                except Exception:
+                    pass
+
                 def _put(cc, q=q):
                     _prev = next((m for m in reversed(cc.get("msgs") or []) if m.get("mission") == q["mid"]), None)
+                    # 2026-11-22 (watch: the same two machine cards every 2 h): the same options already showing are not shown again
+                    _lo = next((m for m in reversed(cc.get("msgs") or []) if m.get("role") == "opts"), None)
+                    if q.get("cards") and _lo and [str(x.get("title")) + str(x.get("price")) for x in _lo.get("items") or []] == \
+                            [str(x.get("title")) + str(x.get("price")) for x in q["cards"]]:
+                        q["cards"] = None
                     if q.get("replace") and _prev is not None and time.time() - float(_prev.get("t") or 0) < 1200:
                         _prev["text"] = q["text"]                  # the newer report replaces the one from minutes ago
                         _prev["t"] = int(time.time())
