@@ -89,8 +89,19 @@ def _not_a_person(x):
         return False
 
 
+def _answered_since(d, x):
+    """2026-11-22 (watch: 'someone answered me' called a friend session every 10 min all night - BareMind 23:34 and elarigent
+    05:05 sat in pending although he had written back at 00:59 and 17:19: his reply went to another url of the thread, and
+    answered(url) only matches the exact one). He wrote to this person after their message: it is not waiting anymore."""
+    p = (d.get("people") or {}).get(x.get("who")) or {}
+    return any(isinstance(s, dict) and s.get("dir") == "out" and float(s.get("t") or 0) > float(x.get("t") or 0)
+               for s in p.get("said") or [])
+
+
 def pending(max_age_h=72):
-    return [x for x in _load()["pending"] if time.time() - float(x.get("t") or 0) < max_age_h * 3600 and not _not_a_person(x)]
+    d = _load()
+    return [x for x in d["pending"] if time.time() - float(x.get("t") or 0) < max_age_h * 3600 and not _not_a_person(x)
+            and not _answered_since(d, x)]
 
 
 def block(en=True):
