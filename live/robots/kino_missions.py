@@ -149,7 +149,8 @@ def _in_their_lang(text, lang):
         import robot_warm as _W
         out = _W.ask_text("You receive a short message for a person whose language is '%s' (ISO code). If the message is already "
                           "in that language, answer with it EXACTLY as it is. Otherwise translate it into that language, same tone, "
-                          "names, prices, links and line breaks. Answer with the message only." % want, str(text), model="haiku",
+                          "names, prices, links and line breaks - and Kino talks to them like a friend: the informal address "
+                          "(tu, tú, du, tu/te...), never the formal one. Answer with the message only." % want, str(text), model="haiku",
                           timeout=60, warm=False)
         if out and len(out.strip()) > 0.5 * len(str(text)):
             return out.strip()
