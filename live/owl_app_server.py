@@ -17483,6 +17483,10 @@ def _reminder_tick():
                         _prev["text"] = q["text"]                  # the newer report replaces the one from minutes ago
                         _prev["t"] = int(time.time())
                         q["_quiet"] = True
+                        if q.get("cards"):                 # 2026-11-22 (owner: "I still don't see the images"): a replacing
+                            cc.setdefault("msgs", []).append({"role": "opts", "t": int(time.time()), "kind": q.get("cards_kind"),
+                                                              "dates": q.get("cards_dates"), "items": q["cards"]})
+                            q["_quiet"] = False            # report used to drop its cards - they come, and the phone rings
                     else:
                         _chat_msg(cc, "ai", text=q["text"], mission=q["mid"], one=True, quick=True)   # his own words from his work session: never re-judged
                         if q.get("cards"):                 # 2026-11-15 (owner): the desk shows what it found as cards too
@@ -17493,7 +17497,14 @@ def _reminder_tick():
                             if m.get("role") == "pay" and (m.get("pay") or {}).get("ref") == q["ref"] and m["pay"].get("status") in ("paid", "trust"):
                                 m["pay"]["status"] = "delivered" if m["pay"]["status"] == "paid" else "owed"
                     return True
-                _chat_mut(q["cid"], _put)
+                try:
+                    _chat_mut(q["cid"], _put)
+                except Exception:                       # 2026-11-22: a report that failed to land goes back, never lost
+                    try:
+                        _KMs.requeue(q)
+                    except Exception:
+                        pass
+                    continue
                 if q.get("_quiet"):
                     continue
                 _cq = _chat_load(_user_by_id(q["uid"]) or {}, q["cid"]) or {}

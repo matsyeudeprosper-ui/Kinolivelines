@@ -420,6 +420,17 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
     return "mission %s: %s%s" % (mid, out["status"], (" - %s has your message in their chat" % (out.get("name") or "they")) if tell else _dupmsg)
 
 
+def requeue(q):
+    """a report the app could not put in the chat goes back in the outbox (tried again on the next drain)"""
+    with _LK:
+        try:
+            Q = json.load(open(OUTBOX, encoding="utf-8"))
+        except Exception:
+            Q = []
+        Q.append(q)
+        json.dump(Q, open(OUTBOX, "w", encoding="utf-8"), ensure_ascii=False)
+
+
 def drain():
     """the app takes the reports to deliver"""
     with _LK:
