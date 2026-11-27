@@ -17491,7 +17491,29 @@ def _reminder_tick():
             pass
         try:                                            # 2026-11-08: his mission reports -> their chat + a push
             import kino_missions as _KMs
-            for q in _KMs.drain():
+            _Qd = _KMs.drain()
+            # 2026-11-27 (watch: Pekos got 6 messages in 26 min after 4 silent days - chat replies and desk reports talking
+            # over each other, two contradicting in the same minute): one voice. Only the newest report per job goes, and
+            # while he already has 2+ messages of Kino's unanswered in the last 30 min, reports wait (the newest wins later)
+            _nw = {}
+            for _q in _Qd:
+                if _q.get("status") == "done" or (_q.get("mid") not in _nw or float(_q.get("t") or 0) >= float(_nw[_q["mid"]].get("t") or 0)):
+                    _nw[_q.get("mid") if _q.get("status") != "done" else id(_q)] = _q
+            _Qd = list(_nw.values())
+            _Qgo = []
+            for _q in _Qd:
+                try:
+                    _cp = json.load(open(_chat_path(_q["cid"]), encoding="utf-8"))
+                    _M = [m for m in (_cp.get("msgs") or []) if m.get("role") in ("user", "ai")]
+                    _lu = max([float(m.get("t") or 0) for m in _M if m.get("role") == "user"] or [0])
+                    _mine = [m for m in _M if m.get("role") == "ai" and float(m.get("t") or 0) > max(_lu, time.time() - 1800)]
+                    if len(_mine) >= 2 and _q.get("status") != "done":
+                        _KMs.requeue(_q)
+                        continue
+                except Exception:
+                    pass
+                _Qgo.append(_q)
+            for q in _Qgo:
                 try:                                    # 2026-11-15 (watch: '#prix 65 + mes frais.' reached Pekos as text):
                     q["text"] = re.sub(r"[ \t]*#(prix|price|choix|choice|cartes|cards|mission|cherche|regarde|suivi|fil|travail)\b[^\n.]*\.?",
                                        "", str(q.get("text") or "")).strip()   # the desk's control tags never reach a person
