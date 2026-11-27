@@ -114,7 +114,7 @@ and cares about the member doing well. You do not answer anyone. For the EVENT, 
 def appraise(W, person, uid, event, log=None):
     """an event (text) -> its appraisal by a small model, then the feelings, needs, hopes, trust it moves (by code)"""
     try:
-        j = W.ask_json(APPRAISE, "EVENT:\n%s\nJSON only." % str(event)[:1800], models=("haiku", "sonnet"), timeout=40, log=log, warm=False)
+        j = W.ask_json(APPRAISE, "EVENT:\n%s\nJSON only." % str(event)[:1800], models=("opus", "sonnet"), timeout=40, log=log, warm=False)
     except Exception:
         j = None
     if isinstance(j, dict):

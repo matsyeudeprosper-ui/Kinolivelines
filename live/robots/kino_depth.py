@@ -70,7 +70,7 @@ def simulate(W, read, transcript, draft, log=None):
     """-> the imagined reaction (dict) or None. Fast model; it is his imagination, it can be wrong."""
     try:
         j = W.ask_json(SIM, "HOW THEY SEEM RIGHT NOW: %s\n\nTHE CONVERSATION (latest last):\n%s\n\nKINO'S DRAFT:\n<<<\n%s\n>>>\nJSON only." % (
-            read or "-", transcript[-3500:], draft[:1500]), models=("haiku",), timeout=25, log=log, warm=True)
+            read or "-", transcript[-3500:], draft[:1500]), models=("opus", "sonnet"), timeout=25, log=log, warm=True)
     except Exception:
         return None
     if not isinstance(j, dict) or not j.get("they_feel"):
@@ -215,7 +215,7 @@ def incubate(W, person, open_things, log=None):
     if not open_things or len(open_things) < 40:
         return []
     try:
-        j = W.ask_json(INCUBATE, "WHAT IS OPEN FOR HIM:\n%s\nJSON only." % open_things[:9000], models=("sonnet",), timeout=120, log=log, warm=False)
+        j = W.ask_json(INCUBATE, "WHAT IS OPEN FOR HIM:\n%s\nJSON only." % open_things[:9000], models=("opus", "sonnet"), timeout=120, log=log, warm=False)
     except Exception:
         return []
     I = [x for x in ((j or {}).get("insights") or []) if isinstance(x, dict) and len(str(x.get("text") or "")) > 20][:2]
@@ -254,7 +254,7 @@ def write_story(W, person, history, log=None):
     P0 = (_load().get(person) or {})
     try:
         j = W.ask_json(STORY, "EXISTING CHAPTERS:\n%s\n\nHISTORY:\n%s\nJSON only." % (
-            json.dumps(P0.get("chapters") or [], ensure_ascii=False), str(history)[:14000]), models=("sonnet",), timeout=150, log=log, warm=False)
+            json.dumps(P0.get("chapters") or [], ensure_ascii=False), str(history)[:14000]), models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     except Exception:
         return None
     C = [x for x in ((j or {}).get("chapters") or []) if isinstance(x, dict) and x.get("title")][:8]

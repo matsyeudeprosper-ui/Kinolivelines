@@ -107,7 +107,7 @@ def think(W, person, uid, lang="fr", context_extra="", log=None):
     L.append("KINO'S LAST THOUGHTS (oldest first): %s" % (" | ".join(last) if last else "none yet"))
     try:
         j = W.ask_json(NEXT % ("English" if lang == "en" else "French"), "\n".join(L)[:6000] + "\nJSON only.",
-                       models=("haiku",), timeout=60, log=log, warm=False)
+                       models=("opus", "sonnet"), timeout=60, log=log, warm=False)
     except Exception:
         return None
     t = " ".join(str((j or {}).get("thought") or "").split())[:300] if isinstance(j, dict) else ""

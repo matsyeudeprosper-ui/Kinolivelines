@@ -58,7 +58,7 @@ def harvest(W, uid, cid, say, about_member=None, log=None):
         kt = "\n".join("[%s] %s (topic: %s, certainty %.1f)" % (x["id"], x["claim"], x.get("topic"), x["c"]) for x in known) or "(none yet)"
         j = W.ask_json(SYSTEM, "HIS KNOWN BELIEFS:\n%s\n\nHIS MESSAGE:\n<<<\n%s\n>>>\n%s\nJSON only." % (
             kt, say[:1500], ("THE MEMBER'S LAST MESSAGE (context): " + str(about_member)[:400]) if about_member else ""),
-            models=("haiku", "sonnet"), timeout=60, log=log, warm=False)
+            models=("opus", "sonnet"), timeout=60, log=log, warm=False)
         B = (j or {}).get("bets") if isinstance(j, dict) else None
         if B:                                            # 2026-10-31: a forecast in his own words is a bet on the record
             try:                                         # (kino_belief ledger, settled by the nightly resolver) - nothing to

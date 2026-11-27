@@ -527,6 +527,17 @@ def _desk_offload(system, user, model, timeout, log, src):
         _DESK_FAILS["openai"] += 1
         if _DESK_FAILS["openai"] >= 2:
             _DESK_FAILS["until_openai"], _DESK_FAILS["openai"] = now + 1800, 0
+    # 2026-11-27 (owner, option 3: the desk was 53 % of the Claude plan, Codex mostly empty): low-stakes desk work (his lab,
+    # his look back, his own wall, cards) goes to the free brain before Claude; anything that touches people (business
+    # emails, client jobs, friends, market) stays on Claude - kino_work.session sets the flag from its own task tags
+    if getattr(_TL, "desk_free", False) and now >= _DESK_FAILS.get("until_free", 0):
+        r = _freellm(system, user, timeout, log, "desk:" + src)
+        if r:
+            _DESK_FAILS["free"] = 0
+            return r
+        _DESK_FAILS["free"] = _DESK_FAILS.get("free", 0) + 1
+        if _DESK_FAILS["free"] >= 2:
+            _DESK_FAILS["until_free"], _DESK_FAILS["free"] = now + 900, 0
     return None
 
 

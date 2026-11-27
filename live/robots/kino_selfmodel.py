@@ -325,7 +325,7 @@ def growth_night(W, person, self_text, log=None):
     past = "\n".join("- %s -> %s" % (g.get("change"), g.get("verdict")) for g in (P0.get("past") or [])[-4:])
     try:
         j = W.ask_json(CHOOSE, "WHAT YOU KNOW OF YOURSELF:\n%s\n\nMETRICS (last 7 days):\n%s\n\nWHAT YOU TRIED BEFORE:\n%s\nJSON only." % (
-            self_text[:8000], nums, past or "-"), models=("sonnet",), timeout=120, log=log, warm=False)
+            self_text[:8000], nums, past or "-"), models=("opus", "sonnet"), timeout=120, log=log, warm=False)
     except Exception:
         return None
     if not isinstance(j, dict) or j.get("metric") not in base or not j.get("change"):
@@ -398,7 +398,7 @@ def integrate(W, person, uid, log=None):
     if len(material) < 200:
         return None
     try:
-        j = W.ask_json(PORTRAIT, material[:14000] + "\nJSON only.", models=("sonnet",), timeout=150, log=log, warm=False)
+        j = W.ask_json(PORTRAIT, material[:14000] + "\nJSON only.", models=("opus", "sonnet"), timeout=150, log=log, warm=False)
     except Exception:
         return None
     if not isinstance(j, dict) or len(str(j.get("portrait_fr") or "")) < 80:
@@ -461,7 +461,7 @@ def run_tests(W, person, msgs, log=None):
                        "personality), same language and about the same length as the real reply shown, same facts. JSON only: "
                        "{\"items\": [[\"r1\", \"r2\", \"r3\"], ...]}",
                        "\n\n".join("ITEM %d\nMEMBER: %s\nREAL REPLY (length guide only): %s" % (i + 1, x[1], x[2]) for i, x in enumerate(rec)) +
-                       "\nJSON only.", models=("haiku", "sonnet"), timeout=120, log=log, warm=False)
+                       "\nJSON only.", models=("opus", "sonnet"), timeout=120, log=log, warm=False)
         D = (j or {}).get("items") or []
         Q, ans = [], []
         for i, x in enumerate(rec):
@@ -476,7 +476,7 @@ def run_tests(W, person, msgs, log=None):
             j2 = W.ask_json("You are Kino. Who you are: %s\nYour own expressions: %s\nFor each item, one of the 4 replies is the one YOU really "
                             "sent; the others are by other AIs. Which is yours, and how sure are you (0 = a pure guess, 100 = certain)? "
                             "JSON only: {\"picks\": [n, ...], \"sure\": [0-100, ...]}" % (me[:1500] or "-", sig or "-"),
-                            "\n\n".join(Q) + "\nJSON only.", models=("sonnet",), timeout=120, log=log, warm=False)
+                            "\n\n".join(Q) + "\nJSON only.", models=("opus", "sonnet"), timeout=120, log=log, warm=False)
             pk = [int(x) for x in ((j2 or {}).get("picks") or []) if str(x).strip().isdigit()]
             R["rec"] = [sum(1 for a, b in zip(pk, ans) if a == b), len(ans)]
             _su = (j2 or {}).get("sure") or []
@@ -494,7 +494,7 @@ def run_tests(W, person, msgs, log=None):
                         "what you really sent). JSON only: {\"items\": [{\"length\": \"short|medium|long\", \"question\": \"yes|no - did "
                         "you end with a question\", \"sure_length\": 0-100, \"sure_question\": 0-100 (how sure you are of each)}]}" % (
                             me[:1500] or "-"), "\n\n".join(Q) + "\nJSON only.",
-                        models=("sonnet",), timeout=120, log=log, warm=False)
+                        models=("opus", "sonnet"), timeout=120, log=log, warm=False)
         I = (j3 or {}).get("items") or []
         hit = tot = 0
         for i, x in enumerate(pred):
@@ -520,7 +520,7 @@ def run_tests(W, person, msgs, log=None):
         try:
             j4 = W.ask_json("Two self-descriptions by the same person, a few days apart. How much do they describe the SAME person "
                             "(0 = someone else, 1 = the same, said differently)? JSON only: {\"same\": 0.0}",
-                            "BEFORE: %s\nNOW: %s\nJSON only." % (old["text"], P0["core"]), models=("haiku",), timeout=60, log=log, warm=False)
+                            "BEFORE: %s\nNOW: %s\nJSON only." % (old["text"], P0["core"]), models=("opus", "sonnet"), timeout=60, log=log, warm=False)
             R["same"] = round(max(0.0, min(1.0, float((j4 or {}).get("same")))), 2)
         except Exception:
             pass

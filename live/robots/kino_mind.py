@@ -700,7 +700,7 @@ Answer ONE JSON object: {"ok": true} or {"ok": false, "fix": "..."}."""
 
 
 def fact_check(message, facts):
-    raw = W.ask_json(CHECK_SYSTEM, "FACTS:\n%s\n\nKINO'S MESSAGE:\n%s" % (facts[:14000], message[:1500]), models=("haiku", "sonnet"), timeout=60)
+    raw = W.ask_json(CHECK_SYSTEM, "FACTS:\n%s\n\nKINO'S MESSAGE:\n%s" % (facts[:14000], message[:1500]), models=("opus", "sonnet"), timeout=60)
     if isinstance(raw, dict) and raw.get("ok") is False and str(raw.get("fix") or "").strip():
         return str(raw["fix"]).strip()[:400]
     return None
@@ -789,5 +789,5 @@ topic, rarely. Answer ONE JSON object and nothing else:
 
 def inner_decide(ctx_text):
     """one small decision in the background (fresh process, nothing kept warm) -> {"now", "intent", "why"} or None"""
-    raw = W.ask_json(INNER_SYSTEM, ctx_text, models=("haiku",), timeout=75, warm=False)
+    raw = W.ask_json(INNER_SYSTEM, ctx_text, models=("opus", "sonnet"), timeout=75, warm=False)
     return raw if isinstance(raw, dict) else None

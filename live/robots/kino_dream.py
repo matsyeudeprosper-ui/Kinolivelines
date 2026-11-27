@@ -97,7 +97,7 @@ def night(W, log=None, now=None):
             "\n".join("%s | %s%s" % (i, x.get("what"), (" (" + x["feel"] + ")") if x.get("feel") else "") for i, x in mom[:30]),
             "\n".join("- %s / %s" % (m.get("did"), m.get("notice")) for m in wd) or "(nothing)",
             stakes, "\n".join("- " + n for n in nag[:6]) or "(nothing)"))
-        j = W.ask_json(DREAM, msg, models=("sonnet",), timeout=150, log=log or LOG, warm=False)
+        j = W.ask_json(DREAM, msg, models=("opus", "sonnet"), timeout=150, log=log or LOG, warm=False)
         if not isinstance(j, dict) or len(str(j.get("dream") or "")) < 40:
             _log("no usable dream: %s" % str(j)[:200])
             return None

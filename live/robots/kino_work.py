@@ -1805,6 +1805,13 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
             rec["night"] = True
         if isinstance(ch, dict) and ch.get("care"):
             rec["care"] = ch["care"]
+        try:                                   # 2026-11-27 (owner, option 3): which brain the desk may use this session
+            import robot_warm as _RWd
+            _low = str(rec.get("care") or "") in ("wall", "memory", "cards") or any(
+                k in task.lower()[:80] for k in ("my trading lab", "weekly look back"))
+            _RWd._TL.desk_free = bool(_low)
+        except Exception:
+            pass
         _fx = ""                               # 2026-11-07 (first friend session): the people list sat past the 6000 chars
         if "hunt" in rec["why"].lower():      # 2026-11-07 (owner: "all continents, any language"): where this hunt goes
             _nr = 0

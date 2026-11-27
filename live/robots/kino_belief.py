@@ -289,7 +289,7 @@ def night_settle(W, uid, facts, log=None):
                                                                      round(b["p"] * 100), b.get("resolves") or "?") for b in B)
     try:
         j = W.ask_json(SETTLE, "OPEN BETS:\n%s\n\nTODAY'S FACTS:\n%s\n\nJSON only." % (lines, str(facts)[:12000]),
-                       models=("sonnet",), timeout=120, log=log, warm=False)
+                       models=("opus", "sonnet"), timeout=120, log=log, warm=False)
     except Exception:
         return 0
     S = [x for x in ((j or {}).get("settled") or []) if isinstance(x, dict) and str(x.get("outcome")).lower() in ("true", "false")]

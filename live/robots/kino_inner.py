@@ -418,7 +418,7 @@ Answer ONE JSON object: {"thoughts": [{"kind": "...", "text": "the thought, firs
 
 
 def reverie(uid, context, W):
-    raw = W.ask_json(REVERIE_SYSTEM, context, models=("haiku",), timeout=90, warm=False)
+    raw = W.ask_json(REVERIE_SYSTEM, context, models=("opus", "sonnet"), timeout=90, warm=False)
     out = []
     for th in (raw or {}).get("thoughts") or []:
         if not isinstance(th, dict) or th.get("kind") not in ("realise", "link", "memory", "daydream", "care", "cross", "wonder"):
@@ -600,7 +600,7 @@ specific detail, no greeting formula). If it does not pass, drop it. Answer ONE 
 def refine(th, ctx, W):
     meas = th.get("kind") in ("hunch", "hunch_check", "finding", "bet", "own_robot", "gut") or str(th.get("src") or "").startswith(("market:", "bet:", "question:"))
     raw = W.ask_json(REFINE_SYSTEM, "THE THOUGHT (%s%s): %s%s\n\n%s" % (th.get("kind"), ", MEASURED BY KINO" if meas else "", th.get("text"),
-                     (" (measured: %s)" % th["measure"]) if th.get("measure") else "", ctx), models=("haiku",), timeout=75, warm=False)
+                     (" (measured: %s)" % th["measure"]) if th.get("measure") else "", ctx), models=("opus", "sonnet"), timeout=75, warm=False)
     return raw if isinstance(raw, dict) else None
 
 
@@ -810,7 +810,7 @@ Answer ONE JSON object and nothing else:
 
 
 def dream(uid, ctx, W):
-    raw = W.ask_json(DREAM_SYSTEM, ctx, models=("sonnet", "haiku"), timeout=150, warm=False)
+    raw = W.ask_json(DREAM_SYSTEM, ctx, models=("opus", "sonnet"), timeout=150, warm=False)
     return raw if isinstance(raw, dict) else None
 
 
@@ -1018,7 +1018,7 @@ atr highest lowest (series, n); cross_up/cross_down(a,b); "@ H1" etc. after a pa
 
 def read_chart(images, note, W):
     import robot_chat as RC
-    raw = W.ask_json(READ_SYSTEM, RC._content("Their words with it: %s" % (note or "-"), images), models=("sonnet", "haiku"),
+    raw = W.ask_json(READ_SYSTEM, RC._content("Their words with it: %s" % (note or "-"), images), models=("opus", "sonnet"),
                      timeout=120, warm=False)
     return raw if isinstance(raw, dict) else None
 
@@ -1087,7 +1087,7 @@ def form_views(live_bars, news, W):
     if not F:
         return None
     raw = W.ask_json(VIEW_SYSTEM, "FACTS (percent): %s\nNEWS: %s\nYOUR SCORE SO FAR: %d right out of %d" % (
-        json.dumps(F), str(news or "-")[:1500], V["score"]["right"], V["score"]["n"]), models=("sonnet", "haiku"), timeout=120, warm=False)
+        json.dumps(F), str(news or "-")[:1500], V["score"]["right"], V["score"]["n"]), models=("opus", "sonnet"), timeout=120, warm=False)
     vs = [v for v in (raw or {}).get("views") or [] if isinstance(v, dict) and v.get("sym") in F and v.get("call") in ("up", "down", "calm", "wild")]
     if not vs:
         return None

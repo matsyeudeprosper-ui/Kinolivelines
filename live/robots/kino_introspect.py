@@ -67,7 +67,7 @@ def check(W, person, say, ro, log=None):
         return None
     _count(person, "checked")
     j = W.ask_json(SYSTEM, "READOUT (measured now):\n%s\n\nWHAT HE WROTE:\n%s\n\nJSON only." % (ro, say[:1500]),
-                   models=("haiku", "sonnet"), timeout=40, log=log, warm=True)
+                   models=("opus", "sonnet"), timeout=40, log=log, warm=True)
     if not isinstance(j, dict) or not j.get("describes"):
         return None
     _count(person, "describes")

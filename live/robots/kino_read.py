@@ -159,7 +159,7 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         ("TRUE FACTS ABOUT KINO HIMSELF (measured by the app - when Kino states these, it is NOT a slip): %s\n" % _kt) if _kt else "",
         _transcript(M))
     try:
-        j = W.ask_json(SYSTEM, user, models=("haiku", "sonnet"), timeout=40, log=log, warm=False)
+        j = W.ask_json(SYSTEM, user, models=("opus", "sonnet"), timeout=40, log=log, warm=False)
     except Exception:
         return None
     if not isinstance(j, dict) or not j.get("mood"):

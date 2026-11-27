@@ -90,7 +90,7 @@ def after_exchange(W, cid, transcript, last_member="", search=None, fetch=None, 
     _BUSY.add(cid)
     try:
         j = W.ask_json(READ, "THE CONVERSATION (latest last):\n%s\n\nJSON only." % str(transcript or "")[-6000:],
-                       models=("haiku", "sonnet"), timeout=90, log=log or LOG, warm=False)
+                       models=("opus", "sonnet"), timeout=90, log=log or LOG, warm=False)
         if not isinstance(j, dict):
             return None
         with _LK:
@@ -128,7 +128,7 @@ def after_exchange(W, cid, transcript, last_member="", search=None, fetch=None, 
                 res[0].get("url") if res else "", page or "(none)"))
         v = {}
         if found:
-            v = W.ask_json(VERIFY, "\n\n".join(found) + "\n\nJSON only.", models=("haiku", "sonnet"), timeout=120,
+            v = W.ask_json(VERIFY, "\n\n".join(found) + "\n\nJSON only.", models=("opus", "sonnet"), timeout=120,
                            log=log or LOG, warm=False) or {}
         facts = [{"fact": " ".join(str(x.get("fact") or "").split())[:300], "src": str(x.get("src") or "")[:200], "t": now}
                  for x in (v.get("facts") or []) if isinstance(x, dict) and x.get("ok") and len(str(x.get("fact") or "")) > 15]

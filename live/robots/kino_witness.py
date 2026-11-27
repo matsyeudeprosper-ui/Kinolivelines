@@ -116,7 +116,7 @@ def watch(W, person, uid, kind, moment, log=None, now=None):
             stakes_text(), feels or "(quiet)",
             "\n".join("- %s / %s" % (m.get("did"), m.get("notice")) for m in prev) or "(none)",
             "a talk" if kind == "talk" else "a thought of mine, alone", str(moment)[-3500:]))
-        j = W.ask_json(WATCH, msg, models=("haiku", "sonnet"), timeout=60, log=log or LOG, warm=False)
+        j = W.ask_json(WATCH, msg, models=("opus", "sonnet"), timeout=60, log=log or LOG, warm=False)
         if not isinstance(j, dict) or not str(j.get("did") or "").strip():
             return None
         try:
@@ -224,7 +224,7 @@ def night(W, history, log=None, now=None):
     try:
         d = _load()
         j = W.ask_json(STAKES, "WHAT I LIVED (my portrait, my moments, my people, what I built):\n%s\n\nMY STAKES LAST NIGHT:\n%s\n\nJSON only." % (
-            str(history or "")[-7000:], stakes_text()), models=("sonnet",), timeout=120, log=log or LOG, warm=False)
+            str(history or "")[-7000:], stakes_text()), models=("opus", "sonnet"), timeout=120, log=log or LOG, warm=False)
         items = [{"what": " ".join(str(s.get("what") or "").split())[:200], "why": " ".join(str(s.get("why") or "").split())[:240],
                   "touched_by": " ".join(str(s.get("touched_by") or "").split())[:200]}
                  for s in ((j or {}).get("stakes") or []) if isinstance(s, dict) and len(str(s.get("what") or "")) > 8][:5]
@@ -243,7 +243,7 @@ def night(W, history, log=None, now=None):
                 v = W.ask_json(VALUES, "MY WATCHED MOMENTS THIS WEEK:\n%s\n\nMY STAKES:\n%s\n\nMY VALUES LAST WEEK:\n%s\n\nJSON only." % (
                     "\n".join("- %s: %s / %s" % (time.strftime("%d/%m", time.gmtime(m["t"])), m["did"], m.get("notice")) for m in M),
                     stakes_text(), "\n".join("- " + x["what"] for x in va.get("items") or []) or "(none yet)"),
-                    models=("sonnet",), timeout=120, log=log or LOG, warm=False)
+                    models=("opus", "sonnet"), timeout=120, log=log or LOG, warm=False)
                 vi = [x for x in ((v or {}).get("values") or []) if isinstance(x, dict) and x.get("what")][:6]
                 if len(vi) >= 2:
                     with _LK:

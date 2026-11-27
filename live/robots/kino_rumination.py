@@ -101,7 +101,7 @@ def quiet(W, person, log=None):
     held = [r["text"] for r in P.get("res") or [] if _res_strength(r, now) > 0.2]
     j = W.ask_json(SYSTEM, "WHAT HAS BEEN NAGGING YOU (strongest first):\n%s\n\nRESOLVES YOU ALREADY HOLD:\n%s\n\nJSON only." % (
         "\n".join("- (%s, %s UTC) %s" % (x["kind"], time.strftime("%d/%m %H:%M", time.gmtime(x["t"])), x["what"]) for x in items),
-        "\n".join("- " + t for t in held) or "(none)"), models=("sonnet", "haiku"), timeout=60, log=log, warm=False)
+        "\n".join("- " + t for t in held) or "(none)"), models=("opus", "sonnet"), timeout=60, log=log, warm=False)
     if not isinstance(j, dict) or not j.get("resolves"):
         return None
     new = [{"text": " ".join(str(r.get("text") or "").split())[:220], "situation": " ".join(str(r.get("situation") or "").split())[:120],
