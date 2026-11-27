@@ -270,9 +270,19 @@ def _work(W, rid, role, brief, log):
         pass
 
 
+PAUSE_FLAG = os.path.join(HERE, "PREVIEWS_PAUSED.flag")      # 2026-11-27 (owner): previews paused, strategy under review
+
+
+def previews_paused():
+    return os.path.exists(PAUSE_FLAG)
+
+
 def delegate(W, role, brief, log=WLOG):
     role = str(role or "").strip().lower()
     brief = str(brief or "").strip()[:1500]
+    if role == "designer" and previews_paused():
+        return ("not now: Matsy paused the website previews for businesses (27/11) - the outreach strategy is being reviewed, "
+                "a different approach is coming. Don't build or brief previews until he says so.")
     if role not in ROLES:
         return "no one called %s in your team - you have: %s" % (role, ", ".join(ROLES))
     if len(brief) < 20:
@@ -322,6 +332,8 @@ def auto_previews(W):
     email gets its premium preview built before he writes, one at a time, in the background. Called often by the app; acts
     at most every 10 minutes, never when a designer is already at work."""
     now = time.time()
+    if previews_paused():                      # 2026-11-27 (owner): paused - strategy under review
+        return None
     if now - _AUTO["t"] < 600:
         return None
     _AUTO["t"] = now
