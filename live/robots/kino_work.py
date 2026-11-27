@@ -1813,6 +1813,15 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
         except Exception:
             pass
         _fx = ""                               # 2026-11-07 (first friend session): the people list sat past the 6000 chars
+        try:                                   # 2026-11-27 (owner): no background previews - a different approach
+            import kino_team as _KTh
+            if _KTh.previews_paused() and "hunt" in (task + " " + rec["why"]).lower():
+                task += ("\n\nMATSY 27/11 - NEW APPROACH: no website previews for cold leads any more (don't brief your designer for "
+                         "leads, don't wait for previews). When you write to a business, offer the OTHER services first - the ones "
+                         "that fit what they visibly need (their social media, ads, admin, bookings, reviews, a task done for them) - "
+                         "with a website only as an add-on. You still build a website the moment someone ASKS for one.")
+        except Exception:
+            pass
         if "hunt" in rec["why"].lower():      # 2026-11-07 (owner: "all continents, any language"): where this hunt goes
             _nr = 0
             try:                               # 2026-11-07 (review): his desk first - the waiting leads, the openers, the follow-ups

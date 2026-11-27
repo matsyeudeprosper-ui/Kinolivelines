@@ -426,7 +426,12 @@ def outreach(W, ref, subject, body, log=None):
         return "too short to be a real, personal email"
     # 2026-11-07 (owner: "going forward, always emails with previews"): a first email to a business carries its own preview -
     # except South Africa (consent first: the link comes after their yes) and people who asked (answer them fast)
-    if not sent and not p.get("asked") and cc != "ZA":
+    try:                                       # 2026-11-27 (owner): previews only on demand now - no preview needed to write
+        import kino_team as _KTp
+        _pv_off = _KTp.previews_paused()
+    except Exception:
+        _pv_off = False
+    if not sent and not p.get("asked") and cc != "ZA" and not _pv_off:
         if not p.get("preview"):
             return ("not sent - Matsy: every first email carries THEIR preview. Brief your designer for %s (or wait for the preview "
                     "queue), then write with the link." % p["name"])

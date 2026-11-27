@@ -280,9 +280,6 @@ def previews_paused():
 def delegate(W, role, brief, log=WLOG):
     role = str(role or "").strip().lower()
     brief = str(brief or "").strip()[:1500]
-    if role == "designer" and previews_paused():
-        return ("not now: Matsy paused the website previews for businesses (27/11) - the outreach strategy is being reviewed, "
-                "a different approach is coming. Don't build or brief previews until he says so.")
     if role not in ROLES:
         return "no one called %s in your team - you have: %s" % (role, ", ".join(ROLES))
     if len(brief) < 20:
