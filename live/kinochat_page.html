@@ -937,12 +937,16 @@ function notifSh(){nState().then(function(s){shOpen('<h3>🔔 '+T('Notifications
 // 2026-11-28 (owner: "my phone allows all notifications for Kino Chat but I get no pushes"): the server dropped a dead
 // registration (05/11) and the app never sent a new one, because it only did on a tap. Now: each time it opens with
 // notifications allowed, it quietly hands the server its current registration (or makes a new one).
-function nSync(){try{if(!nSupported()||Notification.permission!=='granted')return;
- nReg().then(function(r){return r.pushManager.getSubscription().then(function(s){if(s)return s;
-  return fetch(B+'push_key').then(function(x){return x.json()}).then(function(k){if(!k||!k.key)return null;var key=k.key,
+var _nd=[];function nDiag(x){_nd.push(x);try{fetch(B+'push_diag?s='+encodeURIComponent(_nd.join(' > ')),{cache:'no-store'})}catch(e){}}
+function nSync(){try{_nd=[];var sw='serviceWorker' in navigator,pm='PushManager' in window,nt='Notification' in window;
+ if(!sw||!pm||!nt){nDiag('unsupported sw='+sw+' push='+pm+' notif='+nt);return}
+ var perm=Notification.permission;if(perm!=='granted'){nDiag('permission='+perm);return}
+ nReg().then(function(r){return r.pushManager.getSubscription().then(function(s){if(s){nDiag('had sub');return s}
+  return fetch(B+'push_key').then(function(x){return x.json()}).then(function(k){if(!k||!k.key){nDiag('no key');return null}var key=k.key,
    pd='='.repeat((4-key.length%4)%4),bin=atob((key+pd).replace(/-/g,'+').replace(/_/g,'/')),arr=new Uint8Array(bin.length);
-   for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:arr})})})})
- .then(function(s){if(s)return fetch(B+'push_sub',{method:'POST',body:JSON.stringify(s)})}).catch(function(){})}catch(e){}}
+   for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:arr}).then(function(n){nDiag('new sub');return n})})})})
+ .then(function(s){if(s)return fetch(B+'push_sub',{method:'POST',body:JSON.stringify(s)}).then(function(x){nDiag('sent '+x.status)})})
+ .catch(function(e){nDiag('error '+(e&&(e.name+': '+e.message)||e))})}catch(e){nDiag('crash '+e)}}
 setTimeout(nSync,2500);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')nSync()});
 // a gentle offer, once, after a real exchange - never at the door

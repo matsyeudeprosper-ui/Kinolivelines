@@ -15839,6 +15839,9 @@ def _one_fresh(user, c, slim=False):
             _bx = __import__("kino_expect").block(uid)
             if _bx:
                 L.append(_bx)
+            _brs = __import__("kino_residue").block(uid)
+            if _brs:
+                L.append(_brs)
     except Exception:
         pass
     try:                                               # 2026-11-28 (kino_meditate): what has been turning in his mind
@@ -41393,6 +41396,17 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 pass
             self._send(json.dumps(d), "application/json")
+        elif sub == "push_diag":
+            # 2026-11-28 (owner: no push): the phone reports each step of its push registration
+            try:
+                import urllib.parse as _upx
+                _qx = _upx.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                open(os.path.join(DIR, "owl_push_notifier.log"), "a", encoding="utf-8").write(
+                    time.strftime("%Y-%m-%d %H:%M:%S") + "   DIAG %s: %s | %s\n" % (
+                        (user or {}).get("id"), (_qx.get("s", [""])[0] or "")[:400], str(self.headers.get("User-Agent") or "")[:120]))
+            except Exception:
+                pass
+            self._send(json.dumps({"ok": True}), "application/json")
         elif sub == "push_key":
             self._send(json.dumps(
                 {"key": (_VAPID or {}).get("public_key")}),

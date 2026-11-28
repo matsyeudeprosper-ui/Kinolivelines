@@ -75,7 +75,8 @@ Read him RIGHT NOW. JSON only:
  "guess_feel": "the feeling that leaves Kino: surprised | glad | relief | sad | hurt | curiosity | worry | warmth | pride | annoyance - or empty",
  "expect_next": "Kino's own guess, as a friend who knows him: what he will most likely say or do next, after Kino answers (his reaction, his next move, when he will be back) - one short sentence",
  "expect_sure": 0.0 to 1.0 (how sure that guess is),
- "expect_stake": 0.0 to 1.0 (how much it matters to Kino if it goes otherwise)}
+ "expect_stake": 0.0 to 1.0 (how much it matters to Kino if it goes otherwise),
+ "register": "light | warm | deep | tense | practical - the register of these last exchanges between them"}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -229,6 +230,11 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     try:                                               # 2026-11-22: his heart reads their meaning, not their words
         import kino_inner as _KIr
         _KIr.affect_from_read(uid, r)
+    except Exception:
+        pass
+    try:                                               # 2026-11-28 (kino_residue): what this exchange leaves in how he is with them
+        import kino_residue as _KRs
+        _KRs.leave(uid, j, r)
     except Exception:
         pass
     try:                                               # 2026-11-28 (kino_expect): the guess met reality; a new guess
