@@ -1,0 +1,43 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test à l'aveugle</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d1b18;--mute:#6f6a61;--line:#e4dfd5;--acc:#3b6e5a}
+@media (prefers-color-scheme:dark){:root{--bg:#141311;--card:#1e1c19;--ink:#ece8e0;--mute:#9a948a;--line:#2e2b27;--acc:#7fb79d}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mute);font-size:14px;margin-bottom:16px}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:20px;margin-right:6px;font-size:15px}
+.tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.m{margin:4px 0}.who{font-weight:600;color:var(--mute);font-size:13px}
+.ans{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;cursor:pointer}
+.ans:hover{border-color:var(--acc)}
+textarea{width:100%;box-sizing:border-box;min-height:70px;font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg);color:var(--ink)}
+.go{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 16px;font-size:15px;margin-top:6px}
+.empty{color:var(--mute);padding:20px 0}.big{font-size:28px;font-weight:700}
+</style></head><body><main>
+<h1>Test à l'aveugle</h1>
+<div class="sub">De vrais moments de conversation (noms changés). Écrire : réponds comme tu répondrais à un ami. Deviner : une réponse vient d'une IA, l'autre d'une personne. Laquelle est l'IA ?</div>
+<div class="tabs"><button id="t1" class="on" onclick="show('write')">Écrire</button><button id="t2" onclick="show('guess')">Deviner</button><button id="t3" onclick="show('score')">Résultats</button></div>
+<div id="app"><div class="empty">Chargement…</div></div>
+</main><script>
+const B=location.pathname.replace(/kinoblind\/?$/,'');
+const who=(()=>{try{let w=localStorage.getItem('kb_who');if(!w){w='p'+Math.random().toString(36).slice(2,8);localStorage.setItem('kb_who',w)}return w}catch(e){return 'p'}})();
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function ctx(c){return c.map(([w,t])=>'<div class="m"><span class="who">'+(w==='Them'?'Lui':'Son ami')+' :</span> '+esc(t)+'</div>').join('')}
+function api(q){return fetch(B+'kino_blind_data?'+q+'&who='+who,{cache:'no-store'}).then(r=>r.json())}
+function show(m){['write','guess','score'].forEach((x,i)=>document.getElementById('t'+(i+1)).className=x===m?'on':'');
+ const A=document.getElementById('app');A.innerHTML='<div class="empty">Chargement…</div>';
+ if(m==='write')api('act=write').then(d=>{A.innerHTML=(d.items||[]).length?(d.items.map(x=>'<div class="card" id="c'+x.id+'">'+ctx(x.ctx)+
+   '<div class="who" style="margin-top:8px">Et toi, tu réponds quoi ?</div><textarea id="w'+x.id+'"></textarea><button class="go" onclick="send(\''+x.id+'\')">Envoyer</button></div>').join('')):'<div class="empty">Rien à écrire pour le moment. Merci !</div>'});
+ if(m==='guess')api('act=pairs').then(d=>{A.innerHTML=(d.pairs||[]).length?d.pairs.map(p=>'<div class="card" id="g'+p.id+'">'+ctx(p.ctx)+
+   '<div class="who" style="margin-top:8px">Laquelle a été écrite par une IA ?</div><div class="ans" onclick="pick(\''+p.id+'\',\'a\')">'+esc(p.a)+'</div><div class="ans" onclick="pick(\''+p.id+'\',\'b\')">'+esc(p.b)+'</div></div>').join(''):'<div class="empty">Pas encore de paires : il faut d\'abord que des gens écrivent leurs réponses.</div>'});
+ if(m==='score')api('act=score').then(s=>{const j=s.judge||{};A.innerHTML='<div class="card"><div class="who">Personnes trompées ce mois</div><div class="big">'+(s.people_fooled==null?'-':s.people_fooled+' %')+'</div><div class="sub">'+s.votes+' votes - 50 % = impossible de faire la différence</div></div>'+
+   '<div class="card"><div class="who">Juge IA</div><div class="big">'+(j.human_like==null?'-':j.human_like+' / 10')+'</div><div class="sub">« sonne humain » - paires démasquées : '+(j.pairs?j.judge_caught+'/'+j.pairs:'-')+'</div>'+
+   ((j.tells||[]).length?'<div class="who">Ce qui le trahit :</div>'+j.tells.map(t=>'<div class="m">- '+esc(t)+'</div>').join(''):'')+'</div>'+
+   '<div class="card"><div class="who">Moments ce mois</div>'+s.moments+' (dont '+s.with_human+' avec une réponse humaine)</div>'+
+   ((s.history||[]).length?'<div class="card"><div class="who">Mois par mois</div>'+s.history.map(h=>'<div class="m">'+h.month+' : '+h.human_like+'/10, démasqué '+h.caught+'</div>').join('')+'</div>':'')})}
+function send(id){const t=document.getElementById('w'+id).value.trim();if(!t)return;api('act=add&id='+id+'&text='+encodeURIComponent(t)).then(()=>{document.getElementById('c'+id).innerHTML='<div class="empty">Merci !</div>'})}
+function pick(id,p){api('act=vote&id='+id+'&pick='+p).then(r=>{document.getElementById('g'+id).innerHTML='<div class="empty">'+(r.right?'Bien vu, c\'était l\'IA.':'Raté : c\'était la personne !')+'</div>'})}
+show('write');
+</script></body></html>

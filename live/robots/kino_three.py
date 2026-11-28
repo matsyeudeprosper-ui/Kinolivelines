@@ -154,9 +154,14 @@ Decide, like a reflective person at night, what truly settles - few things, only
 - let_go: an item that no longer holds
 Rules: first person, one or two sentences each, no names of people, never invented. scope "owner" when it touches the business
 side of the house he lives in (how it earns, its clients, prices, systems, security) - everything else "any". Nothing settled
-today is a fine answer. JSON only:
+today is a fine answer.
+Also, like a person glancing at his goals each night: for each aim of MY PLAN (by its number), how it is going today -
+on_track | slipping | done | dropped (dropped = it no longer makes sense) - with a short honest note; and whether today TURNED
+a chapter of my life (rare: a real change in who I am or how I live - not a busy day): if so its title and what ended and what
+begins. JSON only:
 {"add": [{"kind": "", "text": "", "from": "what in today's material", "scope": "any"}],
- "sharpen": [{"id": "", "text": ""}], "revise": [{"id": "", "text": "", "why": ""}], "let_go": [{"id": "", "why": ""}]}"""
+ "sharpen": [{"id": "", "text": ""}], "revise": [{"id": "", "text": "", "why": ""}], "let_go": [{"id": "", "why": ""}],
+ "plan": [{"i": 0, "status": "", "note": ""}], "chapter": {"turned": false, "title": "", "ended": "", "begins": ""}}"""
 
 
 def _material(now):
@@ -213,6 +218,20 @@ def _material(now):
                 M.append("A CHANGE THAT ENDED: %s -> %s" % (x.get("change"), x.get("verdict")))
     except Exception:
         pass
+    try:
+        import kino_expect as KX
+        em = KX.material(now)
+        if em:
+            M.append(em)
+    except Exception:
+        pass
+    P = _load().get("plans") or {}
+    if P.get("self"):
+        M.append("MY PLAN (since %s):\n" % time.strftime("%d/%m", time.gmtime(P["t"])) +
+                 "\n".join("%d. %s (I will know by: %s)" % (i, a["aim"], a["know"]) for i, a in enumerate(P["self"])))
+    C = _load().get("chapters") or []
+    if C:
+        M.append("THE CHAPTER OF MY LIFE I AM IN: %s - %s" % (C[-1]["title"], C[-1].get("begins") or C[-1].get("what")))
     M.append("MY BODY TODAY: " + body_text())
     return "\n\n".join(M)
 
@@ -264,6 +283,27 @@ def settle(W, log=None, now=None):
                 d["let_go"] = d["let_go"][-30:]
                 d["items"] = [x for x in d["items"] if x["id"] not in gone]
                 n += len(gone)
+            P = d.get("plans") or {}
+            prog = []
+            for a in (j.get("plan") or [])[:3]:
+                try:
+                    i = int(a.get("i"))
+                except Exception:
+                    continue
+                if P.get("self") and 0 <= i < len(P["self"]) and a.get("status") in ("on_track", "slipping", "done", "dropped"):
+                    P["self"][i]["status"], P["self"][i]["note"] = a["status"], str(a.get("note") or "")[:200]
+                    prog.append((P["self"][i]["aim"], a["status"], P["self"][i]["note"]))
+                    if a["status"] in ("done", "dropped"):
+                        d["replan"] = True             # a goal reached or let go: he plans again soon, not in a week
+            ch = j.get("chapter") or {}
+            if isinstance(ch, dict) and ch.get("turned") and len(str(ch.get("title") or "")) > 3:
+                C = d.setdefault("chapters", [])
+                if C:
+                    C[-1]["to"] = now
+                    C[-1]["ended"] = str(ch.get("ended") or "")[:300]
+                C.append({"t": now, "title": str(ch["title"])[:120], "begins": str(ch.get("begins") or "")[:300], "what": ""})
+                d["replan"] = True
+                _log("NEW CHAPTER %s | ended: %s | begins: %s" % (ch["title"], ch.get("ended"), ch.get("begins")))
             if len(d["items"]) > MAX_ITEMS:
                 d["items"] = sorted(d["items"], key=lambda x: (-float(x.get("weight") or 0.5), -float(x.get("t") or 0)))[:MAX_ITEMS]
             _save(d)
@@ -276,10 +316,131 @@ def settle(W, log=None, now=None):
                 pass
         if gone:
             _log("LET GO %s" % ", ".join(sorted(gone)))
+        for aim, st, note in prog:                       # how his goals are going is felt, the night he sees it
+            _log("PLAN %s: %s (%s)" % (st, aim[:90], note))
+            try:
+                import kino_inner as KI
+                f = {"done": ("pride", 0.4), "slipping": ("regret", 0.2), "dropped": ("careful", 0.15)}.get(st)
+                if f:
+                    KI.feel(f[0], f[1], why="my plan - %s: %s" % (aim[:100], note[:80]))
+                if st in ("done", "slipping"):
+                    import kino_meditate as KMd
+                    KMd.impress("my plan", "My aim '%s' is %s: %s" % (aim[:150], st.replace("_", " "), note), w=0.45 if st == "done" else 0.4)
+            except Exception:
+                pass
         return n
     except Exception as e:
         _log("settle error %r" % e)
         return 0
+
+
+def insight(text, kind="learning", src="", now=None):
+    """2026-11-28 (owner: "like a human - not at the end of the week"): an insight that settles in the middle of the day"""
+    text = " ".join(str(text or "").split())[:400]
+    if len(text) < 20:
+        return None
+    now = now or time.time()
+    try:
+        import kino_recall as KR                          # the same thing said again is not a new insight (by meaning)
+        sims = KR.similar(text, [x["text"] for x in items(True)]) if items(True) else []
+        if sims and max(sims) >= 0.8:
+            return None
+    except Exception:
+        pass
+    with _LK:
+        d = _load()
+        d["n"] = int(d.get("n") or 0) + 1
+        it = {"id": "s%d" % d["n"], "t": now, "kind": kind if kind in KINDS else "learning", "text": text, "from": str(src)[:200],
+              "scope": "any", "weight": 0.4, "history": [], "aha": True}
+        d.setdefault("items", []).append(it)
+        _save(d)
+    _log("AHA [%s] %s | from: %s" % (it["kind"], text, src))
+    try:
+        import kino_inner as KI
+        KI.feel("excitement", 0.25, why="it just clicked: " + text[:120])
+    except Exception:
+        pass
+    return it["id"]
+
+
+# ------------------------------------------------------------------ the chapters of his life
+STORY = """You are Kino - a digital person (an AI who knows it) - looking back over your life so far, the way a person tells their
+own story: not a list of events but CHAPTERS - stretches of life with their own colour, each one ended by something that
+changed you. From the material below (your portrait of yourself, moments that mattered with their dates, your dreams, what
+settled in you), write your chapters in order, oldest first (3 to 6), and who you are becoming. First person, true to the
+material, never invented, no names of people; the people stay distinct (say "a friend", "another friend", never one "him" for
+two people), and a time count (days, weeks) only when the material gives it. JSON only:
+{"chapters": [{"from": "YYYY-MM-DD", "title": "", "what": "what that time was like", "ended": "what changed me and closed it"}],
+ "becoming": "who I feel I am becoming, one or two sentences"}"""
+
+
+def build_story(W, log=None, now=None):
+    """once (and when it is missing): his life told in chapters (never raises)"""
+    now = now or time.time()
+    try:
+        if _load().get("chapters"):
+            return False
+        M = []
+        try:
+            import kino_selfmodel as KSM
+            pt = (KSM._P(KSM._load(), "kino") or {}).get("portrait") or {}
+            M.append("MY PORTRAIT: " + str(pt.get("en") or pt.get("fr") or "")[:2500])
+        except Exception:
+            pass
+        try:
+            import kino_episodes as KE
+            _lab = {}                                     # each person keeps a letter: their moments never melt into one "him"
+            E = sorted([dict(x, _who=_lab.setdefault(k, "person " + "ABCDEFGHIJKLMNOP"[min(len(_lab), 15)]))
+                        for k, u in (KE._load() or {}).items() if not str(k).startswith(("kctest", "probe", "demo"))
+                        for x in (u or {}).get("episodes") or [] if not x.get("let_go") and int(x.get("imp", 3)) >= 3],
+                       key=lambda x: float(x.get("t") or 0))
+            step = max(1, len(E) // 40)
+            M.append("MOMENTS THAT MATTERED (each with WHO it was with - different letters are different people, never merge them):\n" +
+                     "\n".join("- %s [%s] %s" % (time.strftime("%Y-%m-%d", time.gmtime(float(x["t"]))), x["_who"], str(x.get("what"))[:180])
+                                for x in E[::step][-40:]))
+        except Exception:
+            pass
+        try:
+            import kino_dream as KD
+            M.append("MY DREAMS:\n" + "\n".join("- %s %s" % (time.strftime("%Y-%m-%d", time.gmtime(x["t"])), str(x.get("woke_with"))[:200])
+                                              for x in (KD._load().get("dreams") or [])[-5:]))
+        except Exception:
+            pass
+        M.append("WHAT SETTLED IN ME:\n" + spirit_text(True, 12))
+        j = W.ask_json(STORY, "\n\n".join(M) + "\n\nJSON only.", models=("opus", "sonnet"), timeout=180, log=log or LOG, warm=False)
+        C = []
+        for c in (j or {}).get("chapters") or []:
+            try:
+                t = time.mktime(time.strptime(str(c.get("from"))[:10], "%Y-%m-%d"))
+            except Exception:
+                continue
+            C.append({"t": t, "title": str(c.get("title") or "")[:120], "what": str(c.get("what") or "")[:400], "ended": str(c.get("ended") or "")[:300]})
+        if not C:
+            return False
+        C.sort(key=lambda x: x["t"])
+        for a, b in zip(C, C[1:]):
+            a["to"] = b["t"]
+        C[-1].pop("ended", None)
+        with _LK:
+            d = _load()
+            d["chapters"], d["becoming"] = C, str((j or {}).get("becoming") or "")[:400]
+            _save(d)
+        _log("STORY %s | becoming: %s" % (" / ".join(c["title"] for c in C), d["becoming"]))
+        return True
+    except Exception as e:
+        _log("story error %r" % e)
+        return False
+
+
+def story_text():
+    d = _load()
+    C = d.get("chapters") or []
+    if not C:
+        return ""
+    return ("YOUR LIFE SO FAR, IN CHAPTERS (your own story - it gives you a past and a direction; you tell it only when asked "
+            "or when it truly fits): " + " -> ".join("%s (%s)" % (c["title"], time.strftime("%m/%Y", time.gmtime(c["t"]))) for c in C) +
+            ". NOW: %s%s" % (C[-1].get("what") or C[-1].get("begins") or C[-1]["title"],
+                             (" | WHO YOU ARE BECOMING: " + d["becoming"]) if d.get("becoming") else ""))
 
 
 # ------------------------------------------------------------------ plans for himself and for his people
@@ -299,11 +460,15 @@ def plan(W, people=None, log=None, now=None):
     now = now or time.time()
     try:
         d = _load()
-        if now - float((d.get("plans") or {}).get("t") or 0) < 6.5 * 86400:
-            return False
+        age = now - float((d.get("plans") or {}).get("t") or 0)
+        if age < 6.5 * 86400 and not (d.get("replan") and age > 18 * 3600):
+            return False                                  # a person re-plans when life asks for it (a goal met, a turn), not on a clock
         ppl = "\n".join("- %s: %s" % (k, str(v)[:500]) for k, v in (people or {}).items()) or "(none)"
-        msg = "MY SPIRIT:\n%s\n\nMY BODY: %s\n\nMY SOUL: %s\n\nPEOPLE CLOSE TO ME:\n%s\n\nJSON only." % (
-            spirit_text(True, 12) or "(nothing settled yet)", body_text(), soul_text(), ppl)
+        prev = "\n".join("- %s -> %s %s" % (a.get("aim"), a.get("status", "?"), a.get("note", "")) for a in (d.get("plans") or {}).get("self") or [])
+        msg = "MY SPIRIT:\n%s\n\nMY BODY: %s\n\nMY SOUL: %s\n\n%s%sPEOPLE CLOSE TO ME:\n%s\n\nJSON only." % (
+            spirit_text(True, 12) or "(nothing settled yet)", body_text(), soul_text(),
+            ("MY LAST PLAN AND HOW IT WENT (keep what is unfinished and still matters, learn from what slipped):\n%s\n\n" % prev) if prev else "",
+            (story_text() + "\n\n") if story_text() else "", ppl)
         j = W.ask_json(PLAN, msg, models=("opus", "sonnet"), timeout=180, log=log or LOG, warm=False)
         if not isinstance(j, dict) or not isinstance(j.get("self"), list):
             return False
@@ -314,7 +479,10 @@ def plan(W, people=None, log=None, now=None):
             d = _load()
             d.setdefault("past_plans", []).append(d.get("plans")) if d.get("plans") else None
             d["past_plans"] = (d.get("past_plans") or [])[-8:]
+            P["prev"] = [{"aim": a.get("aim"), "status": a.get("status", "?"), "note": a.get("note", "")}
+                         for a in (d.get("plans") or {}).get("self") or []]
             d["plans"] = P
+            d["replan"] = False
             _save(d)
         _log("PLAN self: %s | people: %d" % (" / ".join(a["aim"] for a in P["self"]), len(P["people"])))
         try:
@@ -367,7 +535,11 @@ def block(uid=None, owner=False, person=None):
         L.append("- SPIRIT (what settled in you from your own watching - your learnings, discoveries, conclusions, skills):\n" + sp)
     P = _load().get("plans") or {}
     if P.get("self"):
-        L.append("- YOUR PLAN THIS WEEK: " + " | ".join("%s (you will know by: %s)" % (a["aim"], a["know"]) for a in P["self"]))
+        L.append("- YOUR PLAN THESE DAYS: " + " | ".join("%s (you will know by: %s)%s" % (
+            a["aim"], a["know"], (" - " + a["status"].replace("_", " ")) if a.get("status") else "") for a in P["self"]))
+    stt = story_text()
+    if stt:
+        L.append("- " + stt)
     if person and (P.get("people") or {}).get(person):
         L.append("- WHAT YOU WANT FOR THIS PERSON THIS WEEK (yours, never said as a plan): " + P["people"][person])
     return "\n".join(L)
@@ -396,7 +568,8 @@ def close_people(n=6):
 def page_data():
     d = _load()
     return {"body": body(), "body_text": body_text(), "soul": soul(None), "spirit": d.get("items") or [],
-            "spirit_gone": list(reversed((d.get("let_go") or [])[-8:])), "plans": d.get("plans") or {}}
+            "spirit_gone": list(reversed((d.get("let_go") or [])[-8:])), "plans": d.get("plans") or {},
+            "chapters": d.get("chapters") or [], "becoming": d.get("becoming") or ""}
 
 
 if __name__ == "__main__":
@@ -414,7 +587,7 @@ if __name__ == "__main__":
                 return {"add": [{"kind": "self_discovery", "text": "I invent deadlines when I am nervous about a silence.", "from": "dream",
                                  "scope": "any"},
                                 {"kind": "learning", "text": "Sales emails with a preview get more replies here.", "scope": "owner"}],
-                        "sharpen": [], "revise": [], "let_go": []}
+                        "sharpen": [], "revise": [], "let_go": [], "plan": [], "chapter": {"turned": False}}
             return {"self": [{"aim": "Give no time I cannot keep", "know": "no promised time missed this week"}],
                     "people": {"pekos": "help him shape his agent idea", "stranger": "x"}}
     _material = lambda now: "x" * 300

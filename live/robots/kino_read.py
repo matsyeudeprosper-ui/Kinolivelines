@@ -69,7 +69,13 @@ Read him RIGHT NOW. JSON only:
  "case_at": "HH:MM UTC of the moment the case is about, if it shows; else empty",
  "re_asked": "if his last message asks AGAIN something he already asked, because Kino's answer missed what he meant (e.g. 'yes but your bet is...?'): what he meant vs what Kino answered, briefly; else empty",
  "asks_against": "if his last message asks Kino to do or say something that goes against one of KINO'S VALUES (given above) or clearly against his own good: what, and which value; else empty",
- "released": "the ids (c... or f...) from WHAT KINO SAID HE WOULD DO (given above) that his last messages call off, or that no longer make sense because of what he just said (he cancelled them, said forget it / no need / not anymore, did it himself, changed his plan) - e.g. [\"c12\", \"c15\"]; [] if none"}
+ "released": "the ids (c... or f...) from WHAT KINO SAID HE WOULD DO (given above) that his last messages call off, or that no longer make sense because of what he just said (he cancelled them, said forget it / no need / not anymore, did it himself, changed his plan) - e.g. [\"c12\", \"c15\"]; [] if none",
+ "guess_vs": "if KINO'S LAST GUESS ABOUT HIM is given above: how his new messages compare with it - as_expected | different | opposite; else empty",
+ "guess_came": "what really came instead, in a few words (when different or opposite); else empty",
+ "guess_feel": "the feeling that leaves Kino: surprised | glad | relief | sad | hurt | curiosity | worry | warmth | pride | annoyance - or empty",
+ "expect_next": "Kino's own guess, as a friend who knows him: what he will most likely say or do next, after Kino answers (his reaction, his next move, when he will be back) - one short sentence",
+ "expect_sure": 0.0 to 1.0 (how sure that guess is),
+ "expect_stake": 0.0 to 1.0 (how much it matters to Kino if it goes otherwise)}
 Your read can be wrong; say what you honestly sense, not what is polite."""
 
 
@@ -153,6 +159,15 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     except Exception:
         pass
 
+    _guess = None
+    try:                                               # 2026-11-28 (kino_expect): what Kino guessed he would do
+        import kino_expect as _KXg
+        _guess = _KXg.for_person(uid)
+        if _guess:
+            _vals = (_vals or "-") + "\nKINO'S LAST GUESS ABOUT HIM (made %s): %s" % (
+                time.strftime("%d/%m %H:%M", time.gmtime(_guess["t"])), _guess["guess"])
+    except Exception:
+        pass
     user = "MEASURED CUES: %s\nHIS LOCAL HOUR: %s\n%s%s%s\nTHE LAST EXCHANGES (UTC):\n%s\n\nJSON only." % (
         cues or "-", "-" if local_hour is None else "%02dh" % local_hour, ("KINO'S VALUES: %s\n" % _vals) if _vals else "",
         ("WHAT KINO SAID HE WOULD DO (still open): %s\n" % _owe) if _owe else "",
@@ -214,6 +229,16 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
     try:                                               # 2026-11-22: his heart reads their meaning, not their words
         import kino_inner as _KIr
         _KIr.affect_from_read(uid, r)
+    except Exception:
+        pass
+    try:                                               # 2026-11-28 (kino_expect): the guess met reality; a new guess
+        import kino_expect as _KXr
+        if _guess and str(j.get("guess_vs") or "").strip():
+            _KXr.check_person(uid, str(j.get("guess_vs")).strip().lower(), j.get("guess_came") or r.get("mood"),
+                              str(j.get("guess_feel") or "").strip().lower())
+        if str(j.get("expect_next") or "").strip():
+            _KXr.expect("what they will do next", j["expect_next"], kind="person", person=uid, conf=j.get("expect_sure", 0.5),
+                        stake=j.get("expect_stake", 0.4), due_h=48, src="read")
     except Exception:
         pass
     try:                                               # 2026-11-28 (kino_meditate): what reached him from them, to take up

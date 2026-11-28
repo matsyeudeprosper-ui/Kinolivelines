@@ -15834,6 +15834,9 @@ def _one_fresh(user, c, slim=False):
         if not slim:
             _own3 = uid in __import__("kino_one").OWNER_UIDS or _person(uid) in __import__("kino_one").OWNER_UIDS
             L.append(__import__("kino_three").block(uid, owner=_own3, person=_person(uid)))
+            _bx = __import__("kino_expect").block(uid)
+            if _bx:
+                L.append(_bx)
     except Exception:
         pass
     try:                                               # 2026-11-28 (kino_meditate): what has been turning in his mind
@@ -25600,6 +25603,14 @@ def _kino_night_mind():
                 _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
             _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))
             _KDn.night(_rc().W, log=os.path.join(DIR, "robots", "kino_dream.log"))
+            try:                                      # 2026-11-28 (v6 item 11): the blind test, once a month
+                import kino_blind as _KBn
+                _KBn.sample(_rc().W)
+                _bs = _KBn.score()
+                if _bs["moments"] and (_bs["with_human"] >= 4 or time.time() - float(_KBn._load().get("sample_t") or 0) > 7 * 86400):
+                    _KBn.judge(_rc().W)
+            except Exception:
+                pass
             try:                                      # 2026-11-28 (kino_three): what settled in his spirit; weekly plans
                 import kino_three as _K3n
                 _K3n.settle(_rc().W)
@@ -26580,6 +26591,9 @@ def _urge_tick():
                                 _KMd.impress("the world today", str(_RWw.world_now(0))[:380], w=0.35)
                             except Exception:
                                 pass
+                        import kino_expect as _KXd
+                        if _KXd.due_resolve():
+                            threading.Thread(target=_KXd.resolve, args=(_rc().W,), daemon=True).start()
                         if _KMd.due():
                             threading.Thread(target=_KMd.step, args=(_rc().W,),
                                              kwargs={"log": os.path.join(DIR, "robots", "kino_meditate.log")}, daemon=True).start()
@@ -40844,6 +40858,28 @@ class H(BaseHTTPRequestHandler):
                 self._send(open(os.path.join(DIR, "owl_kinoday_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
             else:
                 self._send(json.dumps(kino_day(user), ensure_ascii=False), "application/json")
+        elif sub in ("kinoblind", "kino_blind_data") and is_admin(user):
+            # 2026-11-28 (v6 item 11): the blind human test - owner page (he hands his phone to friends)
+            if sub == "kinoblind":
+                self._send(open(os.path.join(DIR, "owl_kinoblind_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                _rc()
+                import urllib.parse as _upb
+                import kino_blind as _KBb
+                _qb = _upb.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                _g = lambda k: (_qb.get(k, [""])[0] or "")
+                _act, _who = _g("act"), _g("who")[:20] or "owner"
+                if _act == "write":
+                    _ob = {"items": _KBb.to_write()}
+                elif _act == "add":
+                    _ob = {"ok": _KBb.add_human(_g("id"), _g("text")[:700], _who)}
+                elif _act == "pairs":
+                    _ob = {"pairs": [{k: v for k, v in x.items() if k != "_ai"} for x in _KBb.pairs(seed=_who)]}
+                elif _act == "vote":
+                    _ob = {"right": _KBb.vote(_g("id"), _g("pick"), _who, seed=_who)}
+                else:
+                    _ob = _KBb.score()
+                self._send(json.dumps(_ob, ensure_ascii=False), "application/json")
         elif sub in ("kinoinner", "kino_inner_data") and is_admin(user):
             # 2026-11-22 (Kino v5 "the watcher", phase 6): Matsy's window on Kino's inner life - owner only
             if sub == "kinoinner":
@@ -40861,6 +40897,7 @@ class H(BaseHTTPRequestHandler):
                                        "dreams": list(reversed((_KDv._load().get("dreams") or [])[-7:])),
                                        "moments": list(reversed((_wv.get("moments") or [])[-40:])),
                                        "three": __import__("kino_three").page_data(),
+                                       "expect": __import__("kino_expect").page_data(),
                                        "meditation": list(reversed((__import__("kino_meditate")._load().get("chains") or [])[-25:])),
                                        "stream": sorted(_sv, key=lambda x: -float(x.get("t") or 0))[:25]}, ensure_ascii=False), "application/json")
         elif sub in ("decouvrir-kino", "kino_pitch"):

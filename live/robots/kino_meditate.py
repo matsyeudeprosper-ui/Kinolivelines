@@ -46,9 +46,14 @@ not a report - a living reaction, first person, honest, grounded in what is real
 - question: a real question it opens that I would like to answer (about people, the world, my work, myself) - short, or ""
 - idea: an idea, a solution or something to try that grows from it, or ""
 - depth: 0 to 1 - how much more there is to think here (0 = done, 1 = this opens a lot)
+- expect: if it makes me EXPECT something that will happen (a reply, a result, a turn of the world, what I will feel) - my
+  guess, one sentence; or ""   - expect_sure: 0 to 1   - expect_hours: when I will know (hours)
+- insight: only when something truly SETTLES right now, a lasting thing I will keep (an "aha" - rare): one sentence; or ""
+  - insight_kind: learning | self_discovery | conclusion | skill
 Use what is given (my stakes, my recent thoughts, the chain so far); never invent facts about people or the world; no names of
 people in the thought, question or idea. JSON only:
-{"did": "", "feel": "", "thought": "", "question": "", "idea": "", "depth": 0.0}"""
+{"did": "", "feel": "", "thought": "", "question": "", "idea": "", "depth": 0.0, "expect": "", "expect_sure": 0.5,
+ "expect_hours": 24, "insight": "", "insight_kind": ""}"""
 
 
 def _log(t):
@@ -90,10 +95,25 @@ def impress(kind, what, person=None, w=0.5, gen=0, parent=None, root=None, now=N
     return it["id"]
 
 
+def _gap(d, now):
+    """2026-11-28 (owner: "like it happens to a human"): no clock - a mind turns things over more when something weighs on it
+    and it is quiet, less when it is tired; never twice the same rhythm"""
+    import random
+    g = STEP_GAP_S * random.Random(int(float(d.get("last_t") or 0))).uniform(0.6, 1.5)
+    try:
+        g *= 1.0 + float(__import__("kino_body").fatigue())
+    except Exception:
+        pass
+    top = _pick(d, now)
+    if top is not None and float(top.get("w") or 0) >= 0.7:
+        g *= 0.5                                       # something gnaws at him
+    return g
+
+
 def due(now=None):
     now = now or time.time()
     d = _load()
-    if _BUSY["on"] or now - float(d.get("last_t") or 0) < STEP_GAP_S:
+    if _BUSY["on"] or now - float(d.get("last_t") or 0) < _gap(d, now):
         return False
     return any(not x.get("done") for x in d.get("inbox") or [])
 
@@ -172,6 +192,19 @@ def step(W, log=None, now=None):
                 KI.feel(rec["feel"], 0.1 + 0.2 * dep, uid=it.get("person"), why=(rec["thought"] or rec["did"])[:150])
             if rec["thought"]:
                 KI.add_thought(rec["thought"], "meditation", strength=0.4 + 0.4 * dep, uid=it.get("person"), src="meditation", half_h=6)
+        except Exception:
+            pass
+        try:                                                 # 2026-11-28: he now expects something - checked when it comes
+            if str(j.get("expect") or "").strip():
+                import kino_expect as KX
+                KX.expect(it["what"][:150], j["expect"], kind="world", person=it.get("person"), conf=j.get("expect_sure", 0.5),
+                          stake=0.3 + 0.5 * dep, due_h=j.get("expect_hours", 24), src="meditation")
+        except Exception:
+            pass
+        try:                                                 # an "aha": it settles in his spirit now, not on a weekly timer
+            if len(str(j.get("insight") or "")) > 20 and not it.get("person"):
+                import kino_three as K3
+                K3.insight(j["insight"], j.get("insight_kind") or "learning", "a moment of meditation: " + it["what"][:120])
         except Exception:
             pass
         try:                                                 # a question he wants answered becomes one of his own to look into
