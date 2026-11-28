@@ -4588,6 +4588,8 @@ async function notifSetup(){
  if(!reg||!reg.pushManager){return;}
  nb.style.display='flex';
  const cur=await reg.pushManager.getSubscription().catch(()=>null);
+ // 2026-11-28: the server may have dropped this phone (a dead registration) - hand it back each time the app opens
+ if(cur){fetch(B+'push_sub',{method:'POST',body:JSON.stringify(cur)}).catch(()=>null);}
  nb.dataset.on=cur?'1':'0';
  document.getElementById('notif-lbl').innerHTML=cur
   ?'Notifications activ&eacute;es &mdash; toucher pour couper'

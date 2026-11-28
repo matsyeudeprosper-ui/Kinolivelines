@@ -934,6 +934,17 @@ function nOff(){return nState().then(function(s){if(!s)return;return fetch(B+'pu
 function notifSh(){nState().then(function(s){shOpen('<h3>🔔 '+T('Notifications','Notifications')+'</h3><p>'+T('Quand l’appli est fermée, Kino te prévient dès qu’il t’écrit. La nuit, il garde ses messages pour le matin, sauf l’important.','When the app is closed, Kino lets you know as soon as he writes. At night he keeps his messages for the morning, except what matters.')+'</p>'+
  '<div class="seg"><button data-n="1" class="'+(s?'on':'')+'">🔔 '+T('Activées','On')+'</button><button data-n="0" class="'+(s?'':'on')+'">🔕 '+T('Coupées','Off')+'</button></div>');
  $('shc').onclick=function(e){var b=e.target.closest('[data-n]');if(!b)return;(b.dataset.n==='1'?nOn():nOff()).then(function(){setTimeout(notifSh,300)})}})}
+// 2026-11-28 (owner: "my phone allows all notifications for Kino Chat but I get no pushes"): the server dropped a dead
+// registration (05/11) and the app never sent a new one, because it only did on a tap. Now: each time it opens with
+// notifications allowed, it quietly hands the server its current registration (or makes a new one).
+function nSync(){try{if(!nSupported()||Notification.permission!=='granted')return;
+ nReg().then(function(r){return r.pushManager.getSubscription().then(function(s){if(s)return s;
+  return fetch(B+'push_key').then(function(x){return x.json()}).then(function(k){if(!k||!k.key)return null;var key=k.key,
+   pd='='.repeat((4-key.length%4)%4),bin=atob((key+pd).replace(/-/g,'+').replace(/_/g,'/')),arr=new Uint8Array(bin.length);
+   for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:arr})})})})
+ .then(function(s){if(s)return fetch(B+'push_sub',{method:'POST',body:JSON.stringify(s)})}).catch(function(){})}catch(e){}}
+setTimeout(nSync,2500);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')nSync()});
 // a gentle offer, once, after a real exchange - never at the door
 function nOffer(){if(!nSupported()||Notification.permission!=='default'||lsg('kcNAsk','')||GID)return;var M=(C&&C.msgs)||[];
  if(M.filter(function(m){return m.role==='user'}).length<3)return;lss('kcNAsk','1');
