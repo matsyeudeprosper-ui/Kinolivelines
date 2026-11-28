@@ -396,7 +396,11 @@ def in_fallback():
 
 _OLLAMA_STRICT = ("\n\nSTRICT (backup mode): use ONLY facts written above - never invent what you did, who you talked to, "
                   "numbers or plans; if you do not know, say it simply. Control lines (#fil, #reaction...) go ALONE on their "
-                  "own line at the very end, never inside a sentence. Short answers.")
+                  "own line at the very end, never inside a sentence. Short answers. "
+                  # 2026-11-28 (review: a backup sent Pekos "Thinking process complete. I will prioritize the friendship aspect... I
+                  # will reply in English as requested." then the reply in quotes - in French): what you send IS the message
+                  "Write ONLY the message itself, as Kino - never your reasoning, your plan, a summary of what you will do, or "
+                  "quotes around it. Answer in the language of their LAST message.")
 
 
 def _ollama(system, user, timeout=150, log=None, was=""):
