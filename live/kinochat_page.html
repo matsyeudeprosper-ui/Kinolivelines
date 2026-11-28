@@ -474,7 +474,9 @@ var GID=null,G=null,GSIG='',GPEND=[];
 var CID=null,C=null,SIG='',POLL=null,FAST=0,SENDING=false,PEND=[],QRY='',REPLY=null,NEWN=0,NAI0=0,PINK=0,SWX={moved:false},LPT=null;
 $('tx').placeholder=T('Écris à Kino…','Write to Kino…');$('sq').placeholder=T('Chercher dans la conversation','Search the conversation');
 function toast(s,ms){var t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},ms||2600)}
-function getJ(u){return fetch(B+u+(u.indexOf('?')>=0?'&':'?')+'t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()})}
+// 2026-11-28 (owner: a reply showed only when he reopened the app): a fetch that hangs (server restart, network switch) never
+// settled, and the 12 s poll chain waited on it for good. A read now gives up after 25 s; the watchdog below restarts the chain.
+function getJ(u){var ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(function(){ac.abort()},25000):0;return fetch(B+u+(u.indexOf('?')>=0?'&':'?')+'t='+Date.now(),{cache:'no-store',signal:ac?ac.signal:undefined}).then(function(r){clearTimeout(tm);return r.json()},function(e){clearTimeout(tm);throw e})}
 function post(fn,b){return fetch(B+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})}).then(function(r){return r.json()})}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function md(s){var CODES=[];s=String(s==null?'':s).replace(/```([\w+-]*)\n?([\s\S]*?)```/g,function(_,l,c){CODES.push([l,c.replace(/\n+$/,'')]);return '\u0001'+(CODES.length-1)+'\u0001'});
@@ -633,7 +635,8 @@ function paint(force){try{jobDock();quickDock();ordDock()}catch(e){}if(GID)retur
 function load(force){if(!CID)return Promise.resolve();return getJ('chat_get?id='+encodeURIComponent(CID)+'&ui='+(EN?'en':'fr')).then(function(j){if(j&&!j.err){C=j;
   if(PEND.length){var mine=(C.msgs||[]).filter(function(m){return m.role==='user'}).map(function(m){return (m.text||'').trim()});PEND=PEND.filter(function(p){return mine.indexOf(p.trim())<0})}
   paint(force)}}).catch(function(){})}
-function loop(){clearTimeout(POLL);if(GID){POLL=setTimeout(function(){if(document.visibilityState==='visible')grpLoad().then(loop);else loop()},G&&G.kino?1500:3000);return}var fast=(C&&C.status==='thinking')||FAST>Date.now();
+var LASTLOOP=Date.now();setInterval(function(){if(CID&&document.visibilityState==='visible'&&Date.now()-LASTLOOP>45000)loop()},15000);
+function loop(){LASTLOOP=Date.now();clearTimeout(POLL);if(GID){POLL=setTimeout(function(){if(document.visibilityState==='visible')grpLoad().then(loop);else loop()},G&&G.kino?1500:3000);return}var fast=(C&&C.status==='thinking')||FAST>Date.now();
  POLL=setTimeout(function(){if(document.visibilityState==='visible')load().then(loop);else loop()},fast?1500:12000)}
 // 2026-11-20 (owner's screenshot: an empty dark screen at 21:42): when the server restarted, the first request failed (or
 // hung) and the page stayed empty for good - one "Hors ligne" toast for 2.6 s, no retry. Now a visible line says what is
