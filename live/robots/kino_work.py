@@ -20,6 +20,13 @@ Store robots/kino_work.json (git-ignored), log robots/kino_work.log; his diary: 
 import json, os, re, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# 2026-11-28 (owner: "we can pause on business hunting background job" - a new direction to discuss): while this file is
+# there, no client hunt, no MARKET TIME, no postcard round is queued, and his free choice is told to pick something else.
+HUNT_PAUSE = os.path.join(HERE, "BUSINESS_HUNT_PAUSED.flag")
+
+
+def hunt_paused():
+    return os.path.exists(HUNT_PAUSE)
 NOTIFY = None        # 2026-11-05: set by the app - a push notification to Matsy's trading app (fallback: an email)
 WORLD = r"C:\KinoWorld"
 STORE = os.path.join(HERE, "kino_work.json")
@@ -604,7 +611,7 @@ def due(person, ctx, now=None):
     # 2026-11-07 (owner: "the whole world - some countries are awake; why 10h-22h?"): around the clock, every 3 h
     # 2026-11-12 (owner: "make himself known" - a permanent project): MARKET TIME twice a day in his waking hours
     _lastmk = max([float(s["t"]) for s in d.get("sessions") or [] if s.get("care") == "market"] or [0])
-    if 9 <= _frh < 23 and not d.get("next_task") and now - _lastmk >= 5 * 3600:
+    if 9 <= _frh < 23 and not d.get("next_task") and now - _lastmk >= 5 * 3600 and not hunt_paused():
         try:
             import kino_market as KMK
             _mut(lambda dd: dd.__setitem__("next_task", {"do": KMK.MARKET_TIME, "project": "being known",
@@ -615,7 +622,7 @@ def due(person, ctx, now=None):
     if not d.get("next_task") and now - _lastfr >= 3 * 3600:
         _mut(lambda dd: dd.__setitem__("next_task", {"do": FRIEND_TIME, "project": "my friends", "why": "my time with people",
                                                      "care": "friends"}))
-    if 10 <= _frh < 20 and not d.get("next_task") and card_leads() and not any(
+    if 10 <= _frh < 20 and not d.get("next_task") and not hunt_paused() and card_leads() and not any(
             s.get("care") == "cards" and s.get("day") == _today for s in d.get("sessions") or []):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": CARD_ROUND, "project": "Kinoverse", "why": "my postcard round",
                                                      "care": "cards"}))
@@ -623,7 +630,9 @@ def due(person, ctx, now=None):
     if 11 <= _frh < 22 and not d.get("next_task") and now - max(_walls or [0]) >= 5 * 3600 and             sum(1 for t in _walls if now - t < 16 * 3600) < 2:
         _mut(lambda dd: dd.__setitem__("next_task", {"do": WALL_TIME, "project": "my profiles", "why": "my own wall",
                                                      "care": "wall"}))
-    if _pv_wait and now - _lasthunt > 7200 and not d.get("next_task"):
+    if hunt_paused():
+        pass
+    elif _pv_wait and now - _lasthunt > 7200 and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
     elif len(_last2) == 2 and not any("kinoverse" in str(s.get("project") or "").lower() for s in _last2) and not d.get("next_task"):
         _mut(lambda dd: dd.__setitem__("next_task", {"do": DAY_HUNT, "project": "Kinoverse", "why": "my daily client hunt"}))
@@ -1797,6 +1806,12 @@ def session(W, person, uid, log=None, task=None, project="", lane="on", care=Non
         nt = None if (task or lane != "on") else _load().get("next_task")     # 2026-11-01: a session his rhythm set
         if nt:
             _mut(lambda d: d.pop("next_task", None))
+            if hunt_paused() and (nt.get("care") in ("market", "cards") or "hunt" in str(nt.get("why") or "").lower()):
+                nt = None                      # queued before the pause
+        if not task and not nt and hunt_paused():
+            mind += ("\nMATSY 28/11: your business hunting (client hunt, making yourself known, postcards, cold emails to "
+                     "businesses) is PAUSED until he and you talk about a new direction. Choose anything else. Answering "
+                     "someone who wrote to you is fine.")
             # 2026-11-06 (watch): a hunt queued in the morning ran in the afternoon with the morning's words - the 34 waiting
             # leads were skipped for a scan of Montreal. A queued hunt always takes the CURRENT instructions.
             if "daily client hunt" in str(nt.get("why") or ""):

@@ -169,3 +169,17 @@ try:                                   # 2026-11-07 (owner: "make sure these 3 r
     print("\n== " + _KWr.routine_line())
 except Exception as _e:
     print("\n== routine: " + str(_e)[:80])
+# 2026-11-28 (owner: "build it" - the weekly friend-or-coach check): once a week the judge reads the real chats in the
+# background (review/kino_quality.py --due, a few minutes); the watch shows the latest weekly averages from study/kino_quality.csv
+try:
+    import subprocess as _sq
+    _sq.Popen([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_quality.py"), "--due"],
+              stdout=open(os.path.join(os.path.dirname(LIVE), "study", "kino_quality_last.txt"), "a", encoding="utf-8"),
+              stderr=_sq.STDOUT, creationflags=getattr(_sq, "CREATE_NO_WINDOW", 0))
+    _qr = [l for l in open(os.path.join(os.path.dirname(LIVE), "study", "kino_quality.csv"), encoding="utf-8").read().splitlines()
+           if ",weekly" in l]
+    if _qr:
+        _hd = open(os.path.join(os.path.dirname(LIVE), "study", "kino_quality.csv"), encoding="utf-8").readline().strip().split(",")
+        print("\n== QUALITY (weekly judge, 0-10): " + "  ".join("%s %s" % (k, v) for k, v in zip(_hd[3:], _qr[-1].split(",")[3:])))
+except Exception as _e:
+    print("\n== quality: " + str(_e)[:80])

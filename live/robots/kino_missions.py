@@ -339,6 +339,28 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
                 _dupmsg = " - NOT sent: this chat already has the same report (%s), no need to say it twice" % _ago(_dup["t"])
                 note = ((note + " | ") if note else "") + "unsent repeat: " + str(tell)[:300]
                 tell = ""
+    if tell and status not in ("done", "stuck", "cancelled"):
+        # 2026-11-28 (owner: "a business coach pretending to be a friend" - the judge: "near-identical repeated status messages"):
+        # five "still no delivery price" reports in 19 h to Pekos (22-23/11). A friend says "still waiting" once, then speaks
+        # when something moved. A report while the job made no step since the last one, that they have not answered, within
+        # 20 h of it, goes on the job card they see (no bubble, no push) instead of their chat.
+        try:
+            _m1 = get(mid) or {}
+            _T1 = [x for x in _m1.get("log") or [] if x.get("kind") == "tell"]
+            if _T1 and "step" in _T1[-1] and _m1.get("plan"):      # without a checklist, progress cannot be seen: it goes out
+                _l1 = _T1[-1]
+                _moved = _m1.get("step") != _l1.get("step")      # the checklist moved (the card's words change every time)
+                _c1 = json.load(open(os.path.join(HERE, "chats", _m1["cid"] + ".json"), encoding="utf-8"))
+                _ans = any(x.get("role") == "user" and float(x.get("t") or 0) > float(_l1["t"]) for x in _c1.get("msgs") or [])
+                if not _moved and not _ans and time.time() - float(_l1["t"]) < 20 * 3600:
+                    _held = " ".join(str(tell).split())
+                    note = ((note + " | ") if note else "") + "held for the card (no step since the last report, not answered): " + _held[:300]
+                    if not stage:
+                        _mut(lambda d, _h=_held: [x.__setitem__("stage", _h[:110]) for x in d["missions"] if x["id"] == mid])
+                    _dupmsg = " - NOT sent to their chat: no step since your last report and they have not answered it; it is on their job card"
+                    tell = ""
+        except Exception:
+            pass
 
     def f(d):
         m = next((x for x in d["missions"] if x["id"] == mid), None)
@@ -352,7 +374,7 @@ def update(mid, tell="", status=None, note="", next_h=None, title="", stage="", 
         if note:
             m["log"].append({"t": now, "kind": "note", "text": str(note)[:800]})
         if tell:
-            m["log"].append({"t": now, "kind": "tell", "text": str(tell)[:2000]})
+            m["log"].append({"t": now, "kind": "tell", "text": str(tell)[:2000], "step": m.get("step"), "stage": m.get("stage")})
         if status and status in OPEN + ("done", "stuck", "cancelled"):
             if status != m["status"]:
                 m["log"].append({"t": now, "kind": "status", "text": status})
