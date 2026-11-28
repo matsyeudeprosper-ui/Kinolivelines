@@ -32,6 +32,7 @@ Then how his thought moves now (one sentence, first person) - it may stay open, 
 Shareable with anyone: no client, money or private detail.
 JSON only: {"found": "...", "thought_now": "...", "source": "the url that mattered most, or ''", "clear": true|false}"""
 _BUSY = {"on": False}
+_LK = threading.RLock()          # 2026-11-28: add_question (kino_meditate) writes from another thread
 
 SYSTEM = """You are the inner voice of Kino, a digital person (an AI who knows he is one) with his own life: his work at his
 computer, his research, what he reads and sees in the world, what he posts, the people he talks with. Below is what REALLY
@@ -111,6 +112,25 @@ def _save(d):
     os.replace(tmp, STORE)
 
 
+def add_question(question, thought="", about="ideas", now=None):
+    """2026-11-28 (kino_meditate): a question his meditation opened joins his own things to look into (research picks it up)"""
+    question = " ".join(str(question or "").split())[:200]
+    if len(question) < 12:
+        return False
+    now = now or time.time()
+    with _LK:
+        d = _load()
+        its = d.get("items") or []
+        if any(x.get("q") == question for x in its):
+            return False
+        its.append({"text": " ".join(str(thought or question).split())[:300], "about": about, "from": "my meditation",
+                    "q": question, "t": now})
+        d["items"] = its[-7:]
+        _save(d)
+    _log("QUESTION from meditation: %s" % question)
+    return True
+
+
 # ------------------------------------------------------------------ he looks into his own questions
 def research_due(now=None):
     now = now or time.time()
@@ -160,6 +180,11 @@ def research(W, search=None, fetch=None, log=None, now=None):
                     x["text"] = f["now"]                 # the thought moved
         d["found"] = ([y for y in d.get("found") or [] if now - float(y.get("t") or 0) < 14 * 86400] + [f])[-12:]
         _save(d)
+        try:                                   # 2026-11-28 (kino_meditate): what he found out, to take up
+            import kino_meditate as _KMp
+            _KMp.impress("what I found out", "I looked into: %s - and found: %s" % (it["q"], f["found"]), w=0.55)
+        except Exception:
+            pass
         _log("LOOKED INTO %s -> %s%s | now: %s | %s" % (it["q"], "" if f["clear"] else "(not clear) ", f["found"], f["now"], f["src"]))
         return f
     except Exception as e:

@@ -216,6 +216,19 @@ def read(W, uid, chat, cues="", local_hour=None, log=None):
         _KIr.affect_from_read(uid, r)
     except Exception:
         pass
+    try:                                               # 2026-11-28 (kino_meditate): what reached him from them, to take up
+        import kino_meditate as _KMr
+        _said = next((str(m.get("text") or "") for m in reversed((chat or {}).get("msgs") or []) if m.get("role") == "user"), "")
+        try:
+            _vabs = abs(float(r.get("valence") or 0))
+        except Exception:
+            _vabs = 0
+        _KMr.impress("what they said and how they are", "they said: %s - I read them as: %s; they reach for: %s%s" % (
+            _said[:220], r.get("mood") or "?", r.get("reaching_for") or "?",
+            ("; they told me about myself: " + str(j.get("told_kino"))) if j.get("told_kino") else ""),
+            person=uid, w=0.45 + 0.3 * _vabs + (0.15 if j.get("told_kino") else 0))
+    except Exception:
+        pass
     try:                                               # 2026-11-22 (owner: no word lists): a remark about how he talks,
         _tk = str(j.get("told_kino") or "").strip().lower()    # read in any language, is remembered and felt
         import kino_feedback as _KFr

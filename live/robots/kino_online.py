@@ -47,6 +47,12 @@ def note(who, where, text, direction="in", url="", kind="reply"):
         p["last"] = time.time()
         p["n"] = int(p.get("n") or 0) + 1
         p["said"] = (p.get("said") or [])[-11:] + [{"t": int(time.time()), "dir": direction, "kind": kind, "text": str(text)[:400], "url": url}]
+        if direction == "in" and kind in ("reply", "mention", "quote"):
+            try:                                   # 2026-11-28 (kino_meditate): a reply from someone online, to take up
+                import kino_meditate as _KMo
+                _KMo.impress("someone online answered me", "on %s someone wrote to me: %s" % (where, str(text)[:260]), w=0.4)
+            except Exception:
+                pass
         if direction == "in" and kind in ("reply", "mention", "quote") and url:
             d["pending"] = [x for x in d["pending"] if x.get("url") != url][-30:] + [
                 {"t": time.time(), "who": who, "where": where, "text": str(text)[:400], "url": url}]

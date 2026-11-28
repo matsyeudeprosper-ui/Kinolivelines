@@ -15830,6 +15830,13 @@ def _one_fresh(user, c, slim=False):
                 L.append(_bp)
     except Exception:
         pass
+    try:                                               # 2026-11-28 (kino_meditate): what has been turning in his mind
+        if not slim:
+            _bmd = __import__("kino_meditate").block(uid)
+            if _bmd:
+                L.append(_bmd)
+    except Exception:
+        pass
     try:                                               # 2026-11-22 (v6 item 4): something he made - his, shareable when it fits
         if not slim:
             _bcr = __import__("kino_create").block()
@@ -26542,6 +26549,21 @@ def _urge_tick():
                     for _rq in _KHq.requests("waiting"):           # made elsewhere (another process): posted by the app itself,
                         if not _rq.get("carded"):                  # never written into a chat from outside (it was overwritten)
                             _kino_req_card(_rq)
+                except Exception:
+                    pass
+                try:                                   # 2026-11-28 (owner: "a continuous meditation - inner AND outer world"):
+                    import kino_meditate as _KMd
+                    if pm == "kino":
+                        if now - float(globals().get("_MED_WORLD_T") or 0) > 2 * 3600:
+                            globals()["_MED_WORLD_T"] = now
+                            try:
+                                import robot_reality as _RWw
+                                _KMd.impress("the world today", str(_RWw.world_now(0))[:380], w=0.35)
+                            except Exception:
+                                pass
+                        if _KMd.due():
+                            threading.Thread(target=_KMd.step, args=(_rc().W,),
+                                             kwargs={"log": os.path.join(DIR, "robots", "kino_meditate.log")}, daemon=True).start()
                 except Exception:
                     pass
                 try:                                   # 2026-11-28 (owner: "the self-awareness topic - is it implemented?"):
