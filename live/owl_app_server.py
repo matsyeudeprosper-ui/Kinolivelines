@@ -456,7 +456,8 @@ def kino_ok(u):
 
 def kino_bg_ok(u):
     """Kino's background life (initiatives, inner engine, night mind) - every plan since 2026-11-28 (owl_plans "background")"""
-    return kino_ok(u) and bool(_PL.info(plan_name(u)).get("background"))
+    # 2026-11-28 (watch): free plan on -> 7 of 8 initiatives in one minute went to my own test accounts, who never answer
+    return kino_ok(u) and not str(u.get("id") or "").startswith(("kctest", "probe")) and bool(_PL.info(plan_name(u)).get("background"))
 
 
 def _atomic_json(path, obj, **kw):
@@ -23641,6 +23642,19 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
             _demo_later(cid, user, q["show"])
         if notify and q.get("say"):
             _companion_deliver(user, cid, q["say"], important)
+        elif not event and q.get("say"):
+            # 2026-11-28 (owner: "his last message only arrived when I opened the app"): an ANSWER never rang - only his own
+            # messages did. He wrote, left the app while Kino was thinking, and the answer waited in silence. 25 s after it
+            # lands, if their phone has not fetched this chat since, the answer goes to the phone like any message.
+            def _reply_push(uid=user.get("id"), cid=cid, say=q["say"], t0=time.time()):
+                try:
+                    sn = _CHAT_SEEN.get(uid)
+                    if sn and sn[1] == cid and sn[0] >= t0:
+                        return
+                    queue_push(uid, "Kino", str(say)[:160], path="atelier?c=" + cid, tag="atelier")
+                except Exception:
+                    pass
+            threading.Timer(25, _reply_push).start()
     except Exception as e:
         _CHAT_Q[cid] = max(0, _CHAT_Q.get(cid, 1) - 1)
         _CHAT_DRAFT.pop(cid, None)
@@ -24865,7 +24879,9 @@ def _guardian(u, ch):
     except Exception:
         pass
     lv = A.get("live") or {}
-    if lv.get("alive") is False:
+    # 2026-11-28 (watch): "the Owl gives no sign of life on your account" to fresh at 12:52 - but every robot except Valere's is
+    # stopped ON PURPOSE (VALERE_ONLY.flag, owner 11-20). A stop the owner chose is not news to alarm anyone with.
+    if lv.get("alive") is False and not os.path.exists(os.path.join(DIR, "VALERE_ONLY.flag")):
         key = "down:%d" % (time.time() // 21600)
         if key not in seen:
             alerts.append((key, "ROBOT STOPPED: the robot of their account is not running right now (%s)." % (lv.get("why") or "no sign of life"), True))
