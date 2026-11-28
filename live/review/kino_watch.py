@@ -142,9 +142,11 @@ if "--all" not in sys.argv and "--peek" not in sys.argv:
 # 2026-10-29: the humanity numbers of the last 12 h (review/kino_humanity.py, logged to study/kino_humanity.csv)
 try:
     import subprocess as _sp
-    _o = _sp.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_humanity.py"), "--hours", "12"],
-                 capture_output=True, text=True, encoding="utf-8", timeout=60).stdout
-    print("\n== " + "\n   ".join(l for l in _o.splitlines()[:3]))
+    # 2026-11-28: the owner now lives in Kino Chat as pekos - measure him too (24 h: own messages are rarer there)
+    for _hu, _hh in (("std", "12"), ("pekos", "24")):
+        _o = _sp.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "kino_humanity.py"), "--hours", _hh,
+                      "--uid", _hu], capture_output=True, text=True, encoding="utf-8", timeout=60).stdout
+        print("\n== " + "\n   ".join(l for l in _o.splitlines()[:3]))
 except Exception:
     pass
 # 2026-10-23: today's humanity scorecard on the real conversation (robots/kino_scorecard.py)

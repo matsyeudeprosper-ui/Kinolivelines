@@ -263,10 +263,12 @@ SW = (
     "const v=cs.find(c=>c.visibilityState==='visible');"
     "if(v&&d.tag==='atelier'){v.postMessage({type:'owl_nudge',title:d.title,body:d.body,url:d.url});return;}"
     "return (d.tag==='atelier'?self.registration.getNotifications({tag:'atelier'}):Promise.resolve([])).then(ns=>{"
+    "const KN=d.tag==='atelier'||/^Kino/.test(d.title||'')||self.location.hostname.indexOf('chat.')===0;"
+    # 2026-11-28 (owner): Kino's messages show Kino's face, not the owl
     "const n=((ns[0]&&ns[0].data&&ns[0].data.n)||ns.length)+1,en=/^en/.test((self.navigator&&navigator.language)||'');"
     "return self.registration.showNotification("
-    "n>1?'Kino · '+n+(en?' new messages':' nouveaux messages'):(d.title||'OwlNest'),{body:d.body||'',icon:'icon192.png',"
-    "badge:'icon192.png',tag:d.tag||'owl',renotify:true,requireInteraction:!!d.sticky,"
+    "n>1?'Kino · '+n+(en?' new messages':' nouveaux messages'):(d.title||'OwlNest'),{body:d.body||'',icon:d.icon||(KN?'/kinochat_192.png':'icon192.png'),"
+    "badge:KN?'/kinochat_badge.png':'icon192.png',tag:d.tag||'owl',renotify:true,requireInteraction:!!d.sticky,"
     "data:{url:d.url||'',n:n},image:d.image||undefined,"
     "actions:d.tag==='atelier'?[{action:'like',title:'👍'},{action:'open',title:en?'Open':'Ouvrir'}]:undefined,"
     "vibrate:d.sticky?[120,60,120,60,120]:[80,40,80]});});}));});"
@@ -453,7 +455,7 @@ def kino_ok(u):
 
 
 def kino_bg_ok(u):
-    """Kino's background life (initiatives, inner engine, night mind) costs money: paid plans and the trial only"""
+    """Kino's background life (initiatives, inner engine, night mind) - every plan since 2026-11-28 (owl_plans "background")"""
     return kino_ok(u) and bool(_PL.info(plan_name(u)).get("background"))
 
 
@@ -23500,6 +23502,21 @@ def _chat_quick0(cid, user, event=None, notify=False, important=False):
                         _CHAT_PENDING[cid] = True
                 except Exception:
                     pass
+            if q.get("say") and event and "[SEEN YOUR LAST]" not in str(event):
+                # 2026-11-28 (watch): two of his own a minute apart, twice on 11-27 (YOUR PROMISE + YOUR LOOK CAME BACK written at
+                # the same time), the second contradicting the first (Underdog delivery 29 EUR, then free). A message written while
+                # another of his landed was written blind to it: it is written again once, seeing it - only what is new, or nothing.
+                try:
+                    if any(m.get("role") == "ai" and str(m.get("text") or "").strip() and float(m.get("t") or 0) >= _t0q - 1
+                           for m in c.get("msgs") or []):
+                        io.open(os.path.join(DIR, "robots", "claims.log"), "a", encoding="utf-8").write("%s %s EVENT REDONE (he wrote meanwhile) %s | %s\n" % (
+                            time.strftime("%m-%d %H:%M:%S"), cid, str(event)[:30], str(q["say"])[:120].replace("\n", " ")))
+                        q["say"] = None
+                        threading.Timer(8, _chat_quick, args=(cid, user, str(event) + "\n\n[SEEN YOUR LAST] You just sent them a message a "
+                                        "moment ago (see the end of the talk). Add only what is really new or corrects it, in one short "
+                                        "message - or say nothing if it is all there."), kwargs={"notify": notify}).start()
+                except Exception:
+                    pass
             # 2026-10-24 (owner's tester list, item 5): "Pas vraiment fini, a vue de nez" then 26 s later the measured answer - two
             # messages in a minute, the first a guess. When a lookup follows, a short hedge is not said: the build turn answers.
             if q.get("say") and not event and not _judge_on():
@@ -26494,7 +26511,9 @@ def _urge_tick():
         pm = _person(uid)
         if pm in seen:
             continue
-        cid = _person_main(uid)
+        # 2026-11-28 (owner: "most talks it's me starting them"): a Kino Chat person has no chart main thread, so his own
+        # life (wish, intentions, missing them) never looked at them - their Kino Chat conversation is their main one
+        cid = _person_main(uid) or _gig_cid(uid)
         if not cid:
             continue
         seen.add(pm)
@@ -39934,7 +39953,7 @@ class H(BaseHTTPRequestHandler):
         if len(parts) == 1 and parts[0] == "kinochat.png":       # Kino's face (Kino Chat, the call page, the APK icon)
             self._send_file_fresh(os.path.join(DIR, "static", "kino_avatar.png"), "image/png")
             return
-        if len(parts) == 1 and parts[0] in ("kinochat_round.png", "kinochat_og.png"):   # 2026-11-12: round splash icon, share card
+        if len(parts) == 1 and parts[0] in ("kinochat_round.png", "kinochat_og.png", "kinochat_192.png", "kinochat_badge.png"):   # 2026-11-12: round splash icon, share card
             self._send_file_fresh(os.path.join(DIR, "static", parts[0]), "image/png")
             return
         if len(parts) == 1 and parts[0] in ("kinochat", "kinochat.webmanifest"):

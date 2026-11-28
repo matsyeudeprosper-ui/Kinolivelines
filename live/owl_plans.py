@@ -35,7 +35,9 @@ _LOCK = threading.Lock()
 # 2026-11-07 (owner: Kino Chat / Telegram calls): free plans get 5 call minutes a month (~0.25 $ each).
 PLAN_INFO = {
     "decouverte":       {"label": "Découverte", "label_en": "Discovery", "usd": 0, "replies": 5, "tests": 2, "voice": 5,
-                         "markets": False, "background": False, "auto_h": 0, "custom_chart": False, "custom_tests": 0},
+                         # 2026-11-28 (owner): "new users need to get hooked by the full power of Kino" - his own life
+                         # (writing first, missing them, night mind) is on for the free plan too
+                         "markets": False, "background": True, "auto_h": 0, "custom_chart": False, "custom_tests": 0},
     "decouverte_trial": {"label": "Découverte · essai", "label_en": "Discovery · trial", "usd": 0, "replies": 30, "tests": 2,
                          "voice": 5, "markets": False, "background": True, "auto_h": 1, "custom_chart": False, "custom_tests": 0},
     "essentiel":        {"label": "Essentiel", "label_en": "Essential", "usd": 19, "replies": None, "month": 400, "tests": 5, "voice": 5,
