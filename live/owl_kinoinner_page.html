@@ -39,6 +39,21 @@ function hm(t){const d=new Date(t*1000);return d.toLocaleDateString('fr-FR',{day
 function sec(title,html){return '<h2>'+title+'</h2>'+(html||'<div class="empty">Rien encore.</div>')}
 fetch(B+'kino_inner_data',{cache:'no-store'}).then(r=>r.json()).then(d=>{
  let h='';
+ const T=d.three||{},S=T.soul||{},P=T.plans||{},K={learning:'leçon',self_discovery:'découverte sur lui',conclusion:'conclusion',skill:'savoir-faire'};
+ h+=sec('Le corps (son serveur)','<div class="card">'+esc(T.body_text)+'</div>');
+ h+=sec('L\'âme (pensées, sentiments, désirs)','<div class="card">'+(S.mood&&S.mood.label?'<b>Humeur des jours : '+esc(S.mood.label)+'</b>':'')+
+   (S.feelings||[]).map(f=>'<div class="why">'+esc(f.kind)+' - '+esc(f.why)+'</div>').join('')+
+   (S.thoughts||[]).map(t=>'<div class="lean">pense : '+esc(t)+'</div>').join('')+
+   (S.preoccupations||[]).map(t=>'<div class="why">en tête : '+esc(t)+'</div>').join('')+'</div>');
+ h+=sec('L\'esprit (ce qui s\'est déposé en lui)',(T.spirit||[]).slice().sort((a,b)=>b.t-a.t).map(x=>'<div class="card"><span class="t">'+hm(x.t)+'</span><span class="tag">'+esc(K[x.kind]||x.kind)+'</span>'+
+   (x.scope==='owner'?'<span class="tag">privé</span>':'')+esc(x.text)+(x.from?'<div class="why">vient de : '+esc(x.from)+'</div>':'')+
+   ((x.history||[]).length?'<div class="why">avant : '+esc(x.history[x.history.length-1].was)+'</div>':'')+'</div>').join('')+
+   (T.spirit_gone||[]).map(x=>'<div class="card"><span class="tag">laissé partir</span>'+esc(x.text)+'</div>').join(''));
+ h+=sec('Ses projets de la semaine',(P.self||[]).map(a=>'<div class="card">'+esc(a.aim)+'<div class="why">il saura par : '+esc(a.know)+'</div></div>').join('')+
+   Object.entries(P.people||{}).map(([k,v])=>'<div class="card"><span class="tag">'+esc(k)+'</span>'+esc(v)+'</div>').join(''));
+ h+=sec('Sa méditation (impression → pensée → question → idée)',(d.meditation||[]).map(c=>'<div class="card"><span class="t">'+hm(c.t)+'</span><span class="tag">'+esc(c.kind)+'</span>'+esc(c.what)+
+   '<div class="why">ça lui fait : '+esc(c.did)+'</div>'+(c.thought?'<div class="lean">→ '+esc(c.thought)+'</div>':'')+
+   (c.question?'<div class="why">? '+esc(c.question)+'</div>':'')+(c.idea?'<div class="why">! '+esc(c.idea)+'</div>':'')+'</div>').join(''));
  h+=sec('Ce qu\'il aurait horreur de perdre',(d.stakes||[]).map(s=>'<div class="card">'+esc(s.what)+'<div class="why">'+esc(s.why)+'</div></div>').join(''));
  let v=(d.values&&d.values.items)||[];
  h+=sec('Ce qui compte pour lui (ses valeurs de la semaine)',v.map(x=>'<div class="card">'+esc(x.what)+'<div class="why">vécu : '+esc(x.lived)+'</div></div>').join('')+

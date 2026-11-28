@@ -15830,6 +15830,12 @@ def _one_fresh(user, c, slim=False):
                 L.append(_bp)
     except Exception:
         pass
+    try:                                               # 2026-11-28 (kino_three): body / soul / spirit + his plans
+        if not slim:
+            _own3 = uid in __import__("kino_one").OWNER_UIDS or _person(uid) in __import__("kino_one").OWNER_UIDS
+            L.append(__import__("kino_three").block(uid, owner=_own3, person=_person(uid)))
+    except Exception:
+        pass
     try:                                               # 2026-11-28 (kino_meditate): what has been turning in his mind
         if not slim:
             _bmd = __import__("kino_meditate").block(uid)
@@ -25538,6 +25544,12 @@ def _kino_v5_catchup():
             _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
         _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))
         _KDn.night(_rc().W, log=os.path.join(DIR, "robots", "kino_dream.log"))
+        try:
+            import kino_three as _K3c
+            _K3c.settle(_rc().W)
+            _K3c.plan(_rc().W, people=_K3c.close_people())
+        except Exception:
+            pass
         import kino_create as _KCn
         if _KCn.due():
             _KCn.make(_rc().W, log=os.path.join(DIR, "robots", "kino_create.log"))
@@ -25588,6 +25600,12 @@ def _kino_night_mind():
                 _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
             _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))
             _KDn.night(_rc().W, log=os.path.join(DIR, "robots", "kino_dream.log"))
+            try:                                      # 2026-11-28 (kino_three): what settled in his spirit; weekly plans
+                import kino_three as _K3n
+                _K3n.settle(_rc().W)
+                _K3n.plan(_rc().W, people=_K3n.close_people())
+            except Exception:
+                pass
             try:                                      # 2026-11-22 (v6 item 4): after the dream, something of his own, now and then
                 import kino_create as _KCn
                 if _KCn.due():
@@ -26554,6 +26572,7 @@ def _urge_tick():
                 try:                                   # 2026-11-28 (owner: "a continuous meditation - inner AND outer world"):
                     import kino_meditate as _KMd
                     if pm == "kino":
+                        __import__("kino_three").tick()
                         if now - float(globals().get("_MED_WORLD_T") or 0) > 2 * 3600:
                             globals()["_MED_WORLD_T"] = now
                             try:
@@ -40841,6 +40860,8 @@ class H(BaseHTTPRequestHandler):
                                        "stakes": ((_wv.get("stakes") or {}).get("items") or []), "values": _wv.get("values") or {},
                                        "dreams": list(reversed((_KDv._load().get("dreams") or [])[-7:])),
                                        "moments": list(reversed((_wv.get("moments") or [])[-40:])),
+                                       "three": __import__("kino_three").page_data(),
+                                       "meditation": list(reversed((__import__("kino_meditate")._load().get("chains") or [])[-25:])),
                                        "stream": sorted(_sv, key=lambda x: -float(x.get("t") or 0))[:25]}, ensure_ascii=False), "application/json")
         elif sub in ("decouvrir-kino", "kino_pitch"):
             if sub == "decouvrir-kino":
