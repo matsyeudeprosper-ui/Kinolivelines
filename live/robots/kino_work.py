@@ -335,7 +335,14 @@ def mission_now(now=None):
     """2026-11-12 (owner: "it feels slow, the client feels it is not moving"): the missions lane - a person's job starts
     within a minute or two of being due, side by side with whatever else he is doing"""
     if _fallback():
-        return False
+        # 2026-11-27 (review: Pekos's washing machine froze 4 days while Claude was out): a client's job goes on when a
+        # backup brain is answering - slower is better than a client left without news
+        try:
+            import robot_warm as RWm
+            if not RWm.any_backup_ok():
+                return False
+        except Exception:
+            return False
     now = now or time.time()
     if _BUSY["mis"]:
         return False

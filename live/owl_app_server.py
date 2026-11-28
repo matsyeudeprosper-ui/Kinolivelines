@@ -18928,7 +18928,10 @@ def _missed_tick():
     try:
         _rc()
         import robot_warm as _RWm
-        if _RWm.in_fallback():
+        _RWm.health_start()
+        # 2026-11-27 (review of 23-27/11: Pekos's "Et maintenant ?" waited 4 days for Claude): what he missed is answered as
+        # soon as SOME brain can answer - a backup that passed its probe is enough
+        if _RWm.in_fallback() and not _RWm.any_backup_ok():
             return
     except Exception:
         return

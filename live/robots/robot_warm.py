@@ -566,6 +566,58 @@ def _freellm(system, user, timeout=150, log=None, was=""):
         return None
 
 
+# ---------------------------------------------------------------- 2026-11-27 (owner: "30 s is a lot - a background test of which
+# one is available; the free brain first, and Codex the moment it is available"): each backup is probed in the background
+# (a tiny call), so when Claude is out the chain goes straight to one that answers - never through dead ones first
+_HEALTH = {}                    # name -> {"ok": bool, "t": probe time, "ms": latency}
+_HEALTH_ON = {"started": False}
+PREFER = ("codex", "free", "claude_api", "openai", "ollama")     # quality order among the HEALTHY ones
+PROBE_EVERY = {"codex": 900, "free": 300, "claude_api": 1800, "openai": 1800, "ollama": 1800}
+
+
+def _probe(name):
+    t0 = time.time()
+    sysm, msg = "You answer with one word.", "Reply with exactly: OK"
+    try:
+        if name == "claude_api":
+            import robot_anthropic as _RAp
+            r = _RAp.ask_text(sysm, msg, "haiku", 30, None, None) if _RAp.ready() else None
+        elif name == "codex":
+            r = _codex(sysm, msg, 90, None, "probe")
+        elif name == "openai":
+            import robot_openai as _ROp
+            r = _ROp.ask_text(sysm, msg, "haiku", 30, None, None)
+        elif name == "ollama":
+            r = _ollama(sysm, msg, 30, None, "probe") if os.path.exists(OLLAMA_FILE) else None
+        else:
+            r = _freellm(sysm, msg, 60, None, "probe") if os.path.exists(FREE_FILE) else None
+    except Exception:
+        r = None
+    _HEALTH[name] = {"ok": bool(r), "t": time.time(), "ms": int((time.time() - t0) * 1000)}
+
+
+def _health_loop():
+    while True:
+        for n in PREFER:
+            try:
+                if time.time() - float((_HEALTH.get(n) or {}).get("t") or 0) >= PROBE_EVERY.get(n, 1800):
+                    _probe(n)
+            except Exception:
+                pass
+        time.sleep(30)
+
+
+def health_start():
+    if not _HEALTH_ON["started"]:
+        _HEALTH_ON["started"] = True
+        threading.Thread(target=_health_loop, daemon=True).start()
+
+
+def any_backup_ok():
+    """some backup answered its last probe (a brain is there even while Claude is out)"""
+    return any((_HEALTH.get(n) or {}).get("ok") for n in PREFER)
+
+
 def _backup(system, user, timeout=150, log=None, model="sonnet", on_text=None):
     """2026-11-20 (owner: "when claude.exe is not available, and Claude API not available, Codex not available, ChatGPT API
     not available, we default to Free LLM API"): claude.exe failed on its limit or its login - the same call down the chain
@@ -580,6 +632,13 @@ def _backup(system, user, timeout=150, log=None, model="sonnet", on_text=None):
     chain = [("claude_api", _ra), ("codex", lambda: _codex(system, user, timeout, log, model)), ("openai", _ro),
              ("ollama", lambda: _ollama(system, user, timeout, log, model) if os.path.exists(OLLAMA_FILE) else None),
              ("free", lambda: _freellm(system, user, timeout, log, model) if os.path.exists(FREE_FILE) else None)]
+    health_start()
+    # healthy ones first, in quality order; not yet probed next; the ones whose last probe failed only as a last resort
+    _fn = dict(chain)
+    _ok = [n for n in PREFER if (_HEALTH.get(n) or {}).get("ok")]
+    _unk = [n for n in PREFER if n not in _HEALTH]
+    _bad = [n for n in PREFER if n in _HEALTH and not _HEALTH[n].get("ok")]
+    chain = [(n, _fn[n]) for n in _ok + _unk] + ([(n, _fn[n]) for n in _bad] if not _ok else [])
     for name, fn in chain:
         if time.time() < _BK_DOWN.get(name, 0):
             continue
@@ -589,7 +648,9 @@ def _backup(system, user, timeout=150, log=None, model="sonnet", on_text=None):
             r = None
         if r is not None:
             _BK_FAILS[name] = 0
+            _HEALTH[name] = {"ok": True, "t": time.time(), "ms": (_HEALTH.get(name) or {}).get("ms", 0)}
             return r
+        _HEALTH[name] = {"ok": False, "t": time.time(), "ms": 0}          # a real failure counts as a failed probe
         _BK_FAILS[name] = _BK_FAILS.get(name, 0) + 1
         if _BK_FAILS[name] >= 2:
             _BK_DOWN[name], _BK_FAILS[name] = time.time() + 900, 0
