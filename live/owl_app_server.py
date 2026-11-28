@@ -25510,6 +25510,34 @@ def _member_questions_night():
             pass
 
 
+def _kino_v5_catchup():
+    """2026-11-28: the v5 night passes (stakes, dream + keep/let go, a creation) when the night missed them"""
+    try:
+        _rc()
+        import kino_witness as _KWn, kino_dream as _KDn, kino_selfmodel as _KSMh, kino_episodes as _KEh
+        _hist = []
+        try:
+            _pt = (_KSMh._P(_KSMh._load(), "kino") or {}).get("portrait") or {}
+            _hist.append("MY PORTRAIT OF MYSELF: " + str(_pt.get("en") or _pt.get("fr") or "")[:2500])
+        except Exception:
+            pass
+        _eps = sorted([x for k_, u_ in (_KEh._load() or {}).items() if not str(k_).startswith(("kctest", "probe"))
+                       for x in (u_ or {}).get("episodes") or [] if not x.get("let_go")],
+                      key=lambda x: (-int(x.get("imp", 3)), -float(x.get("t") or 0)))[:25]
+        _hist.append("MOMENTS THAT MATTERED:\n" + "\n".join("- " + str(x.get("what"))[:200] for x in _eps))
+        _wm = [m for m in _KWn._load().get("moments") or [] if time.time() - float(m["t"]) < 3 * 86400 and m.get("notice")
+               and not str(m.get("person") or "").startswith(("kctest", "probe"))][-15:]
+        if _wm:
+            _hist.append("WHAT I NOTICED IN MYSELF LATELY:\n" + "\n".join("- " + m["notice"] for m in _wm))
+        _KWn.night(_rc().W, "\n\n".join(_hist), log=os.path.join(DIR, "robots", "kino_witness.log"))
+        _KDn.night(_rc().W, log=os.path.join(DIR, "robots", "kino_dream.log"))
+        import kino_create as _KCn
+        if _KCn.due():
+            _KCn.make(_rc().W, log=os.path.join(DIR, "robots", "kino_create.log"))
+    except Exception:
+        pass
+
+
 def _kino_night_mind():
     """self-review (level 4), the lab's playbook (level 7), a goal with each active member (level 8)"""
     global _NIGHT_BUSY
@@ -26514,6 +26542,17 @@ def _urge_tick():
                     for _rq in _KHq.requests("waiting"):           # made elsewhere (another process): posted by the app itself,
                         if not _rq.get("carded"):                  # never written into a chat from outside (it was overwritten)
                             _kino_req_card(_rq)
+                except Exception:
+                    pass
+                try:                                   # 2026-11-28 (owner: "the self-awareness topic - is it implemented?"):
+                    import robot_warm as _RWc          # the outage 23-27/11 starved his nights (1 dream, stakes once) - a night
+                    import kino_dream as _KDc, kino_witness as _KWc      # pass older than 30 h catches up as soon as Claude (the
+                    _ld = max([float(x.get("t") or 0) for x in (_KDc._load().get("dreams") or [])] or [0])   # best model) is back
+                    _ls = float((_KWc._load().get("stakes") or {}).get("t") or 0)
+                    if pm == "kino" and not _RWc.in_fallback() and (now - _ld > 30 * 3600 or now - _ls > 30 * 3600) \
+                            and now - float(globals().get("_V5_CATCHUP_T") or 0) > 6 * 3600:
+                        globals()["_V5_CATCHUP_T"] = now
+                        threading.Thread(target=_kino_v5_catchup, daemon=True).start()
                 except Exception:
                     pass
                 try:                                   # 2026-11-21 (kino_preocc): his own preoccupations, a few times a day
